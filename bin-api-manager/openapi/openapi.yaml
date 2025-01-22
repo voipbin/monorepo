@@ -2930,59 +2930,61 @@ paths:
   /campaigns:
     $ref: './paths/campaigns/main.yaml'
 
-  # /chatbotcalls/{id}:
-  #   $ref: './paths/chatbotcalls/id.yaml'
-  # /chatbotcalls:
-  #   $ref: './paths/chatbotcalls/main.yaml'
+  /chatbotcalls/{id}:
+    $ref: './paths/chatbotcalls/id.yaml'
+  /chatbotcalls:
+    $ref: './paths/chatbotcalls/main.yaml'
 
-  # /chatbots/{id}:
-  #   $ref: './paths/chatbots/id.yaml'
-  # /chatbots:
-  #   $ref: './paths/chatbots/main.yaml'
+  /chatbots/{id}:
+    $ref: './paths/chatbots/id.yaml'
+  /chatbots:
+    $ref: './paths/chatbots/main.yaml'
 
-  # /chatmessages/{id}:
-  #   $ref: './paths/chatmessages/id.yaml'
-  # /chatmessages:
-  #   $ref: './paths/chatmessages/main.yaml'
+  /chatmessages/{id}:
+    $ref: './paths/chatmessages/id.yaml'
+  /chatmessages:
+    $ref: './paths/chatmessages/main.yaml'
 
-  # /chatroommessages/{id}:
-  #   $ref: './paths/chatroommessages/id.yaml'
-  # /chatroommessages:
-  #   $ref: './paths/chatroommessages/main.yaml'
+  /chatroommessages/{id}:
+    $ref: './paths/chatroommessages/id.yaml'
+  /chatroommessages:
+    $ref: './paths/chatroommessages/main.yaml'
 
-  # /chatrooms/{id}:
-  #   $ref: './paths/chatrooms/id.yaml'
-  # /chatrooms:
-  #   $ref: './paths/chatrooms/main.yaml'
+  /chatrooms/{id}:
+    $ref: './paths/chatrooms/id.yaml'
+  /chatrooms:
+    $ref: './paths/chatrooms/main.yaml'
 
-  # /chats/{id}/participant_ids/{participant_id}:
-  #   $ref: './paths/chats/id_participant_ids_id.yaml'
-  # /chats/{id}/participant_ids:
-  #   $ref: './paths/chats/id_participant_ids.yaml'
-  # /chats/{id}:
-  #   $ref: './paths/chats/id.yaml'
-  # /chats:
-  #   $ref: './paths/chats/main.yaml'
+  /chats/{id}/participant_ids/{participant_id}:
+    $ref: './paths/chats/id_participant_ids_id.yaml'
+  /chats/{id}/participant_ids:
+    $ref: './paths/chats/id_participant_ids.yaml'
+  /chats/{id}/room_owner_id:
+    $ref: './paths/chats/id_room_owner_id.yaml'
+  /chats/{id}:
+    $ref: './paths/chats/id.yaml'
+  /chats:
+    $ref: './paths/chats/main.yaml'
 
-  # /conferencecalls/{id}:
-  #   $ref: './paths/conferencecalls/id.yaml'
-  # /conferencecalls:
-  #   $ref: './paths/conferencecalls/main.yaml'
+  /conferencecalls/{id}:
+    $ref: './paths/conferencecalls/id.yaml'
+  /conferencecalls:
+    $ref: './paths/conferencecalls/main.yaml'
 
-  # /conferences/{id}/media_stream:
-  #   $ref: './paths/conferences/id_media_stream.yaml'
-  # /conferences/{id}/recording_start:
-  #   $ref: './paths/conferences/id_recording_start.yaml'
-  # /conferences/{id}/recording_stop:
-  #   $ref: './paths/conferences/id_recording_stop.yaml'
-  # /conferences/{id}/transcribe_start:
-  #   $ref: './paths/conferences/id_transcribe_start.yaml'
-  # /conferences/{id}/transcribe_stop:
-  #   $ref: './paths/conferences/id_transcribe_stop.yaml'
-  # /conferences/{id}:
-  #   $ref: './paths/conferences/id.yaml'
-  # /conferences:
-  #   $ref: './paths/conferences/main.yaml'
+  /conferences/{id}/media_stream:
+    $ref: './paths/conferences/id_media_stream.yaml'
+  /conferences/{id}/recording_start:
+    $ref: './paths/conferences/id_recording_start.yaml'
+  /conferences/{id}/recording_stop:
+    $ref: './paths/conferences/id_recording_stop.yaml'
+  /conferences/{id}/transcribe_start:
+    $ref: './paths/conferences/id_transcribe_start.yaml'
+  /conferences/{id}/transcribe_stop:
+    $ref: './paths/conferences/id_transcribe_stop.yaml'
+  /conferences/{id}:
+    $ref: './paths/conferences/id.yaml'
+  /conferences:
+    $ref: './paths/conferences/main.yaml'
 
   # /conversation_accounts/{id}:
   #   $ref: './paths/conversation_accounts/id.yaml'
@@ -3023,6 +3025,8 @@ paths:
   # /flows:
   #   $ref: './paths/flows/main.yaml'
 
+  # /groupcalls/{id}/hangup:
+  #   $ref: './paths/groupcalls/id_hangup.yaml'
   # /groupcalls/{id}:
   #   $ref: './paths/groupcalls/id.yaml'
   # /groupcalls:

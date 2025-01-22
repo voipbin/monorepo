@@ -46,10 +46,13 @@ post:
             text:
               type: string
               description: The text content of the message.
-            media:
+            medias:
               type: array
               items:
                 $ref: '#/components/schemas/ConversationManagerMedia'
+          required:
+            - text
+            - medias
   responses:
     '200':
       description: The details of the sent message.

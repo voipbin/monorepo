@@ -55,10 +55,15 @@ put:
               type: string
             detail:
               type: string
-            engineType:
+            engine_type:
               $ref: '#/components/schemas/ChatbotManagerChatbotEngineType'
-            initPrompt:
+            init_prompt:
               type: string
+          required:
+            - name
+            - detail
+            - engine_type
+            - init_prompt
   responses:
     '200':
       description: Details of the updated chatbot.

@@ -57,6 +57,7 @@ put:
               type: string
           required:
             - name
+            - detail
   responses:
     '200':
       description: The updated chat details.

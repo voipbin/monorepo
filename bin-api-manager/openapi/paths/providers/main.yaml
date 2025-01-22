@@ -32,16 +32,24 @@ post:
               $ref: '#/components/schemas/RouteManagerProviderType'
             hostname:
               type: string
-            techPrefix:
+            tech_prefix:
               type: string
-            techPostfix:
+            tech_postfix:
               type: string
-            techHeaders:
+            tech_headers:
               type: object
             name:
               type: string
             detail:
               type: string
+          required:
+            - type
+            - hostname
+            - tech_prefix
+            - tech_postfix
+            - tech_headers
+            - name
+            - detail
   responses:
     '200':
       description: The created provider details.

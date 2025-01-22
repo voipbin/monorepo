@@ -35,7 +35,7 @@ put:
               type: string
             detail:
               type: string
-            authTypes:
+            auth_types:
               type: array
               items:
                 $ref: '#/components/schemas/RegistrarManagerAuthType'
@@ -43,10 +43,17 @@ put:
               type: string
             password:
               type: string
-            allowedIPs:
+            allowed_ips:
               type: array
               items:
                 type: string
+          required:
+            - name
+            - detail
+            - auth_types
+            - username
+            - password
+            - allowed_ips
   responses:
     '200':
       description: The updated trunk details.

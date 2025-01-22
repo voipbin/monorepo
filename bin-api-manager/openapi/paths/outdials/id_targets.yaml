@@ -21,16 +21,25 @@ post:
               type: string
             data:
               type: string
-            destination0:
+            destination_0:
               $ref: '#/components/schemas/CommonAddress'
-            destination1:
+            destination_1:
               $ref: '#/components/schemas/CommonAddress'
-            destination2:
+            destination_2:
               $ref: '#/components/schemas/CommonAddress'
-            destination3:
+            destination_3:
               $ref: '#/components/schemas/CommonAddress'
-            destination4:
+            destination_4:
               $ref: '#/components/schemas/CommonAddress'
+        required:
+          - name
+          - detail
+          - data
+          - destination_0
+          - destination_1
+          - destination_2
+          - destination_3
+          - destination_4
   responses:
     '200':
       description: The created outdial target details.

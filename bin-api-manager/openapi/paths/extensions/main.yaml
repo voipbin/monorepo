@@ -41,6 +41,7 @@ post:
             - extension
             - password
             - name
+            - detail
   responses:
     '200':
       description: The created extension.

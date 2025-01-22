@@ -18,6 +18,9 @@ post:
             language:
               type: string
               description: The language for transcription.
+              example: en-US
+          required:
+            - language
   responses:
     '200':
       description: Transcription started successfully.

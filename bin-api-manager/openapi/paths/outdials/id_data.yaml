@@ -16,6 +16,8 @@ put:
           properties:
             data:
               type: string
+          required:
+            - data
   responses:
     '200':
       description: The updated outdial details.

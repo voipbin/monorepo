@@ -48,6 +48,7 @@ post:
                 $ref: '#/components/schemas/ChatManagerMedia'
           required:
             - chatroom_id
+            - text
   responses:
     '200':
       content:

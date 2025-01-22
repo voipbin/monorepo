@@ -62,6 +62,15 @@ post:
               type: array
               items:
                 $ref: '#/components/schemas/CommonAddress'
+          required:
+            - username
+            - password
+            - name
+            - detail
+            - ring_method
+            - permission
+            - tag_ids
+            - addresses
   responses:
     '201':
       description: Agent created successfully.

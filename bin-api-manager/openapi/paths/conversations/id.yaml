@@ -36,6 +36,9 @@ put:
               type: string
             detail:
               type: string
+          required:
+            - name
+            - detail
   responses:
     '200':
       content:

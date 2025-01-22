@@ -13,6 +13,8 @@ put:
               items:
                 $ref: '#/components/schemas/CommonAddress'
               description: The updated list of addresses.
+          required:
+            - addresses
   responses:
     '200':
       description: The updated address information of the agent.

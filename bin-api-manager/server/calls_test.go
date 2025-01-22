@@ -2,7 +2,6 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -68,8 +67,7 @@ func Test_CallsPOST(t *testing.T) {
 			expectFlowID: uuid.FromStringOrNil("f0f80af2-d7c8-11ef-bc6a-03858a6b220f"),
 			expectActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeAnswer,
-					Option: json.RawMessage(`{}`),
+					Type: fmaction.TypeAnswer,
 				},
 			},
 			expectSource: &commonaddress.Address{

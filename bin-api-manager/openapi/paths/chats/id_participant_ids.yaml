@@ -15,10 +15,10 @@ post:
         schema:
           type: object
           properties:
-            participantID:
+            participant_id:
               type: string
           required:
-            - participantID
+            - participant_id
   responses:
     '200':
       description: The updated chat details with the new participant.

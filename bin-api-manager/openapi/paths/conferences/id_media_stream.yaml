@@ -8,6 +8,13 @@ get:
       schema:
         type: string
       description: The ID of the conference
+    - name: encapsulation
+      in: query
+      required: true
+      schema:
+        type: string
+      description: The encapsulation for media stream.
+      example: mediasocket
   responses:
     '200':
       description: Media streaming started successfully.

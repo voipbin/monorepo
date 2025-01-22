@@ -36,6 +36,11 @@ post:
               type: string
             data:
               type: string
+          required:
+            - campaign_id
+            - name
+            - detail
+            - data
   responses:
     '200':
       description: The created outdial details.

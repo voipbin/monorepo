@@ -2,10 +2,14 @@ package server
 
 import (
 	"encoding/json"
+	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	chmedia "monorepo/bin-chat-manager/models/media"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
+
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
@@ -68,6 +72,100 @@ func ConvertFlowManagerAction(fma openapi_server.FlowManagerAction) fmaction.Act
 	}
 
 	return res
+}
+
+func derefString(s *string) string {
+	if s != nil {
+		return *s
+	}
+	return ""
+}
+
+func convertAgent(agentManager openapi_server.AgentManagerAgent) amagent.Agent {
+	id := uuid.Nil
+	if agentManager.Id != nil {
+		id = uuid.FromStringOrNil(*agentManager.Id)
+	}
+
+	customerID := uuid.Nil
+	if agentManager.CustomerId != nil {
+		customerID = uuid.FromStringOrNil(*agentManager.CustomerId)
+	}
+
+	tagIDs := []uuid.UUID{}
+	if agentManager.TagIds != nil {
+		for _, v := range *agentManager.TagIds {
+			tagIDs = append(tagIDs, uuid.FromStringOrNil(v))
+		}
+	}
+
+	var addresses []commonaddress.Address
+	if agentManager.Addresses != nil {
+		for _, v := range *agentManager.Addresses {
+			addresses = append(addresses, ConvertCommonAddress(v))
+		}
+	}
+
+	res := amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+
+		Username:     derefString(agentManager.Username),
+		PasswordHash: "",
+
+		Name:   derefString(agentManager.Name),
+		Detail: derefString(agentManager.Detail),
+
+		TagIDs:    tagIDs,
+		Addresses: addresses,
+	}
+
+	if agentManager.RingMethod != nil {
+		res.RingMethod = amagent.RingMethod(*agentManager.RingMethod)
+	}
+
+	if agentManager.Status != nil {
+		res.Status = amagent.Status(*agentManager.Status)
+	}
+
+	if agentManager.Permission != nil {
+		res.Permission = amagent.Permission(*agentManager.Permission)
+	}
+
+	return res
+
+}
+
+func ConvertChatManagerMedia(input openapi_server.ChatManagerMedia) chmedia.Media {
+	mediaType := ""
+	if input.Type != nil {
+		mediaType = string(*input.Type)
+	}
+
+	fileID := uuid.Nil
+	if input.FileId != nil {
+		fileID = uuid.FromStringOrNil(*input.FileId) // Handle invalid UUID parsing as needed
+	}
+
+	address := commonaddress.Address{}
+	if input.Address != nil {
+		address = ConvertCommonAddress(*input.Address)
+	}
+
+	agent := amagent.Agent{}
+	if input.Agent != nil {
+		agent = convertAgent(*input.Agent)
+	}
+
+	return chmedia.Media{
+		Type:    chmedia.Type(mediaType),
+		Address: address,
+		Agent:   agent,
+		FileID:  fileID,
+		LinkURL: derefString(input.LinkUrl),
+	}
 }
 
 func stringPtr(s string) *string {

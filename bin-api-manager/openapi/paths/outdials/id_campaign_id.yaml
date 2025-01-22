@@ -16,6 +16,8 @@ put:
           properties:
             campaign_id:
               type: string
+          required:
+            - campaign_id
   responses:
     '200':
       description: The updated outdial details.

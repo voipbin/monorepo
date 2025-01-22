@@ -30,20 +30,26 @@ post:
           type: object
           properties:
             number:
-              type: string
               description: The phone number.
+              type: string
             call_flow_id:
-              type: string
               description: The ID of the call flow.
+              type: string
             message_flow_id:
-              type: string
               description: The ID of the message flow.
+              type: string
             name:
-              type: string
               description: The name of the number.
-            detail:
               type: string
+            detail:
               description: Additional details about the number.
+              type: string
+          required:
+            - number
+            - call_flow_id
+            - message_flow_id
+            - name
+            - detail
   responses:
     '200':
       description: The created order number details.

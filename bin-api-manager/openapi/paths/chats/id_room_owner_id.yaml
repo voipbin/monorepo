@@ -15,10 +15,10 @@ put:
         schema:
           type: object
           properties:
-            roomOwnerID:
+            room_owner_id:
               type: string
           required:
-            - roomOwnerID
+            - room_owner_id
   responses:
     '200':
       description: The updated chat details with new room owner ID.

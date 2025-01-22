@@ -17,6 +17,8 @@ put:
               type: array
               items:
                 type: string
+          required:
+            - tag_ids
   responses:
     '200':
       description: The updated queue details.

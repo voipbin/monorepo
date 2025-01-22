@@ -95,51 +95,21 @@ func (h *server) PostAgents(c *gin.Context) {
 		return
 	}
 
-	username := ""
-	if req.Username != nil {
-		username = *req.Username
-	}
-
-	password := ""
-	if req.Password != nil {
-		password = *req.Password
-	}
-
-	name := ""
-	if req.Name != nil {
-		name = *req.Name
-	}
-
-	detail := ""
-	if req.Detail != nil {
-		detail = *req.Detail
-	}
-
-	ringMethod := amagent.RingMethodRingAll
-	if req.RingMethod != nil {
-		ringMethod = string(*req.RingMethod)
-	}
-
-	permission := amagent.PermissionNone
-	if req.Permission != nil {
-		permission = amagent.Permission(*req.Permission)
-	}
-
 	tagIDs := []uuid.UUID{}
 	if req.TagIds != nil {
-		for _, v := range *req.TagIds {
+		for _, v := range req.TagIds {
 			tagIDs = append(tagIDs, uuid.FromStringOrNil(v))
 		}
 	}
 
 	addresses := []commonaddress.Address{}
 	if req.Addresses != nil {
-		for _, v := range *req.Addresses {
+		for _, v := range req.Addresses {
 			addresses = append(addresses, ConvertCommonAddress(v))
 		}
 	}
 
-	res, err := h.serviceHandler.AgentCreate(c.Request.Context(), &a, username, password, name, detail, amagent.RingMethod(ringMethod), permission, tagIDs, addresses)
+	res, err := h.serviceHandler.AgentCreate(c.Request.Context(), &a, req.Username, req.Password, req.Name, req.Detail, amagent.RingMethod(req.RingMethod), amagent.Permission(req.Permission), tagIDs, addresses)
 	if err != nil {
 		log.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)

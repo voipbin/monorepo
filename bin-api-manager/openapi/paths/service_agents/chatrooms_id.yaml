@@ -54,6 +54,9 @@ put:
               type: string
             detail:
               type: string
+          required:
+            - name
+            - detail
   responses:
     '200':
       description: The updated chatroom's details.

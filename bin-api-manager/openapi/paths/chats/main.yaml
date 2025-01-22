@@ -31,16 +31,22 @@ post:
           properties:
             type:
               $ref: '#/components/schemas/ChatManagerChatType'
-            ownerID:
+            owner_id:
               type: string
-            participantID:
-              type: string
+            participant_ids:
+              type: array
+              items:
+                type: string
             name:
               type: string
             detail:
               type: string
           required:
-            - ownerID
+            - type
+            - owner_id
+            - participant_ids
+            - name
+            - detail
   responses:
     '200':
       description: The created chat details.

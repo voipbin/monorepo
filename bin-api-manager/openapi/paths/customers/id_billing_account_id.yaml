@@ -14,8 +14,10 @@ put:
         schema:
           type: object
           properties:
-            billingAccountID:
+            billing_account_id:
               type: string
+          required:
+            - billing_account_id
   responses:
     '200':
       content:

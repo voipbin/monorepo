@@ -59,6 +59,17 @@ post:
             max_try_count_4:
               type: integer
               description: Maximum retry count for destination 4.
+          required:
+            - name
+            - detail
+            - source
+            - dial_timeout
+            - try_interval
+            - max_try_count_0
+            - max_try_count_1
+            - max_try_count_2
+            - max_try_count_3
+            - max_try_count_4
   responses:
     '200':
       description: The created outplan details.

@@ -59,6 +59,7 @@ put:
               description: The new details of the chatroom.
           required:
             - name
+            - detail
   responses:
     '200':
       description: The updated chatroom details.

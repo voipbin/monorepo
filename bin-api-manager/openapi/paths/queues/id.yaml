@@ -66,7 +66,14 @@ put:
               type: integer
             service_timeout:
               type: integer
-
+          required:
+            - name
+            - detail
+            - routing_method
+            - tag_ids
+            - wait_actions
+            - wait_timeout
+            - service_timeout
   responses:
     '200':
       description: The updated queue details.

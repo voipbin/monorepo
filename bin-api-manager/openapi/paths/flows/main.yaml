@@ -30,16 +30,20 @@ post:
           type: object
           properties:
             name:
-              type: string
               description: The name of the flow.
-            detail:
               type: string
+            detail:
               description: Detailed information about the flow.
+              type: string
             actions:
+              description: List of actions associated with the flow.
               type: array
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
-              description: List of actions associated with the flow.
+          required:
+            - name
+            - detail
+            - actions
   responses:
     '200':
       description: The created flow details.

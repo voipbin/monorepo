@@ -36,14 +36,22 @@ put:
               type: string
             email:
               type: string
-            phoneNumber:
+            phone_number:
               type: string
             address:
               type: string
-            webhookMethod:
+            webhook_method:
               $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
-            webhookURI:
+            webhook_uri:
               type: string
+          required:
+            - name
+            - detail
+            - email
+            - phone_number
+            - address
+            - webhook_method
+            - webhook_uri
   responses:
     '200':
       content:

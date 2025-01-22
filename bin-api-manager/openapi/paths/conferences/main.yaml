@@ -18,6 +18,7 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/ConferenceManagerConference'
+
 post:
   summary: Create a new conference
   description: Create a new conference with the provided details.
@@ -38,14 +39,22 @@ post:
               type: integer
             data:
               type: object
-            preActions:
+            pre_actions:
               type: array
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
-            postActions:
+            post_actions:
               type: array
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
+          required:
+            - type
+            - name
+            - detail
+            - timeout
+            - data
+            - pre_actions
+            - post_actions
   responses:
     '200':
       content:

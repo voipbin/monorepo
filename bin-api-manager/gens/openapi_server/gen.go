@@ -2466,18 +2466,18 @@ type GetAgentsParams struct {
 
 // PostAgentsJSONBody defines parameters for PostAgents.
 type PostAgentsJSONBody struct {
-	Addresses *[]CommonAddress `json:"addresses,omitempty"`
-	Detail    *string          `json:"detail,omitempty"`
-	Name      *string          `json:"name,omitempty"`
-	Password  *string          `json:"password,omitempty"`
+	Addresses []CommonAddress `json:"addresses"`
+	Detail    string          `json:"detail"`
+	Name      string          `json:"name"`
+	Password  string          `json:"password"`
 
 	// Permission Permission type
-	Permission *AgentManagerAgentPermission `json:"permission,omitempty"`
+	Permission AgentManagerAgentPermission `json:"permission"`
 
 	// RingMethod Represents an agent resource.
-	RingMethod *AgentManagerAgentRingMethod `json:"ring_method,omitempty"`
-	TagIds     *[]string                    `json:"tag_ids,omitempty"`
-	Username   *string                      `json:"username,omitempty"`
+	RingMethod AgentManagerAgentRingMethod `json:"ring_method"`
+	TagIds     []string                    `json:"tag_ids"`
+	Username   string                      `json:"username"`
 }
 
 // PutAgentsIdJSONBody defines parameters for PutAgentsId.
@@ -2739,6 +2739,214 @@ type PutCampaignsIdStatusJSONBody struct {
 	Status CampaignManagerCampaignStatus `json:"status"`
 }
 
+// GetChatbotcallsParams defines parameters for GetChatbotcalls.
+type GetChatbotcallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetChatbotsParams defines parameters for GetChatbots.
+type GetChatbotsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostChatbotsJSONBody defines parameters for PostChatbots.
+type PostChatbotsJSONBody struct {
+	Detail string `json:"detail"`
+
+	// EngineType Type of engine used by the chatbot.
+	EngineType ChatbotManagerChatbotEngineType `json:"engine_type"`
+	InitPrompt string                          `json:"init_prompt"`
+	Name       string                          `json:"name"`
+}
+
+// PutChatbotsIdJSONBody defines parameters for PutChatbotsId.
+type PutChatbotsIdJSONBody struct {
+	Detail string `json:"detail"`
+
+	// EngineType Type of engine used by the chatbot.
+	EngineType ChatbotManagerChatbotEngineType `json:"engine_type"`
+	InitPrompt string                          `json:"init_prompt"`
+	Name       string                          `json:"name"`
+}
+
+// GetChatmessagesParams defines parameters for GetChatmessages.
+type GetChatmessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ChatId The chat id.
+	ChatId string `form:"chat_id" json:"chat_id"`
+}
+
+// PostChatmessagesJSONBody defines parameters for PostChatmessages.
+type PostChatmessagesJSONBody struct {
+	ChatId string              `json:"chat_id"`
+	Medias *[]ChatManagerMedia `json:"medias,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+	Text   string        `json:"text"`
+
+	// Type Type of the message chat.
+	Type ChatManagerMessagechatType `json:"type"`
+}
+
+// GetChatroommessagesParams defines parameters for GetChatroommessages.
+type GetChatroommessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ChatroomId The ID of the chatroom
+	ChatroomId string `form:"chatroom_id" json:"chatroom_id"`
+}
+
+// PostChatroommessagesJSONBody defines parameters for PostChatroommessages.
+type PostChatroommessagesJSONBody struct {
+	// ChatroomId ID of the chatroom.
+	ChatroomId string `json:"chatroom_id"`
+
+	// Medias List of media URLs.
+	Medias *[]ChatManagerMedia `json:"medias,omitempty"`
+
+	// Text Text of the message.
+	Text string `json:"text"`
+}
+
+// GetChatroomsParams defines parameters for GetChatrooms.
+type GetChatroomsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// OwnerId The ID of the chatroom owner.
+	OwnerId string `form:"owner_id" json:"owner_id"`
+}
+
+// PostChatroomsJSONBody defines parameters for PostChatrooms.
+type PostChatroomsJSONBody struct {
+	// Detail Additional details of the chatroom.
+	Detail string `json:"detail"`
+
+	// Name The name of the chatroom.
+	Name string `json:"name"`
+
+	// ParticipantIds The ID of the participant.
+	ParticipantIds []string `json:"participant_ids"`
+}
+
+// PutChatroomsIdJSONBody defines parameters for PutChatroomsId.
+type PutChatroomsIdJSONBody struct {
+	// Detail The new details of the chatroom.
+	Detail string `json:"detail"`
+
+	// Name The new name of the chatroom.
+	Name string `json:"name"`
+}
+
+// GetChatsParams defines parameters for GetChats.
+type GetChatsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostChatsJSONBody defines parameters for PostChats.
+type PostChatsJSONBody struct {
+	Detail         string   `json:"detail"`
+	Name           string   `json:"name"`
+	OwnerId        string   `json:"owner_id"`
+	ParticipantIds []string `json:"participant_ids"`
+
+	// Type Type of the chat.
+	Type ChatManagerChatType `json:"type"`
+}
+
+// PutChatsIdJSONBody defines parameters for PutChatsId.
+type PutChatsIdJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+}
+
+// PostChatsIdParticipantIdsJSONBody defines parameters for PostChatsIdParticipantIds.
+type PostChatsIdParticipantIdsJSONBody struct {
+	ParticipantId string `json:"participant_id"`
+}
+
+// PutChatsIdRoomOwnerIdJSONBody defines parameters for PutChatsIdRoomOwnerId.
+type PutChatsIdRoomOwnerIdJSONBody struct {
+	RoomOwnerId string `json:"room_owner_id"`
+}
+
+// GetConferencecallsParams defines parameters for GetConferencecalls.
+type GetConferencecallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetConferencesParams defines parameters for GetConferences.
+type GetConferencesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostConferencesJSONBody defines parameters for PostConferences.
+type PostConferencesJSONBody struct {
+	Data        map[string]interface{} `json:"data"`
+	Detail      string                 `json:"detail"`
+	Name        string                 `json:"name"`
+	PostActions []FlowManagerAction    `json:"post_actions"`
+	PreActions  []FlowManagerAction    `json:"pre_actions"`
+	Timeout     int                    `json:"timeout"`
+
+	// Type Types of conferences.
+	Type ConferenceManagerConferenceType `json:"type"`
+}
+
+// PutConferencesIdJSONBody defines parameters for PutConferencesId.
+type PutConferencesIdJSONBody struct {
+	Detail      string              `json:"detail"`
+	Name        string              `json:"name"`
+	PostActions []FlowManagerAction `json:"post_actions"`
+	PreActions  []FlowManagerAction `json:"pre_actions"`
+	Timeout     int                 `json:"timeout"`
+}
+
+// GetConferencesIdMediaStreamParams defines parameters for GetConferencesIdMediaStream.
+type GetConferencesIdMediaStreamParams struct {
+	// Encapsulation The encapsulation for media stream.
+	Encapsulation string `form:"encapsulation" json:"encapsulation"`
+}
+
+// PostConferencesIdTranscribeStartJSONBody defines parameters for PostConferencesIdTranscribeStart.
+type PostConferencesIdTranscribeStartJSONBody struct {
+	// Language The language for transcription.
+	Language string `json:"language"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -2816,6 +3024,45 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
+
+// PostChatbotsJSONRequestBody defines body for PostChatbots for application/json ContentType.
+type PostChatbotsJSONRequestBody PostChatbotsJSONBody
+
+// PutChatbotsIdJSONRequestBody defines body for PutChatbotsId for application/json ContentType.
+type PutChatbotsIdJSONRequestBody PutChatbotsIdJSONBody
+
+// PostChatmessagesJSONRequestBody defines body for PostChatmessages for application/json ContentType.
+type PostChatmessagesJSONRequestBody PostChatmessagesJSONBody
+
+// PostChatroommessagesJSONRequestBody defines body for PostChatroommessages for application/json ContentType.
+type PostChatroommessagesJSONRequestBody PostChatroommessagesJSONBody
+
+// PostChatroomsJSONRequestBody defines body for PostChatrooms for application/json ContentType.
+type PostChatroomsJSONRequestBody PostChatroomsJSONBody
+
+// PutChatroomsIdJSONRequestBody defines body for PutChatroomsId for application/json ContentType.
+type PutChatroomsIdJSONRequestBody PutChatroomsIdJSONBody
+
+// PostChatsJSONRequestBody defines body for PostChats for application/json ContentType.
+type PostChatsJSONRequestBody PostChatsJSONBody
+
+// PutChatsIdJSONRequestBody defines body for PutChatsId for application/json ContentType.
+type PutChatsIdJSONRequestBody PutChatsIdJSONBody
+
+// PostChatsIdParticipantIdsJSONRequestBody defines body for PostChatsIdParticipantIds for application/json ContentType.
+type PostChatsIdParticipantIdsJSONRequestBody PostChatsIdParticipantIdsJSONBody
+
+// PutChatsIdRoomOwnerIdJSONRequestBody defines body for PutChatsIdRoomOwnerId for application/json ContentType.
+type PutChatsIdRoomOwnerIdJSONRequestBody PutChatsIdRoomOwnerIdJSONBody
+
+// PostConferencesJSONRequestBody defines body for PostConferences for application/json ContentType.
+type PostConferencesJSONRequestBody PostConferencesJSONBody
+
+// PutConferencesIdJSONRequestBody defines body for PutConferencesId for application/json ContentType.
+type PutConferencesIdJSONRequestBody PutConferencesIdJSONBody
+
+// PostConferencesIdTranscribeStartJSONRequestBody defines body for PostConferencesIdTranscribeStart for application/json ContentType.
+type PostConferencesIdTranscribeStartJSONRequestBody PostConferencesIdTranscribeStartJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -2996,6 +3243,132 @@ type ServerInterface interface {
 	// Update campaign status
 	// (PUT /campaigns/{id}/status)
 	PutCampaignsIdStatus(c *gin.Context, id string)
+	// Gets a list of chatbot calls
+	// (GET /chatbotcalls)
+	GetChatbotcalls(c *gin.Context, params GetChatbotcallsParams)
+	// Delete a specific chatbot call
+	// (DELETE /chatbotcalls/{id})
+	DeleteChatbotcallsId(c *gin.Context, id string)
+	// Get details of a specific chatbot call
+	// (GET /chatbotcalls/{id})
+	GetChatbotcallsId(c *gin.Context, id string)
+	// Gets a list of chatbots.
+	// (GET /chatbots)
+	GetChatbots(c *gin.Context, params GetChatbotsParams)
+	// Create a new chatbot.
+	// (POST /chatbots)
+	PostChatbots(c *gin.Context)
+	// Delete a chatbot.
+	// (DELETE /chatbots/{id})
+	DeleteChatbotsId(c *gin.Context, id string)
+	// Get chatbot details.
+	// (GET /chatbots/{id})
+	GetChatbotsId(c *gin.Context, id string)
+	// Update a chatbot.
+	// (PUT /chatbots/{id})
+	PutChatbotsId(c *gin.Context, id string)
+	// Retrieve a list of chat messages
+	// (GET /chatmessages)
+	GetChatmessages(c *gin.Context, params GetChatmessagesParams)
+	// Create a new chat message
+	// (POST /chatmessages)
+	PostChatmessages(c *gin.Context)
+	// Delete a chat message
+	// (DELETE /chatmessages/{id})
+	DeleteChatmessagesId(c *gin.Context, id string)
+	// Retrieve details of a chat message
+	// (GET /chatmessages/{id})
+	GetChatmessagesId(c *gin.Context, id string)
+	// Retrieve a list of chatroom messages
+	// (GET /chatroommessages)
+	GetChatroommessages(c *gin.Context, params GetChatroommessagesParams)
+	// Create a new chatroom message
+	// (POST /chatroommessages)
+	PostChatroommessages(c *gin.Context)
+	// Delete a chatroom message
+	// (DELETE /chatroommessages/{id})
+	DeleteChatroommessagesId(c *gin.Context, id string)
+	// Get details of a specific chatroom message
+	// (GET /chatroommessages/{id})
+	GetChatroommessagesId(c *gin.Context, id string)
+	// Gets a list of chatrooms.
+	// (GET /chatrooms)
+	GetChatrooms(c *gin.Context, params GetChatroomsParams)
+	// Create a new chatroom.
+	// (POST /chatrooms)
+	PostChatrooms(c *gin.Context)
+	// Delete a chatroom.
+	// (DELETE /chatrooms/{id})
+	DeleteChatroomsId(c *gin.Context, id string)
+	// Get chatroom details.
+	// (GET /chatrooms/{id})
+	GetChatroomsId(c *gin.Context, id string)
+	// Update a chatroom.
+	// (PUT /chatrooms/{id})
+	PutChatroomsId(c *gin.Context, id string)
+	// Gets a list of chats.
+	// (GET /chats)
+	GetChats(c *gin.Context, params GetChatsParams)
+	// Create a new chat.
+	// (POST /chats)
+	PostChats(c *gin.Context)
+	// Delete a chat.
+	// (DELETE /chats/{id})
+	DeleteChatsId(c *gin.Context, id string)
+	// Get details of a specific chat.
+	// (GET /chats/{id})
+	GetChatsId(c *gin.Context, id string)
+	// Update a chat.
+	// (PUT /chats/{id})
+	PutChatsId(c *gin.Context, id string)
+	// Add a participant to a chat.
+	// (POST /chats/{id}/participant_ids)
+	PostChatsIdParticipantIds(c *gin.Context, id string)
+	// Remove a participant from a chat.
+	// (DELETE /chats/{id}/participant_ids/{participant_id})
+	DeleteChatsIdParticipantIdsParticipantId(c *gin.Context, id string, participantId string)
+	// Update the room owner of a chat.
+	// (PUT /chats/{id}/room_owner_id)
+	PutChatsIdRoomOwnerId(c *gin.Context, id string)
+	// Get list of conference calls
+	// (GET /conferencecalls)
+	GetConferencecalls(c *gin.Context, params GetConferencecallsParams)
+	// Remove a conference call
+	// (DELETE /conferencecalls/{id})
+	DeleteConferencecallsId(c *gin.Context, id string)
+	// Get conference call details
+	// (GET /conferencecalls/{id})
+	GetConferencecallsId(c *gin.Context, id string)
+	// Get list of conferences
+	// (GET /conferences)
+	GetConferences(c *gin.Context, params GetConferencesParams)
+	// Create a new conference
+	// (POST /conferences)
+	PostConferences(c *gin.Context)
+	// Delete a conference
+	// (DELETE /conferences/{id})
+	DeleteConferencesId(c *gin.Context, id string)
+	// Get conference details
+	// (GET /conferences/{id})
+	GetConferencesId(c *gin.Context, id string)
+	// Update conference details
+	// (PUT /conferences/{id})
+	PutConferencesId(c *gin.Context, id string)
+	// Start media streaming for a conference
+	// (GET /conferences/{id}/media_stream)
+	GetConferencesIdMediaStream(c *gin.Context, id string, params GetConferencesIdMediaStreamParams)
+	// Start conference recording
+	// (POST /conferences/{id}/recording_start)
+	PostConferencesIdRecordingStart(c *gin.Context, id string)
+	// Stop conference recording
+	// (POST /conferences/{id}/recording_stop)
+	PostConferencesIdRecordingStop(c *gin.Context, id string)
+	// Start conference transcription
+	// (POST /conferences/{id}/transcribe_start)
+	PostConferencesIdTranscribeStart(c *gin.Context, id string)
+	// Stop conference transcription
+	// (POST /conferences/{id}/transcribe_stop)
+	PostConferencesIdTranscribeStop(c *gin.Context, id string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -4500,6 +4873,1100 @@ func (siw *ServerInterfaceWrapper) PutCampaignsIdStatus(c *gin.Context) {
 	siw.Handler.PutCampaignsIdStatus(c, id)
 }
 
+// GetChatbotcalls operation middleware
+func (siw *ServerInterfaceWrapper) GetChatbotcalls(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChatbotcallsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatbotcalls(c, params)
+}
+
+// DeleteChatbotcallsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChatbotcallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteChatbotcallsId(c, id)
+}
+
+// GetChatbotcallsId operation middleware
+func (siw *ServerInterfaceWrapper) GetChatbotcallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatbotcallsId(c, id)
+}
+
+// GetChatbots operation middleware
+func (siw *ServerInterfaceWrapper) GetChatbots(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChatbotsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatbots(c, params)
+}
+
+// PostChatbots operation middleware
+func (siw *ServerInterfaceWrapper) PostChatbots(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostChatbots(c)
+}
+
+// DeleteChatbotsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChatbotsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteChatbotsId(c, id)
+}
+
+// GetChatbotsId operation middleware
+func (siw *ServerInterfaceWrapper) GetChatbotsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatbotsId(c, id)
+}
+
+// PutChatbotsId operation middleware
+func (siw *ServerInterfaceWrapper) PutChatbotsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutChatbotsId(c, id)
+}
+
+// GetChatmessages operation middleware
+func (siw *ServerInterfaceWrapper) GetChatmessages(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChatmessagesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Required query parameter "chat_id" -------------
+
+	if paramValue := c.Query("chat_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument chat_id is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "chat_id", c.Request.URL.Query(), &params.ChatId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chat_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatmessages(c, params)
+}
+
+// PostChatmessages operation middleware
+func (siw *ServerInterfaceWrapper) PostChatmessages(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostChatmessages(c)
+}
+
+// DeleteChatmessagesId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChatmessagesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteChatmessagesId(c, id)
+}
+
+// GetChatmessagesId operation middleware
+func (siw *ServerInterfaceWrapper) GetChatmessagesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatmessagesId(c, id)
+}
+
+// GetChatroommessages operation middleware
+func (siw *ServerInterfaceWrapper) GetChatroommessages(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChatroommessagesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Required query parameter "chatroom_id" -------------
+
+	if paramValue := c.Query("chatroom_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument chatroom_id is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "chatroom_id", c.Request.URL.Query(), &params.ChatroomId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chatroom_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatroommessages(c, params)
+}
+
+// PostChatroommessages operation middleware
+func (siw *ServerInterfaceWrapper) PostChatroommessages(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostChatroommessages(c)
+}
+
+// DeleteChatroommessagesId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChatroommessagesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteChatroommessagesId(c, id)
+}
+
+// GetChatroommessagesId operation middleware
+func (siw *ServerInterfaceWrapper) GetChatroommessagesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatroommessagesId(c, id)
+}
+
+// GetChatrooms operation middleware
+func (siw *ServerInterfaceWrapper) GetChatrooms(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChatroomsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Required query parameter "owner_id" -------------
+
+	if paramValue := c.Query("owner_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument owner_id is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "owner_id", c.Request.URL.Query(), &params.OwnerId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatrooms(c, params)
+}
+
+// PostChatrooms operation middleware
+func (siw *ServerInterfaceWrapper) PostChatrooms(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostChatrooms(c)
+}
+
+// DeleteChatroomsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChatroomsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteChatroomsId(c, id)
+}
+
+// GetChatroomsId operation middleware
+func (siw *ServerInterfaceWrapper) GetChatroomsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatroomsId(c, id)
+}
+
+// PutChatroomsId operation middleware
+func (siw *ServerInterfaceWrapper) PutChatroomsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutChatroomsId(c, id)
+}
+
+// GetChats operation middleware
+func (siw *ServerInterfaceWrapper) GetChats(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChatsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChats(c, params)
+}
+
+// PostChats operation middleware
+func (siw *ServerInterfaceWrapper) PostChats(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostChats(c)
+}
+
+// DeleteChatsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChatsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteChatsId(c, id)
+}
+
+// GetChatsId operation middleware
+func (siw *ServerInterfaceWrapper) GetChatsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatsId(c, id)
+}
+
+// PutChatsId operation middleware
+func (siw *ServerInterfaceWrapper) PutChatsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutChatsId(c, id)
+}
+
+// PostChatsIdParticipantIds operation middleware
+func (siw *ServerInterfaceWrapper) PostChatsIdParticipantIds(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostChatsIdParticipantIds(c, id)
+}
+
+// DeleteChatsIdParticipantIdsParticipantId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChatsIdParticipantIdsParticipantId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "participant_id" -------------
+	var participantId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "participant_id", c.Param("participant_id"), &participantId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter participant_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteChatsIdParticipantIdsParticipantId(c, id, participantId)
+}
+
+// PutChatsIdRoomOwnerId operation middleware
+func (siw *ServerInterfaceWrapper) PutChatsIdRoomOwnerId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutChatsIdRoomOwnerId(c, id)
+}
+
+// GetConferencecalls operation middleware
+func (siw *ServerInterfaceWrapper) GetConferencecalls(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetConferencecallsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetConferencecalls(c, params)
+}
+
+// DeleteConferencecallsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteConferencecallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteConferencecallsId(c, id)
+}
+
+// GetConferencecallsId operation middleware
+func (siw *ServerInterfaceWrapper) GetConferencecallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetConferencecallsId(c, id)
+}
+
+// GetConferences operation middleware
+func (siw *ServerInterfaceWrapper) GetConferences(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetConferencesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetConferences(c, params)
+}
+
+// PostConferences operation middleware
+func (siw *ServerInterfaceWrapper) PostConferences(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostConferences(c)
+}
+
+// DeleteConferencesId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteConferencesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteConferencesId(c, id)
+}
+
+// GetConferencesId operation middleware
+func (siw *ServerInterfaceWrapper) GetConferencesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetConferencesId(c, id)
+}
+
+// PutConferencesId operation middleware
+func (siw *ServerInterfaceWrapper) PutConferencesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutConferencesId(c, id)
+}
+
+// GetConferencesIdMediaStream operation middleware
+func (siw *ServerInterfaceWrapper) GetConferencesIdMediaStream(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetConferencesIdMediaStreamParams
+
+	// ------------- Required query parameter "encapsulation" -------------
+
+	if paramValue := c.Query("encapsulation"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument encapsulation is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "encapsulation", c.Request.URL.Query(), &params.Encapsulation)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter encapsulation: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetConferencesIdMediaStream(c, id, params)
+}
+
+// PostConferencesIdRecordingStart operation middleware
+func (siw *ServerInterfaceWrapper) PostConferencesIdRecordingStart(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostConferencesIdRecordingStart(c, id)
+}
+
+// PostConferencesIdRecordingStop operation middleware
+func (siw *ServerInterfaceWrapper) PostConferencesIdRecordingStop(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostConferencesIdRecordingStop(c, id)
+}
+
+// PostConferencesIdTranscribeStart operation middleware
+func (siw *ServerInterfaceWrapper) PostConferencesIdTranscribeStart(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostConferencesIdTranscribeStart(c, id)
+}
+
+// PostConferencesIdTranscribeStop operation middleware
+func (siw *ServerInterfaceWrapper) PostConferencesIdTranscribeStop(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostConferencesIdTranscribeStop(c, id)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -4586,6 +6053,48 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/campaigns/:id/resource_info", wrapper.PutCampaignsIdResourceInfo)
 	router.PUT(options.BaseURL+"/campaigns/:id/service_level", wrapper.PutCampaignsIdServiceLevel)
 	router.PUT(options.BaseURL+"/campaigns/:id/status", wrapper.PutCampaignsIdStatus)
+	router.GET(options.BaseURL+"/chatbotcalls", wrapper.GetChatbotcalls)
+	router.DELETE(options.BaseURL+"/chatbotcalls/:id", wrapper.DeleteChatbotcallsId)
+	router.GET(options.BaseURL+"/chatbotcalls/:id", wrapper.GetChatbotcallsId)
+	router.GET(options.BaseURL+"/chatbots", wrapper.GetChatbots)
+	router.POST(options.BaseURL+"/chatbots", wrapper.PostChatbots)
+	router.DELETE(options.BaseURL+"/chatbots/:id", wrapper.DeleteChatbotsId)
+	router.GET(options.BaseURL+"/chatbots/:id", wrapper.GetChatbotsId)
+	router.PUT(options.BaseURL+"/chatbots/:id", wrapper.PutChatbotsId)
+	router.GET(options.BaseURL+"/chatmessages", wrapper.GetChatmessages)
+	router.POST(options.BaseURL+"/chatmessages", wrapper.PostChatmessages)
+	router.DELETE(options.BaseURL+"/chatmessages/:id", wrapper.DeleteChatmessagesId)
+	router.GET(options.BaseURL+"/chatmessages/:id", wrapper.GetChatmessagesId)
+	router.GET(options.BaseURL+"/chatroommessages", wrapper.GetChatroommessages)
+	router.POST(options.BaseURL+"/chatroommessages", wrapper.PostChatroommessages)
+	router.DELETE(options.BaseURL+"/chatroommessages/:id", wrapper.DeleteChatroommessagesId)
+	router.GET(options.BaseURL+"/chatroommessages/:id", wrapper.GetChatroommessagesId)
+	router.GET(options.BaseURL+"/chatrooms", wrapper.GetChatrooms)
+	router.POST(options.BaseURL+"/chatrooms", wrapper.PostChatrooms)
+	router.DELETE(options.BaseURL+"/chatrooms/:id", wrapper.DeleteChatroomsId)
+	router.GET(options.BaseURL+"/chatrooms/:id", wrapper.GetChatroomsId)
+	router.PUT(options.BaseURL+"/chatrooms/:id", wrapper.PutChatroomsId)
+	router.GET(options.BaseURL+"/chats", wrapper.GetChats)
+	router.POST(options.BaseURL+"/chats", wrapper.PostChats)
+	router.DELETE(options.BaseURL+"/chats/:id", wrapper.DeleteChatsId)
+	router.GET(options.BaseURL+"/chats/:id", wrapper.GetChatsId)
+	router.PUT(options.BaseURL+"/chats/:id", wrapper.PutChatsId)
+	router.POST(options.BaseURL+"/chats/:id/participant_ids", wrapper.PostChatsIdParticipantIds)
+	router.DELETE(options.BaseURL+"/chats/:id/participant_ids/:participant_id", wrapper.DeleteChatsIdParticipantIdsParticipantId)
+	router.PUT(options.BaseURL+"/chats/:id/room_owner_id", wrapper.PutChatsIdRoomOwnerId)
+	router.GET(options.BaseURL+"/conferencecalls", wrapper.GetConferencecalls)
+	router.DELETE(options.BaseURL+"/conferencecalls/:id", wrapper.DeleteConferencecallsId)
+	router.GET(options.BaseURL+"/conferencecalls/:id", wrapper.GetConferencecallsId)
+	router.GET(options.BaseURL+"/conferences", wrapper.GetConferences)
+	router.POST(options.BaseURL+"/conferences", wrapper.PostConferences)
+	router.DELETE(options.BaseURL+"/conferences/:id", wrapper.DeleteConferencesId)
+	router.GET(options.BaseURL+"/conferences/:id", wrapper.GetConferencesId)
+	router.PUT(options.BaseURL+"/conferences/:id", wrapper.PutConferencesId)
+	router.GET(options.BaseURL+"/conferences/:id/media_stream", wrapper.GetConferencesIdMediaStream)
+	router.POST(options.BaseURL+"/conferences/:id/recording_start", wrapper.PostConferencesIdRecordingStart)
+	router.POST(options.BaseURL+"/conferences/:id/recording_stop", wrapper.PostConferencesIdRecordingStop)
+	router.POST(options.BaseURL+"/conferences/:id/transcribe_start", wrapper.PostConferencesIdTranscribeStart)
+	router.POST(options.BaseURL+"/conferences/:id/transcribe_stop", wrapper.PostConferencesIdTranscribeStop)
 }
 
 type GetAccesskeysRequestObject struct {
@@ -5722,6 +7231,756 @@ func (response PutCampaignsIdStatus200JSONResponse) VisitPutCampaignsIdStatusRes
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetChatbotcallsRequestObject struct {
+	Params GetChatbotcallsParams
+}
+
+type GetChatbotcallsResponseObject interface {
+	VisitGetChatbotcallsResponse(w http.ResponseWriter) error
+}
+
+type GetChatbotcalls200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                      `json:"next_page_token,omitempty"`
+	Result        *[]ChatbotManagerChatbotcall `json:"result,omitempty"`
+}
+
+func (response GetChatbotcalls200JSONResponse) VisitGetChatbotcallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChatbotcallsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteChatbotcallsIdResponseObject interface {
+	VisitDeleteChatbotcallsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChatbotcallsId200JSONResponse ChatbotManagerChatbotcall
+
+func (response DeleteChatbotcallsId200JSONResponse) VisitDeleteChatbotcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatbotcallsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetChatbotcallsIdResponseObject interface {
+	VisitGetChatbotcallsIdResponse(w http.ResponseWriter) error
+}
+
+type GetChatbotcallsId200JSONResponse ChatbotManagerChatbotcall
+
+func (response GetChatbotcallsId200JSONResponse) VisitGetChatbotcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatbotsRequestObject struct {
+	Params GetChatbotsParams
+}
+
+type GetChatbotsResponseObject interface {
+	VisitGetChatbotsResponse(w http.ResponseWriter) error
+}
+
+type GetChatbots200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                  `json:"next_page_token,omitempty"`
+	Result        *[]ChatbotManagerChatbot `json:"result,omitempty"`
+}
+
+func (response GetChatbots200JSONResponse) VisitGetChatbotsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChatbotsRequestObject struct {
+	Body *PostChatbotsJSONRequestBody
+}
+
+type PostChatbotsResponseObject interface {
+	VisitPostChatbotsResponse(w http.ResponseWriter) error
+}
+
+type PostChatbots200JSONResponse ChatbotManagerChatbot
+
+func (response PostChatbots200JSONResponse) VisitPostChatbotsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChatbotsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteChatbotsIdResponseObject interface {
+	VisitDeleteChatbotsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChatbotsId200JSONResponse ChatbotManagerChatbot
+
+func (response DeleteChatbotsId200JSONResponse) VisitDeleteChatbotsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatbotsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetChatbotsIdResponseObject interface {
+	VisitGetChatbotsIdResponse(w http.ResponseWriter) error
+}
+
+type GetChatbotsId200JSONResponse ChatbotManagerChatbot
+
+func (response GetChatbotsId200JSONResponse) VisitGetChatbotsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutChatbotsIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutChatbotsIdJSONRequestBody
+}
+
+type PutChatbotsIdResponseObject interface {
+	VisitPutChatbotsIdResponse(w http.ResponseWriter) error
+}
+
+type PutChatbotsId200JSONResponse ChatbotManagerChatbot
+
+func (response PutChatbotsId200JSONResponse) VisitPutChatbotsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatmessagesRequestObject struct {
+	Params GetChatmessagesParams
+}
+
+type GetChatmessagesResponseObject interface {
+	VisitGetChatmessagesResponse(w http.ResponseWriter) error
+}
+
+type GetChatmessages200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                   `json:"next_page_token,omitempty"`
+	Result        *[]ChatManagerMessagechat `json:"result,omitempty"`
+}
+
+func (response GetChatmessages200JSONResponse) VisitGetChatmessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChatmessagesRequestObject struct {
+	Body *PostChatmessagesJSONRequestBody
+}
+
+type PostChatmessagesResponseObject interface {
+	VisitPostChatmessagesResponse(w http.ResponseWriter) error
+}
+
+type PostChatmessages200JSONResponse ChatManagerMessagechat
+
+func (response PostChatmessages200JSONResponse) VisitPostChatmessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChatmessagesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteChatmessagesIdResponseObject interface {
+	VisitDeleteChatmessagesIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChatmessagesId200JSONResponse ChatManagerMessagechat
+
+func (response DeleteChatmessagesId200JSONResponse) VisitDeleteChatmessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatmessagesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetChatmessagesIdResponseObject interface {
+	VisitGetChatmessagesIdResponse(w http.ResponseWriter) error
+}
+
+type GetChatmessagesId200JSONResponse ChatManagerMessagechat
+
+func (response GetChatmessagesId200JSONResponse) VisitGetChatmessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatroommessagesRequestObject struct {
+	Params GetChatroommessagesParams
+}
+
+type GetChatroommessagesResponseObject interface {
+	VisitGetChatroommessagesResponse(w http.ResponseWriter) error
+}
+
+type GetChatroommessages200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                       `json:"next_page_token,omitempty"`
+	Result        *[]ChatManagerMessagechatroom `json:"result,omitempty"`
+}
+
+func (response GetChatroommessages200JSONResponse) VisitGetChatroommessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChatroommessagesRequestObject struct {
+	Body *PostChatroommessagesJSONRequestBody
+}
+
+type PostChatroommessagesResponseObject interface {
+	VisitPostChatroommessagesResponse(w http.ResponseWriter) error
+}
+
+type PostChatroommessages200JSONResponse ChatManagerMessagechatroom
+
+func (response PostChatroommessages200JSONResponse) VisitPostChatroommessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChatroommessagesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteChatroommessagesIdResponseObject interface {
+	VisitDeleteChatroommessagesIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChatroommessagesId200JSONResponse ChatManagerMessagechatroom
+
+func (response DeleteChatroommessagesId200JSONResponse) VisitDeleteChatroommessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatroommessagesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetChatroommessagesIdResponseObject interface {
+	VisitGetChatroommessagesIdResponse(w http.ResponseWriter) error
+}
+
+type GetChatroommessagesId200JSONResponse ChatManagerMessagechatroom
+
+func (response GetChatroommessagesId200JSONResponse) VisitGetChatroommessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatroomsRequestObject struct {
+	Params GetChatroomsParams
+}
+
+type GetChatroomsResponseObject interface {
+	VisitGetChatroomsResponse(w http.ResponseWriter) error
+}
+
+type GetChatrooms200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                `json:"next_page_token,omitempty"`
+	Result        *[]ChatManagerChatroom `json:"result,omitempty"`
+}
+
+func (response GetChatrooms200JSONResponse) VisitGetChatroomsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChatroomsRequestObject struct {
+	Body *PostChatroomsJSONRequestBody
+}
+
+type PostChatroomsResponseObject interface {
+	VisitPostChatroomsResponse(w http.ResponseWriter) error
+}
+
+type PostChatrooms200JSONResponse ChatManagerChatroom
+
+func (response PostChatrooms200JSONResponse) VisitPostChatroomsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChatroomsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteChatroomsIdResponseObject interface {
+	VisitDeleteChatroomsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChatroomsId200JSONResponse ChatManagerChatroom
+
+func (response DeleteChatroomsId200JSONResponse) VisitDeleteChatroomsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatroomsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetChatroomsIdResponseObject interface {
+	VisitGetChatroomsIdResponse(w http.ResponseWriter) error
+}
+
+type GetChatroomsId200JSONResponse ChatManagerChatroom
+
+func (response GetChatroomsId200JSONResponse) VisitGetChatroomsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutChatroomsIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutChatroomsIdJSONRequestBody
+}
+
+type PutChatroomsIdResponseObject interface {
+	VisitPutChatroomsIdResponse(w http.ResponseWriter) error
+}
+
+type PutChatroomsId200JSONResponse ChatManagerChatroom
+
+func (response PutChatroomsId200JSONResponse) VisitPutChatroomsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatsRequestObject struct {
+	Params GetChatsParams
+}
+
+type GetChatsResponseObject interface {
+	VisitGetChatsResponse(w http.ResponseWriter) error
+}
+
+type GetChats200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string            `json:"next_page_token,omitempty"`
+	Result        *[]ChatManagerChat `json:"result,omitempty"`
+}
+
+func (response GetChats200JSONResponse) VisitGetChatsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChatsRequestObject struct {
+	Body *PostChatsJSONRequestBody
+}
+
+type PostChatsResponseObject interface {
+	VisitPostChatsResponse(w http.ResponseWriter) error
+}
+
+type PostChats200JSONResponse ChatManagerChat
+
+func (response PostChats200JSONResponse) VisitPostChatsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChatsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteChatsIdResponseObject interface {
+	VisitDeleteChatsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChatsId200JSONResponse ChatManagerChat
+
+func (response DeleteChatsId200JSONResponse) VisitDeleteChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetChatsIdResponseObject interface {
+	VisitGetChatsIdResponse(w http.ResponseWriter) error
+}
+
+type GetChatsId200JSONResponse ChatManagerChat
+
+func (response GetChatsId200JSONResponse) VisitGetChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutChatsIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutChatsIdJSONRequestBody
+}
+
+type PutChatsIdResponseObject interface {
+	VisitPutChatsIdResponse(w http.ResponseWriter) error
+}
+
+type PutChatsId200JSONResponse ChatManagerChat
+
+func (response PutChatsId200JSONResponse) VisitPutChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChatsIdParticipantIdsRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostChatsIdParticipantIdsJSONRequestBody
+}
+
+type PostChatsIdParticipantIdsResponseObject interface {
+	VisitPostChatsIdParticipantIdsResponse(w http.ResponseWriter) error
+}
+
+type PostChatsIdParticipantIds200JSONResponse ChatManagerChat
+
+func (response PostChatsIdParticipantIds200JSONResponse) VisitPostChatsIdParticipantIdsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChatsIdParticipantIdsParticipantIdRequestObject struct {
+	Id            string `json:"id"`
+	ParticipantId string `json:"participant_id"`
+}
+
+type DeleteChatsIdParticipantIdsParticipantIdResponseObject interface {
+	VisitDeleteChatsIdParticipantIdsParticipantIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChatsIdParticipantIdsParticipantId200JSONResponse ChatManagerChat
+
+func (response DeleteChatsIdParticipantIdsParticipantId200JSONResponse) VisitDeleteChatsIdParticipantIdsParticipantIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutChatsIdRoomOwnerIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutChatsIdRoomOwnerIdJSONRequestBody
+}
+
+type PutChatsIdRoomOwnerIdResponseObject interface {
+	VisitPutChatsIdRoomOwnerIdResponse(w http.ResponseWriter) error
+}
+
+type PutChatsIdRoomOwnerId200JSONResponse ChatManagerChat
+
+func (response PutChatsIdRoomOwnerId200JSONResponse) VisitPutChatsIdRoomOwnerIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetConferencecallsRequestObject struct {
+	Params GetConferencecallsParams
+}
+
+type GetConferencecallsResponseObject interface {
+	VisitGetConferencecallsResponse(w http.ResponseWriter) error
+}
+
+type GetConferencecalls200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                            `json:"next_page_token,omitempty"`
+	Result        *[]ConferenceManagerConferencecall `json:"result,omitempty"`
+}
+
+func (response GetConferencecalls200JSONResponse) VisitGetConferencecallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteConferencecallsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteConferencecallsIdResponseObject interface {
+	VisitDeleteConferencecallsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteConferencecallsId200JSONResponse ConferenceManagerConferencecall
+
+func (response DeleteConferencecallsId200JSONResponse) VisitDeleteConferencecallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetConferencecallsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetConferencecallsIdResponseObject interface {
+	VisitGetConferencecallsIdResponse(w http.ResponseWriter) error
+}
+
+type GetConferencecallsId200JSONResponse ConferenceManagerConferencecall
+
+func (response GetConferencecallsId200JSONResponse) VisitGetConferencecallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetConferencesRequestObject struct {
+	Params GetConferencesParams
+}
+
+type GetConferencesResponseObject interface {
+	VisitGetConferencesResponse(w http.ResponseWriter) error
+}
+
+type GetConferences200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                        `json:"next_page_token,omitempty"`
+	Result        *[]ConferenceManagerConference `json:"result,omitempty"`
+}
+
+func (response GetConferences200JSONResponse) VisitGetConferencesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostConferencesRequestObject struct {
+	Body *PostConferencesJSONRequestBody
+}
+
+type PostConferencesResponseObject interface {
+	VisitPostConferencesResponse(w http.ResponseWriter) error
+}
+
+type PostConferences200JSONResponse ConferenceManagerConference
+
+func (response PostConferences200JSONResponse) VisitPostConferencesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteConferencesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteConferencesIdResponseObject interface {
+	VisitDeleteConferencesIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteConferencesId200JSONResponse ConferenceManagerConference
+
+func (response DeleteConferencesId200JSONResponse) VisitDeleteConferencesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetConferencesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetConferencesIdResponseObject interface {
+	VisitGetConferencesIdResponse(w http.ResponseWriter) error
+}
+
+type GetConferencesId200JSONResponse ConferenceManagerConference
+
+func (response GetConferencesId200JSONResponse) VisitGetConferencesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutConferencesIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutConferencesIdJSONRequestBody
+}
+
+type PutConferencesIdResponseObject interface {
+	VisitPutConferencesIdResponse(w http.ResponseWriter) error
+}
+
+type PutConferencesId200JSONResponse ConferenceManagerConference
+
+func (response PutConferencesId200JSONResponse) VisitPutConferencesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetConferencesIdMediaStreamRequestObject struct {
+	Id     string `json:"id"`
+	Params GetConferencesIdMediaStreamParams
+}
+
+type GetConferencesIdMediaStreamResponseObject interface {
+	VisitGetConferencesIdMediaStreamResponse(w http.ResponseWriter) error
+}
+
+type GetConferencesIdMediaStream200Response struct {
+}
+
+func (response GetConferencesIdMediaStream200Response) VisitGetConferencesIdMediaStreamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostConferencesIdRecordingStartRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostConferencesIdRecordingStartResponseObject interface {
+	VisitPostConferencesIdRecordingStartResponse(w http.ResponseWriter) error
+}
+
+type PostConferencesIdRecordingStart200Response struct {
+}
+
+func (response PostConferencesIdRecordingStart200Response) VisitPostConferencesIdRecordingStartResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostConferencesIdRecordingStopRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostConferencesIdRecordingStopResponseObject interface {
+	VisitPostConferencesIdRecordingStopResponse(w http.ResponseWriter) error
+}
+
+type PostConferencesIdRecordingStop200Response struct {
+}
+
+func (response PostConferencesIdRecordingStop200Response) VisitPostConferencesIdRecordingStopResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostConferencesIdTranscribeStartRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostConferencesIdTranscribeStartJSONRequestBody
+}
+
+type PostConferencesIdTranscribeStartResponseObject interface {
+	VisitPostConferencesIdTranscribeStartResponse(w http.ResponseWriter) error
+}
+
+type PostConferencesIdTranscribeStart200Response struct {
+}
+
+func (response PostConferencesIdTranscribeStart200Response) VisitPostConferencesIdTranscribeStartResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostConferencesIdTranscribeStopRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostConferencesIdTranscribeStopResponseObject interface {
+	VisitPostConferencesIdTranscribeStopResponse(w http.ResponseWriter) error
+}
+
+type PostConferencesIdTranscribeStop200Response struct {
+}
+
+func (response PostConferencesIdTranscribeStop200Response) VisitPostConferencesIdTranscribeStopResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get list of accesskeys
@@ -5901,6 +8160,132 @@ type StrictServerInterface interface {
 	// Update campaign status
 	// (PUT /campaigns/{id}/status)
 	PutCampaignsIdStatus(ctx context.Context, request PutCampaignsIdStatusRequestObject) (PutCampaignsIdStatusResponseObject, error)
+	// Gets a list of chatbot calls
+	// (GET /chatbotcalls)
+	GetChatbotcalls(ctx context.Context, request GetChatbotcallsRequestObject) (GetChatbotcallsResponseObject, error)
+	// Delete a specific chatbot call
+	// (DELETE /chatbotcalls/{id})
+	DeleteChatbotcallsId(ctx context.Context, request DeleteChatbotcallsIdRequestObject) (DeleteChatbotcallsIdResponseObject, error)
+	// Get details of a specific chatbot call
+	// (GET /chatbotcalls/{id})
+	GetChatbotcallsId(ctx context.Context, request GetChatbotcallsIdRequestObject) (GetChatbotcallsIdResponseObject, error)
+	// Gets a list of chatbots.
+	// (GET /chatbots)
+	GetChatbots(ctx context.Context, request GetChatbotsRequestObject) (GetChatbotsResponseObject, error)
+	// Create a new chatbot.
+	// (POST /chatbots)
+	PostChatbots(ctx context.Context, request PostChatbotsRequestObject) (PostChatbotsResponseObject, error)
+	// Delete a chatbot.
+	// (DELETE /chatbots/{id})
+	DeleteChatbotsId(ctx context.Context, request DeleteChatbotsIdRequestObject) (DeleteChatbotsIdResponseObject, error)
+	// Get chatbot details.
+	// (GET /chatbots/{id})
+	GetChatbotsId(ctx context.Context, request GetChatbotsIdRequestObject) (GetChatbotsIdResponseObject, error)
+	// Update a chatbot.
+	// (PUT /chatbots/{id})
+	PutChatbotsId(ctx context.Context, request PutChatbotsIdRequestObject) (PutChatbotsIdResponseObject, error)
+	// Retrieve a list of chat messages
+	// (GET /chatmessages)
+	GetChatmessages(ctx context.Context, request GetChatmessagesRequestObject) (GetChatmessagesResponseObject, error)
+	// Create a new chat message
+	// (POST /chatmessages)
+	PostChatmessages(ctx context.Context, request PostChatmessagesRequestObject) (PostChatmessagesResponseObject, error)
+	// Delete a chat message
+	// (DELETE /chatmessages/{id})
+	DeleteChatmessagesId(ctx context.Context, request DeleteChatmessagesIdRequestObject) (DeleteChatmessagesIdResponseObject, error)
+	// Retrieve details of a chat message
+	// (GET /chatmessages/{id})
+	GetChatmessagesId(ctx context.Context, request GetChatmessagesIdRequestObject) (GetChatmessagesIdResponseObject, error)
+	// Retrieve a list of chatroom messages
+	// (GET /chatroommessages)
+	GetChatroommessages(ctx context.Context, request GetChatroommessagesRequestObject) (GetChatroommessagesResponseObject, error)
+	// Create a new chatroom message
+	// (POST /chatroommessages)
+	PostChatroommessages(ctx context.Context, request PostChatroommessagesRequestObject) (PostChatroommessagesResponseObject, error)
+	// Delete a chatroom message
+	// (DELETE /chatroommessages/{id})
+	DeleteChatroommessagesId(ctx context.Context, request DeleteChatroommessagesIdRequestObject) (DeleteChatroommessagesIdResponseObject, error)
+	// Get details of a specific chatroom message
+	// (GET /chatroommessages/{id})
+	GetChatroommessagesId(ctx context.Context, request GetChatroommessagesIdRequestObject) (GetChatroommessagesIdResponseObject, error)
+	// Gets a list of chatrooms.
+	// (GET /chatrooms)
+	GetChatrooms(ctx context.Context, request GetChatroomsRequestObject) (GetChatroomsResponseObject, error)
+	// Create a new chatroom.
+	// (POST /chatrooms)
+	PostChatrooms(ctx context.Context, request PostChatroomsRequestObject) (PostChatroomsResponseObject, error)
+	// Delete a chatroom.
+	// (DELETE /chatrooms/{id})
+	DeleteChatroomsId(ctx context.Context, request DeleteChatroomsIdRequestObject) (DeleteChatroomsIdResponseObject, error)
+	// Get chatroom details.
+	// (GET /chatrooms/{id})
+	GetChatroomsId(ctx context.Context, request GetChatroomsIdRequestObject) (GetChatroomsIdResponseObject, error)
+	// Update a chatroom.
+	// (PUT /chatrooms/{id})
+	PutChatroomsId(ctx context.Context, request PutChatroomsIdRequestObject) (PutChatroomsIdResponseObject, error)
+	// Gets a list of chats.
+	// (GET /chats)
+	GetChats(ctx context.Context, request GetChatsRequestObject) (GetChatsResponseObject, error)
+	// Create a new chat.
+	// (POST /chats)
+	PostChats(ctx context.Context, request PostChatsRequestObject) (PostChatsResponseObject, error)
+	// Delete a chat.
+	// (DELETE /chats/{id})
+	DeleteChatsId(ctx context.Context, request DeleteChatsIdRequestObject) (DeleteChatsIdResponseObject, error)
+	// Get details of a specific chat.
+	// (GET /chats/{id})
+	GetChatsId(ctx context.Context, request GetChatsIdRequestObject) (GetChatsIdResponseObject, error)
+	// Update a chat.
+	// (PUT /chats/{id})
+	PutChatsId(ctx context.Context, request PutChatsIdRequestObject) (PutChatsIdResponseObject, error)
+	// Add a participant to a chat.
+	// (POST /chats/{id}/participant_ids)
+	PostChatsIdParticipantIds(ctx context.Context, request PostChatsIdParticipantIdsRequestObject) (PostChatsIdParticipantIdsResponseObject, error)
+	// Remove a participant from a chat.
+	// (DELETE /chats/{id}/participant_ids/{participant_id})
+	DeleteChatsIdParticipantIdsParticipantId(ctx context.Context, request DeleteChatsIdParticipantIdsParticipantIdRequestObject) (DeleteChatsIdParticipantIdsParticipantIdResponseObject, error)
+	// Update the room owner of a chat.
+	// (PUT /chats/{id}/room_owner_id)
+	PutChatsIdRoomOwnerId(ctx context.Context, request PutChatsIdRoomOwnerIdRequestObject) (PutChatsIdRoomOwnerIdResponseObject, error)
+	// Get list of conference calls
+	// (GET /conferencecalls)
+	GetConferencecalls(ctx context.Context, request GetConferencecallsRequestObject) (GetConferencecallsResponseObject, error)
+	// Remove a conference call
+	// (DELETE /conferencecalls/{id})
+	DeleteConferencecallsId(ctx context.Context, request DeleteConferencecallsIdRequestObject) (DeleteConferencecallsIdResponseObject, error)
+	// Get conference call details
+	// (GET /conferencecalls/{id})
+	GetConferencecallsId(ctx context.Context, request GetConferencecallsIdRequestObject) (GetConferencecallsIdResponseObject, error)
+	// Get list of conferences
+	// (GET /conferences)
+	GetConferences(ctx context.Context, request GetConferencesRequestObject) (GetConferencesResponseObject, error)
+	// Create a new conference
+	// (POST /conferences)
+	PostConferences(ctx context.Context, request PostConferencesRequestObject) (PostConferencesResponseObject, error)
+	// Delete a conference
+	// (DELETE /conferences/{id})
+	DeleteConferencesId(ctx context.Context, request DeleteConferencesIdRequestObject) (DeleteConferencesIdResponseObject, error)
+	// Get conference details
+	// (GET /conferences/{id})
+	GetConferencesId(ctx context.Context, request GetConferencesIdRequestObject) (GetConferencesIdResponseObject, error)
+	// Update conference details
+	// (PUT /conferences/{id})
+	PutConferencesId(ctx context.Context, request PutConferencesIdRequestObject) (PutConferencesIdResponseObject, error)
+	// Start media streaming for a conference
+	// (GET /conferences/{id}/media_stream)
+	GetConferencesIdMediaStream(ctx context.Context, request GetConferencesIdMediaStreamRequestObject) (GetConferencesIdMediaStreamResponseObject, error)
+	// Start conference recording
+	// (POST /conferences/{id}/recording_start)
+	PostConferencesIdRecordingStart(ctx context.Context, request PostConferencesIdRecordingStartRequestObject) (PostConferencesIdRecordingStartResponseObject, error)
+	// Stop conference recording
+	// (POST /conferences/{id}/recording_stop)
+	PostConferencesIdRecordingStop(ctx context.Context, request PostConferencesIdRecordingStopRequestObject) (PostConferencesIdRecordingStopResponseObject, error)
+	// Start conference transcription
+	// (POST /conferences/{id}/transcribe_start)
+	PostConferencesIdTranscribeStart(ctx context.Context, request PostConferencesIdTranscribeStartRequestObject) (PostConferencesIdTranscribeStartResponseObject, error)
+	// Stop conference transcription
+	// (POST /conferences/{id}/transcribe_stop)
+	PostConferencesIdTranscribeStop(ctx context.Context, request PostConferencesIdTranscribeStopRequestObject) (PostConferencesIdTranscribeStopResponseObject, error)
 }
 
 type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
@@ -7699,6 +10084,1234 @@ func (sh *strictHandler) PutCampaignsIdStatus(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutCampaignsIdStatusResponseObject); ok {
 		if err := validResponse.VisitPutCampaignsIdStatusResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatbotcalls operation middleware
+func (sh *strictHandler) GetChatbotcalls(ctx *gin.Context, params GetChatbotcallsParams) {
+	var request GetChatbotcallsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatbotcalls(ctx, request.(GetChatbotcallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatbotcalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatbotcallsResponseObject); ok {
+		if err := validResponse.VisitGetChatbotcallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChatbotcallsId operation middleware
+func (sh *strictHandler) DeleteChatbotcallsId(ctx *gin.Context, id string) {
+	var request DeleteChatbotcallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChatbotcallsId(ctx, request.(DeleteChatbotcallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChatbotcallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChatbotcallsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChatbotcallsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatbotcallsId operation middleware
+func (sh *strictHandler) GetChatbotcallsId(ctx *gin.Context, id string) {
+	var request GetChatbotcallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatbotcallsId(ctx, request.(GetChatbotcallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatbotcallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatbotcallsIdResponseObject); ok {
+		if err := validResponse.VisitGetChatbotcallsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatbots operation middleware
+func (sh *strictHandler) GetChatbots(ctx *gin.Context, params GetChatbotsParams) {
+	var request GetChatbotsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatbots(ctx, request.(GetChatbotsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatbots")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatbotsResponseObject); ok {
+		if err := validResponse.VisitGetChatbotsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChatbots operation middleware
+func (sh *strictHandler) PostChatbots(ctx *gin.Context) {
+	var request PostChatbotsRequestObject
+
+	var body PostChatbotsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChatbots(ctx, request.(PostChatbotsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChatbots")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChatbotsResponseObject); ok {
+		if err := validResponse.VisitPostChatbotsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChatbotsId operation middleware
+func (sh *strictHandler) DeleteChatbotsId(ctx *gin.Context, id string) {
+	var request DeleteChatbotsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChatbotsId(ctx, request.(DeleteChatbotsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChatbotsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChatbotsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChatbotsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatbotsId operation middleware
+func (sh *strictHandler) GetChatbotsId(ctx *gin.Context, id string) {
+	var request GetChatbotsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatbotsId(ctx, request.(GetChatbotsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatbotsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatbotsIdResponseObject); ok {
+		if err := validResponse.VisitGetChatbotsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutChatbotsId operation middleware
+func (sh *strictHandler) PutChatbotsId(ctx *gin.Context, id string) {
+	var request PutChatbotsIdRequestObject
+
+	request.Id = id
+
+	var body PutChatbotsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutChatbotsId(ctx, request.(PutChatbotsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutChatbotsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutChatbotsIdResponseObject); ok {
+		if err := validResponse.VisitPutChatbotsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatmessages operation middleware
+func (sh *strictHandler) GetChatmessages(ctx *gin.Context, params GetChatmessagesParams) {
+	var request GetChatmessagesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatmessages(ctx, request.(GetChatmessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatmessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatmessagesResponseObject); ok {
+		if err := validResponse.VisitGetChatmessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChatmessages operation middleware
+func (sh *strictHandler) PostChatmessages(ctx *gin.Context) {
+	var request PostChatmessagesRequestObject
+
+	var body PostChatmessagesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChatmessages(ctx, request.(PostChatmessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChatmessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChatmessagesResponseObject); ok {
+		if err := validResponse.VisitPostChatmessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChatmessagesId operation middleware
+func (sh *strictHandler) DeleteChatmessagesId(ctx *gin.Context, id string) {
+	var request DeleteChatmessagesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChatmessagesId(ctx, request.(DeleteChatmessagesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChatmessagesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChatmessagesIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChatmessagesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatmessagesId operation middleware
+func (sh *strictHandler) GetChatmessagesId(ctx *gin.Context, id string) {
+	var request GetChatmessagesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatmessagesId(ctx, request.(GetChatmessagesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatmessagesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatmessagesIdResponseObject); ok {
+		if err := validResponse.VisitGetChatmessagesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatroommessages operation middleware
+func (sh *strictHandler) GetChatroommessages(ctx *gin.Context, params GetChatroommessagesParams) {
+	var request GetChatroommessagesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatroommessages(ctx, request.(GetChatroommessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatroommessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatroommessagesResponseObject); ok {
+		if err := validResponse.VisitGetChatroommessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChatroommessages operation middleware
+func (sh *strictHandler) PostChatroommessages(ctx *gin.Context) {
+	var request PostChatroommessagesRequestObject
+
+	var body PostChatroommessagesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChatroommessages(ctx, request.(PostChatroommessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChatroommessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChatroommessagesResponseObject); ok {
+		if err := validResponse.VisitPostChatroommessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChatroommessagesId operation middleware
+func (sh *strictHandler) DeleteChatroommessagesId(ctx *gin.Context, id string) {
+	var request DeleteChatroommessagesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChatroommessagesId(ctx, request.(DeleteChatroommessagesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChatroommessagesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChatroommessagesIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChatroommessagesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatroommessagesId operation middleware
+func (sh *strictHandler) GetChatroommessagesId(ctx *gin.Context, id string) {
+	var request GetChatroommessagesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatroommessagesId(ctx, request.(GetChatroommessagesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatroommessagesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatroommessagesIdResponseObject); ok {
+		if err := validResponse.VisitGetChatroommessagesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatrooms operation middleware
+func (sh *strictHandler) GetChatrooms(ctx *gin.Context, params GetChatroomsParams) {
+	var request GetChatroomsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatrooms(ctx, request.(GetChatroomsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatrooms")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatroomsResponseObject); ok {
+		if err := validResponse.VisitGetChatroomsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChatrooms operation middleware
+func (sh *strictHandler) PostChatrooms(ctx *gin.Context) {
+	var request PostChatroomsRequestObject
+
+	var body PostChatroomsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChatrooms(ctx, request.(PostChatroomsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChatrooms")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChatroomsResponseObject); ok {
+		if err := validResponse.VisitPostChatroomsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChatroomsId operation middleware
+func (sh *strictHandler) DeleteChatroomsId(ctx *gin.Context, id string) {
+	var request DeleteChatroomsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChatroomsId(ctx, request.(DeleteChatroomsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChatroomsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChatroomsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChatroomsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatroomsId operation middleware
+func (sh *strictHandler) GetChatroomsId(ctx *gin.Context, id string) {
+	var request GetChatroomsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatroomsId(ctx, request.(GetChatroomsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatroomsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatroomsIdResponseObject); ok {
+		if err := validResponse.VisitGetChatroomsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutChatroomsId operation middleware
+func (sh *strictHandler) PutChatroomsId(ctx *gin.Context, id string) {
+	var request PutChatroomsIdRequestObject
+
+	request.Id = id
+
+	var body PutChatroomsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutChatroomsId(ctx, request.(PutChatroomsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutChatroomsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutChatroomsIdResponseObject); ok {
+		if err := validResponse.VisitPutChatroomsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChats operation middleware
+func (sh *strictHandler) GetChats(ctx *gin.Context, params GetChatsParams) {
+	var request GetChatsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChats(ctx, request.(GetChatsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChats")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatsResponseObject); ok {
+		if err := validResponse.VisitGetChatsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChats operation middleware
+func (sh *strictHandler) PostChats(ctx *gin.Context) {
+	var request PostChatsRequestObject
+
+	var body PostChatsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChats(ctx, request.(PostChatsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChats")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChatsResponseObject); ok {
+		if err := validResponse.VisitPostChatsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChatsId operation middleware
+func (sh *strictHandler) DeleteChatsId(ctx *gin.Context, id string) {
+	var request DeleteChatsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChatsId(ctx, request.(DeleteChatsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChatsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChatsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChatsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatsId operation middleware
+func (sh *strictHandler) GetChatsId(ctx *gin.Context, id string) {
+	var request GetChatsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatsId(ctx, request.(GetChatsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatsIdResponseObject); ok {
+		if err := validResponse.VisitGetChatsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutChatsId operation middleware
+func (sh *strictHandler) PutChatsId(ctx *gin.Context, id string) {
+	var request PutChatsIdRequestObject
+
+	request.Id = id
+
+	var body PutChatsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutChatsId(ctx, request.(PutChatsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutChatsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutChatsIdResponseObject); ok {
+		if err := validResponse.VisitPutChatsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChatsIdParticipantIds operation middleware
+func (sh *strictHandler) PostChatsIdParticipantIds(ctx *gin.Context, id string) {
+	var request PostChatsIdParticipantIdsRequestObject
+
+	request.Id = id
+
+	var body PostChatsIdParticipantIdsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChatsIdParticipantIds(ctx, request.(PostChatsIdParticipantIdsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChatsIdParticipantIds")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChatsIdParticipantIdsResponseObject); ok {
+		if err := validResponse.VisitPostChatsIdParticipantIdsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChatsIdParticipantIdsParticipantId operation middleware
+func (sh *strictHandler) DeleteChatsIdParticipantIdsParticipantId(ctx *gin.Context, id string, participantId string) {
+	var request DeleteChatsIdParticipantIdsParticipantIdRequestObject
+
+	request.Id = id
+	request.ParticipantId = participantId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChatsIdParticipantIdsParticipantId(ctx, request.(DeleteChatsIdParticipantIdsParticipantIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChatsIdParticipantIdsParticipantId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChatsIdParticipantIdsParticipantIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChatsIdParticipantIdsParticipantIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutChatsIdRoomOwnerId operation middleware
+func (sh *strictHandler) PutChatsIdRoomOwnerId(ctx *gin.Context, id string) {
+	var request PutChatsIdRoomOwnerIdRequestObject
+
+	request.Id = id
+
+	var body PutChatsIdRoomOwnerIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutChatsIdRoomOwnerId(ctx, request.(PutChatsIdRoomOwnerIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutChatsIdRoomOwnerId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutChatsIdRoomOwnerIdResponseObject); ok {
+		if err := validResponse.VisitPutChatsIdRoomOwnerIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetConferencecalls operation middleware
+func (sh *strictHandler) GetConferencecalls(ctx *gin.Context, params GetConferencecallsParams) {
+	var request GetConferencecallsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetConferencecalls(ctx, request.(GetConferencecallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetConferencecalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetConferencecallsResponseObject); ok {
+		if err := validResponse.VisitGetConferencecallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteConferencecallsId operation middleware
+func (sh *strictHandler) DeleteConferencecallsId(ctx *gin.Context, id string) {
+	var request DeleteConferencecallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteConferencecallsId(ctx, request.(DeleteConferencecallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteConferencecallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteConferencecallsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteConferencecallsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetConferencecallsId operation middleware
+func (sh *strictHandler) GetConferencecallsId(ctx *gin.Context, id string) {
+	var request GetConferencecallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetConferencecallsId(ctx, request.(GetConferencecallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetConferencecallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetConferencecallsIdResponseObject); ok {
+		if err := validResponse.VisitGetConferencecallsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetConferences operation middleware
+func (sh *strictHandler) GetConferences(ctx *gin.Context, params GetConferencesParams) {
+	var request GetConferencesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetConferences(ctx, request.(GetConferencesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetConferences")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetConferencesResponseObject); ok {
+		if err := validResponse.VisitGetConferencesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostConferences operation middleware
+func (sh *strictHandler) PostConferences(ctx *gin.Context) {
+	var request PostConferencesRequestObject
+
+	var body PostConferencesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostConferences(ctx, request.(PostConferencesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostConferences")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostConferencesResponseObject); ok {
+		if err := validResponse.VisitPostConferencesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteConferencesId operation middleware
+func (sh *strictHandler) DeleteConferencesId(ctx *gin.Context, id string) {
+	var request DeleteConferencesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteConferencesId(ctx, request.(DeleteConferencesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteConferencesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteConferencesIdResponseObject); ok {
+		if err := validResponse.VisitDeleteConferencesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetConferencesId operation middleware
+func (sh *strictHandler) GetConferencesId(ctx *gin.Context, id string) {
+	var request GetConferencesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetConferencesId(ctx, request.(GetConferencesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetConferencesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetConferencesIdResponseObject); ok {
+		if err := validResponse.VisitGetConferencesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutConferencesId operation middleware
+func (sh *strictHandler) PutConferencesId(ctx *gin.Context, id string) {
+	var request PutConferencesIdRequestObject
+
+	request.Id = id
+
+	var body PutConferencesIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutConferencesId(ctx, request.(PutConferencesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutConferencesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutConferencesIdResponseObject); ok {
+		if err := validResponse.VisitPutConferencesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetConferencesIdMediaStream operation middleware
+func (sh *strictHandler) GetConferencesIdMediaStream(ctx *gin.Context, id string, params GetConferencesIdMediaStreamParams) {
+	var request GetConferencesIdMediaStreamRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetConferencesIdMediaStream(ctx, request.(GetConferencesIdMediaStreamRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetConferencesIdMediaStream")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetConferencesIdMediaStreamResponseObject); ok {
+		if err := validResponse.VisitGetConferencesIdMediaStreamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostConferencesIdRecordingStart operation middleware
+func (sh *strictHandler) PostConferencesIdRecordingStart(ctx *gin.Context, id string) {
+	var request PostConferencesIdRecordingStartRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostConferencesIdRecordingStart(ctx, request.(PostConferencesIdRecordingStartRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostConferencesIdRecordingStart")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostConferencesIdRecordingStartResponseObject); ok {
+		if err := validResponse.VisitPostConferencesIdRecordingStartResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostConferencesIdRecordingStop operation middleware
+func (sh *strictHandler) PostConferencesIdRecordingStop(ctx *gin.Context, id string) {
+	var request PostConferencesIdRecordingStopRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostConferencesIdRecordingStop(ctx, request.(PostConferencesIdRecordingStopRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostConferencesIdRecordingStop")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostConferencesIdRecordingStopResponseObject); ok {
+		if err := validResponse.VisitPostConferencesIdRecordingStopResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostConferencesIdTranscribeStart operation middleware
+func (sh *strictHandler) PostConferencesIdTranscribeStart(ctx *gin.Context, id string) {
+	var request PostConferencesIdTranscribeStartRequestObject
+
+	request.Id = id
+
+	var body PostConferencesIdTranscribeStartJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostConferencesIdTranscribeStart(ctx, request.(PostConferencesIdTranscribeStartRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostConferencesIdTranscribeStart")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostConferencesIdTranscribeStartResponseObject); ok {
+		if err := validResponse.VisitPostConferencesIdTranscribeStartResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostConferencesIdTranscribeStop operation middleware
+func (sh *strictHandler) PostConferencesIdTranscribeStop(ctx *gin.Context, id string) {
+	var request PostConferencesIdTranscribeStopRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostConferencesIdTranscribeStop(ctx, request.(PostConferencesIdTranscribeStopRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostConferencesIdTranscribeStop")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostConferencesIdTranscribeStopResponseObject); ok {
+		if err := validResponse.VisitPostConferencesIdTranscribeStopResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

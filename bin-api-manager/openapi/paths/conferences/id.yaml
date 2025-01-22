@@ -38,14 +38,20 @@ put:
               type: string
             timeout:
               type: integer
-            preActions:
+            pre_actions:
               type: array
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
-            postActions:
+            post_actions:
               type: array
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
+          required:
+            - name
+            - detail
+            - timeout
+            - pre_actions
+            - post_actions
   responses:
     '200':
       content:

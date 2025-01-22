@@ -25,8 +25,12 @@ put:
             detail:
               type: string
               description: Additional details about the agent.
-            ringMethod:
+            ring_method:
               $ref: '#/components/schemas/AgentManagerAgentRingMethod'
+          required:
+            - name
+            - detail
+            - ring_method
   responses:
     '200':
       description: The updated agent's details.

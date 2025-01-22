@@ -31,6 +31,8 @@ post:
             file:
               type: string
               format: binary
+          required:
+            - file
   responses:
     '200':
       description: The created call details.

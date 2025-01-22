@@ -30,6 +30,8 @@ post:
           properties:
             customer_id:
               type: string
+          required:
+            - customer_id
   responses:
     '200':
       description: The created storage account details.

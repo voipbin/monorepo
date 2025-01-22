@@ -66,6 +66,12 @@ put:
             target:
               type: string
               description: The target of the route.
+          required:
+            - name
+            - detail
+            - provider_id
+            - priority
+            - target
   responses:
     '200':
       description: The updated route details.

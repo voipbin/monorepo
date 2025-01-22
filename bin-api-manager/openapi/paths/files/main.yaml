@@ -33,6 +33,8 @@ post:
               type: string
               format: binary
               description: The file to be uploaded.
+          required:
+            - file
   responses:
     '200':
       content:

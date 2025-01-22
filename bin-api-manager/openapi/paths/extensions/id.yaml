@@ -39,6 +39,10 @@ put:
               type: string
             password:
               type: string
+          required:
+            - name
+            - detail
+            - password
   responses:
     '200':
       description: The updated extension.

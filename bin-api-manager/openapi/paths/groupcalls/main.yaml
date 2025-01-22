@@ -34,7 +34,7 @@ post:
               type: array
               items:
                 $ref: '#/components/schemas/CommonAddress'
-            flowID:
+            flow_id:
               type: string
             actions:
               type: array
@@ -44,6 +44,13 @@ post:
               $ref: '#/components/schemas/CallManagerGroupcallRingMethod'
             answer_method:
               $ref: '#/components/schemas/CallManagerGroupcallAnswerMethod'
+          required:
+            - source
+            - destinations
+            - flow_id
+            - actions
+            - ring_method
+            - answer_method
   responses:
     '200':
       description: The created groupcall details.

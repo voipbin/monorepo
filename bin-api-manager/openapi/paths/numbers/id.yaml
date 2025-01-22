@@ -51,17 +51,22 @@ put:
           type: object
           properties:
             call_flow_id:
-              type: string
               description: The ID of the updated call flow.
+              type: string
             message_flow_id:
-              type: string
               description: The ID of the updated message flow.
+              type: string
             name:
-              type: string
               description: The updated name of the number.
-            detail:
               type: string
+            detail:
               description: Updated details for the number.
+              type: string
+          required:
+            - call_flow_id
+            - message_flow_id
+            - name
+            - detail
   responses:
     '200':
       description: The updated order number details.

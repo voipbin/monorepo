@@ -40,6 +40,14 @@ put:
             webhook_uri:
               type: string
               description: Webhook URI.
+          required:
+            - name
+            - detail
+            - email
+            - phone_number
+            - address
+            - webhook_method
+            - webhook_uri
   responses:
     '200':
       description: The updated customer information.

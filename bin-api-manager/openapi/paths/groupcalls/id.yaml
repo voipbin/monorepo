@@ -34,20 +34,3 @@ delete:
           schema:
             $ref: '#/components/schemas/CallManagerGroupcall'
 
-post:
-  summary: Hangup the groupcall
-  description: Ends the groupcall with the specified ID.
-  parameters:
-    - name: id
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The ID of the groupcall.
-  responses:
-    '200':
-      description: The updated groupcall details after hangup.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CallManagerGroupcall'

@@ -2468,18 +2468,18 @@ type GetAgentsParams struct {
 
 // PostAgentsJSONBody defines parameters for PostAgents.
 type PostAgentsJSONBody struct {
-	Addresses *[]CommonAddress `json:"addresses,omitempty"`
-	Detail    *string          `json:"detail,omitempty"`
-	Name      *string          `json:"name,omitempty"`
-	Password  *string          `json:"password,omitempty"`
+	Addresses []CommonAddress `json:"addresses"`
+	Detail    string          `json:"detail"`
+	Name      string          `json:"name"`
+	Password  string          `json:"password"`
 
 	// Permission Permission type
-	Permission *AgentManagerAgentPermission `json:"permission,omitempty"`
+	Permission AgentManagerAgentPermission `json:"permission"`
 
 	// RingMethod Represents an agent resource.
-	RingMethod *AgentManagerAgentRingMethod `json:"ring_method,omitempty"`
-	TagIds     *[]string                    `json:"tag_ids,omitempty"`
-	Username   *string                      `json:"username,omitempty"`
+	RingMethod AgentManagerAgentRingMethod `json:"ring_method"`
+	TagIds     []string                    `json:"tag_ids"`
+	Username   string                      `json:"username"`
 }
 
 // PutAgentsIdJSONBody defines parameters for PutAgentsId.
@@ -2741,6 +2741,214 @@ type PutCampaignsIdStatusJSONBody struct {
 	Status CampaignManagerCampaignStatus `json:"status"`
 }
 
+// GetChatbotcallsParams defines parameters for GetChatbotcalls.
+type GetChatbotcallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetChatbotsParams defines parameters for GetChatbots.
+type GetChatbotsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostChatbotsJSONBody defines parameters for PostChatbots.
+type PostChatbotsJSONBody struct {
+	Detail string `json:"detail"`
+
+	// EngineType Type of engine used by the chatbot.
+	EngineType ChatbotManagerChatbotEngineType `json:"engine_type"`
+	InitPrompt string                          `json:"init_prompt"`
+	Name       string                          `json:"name"`
+}
+
+// PutChatbotsIdJSONBody defines parameters for PutChatbotsId.
+type PutChatbotsIdJSONBody struct {
+	Detail string `json:"detail"`
+
+	// EngineType Type of engine used by the chatbot.
+	EngineType ChatbotManagerChatbotEngineType `json:"engine_type"`
+	InitPrompt string                          `json:"init_prompt"`
+	Name       string                          `json:"name"`
+}
+
+// GetChatmessagesParams defines parameters for GetChatmessages.
+type GetChatmessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ChatId The chat id.
+	ChatId string `form:"chat_id" json:"chat_id"`
+}
+
+// PostChatmessagesJSONBody defines parameters for PostChatmessages.
+type PostChatmessagesJSONBody struct {
+	ChatId string              `json:"chat_id"`
+	Medias *[]ChatManagerMedia `json:"medias,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+	Text   string        `json:"text"`
+
+	// Type Type of the message chat.
+	Type ChatManagerMessagechatType `json:"type"`
+}
+
+// GetChatroommessagesParams defines parameters for GetChatroommessages.
+type GetChatroommessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ChatroomId The ID of the chatroom
+	ChatroomId string `form:"chatroom_id" json:"chatroom_id"`
+}
+
+// PostChatroommessagesJSONBody defines parameters for PostChatroommessages.
+type PostChatroommessagesJSONBody struct {
+	// ChatroomId ID of the chatroom.
+	ChatroomId string `json:"chatroom_id"`
+
+	// Medias List of media URLs.
+	Medias *[]ChatManagerMedia `json:"medias,omitempty"`
+
+	// Text Text of the message.
+	Text string `json:"text"`
+}
+
+// GetChatroomsParams defines parameters for GetChatrooms.
+type GetChatroomsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// OwnerId The ID of the chatroom owner.
+	OwnerId string `form:"owner_id" json:"owner_id"`
+}
+
+// PostChatroomsJSONBody defines parameters for PostChatrooms.
+type PostChatroomsJSONBody struct {
+	// Detail Additional details of the chatroom.
+	Detail string `json:"detail"`
+
+	// Name The name of the chatroom.
+	Name string `json:"name"`
+
+	// ParticipantIds The ID of the participant.
+	ParticipantIds []string `json:"participant_ids"`
+}
+
+// PutChatroomsIdJSONBody defines parameters for PutChatroomsId.
+type PutChatroomsIdJSONBody struct {
+	// Detail The new details of the chatroom.
+	Detail string `json:"detail"`
+
+	// Name The new name of the chatroom.
+	Name string `json:"name"`
+}
+
+// GetChatsParams defines parameters for GetChats.
+type GetChatsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostChatsJSONBody defines parameters for PostChats.
+type PostChatsJSONBody struct {
+	Detail         string   `json:"detail"`
+	Name           string   `json:"name"`
+	OwnerId        string   `json:"owner_id"`
+	ParticipantIds []string `json:"participant_ids"`
+
+	// Type Type of the chat.
+	Type ChatManagerChatType `json:"type"`
+}
+
+// PutChatsIdJSONBody defines parameters for PutChatsId.
+type PutChatsIdJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+}
+
+// PostChatsIdParticipantIdsJSONBody defines parameters for PostChatsIdParticipantIds.
+type PostChatsIdParticipantIdsJSONBody struct {
+	ParticipantId string `json:"participant_id"`
+}
+
+// PutChatsIdRoomOwnerIdJSONBody defines parameters for PutChatsIdRoomOwnerId.
+type PutChatsIdRoomOwnerIdJSONBody struct {
+	RoomOwnerId string `json:"room_owner_id"`
+}
+
+// GetConferencecallsParams defines parameters for GetConferencecalls.
+type GetConferencecallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetConferencesParams defines parameters for GetConferences.
+type GetConferencesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostConferencesJSONBody defines parameters for PostConferences.
+type PostConferencesJSONBody struct {
+	Data        map[string]interface{} `json:"data"`
+	Detail      string                 `json:"detail"`
+	Name        string                 `json:"name"`
+	PostActions []FlowManagerAction    `json:"post_actions"`
+	PreActions  []FlowManagerAction    `json:"pre_actions"`
+	Timeout     int                    `json:"timeout"`
+
+	// Type Types of conferences.
+	Type ConferenceManagerConferenceType `json:"type"`
+}
+
+// PutConferencesIdJSONBody defines parameters for PutConferencesId.
+type PutConferencesIdJSONBody struct {
+	Detail      string              `json:"detail"`
+	Name        string              `json:"name"`
+	PostActions []FlowManagerAction `json:"post_actions"`
+	PreActions  []FlowManagerAction `json:"pre_actions"`
+	Timeout     int                 `json:"timeout"`
+}
+
+// GetConferencesIdMediaStreamParams defines parameters for GetConferencesIdMediaStream.
+type GetConferencesIdMediaStreamParams struct {
+	// Encapsulation The encapsulation for media stream.
+	Encapsulation string `form:"encapsulation" json:"encapsulation"`
+}
+
+// PostConferencesIdTranscribeStartJSONBody defines parameters for PostConferencesIdTranscribeStart.
+type PostConferencesIdTranscribeStartJSONBody struct {
+	// Language The language for transcription.
+	Language string `json:"language"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -2818,6 +3026,45 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
+
+// PostChatbotsJSONRequestBody defines body for PostChatbots for application/json ContentType.
+type PostChatbotsJSONRequestBody PostChatbotsJSONBody
+
+// PutChatbotsIdJSONRequestBody defines body for PutChatbotsId for application/json ContentType.
+type PutChatbotsIdJSONRequestBody PutChatbotsIdJSONBody
+
+// PostChatmessagesJSONRequestBody defines body for PostChatmessages for application/json ContentType.
+type PostChatmessagesJSONRequestBody PostChatmessagesJSONBody
+
+// PostChatroommessagesJSONRequestBody defines body for PostChatroommessages for application/json ContentType.
+type PostChatroommessagesJSONRequestBody PostChatroommessagesJSONBody
+
+// PostChatroomsJSONRequestBody defines body for PostChatrooms for application/json ContentType.
+type PostChatroomsJSONRequestBody PostChatroomsJSONBody
+
+// PutChatroomsIdJSONRequestBody defines body for PutChatroomsId for application/json ContentType.
+type PutChatroomsIdJSONRequestBody PutChatroomsIdJSONBody
+
+// PostChatsJSONRequestBody defines body for PostChats for application/json ContentType.
+type PostChatsJSONRequestBody PostChatsJSONBody
+
+// PutChatsIdJSONRequestBody defines body for PutChatsId for application/json ContentType.
+type PutChatsIdJSONRequestBody PutChatsIdJSONBody
+
+// PostChatsIdParticipantIdsJSONRequestBody defines body for PostChatsIdParticipantIds for application/json ContentType.
+type PostChatsIdParticipantIdsJSONRequestBody PostChatsIdParticipantIdsJSONBody
+
+// PutChatsIdRoomOwnerIdJSONRequestBody defines body for PutChatsIdRoomOwnerId for application/json ContentType.
+type PutChatsIdRoomOwnerIdJSONRequestBody PutChatsIdRoomOwnerIdJSONBody
+
+// PostConferencesJSONRequestBody defines body for PostConferences for application/json ContentType.
+type PostConferencesJSONRequestBody PostConferencesJSONBody
+
+// PutConferencesIdJSONRequestBody defines body for PutConferencesId for application/json ContentType.
+type PutConferencesIdJSONRequestBody PutConferencesIdJSONBody
+
+// PostConferencesIdTranscribeStartJSONRequestBody defines body for PostConferencesIdTranscribeStart for application/json ContentType.
+type PostConferencesIdTranscribeStartJSONRequestBody PostConferencesIdTranscribeStartJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -3120,6 +3367,158 @@ type ClientInterface interface {
 	PutCampaignsIdStatusWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PutCampaignsIdStatus(ctx context.Context, id string, body PutCampaignsIdStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatbotcalls request
+	GetChatbotcalls(ctx context.Context, params *GetChatbotcallsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteChatbotcallsId request
+	DeleteChatbotcallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatbotcallsId request
+	GetChatbotcallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatbots request
+	GetChatbots(ctx context.Context, params *GetChatbotsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostChatbotsWithBody request with any body
+	PostChatbotsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostChatbots(ctx context.Context, body PostChatbotsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteChatbotsId request
+	DeleteChatbotsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatbotsId request
+	GetChatbotsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutChatbotsIdWithBody request with any body
+	PutChatbotsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutChatbotsId(ctx context.Context, id string, body PutChatbotsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatmessages request
+	GetChatmessages(ctx context.Context, params *GetChatmessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostChatmessagesWithBody request with any body
+	PostChatmessagesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostChatmessages(ctx context.Context, body PostChatmessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteChatmessagesId request
+	DeleteChatmessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatmessagesId request
+	GetChatmessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatroommessages request
+	GetChatroommessages(ctx context.Context, params *GetChatroommessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostChatroommessagesWithBody request with any body
+	PostChatroommessagesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostChatroommessages(ctx context.Context, body PostChatroommessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteChatroommessagesId request
+	DeleteChatroommessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatroommessagesId request
+	GetChatroommessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatrooms request
+	GetChatrooms(ctx context.Context, params *GetChatroomsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostChatroomsWithBody request with any body
+	PostChatroomsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostChatrooms(ctx context.Context, body PostChatroomsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteChatroomsId request
+	DeleteChatroomsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatroomsId request
+	GetChatroomsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutChatroomsIdWithBody request with any body
+	PutChatroomsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutChatroomsId(ctx context.Context, id string, body PutChatroomsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChats request
+	GetChats(ctx context.Context, params *GetChatsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostChatsWithBody request with any body
+	PostChatsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostChats(ctx context.Context, body PostChatsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteChatsId request
+	DeleteChatsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChatsId request
+	GetChatsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutChatsIdWithBody request with any body
+	PutChatsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutChatsId(ctx context.Context, id string, body PutChatsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostChatsIdParticipantIdsWithBody request with any body
+	PostChatsIdParticipantIdsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostChatsIdParticipantIds(ctx context.Context, id string, body PostChatsIdParticipantIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteChatsIdParticipantIdsParticipantId request
+	DeleteChatsIdParticipantIdsParticipantId(ctx context.Context, id string, participantId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutChatsIdRoomOwnerIdWithBody request with any body
+	PutChatsIdRoomOwnerIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutChatsIdRoomOwnerId(ctx context.Context, id string, body PutChatsIdRoomOwnerIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConferencecalls request
+	GetConferencecalls(ctx context.Context, params *GetConferencecallsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteConferencecallsId request
+	DeleteConferencecallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConferencecallsId request
+	GetConferencecallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConferences request
+	GetConferences(ctx context.Context, params *GetConferencesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostConferencesWithBody request with any body
+	PostConferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostConferences(ctx context.Context, body PostConferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteConferencesId request
+	DeleteConferencesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConferencesId request
+	GetConferencesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutConferencesIdWithBody request with any body
+	PutConferencesIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutConferencesId(ctx context.Context, id string, body PutConferencesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConferencesIdMediaStream request
+	GetConferencesIdMediaStream(ctx context.Context, id string, params *GetConferencesIdMediaStreamParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostConferencesIdRecordingStart request
+	PostConferencesIdRecordingStart(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostConferencesIdRecordingStop request
+	PostConferencesIdRecordingStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostConferencesIdTranscribeStartWithBody request with any body
+	PostConferencesIdTranscribeStartWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostConferencesIdTranscribeStart(ctx context.Context, id string, body PostConferencesIdTranscribeStartJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostConferencesIdTranscribeStop request
+	PostConferencesIdTranscribeStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccesskeys(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4132,6 +4531,666 @@ func (c *Client) PutCampaignsIdStatusWithBody(ctx context.Context, id string, co
 
 func (c *Client) PutCampaignsIdStatus(ctx context.Context, id string, body PutCampaignsIdStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPutCampaignsIdStatusRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatbotcalls(ctx context.Context, params *GetChatbotcallsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatbotcallsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteChatbotcallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteChatbotcallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatbotcallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatbotcallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatbots(ctx context.Context, params *GetChatbotsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatbotsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatbotsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatbotsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatbots(ctx context.Context, body PostChatbotsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatbotsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteChatbotsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteChatbotsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatbotsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatbotsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChatbotsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChatbotsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChatbotsId(ctx context.Context, id string, body PutChatbotsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChatbotsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatmessages(ctx context.Context, params *GetChatmessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatmessagesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatmessagesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatmessagesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatmessages(ctx context.Context, body PostChatmessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatmessagesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteChatmessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteChatmessagesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatmessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatmessagesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatroommessages(ctx context.Context, params *GetChatroommessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatroommessagesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatroommessagesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatroommessagesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatroommessages(ctx context.Context, body PostChatroommessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatroommessagesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteChatroommessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteChatroommessagesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatroommessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatroommessagesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatrooms(ctx context.Context, params *GetChatroomsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatroomsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatroomsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatroomsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatrooms(ctx context.Context, body PostChatroomsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatroomsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteChatroomsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteChatroomsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatroomsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatroomsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChatroomsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChatroomsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChatroomsId(ctx context.Context, id string, body PutChatroomsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChatroomsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChats(ctx context.Context, params *GetChatsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChats(ctx context.Context, body PostChatsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteChatsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteChatsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChatsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChatsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChatsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChatsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChatsId(ctx context.Context, id string, body PutChatsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChatsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatsIdParticipantIdsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatsIdParticipantIdsRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChatsIdParticipantIds(ctx context.Context, id string, body PostChatsIdParticipantIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChatsIdParticipantIdsRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteChatsIdParticipantIdsParticipantId(ctx context.Context, id string, participantId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteChatsIdParticipantIdsParticipantIdRequest(c.Server, id, participantId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChatsIdRoomOwnerIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChatsIdRoomOwnerIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChatsIdRoomOwnerId(ctx context.Context, id string, body PutChatsIdRoomOwnerIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChatsIdRoomOwnerIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConferencecalls(ctx context.Context, params *GetConferencecallsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConferencecallsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteConferencecallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteConferencecallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConferencecallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConferencecallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConferences(ctx context.Context, params *GetConferencesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConferencesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConferencesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConferences(ctx context.Context, body PostConferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConferencesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteConferencesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteConferencesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConferencesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConferencesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutConferencesIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutConferencesIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutConferencesId(ctx context.Context, id string, body PutConferencesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutConferencesIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConferencesIdMediaStream(ctx context.Context, id string, params *GetConferencesIdMediaStreamParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConferencesIdMediaStreamRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConferencesIdRecordingStart(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConferencesIdRecordingStartRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConferencesIdRecordingStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConferencesIdRecordingStopRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConferencesIdTranscribeStartWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConferencesIdTranscribeStartRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConferencesIdTranscribeStart(ctx context.Context, id string, body PostConferencesIdTranscribeStartJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConferencesIdTranscribeStartRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConferencesIdTranscribeStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConferencesIdTranscribeStopRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -6811,6 +7870,1870 @@ func NewPutCampaignsIdStatusRequestWithBody(server string, id string, contentTyp
 	return req, nil
 }
 
+// NewGetChatbotcallsRequest generates requests for GetChatbotcalls
+func NewGetChatbotcallsRequest(server string, params *GetChatbotcallsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatbotcalls")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteChatbotcallsIdRequest generates requests for DeleteChatbotcallsId
+func NewDeleteChatbotcallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatbotcalls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChatbotcallsIdRequest generates requests for GetChatbotcallsId
+func NewGetChatbotcallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatbotcalls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChatbotsRequest generates requests for GetChatbots
+func NewGetChatbotsRequest(server string, params *GetChatbotsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatbots")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostChatbotsRequest calls the generic PostChatbots builder with application/json body
+func NewPostChatbotsRequest(server string, body PostChatbotsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostChatbotsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostChatbotsRequestWithBody generates requests for PostChatbots with any type of body
+func NewPostChatbotsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatbots")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteChatbotsIdRequest generates requests for DeleteChatbotsId
+func NewDeleteChatbotsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatbots/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChatbotsIdRequest generates requests for GetChatbotsId
+func NewGetChatbotsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatbots/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutChatbotsIdRequest calls the generic PutChatbotsId builder with application/json body
+func NewPutChatbotsIdRequest(server string, id string, body PutChatbotsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutChatbotsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutChatbotsIdRequestWithBody generates requests for PutChatbotsId with any type of body
+func NewPutChatbotsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatbots/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetChatmessagesRequest generates requests for GetChatmessages
+func NewGetChatmessagesRequest(server string, params *GetChatmessagesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatmessages")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chat_id", runtime.ParamLocationQuery, params.ChatId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostChatmessagesRequest calls the generic PostChatmessages builder with application/json body
+func NewPostChatmessagesRequest(server string, body PostChatmessagesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostChatmessagesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostChatmessagesRequestWithBody generates requests for PostChatmessages with any type of body
+func NewPostChatmessagesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatmessages")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteChatmessagesIdRequest generates requests for DeleteChatmessagesId
+func NewDeleteChatmessagesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatmessages/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChatmessagesIdRequest generates requests for GetChatmessagesId
+func NewGetChatmessagesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatmessages/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChatroommessagesRequest generates requests for GetChatroommessages
+func NewGetChatroommessagesRequest(server string, params *GetChatroommessagesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatroommessages")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chatroom_id", runtime.ParamLocationQuery, params.ChatroomId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostChatroommessagesRequest calls the generic PostChatroommessages builder with application/json body
+func NewPostChatroommessagesRequest(server string, body PostChatroommessagesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostChatroommessagesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostChatroommessagesRequestWithBody generates requests for PostChatroommessages with any type of body
+func NewPostChatroommessagesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatroommessages")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteChatroommessagesIdRequest generates requests for DeleteChatroommessagesId
+func NewDeleteChatroommessagesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatroommessages/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChatroommessagesIdRequest generates requests for GetChatroommessagesId
+func NewGetChatroommessagesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatroommessages/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChatroomsRequest generates requests for GetChatrooms
+func NewGetChatroomsRequest(server string, params *GetChatroomsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatrooms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "owner_id", runtime.ParamLocationQuery, params.OwnerId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostChatroomsRequest calls the generic PostChatrooms builder with application/json body
+func NewPostChatroomsRequest(server string, body PostChatroomsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostChatroomsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostChatroomsRequestWithBody generates requests for PostChatrooms with any type of body
+func NewPostChatroomsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatrooms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteChatroomsIdRequest generates requests for DeleteChatroomsId
+func NewDeleteChatroomsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatrooms/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChatroomsIdRequest generates requests for GetChatroomsId
+func NewGetChatroomsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatrooms/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutChatroomsIdRequest calls the generic PutChatroomsId builder with application/json body
+func NewPutChatroomsIdRequest(server string, id string, body PutChatroomsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutChatroomsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutChatroomsIdRequestWithBody generates requests for PutChatroomsId with any type of body
+func NewPutChatroomsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chatrooms/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetChatsRequest generates requests for GetChats
+func NewGetChatsRequest(server string, params *GetChatsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chats")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostChatsRequest calls the generic PostChats builder with application/json body
+func NewPostChatsRequest(server string, body PostChatsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostChatsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostChatsRequestWithBody generates requests for PostChats with any type of body
+func NewPostChatsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chats")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteChatsIdRequest generates requests for DeleteChatsId
+func NewDeleteChatsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chats/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChatsIdRequest generates requests for GetChatsId
+func NewGetChatsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chats/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutChatsIdRequest calls the generic PutChatsId builder with application/json body
+func NewPutChatsIdRequest(server string, id string, body PutChatsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutChatsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutChatsIdRequestWithBody generates requests for PutChatsId with any type of body
+func NewPutChatsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chats/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostChatsIdParticipantIdsRequest calls the generic PostChatsIdParticipantIds builder with application/json body
+func NewPostChatsIdParticipantIdsRequest(server string, id string, body PostChatsIdParticipantIdsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostChatsIdParticipantIdsRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostChatsIdParticipantIdsRequestWithBody generates requests for PostChatsIdParticipantIds with any type of body
+func NewPostChatsIdParticipantIdsRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chats/%s/participant_ids", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteChatsIdParticipantIdsParticipantIdRequest generates requests for DeleteChatsIdParticipantIdsParticipantId
+func NewDeleteChatsIdParticipantIdsParticipantIdRequest(server string, id string, participantId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "participant_id", runtime.ParamLocationPath, participantId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chats/%s/participant_ids/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutChatsIdRoomOwnerIdRequest calls the generic PutChatsIdRoomOwnerId builder with application/json body
+func NewPutChatsIdRoomOwnerIdRequest(server string, id string, body PutChatsIdRoomOwnerIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutChatsIdRoomOwnerIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutChatsIdRoomOwnerIdRequestWithBody generates requests for PutChatsIdRoomOwnerId with any type of body
+func NewPutChatsIdRoomOwnerIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/chats/%s/room_owner_id", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetConferencecallsRequest generates requests for GetConferencecalls
+func NewGetConferencecallsRequest(server string, params *GetConferencecallsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferencecalls")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteConferencecallsIdRequest generates requests for DeleteConferencecallsId
+func NewDeleteConferencecallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferencecalls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetConferencecallsIdRequest generates requests for GetConferencecallsId
+func NewGetConferencecallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferencecalls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetConferencesRequest generates requests for GetConferences
+func NewGetConferencesRequest(server string, params *GetConferencesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostConferencesRequest calls the generic PostConferences builder with application/json body
+func NewPostConferencesRequest(server string, body PostConferencesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostConferencesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostConferencesRequestWithBody generates requests for PostConferences with any type of body
+func NewPostConferencesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteConferencesIdRequest generates requests for DeleteConferencesId
+func NewDeleteConferencesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetConferencesIdRequest generates requests for GetConferencesId
+func NewGetConferencesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutConferencesIdRequest calls the generic PutConferencesId builder with application/json body
+func NewPutConferencesIdRequest(server string, id string, body PutConferencesIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutConferencesIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutConferencesIdRequestWithBody generates requests for PutConferencesId with any type of body
+func NewPutConferencesIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetConferencesIdMediaStreamRequest generates requests for GetConferencesIdMediaStream
+func NewGetConferencesIdMediaStreamRequest(server string, id string, params *GetConferencesIdMediaStreamParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences/%s/media_stream", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "encapsulation", runtime.ParamLocationQuery, params.Encapsulation); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostConferencesIdRecordingStartRequest generates requests for PostConferencesIdRecordingStart
+func NewPostConferencesIdRecordingStartRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences/%s/recording_start", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostConferencesIdRecordingStopRequest generates requests for PostConferencesIdRecordingStop
+func NewPostConferencesIdRecordingStopRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences/%s/recording_stop", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostConferencesIdTranscribeStartRequest calls the generic PostConferencesIdTranscribeStart builder with application/json body
+func NewPostConferencesIdTranscribeStartRequest(server string, id string, body PostConferencesIdTranscribeStartJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostConferencesIdTranscribeStartRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostConferencesIdTranscribeStartRequestWithBody generates requests for PostConferencesIdTranscribeStart with any type of body
+func NewPostConferencesIdTranscribeStartRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences/%s/transcribe_start", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostConferencesIdTranscribeStopRequest generates requests for PostConferencesIdTranscribeStop
+func NewPostConferencesIdTranscribeStopRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conferences/%s/transcribe_stop", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -7082,6 +10005,158 @@ type ClientWithResponsesInterface interface {
 	PutCampaignsIdStatusWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutCampaignsIdStatusResponse, error)
 
 	PutCampaignsIdStatusWithResponse(ctx context.Context, id string, body PutCampaignsIdStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PutCampaignsIdStatusResponse, error)
+
+	// GetChatbotcallsWithResponse request
+	GetChatbotcallsWithResponse(ctx context.Context, params *GetChatbotcallsParams, reqEditors ...RequestEditorFn) (*GetChatbotcallsResponse, error)
+
+	// DeleteChatbotcallsIdWithResponse request
+	DeleteChatbotcallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatbotcallsIdResponse, error)
+
+	// GetChatbotcallsIdWithResponse request
+	GetChatbotcallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatbotcallsIdResponse, error)
+
+	// GetChatbotsWithResponse request
+	GetChatbotsWithResponse(ctx context.Context, params *GetChatbotsParams, reqEditors ...RequestEditorFn) (*GetChatbotsResponse, error)
+
+	// PostChatbotsWithBodyWithResponse request with any body
+	PostChatbotsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatbotsResponse, error)
+
+	PostChatbotsWithResponse(ctx context.Context, body PostChatbotsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatbotsResponse, error)
+
+	// DeleteChatbotsIdWithResponse request
+	DeleteChatbotsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatbotsIdResponse, error)
+
+	// GetChatbotsIdWithResponse request
+	GetChatbotsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatbotsIdResponse, error)
+
+	// PutChatbotsIdWithBodyWithResponse request with any body
+	PutChatbotsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChatbotsIdResponse, error)
+
+	PutChatbotsIdWithResponse(ctx context.Context, id string, body PutChatbotsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChatbotsIdResponse, error)
+
+	// GetChatmessagesWithResponse request
+	GetChatmessagesWithResponse(ctx context.Context, params *GetChatmessagesParams, reqEditors ...RequestEditorFn) (*GetChatmessagesResponse, error)
+
+	// PostChatmessagesWithBodyWithResponse request with any body
+	PostChatmessagesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatmessagesResponse, error)
+
+	PostChatmessagesWithResponse(ctx context.Context, body PostChatmessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatmessagesResponse, error)
+
+	// DeleteChatmessagesIdWithResponse request
+	DeleteChatmessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatmessagesIdResponse, error)
+
+	// GetChatmessagesIdWithResponse request
+	GetChatmessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatmessagesIdResponse, error)
+
+	// GetChatroommessagesWithResponse request
+	GetChatroommessagesWithResponse(ctx context.Context, params *GetChatroommessagesParams, reqEditors ...RequestEditorFn) (*GetChatroommessagesResponse, error)
+
+	// PostChatroommessagesWithBodyWithResponse request with any body
+	PostChatroommessagesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatroommessagesResponse, error)
+
+	PostChatroommessagesWithResponse(ctx context.Context, body PostChatroommessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatroommessagesResponse, error)
+
+	// DeleteChatroommessagesIdWithResponse request
+	DeleteChatroommessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatroommessagesIdResponse, error)
+
+	// GetChatroommessagesIdWithResponse request
+	GetChatroommessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatroommessagesIdResponse, error)
+
+	// GetChatroomsWithResponse request
+	GetChatroomsWithResponse(ctx context.Context, params *GetChatroomsParams, reqEditors ...RequestEditorFn) (*GetChatroomsResponse, error)
+
+	// PostChatroomsWithBodyWithResponse request with any body
+	PostChatroomsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatroomsResponse, error)
+
+	PostChatroomsWithResponse(ctx context.Context, body PostChatroomsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatroomsResponse, error)
+
+	// DeleteChatroomsIdWithResponse request
+	DeleteChatroomsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatroomsIdResponse, error)
+
+	// GetChatroomsIdWithResponse request
+	GetChatroomsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatroomsIdResponse, error)
+
+	// PutChatroomsIdWithBodyWithResponse request with any body
+	PutChatroomsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChatroomsIdResponse, error)
+
+	PutChatroomsIdWithResponse(ctx context.Context, id string, body PutChatroomsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChatroomsIdResponse, error)
+
+	// GetChatsWithResponse request
+	GetChatsWithResponse(ctx context.Context, params *GetChatsParams, reqEditors ...RequestEditorFn) (*GetChatsResponse, error)
+
+	// PostChatsWithBodyWithResponse request with any body
+	PostChatsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatsResponse, error)
+
+	PostChatsWithResponse(ctx context.Context, body PostChatsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatsResponse, error)
+
+	// DeleteChatsIdWithResponse request
+	DeleteChatsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatsIdResponse, error)
+
+	// GetChatsIdWithResponse request
+	GetChatsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatsIdResponse, error)
+
+	// PutChatsIdWithBodyWithResponse request with any body
+	PutChatsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChatsIdResponse, error)
+
+	PutChatsIdWithResponse(ctx context.Context, id string, body PutChatsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChatsIdResponse, error)
+
+	// PostChatsIdParticipantIdsWithBodyWithResponse request with any body
+	PostChatsIdParticipantIdsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatsIdParticipantIdsResponse, error)
+
+	PostChatsIdParticipantIdsWithResponse(ctx context.Context, id string, body PostChatsIdParticipantIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatsIdParticipantIdsResponse, error)
+
+	// DeleteChatsIdParticipantIdsParticipantIdWithResponse request
+	DeleteChatsIdParticipantIdsParticipantIdWithResponse(ctx context.Context, id string, participantId string, reqEditors ...RequestEditorFn) (*DeleteChatsIdParticipantIdsParticipantIdResponse, error)
+
+	// PutChatsIdRoomOwnerIdWithBodyWithResponse request with any body
+	PutChatsIdRoomOwnerIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChatsIdRoomOwnerIdResponse, error)
+
+	PutChatsIdRoomOwnerIdWithResponse(ctx context.Context, id string, body PutChatsIdRoomOwnerIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChatsIdRoomOwnerIdResponse, error)
+
+	// GetConferencecallsWithResponse request
+	GetConferencecallsWithResponse(ctx context.Context, params *GetConferencecallsParams, reqEditors ...RequestEditorFn) (*GetConferencecallsResponse, error)
+
+	// DeleteConferencecallsIdWithResponse request
+	DeleteConferencecallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteConferencecallsIdResponse, error)
+
+	// GetConferencecallsIdWithResponse request
+	GetConferencecallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetConferencecallsIdResponse, error)
+
+	// GetConferencesWithResponse request
+	GetConferencesWithResponse(ctx context.Context, params *GetConferencesParams, reqEditors ...RequestEditorFn) (*GetConferencesResponse, error)
+
+	// PostConferencesWithBodyWithResponse request with any body
+	PostConferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConferencesResponse, error)
+
+	PostConferencesWithResponse(ctx context.Context, body PostConferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConferencesResponse, error)
+
+	// DeleteConferencesIdWithResponse request
+	DeleteConferencesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteConferencesIdResponse, error)
+
+	// GetConferencesIdWithResponse request
+	GetConferencesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetConferencesIdResponse, error)
+
+	// PutConferencesIdWithBodyWithResponse request with any body
+	PutConferencesIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutConferencesIdResponse, error)
+
+	PutConferencesIdWithResponse(ctx context.Context, id string, body PutConferencesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutConferencesIdResponse, error)
+
+	// GetConferencesIdMediaStreamWithResponse request
+	GetConferencesIdMediaStreamWithResponse(ctx context.Context, id string, params *GetConferencesIdMediaStreamParams, reqEditors ...RequestEditorFn) (*GetConferencesIdMediaStreamResponse, error)
+
+	// PostConferencesIdRecordingStartWithResponse request
+	PostConferencesIdRecordingStartWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostConferencesIdRecordingStartResponse, error)
+
+	// PostConferencesIdRecordingStopWithResponse request
+	PostConferencesIdRecordingStopWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostConferencesIdRecordingStopResponse, error)
+
+	// PostConferencesIdTranscribeStartWithBodyWithResponse request with any body
+	PostConferencesIdTranscribeStartWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConferencesIdTranscribeStartResponse, error)
+
+	PostConferencesIdTranscribeStartWithResponse(ctx context.Context, id string, body PostConferencesIdTranscribeStartJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConferencesIdTranscribeStartResponse, error)
+
+	// PostConferencesIdTranscribeStopWithResponse request
+	PostConferencesIdTranscribeStopWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostConferencesIdTranscribeStopResponse, error)
 }
 
 type GetAccesskeysResponse struct {
@@ -8411,6 +11486,957 @@ func (r PutCampaignsIdStatusResponse) StatusCode() int {
 	return 0
 }
 
+type GetChatbotcallsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                      `json:"next_page_token,omitempty"`
+		Result        *[]ChatbotManagerChatbotcall `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatbotcallsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatbotcallsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteChatbotcallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatbotManagerChatbotcall
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteChatbotcallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteChatbotcallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatbotcallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatbotManagerChatbotcall
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatbotcallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatbotcallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatbotsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                  `json:"next_page_token,omitempty"`
+		Result        *[]ChatbotManagerChatbot `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatbotsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatbotsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostChatbotsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatbotManagerChatbot
+}
+
+// Status returns HTTPResponse.Status
+func (r PostChatbotsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostChatbotsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteChatbotsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatbotManagerChatbot
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteChatbotsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteChatbotsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatbotsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatbotManagerChatbot
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatbotsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatbotsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutChatbotsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatbotManagerChatbot
+}
+
+// Status returns HTTPResponse.Status
+func (r PutChatbotsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutChatbotsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatmessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                   `json:"next_page_token,omitempty"`
+		Result        *[]ChatManagerMessagechat `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatmessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatmessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostChatmessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerMessagechat
+}
+
+// Status returns HTTPResponse.Status
+func (r PostChatmessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostChatmessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteChatmessagesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerMessagechat
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteChatmessagesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteChatmessagesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatmessagesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerMessagechat
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatmessagesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatmessagesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatroommessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                       `json:"next_page_token,omitempty"`
+		Result        *[]ChatManagerMessagechatroom `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatroommessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatroommessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostChatroommessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerMessagechatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r PostChatroommessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostChatroommessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteChatroommessagesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerMessagechatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteChatroommessagesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteChatroommessagesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatroommessagesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerMessagechatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatroommessagesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatroommessagesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatroomsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                `json:"next_page_token,omitempty"`
+		Result        *[]ChatManagerChatroom `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatroomsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatroomsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostChatroomsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r PostChatroomsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostChatroomsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteChatroomsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteChatroomsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteChatroomsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatroomsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatroomsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatroomsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutChatroomsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r PutChatroomsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutChatroomsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string            `json:"next_page_token,omitempty"`
+		Result        *[]ChatManagerChat `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostChatsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChat
+}
+
+// Status returns HTTPResponse.Status
+func (r PostChatsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostChatsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteChatsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChat
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteChatsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteChatsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChatsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChat
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChatsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChatsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutChatsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChat
+}
+
+// Status returns HTTPResponse.Status
+func (r PutChatsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutChatsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostChatsIdParticipantIdsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChat
+}
+
+// Status returns HTTPResponse.Status
+func (r PostChatsIdParticipantIdsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostChatsIdParticipantIdsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteChatsIdParticipantIdsParticipantIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChat
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteChatsIdParticipantIdsParticipantIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteChatsIdParticipantIdsParticipantIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutChatsIdRoomOwnerIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChat
+}
+
+// Status returns HTTPResponse.Status
+func (r PutChatsIdRoomOwnerIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutChatsIdRoomOwnerIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConferencecallsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                            `json:"next_page_token,omitempty"`
+		Result        *[]ConferenceManagerConferencecall `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConferencecallsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConferencecallsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteConferencecallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConferenceManagerConferencecall
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteConferencecallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteConferencecallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConferencecallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConferenceManagerConferencecall
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConferencecallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConferencecallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConferencesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                        `json:"next_page_token,omitempty"`
+		Result        *[]ConferenceManagerConference `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConferencesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConferencesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostConferencesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConferenceManagerConference
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConferencesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConferencesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteConferencesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConferenceManagerConference
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteConferencesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteConferencesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConferencesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConferenceManagerConference
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConferencesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConferencesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutConferencesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConferenceManagerConference
+}
+
+// Status returns HTTPResponse.Status
+func (r PutConferencesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutConferencesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConferencesIdMediaStreamResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConferencesIdMediaStreamResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConferencesIdMediaStreamResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostConferencesIdRecordingStartResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConferencesIdRecordingStartResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConferencesIdRecordingStartResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostConferencesIdRecordingStopResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConferencesIdRecordingStopResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConferencesIdRecordingStopResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostConferencesIdTranscribeStartResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConferencesIdTranscribeStartResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConferencesIdTranscribeStartResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostConferencesIdTranscribeStopResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConferencesIdTranscribeStopResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConferencesIdTranscribeStopResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccesskeysWithResponse request returning *GetAccesskeysResponse
 func (c *ClientWithResponses) GetAccesskeysWithResponse(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*GetAccesskeysResponse, error) {
 	rsp, err := c.GetAccesskeys(ctx, params, reqEditors...)
@@ -9148,6 +13174,488 @@ func (c *ClientWithResponses) PutCampaignsIdStatusWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParsePutCampaignsIdStatusResponse(rsp)
+}
+
+// GetChatbotcallsWithResponse request returning *GetChatbotcallsResponse
+func (c *ClientWithResponses) GetChatbotcallsWithResponse(ctx context.Context, params *GetChatbotcallsParams, reqEditors ...RequestEditorFn) (*GetChatbotcallsResponse, error) {
+	rsp, err := c.GetChatbotcalls(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatbotcallsResponse(rsp)
+}
+
+// DeleteChatbotcallsIdWithResponse request returning *DeleteChatbotcallsIdResponse
+func (c *ClientWithResponses) DeleteChatbotcallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatbotcallsIdResponse, error) {
+	rsp, err := c.DeleteChatbotcallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteChatbotcallsIdResponse(rsp)
+}
+
+// GetChatbotcallsIdWithResponse request returning *GetChatbotcallsIdResponse
+func (c *ClientWithResponses) GetChatbotcallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatbotcallsIdResponse, error) {
+	rsp, err := c.GetChatbotcallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatbotcallsIdResponse(rsp)
+}
+
+// GetChatbotsWithResponse request returning *GetChatbotsResponse
+func (c *ClientWithResponses) GetChatbotsWithResponse(ctx context.Context, params *GetChatbotsParams, reqEditors ...RequestEditorFn) (*GetChatbotsResponse, error) {
+	rsp, err := c.GetChatbots(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatbotsResponse(rsp)
+}
+
+// PostChatbotsWithBodyWithResponse request with arbitrary body returning *PostChatbotsResponse
+func (c *ClientWithResponses) PostChatbotsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatbotsResponse, error) {
+	rsp, err := c.PostChatbotsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatbotsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostChatbotsWithResponse(ctx context.Context, body PostChatbotsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatbotsResponse, error) {
+	rsp, err := c.PostChatbots(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatbotsResponse(rsp)
+}
+
+// DeleteChatbotsIdWithResponse request returning *DeleteChatbotsIdResponse
+func (c *ClientWithResponses) DeleteChatbotsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatbotsIdResponse, error) {
+	rsp, err := c.DeleteChatbotsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteChatbotsIdResponse(rsp)
+}
+
+// GetChatbotsIdWithResponse request returning *GetChatbotsIdResponse
+func (c *ClientWithResponses) GetChatbotsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatbotsIdResponse, error) {
+	rsp, err := c.GetChatbotsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatbotsIdResponse(rsp)
+}
+
+// PutChatbotsIdWithBodyWithResponse request with arbitrary body returning *PutChatbotsIdResponse
+func (c *ClientWithResponses) PutChatbotsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChatbotsIdResponse, error) {
+	rsp, err := c.PutChatbotsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChatbotsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutChatbotsIdWithResponse(ctx context.Context, id string, body PutChatbotsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChatbotsIdResponse, error) {
+	rsp, err := c.PutChatbotsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChatbotsIdResponse(rsp)
+}
+
+// GetChatmessagesWithResponse request returning *GetChatmessagesResponse
+func (c *ClientWithResponses) GetChatmessagesWithResponse(ctx context.Context, params *GetChatmessagesParams, reqEditors ...RequestEditorFn) (*GetChatmessagesResponse, error) {
+	rsp, err := c.GetChatmessages(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatmessagesResponse(rsp)
+}
+
+// PostChatmessagesWithBodyWithResponse request with arbitrary body returning *PostChatmessagesResponse
+func (c *ClientWithResponses) PostChatmessagesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatmessagesResponse, error) {
+	rsp, err := c.PostChatmessagesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatmessagesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostChatmessagesWithResponse(ctx context.Context, body PostChatmessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatmessagesResponse, error) {
+	rsp, err := c.PostChatmessages(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatmessagesResponse(rsp)
+}
+
+// DeleteChatmessagesIdWithResponse request returning *DeleteChatmessagesIdResponse
+func (c *ClientWithResponses) DeleteChatmessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatmessagesIdResponse, error) {
+	rsp, err := c.DeleteChatmessagesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteChatmessagesIdResponse(rsp)
+}
+
+// GetChatmessagesIdWithResponse request returning *GetChatmessagesIdResponse
+func (c *ClientWithResponses) GetChatmessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatmessagesIdResponse, error) {
+	rsp, err := c.GetChatmessagesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatmessagesIdResponse(rsp)
+}
+
+// GetChatroommessagesWithResponse request returning *GetChatroommessagesResponse
+func (c *ClientWithResponses) GetChatroommessagesWithResponse(ctx context.Context, params *GetChatroommessagesParams, reqEditors ...RequestEditorFn) (*GetChatroommessagesResponse, error) {
+	rsp, err := c.GetChatroommessages(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatroommessagesResponse(rsp)
+}
+
+// PostChatroommessagesWithBodyWithResponse request with arbitrary body returning *PostChatroommessagesResponse
+func (c *ClientWithResponses) PostChatroommessagesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatroommessagesResponse, error) {
+	rsp, err := c.PostChatroommessagesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatroommessagesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostChatroommessagesWithResponse(ctx context.Context, body PostChatroommessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatroommessagesResponse, error) {
+	rsp, err := c.PostChatroommessages(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatroommessagesResponse(rsp)
+}
+
+// DeleteChatroommessagesIdWithResponse request returning *DeleteChatroommessagesIdResponse
+func (c *ClientWithResponses) DeleteChatroommessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatroommessagesIdResponse, error) {
+	rsp, err := c.DeleteChatroommessagesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteChatroommessagesIdResponse(rsp)
+}
+
+// GetChatroommessagesIdWithResponse request returning *GetChatroommessagesIdResponse
+func (c *ClientWithResponses) GetChatroommessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatroommessagesIdResponse, error) {
+	rsp, err := c.GetChatroommessagesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatroommessagesIdResponse(rsp)
+}
+
+// GetChatroomsWithResponse request returning *GetChatroomsResponse
+func (c *ClientWithResponses) GetChatroomsWithResponse(ctx context.Context, params *GetChatroomsParams, reqEditors ...RequestEditorFn) (*GetChatroomsResponse, error) {
+	rsp, err := c.GetChatrooms(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatroomsResponse(rsp)
+}
+
+// PostChatroomsWithBodyWithResponse request with arbitrary body returning *PostChatroomsResponse
+func (c *ClientWithResponses) PostChatroomsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatroomsResponse, error) {
+	rsp, err := c.PostChatroomsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatroomsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostChatroomsWithResponse(ctx context.Context, body PostChatroomsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatroomsResponse, error) {
+	rsp, err := c.PostChatrooms(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatroomsResponse(rsp)
+}
+
+// DeleteChatroomsIdWithResponse request returning *DeleteChatroomsIdResponse
+func (c *ClientWithResponses) DeleteChatroomsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatroomsIdResponse, error) {
+	rsp, err := c.DeleteChatroomsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteChatroomsIdResponse(rsp)
+}
+
+// GetChatroomsIdWithResponse request returning *GetChatroomsIdResponse
+func (c *ClientWithResponses) GetChatroomsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatroomsIdResponse, error) {
+	rsp, err := c.GetChatroomsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatroomsIdResponse(rsp)
+}
+
+// PutChatroomsIdWithBodyWithResponse request with arbitrary body returning *PutChatroomsIdResponse
+func (c *ClientWithResponses) PutChatroomsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChatroomsIdResponse, error) {
+	rsp, err := c.PutChatroomsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChatroomsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutChatroomsIdWithResponse(ctx context.Context, id string, body PutChatroomsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChatroomsIdResponse, error) {
+	rsp, err := c.PutChatroomsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChatroomsIdResponse(rsp)
+}
+
+// GetChatsWithResponse request returning *GetChatsResponse
+func (c *ClientWithResponses) GetChatsWithResponse(ctx context.Context, params *GetChatsParams, reqEditors ...RequestEditorFn) (*GetChatsResponse, error) {
+	rsp, err := c.GetChats(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatsResponse(rsp)
+}
+
+// PostChatsWithBodyWithResponse request with arbitrary body returning *PostChatsResponse
+func (c *ClientWithResponses) PostChatsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatsResponse, error) {
+	rsp, err := c.PostChatsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostChatsWithResponse(ctx context.Context, body PostChatsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatsResponse, error) {
+	rsp, err := c.PostChats(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatsResponse(rsp)
+}
+
+// DeleteChatsIdWithResponse request returning *DeleteChatsIdResponse
+func (c *ClientWithResponses) DeleteChatsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteChatsIdResponse, error) {
+	rsp, err := c.DeleteChatsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteChatsIdResponse(rsp)
+}
+
+// GetChatsIdWithResponse request returning *GetChatsIdResponse
+func (c *ClientWithResponses) GetChatsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetChatsIdResponse, error) {
+	rsp, err := c.GetChatsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChatsIdResponse(rsp)
+}
+
+// PutChatsIdWithBodyWithResponse request with arbitrary body returning *PutChatsIdResponse
+func (c *ClientWithResponses) PutChatsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChatsIdResponse, error) {
+	rsp, err := c.PutChatsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChatsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutChatsIdWithResponse(ctx context.Context, id string, body PutChatsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChatsIdResponse, error) {
+	rsp, err := c.PutChatsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChatsIdResponse(rsp)
+}
+
+// PostChatsIdParticipantIdsWithBodyWithResponse request with arbitrary body returning *PostChatsIdParticipantIdsResponse
+func (c *ClientWithResponses) PostChatsIdParticipantIdsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChatsIdParticipantIdsResponse, error) {
+	rsp, err := c.PostChatsIdParticipantIdsWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatsIdParticipantIdsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostChatsIdParticipantIdsWithResponse(ctx context.Context, id string, body PostChatsIdParticipantIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChatsIdParticipantIdsResponse, error) {
+	rsp, err := c.PostChatsIdParticipantIds(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChatsIdParticipantIdsResponse(rsp)
+}
+
+// DeleteChatsIdParticipantIdsParticipantIdWithResponse request returning *DeleteChatsIdParticipantIdsParticipantIdResponse
+func (c *ClientWithResponses) DeleteChatsIdParticipantIdsParticipantIdWithResponse(ctx context.Context, id string, participantId string, reqEditors ...RequestEditorFn) (*DeleteChatsIdParticipantIdsParticipantIdResponse, error) {
+	rsp, err := c.DeleteChatsIdParticipantIdsParticipantId(ctx, id, participantId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteChatsIdParticipantIdsParticipantIdResponse(rsp)
+}
+
+// PutChatsIdRoomOwnerIdWithBodyWithResponse request with arbitrary body returning *PutChatsIdRoomOwnerIdResponse
+func (c *ClientWithResponses) PutChatsIdRoomOwnerIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChatsIdRoomOwnerIdResponse, error) {
+	rsp, err := c.PutChatsIdRoomOwnerIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChatsIdRoomOwnerIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutChatsIdRoomOwnerIdWithResponse(ctx context.Context, id string, body PutChatsIdRoomOwnerIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChatsIdRoomOwnerIdResponse, error) {
+	rsp, err := c.PutChatsIdRoomOwnerId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChatsIdRoomOwnerIdResponse(rsp)
+}
+
+// GetConferencecallsWithResponse request returning *GetConferencecallsResponse
+func (c *ClientWithResponses) GetConferencecallsWithResponse(ctx context.Context, params *GetConferencecallsParams, reqEditors ...RequestEditorFn) (*GetConferencecallsResponse, error) {
+	rsp, err := c.GetConferencecalls(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConferencecallsResponse(rsp)
+}
+
+// DeleteConferencecallsIdWithResponse request returning *DeleteConferencecallsIdResponse
+func (c *ClientWithResponses) DeleteConferencecallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteConferencecallsIdResponse, error) {
+	rsp, err := c.DeleteConferencecallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteConferencecallsIdResponse(rsp)
+}
+
+// GetConferencecallsIdWithResponse request returning *GetConferencecallsIdResponse
+func (c *ClientWithResponses) GetConferencecallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetConferencecallsIdResponse, error) {
+	rsp, err := c.GetConferencecallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConferencecallsIdResponse(rsp)
+}
+
+// GetConferencesWithResponse request returning *GetConferencesResponse
+func (c *ClientWithResponses) GetConferencesWithResponse(ctx context.Context, params *GetConferencesParams, reqEditors ...RequestEditorFn) (*GetConferencesResponse, error) {
+	rsp, err := c.GetConferences(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConferencesResponse(rsp)
+}
+
+// PostConferencesWithBodyWithResponse request with arbitrary body returning *PostConferencesResponse
+func (c *ClientWithResponses) PostConferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConferencesResponse, error) {
+	rsp, err := c.PostConferencesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConferencesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostConferencesWithResponse(ctx context.Context, body PostConferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConferencesResponse, error) {
+	rsp, err := c.PostConferences(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConferencesResponse(rsp)
+}
+
+// DeleteConferencesIdWithResponse request returning *DeleteConferencesIdResponse
+func (c *ClientWithResponses) DeleteConferencesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteConferencesIdResponse, error) {
+	rsp, err := c.DeleteConferencesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteConferencesIdResponse(rsp)
+}
+
+// GetConferencesIdWithResponse request returning *GetConferencesIdResponse
+func (c *ClientWithResponses) GetConferencesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetConferencesIdResponse, error) {
+	rsp, err := c.GetConferencesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConferencesIdResponse(rsp)
+}
+
+// PutConferencesIdWithBodyWithResponse request with arbitrary body returning *PutConferencesIdResponse
+func (c *ClientWithResponses) PutConferencesIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutConferencesIdResponse, error) {
+	rsp, err := c.PutConferencesIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutConferencesIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutConferencesIdWithResponse(ctx context.Context, id string, body PutConferencesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutConferencesIdResponse, error) {
+	rsp, err := c.PutConferencesId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutConferencesIdResponse(rsp)
+}
+
+// GetConferencesIdMediaStreamWithResponse request returning *GetConferencesIdMediaStreamResponse
+func (c *ClientWithResponses) GetConferencesIdMediaStreamWithResponse(ctx context.Context, id string, params *GetConferencesIdMediaStreamParams, reqEditors ...RequestEditorFn) (*GetConferencesIdMediaStreamResponse, error) {
+	rsp, err := c.GetConferencesIdMediaStream(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConferencesIdMediaStreamResponse(rsp)
+}
+
+// PostConferencesIdRecordingStartWithResponse request returning *PostConferencesIdRecordingStartResponse
+func (c *ClientWithResponses) PostConferencesIdRecordingStartWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostConferencesIdRecordingStartResponse, error) {
+	rsp, err := c.PostConferencesIdRecordingStart(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConferencesIdRecordingStartResponse(rsp)
+}
+
+// PostConferencesIdRecordingStopWithResponse request returning *PostConferencesIdRecordingStopResponse
+func (c *ClientWithResponses) PostConferencesIdRecordingStopWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostConferencesIdRecordingStopResponse, error) {
+	rsp, err := c.PostConferencesIdRecordingStop(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConferencesIdRecordingStopResponse(rsp)
+}
+
+// PostConferencesIdTranscribeStartWithBodyWithResponse request with arbitrary body returning *PostConferencesIdTranscribeStartResponse
+func (c *ClientWithResponses) PostConferencesIdTranscribeStartWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConferencesIdTranscribeStartResponse, error) {
+	rsp, err := c.PostConferencesIdTranscribeStartWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConferencesIdTranscribeStartResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostConferencesIdTranscribeStartWithResponse(ctx context.Context, id string, body PostConferencesIdTranscribeStartJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConferencesIdTranscribeStartResponse, error) {
+	rsp, err := c.PostConferencesIdTranscribeStart(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConferencesIdTranscribeStartResponse(rsp)
+}
+
+// PostConferencesIdTranscribeStopWithResponse request returning *PostConferencesIdTranscribeStopResponse
+func (c *ClientWithResponses) PostConferencesIdTranscribeStopWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostConferencesIdTranscribeStopResponse, error) {
+	rsp, err := c.PostConferencesIdTranscribeStop(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConferencesIdTranscribeStopResponse(rsp)
 }
 
 // ParseGetAccesskeysResponse parses an HTTP response from a GetAccesskeysWithResponse call
@@ -10600,6 +15108,1080 @@ func ParsePutCampaignsIdStatusResponse(rsp *http.Response) (*PutCampaignsIdStatu
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseGetChatbotcallsResponse parses an HTTP response from a GetChatbotcallsWithResponse call
+func ParseGetChatbotcallsResponse(rsp *http.Response) (*GetChatbotcallsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatbotcallsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                      `json:"next_page_token,omitempty"`
+			Result        *[]ChatbotManagerChatbotcall `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteChatbotcallsIdResponse parses an HTTP response from a DeleteChatbotcallsIdWithResponse call
+func ParseDeleteChatbotcallsIdResponse(rsp *http.Response) (*DeleteChatbotcallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteChatbotcallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatbotManagerChatbotcall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatbotcallsIdResponse parses an HTTP response from a GetChatbotcallsIdWithResponse call
+func ParseGetChatbotcallsIdResponse(rsp *http.Response) (*GetChatbotcallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatbotcallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatbotManagerChatbotcall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatbotsResponse parses an HTTP response from a GetChatbotsWithResponse call
+func ParseGetChatbotsResponse(rsp *http.Response) (*GetChatbotsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatbotsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                  `json:"next_page_token,omitempty"`
+			Result        *[]ChatbotManagerChatbot `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostChatbotsResponse parses an HTTP response from a PostChatbotsWithResponse call
+func ParsePostChatbotsResponse(rsp *http.Response) (*PostChatbotsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostChatbotsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatbotManagerChatbot
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteChatbotsIdResponse parses an HTTP response from a DeleteChatbotsIdWithResponse call
+func ParseDeleteChatbotsIdResponse(rsp *http.Response) (*DeleteChatbotsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteChatbotsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatbotManagerChatbot
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatbotsIdResponse parses an HTTP response from a GetChatbotsIdWithResponse call
+func ParseGetChatbotsIdResponse(rsp *http.Response) (*GetChatbotsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatbotsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatbotManagerChatbot
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutChatbotsIdResponse parses an HTTP response from a PutChatbotsIdWithResponse call
+func ParsePutChatbotsIdResponse(rsp *http.Response) (*PutChatbotsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutChatbotsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatbotManagerChatbot
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatmessagesResponse parses an HTTP response from a GetChatmessagesWithResponse call
+func ParseGetChatmessagesResponse(rsp *http.Response) (*GetChatmessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatmessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                   `json:"next_page_token,omitempty"`
+			Result        *[]ChatManagerMessagechat `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostChatmessagesResponse parses an HTTP response from a PostChatmessagesWithResponse call
+func ParsePostChatmessagesResponse(rsp *http.Response) (*PostChatmessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostChatmessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerMessagechat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteChatmessagesIdResponse parses an HTTP response from a DeleteChatmessagesIdWithResponse call
+func ParseDeleteChatmessagesIdResponse(rsp *http.Response) (*DeleteChatmessagesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteChatmessagesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerMessagechat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatmessagesIdResponse parses an HTTP response from a GetChatmessagesIdWithResponse call
+func ParseGetChatmessagesIdResponse(rsp *http.Response) (*GetChatmessagesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatmessagesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerMessagechat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatroommessagesResponse parses an HTTP response from a GetChatroommessagesWithResponse call
+func ParseGetChatroommessagesResponse(rsp *http.Response) (*GetChatroommessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatroommessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                       `json:"next_page_token,omitempty"`
+			Result        *[]ChatManagerMessagechatroom `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostChatroommessagesResponse parses an HTTP response from a PostChatroommessagesWithResponse call
+func ParsePostChatroommessagesResponse(rsp *http.Response) (*PostChatroommessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostChatroommessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerMessagechatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteChatroommessagesIdResponse parses an HTTP response from a DeleteChatroommessagesIdWithResponse call
+func ParseDeleteChatroommessagesIdResponse(rsp *http.Response) (*DeleteChatroommessagesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteChatroommessagesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerMessagechatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatroommessagesIdResponse parses an HTTP response from a GetChatroommessagesIdWithResponse call
+func ParseGetChatroommessagesIdResponse(rsp *http.Response) (*GetChatroommessagesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatroommessagesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerMessagechatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatroomsResponse parses an HTTP response from a GetChatroomsWithResponse call
+func ParseGetChatroomsResponse(rsp *http.Response) (*GetChatroomsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatroomsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                `json:"next_page_token,omitempty"`
+			Result        *[]ChatManagerChatroom `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostChatroomsResponse parses an HTTP response from a PostChatroomsWithResponse call
+func ParsePostChatroomsResponse(rsp *http.Response) (*PostChatroomsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostChatroomsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteChatroomsIdResponse parses an HTTP response from a DeleteChatroomsIdWithResponse call
+func ParseDeleteChatroomsIdResponse(rsp *http.Response) (*DeleteChatroomsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteChatroomsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatroomsIdResponse parses an HTTP response from a GetChatroomsIdWithResponse call
+func ParseGetChatroomsIdResponse(rsp *http.Response) (*GetChatroomsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatroomsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutChatroomsIdResponse parses an HTTP response from a PutChatroomsIdWithResponse call
+func ParsePutChatroomsIdResponse(rsp *http.Response) (*PutChatroomsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutChatroomsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatsResponse parses an HTTP response from a GetChatsWithResponse call
+func ParseGetChatsResponse(rsp *http.Response) (*GetChatsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string            `json:"next_page_token,omitempty"`
+			Result        *[]ChatManagerChat `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostChatsResponse parses an HTTP response from a PostChatsWithResponse call
+func ParsePostChatsResponse(rsp *http.Response) (*PostChatsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostChatsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteChatsIdResponse parses an HTTP response from a DeleteChatsIdWithResponse call
+func ParseDeleteChatsIdResponse(rsp *http.Response) (*DeleteChatsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteChatsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChatsIdResponse parses an HTTP response from a GetChatsIdWithResponse call
+func ParseGetChatsIdResponse(rsp *http.Response) (*GetChatsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChatsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutChatsIdResponse parses an HTTP response from a PutChatsIdWithResponse call
+func ParsePutChatsIdResponse(rsp *http.Response) (*PutChatsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutChatsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostChatsIdParticipantIdsResponse parses an HTTP response from a PostChatsIdParticipantIdsWithResponse call
+func ParsePostChatsIdParticipantIdsResponse(rsp *http.Response) (*PostChatsIdParticipantIdsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostChatsIdParticipantIdsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteChatsIdParticipantIdsParticipantIdResponse parses an HTTP response from a DeleteChatsIdParticipantIdsParticipantIdWithResponse call
+func ParseDeleteChatsIdParticipantIdsParticipantIdResponse(rsp *http.Response) (*DeleteChatsIdParticipantIdsParticipantIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteChatsIdParticipantIdsParticipantIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutChatsIdRoomOwnerIdResponse parses an HTTP response from a PutChatsIdRoomOwnerIdWithResponse call
+func ParsePutChatsIdRoomOwnerIdResponse(rsp *http.Response) (*PutChatsIdRoomOwnerIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutChatsIdRoomOwnerIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChat
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConferencecallsResponse parses an HTTP response from a GetConferencecallsWithResponse call
+func ParseGetConferencecallsResponse(rsp *http.Response) (*GetConferencecallsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConferencecallsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                            `json:"next_page_token,omitempty"`
+			Result        *[]ConferenceManagerConferencecall `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteConferencecallsIdResponse parses an HTTP response from a DeleteConferencecallsIdWithResponse call
+func ParseDeleteConferencecallsIdResponse(rsp *http.Response) (*DeleteConferencecallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteConferencecallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConferenceManagerConferencecall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConferencecallsIdResponse parses an HTTP response from a GetConferencecallsIdWithResponse call
+func ParseGetConferencecallsIdResponse(rsp *http.Response) (*GetConferencecallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConferencecallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConferenceManagerConferencecall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConferencesResponse parses an HTTP response from a GetConferencesWithResponse call
+func ParseGetConferencesResponse(rsp *http.Response) (*GetConferencesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConferencesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                        `json:"next_page_token,omitempty"`
+			Result        *[]ConferenceManagerConference `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostConferencesResponse parses an HTTP response from a PostConferencesWithResponse call
+func ParsePostConferencesResponse(rsp *http.Response) (*PostConferencesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConferencesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConferenceManagerConference
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteConferencesIdResponse parses an HTTP response from a DeleteConferencesIdWithResponse call
+func ParseDeleteConferencesIdResponse(rsp *http.Response) (*DeleteConferencesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteConferencesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConferenceManagerConference
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConferencesIdResponse parses an HTTP response from a GetConferencesIdWithResponse call
+func ParseGetConferencesIdResponse(rsp *http.Response) (*GetConferencesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConferencesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConferenceManagerConference
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutConferencesIdResponse parses an HTTP response from a PutConferencesIdWithResponse call
+func ParsePutConferencesIdResponse(rsp *http.Response) (*PutConferencesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutConferencesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConferenceManagerConference
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConferencesIdMediaStreamResponse parses an HTTP response from a GetConferencesIdMediaStreamWithResponse call
+func ParseGetConferencesIdMediaStreamResponse(rsp *http.Response) (*GetConferencesIdMediaStreamResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConferencesIdMediaStreamResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostConferencesIdRecordingStartResponse parses an HTTP response from a PostConferencesIdRecordingStartWithResponse call
+func ParsePostConferencesIdRecordingStartResponse(rsp *http.Response) (*PostConferencesIdRecordingStartResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConferencesIdRecordingStartResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostConferencesIdRecordingStopResponse parses an HTTP response from a PostConferencesIdRecordingStopWithResponse call
+func ParsePostConferencesIdRecordingStopResponse(rsp *http.Response) (*PostConferencesIdRecordingStopResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConferencesIdRecordingStopResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostConferencesIdTranscribeStartResponse parses an HTTP response from a PostConferencesIdTranscribeStartWithResponse call
+func ParsePostConferencesIdTranscribeStartResponse(rsp *http.Response) (*PostConferencesIdTranscribeStartResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConferencesIdTranscribeStartResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostConferencesIdTranscribeStopResponse parses an HTTP response from a PostConferencesIdTranscribeStopWithResponse call
+func ParsePostConferencesIdTranscribeStopResponse(rsp *http.Response) (*PostConferencesIdTranscribeStopResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConferencesIdTranscribeStopResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

@@ -8,20 +8,20 @@ post:
         schema:
           type: object
           properties:
-            transferType:
+            transfer_type:
               $ref: '#/components/schemas/TransferManagerTransferType'
-            transfererCallID:
+            transferer_call_id:
               type: string
               description: Call ID of the transfer initiator.
-            transfereeAddresses:
+            transferee_addresses:
               type: array
               items:
                 $ref: '#/components/schemas/CommonAddress'
               description: Addresses of the transfer recipients.
           required:
-            - transferType
-            - transfererCallID
-            - transfereeAddresses
+            - transfer_type
+            - transferer_call_id
+            - transferee_addresses
   responses:
     '200':
       description: The transfer details.

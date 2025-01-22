@@ -35,7 +35,7 @@ post:
               type: string
             domainName:
               type: string
-            authTypes:
+            auth_types:
               type: array
               items:
                 $ref: '#/components/schemas/RegistrarManagerAuthType'
@@ -43,10 +43,18 @@ post:
               type: string
             password:
               type: string
-            allowedIPs:
+            allowed_ips:
               type: array
               items:
                 type: string
+          required:
+            - name
+            - detail
+            - domainName
+            - auth_types
+            - username
+            - password
+            - allowed_ips
   responses:
     '200':
       description: The created trunk details.

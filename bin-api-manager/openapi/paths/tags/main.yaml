@@ -11,6 +11,9 @@ post:
               type: string
             detail:
               type: string
+          required:
+            - name
+            - detail
   responses:
     '200':
       description: The created tag details.

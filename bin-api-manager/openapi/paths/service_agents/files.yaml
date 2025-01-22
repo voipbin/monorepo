@@ -12,6 +12,8 @@ post:
               type: string
               format: binary
               description: The file to upload.
+          required:
+            - file
   responses:
     '200':
       description: The details of the uploaded file.

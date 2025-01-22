@@ -39,6 +39,11 @@ post:
               description: The language of the transcription.
             direction:
               $$ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+          required:
+            - reference_type
+            - reference_id
+            - language
+            - direction
   responses:
     '200':
       description: The created transcribe details.

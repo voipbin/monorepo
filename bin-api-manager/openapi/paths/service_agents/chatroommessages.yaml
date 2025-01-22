@@ -16,6 +16,10 @@ post:
               type: array
                 items:
                   $ref: '#/components/schemas/ChatManagerMedia'
+          required:
+            - chatroom_id
+            - text
+            - medias
   responses:
     '200':
       description: The details of the created chatroom message.

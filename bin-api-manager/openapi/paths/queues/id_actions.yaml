@@ -21,6 +21,10 @@ put:
               type: integer
             timeout_service:
               type: integer
+          required:
+            - wait_actions
+            - timeout_wait
+            - timeout_service
   responses:
     '200':
       description: The updated queue details.

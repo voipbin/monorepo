@@ -40,6 +40,11 @@ put:
               type: string
             token:
               type: string
+          required:
+            - name
+            - detail
+            - secret
+            - token
   responses:
     '200':
       content:

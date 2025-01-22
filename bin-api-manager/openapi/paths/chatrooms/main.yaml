@@ -35,17 +35,21 @@ post:
         schema:
           type: object
           properties:
-            participant_id:
-              type: string
+            participant_ids:
               description: The ID of the participant.
+              type: array
+              items:
+                type: string
             name:
-              type: string
               description: The name of the chatroom.
+              type: string
             detail:
               type: string
               description: Additional details of the chatroom.
           required:
-            - participant_id
+            - participant_ids
+            - name
+            - detail
   responses:
     '200':
       description: The created chatroom details.

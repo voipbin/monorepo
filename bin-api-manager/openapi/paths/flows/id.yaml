@@ -34,16 +34,20 @@ put:
           type: object
           properties:
             name:
-              type: string
               description: The updated name of the flow.
-            detail:
               type: string
+            detail:
               description: The updated details of the flow.
+              type: string
             actions:
+              description: Updated list of actions associated with the flow.
               type: array
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
-              description: Updated list of actions associated with the flow.
+          required:
+            - name
+            - detail
+            - actions
   responses:
     '200':
       description: The updated flow details.

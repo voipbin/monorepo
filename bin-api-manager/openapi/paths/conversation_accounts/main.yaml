@@ -39,6 +39,12 @@ post:
               type: string
             token:
               type: string
+          required:
+            - type
+            - name
+            - detail
+            - secret
+            - token
   responses:
     '200':
       content:
