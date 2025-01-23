@@ -3062,10 +3062,12 @@ paths:
   /outdials:
     $ref: './paths/outdials/main.yaml'
 
-  # /outplans/{id}:
-  #   $ref: './paths/outplans/id.yaml'
-  # /outplans:
-  #   $ref: './paths/outplans/main.yaml'
+  /outplans/{id}/dial_info:
+    $ref: './paths/outplans/id_dial_info.yaml'
+  /outplans/{id}:
+    $ref: './paths/outplans/id.yaml'
+  /outplans:
+    $ref: './paths/outplans/main.yaml'
 
   # /providers/{id}:
   #   $ref: './paths/providers/id.yaml'

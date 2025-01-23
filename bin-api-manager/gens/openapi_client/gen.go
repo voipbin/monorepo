@@ -3319,6 +3319,84 @@ type PostOutdialsIdTargetsJSONBody struct {
 	Name         string        `json:"name"`
 }
 
+// GetOutplansParams defines parameters for GetOutplans.
+type GetOutplansParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostOutplansJSONBody defines parameters for PostOutplans.
+type PostOutplansJSONBody struct {
+	// Detail Additional details about the outplan.
+	Detail string `json:"detail"`
+
+	// DialTimeout The dial timeout in seconds.
+	DialTimeout int `json:"dial_timeout"`
+
+	// MaxTryCount0 Maximum retry count for destination 0.
+	MaxTryCount0 int `json:"max_try_count_0"`
+
+	// MaxTryCount1 Maximum retry count for destination 1.
+	MaxTryCount1 int `json:"max_try_count_1"`
+
+	// MaxTryCount2 Maximum retry count for destination 2.
+	MaxTryCount2 int `json:"max_try_count_2"`
+
+	// MaxTryCount3 Maximum retry count for destination 3.
+	MaxTryCount3 int `json:"max_try_count_3"`
+
+	// MaxTryCount4 Maximum retry count for destination 4.
+	MaxTryCount4 int `json:"max_try_count_4"`
+
+	// Name The name of the outplan.
+	Name string `json:"name"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+
+	// TryInterval The interval between retry attempts.
+	TryInterval int `json:"try_interval"`
+}
+
+// PutOutplansIdJSONBody defines parameters for PutOutplansId.
+type PutOutplansIdJSONBody struct {
+	// Detail The new detail of the outplan.
+	Detail string `json:"detail"`
+
+	// Name The new name of the outplan.
+	Name string `json:"name"`
+}
+
+// PutOutplansIdDialInfoJSONBody defines parameters for PutOutplansIdDialInfo.
+type PutOutplansIdDialInfoJSONBody struct {
+	// DialTimeout The new dial timeout in seconds.
+	DialTimeout int `json:"dial_timeout"`
+
+	// MaxTryCount0 The new maximum retry count for destination 0.
+	MaxTryCount0 int `json:"max_try_count_0"`
+
+	// MaxTryCount1 The new maximum retry count for destination 1.
+	MaxTryCount1 int `json:"max_try_count_1"`
+
+	// MaxTryCount2 The new maximum retry count for destination 2.
+	MaxTryCount2 int `json:"max_try_count_2"`
+
+	// MaxTryCount3 The new maximum retry count for destination 3.
+	MaxTryCount3 int `json:"max_try_count_3"`
+
+	// MaxTryCount4 The new maximum retry count for destination 4.
+	MaxTryCount4 int `json:"max_try_count_4"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+
+	// TryInterval The new interval between retry attempts.
+	TryInterval int `json:"try_interval"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -3510,6 +3588,15 @@ type PutOutdialsIdDataJSONRequestBody PutOutdialsIdDataJSONBody
 
 // PostOutdialsIdTargetsJSONRequestBody defines body for PostOutdialsIdTargets for application/json ContentType.
 type PostOutdialsIdTargetsJSONRequestBody PostOutdialsIdTargetsJSONBody
+
+// PostOutplansJSONRequestBody defines body for PostOutplans for application/json ContentType.
+type PostOutplansJSONRequestBody PostOutplansJSONBody
+
+// PutOutplansIdJSONRequestBody defines body for PutOutplansId for application/json ContentType.
+type PutOutplansIdJSONRequestBody PutOutplansIdJSONBody
+
+// PutOutplansIdDialInfoJSONRequestBody defines body for PutOutplansIdDialInfo for application/json ContentType.
+type PutOutplansIdDialInfoJSONRequestBody PutOutplansIdDialInfoJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -4195,6 +4282,30 @@ type ClientInterface interface {
 
 	// GetOutdialsIdTargetsTargetId request
 	GetOutdialsIdTargetsTargetId(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOutplans request
+	GetOutplans(ctx context.Context, params *GetOutplansParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostOutplansWithBody request with any body
+	PostOutplansWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostOutplans(ctx context.Context, body PostOutplansJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOutplansId request
+	DeleteOutplansId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOutplansId request
+	GetOutplansId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutOutplansIdWithBody request with any body
+	PutOutplansIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutOutplansId(ctx context.Context, id string, body PutOutplansIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutOutplansIdDialInfoWithBody request with any body
+	PutOutplansIdDialInfoWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutOutplansIdDialInfo(ctx context.Context, id string, body PutOutplansIdDialInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccesskeys(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6887,6 +6998,114 @@ func (c *Client) DeleteOutdialsIdTargetsTargetId(ctx context.Context, id string,
 
 func (c *Client) GetOutdialsIdTargetsTargetId(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOutdialsIdTargetsTargetIdRequest(c.Server, id, targetId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOutplans(ctx context.Context, params *GetOutplansParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOutplansRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostOutplansWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostOutplansRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostOutplans(ctx context.Context, body PostOutplansJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostOutplansRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOutplansId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOutplansIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOutplansId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOutplansIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutplansIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutplansIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutplansId(ctx context.Context, id string, body PutOutplansIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutplansIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutplansIdDialInfoWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutplansIdDialInfoRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutplansIdDialInfo(ctx context.Context, id string, body PutOutplansIdDialInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutplansIdDialInfoRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -14120,6 +14339,273 @@ func NewGetOutdialsIdTargetsTargetIdRequest(server string, id string, targetId s
 	return req, nil
 }
 
+// NewGetOutplansRequest generates requests for GetOutplans
+func NewGetOutplansRequest(server string, params *GetOutplansParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outplans")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostOutplansRequest calls the generic PostOutplans builder with application/json body
+func NewPostOutplansRequest(server string, body PostOutplansJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostOutplansRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostOutplansRequestWithBody generates requests for PostOutplans with any type of body
+func NewPostOutplansRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outplans")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOutplansIdRequest generates requests for DeleteOutplansId
+func NewDeleteOutplansIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outplans/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOutplansIdRequest generates requests for GetOutplansId
+func NewGetOutplansIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outplans/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutOutplansIdRequest calls the generic PutOutplansId builder with application/json body
+func NewPutOutplansIdRequest(server string, id string, body PutOutplansIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutOutplansIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutOutplansIdRequestWithBody generates requests for PutOutplansId with any type of body
+func NewPutOutplansIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outplans/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutOutplansIdDialInfoRequest calls the generic PutOutplansIdDialInfo builder with application/json body
+func NewPutOutplansIdDialInfoRequest(server string, id string, body PutOutplansIdDialInfoJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutOutplansIdDialInfoRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutOutplansIdDialInfoRequestWithBody generates requests for PutOutplansIdDialInfo with any type of body
+func NewPutOutplansIdDialInfoRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outplans/%s/dial_info", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -14774,6 +15260,30 @@ type ClientWithResponsesInterface interface {
 
 	// GetOutdialsIdTargetsTargetIdWithResponse request
 	GetOutdialsIdTargetsTargetIdWithResponse(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*GetOutdialsIdTargetsTargetIdResponse, error)
+
+	// GetOutplansWithResponse request
+	GetOutplansWithResponse(ctx context.Context, params *GetOutplansParams, reqEditors ...RequestEditorFn) (*GetOutplansResponse, error)
+
+	// PostOutplansWithBodyWithResponse request with any body
+	PostOutplansWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOutplansResponse, error)
+
+	PostOutplansWithResponse(ctx context.Context, body PostOutplansJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOutplansResponse, error)
+
+	// DeleteOutplansIdWithResponse request
+	DeleteOutplansIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteOutplansIdResponse, error)
+
+	// GetOutplansIdWithResponse request
+	GetOutplansIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetOutplansIdResponse, error)
+
+	// PutOutplansIdWithBodyWithResponse request with any body
+	PutOutplansIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutplansIdResponse, error)
+
+	PutOutplansIdWithResponse(ctx context.Context, id string, body PutOutplansIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutplansIdResponse, error)
+
+	// PutOutplansIdDialInfoWithBodyWithResponse request with any body
+	PutOutplansIdDialInfoWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutplansIdDialInfoResponse, error)
+
+	PutOutplansIdDialInfoWithResponse(ctx context.Context, id string, body PutOutplansIdDialInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutplansIdDialInfoResponse, error)
 }
 
 type GetAccesskeysResponse struct {
@@ -18444,6 +18954,142 @@ func (r GetOutdialsIdTargetsTargetIdResponse) StatusCode() int {
 	return 0
 }
 
+type GetOutplansResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                   `json:"next_page_token,omitempty"`
+		Result        *[]CampaignManagerOutplan `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOutplansResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOutplansResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostOutplansResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignManagerOutplan
+}
+
+// Status returns HTTPResponse.Status
+func (r PostOutplansResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostOutplansResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteOutplansIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignManagerOutplan
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOutplansIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOutplansIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOutplansIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignManagerOutplan
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOutplansIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOutplansIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutOutplansIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignManagerOutplan
+}
+
+// Status returns HTTPResponse.Status
+func (r PutOutplansIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutOutplansIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutOutplansIdDialInfoResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignManagerOutplan
+}
+
+// Status returns HTTPResponse.Status
+func (r PutOutplansIdDialInfoResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutOutplansIdDialInfoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccesskeysWithResponse request returning *GetAccesskeysResponse
 func (c *ClientWithResponses) GetAccesskeysWithResponse(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*GetAccesskeysResponse, error) {
 	rsp, err := c.GetAccesskeys(ctx, params, reqEditors...)
@@ -20404,6 +21050,84 @@ func (c *ClientWithResponses) GetOutdialsIdTargetsTargetIdWithResponse(ctx conte
 		return nil, err
 	}
 	return ParseGetOutdialsIdTargetsTargetIdResponse(rsp)
+}
+
+// GetOutplansWithResponse request returning *GetOutplansResponse
+func (c *ClientWithResponses) GetOutplansWithResponse(ctx context.Context, params *GetOutplansParams, reqEditors ...RequestEditorFn) (*GetOutplansResponse, error) {
+	rsp, err := c.GetOutplans(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOutplansResponse(rsp)
+}
+
+// PostOutplansWithBodyWithResponse request with arbitrary body returning *PostOutplansResponse
+func (c *ClientWithResponses) PostOutplansWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOutplansResponse, error) {
+	rsp, err := c.PostOutplansWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostOutplansResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostOutplansWithResponse(ctx context.Context, body PostOutplansJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOutplansResponse, error) {
+	rsp, err := c.PostOutplans(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostOutplansResponse(rsp)
+}
+
+// DeleteOutplansIdWithResponse request returning *DeleteOutplansIdResponse
+func (c *ClientWithResponses) DeleteOutplansIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteOutplansIdResponse, error) {
+	rsp, err := c.DeleteOutplansId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOutplansIdResponse(rsp)
+}
+
+// GetOutplansIdWithResponse request returning *GetOutplansIdResponse
+func (c *ClientWithResponses) GetOutplansIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetOutplansIdResponse, error) {
+	rsp, err := c.GetOutplansId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOutplansIdResponse(rsp)
+}
+
+// PutOutplansIdWithBodyWithResponse request with arbitrary body returning *PutOutplansIdResponse
+func (c *ClientWithResponses) PutOutplansIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutplansIdResponse, error) {
+	rsp, err := c.PutOutplansIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutplansIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutOutplansIdWithResponse(ctx context.Context, id string, body PutOutplansIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutplansIdResponse, error) {
+	rsp, err := c.PutOutplansId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutplansIdResponse(rsp)
+}
+
+// PutOutplansIdDialInfoWithBodyWithResponse request with arbitrary body returning *PutOutplansIdDialInfoResponse
+func (c *ClientWithResponses) PutOutplansIdDialInfoWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutplansIdDialInfoResponse, error) {
+	rsp, err := c.PutOutplansIdDialInfoWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutplansIdDialInfoResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutOutplansIdDialInfoWithResponse(ctx context.Context, id string, body PutOutplansIdDialInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutplansIdDialInfoResponse, error) {
+	rsp, err := c.PutOutplansIdDialInfo(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutplansIdDialInfoResponse(rsp)
 }
 
 // ParseGetAccesskeysResponse parses an HTTP response from a GetAccesskeysWithResponse call
@@ -24559,6 +25283,166 @@ func ParseGetOutdialsIdTargetsTargetIdResponse(rsp *http.Response) (*GetOutdials
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest OutdialManagerOutdialtarget
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOutplansResponse parses an HTTP response from a GetOutplansWithResponse call
+func ParseGetOutplansResponse(rsp *http.Response) (*GetOutplansResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOutplansResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                   `json:"next_page_token,omitempty"`
+			Result        *[]CampaignManagerOutplan `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostOutplansResponse parses an HTTP response from a PostOutplansWithResponse call
+func ParsePostOutplansResponse(rsp *http.Response) (*PostOutplansResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostOutplansResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignManagerOutplan
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOutplansIdResponse parses an HTTP response from a DeleteOutplansIdWithResponse call
+func ParseDeleteOutplansIdResponse(rsp *http.Response) (*DeleteOutplansIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOutplansIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignManagerOutplan
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOutplansIdResponse parses an HTTP response from a GetOutplansIdWithResponse call
+func ParseGetOutplansIdResponse(rsp *http.Response) (*GetOutplansIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOutplansIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignManagerOutplan
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutOutplansIdResponse parses an HTTP response from a PutOutplansIdWithResponse call
+func ParsePutOutplansIdResponse(rsp *http.Response) (*PutOutplansIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutOutplansIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignManagerOutplan
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutOutplansIdDialInfoResponse parses an HTTP response from a PutOutplansIdDialInfoWithResponse call
+func ParsePutOutplansIdDialInfoResponse(rsp *http.Response) (*PutOutplansIdDialInfoResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutOutplansIdDialInfoResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignManagerOutplan
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

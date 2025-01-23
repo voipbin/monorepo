@@ -3318,6 +3318,84 @@ type PostOutdialsIdTargetsJSONBody struct {
 	Name         string        `json:"name"`
 }
 
+// GetOutplansParams defines parameters for GetOutplans.
+type GetOutplansParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostOutplansJSONBody defines parameters for PostOutplans.
+type PostOutplansJSONBody struct {
+	// Detail Additional details about the outplan.
+	Detail string `json:"detail"`
+
+	// DialTimeout The dial timeout in seconds.
+	DialTimeout int `json:"dial_timeout"`
+
+	// MaxTryCount0 Maximum retry count for destination 0.
+	MaxTryCount0 int `json:"max_try_count_0"`
+
+	// MaxTryCount1 Maximum retry count for destination 1.
+	MaxTryCount1 int `json:"max_try_count_1"`
+
+	// MaxTryCount2 Maximum retry count for destination 2.
+	MaxTryCount2 int `json:"max_try_count_2"`
+
+	// MaxTryCount3 Maximum retry count for destination 3.
+	MaxTryCount3 int `json:"max_try_count_3"`
+
+	// MaxTryCount4 Maximum retry count for destination 4.
+	MaxTryCount4 int `json:"max_try_count_4"`
+
+	// Name The name of the outplan.
+	Name string `json:"name"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+
+	// TryInterval The interval between retry attempts.
+	TryInterval int `json:"try_interval"`
+}
+
+// PutOutplansIdJSONBody defines parameters for PutOutplansId.
+type PutOutplansIdJSONBody struct {
+	// Detail The new detail of the outplan.
+	Detail string `json:"detail"`
+
+	// Name The new name of the outplan.
+	Name string `json:"name"`
+}
+
+// PutOutplansIdDialInfoJSONBody defines parameters for PutOutplansIdDialInfo.
+type PutOutplansIdDialInfoJSONBody struct {
+	// DialTimeout The new dial timeout in seconds.
+	DialTimeout int `json:"dial_timeout"`
+
+	// MaxTryCount0 The new maximum retry count for destination 0.
+	MaxTryCount0 int `json:"max_try_count_0"`
+
+	// MaxTryCount1 The new maximum retry count for destination 1.
+	MaxTryCount1 int `json:"max_try_count_1"`
+
+	// MaxTryCount2 The new maximum retry count for destination 2.
+	MaxTryCount2 int `json:"max_try_count_2"`
+
+	// MaxTryCount3 The new maximum retry count for destination 3.
+	MaxTryCount3 int `json:"max_try_count_3"`
+
+	// MaxTryCount4 The new maximum retry count for destination 4.
+	MaxTryCount4 int `json:"max_try_count_4"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+
+	// TryInterval The new interval between retry attempts.
+	TryInterval int `json:"try_interval"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -3509,6 +3587,15 @@ type PutOutdialsIdDataJSONRequestBody PutOutdialsIdDataJSONBody
 
 // PostOutdialsIdTargetsJSONRequestBody defines body for PostOutdialsIdTargets for application/json ContentType.
 type PostOutdialsIdTargetsJSONRequestBody PostOutdialsIdTargetsJSONBody
+
+// PostOutplansJSONRequestBody defines body for PostOutplans for application/json ContentType.
+type PostOutplansJSONRequestBody PostOutplansJSONBody
+
+// PutOutplansIdJSONRequestBody defines body for PutOutplansId for application/json ContentType.
+type PutOutplansIdJSONRequestBody PutOutplansIdJSONBody
+
+// PutOutplansIdDialInfoJSONRequestBody defines body for PutOutplansIdDialInfo for application/json ContentType.
+type PutOutplansIdDialInfoJSONRequestBody PutOutplansIdDialInfoJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -3998,6 +4085,24 @@ type ServerInterface interface {
 	// Retrieve an outdial target by its ID.
 	// (GET /outdials/{id}/targets/{target_id})
 	GetOutdialsIdTargetsTargetId(c *gin.Context, id string, targetId string)
+	// Retrieve a list of outplans.
+	// (GET /outplans)
+	GetOutplans(c *gin.Context, params GetOutplansParams)
+	// Create a new outplan.
+	// (POST /outplans)
+	PostOutplans(c *gin.Context)
+	// Delete an existing outplan.
+	// (DELETE /outplans/{id})
+	DeleteOutplansId(c *gin.Context, id string)
+	// Retrieve outplan details by ID.
+	// (GET /outplans/{id})
+	GetOutplansId(c *gin.Context, id string)
+	// Update dial information of an existing outplan.
+	// (PUT /outplans/{id})
+	PutOutplansId(c *gin.Context, id string)
+	// Update dial information of an existing outplan.
+	// (PUT /outplans/{id}/dial_info)
+	PutOutplansIdDialInfo(c *gin.Context, id string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -8062,6 +8167,149 @@ func (siw *ServerInterfaceWrapper) GetOutdialsIdTargetsTargetId(c *gin.Context) 
 	siw.Handler.GetOutdialsIdTargetsTargetId(c, id, targetId)
 }
 
+// GetOutplans operation middleware
+func (siw *ServerInterfaceWrapper) GetOutplans(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetOutplansParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetOutplans(c, params)
+}
+
+// PostOutplans operation middleware
+func (siw *ServerInterfaceWrapper) PostOutplans(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostOutplans(c)
+}
+
+// DeleteOutplansId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteOutplansId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteOutplansId(c, id)
+}
+
+// GetOutplansId operation middleware
+func (siw *ServerInterfaceWrapper) GetOutplansId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetOutplansId(c, id)
+}
+
+// PutOutplansId operation middleware
+func (siw *ServerInterfaceWrapper) PutOutplansId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutOutplansId(c, id)
+}
+
+// PutOutplansIdDialInfo operation middleware
+func (siw *ServerInterfaceWrapper) PutOutplansIdDialInfo(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutOutplansIdDialInfo(c, id)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -8251,6 +8499,12 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/outdials/:id/targets", wrapper.PostOutdialsIdTargets)
 	router.DELETE(options.BaseURL+"/outdials/:id/targets/:target_id", wrapper.DeleteOutdialsIdTargetsTargetId)
 	router.GET(options.BaseURL+"/outdials/:id/targets/:target_id", wrapper.GetOutdialsIdTargetsTargetId)
+	router.GET(options.BaseURL+"/outplans", wrapper.GetOutplans)
+	router.POST(options.BaseURL+"/outplans", wrapper.PostOutplans)
+	router.DELETE(options.BaseURL+"/outplans/:id", wrapper.DeleteOutplansId)
+	router.GET(options.BaseURL+"/outplans/:id", wrapper.GetOutplansId)
+	router.PUT(options.BaseURL+"/outplans/:id", wrapper.PutOutplansId)
+	router.PUT(options.BaseURL+"/outplans/:id/dial_info", wrapper.PutOutplansIdDialInfo)
 }
 
 type GetAccesskeysRequestObject struct {
@@ -11237,6 +11491,114 @@ func (response GetOutdialsIdTargetsTargetId200JSONResponse) VisitGetOutdialsIdTa
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetOutplansRequestObject struct {
+	Params GetOutplansParams
+}
+
+type GetOutplansResponseObject interface {
+	VisitGetOutplansResponse(w http.ResponseWriter) error
+}
+
+type GetOutplans200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                   `json:"next_page_token,omitempty"`
+	Result        *[]CampaignManagerOutplan `json:"result,omitempty"`
+}
+
+func (response GetOutplans200JSONResponse) VisitGetOutplansResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostOutplansRequestObject struct {
+	Body *PostOutplansJSONRequestBody
+}
+
+type PostOutplansResponseObject interface {
+	VisitPostOutplansResponse(w http.ResponseWriter) error
+}
+
+type PostOutplans200JSONResponse CampaignManagerOutplan
+
+func (response PostOutplans200JSONResponse) VisitPostOutplansResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteOutplansIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteOutplansIdResponseObject interface {
+	VisitDeleteOutplansIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteOutplansId200JSONResponse CampaignManagerOutplan
+
+func (response DeleteOutplansId200JSONResponse) VisitDeleteOutplansIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutplansIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetOutplansIdResponseObject interface {
+	VisitGetOutplansIdResponse(w http.ResponseWriter) error
+}
+
+type GetOutplansId200JSONResponse CampaignManagerOutplan
+
+func (response GetOutplansId200JSONResponse) VisitGetOutplansIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutplansIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutOutplansIdJSONRequestBody
+}
+
+type PutOutplansIdResponseObject interface {
+	VisitPutOutplansIdResponse(w http.ResponseWriter) error
+}
+
+type PutOutplansId200JSONResponse CampaignManagerOutplan
+
+func (response PutOutplansId200JSONResponse) VisitPutOutplansIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutplansIdDialInfoRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutOutplansIdDialInfoJSONRequestBody
+}
+
+type PutOutplansIdDialInfoResponseObject interface {
+	VisitPutOutplansIdDialInfoResponse(w http.ResponseWriter) error
+}
+
+type PutOutplansIdDialInfo200JSONResponse CampaignManagerOutplan
+
+func (response PutOutplansIdDialInfo200JSONResponse) VisitPutOutplansIdDialInfoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get list of accesskeys
@@ -11725,6 +12087,24 @@ type StrictServerInterface interface {
 	// Retrieve an outdial target by its ID.
 	// (GET /outdials/{id}/targets/{target_id})
 	GetOutdialsIdTargetsTargetId(ctx context.Context, request GetOutdialsIdTargetsTargetIdRequestObject) (GetOutdialsIdTargetsTargetIdResponseObject, error)
+	// Retrieve a list of outplans.
+	// (GET /outplans)
+	GetOutplans(ctx context.Context, request GetOutplansRequestObject) (GetOutplansResponseObject, error)
+	// Create a new outplan.
+	// (POST /outplans)
+	PostOutplans(ctx context.Context, request PostOutplansRequestObject) (PostOutplansResponseObject, error)
+	// Delete an existing outplan.
+	// (DELETE /outplans/{id})
+	DeleteOutplansId(ctx context.Context, request DeleteOutplansIdRequestObject) (DeleteOutplansIdResponseObject, error)
+	// Retrieve outplan details by ID.
+	// (GET /outplans/{id})
+	GetOutplansId(ctx context.Context, request GetOutplansIdRequestObject) (GetOutplansIdResponseObject, error)
+	// Update dial information of an existing outplan.
+	// (PUT /outplans/{id})
+	PutOutplansId(ctx context.Context, request PutOutplansIdRequestObject) (PutOutplansIdResponseObject, error)
+	// Update dial information of an existing outplan.
+	// (PUT /outplans/{id}/dial_info)
+	PutOutplansIdDialInfo(ctx context.Context, request PutOutplansIdDialInfoRequestObject) (PutOutplansIdDialInfoResponseObject, error)
 }
 
 type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
@@ -16573,6 +16953,190 @@ func (sh *strictHandler) GetOutdialsIdTargetsTargetId(ctx *gin.Context, id strin
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetOutdialsIdTargetsTargetIdResponseObject); ok {
 		if err := validResponse.VisitGetOutdialsIdTargetsTargetIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOutplans operation middleware
+func (sh *strictHandler) GetOutplans(ctx *gin.Context, params GetOutplansParams) {
+	var request GetOutplansRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOutplans(ctx, request.(GetOutplansRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOutplans")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetOutplansResponseObject); ok {
+		if err := validResponse.VisitGetOutplansResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostOutplans operation middleware
+func (sh *strictHandler) PostOutplans(ctx *gin.Context) {
+	var request PostOutplansRequestObject
+
+	var body PostOutplansJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostOutplans(ctx, request.(PostOutplansRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostOutplans")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostOutplansResponseObject); ok {
+		if err := validResponse.VisitPostOutplansResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteOutplansId operation middleware
+func (sh *strictHandler) DeleteOutplansId(ctx *gin.Context, id string) {
+	var request DeleteOutplansIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteOutplansId(ctx, request.(DeleteOutplansIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteOutplansId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteOutplansIdResponseObject); ok {
+		if err := validResponse.VisitDeleteOutplansIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOutplansId operation middleware
+func (sh *strictHandler) GetOutplansId(ctx *gin.Context, id string) {
+	var request GetOutplansIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOutplansId(ctx, request.(GetOutplansIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOutplansId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetOutplansIdResponseObject); ok {
+		if err := validResponse.VisitGetOutplansIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutOutplansId operation middleware
+func (sh *strictHandler) PutOutplansId(ctx *gin.Context, id string) {
+	var request PutOutplansIdRequestObject
+
+	request.Id = id
+
+	var body PutOutplansIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutOutplansId(ctx, request.(PutOutplansIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutOutplansId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutOutplansIdResponseObject); ok {
+		if err := validResponse.VisitPutOutplansIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutOutplansIdDialInfo operation middleware
+func (sh *strictHandler) PutOutplansIdDialInfo(ctx *gin.Context, id string) {
+	var request PutOutplansIdDialInfoRequestObject
+
+	request.Id = id
+
+	var body PutOutplansIdDialInfoJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutOutplansIdDialInfo(ctx, request.(PutOutplansIdDialInfoRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutOutplansIdDialInfo")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutOutplansIdDialInfoResponseObject); ok {
+		if err := validResponse.VisitPutOutplansIdDialInfoResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

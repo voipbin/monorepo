@@ -51,39 +51,15 @@ put:
         schema:
           type: object
           properties:
-            source:
-              $ref: '#/components/schemas/CommonAddress'
-              description: The new source address.
-            dial_timeout:
-              type: integer
-              description: The new dial timeout in seconds.
-            try_interval:
-              type: integer
-              description: The new interval between retry attempts.
-            max_try_count_0:
-              type: integer
-              description: The new maximum retry count for destination 0.
-            max_try_count_1:
-              type: integer
-              description: The new maximum retry count for destination 1.
-            max_try_count_2:
-              type: integer
-              description: The new maximum retry count for destination 2.
-            max_try_count_3:
-              type: integer
-              description: The new maximum retry count for destination 3.
-            max_try_count_4:
-              type: integer
-              description: The new maximum retry count for destination 4.
+            name:
+              type: string
+              description: The new name of the outplan.
+            detail:
+              type: string
+              description: The new detail of the outplan.
           required:
-            - source
-            - dial_timeout
-            - try_interval
-            - max_try_count_0
-            - max_try_count_1
-            - max_try_count_2
-            - max_try_count_3
-            - max_try_count_4
+            - name
+            - detail
   responses:
     '200':
       description: The updated outplan with new dial information.
