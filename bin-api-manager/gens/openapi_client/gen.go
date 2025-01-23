@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for AgentManagerAgentPermission.
@@ -2949,6 +2950,311 @@ type PostConferencesIdTranscribeStartJSONBody struct {
 	Language string `json:"language"`
 }
 
+// GetConversationAccountsParams defines parameters for GetConversationAccounts.
+type GetConversationAccountsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostConversationAccountsJSONBody defines parameters for PostConversationAccounts.
+type PostConversationAccountsJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+	Secret string `json:"secret"`
+	Token  string `json:"token"`
+
+	// Type Type of the account.
+	Type ConversationManagerAccountType `json:"type"`
+}
+
+// PutConversationAccountsIdJSONBody defines parameters for PutConversationAccountsId.
+type PutConversationAccountsIdJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+	Secret string `json:"secret"`
+	Token  string `json:"token"`
+}
+
+// GetConversationsParams defines parameters for GetConversations.
+type GetConversationsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PutConversationsIdJSONBody defines parameters for PutConversationsId.
+type PutConversationsIdJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+}
+
+// GetConversationsIdMessagesParams defines parameters for GetConversationsIdMessages.
+type GetConversationsIdMessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostConversationsIdMessagesJSONBody defines parameters for PostConversationsIdMessages.
+type PostConversationsIdMessagesJSONBody struct {
+	Medias []ConversationManagerMedia `json:"medias"`
+
+	// Text The message text.
+	Text string `json:"text"`
+}
+
+// PutCustomerJSONBody defines parameters for PutCustomer.
+type PutCustomerJSONBody struct {
+	// Address The customer's address.
+	Address string `json:"address"`
+
+	// Detail Additional details about the customer.
+	Detail string `json:"detail"`
+
+	// Email The customer's email address.
+	Email string `json:"email"`
+
+	// Name The new name of the customer.
+	Name string `json:"name"`
+
+	// PhoneNumber The customer's phone number.
+	PhoneNumber string `json:"phone_number"`
+
+	// WebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+	WebhookMethod CustomerManagerCustomerWebhookMethod `json:"webhook_method"`
+
+	// WebhookUri Webhook URI.
+	WebhookUri string `json:"webhook_uri"`
+}
+
+// PutCustomerBillingAccountIdJSONBody defines parameters for PutCustomerBillingAccountId.
+type PutCustomerBillingAccountIdJSONBody struct {
+	// BillingAccountId The new billing account ID for the customer.
+	BillingAccountId string `json:"billing_account_id"`
+}
+
+// GetCustomersParams defines parameters for GetCustomers.
+type GetCustomersParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostCustomersJSONBody defines parameters for PostCustomers.
+type PostCustomersJSONBody struct {
+	Address     string `json:"address"`
+	Detail      string `json:"detail"`
+	Email       string `json:"email"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phone_number"`
+
+	// WebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+	WebhookMethod CustomerManagerCustomerWebhookMethod `json:"webhook_method"`
+	WebhookUri    string                               `json:"webhook_uri"`
+}
+
+// PutCustomersIdJSONBody defines parameters for PutCustomersId.
+type PutCustomersIdJSONBody struct {
+	Address     string `json:"address"`
+	Detail      string `json:"detail"`
+	Email       string `json:"email"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phone_number"`
+
+	// WebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+	WebhookMethod CustomerManagerCustomerWebhookMethod `json:"webhook_method"`
+	WebhookUri    string                               `json:"webhook_uri"`
+}
+
+// PutCustomersIdBillingAccountIdJSONBody defines parameters for PutCustomersIdBillingAccountId.
+type PutCustomersIdBillingAccountIdJSONBody struct {
+	BillingAccountId string `json:"billing_account_id"`
+}
+
+// GetExtensionsParams defines parameters for GetExtensions.
+type GetExtensionsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostExtensionsJSONBody defines parameters for PostExtensions.
+type PostExtensionsJSONBody struct {
+	Detail    string `json:"detail"`
+	Extension string `json:"extension"`
+	Name      string `json:"name"`
+	Password  string `json:"password"`
+}
+
+// PutExtensionsIdJSONBody defines parameters for PutExtensionsId.
+type PutExtensionsIdJSONBody struct {
+	Detail   string `json:"detail"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
+// GetFilesParams defines parameters for GetFiles.
+type GetFilesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostFilesMultipartBody defines parameters for PostFiles.
+type PostFilesMultipartBody struct {
+	// File The file to be uploaded.
+	File openapi_types.File `json:"file"`
+}
+
+// GetFlowsParams defines parameters for GetFlows.
+type GetFlowsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostFlowsJSONBody defines parameters for PostFlows.
+type PostFlowsJSONBody struct {
+	// Actions List of actions associated with the flow.
+	Actions []FlowManagerAction `json:"actions"`
+
+	// Detail Detailed information about the flow.
+	Detail string `json:"detail"`
+
+	// Name The name of the flow.
+	Name string `json:"name"`
+}
+
+// PutFlowsIdJSONBody defines parameters for PutFlowsId.
+type PutFlowsIdJSONBody struct {
+	// Actions Updated list of actions associated with the flow.
+	Actions []FlowManagerAction `json:"actions"`
+
+	// Detail The updated details of the flow.
+	Detail string `json:"detail"`
+
+	// Name The updated name of the flow.
+	Name string `json:"name"`
+}
+
+// GetGroupcallsParams defines parameters for GetGroupcalls.
+type GetGroupcallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostGroupcallsJSONBody defines parameters for PostGroupcalls.
+type PostGroupcallsJSONBody struct {
+	Actions []FlowManagerAction `json:"actions"`
+
+	// AnswerMethod Method to handle answered calls
+	AnswerMethod CallManagerGroupcallAnswerMethod `json:"answer_method"`
+	Destinations []CommonAddress                  `json:"destinations"`
+	FlowId       string                           `json:"flow_id"`
+
+	// RingMethod Method used for dialing
+	RingMethod CallManagerGroupcallRingMethod `json:"ring_method"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+}
+
+// GetMessagesParams defines parameters for GetMessages.
+type GetMessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostMessagesJSONBody defines parameters for PostMessages.
+type PostMessagesJSONBody struct {
+	// Destinations List of destinations for the message.
+	Destinations []CommonAddress `json:"destinations"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+
+	// Text The content of the message.
+	Text string `json:"text"`
+}
+
+// GetNumbersParams defines parameters for GetNumbers.
+type GetNumbersParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostNumbersJSONBody defines parameters for PostNumbers.
+type PostNumbersJSONBody struct {
+	// CallFlowId The ID of the call flow.
+	CallFlowId string `json:"call_flow_id"`
+
+	// Detail Additional details about the number.
+	Detail string `json:"detail"`
+
+	// MessageFlowId The ID of the message flow.
+	MessageFlowId string `json:"message_flow_id"`
+
+	// Name The name of the number.
+	Name string `json:"name"`
+
+	// Number The phone number.
+	Number string `json:"number"`
+}
+
+// PostNumbersRenewJSONBody defines parameters for PostNumbersRenew.
+type PostNumbersRenewJSONBody struct {
+	// TmRenew The timestamp for renewing the number.
+	TmRenew string `json:"tm_renew"`
+}
+
+// PutNumbersIdJSONBody defines parameters for PutNumbersId.
+type PutNumbersIdJSONBody struct {
+	// CallFlowId The ID of the updated call flow.
+	CallFlowId string `json:"call_flow_id"`
+
+	// Detail Updated details for the number.
+	Detail string `json:"detail"`
+
+	// MessageFlowId The ID of the updated message flow.
+	MessageFlowId string `json:"message_flow_id"`
+
+	// Name The updated name of the number.
+	Name string `json:"name"`
+}
+
+// PutNumbersIdFlowIdsJSONBody defines parameters for PutNumbersIdFlowIds.
+type PutNumbersIdFlowIdsJSONBody struct {
+	// CallFlowId The ID of the updated call flow.
+	CallFlowId string `json:"call_flow_id"`
+
+	// MessageFlowId The ID of the updated message flow.
+	MessageFlowId string `json:"message_flow_id"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -3065,6 +3371,66 @@ type PutConferencesIdJSONRequestBody PutConferencesIdJSONBody
 
 // PostConferencesIdTranscribeStartJSONRequestBody defines body for PostConferencesIdTranscribeStart for application/json ContentType.
 type PostConferencesIdTranscribeStartJSONRequestBody PostConferencesIdTranscribeStartJSONBody
+
+// PostConversationAccountsJSONRequestBody defines body for PostConversationAccounts for application/json ContentType.
+type PostConversationAccountsJSONRequestBody PostConversationAccountsJSONBody
+
+// PutConversationAccountsIdJSONRequestBody defines body for PutConversationAccountsId for application/json ContentType.
+type PutConversationAccountsIdJSONRequestBody PutConversationAccountsIdJSONBody
+
+// PutConversationsIdJSONRequestBody defines body for PutConversationsId for application/json ContentType.
+type PutConversationsIdJSONRequestBody PutConversationsIdJSONBody
+
+// PostConversationsIdMessagesJSONRequestBody defines body for PostConversationsIdMessages for application/json ContentType.
+type PostConversationsIdMessagesJSONRequestBody PostConversationsIdMessagesJSONBody
+
+// PutCustomerJSONRequestBody defines body for PutCustomer for application/json ContentType.
+type PutCustomerJSONRequestBody PutCustomerJSONBody
+
+// PutCustomerBillingAccountIdJSONRequestBody defines body for PutCustomerBillingAccountId for application/json ContentType.
+type PutCustomerBillingAccountIdJSONRequestBody PutCustomerBillingAccountIdJSONBody
+
+// PostCustomersJSONRequestBody defines body for PostCustomers for application/json ContentType.
+type PostCustomersJSONRequestBody PostCustomersJSONBody
+
+// PutCustomersIdJSONRequestBody defines body for PutCustomersId for application/json ContentType.
+type PutCustomersIdJSONRequestBody PutCustomersIdJSONBody
+
+// PutCustomersIdBillingAccountIdJSONRequestBody defines body for PutCustomersIdBillingAccountId for application/json ContentType.
+type PutCustomersIdBillingAccountIdJSONRequestBody PutCustomersIdBillingAccountIdJSONBody
+
+// PostExtensionsJSONRequestBody defines body for PostExtensions for application/json ContentType.
+type PostExtensionsJSONRequestBody PostExtensionsJSONBody
+
+// PutExtensionsIdJSONRequestBody defines body for PutExtensionsId for application/json ContentType.
+type PutExtensionsIdJSONRequestBody PutExtensionsIdJSONBody
+
+// PostFilesMultipartRequestBody defines body for PostFiles for multipart/form-data ContentType.
+type PostFilesMultipartRequestBody PostFilesMultipartBody
+
+// PostFlowsJSONRequestBody defines body for PostFlows for application/json ContentType.
+type PostFlowsJSONRequestBody PostFlowsJSONBody
+
+// PutFlowsIdJSONRequestBody defines body for PutFlowsId for application/json ContentType.
+type PutFlowsIdJSONRequestBody PutFlowsIdJSONBody
+
+// PostGroupcallsJSONRequestBody defines body for PostGroupcalls for application/json ContentType.
+type PostGroupcallsJSONRequestBody PostGroupcallsJSONBody
+
+// PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
+type PostMessagesJSONRequestBody PostMessagesJSONBody
+
+// PostNumbersJSONRequestBody defines body for PostNumbers for application/json ContentType.
+type PostNumbersJSONRequestBody PostNumbersJSONBody
+
+// PostNumbersRenewJSONRequestBody defines body for PostNumbersRenew for application/json ContentType.
+type PostNumbersRenewJSONRequestBody PostNumbersRenewJSONBody
+
+// PutNumbersIdJSONRequestBody defines body for PutNumbersId for application/json ContentType.
+type PutNumbersIdJSONRequestBody PutNumbersIdJSONBody
+
+// PutNumbersIdFlowIdsJSONRequestBody defines body for PutNumbersIdFlowIds for application/json ContentType.
+type PutNumbersIdFlowIdsJSONRequestBody PutNumbersIdFlowIdsJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -3519,6 +3885,194 @@ type ClientInterface interface {
 
 	// PostConferencesIdTranscribeStop request
 	PostConferencesIdTranscribeStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConversationAccounts request
+	GetConversationAccounts(ctx context.Context, params *GetConversationAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostConversationAccountsWithBody request with any body
+	PostConversationAccountsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostConversationAccounts(ctx context.Context, body PostConversationAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteConversationAccountsId request
+	DeleteConversationAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConversationAccountsId request
+	GetConversationAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutConversationAccountsIdWithBody request with any body
+	PutConversationAccountsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutConversationAccountsId(ctx context.Context, id string, body PutConversationAccountsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConversations request
+	GetConversations(ctx context.Context, params *GetConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConversationsId request
+	GetConversationsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutConversationsIdWithBody request with any body
+	PutConversationsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutConversationsId(ctx context.Context, id string, body PutConversationsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConversationsIdMessages request
+	GetConversationsIdMessages(ctx context.Context, id string, params *GetConversationsIdMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostConversationsIdMessagesWithBody request with any body
+	PostConversationsIdMessagesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostConversationsIdMessages(ctx context.Context, id string, body PostConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCustomer request
+	GetCustomer(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutCustomerWithBody request with any body
+	PutCustomerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutCustomer(ctx context.Context, body PutCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutCustomerBillingAccountIdWithBody request with any body
+	PutCustomerBillingAccountIdWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutCustomerBillingAccountId(ctx context.Context, body PutCustomerBillingAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCustomers request
+	GetCustomers(ctx context.Context, params *GetCustomersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostCustomersWithBody request with any body
+	PostCustomersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostCustomers(ctx context.Context, body PostCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCustomersId request
+	DeleteCustomersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCustomersId request
+	GetCustomersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutCustomersIdWithBody request with any body
+	PutCustomersIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutCustomersId(ctx context.Context, id string, body PutCustomersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutCustomersIdBillingAccountIdWithBody request with any body
+	PutCustomersIdBillingAccountIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutCustomersIdBillingAccountId(ctx context.Context, id string, body PutCustomersIdBillingAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetExtensions request
+	GetExtensions(ctx context.Context, params *GetExtensionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostExtensionsWithBody request with any body
+	PostExtensionsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostExtensions(ctx context.Context, body PostExtensionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteExtensionsId request
+	DeleteExtensionsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetExtensionsId request
+	GetExtensionsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutExtensionsIdWithBody request with any body
+	PutExtensionsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutExtensionsId(ctx context.Context, id string, body PutExtensionsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetFiles request
+	GetFiles(ctx context.Context, params *GetFilesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostFilesWithBody request with any body
+	PostFilesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteFilesId request
+	DeleteFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetFilesId request
+	GetFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetFlows request
+	GetFlows(ctx context.Context, params *GetFlowsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostFlowsWithBody request with any body
+	PostFlowsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostFlows(ctx context.Context, body PostFlowsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteFlowsId request
+	DeleteFlowsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetFlowsId request
+	GetFlowsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutFlowsIdWithBody request with any body
+	PutFlowsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutFlowsId(ctx context.Context, id string, body PutFlowsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetGroupcalls request
+	GetGroupcalls(ctx context.Context, params *GetGroupcallsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostGroupcallsWithBody request with any body
+	PostGroupcallsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostGroupcalls(ctx context.Context, body PostGroupcallsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteGroupcallsId request
+	DeleteGroupcallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetGroupcallsId request
+	GetGroupcallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostGroupcallsIdHangup request
+	PostGroupcallsIdHangup(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMe request
+	GetMe(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMessages request
+	GetMessages(ctx context.Context, params *GetMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostMessagesWithBody request with any body
+	PostMessagesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostMessages(ctx context.Context, body PostMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteMessagesId request
+	DeleteMessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMessagesId request
+	GetMessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetNumbers request
+	GetNumbers(ctx context.Context, params *GetNumbersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostNumbersWithBody request with any body
+	PostNumbersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostNumbers(ctx context.Context, body PostNumbersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostNumbersRenewWithBody request with any body
+	PostNumbersRenewWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostNumbersRenew(ctx context.Context, body PostNumbersRenewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteNumbersId request
+	DeleteNumbersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetNumbersId request
+	GetNumbersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutNumbersIdWithBody request with any body
+	PutNumbersIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutNumbersId(ctx context.Context, id string, body PutNumbersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutNumbersIdFlowIdsWithBody request with any body
+	PutNumbersIdFlowIdsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutNumbersIdFlowIds(ctx context.Context, id string, body PutNumbersIdFlowIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccesskeys(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5191,6 +5745,834 @@ func (c *Client) PostConferencesIdTranscribeStart(ctx context.Context, id string
 
 func (c *Client) PostConferencesIdTranscribeStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostConferencesIdTranscribeStopRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConversationAccounts(ctx context.Context, params *GetConversationAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConversationAccountsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConversationAccountsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConversationAccountsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConversationAccounts(ctx context.Context, body PostConversationAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConversationAccountsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteConversationAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteConversationAccountsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConversationAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConversationAccountsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutConversationAccountsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutConversationAccountsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutConversationAccountsId(ctx context.Context, id string, body PutConversationAccountsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutConversationAccountsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConversations(ctx context.Context, params *GetConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConversationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConversationsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConversationsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutConversationsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutConversationsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutConversationsId(ctx context.Context, id string, body PutConversationsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutConversationsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetConversationsIdMessages(ctx context.Context, id string, params *GetConversationsIdMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConversationsIdMessagesRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConversationsIdMessagesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConversationsIdMessagesRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostConversationsIdMessages(ctx context.Context, id string, body PostConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostConversationsIdMessagesRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCustomer(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCustomerRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutCustomerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutCustomerRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutCustomer(ctx context.Context, body PutCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutCustomerRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutCustomerBillingAccountIdWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutCustomerBillingAccountIdRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutCustomerBillingAccountId(ctx context.Context, body PutCustomerBillingAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutCustomerBillingAccountIdRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCustomers(ctx context.Context, params *GetCustomersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCustomersRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCustomersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCustomersRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCustomers(ctx context.Context, body PostCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCustomersRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCustomersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCustomersIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCustomersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCustomersIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutCustomersIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutCustomersIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutCustomersId(ctx context.Context, id string, body PutCustomersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutCustomersIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutCustomersIdBillingAccountIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutCustomersIdBillingAccountIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutCustomersIdBillingAccountId(ctx context.Context, id string, body PutCustomersIdBillingAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutCustomersIdBillingAccountIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetExtensions(ctx context.Context, params *GetExtensionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetExtensionsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostExtensionsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostExtensionsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostExtensions(ctx context.Context, body PostExtensionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostExtensionsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteExtensionsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteExtensionsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetExtensionsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetExtensionsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutExtensionsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutExtensionsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutExtensionsId(ctx context.Context, id string, body PutExtensionsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutExtensionsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetFiles(ctx context.Context, params *GetFilesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetFilesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostFilesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostFilesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteFilesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetFilesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetFlows(ctx context.Context, params *GetFlowsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetFlowsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostFlowsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostFlowsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostFlows(ctx context.Context, body PostFlowsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostFlowsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteFlowsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteFlowsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetFlowsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetFlowsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutFlowsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutFlowsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutFlowsId(ctx context.Context, id string, body PutFlowsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutFlowsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetGroupcalls(ctx context.Context, params *GetGroupcallsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetGroupcallsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostGroupcallsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostGroupcallsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostGroupcalls(ctx context.Context, body PostGroupcallsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostGroupcallsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteGroupcallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteGroupcallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetGroupcallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetGroupcallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostGroupcallsIdHangup(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostGroupcallsIdHangupRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetMe(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMeRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetMessages(ctx context.Context, params *GetMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMessagesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostMessagesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostMessagesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostMessages(ctx context.Context, body PostMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostMessagesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteMessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteMessagesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetMessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMessagesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetNumbers(ctx context.Context, params *GetNumbersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetNumbersRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostNumbersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostNumbersRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostNumbers(ctx context.Context, body PostNumbersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostNumbersRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostNumbersRenewWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostNumbersRenewRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostNumbersRenew(ctx context.Context, body PostNumbersRenewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostNumbersRenewRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteNumbersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteNumbersIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetNumbersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetNumbersIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutNumbersIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutNumbersIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutNumbersId(ctx context.Context, id string, body PutNumbersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutNumbersIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutNumbersIdFlowIdsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutNumbersIdFlowIdsRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutNumbersIdFlowIds(ctx context.Context, id string, body PutNumbersIdFlowIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutNumbersIdFlowIdsRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -9734,6 +11116,2181 @@ func NewPostConferencesIdTranscribeStopRequest(server string, id string) (*http.
 	return req, nil
 }
 
+// NewGetConversationAccountsRequest generates requests for GetConversationAccounts
+func NewGetConversationAccountsRequest(server string, params *GetConversationAccountsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversation_accounts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostConversationAccountsRequest calls the generic PostConversationAccounts builder with application/json body
+func NewPostConversationAccountsRequest(server string, body PostConversationAccountsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostConversationAccountsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostConversationAccountsRequestWithBody generates requests for PostConversationAccounts with any type of body
+func NewPostConversationAccountsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversation_accounts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteConversationAccountsIdRequest generates requests for DeleteConversationAccountsId
+func NewDeleteConversationAccountsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversation_accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetConversationAccountsIdRequest generates requests for GetConversationAccountsId
+func NewGetConversationAccountsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversation_accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutConversationAccountsIdRequest calls the generic PutConversationAccountsId builder with application/json body
+func NewPutConversationAccountsIdRequest(server string, id string, body PutConversationAccountsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutConversationAccountsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutConversationAccountsIdRequestWithBody generates requests for PutConversationAccountsId with any type of body
+func NewPutConversationAccountsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversation_accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetConversationsRequest generates requests for GetConversations
+func NewGetConversationsRequest(server string, params *GetConversationsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetConversationsIdRequest generates requests for GetConversationsId
+func NewGetConversationsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutConversationsIdRequest calls the generic PutConversationsId builder with application/json body
+func NewPutConversationsIdRequest(server string, id string, body PutConversationsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutConversationsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutConversationsIdRequestWithBody generates requests for PutConversationsId with any type of body
+func NewPutConversationsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetConversationsIdMessagesRequest generates requests for GetConversationsIdMessages
+func NewGetConversationsIdMessagesRequest(server string, id string, params *GetConversationsIdMessagesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversations/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostConversationsIdMessagesRequest calls the generic PostConversationsIdMessages builder with application/json body
+func NewPostConversationsIdMessagesRequest(server string, id string, body PostConversationsIdMessagesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostConversationsIdMessagesRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostConversationsIdMessagesRequestWithBody generates requests for PostConversationsIdMessages with any type of body
+func NewPostConversationsIdMessagesRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/conversations/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetCustomerRequest generates requests for GetCustomer
+func NewGetCustomerRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/customer")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutCustomerRequest calls the generic PutCustomer builder with application/json body
+func NewPutCustomerRequest(server string, body PutCustomerJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutCustomerRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPutCustomerRequestWithBody generates requests for PutCustomer with any type of body
+func NewPutCustomerRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/customer")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutCustomerBillingAccountIdRequest calls the generic PutCustomerBillingAccountId builder with application/json body
+func NewPutCustomerBillingAccountIdRequest(server string, body PutCustomerBillingAccountIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutCustomerBillingAccountIdRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPutCustomerBillingAccountIdRequestWithBody generates requests for PutCustomerBillingAccountId with any type of body
+func NewPutCustomerBillingAccountIdRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/customer/billing_account_id")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetCustomersRequest generates requests for GetCustomers
+func NewGetCustomersRequest(server string, params *GetCustomersParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/customers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostCustomersRequest calls the generic PostCustomers builder with application/json body
+func NewPostCustomersRequest(server string, body PostCustomersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostCustomersRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostCustomersRequestWithBody generates requests for PostCustomers with any type of body
+func NewPostCustomersRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/customers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteCustomersIdRequest generates requests for DeleteCustomersId
+func NewDeleteCustomersIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/customers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetCustomersIdRequest generates requests for GetCustomersId
+func NewGetCustomersIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/customers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutCustomersIdRequest calls the generic PutCustomersId builder with application/json body
+func NewPutCustomersIdRequest(server string, id string, body PutCustomersIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutCustomersIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutCustomersIdRequestWithBody generates requests for PutCustomersId with any type of body
+func NewPutCustomersIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/customers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutCustomersIdBillingAccountIdRequest calls the generic PutCustomersIdBillingAccountId builder with application/json body
+func NewPutCustomersIdBillingAccountIdRequest(server string, id string, body PutCustomersIdBillingAccountIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutCustomersIdBillingAccountIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutCustomersIdBillingAccountIdRequestWithBody generates requests for PutCustomersIdBillingAccountId with any type of body
+func NewPutCustomersIdBillingAccountIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/customers/%s/billing_account_id", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetExtensionsRequest generates requests for GetExtensions
+func NewGetExtensionsRequest(server string, params *GetExtensionsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/extensions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostExtensionsRequest calls the generic PostExtensions builder with application/json body
+func NewPostExtensionsRequest(server string, body PostExtensionsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostExtensionsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostExtensionsRequestWithBody generates requests for PostExtensions with any type of body
+func NewPostExtensionsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/extensions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteExtensionsIdRequest generates requests for DeleteExtensionsId
+func NewDeleteExtensionsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/extensions/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetExtensionsIdRequest generates requests for GetExtensionsId
+func NewGetExtensionsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/extensions/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutExtensionsIdRequest calls the generic PutExtensionsId builder with application/json body
+func NewPutExtensionsIdRequest(server string, id string, body PutExtensionsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutExtensionsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutExtensionsIdRequestWithBody generates requests for PutExtensionsId with any type of body
+func NewPutExtensionsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/extensions/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetFilesRequest generates requests for GetFiles
+func NewGetFilesRequest(server string, params *GetFilesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/files")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostFilesRequestWithBody generates requests for PostFiles with any type of body
+func NewPostFilesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/files")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteFilesIdRequest generates requests for DeleteFilesId
+func NewDeleteFilesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/files/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetFilesIdRequest generates requests for GetFilesId
+func NewGetFilesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/files/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetFlowsRequest generates requests for GetFlows
+func NewGetFlowsRequest(server string, params *GetFlowsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/flows")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostFlowsRequest calls the generic PostFlows builder with application/json body
+func NewPostFlowsRequest(server string, body PostFlowsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostFlowsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostFlowsRequestWithBody generates requests for PostFlows with any type of body
+func NewPostFlowsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/flows")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteFlowsIdRequest generates requests for DeleteFlowsId
+func NewDeleteFlowsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/flows/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetFlowsIdRequest generates requests for GetFlowsId
+func NewGetFlowsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/flows/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutFlowsIdRequest calls the generic PutFlowsId builder with application/json body
+func NewPutFlowsIdRequest(server string, id string, body PutFlowsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutFlowsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutFlowsIdRequestWithBody generates requests for PutFlowsId with any type of body
+func NewPutFlowsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/flows/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetGroupcallsRequest generates requests for GetGroupcalls
+func NewGetGroupcallsRequest(server string, params *GetGroupcallsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/groupcalls")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostGroupcallsRequest calls the generic PostGroupcalls builder with application/json body
+func NewPostGroupcallsRequest(server string, body PostGroupcallsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostGroupcallsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostGroupcallsRequestWithBody generates requests for PostGroupcalls with any type of body
+func NewPostGroupcallsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/groupcalls")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteGroupcallsIdRequest generates requests for DeleteGroupcallsId
+func NewDeleteGroupcallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/groupcalls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetGroupcallsIdRequest generates requests for GetGroupcallsId
+func NewGetGroupcallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/groupcalls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostGroupcallsIdHangupRequest generates requests for PostGroupcallsIdHangup
+func NewPostGroupcallsIdHangupRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/groupcalls/%s/hangup", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetMeRequest generates requests for GetMe
+func NewGetMeRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/me")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetMessagesRequest generates requests for GetMessages
+func NewGetMessagesRequest(server string, params *GetMessagesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/messages")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostMessagesRequest calls the generic PostMessages builder with application/json body
+func NewPostMessagesRequest(server string, body PostMessagesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostMessagesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostMessagesRequestWithBody generates requests for PostMessages with any type of body
+func NewPostMessagesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/messages")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteMessagesIdRequest generates requests for DeleteMessagesId
+func NewDeleteMessagesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/messages/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetMessagesIdRequest generates requests for GetMessagesId
+func NewGetMessagesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/messages/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetNumbersRequest generates requests for GetNumbers
+func NewGetNumbersRequest(server string, params *GetNumbersParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/numbers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostNumbersRequest calls the generic PostNumbers builder with application/json body
+func NewPostNumbersRequest(server string, body PostNumbersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostNumbersRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostNumbersRequestWithBody generates requests for PostNumbers with any type of body
+func NewPostNumbersRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/numbers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostNumbersRenewRequest calls the generic PostNumbersRenew builder with application/json body
+func NewPostNumbersRenewRequest(server string, body PostNumbersRenewJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostNumbersRenewRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostNumbersRenewRequestWithBody generates requests for PostNumbersRenew with any type of body
+func NewPostNumbersRenewRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/numbers/renew")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteNumbersIdRequest generates requests for DeleteNumbersId
+func NewDeleteNumbersIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/numbers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetNumbersIdRequest generates requests for GetNumbersId
+func NewGetNumbersIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/numbers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutNumbersIdRequest calls the generic PutNumbersId builder with application/json body
+func NewPutNumbersIdRequest(server string, id string, body PutNumbersIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutNumbersIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutNumbersIdRequestWithBody generates requests for PutNumbersId with any type of body
+func NewPutNumbersIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/numbers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutNumbersIdFlowIdsRequest calls the generic PutNumbersIdFlowIds builder with application/json body
+func NewPutNumbersIdFlowIdsRequest(server string, id string, body PutNumbersIdFlowIdsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutNumbersIdFlowIdsRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutNumbersIdFlowIdsRequestWithBody generates requests for PutNumbersIdFlowIds with any type of body
+func NewPutNumbersIdFlowIdsRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/numbers/%s/flow_ids", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -10157,6 +13714,194 @@ type ClientWithResponsesInterface interface {
 
 	// PostConferencesIdTranscribeStopWithResponse request
 	PostConferencesIdTranscribeStopWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostConferencesIdTranscribeStopResponse, error)
+
+	// GetConversationAccountsWithResponse request
+	GetConversationAccountsWithResponse(ctx context.Context, params *GetConversationAccountsParams, reqEditors ...RequestEditorFn) (*GetConversationAccountsResponse, error)
+
+	// PostConversationAccountsWithBodyWithResponse request with any body
+	PostConversationAccountsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConversationAccountsResponse, error)
+
+	PostConversationAccountsWithResponse(ctx context.Context, body PostConversationAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConversationAccountsResponse, error)
+
+	// DeleteConversationAccountsIdWithResponse request
+	DeleteConversationAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteConversationAccountsIdResponse, error)
+
+	// GetConversationAccountsIdWithResponse request
+	GetConversationAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetConversationAccountsIdResponse, error)
+
+	// PutConversationAccountsIdWithBodyWithResponse request with any body
+	PutConversationAccountsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutConversationAccountsIdResponse, error)
+
+	PutConversationAccountsIdWithResponse(ctx context.Context, id string, body PutConversationAccountsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutConversationAccountsIdResponse, error)
+
+	// GetConversationsWithResponse request
+	GetConversationsWithResponse(ctx context.Context, params *GetConversationsParams, reqEditors ...RequestEditorFn) (*GetConversationsResponse, error)
+
+	// GetConversationsIdWithResponse request
+	GetConversationsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetConversationsIdResponse, error)
+
+	// PutConversationsIdWithBodyWithResponse request with any body
+	PutConversationsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutConversationsIdResponse, error)
+
+	PutConversationsIdWithResponse(ctx context.Context, id string, body PutConversationsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutConversationsIdResponse, error)
+
+	// GetConversationsIdMessagesWithResponse request
+	GetConversationsIdMessagesWithResponse(ctx context.Context, id string, params *GetConversationsIdMessagesParams, reqEditors ...RequestEditorFn) (*GetConversationsIdMessagesResponse, error)
+
+	// PostConversationsIdMessagesWithBodyWithResponse request with any body
+	PostConversationsIdMessagesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConversationsIdMessagesResponse, error)
+
+	PostConversationsIdMessagesWithResponse(ctx context.Context, id string, body PostConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConversationsIdMessagesResponse, error)
+
+	// GetCustomerWithResponse request
+	GetCustomerWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCustomerResponse, error)
+
+	// PutCustomerWithBodyWithResponse request with any body
+	PutCustomerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutCustomerResponse, error)
+
+	PutCustomerWithResponse(ctx context.Context, body PutCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*PutCustomerResponse, error)
+
+	// PutCustomerBillingAccountIdWithBodyWithResponse request with any body
+	PutCustomerBillingAccountIdWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutCustomerBillingAccountIdResponse, error)
+
+	PutCustomerBillingAccountIdWithResponse(ctx context.Context, body PutCustomerBillingAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutCustomerBillingAccountIdResponse, error)
+
+	// GetCustomersWithResponse request
+	GetCustomersWithResponse(ctx context.Context, params *GetCustomersParams, reqEditors ...RequestEditorFn) (*GetCustomersResponse, error)
+
+	// PostCustomersWithBodyWithResponse request with any body
+	PostCustomersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostCustomersResponse, error)
+
+	PostCustomersWithResponse(ctx context.Context, body PostCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostCustomersResponse, error)
+
+	// DeleteCustomersIdWithResponse request
+	DeleteCustomersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCustomersIdResponse, error)
+
+	// GetCustomersIdWithResponse request
+	GetCustomersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetCustomersIdResponse, error)
+
+	// PutCustomersIdWithBodyWithResponse request with any body
+	PutCustomersIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutCustomersIdResponse, error)
+
+	PutCustomersIdWithResponse(ctx context.Context, id string, body PutCustomersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutCustomersIdResponse, error)
+
+	// PutCustomersIdBillingAccountIdWithBodyWithResponse request with any body
+	PutCustomersIdBillingAccountIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutCustomersIdBillingAccountIdResponse, error)
+
+	PutCustomersIdBillingAccountIdWithResponse(ctx context.Context, id string, body PutCustomersIdBillingAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutCustomersIdBillingAccountIdResponse, error)
+
+	// GetExtensionsWithResponse request
+	GetExtensionsWithResponse(ctx context.Context, params *GetExtensionsParams, reqEditors ...RequestEditorFn) (*GetExtensionsResponse, error)
+
+	// PostExtensionsWithBodyWithResponse request with any body
+	PostExtensionsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostExtensionsResponse, error)
+
+	PostExtensionsWithResponse(ctx context.Context, body PostExtensionsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostExtensionsResponse, error)
+
+	// DeleteExtensionsIdWithResponse request
+	DeleteExtensionsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteExtensionsIdResponse, error)
+
+	// GetExtensionsIdWithResponse request
+	GetExtensionsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetExtensionsIdResponse, error)
+
+	// PutExtensionsIdWithBodyWithResponse request with any body
+	PutExtensionsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutExtensionsIdResponse, error)
+
+	PutExtensionsIdWithResponse(ctx context.Context, id string, body PutExtensionsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutExtensionsIdResponse, error)
+
+	// GetFilesWithResponse request
+	GetFilesWithResponse(ctx context.Context, params *GetFilesParams, reqEditors ...RequestEditorFn) (*GetFilesResponse, error)
+
+	// PostFilesWithBodyWithResponse request with any body
+	PostFilesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostFilesResponse, error)
+
+	// DeleteFilesIdWithResponse request
+	DeleteFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteFilesIdResponse, error)
+
+	// GetFilesIdWithResponse request
+	GetFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetFilesIdResponse, error)
+
+	// GetFlowsWithResponse request
+	GetFlowsWithResponse(ctx context.Context, params *GetFlowsParams, reqEditors ...RequestEditorFn) (*GetFlowsResponse, error)
+
+	// PostFlowsWithBodyWithResponse request with any body
+	PostFlowsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostFlowsResponse, error)
+
+	PostFlowsWithResponse(ctx context.Context, body PostFlowsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostFlowsResponse, error)
+
+	// DeleteFlowsIdWithResponse request
+	DeleteFlowsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteFlowsIdResponse, error)
+
+	// GetFlowsIdWithResponse request
+	GetFlowsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetFlowsIdResponse, error)
+
+	// PutFlowsIdWithBodyWithResponse request with any body
+	PutFlowsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutFlowsIdResponse, error)
+
+	PutFlowsIdWithResponse(ctx context.Context, id string, body PutFlowsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutFlowsIdResponse, error)
+
+	// GetGroupcallsWithResponse request
+	GetGroupcallsWithResponse(ctx context.Context, params *GetGroupcallsParams, reqEditors ...RequestEditorFn) (*GetGroupcallsResponse, error)
+
+	// PostGroupcallsWithBodyWithResponse request with any body
+	PostGroupcallsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostGroupcallsResponse, error)
+
+	PostGroupcallsWithResponse(ctx context.Context, body PostGroupcallsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostGroupcallsResponse, error)
+
+	// DeleteGroupcallsIdWithResponse request
+	DeleteGroupcallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteGroupcallsIdResponse, error)
+
+	// GetGroupcallsIdWithResponse request
+	GetGroupcallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetGroupcallsIdResponse, error)
+
+	// PostGroupcallsIdHangupWithResponse request
+	PostGroupcallsIdHangupWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostGroupcallsIdHangupResponse, error)
+
+	// GetMeWithResponse request
+	GetMeWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetMeResponse, error)
+
+	// GetMessagesWithResponse request
+	GetMessagesWithResponse(ctx context.Context, params *GetMessagesParams, reqEditors ...RequestEditorFn) (*GetMessagesResponse, error)
+
+	// PostMessagesWithBodyWithResponse request with any body
+	PostMessagesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostMessagesResponse, error)
+
+	PostMessagesWithResponse(ctx context.Context, body PostMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostMessagesResponse, error)
+
+	// DeleteMessagesIdWithResponse request
+	DeleteMessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteMessagesIdResponse, error)
+
+	// GetMessagesIdWithResponse request
+	GetMessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetMessagesIdResponse, error)
+
+	// GetNumbersWithResponse request
+	GetNumbersWithResponse(ctx context.Context, params *GetNumbersParams, reqEditors ...RequestEditorFn) (*GetNumbersResponse, error)
+
+	// PostNumbersWithBodyWithResponse request with any body
+	PostNumbersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostNumbersResponse, error)
+
+	PostNumbersWithResponse(ctx context.Context, body PostNumbersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostNumbersResponse, error)
+
+	// PostNumbersRenewWithBodyWithResponse request with any body
+	PostNumbersRenewWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostNumbersRenewResponse, error)
+
+	PostNumbersRenewWithResponse(ctx context.Context, body PostNumbersRenewJSONRequestBody, reqEditors ...RequestEditorFn) (*PostNumbersRenewResponse, error)
+
+	// DeleteNumbersIdWithResponse request
+	DeleteNumbersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteNumbersIdResponse, error)
+
+	// GetNumbersIdWithResponse request
+	GetNumbersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetNumbersIdResponse, error)
+
+	// PutNumbersIdWithBodyWithResponse request with any body
+	PutNumbersIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutNumbersIdResponse, error)
+
+	PutNumbersIdWithResponse(ctx context.Context, id string, body PutNumbersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutNumbersIdResponse, error)
+
+	// PutNumbersIdFlowIdsWithBodyWithResponse request with any body
+	PutNumbersIdFlowIdsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutNumbersIdFlowIdsResponse, error)
+
+	PutNumbersIdFlowIdsWithResponse(ctx context.Context, id string, body PutNumbersIdFlowIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*PutNumbersIdFlowIdsResponse, error)
 }
 
 type GetAccesskeysResponse struct {
@@ -12437,6 +16182,1146 @@ func (r PostConferencesIdTranscribeStopResponse) StatusCode() int {
 	return 0
 }
 
+type GetConversationAccountsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                       `json:"next_page_token,omitempty"`
+		Result        *[]ConversationManagerAccount `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConversationAccountsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConversationAccountsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostConversationAccountsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConversationManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConversationAccountsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConversationAccountsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteConversationAccountsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConversationManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteConversationAccountsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteConversationAccountsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConversationAccountsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConversationManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConversationAccountsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConversationAccountsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutConversationAccountsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConversationManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r PutConversationAccountsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutConversationAccountsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConversationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                            `json:"next_page_token,omitempty"`
+		Result        *[]ConversationManagerConversation `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConversationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConversationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConversationsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConversationManagerConversation
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConversationsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConversationsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutConversationsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConversationManagerConversation
+}
+
+// Status returns HTTPResponse.Status
+func (r PutConversationsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutConversationsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetConversationsIdMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                       `json:"next_page_token,omitempty"`
+		Result        *[]ConversationManagerMessage `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConversationsIdMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConversationsIdMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostConversationsIdMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConversationManagerMessage
+}
+
+// Status returns HTTPResponse.Status
+func (r PostConversationsIdMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostConversationsIdMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCustomerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomerManagerCustomer
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCustomerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCustomerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutCustomerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomerManagerCustomer
+}
+
+// Status returns HTTPResponse.Status
+func (r PutCustomerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutCustomerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutCustomerBillingAccountIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomerManagerCustomer
+}
+
+// Status returns HTTPResponse.Status
+func (r PutCustomerBillingAccountIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutCustomerBillingAccountIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCustomersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                    `json:"next_page_token,omitempty"`
+		Result        *[]CustomerManagerCustomer `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCustomersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCustomersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostCustomersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomerManagerCustomer
+}
+
+// Status returns HTTPResponse.Status
+func (r PostCustomersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostCustomersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCustomersIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomerManagerCustomer
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCustomersIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCustomersIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCustomersIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomerManagerCustomer
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCustomersIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCustomersIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutCustomersIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomerManagerCustomer
+}
+
+// Status returns HTTPResponse.Status
+func (r PutCustomersIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutCustomersIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutCustomersIdBillingAccountIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomerManagerCustomer
+}
+
+// Status returns HTTPResponse.Status
+func (r PutCustomersIdBillingAccountIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutCustomersIdBillingAccountIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetExtensionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                      `json:"next_page_token,omitempty"`
+		Result        *[]RegistrarManagerExtension `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetExtensionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetExtensionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostExtensionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegistrarManagerExtension
+}
+
+// Status returns HTTPResponse.Status
+func (r PostExtensionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostExtensionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteExtensionsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegistrarManagerExtension
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteExtensionsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteExtensionsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetExtensionsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegistrarManagerExtension
+}
+
+// Status returns HTTPResponse.Status
+func (r GetExtensionsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetExtensionsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutExtensionsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegistrarManagerExtension
+}
+
+// Status returns HTTPResponse.Status
+func (r PutExtensionsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutExtensionsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetFilesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string               `json:"next_page_token,omitempty"`
+		Result        *[]StorageManagerFile `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetFilesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetFilesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostFilesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerFile
+}
+
+// Status returns HTTPResponse.Status
+func (r PostFilesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostFilesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteFilesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerFile
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteFilesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteFilesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetFilesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerFile
+}
+
+// Status returns HTTPResponse.Status
+func (r GetFilesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetFilesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetFlowsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string            `json:"next_page_token,omitempty"`
+		Result        *[]FlowManagerFlow `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetFlowsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetFlowsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostFlowsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FlowManagerFlow
+}
+
+// Status returns HTTPResponse.Status
+func (r PostFlowsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostFlowsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteFlowsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FlowManagerFlow
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteFlowsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteFlowsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetFlowsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FlowManagerFlow
+}
+
+// Status returns HTTPResponse.Status
+func (r GetFlowsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetFlowsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutFlowsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FlowManagerFlow
+}
+
+// Status returns HTTPResponse.Status
+func (r PutFlowsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutFlowsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetGroupcallsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                 `json:"next_page_token,omitempty"`
+		Result        *[]CallManagerGroupcall `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetGroupcallsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetGroupcallsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostGroupcallsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerGroupcall
+}
+
+// Status returns HTTPResponse.Status
+func (r PostGroupcallsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostGroupcallsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteGroupcallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerGroupcall
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteGroupcallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteGroupcallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetGroupcallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerGroupcall
+}
+
+// Status returns HTTPResponse.Status
+func (r GetGroupcallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetGroupcallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostGroupcallsIdHangupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerGroupcall
+}
+
+// Status returns HTTPResponse.Status
+func (r PostGroupcallsIdHangupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostGroupcallsIdHangupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetMeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                  `json:"next_page_token,omitempty"`
+		Result        *[]MessageManagerMessage `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MessageManagerMessage
+}
+
+// Status returns HTTPResponse.Status
+func (r PostMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteMessagesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MessageManagerMessage
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteMessagesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteMessagesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetMessagesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MessageManagerMessage
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMessagesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMessagesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetNumbersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                `json:"next_page_token,omitempty"`
+		Result        *[]NumberManagerNumber `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetNumbersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetNumbersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostNumbersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NumberManagerNumber
+}
+
+// Status returns HTTPResponse.Status
+func (r PostNumbersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostNumbersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostNumbersRenewResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]NumberManagerNumber
+}
+
+// Status returns HTTPResponse.Status
+func (r PostNumbersRenewResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostNumbersRenewResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteNumbersIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NumberManagerNumber
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteNumbersIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteNumbersIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetNumbersIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NumberManagerNumber
+}
+
+// Status returns HTTPResponse.Status
+func (r GetNumbersIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetNumbersIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutNumbersIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NumberManagerNumber
+}
+
+// Status returns HTTPResponse.Status
+func (r PutNumbersIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutNumbersIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutNumbersIdFlowIdsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NumberManagerNumber
+}
+
+// Status returns HTTPResponse.Status
+func (r PutNumbersIdFlowIdsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutNumbersIdFlowIdsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccesskeysWithResponse request returning *GetAccesskeysResponse
 func (c *ClientWithResponses) GetAccesskeysWithResponse(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*GetAccesskeysResponse, error) {
 	rsp, err := c.GetAccesskeys(ctx, params, reqEditors...)
@@ -13656,6 +18541,608 @@ func (c *ClientWithResponses) PostConferencesIdTranscribeStopWithResponse(ctx co
 		return nil, err
 	}
 	return ParsePostConferencesIdTranscribeStopResponse(rsp)
+}
+
+// GetConversationAccountsWithResponse request returning *GetConversationAccountsResponse
+func (c *ClientWithResponses) GetConversationAccountsWithResponse(ctx context.Context, params *GetConversationAccountsParams, reqEditors ...RequestEditorFn) (*GetConversationAccountsResponse, error) {
+	rsp, err := c.GetConversationAccounts(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConversationAccountsResponse(rsp)
+}
+
+// PostConversationAccountsWithBodyWithResponse request with arbitrary body returning *PostConversationAccountsResponse
+func (c *ClientWithResponses) PostConversationAccountsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConversationAccountsResponse, error) {
+	rsp, err := c.PostConversationAccountsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConversationAccountsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostConversationAccountsWithResponse(ctx context.Context, body PostConversationAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConversationAccountsResponse, error) {
+	rsp, err := c.PostConversationAccounts(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConversationAccountsResponse(rsp)
+}
+
+// DeleteConversationAccountsIdWithResponse request returning *DeleteConversationAccountsIdResponse
+func (c *ClientWithResponses) DeleteConversationAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteConversationAccountsIdResponse, error) {
+	rsp, err := c.DeleteConversationAccountsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteConversationAccountsIdResponse(rsp)
+}
+
+// GetConversationAccountsIdWithResponse request returning *GetConversationAccountsIdResponse
+func (c *ClientWithResponses) GetConversationAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetConversationAccountsIdResponse, error) {
+	rsp, err := c.GetConversationAccountsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConversationAccountsIdResponse(rsp)
+}
+
+// PutConversationAccountsIdWithBodyWithResponse request with arbitrary body returning *PutConversationAccountsIdResponse
+func (c *ClientWithResponses) PutConversationAccountsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutConversationAccountsIdResponse, error) {
+	rsp, err := c.PutConversationAccountsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutConversationAccountsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutConversationAccountsIdWithResponse(ctx context.Context, id string, body PutConversationAccountsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutConversationAccountsIdResponse, error) {
+	rsp, err := c.PutConversationAccountsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutConversationAccountsIdResponse(rsp)
+}
+
+// GetConversationsWithResponse request returning *GetConversationsResponse
+func (c *ClientWithResponses) GetConversationsWithResponse(ctx context.Context, params *GetConversationsParams, reqEditors ...RequestEditorFn) (*GetConversationsResponse, error) {
+	rsp, err := c.GetConversations(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConversationsResponse(rsp)
+}
+
+// GetConversationsIdWithResponse request returning *GetConversationsIdResponse
+func (c *ClientWithResponses) GetConversationsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetConversationsIdResponse, error) {
+	rsp, err := c.GetConversationsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConversationsIdResponse(rsp)
+}
+
+// PutConversationsIdWithBodyWithResponse request with arbitrary body returning *PutConversationsIdResponse
+func (c *ClientWithResponses) PutConversationsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutConversationsIdResponse, error) {
+	rsp, err := c.PutConversationsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutConversationsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutConversationsIdWithResponse(ctx context.Context, id string, body PutConversationsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutConversationsIdResponse, error) {
+	rsp, err := c.PutConversationsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutConversationsIdResponse(rsp)
+}
+
+// GetConversationsIdMessagesWithResponse request returning *GetConversationsIdMessagesResponse
+func (c *ClientWithResponses) GetConversationsIdMessagesWithResponse(ctx context.Context, id string, params *GetConversationsIdMessagesParams, reqEditors ...RequestEditorFn) (*GetConversationsIdMessagesResponse, error) {
+	rsp, err := c.GetConversationsIdMessages(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConversationsIdMessagesResponse(rsp)
+}
+
+// PostConversationsIdMessagesWithBodyWithResponse request with arbitrary body returning *PostConversationsIdMessagesResponse
+func (c *ClientWithResponses) PostConversationsIdMessagesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostConversationsIdMessagesResponse, error) {
+	rsp, err := c.PostConversationsIdMessagesWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConversationsIdMessagesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostConversationsIdMessagesWithResponse(ctx context.Context, id string, body PostConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostConversationsIdMessagesResponse, error) {
+	rsp, err := c.PostConversationsIdMessages(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostConversationsIdMessagesResponse(rsp)
+}
+
+// GetCustomerWithResponse request returning *GetCustomerResponse
+func (c *ClientWithResponses) GetCustomerWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCustomerResponse, error) {
+	rsp, err := c.GetCustomer(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCustomerResponse(rsp)
+}
+
+// PutCustomerWithBodyWithResponse request with arbitrary body returning *PutCustomerResponse
+func (c *ClientWithResponses) PutCustomerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutCustomerResponse, error) {
+	rsp, err := c.PutCustomerWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutCustomerResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutCustomerWithResponse(ctx context.Context, body PutCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*PutCustomerResponse, error) {
+	rsp, err := c.PutCustomer(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutCustomerResponse(rsp)
+}
+
+// PutCustomerBillingAccountIdWithBodyWithResponse request with arbitrary body returning *PutCustomerBillingAccountIdResponse
+func (c *ClientWithResponses) PutCustomerBillingAccountIdWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutCustomerBillingAccountIdResponse, error) {
+	rsp, err := c.PutCustomerBillingAccountIdWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutCustomerBillingAccountIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutCustomerBillingAccountIdWithResponse(ctx context.Context, body PutCustomerBillingAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutCustomerBillingAccountIdResponse, error) {
+	rsp, err := c.PutCustomerBillingAccountId(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutCustomerBillingAccountIdResponse(rsp)
+}
+
+// GetCustomersWithResponse request returning *GetCustomersResponse
+func (c *ClientWithResponses) GetCustomersWithResponse(ctx context.Context, params *GetCustomersParams, reqEditors ...RequestEditorFn) (*GetCustomersResponse, error) {
+	rsp, err := c.GetCustomers(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCustomersResponse(rsp)
+}
+
+// PostCustomersWithBodyWithResponse request with arbitrary body returning *PostCustomersResponse
+func (c *ClientWithResponses) PostCustomersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostCustomersResponse, error) {
+	rsp, err := c.PostCustomersWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCustomersResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostCustomersWithResponse(ctx context.Context, body PostCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostCustomersResponse, error) {
+	rsp, err := c.PostCustomers(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCustomersResponse(rsp)
+}
+
+// DeleteCustomersIdWithResponse request returning *DeleteCustomersIdResponse
+func (c *ClientWithResponses) DeleteCustomersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCustomersIdResponse, error) {
+	rsp, err := c.DeleteCustomersId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCustomersIdResponse(rsp)
+}
+
+// GetCustomersIdWithResponse request returning *GetCustomersIdResponse
+func (c *ClientWithResponses) GetCustomersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetCustomersIdResponse, error) {
+	rsp, err := c.GetCustomersId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCustomersIdResponse(rsp)
+}
+
+// PutCustomersIdWithBodyWithResponse request with arbitrary body returning *PutCustomersIdResponse
+func (c *ClientWithResponses) PutCustomersIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutCustomersIdResponse, error) {
+	rsp, err := c.PutCustomersIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutCustomersIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutCustomersIdWithResponse(ctx context.Context, id string, body PutCustomersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutCustomersIdResponse, error) {
+	rsp, err := c.PutCustomersId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutCustomersIdResponse(rsp)
+}
+
+// PutCustomersIdBillingAccountIdWithBodyWithResponse request with arbitrary body returning *PutCustomersIdBillingAccountIdResponse
+func (c *ClientWithResponses) PutCustomersIdBillingAccountIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutCustomersIdBillingAccountIdResponse, error) {
+	rsp, err := c.PutCustomersIdBillingAccountIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutCustomersIdBillingAccountIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutCustomersIdBillingAccountIdWithResponse(ctx context.Context, id string, body PutCustomersIdBillingAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutCustomersIdBillingAccountIdResponse, error) {
+	rsp, err := c.PutCustomersIdBillingAccountId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutCustomersIdBillingAccountIdResponse(rsp)
+}
+
+// GetExtensionsWithResponse request returning *GetExtensionsResponse
+func (c *ClientWithResponses) GetExtensionsWithResponse(ctx context.Context, params *GetExtensionsParams, reqEditors ...RequestEditorFn) (*GetExtensionsResponse, error) {
+	rsp, err := c.GetExtensions(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetExtensionsResponse(rsp)
+}
+
+// PostExtensionsWithBodyWithResponse request with arbitrary body returning *PostExtensionsResponse
+func (c *ClientWithResponses) PostExtensionsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostExtensionsResponse, error) {
+	rsp, err := c.PostExtensionsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostExtensionsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostExtensionsWithResponse(ctx context.Context, body PostExtensionsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostExtensionsResponse, error) {
+	rsp, err := c.PostExtensions(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostExtensionsResponse(rsp)
+}
+
+// DeleteExtensionsIdWithResponse request returning *DeleteExtensionsIdResponse
+func (c *ClientWithResponses) DeleteExtensionsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteExtensionsIdResponse, error) {
+	rsp, err := c.DeleteExtensionsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteExtensionsIdResponse(rsp)
+}
+
+// GetExtensionsIdWithResponse request returning *GetExtensionsIdResponse
+func (c *ClientWithResponses) GetExtensionsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetExtensionsIdResponse, error) {
+	rsp, err := c.GetExtensionsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetExtensionsIdResponse(rsp)
+}
+
+// PutExtensionsIdWithBodyWithResponse request with arbitrary body returning *PutExtensionsIdResponse
+func (c *ClientWithResponses) PutExtensionsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutExtensionsIdResponse, error) {
+	rsp, err := c.PutExtensionsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutExtensionsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutExtensionsIdWithResponse(ctx context.Context, id string, body PutExtensionsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutExtensionsIdResponse, error) {
+	rsp, err := c.PutExtensionsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutExtensionsIdResponse(rsp)
+}
+
+// GetFilesWithResponse request returning *GetFilesResponse
+func (c *ClientWithResponses) GetFilesWithResponse(ctx context.Context, params *GetFilesParams, reqEditors ...RequestEditorFn) (*GetFilesResponse, error) {
+	rsp, err := c.GetFiles(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetFilesResponse(rsp)
+}
+
+// PostFilesWithBodyWithResponse request with arbitrary body returning *PostFilesResponse
+func (c *ClientWithResponses) PostFilesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostFilesResponse, error) {
+	rsp, err := c.PostFilesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostFilesResponse(rsp)
+}
+
+// DeleteFilesIdWithResponse request returning *DeleteFilesIdResponse
+func (c *ClientWithResponses) DeleteFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteFilesIdResponse, error) {
+	rsp, err := c.DeleteFilesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteFilesIdResponse(rsp)
+}
+
+// GetFilesIdWithResponse request returning *GetFilesIdResponse
+func (c *ClientWithResponses) GetFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetFilesIdResponse, error) {
+	rsp, err := c.GetFilesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetFilesIdResponse(rsp)
+}
+
+// GetFlowsWithResponse request returning *GetFlowsResponse
+func (c *ClientWithResponses) GetFlowsWithResponse(ctx context.Context, params *GetFlowsParams, reqEditors ...RequestEditorFn) (*GetFlowsResponse, error) {
+	rsp, err := c.GetFlows(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetFlowsResponse(rsp)
+}
+
+// PostFlowsWithBodyWithResponse request with arbitrary body returning *PostFlowsResponse
+func (c *ClientWithResponses) PostFlowsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostFlowsResponse, error) {
+	rsp, err := c.PostFlowsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostFlowsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostFlowsWithResponse(ctx context.Context, body PostFlowsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostFlowsResponse, error) {
+	rsp, err := c.PostFlows(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostFlowsResponse(rsp)
+}
+
+// DeleteFlowsIdWithResponse request returning *DeleteFlowsIdResponse
+func (c *ClientWithResponses) DeleteFlowsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteFlowsIdResponse, error) {
+	rsp, err := c.DeleteFlowsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteFlowsIdResponse(rsp)
+}
+
+// GetFlowsIdWithResponse request returning *GetFlowsIdResponse
+func (c *ClientWithResponses) GetFlowsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetFlowsIdResponse, error) {
+	rsp, err := c.GetFlowsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetFlowsIdResponse(rsp)
+}
+
+// PutFlowsIdWithBodyWithResponse request with arbitrary body returning *PutFlowsIdResponse
+func (c *ClientWithResponses) PutFlowsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutFlowsIdResponse, error) {
+	rsp, err := c.PutFlowsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutFlowsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutFlowsIdWithResponse(ctx context.Context, id string, body PutFlowsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutFlowsIdResponse, error) {
+	rsp, err := c.PutFlowsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutFlowsIdResponse(rsp)
+}
+
+// GetGroupcallsWithResponse request returning *GetGroupcallsResponse
+func (c *ClientWithResponses) GetGroupcallsWithResponse(ctx context.Context, params *GetGroupcallsParams, reqEditors ...RequestEditorFn) (*GetGroupcallsResponse, error) {
+	rsp, err := c.GetGroupcalls(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetGroupcallsResponse(rsp)
+}
+
+// PostGroupcallsWithBodyWithResponse request with arbitrary body returning *PostGroupcallsResponse
+func (c *ClientWithResponses) PostGroupcallsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostGroupcallsResponse, error) {
+	rsp, err := c.PostGroupcallsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostGroupcallsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostGroupcallsWithResponse(ctx context.Context, body PostGroupcallsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostGroupcallsResponse, error) {
+	rsp, err := c.PostGroupcalls(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostGroupcallsResponse(rsp)
+}
+
+// DeleteGroupcallsIdWithResponse request returning *DeleteGroupcallsIdResponse
+func (c *ClientWithResponses) DeleteGroupcallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteGroupcallsIdResponse, error) {
+	rsp, err := c.DeleteGroupcallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteGroupcallsIdResponse(rsp)
+}
+
+// GetGroupcallsIdWithResponse request returning *GetGroupcallsIdResponse
+func (c *ClientWithResponses) GetGroupcallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetGroupcallsIdResponse, error) {
+	rsp, err := c.GetGroupcallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetGroupcallsIdResponse(rsp)
+}
+
+// PostGroupcallsIdHangupWithResponse request returning *PostGroupcallsIdHangupResponse
+func (c *ClientWithResponses) PostGroupcallsIdHangupWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostGroupcallsIdHangupResponse, error) {
+	rsp, err := c.PostGroupcallsIdHangup(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostGroupcallsIdHangupResponse(rsp)
+}
+
+// GetMeWithResponse request returning *GetMeResponse
+func (c *ClientWithResponses) GetMeWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetMeResponse, error) {
+	rsp, err := c.GetMe(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetMeResponse(rsp)
+}
+
+// GetMessagesWithResponse request returning *GetMessagesResponse
+func (c *ClientWithResponses) GetMessagesWithResponse(ctx context.Context, params *GetMessagesParams, reqEditors ...RequestEditorFn) (*GetMessagesResponse, error) {
+	rsp, err := c.GetMessages(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetMessagesResponse(rsp)
+}
+
+// PostMessagesWithBodyWithResponse request with arbitrary body returning *PostMessagesResponse
+func (c *ClientWithResponses) PostMessagesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostMessagesResponse, error) {
+	rsp, err := c.PostMessagesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostMessagesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostMessagesWithResponse(ctx context.Context, body PostMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostMessagesResponse, error) {
+	rsp, err := c.PostMessages(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostMessagesResponse(rsp)
+}
+
+// DeleteMessagesIdWithResponse request returning *DeleteMessagesIdResponse
+func (c *ClientWithResponses) DeleteMessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteMessagesIdResponse, error) {
+	rsp, err := c.DeleteMessagesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteMessagesIdResponse(rsp)
+}
+
+// GetMessagesIdWithResponse request returning *GetMessagesIdResponse
+func (c *ClientWithResponses) GetMessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetMessagesIdResponse, error) {
+	rsp, err := c.GetMessagesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetMessagesIdResponse(rsp)
+}
+
+// GetNumbersWithResponse request returning *GetNumbersResponse
+func (c *ClientWithResponses) GetNumbersWithResponse(ctx context.Context, params *GetNumbersParams, reqEditors ...RequestEditorFn) (*GetNumbersResponse, error) {
+	rsp, err := c.GetNumbers(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetNumbersResponse(rsp)
+}
+
+// PostNumbersWithBodyWithResponse request with arbitrary body returning *PostNumbersResponse
+func (c *ClientWithResponses) PostNumbersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostNumbersResponse, error) {
+	rsp, err := c.PostNumbersWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostNumbersResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostNumbersWithResponse(ctx context.Context, body PostNumbersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostNumbersResponse, error) {
+	rsp, err := c.PostNumbers(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostNumbersResponse(rsp)
+}
+
+// PostNumbersRenewWithBodyWithResponse request with arbitrary body returning *PostNumbersRenewResponse
+func (c *ClientWithResponses) PostNumbersRenewWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostNumbersRenewResponse, error) {
+	rsp, err := c.PostNumbersRenewWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostNumbersRenewResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostNumbersRenewWithResponse(ctx context.Context, body PostNumbersRenewJSONRequestBody, reqEditors ...RequestEditorFn) (*PostNumbersRenewResponse, error) {
+	rsp, err := c.PostNumbersRenew(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostNumbersRenewResponse(rsp)
+}
+
+// DeleteNumbersIdWithResponse request returning *DeleteNumbersIdResponse
+func (c *ClientWithResponses) DeleteNumbersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteNumbersIdResponse, error) {
+	rsp, err := c.DeleteNumbersId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteNumbersIdResponse(rsp)
+}
+
+// GetNumbersIdWithResponse request returning *GetNumbersIdResponse
+func (c *ClientWithResponses) GetNumbersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetNumbersIdResponse, error) {
+	rsp, err := c.GetNumbersId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetNumbersIdResponse(rsp)
+}
+
+// PutNumbersIdWithBodyWithResponse request with arbitrary body returning *PutNumbersIdResponse
+func (c *ClientWithResponses) PutNumbersIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutNumbersIdResponse, error) {
+	rsp, err := c.PutNumbersIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutNumbersIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutNumbersIdWithResponse(ctx context.Context, id string, body PutNumbersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutNumbersIdResponse, error) {
+	rsp, err := c.PutNumbersId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutNumbersIdResponse(rsp)
+}
+
+// PutNumbersIdFlowIdsWithBodyWithResponse request with arbitrary body returning *PutNumbersIdFlowIdsResponse
+func (c *ClientWithResponses) PutNumbersIdFlowIdsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutNumbersIdFlowIdsResponse, error) {
+	rsp, err := c.PutNumbersIdFlowIdsWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutNumbersIdFlowIdsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutNumbersIdFlowIdsWithResponse(ctx context.Context, id string, body PutNumbersIdFlowIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*PutNumbersIdFlowIdsResponse, error) {
+	rsp, err := c.PutNumbersIdFlowIds(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutNumbersIdFlowIdsResponse(rsp)
 }
 
 // ParseGetAccesskeysResponse parses an HTTP response from a GetAccesskeysWithResponse call
@@ -16182,6 +21669,1346 @@ func ParsePostConferencesIdTranscribeStopResponse(rsp *http.Response) (*PostConf
 	response := &PostConferencesIdTranscribeStopResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetConversationAccountsResponse parses an HTTP response from a GetConversationAccountsWithResponse call
+func ParseGetConversationAccountsResponse(rsp *http.Response) (*GetConversationAccountsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConversationAccountsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                       `json:"next_page_token,omitempty"`
+			Result        *[]ConversationManagerAccount `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostConversationAccountsResponse parses an HTTP response from a PostConversationAccountsWithResponse call
+func ParsePostConversationAccountsResponse(rsp *http.Response) (*PostConversationAccountsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConversationAccountsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConversationManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteConversationAccountsIdResponse parses an HTTP response from a DeleteConversationAccountsIdWithResponse call
+func ParseDeleteConversationAccountsIdResponse(rsp *http.Response) (*DeleteConversationAccountsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteConversationAccountsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConversationManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConversationAccountsIdResponse parses an HTTP response from a GetConversationAccountsIdWithResponse call
+func ParseGetConversationAccountsIdResponse(rsp *http.Response) (*GetConversationAccountsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConversationAccountsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConversationManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutConversationAccountsIdResponse parses an HTTP response from a PutConversationAccountsIdWithResponse call
+func ParsePutConversationAccountsIdResponse(rsp *http.Response) (*PutConversationAccountsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutConversationAccountsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConversationManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConversationsResponse parses an HTTP response from a GetConversationsWithResponse call
+func ParseGetConversationsResponse(rsp *http.Response) (*GetConversationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConversationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                            `json:"next_page_token,omitempty"`
+			Result        *[]ConversationManagerConversation `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConversationsIdResponse parses an HTTP response from a GetConversationsIdWithResponse call
+func ParseGetConversationsIdResponse(rsp *http.Response) (*GetConversationsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConversationsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConversationManagerConversation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutConversationsIdResponse parses an HTTP response from a PutConversationsIdWithResponse call
+func ParsePutConversationsIdResponse(rsp *http.Response) (*PutConversationsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutConversationsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConversationManagerConversation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConversationsIdMessagesResponse parses an HTTP response from a GetConversationsIdMessagesWithResponse call
+func ParseGetConversationsIdMessagesResponse(rsp *http.Response) (*GetConversationsIdMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConversationsIdMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                       `json:"next_page_token,omitempty"`
+			Result        *[]ConversationManagerMessage `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostConversationsIdMessagesResponse parses an HTTP response from a PostConversationsIdMessagesWithResponse call
+func ParsePostConversationsIdMessagesResponse(rsp *http.Response) (*PostConversationsIdMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostConversationsIdMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConversationManagerMessage
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCustomerResponse parses an HTTP response from a GetCustomerWithResponse call
+func ParseGetCustomerResponse(rsp *http.Response) (*GetCustomerResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCustomerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomerManagerCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutCustomerResponse parses an HTTP response from a PutCustomerWithResponse call
+func ParsePutCustomerResponse(rsp *http.Response) (*PutCustomerResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutCustomerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomerManagerCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutCustomerBillingAccountIdResponse parses an HTTP response from a PutCustomerBillingAccountIdWithResponse call
+func ParsePutCustomerBillingAccountIdResponse(rsp *http.Response) (*PutCustomerBillingAccountIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutCustomerBillingAccountIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomerManagerCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCustomersResponse parses an HTTP response from a GetCustomersWithResponse call
+func ParseGetCustomersResponse(rsp *http.Response) (*GetCustomersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCustomersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                    `json:"next_page_token,omitempty"`
+			Result        *[]CustomerManagerCustomer `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostCustomersResponse parses an HTTP response from a PostCustomersWithResponse call
+func ParsePostCustomersResponse(rsp *http.Response) (*PostCustomersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostCustomersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomerManagerCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCustomersIdResponse parses an HTTP response from a DeleteCustomersIdWithResponse call
+func ParseDeleteCustomersIdResponse(rsp *http.Response) (*DeleteCustomersIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCustomersIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomerManagerCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCustomersIdResponse parses an HTTP response from a GetCustomersIdWithResponse call
+func ParseGetCustomersIdResponse(rsp *http.Response) (*GetCustomersIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCustomersIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomerManagerCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutCustomersIdResponse parses an HTTP response from a PutCustomersIdWithResponse call
+func ParsePutCustomersIdResponse(rsp *http.Response) (*PutCustomersIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutCustomersIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomerManagerCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutCustomersIdBillingAccountIdResponse parses an HTTP response from a PutCustomersIdBillingAccountIdWithResponse call
+func ParsePutCustomersIdBillingAccountIdResponse(rsp *http.Response) (*PutCustomersIdBillingAccountIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutCustomersIdBillingAccountIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomerManagerCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetExtensionsResponse parses an HTTP response from a GetExtensionsWithResponse call
+func ParseGetExtensionsResponse(rsp *http.Response) (*GetExtensionsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetExtensionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                      `json:"next_page_token,omitempty"`
+			Result        *[]RegistrarManagerExtension `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostExtensionsResponse parses an HTTP response from a PostExtensionsWithResponse call
+func ParsePostExtensionsResponse(rsp *http.Response) (*PostExtensionsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostExtensionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegistrarManagerExtension
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteExtensionsIdResponse parses an HTTP response from a DeleteExtensionsIdWithResponse call
+func ParseDeleteExtensionsIdResponse(rsp *http.Response) (*DeleteExtensionsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteExtensionsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegistrarManagerExtension
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetExtensionsIdResponse parses an HTTP response from a GetExtensionsIdWithResponse call
+func ParseGetExtensionsIdResponse(rsp *http.Response) (*GetExtensionsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetExtensionsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegistrarManagerExtension
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutExtensionsIdResponse parses an HTTP response from a PutExtensionsIdWithResponse call
+func ParsePutExtensionsIdResponse(rsp *http.Response) (*PutExtensionsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutExtensionsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegistrarManagerExtension
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetFilesResponse parses an HTTP response from a GetFilesWithResponse call
+func ParseGetFilesResponse(rsp *http.Response) (*GetFilesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetFilesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string               `json:"next_page_token,omitempty"`
+			Result        *[]StorageManagerFile `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostFilesResponse parses an HTTP response from a PostFilesWithResponse call
+func ParsePostFilesResponse(rsp *http.Response) (*PostFilesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostFilesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerFile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteFilesIdResponse parses an HTTP response from a DeleteFilesIdWithResponse call
+func ParseDeleteFilesIdResponse(rsp *http.Response) (*DeleteFilesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteFilesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerFile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetFilesIdResponse parses an HTTP response from a GetFilesIdWithResponse call
+func ParseGetFilesIdResponse(rsp *http.Response) (*GetFilesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetFilesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerFile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetFlowsResponse parses an HTTP response from a GetFlowsWithResponse call
+func ParseGetFlowsResponse(rsp *http.Response) (*GetFlowsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetFlowsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string            `json:"next_page_token,omitempty"`
+			Result        *[]FlowManagerFlow `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostFlowsResponse parses an HTTP response from a PostFlowsWithResponse call
+func ParsePostFlowsResponse(rsp *http.Response) (*PostFlowsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostFlowsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FlowManagerFlow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteFlowsIdResponse parses an HTTP response from a DeleteFlowsIdWithResponse call
+func ParseDeleteFlowsIdResponse(rsp *http.Response) (*DeleteFlowsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteFlowsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FlowManagerFlow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetFlowsIdResponse parses an HTTP response from a GetFlowsIdWithResponse call
+func ParseGetFlowsIdResponse(rsp *http.Response) (*GetFlowsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetFlowsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FlowManagerFlow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutFlowsIdResponse parses an HTTP response from a PutFlowsIdWithResponse call
+func ParsePutFlowsIdResponse(rsp *http.Response) (*PutFlowsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutFlowsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FlowManagerFlow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetGroupcallsResponse parses an HTTP response from a GetGroupcallsWithResponse call
+func ParseGetGroupcallsResponse(rsp *http.Response) (*GetGroupcallsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetGroupcallsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                 `json:"next_page_token,omitempty"`
+			Result        *[]CallManagerGroupcall `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostGroupcallsResponse parses an HTTP response from a PostGroupcallsWithResponse call
+func ParsePostGroupcallsResponse(rsp *http.Response) (*PostGroupcallsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostGroupcallsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerGroupcall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteGroupcallsIdResponse parses an HTTP response from a DeleteGroupcallsIdWithResponse call
+func ParseDeleteGroupcallsIdResponse(rsp *http.Response) (*DeleteGroupcallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteGroupcallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerGroupcall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetGroupcallsIdResponse parses an HTTP response from a GetGroupcallsIdWithResponse call
+func ParseGetGroupcallsIdResponse(rsp *http.Response) (*GetGroupcallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetGroupcallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerGroupcall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostGroupcallsIdHangupResponse parses an HTTP response from a PostGroupcallsIdHangupWithResponse call
+func ParsePostGroupcallsIdHangupResponse(rsp *http.Response) (*PostGroupcallsIdHangupResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostGroupcallsIdHangupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerGroupcall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetMeResponse parses an HTTP response from a GetMeWithResponse call
+func ParseGetMeResponse(rsp *http.Response) (*GetMeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetMessagesResponse parses an HTTP response from a GetMessagesWithResponse call
+func ParseGetMessagesResponse(rsp *http.Response) (*GetMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                  `json:"next_page_token,omitempty"`
+			Result        *[]MessageManagerMessage `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostMessagesResponse parses an HTTP response from a PostMessagesWithResponse call
+func ParsePostMessagesResponse(rsp *http.Response) (*PostMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MessageManagerMessage
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteMessagesIdResponse parses an HTTP response from a DeleteMessagesIdWithResponse call
+func ParseDeleteMessagesIdResponse(rsp *http.Response) (*DeleteMessagesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteMessagesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MessageManagerMessage
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetMessagesIdResponse parses an HTTP response from a GetMessagesIdWithResponse call
+func ParseGetMessagesIdResponse(rsp *http.Response) (*GetMessagesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMessagesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MessageManagerMessage
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetNumbersResponse parses an HTTP response from a GetNumbersWithResponse call
+func ParseGetNumbersResponse(rsp *http.Response) (*GetNumbersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetNumbersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                `json:"next_page_token,omitempty"`
+			Result        *[]NumberManagerNumber `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostNumbersResponse parses an HTTP response from a PostNumbersWithResponse call
+func ParsePostNumbersResponse(rsp *http.Response) (*PostNumbersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostNumbersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NumberManagerNumber
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostNumbersRenewResponse parses an HTTP response from a PostNumbersRenewWithResponse call
+func ParsePostNumbersRenewResponse(rsp *http.Response) (*PostNumbersRenewResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostNumbersRenewResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []NumberManagerNumber
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteNumbersIdResponse parses an HTTP response from a DeleteNumbersIdWithResponse call
+func ParseDeleteNumbersIdResponse(rsp *http.Response) (*DeleteNumbersIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteNumbersIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NumberManagerNumber
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetNumbersIdResponse parses an HTTP response from a GetNumbersIdWithResponse call
+func ParseGetNumbersIdResponse(rsp *http.Response) (*GetNumbersIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetNumbersIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NumberManagerNumber
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutNumbersIdResponse parses an HTTP response from a PutNumbersIdWithResponse call
+func ParsePutNumbersIdResponse(rsp *http.Response) (*PutNumbersIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutNumbersIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NumberManagerNumber
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutNumbersIdFlowIdsResponse parses an HTTP response from a PutNumbersIdFlowIdsWithResponse call
+func ParsePutNumbersIdFlowIdsResponse(rsp *http.Response) (*PutNumbersIdFlowIdsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutNumbersIdFlowIdsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NumberManagerNumber
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil

@@ -10,6 +10,8 @@ post:
             tm_renew:
               type: string
               description: The timestamp for renewing the number.
+          required:
+            - tm_renew
   responses:
     '200':
       description: A list of renewed order numbers.

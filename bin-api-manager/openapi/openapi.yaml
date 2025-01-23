@@ -2986,68 +2986,68 @@ paths:
   /conferences:
     $ref: './paths/conferences/main.yaml'
 
-  # /conversation_accounts/{id}:
-  #   $ref: './paths/conversation_accounts/id.yaml'
-  # /conversation_accounts:
-  #   $ref: './paths/conversation_accounts/main.yaml'
+  /conversation_accounts/{id}:
+    $ref: './paths/conversation_accounts/id.yaml'
+  /conversation_accounts:
+    $ref: './paths/conversation_accounts/main.yaml'
 
-  # /conversations/{id}/messages:
-  #   $ref: './paths/conversations/id_messages.yaml'
-  # /conversations/{id}:
-  #   $ref: './paths/conversations/id.yaml'
-  # /conversations:
-  #   $ref: './paths/conversations/main.yaml'
+  /conversations/{id}/messages:
+    $ref: './paths/conversations/id_messages.yaml'
+  /conversations/{id}:
+    $ref: './paths/conversations/id.yaml'
+  /conversations:
+    $ref: './paths/conversations/main.yaml'
 
-  # /customer/billing_account_id:
-  #   $ref: './paths/customer/billing_account_id.yaml'
-  # /customer:
-  #   $ref: './paths/customer/main.yaml'
+  /customer/billing_account_id:
+    $ref: './paths/customer/billing_account_id.yaml'
+  /customer:
+    $ref: './paths/customer/main.yaml'
 
-  # /customers/{id}/billing_account_id:
-  #   $ref: './paths/customers/id_billing_account_id.yaml'
-  # /customers/{id}:
-  #   $ref: './paths/customers/id.yaml'
-  # /customers:
-  #   $ref: './paths/customers/main.yaml'
+  /customers/{id}/billing_account_id:
+    $ref: './paths/customers/id_billing_account_id.yaml'
+  /customers/{id}:
+    $ref: './paths/customers/id.yaml'
+  /customers:
+    $ref: './paths/customers/main.yaml'
 
-  # /extensions/{id}:
-  #   $ref: './paths/extensions/id.yaml'
-  # /extensions:
-  #   $ref: './paths/extensions/main.yaml'
+  /extensions/{id}:
+    $ref: './paths/extensions/id.yaml'
+  /extensions:
+    $ref: './paths/extensions/main.yaml'
 
-  # /files/{id}:
-  #   $ref: './paths/files/id.yaml'
-  # /files:
-  #   $ref: './paths/files/main.yaml'
+  /files/{id}:
+    $ref: './paths/files/id.yaml'
+  /files:
+    $ref: './paths/files/main.yaml'
 
-  # /flows/{id}:
-  #   $ref: './paths/flows/id.yaml'
-  # /flows:
-  #   $ref: './paths/flows/main.yaml'
+  /flows/{id}:
+    $ref: './paths/flows/id.yaml'
+  /flows:
+    $ref: './paths/flows/main.yaml'
 
-  # /groupcalls/{id}/hangup:
-  #   $ref: './paths/groupcalls/id_hangup.yaml'
-  # /groupcalls/{id}:
-  #   $ref: './paths/groupcalls/id.yaml'
-  # /groupcalls:
-  #   $ref: './paths/groupcalls/main.yaml'
+  /groupcalls/{id}/hangup:
+    $ref: './paths/groupcalls/id_hangup.yaml'
+  /groupcalls/{id}:
+    $ref: './paths/groupcalls/id.yaml'
+  /groupcalls:
+    $ref: './paths/groupcalls/main.yaml'
 
-  # /me:
-  #   $ref: './paths/me/main.yaml'
+  /me:
+    $ref: './paths/me/main.yaml'
 
-  # /messages/{id}:
-  #   $ref: './paths/messages/id.yaml'
-  # /messages:
-  #   $ref: './paths/messages/main.yaml'
+  /messages/{id}:
+    $ref: './paths/messages/id.yaml'
+  /messages:
+    $ref: './paths/messages/main.yaml'
 
-  # /numbers/{id}/flow_id:
-  #   $ref: './paths/numbers/id.yaml'
-  # /numbers/{id}:
-  #   $ref: './paths/numbers/id.yaml'
-  # /numbers:
-  #   $ref: './paths/numbers/main.yaml'
-  # /numbers/renew:
-  #   $ref: './paths/numbers/renew.yaml'
+  /numbers/{id}/flow_ids:
+    $ref: './paths/numbers/id_flow_id.yaml'
+  /numbers/{id}:
+    $ref: './paths/numbers/id.yaml'
+  /numbers:
+    $ref: './paths/numbers/main.yaml'
+  /numbers/renew:
+    $ref: './paths/numbers/renew.yaml'
 
   # /outdials/{id}/campaign_id:
   #   $ref: './paths/outdials/id_campaign_id.yaml'
