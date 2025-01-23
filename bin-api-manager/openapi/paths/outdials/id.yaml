@@ -2,7 +2,6 @@ get:
   summary: Retrieve an outdial by its ID.
   description: Returns detailed information of a specific outdial based on the provided ID.
   parameters:
-    - $ref: '#/components/parameters/PageSize'
     - name: id
       in: path
       required: true

@@ -3254,6 +3254,70 @@ type PutNumbersIdFlowIdsJSONBody struct {
 	MessageFlowId string `json:"message_flow_id"`
 }
 
+// GetOutdialsParams defines parameters for GetOutdials.
+type GetOutdialsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostOutdialsJSONBody defines parameters for PostOutdials.
+type PostOutdialsJSONBody struct {
+	CampaignId string `json:"campaign_id"`
+	Data       string `json:"data"`
+	Detail     string `json:"detail"`
+	Name       string `json:"name"`
+}
+
+// PutOutdialsIdJSONBody defines parameters for PutOutdialsId.
+type PutOutdialsIdJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+}
+
+// PutOutdialsIdCampaignIdJSONBody defines parameters for PutOutdialsIdCampaignId.
+type PutOutdialsIdCampaignIdJSONBody struct {
+	CampaignId string `json:"campaign_id"`
+}
+
+// PutOutdialsIdDataJSONBody defines parameters for PutOutdialsIdData.
+type PutOutdialsIdDataJSONBody struct {
+	Data string `json:"data"`
+}
+
+// GetOutdialsIdTargetsParams defines parameters for GetOutdialsIdTargets.
+type GetOutdialsIdTargetsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostOutdialsIdTargetsJSONBody defines parameters for PostOutdialsIdTargets.
+type PostOutdialsIdTargetsJSONBody struct {
+	Data string `json:"data"`
+
+	// Destination0 Contains source or destination detail info.
+	Destination0 CommonAddress `json:"destination_0"`
+
+	// Destination1 Contains source or destination detail info.
+	Destination1 CommonAddress `json:"destination_1"`
+
+	// Destination2 Contains source or destination detail info.
+	Destination2 CommonAddress `json:"destination_2"`
+
+	// Destination3 Contains source or destination detail info.
+	Destination3 CommonAddress `json:"destination_3"`
+
+	// Destination4 Contains source or destination detail info.
+	Destination4 CommonAddress `json:"destination_4"`
+	Detail       string        `json:"detail"`
+	Name         string        `json:"name"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -3430,6 +3494,21 @@ type PutNumbersIdJSONRequestBody PutNumbersIdJSONBody
 
 // PutNumbersIdFlowIdsJSONRequestBody defines body for PutNumbersIdFlowIds for application/json ContentType.
 type PutNumbersIdFlowIdsJSONRequestBody PutNumbersIdFlowIdsJSONBody
+
+// PostOutdialsJSONRequestBody defines body for PostOutdials for application/json ContentType.
+type PostOutdialsJSONRequestBody PostOutdialsJSONBody
+
+// PutOutdialsIdJSONRequestBody defines body for PutOutdialsId for application/json ContentType.
+type PutOutdialsIdJSONRequestBody PutOutdialsIdJSONBody
+
+// PutOutdialsIdCampaignIdJSONRequestBody defines body for PutOutdialsIdCampaignId for application/json ContentType.
+type PutOutdialsIdCampaignIdJSONRequestBody PutOutdialsIdCampaignIdJSONBody
+
+// PutOutdialsIdDataJSONRequestBody defines body for PutOutdialsIdData for application/json ContentType.
+type PutOutdialsIdDataJSONRequestBody PutOutdialsIdDataJSONBody
+
+// PostOutdialsIdTargetsJSONRequestBody defines body for PostOutdialsIdTargets for application/json ContentType.
+type PostOutdialsIdTargetsJSONRequestBody PostOutdialsIdTargetsJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -3886,6 +3965,39 @@ type ServerInterface interface {
 	// Update the order number's flow ID
 	// (PUT /numbers/{id}/flow_ids)
 	PutNumbersIdFlowIds(c *gin.Context, id string)
+	// Retrieve a list of outdials.
+	// (GET /outdials)
+	GetOutdials(c *gin.Context, params GetOutdialsParams)
+	// Create a new outdial.
+	// (POST /outdials)
+	PostOutdials(c *gin.Context)
+	// Delete an existing outdial.
+	// (DELETE /outdials/{id})
+	DeleteOutdialsId(c *gin.Context, id string)
+	// Retrieve an outdial by its ID.
+	// (GET /outdials/{id})
+	GetOutdialsId(c *gin.Context, id string)
+	// Update an outdial.
+	// (PUT /outdials/{id})
+	PutOutdialsId(c *gin.Context, id string)
+	// Update an outdial's campaign ID.
+	// (PUT /outdials/{id}/campaign_id)
+	PutOutdialsIdCampaignId(c *gin.Context, id string)
+	// Update an outdial's data.
+	// (PUT /outdials/{id}/data)
+	PutOutdialsIdData(c *gin.Context, id string)
+	// Retrieve a list of outdial targets.
+	// (GET /outdials/{id}/targets)
+	GetOutdialsIdTargets(c *gin.Context, id string, params GetOutdialsIdTargetsParams)
+	// Create a new target for an outdial.
+	// (POST /outdials/{id}/targets)
+	PostOutdialsIdTargets(c *gin.Context, id string)
+	// Delete an outdial target.
+	// (DELETE /outdials/{id}/targets/{target_id})
+	DeleteOutdialsIdTargetsTargetId(c *gin.Context, id string, targetId string)
+	// Retrieve an outdial target by its ID.
+	// (GET /outdials/{id}/targets/{target_id})
+	GetOutdialsIdTargetsTargetId(c *gin.Context, id string, targetId string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -7650,6 +7762,306 @@ func (siw *ServerInterfaceWrapper) PutNumbersIdFlowIds(c *gin.Context) {
 	siw.Handler.PutNumbersIdFlowIds(c, id)
 }
 
+// GetOutdials operation middleware
+func (siw *ServerInterfaceWrapper) GetOutdials(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetOutdialsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetOutdials(c, params)
+}
+
+// PostOutdials operation middleware
+func (siw *ServerInterfaceWrapper) PostOutdials(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostOutdials(c)
+}
+
+// DeleteOutdialsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteOutdialsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteOutdialsId(c, id)
+}
+
+// GetOutdialsId operation middleware
+func (siw *ServerInterfaceWrapper) GetOutdialsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetOutdialsId(c, id)
+}
+
+// PutOutdialsId operation middleware
+func (siw *ServerInterfaceWrapper) PutOutdialsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutOutdialsId(c, id)
+}
+
+// PutOutdialsIdCampaignId operation middleware
+func (siw *ServerInterfaceWrapper) PutOutdialsIdCampaignId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutOutdialsIdCampaignId(c, id)
+}
+
+// PutOutdialsIdData operation middleware
+func (siw *ServerInterfaceWrapper) PutOutdialsIdData(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutOutdialsIdData(c, id)
+}
+
+// GetOutdialsIdTargets operation middleware
+func (siw *ServerInterfaceWrapper) GetOutdialsIdTargets(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetOutdialsIdTargetsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetOutdialsIdTargets(c, id, params)
+}
+
+// PostOutdialsIdTargets operation middleware
+func (siw *ServerInterfaceWrapper) PostOutdialsIdTargets(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostOutdialsIdTargets(c, id)
+}
+
+// DeleteOutdialsIdTargetsTargetId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteOutdialsIdTargetsTargetId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "target_id" -------------
+	var targetId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "target_id", c.Param("target_id"), &targetId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter target_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteOutdialsIdTargetsTargetId(c, id, targetId)
+}
+
+// GetOutdialsIdTargetsTargetId operation middleware
+func (siw *ServerInterfaceWrapper) GetOutdialsIdTargetsTargetId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "target_id" -------------
+	var targetId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "target_id", c.Param("target_id"), &targetId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter target_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetOutdialsIdTargetsTargetId(c, id, targetId)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -7828,6 +8240,17 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/numbers/:id", wrapper.GetNumbersId)
 	router.PUT(options.BaseURL+"/numbers/:id", wrapper.PutNumbersId)
 	router.PUT(options.BaseURL+"/numbers/:id/flow_ids", wrapper.PutNumbersIdFlowIds)
+	router.GET(options.BaseURL+"/outdials", wrapper.GetOutdials)
+	router.POST(options.BaseURL+"/outdials", wrapper.PostOutdials)
+	router.DELETE(options.BaseURL+"/outdials/:id", wrapper.DeleteOutdialsId)
+	router.GET(options.BaseURL+"/outdials/:id", wrapper.GetOutdialsId)
+	router.PUT(options.BaseURL+"/outdials/:id", wrapper.PutOutdialsId)
+	router.PUT(options.BaseURL+"/outdials/:id/campaign_id", wrapper.PutOutdialsIdCampaignId)
+	router.PUT(options.BaseURL+"/outdials/:id/data", wrapper.PutOutdialsIdData)
+	router.GET(options.BaseURL+"/outdials/:id/targets", wrapper.GetOutdialsIdTargets)
+	router.POST(options.BaseURL+"/outdials/:id/targets", wrapper.PostOutdialsIdTargets)
+	router.DELETE(options.BaseURL+"/outdials/:id/targets/:target_id", wrapper.DeleteOutdialsIdTargetsTargetId)
+	router.GET(options.BaseURL+"/outdials/:id/targets/:target_id", wrapper.GetOutdialsIdTargetsTargetId)
 }
 
 type GetAccesskeysRequestObject struct {
@@ -10612,6 +11035,208 @@ func (response PutNumbersIdFlowIds200JSONResponse) VisitPutNumbersIdFlowIdsRespo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetOutdialsRequestObject struct {
+	Params GetOutdialsParams
+}
+
+type GetOutdialsResponseObject interface {
+	VisitGetOutdialsResponse(w http.ResponseWriter) error
+}
+
+type GetOutdials200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                  `json:"next_page_token,omitempty"`
+	Result        *[]OutdialManagerOutdial `json:"result,omitempty"`
+}
+
+func (response GetOutdials200JSONResponse) VisitGetOutdialsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostOutdialsRequestObject struct {
+	Body *PostOutdialsJSONRequestBody
+}
+
+type PostOutdialsResponseObject interface {
+	VisitPostOutdialsResponse(w http.ResponseWriter) error
+}
+
+type PostOutdials200JSONResponse OutdialManagerOutdial
+
+func (response PostOutdials200JSONResponse) VisitPostOutdialsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteOutdialsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteOutdialsIdResponseObject interface {
+	VisitDeleteOutdialsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteOutdialsId200JSONResponse OutdialManagerOutdial
+
+func (response DeleteOutdialsId200JSONResponse) VisitDeleteOutdialsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutdialsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetOutdialsIdResponseObject interface {
+	VisitGetOutdialsIdResponse(w http.ResponseWriter) error
+}
+
+type GetOutdialsId200JSONResponse OutdialManagerOutdial
+
+func (response GetOutdialsId200JSONResponse) VisitGetOutdialsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutdialsIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutOutdialsIdJSONRequestBody
+}
+
+type PutOutdialsIdResponseObject interface {
+	VisitPutOutdialsIdResponse(w http.ResponseWriter) error
+}
+
+type PutOutdialsId200JSONResponse OutdialManagerOutdial
+
+func (response PutOutdialsId200JSONResponse) VisitPutOutdialsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutdialsIdCampaignIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutOutdialsIdCampaignIdJSONRequestBody
+}
+
+type PutOutdialsIdCampaignIdResponseObject interface {
+	VisitPutOutdialsIdCampaignIdResponse(w http.ResponseWriter) error
+}
+
+type PutOutdialsIdCampaignId200JSONResponse OutdialManagerOutdial
+
+func (response PutOutdialsIdCampaignId200JSONResponse) VisitPutOutdialsIdCampaignIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutdialsIdDataRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutOutdialsIdDataJSONRequestBody
+}
+
+type PutOutdialsIdDataResponseObject interface {
+	VisitPutOutdialsIdDataResponse(w http.ResponseWriter) error
+}
+
+type PutOutdialsIdData200JSONResponse OutdialManagerOutdial
+
+func (response PutOutdialsIdData200JSONResponse) VisitPutOutdialsIdDataResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutdialsIdTargetsRequestObject struct {
+	Id     string `json:"id"`
+	Params GetOutdialsIdTargetsParams
+}
+
+type GetOutdialsIdTargetsResponseObject interface {
+	VisitGetOutdialsIdTargetsResponse(w http.ResponseWriter) error
+}
+
+type GetOutdialsIdTargets200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                        `json:"next_page_token,omitempty"`
+	Result        *[]OutdialManagerOutdialtarget `json:"result,omitempty"`
+}
+
+func (response GetOutdialsIdTargets200JSONResponse) VisitGetOutdialsIdTargetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostOutdialsIdTargetsRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostOutdialsIdTargetsJSONRequestBody
+}
+
+type PostOutdialsIdTargetsResponseObject interface {
+	VisitPostOutdialsIdTargetsResponse(w http.ResponseWriter) error
+}
+
+type PostOutdialsIdTargets200JSONResponse OutdialManagerOutdialtarget
+
+func (response PostOutdialsIdTargets200JSONResponse) VisitPostOutdialsIdTargetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteOutdialsIdTargetsTargetIdRequestObject struct {
+	Id       string `json:"id"`
+	TargetId string `json:"target_id"`
+}
+
+type DeleteOutdialsIdTargetsTargetIdResponseObject interface {
+	VisitDeleteOutdialsIdTargetsTargetIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteOutdialsIdTargetsTargetId200JSONResponse OutdialManagerOutdialtarget
+
+func (response DeleteOutdialsIdTargetsTargetId200JSONResponse) VisitDeleteOutdialsIdTargetsTargetIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutdialsIdTargetsTargetIdRequestObject struct {
+	Id       string `json:"id"`
+	TargetId string `json:"target_id"`
+}
+
+type GetOutdialsIdTargetsTargetIdResponseObject interface {
+	VisitGetOutdialsIdTargetsTargetIdResponse(w http.ResponseWriter) error
+}
+
+type GetOutdialsIdTargetsTargetId200JSONResponse OutdialManagerOutdialtarget
+
+func (response GetOutdialsIdTargetsTargetId200JSONResponse) VisitGetOutdialsIdTargetsTargetIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get list of accesskeys
@@ -11067,6 +11692,39 @@ type StrictServerInterface interface {
 	// Update the order number's flow ID
 	// (PUT /numbers/{id}/flow_ids)
 	PutNumbersIdFlowIds(ctx context.Context, request PutNumbersIdFlowIdsRequestObject) (PutNumbersIdFlowIdsResponseObject, error)
+	// Retrieve a list of outdials.
+	// (GET /outdials)
+	GetOutdials(ctx context.Context, request GetOutdialsRequestObject) (GetOutdialsResponseObject, error)
+	// Create a new outdial.
+	// (POST /outdials)
+	PostOutdials(ctx context.Context, request PostOutdialsRequestObject) (PostOutdialsResponseObject, error)
+	// Delete an existing outdial.
+	// (DELETE /outdials/{id})
+	DeleteOutdialsId(ctx context.Context, request DeleteOutdialsIdRequestObject) (DeleteOutdialsIdResponseObject, error)
+	// Retrieve an outdial by its ID.
+	// (GET /outdials/{id})
+	GetOutdialsId(ctx context.Context, request GetOutdialsIdRequestObject) (GetOutdialsIdResponseObject, error)
+	// Update an outdial.
+	// (PUT /outdials/{id})
+	PutOutdialsId(ctx context.Context, request PutOutdialsIdRequestObject) (PutOutdialsIdResponseObject, error)
+	// Update an outdial's campaign ID.
+	// (PUT /outdials/{id}/campaign_id)
+	PutOutdialsIdCampaignId(ctx context.Context, request PutOutdialsIdCampaignIdRequestObject) (PutOutdialsIdCampaignIdResponseObject, error)
+	// Update an outdial's data.
+	// (PUT /outdials/{id}/data)
+	PutOutdialsIdData(ctx context.Context, request PutOutdialsIdDataRequestObject) (PutOutdialsIdDataResponseObject, error)
+	// Retrieve a list of outdial targets.
+	// (GET /outdials/{id}/targets)
+	GetOutdialsIdTargets(ctx context.Context, request GetOutdialsIdTargetsRequestObject) (GetOutdialsIdTargetsResponseObject, error)
+	// Create a new target for an outdial.
+	// (POST /outdials/{id}/targets)
+	PostOutdialsIdTargets(ctx context.Context, request PostOutdialsIdTargetsRequestObject) (PostOutdialsIdTargetsResponseObject, error)
+	// Delete an outdial target.
+	// (DELETE /outdials/{id}/targets/{target_id})
+	DeleteOutdialsIdTargetsTargetId(ctx context.Context, request DeleteOutdialsIdTargetsTargetIdRequestObject) (DeleteOutdialsIdTargetsTargetIdResponseObject, error)
+	// Retrieve an outdial target by its ID.
+	// (GET /outdials/{id}/targets/{target_id})
+	GetOutdialsIdTargetsTargetId(ctx context.Context, request GetOutdialsIdTargetsTargetIdRequestObject) (GetOutdialsIdTargetsTargetIdResponseObject, error)
 }
 
 type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
@@ -15577,6 +16235,344 @@ func (sh *strictHandler) PutNumbersIdFlowIds(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutNumbersIdFlowIdsResponseObject); ok {
 		if err := validResponse.VisitPutNumbersIdFlowIdsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOutdials operation middleware
+func (sh *strictHandler) GetOutdials(ctx *gin.Context, params GetOutdialsParams) {
+	var request GetOutdialsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOutdials(ctx, request.(GetOutdialsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOutdials")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetOutdialsResponseObject); ok {
+		if err := validResponse.VisitGetOutdialsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostOutdials operation middleware
+func (sh *strictHandler) PostOutdials(ctx *gin.Context) {
+	var request PostOutdialsRequestObject
+
+	var body PostOutdialsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostOutdials(ctx, request.(PostOutdialsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostOutdials")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostOutdialsResponseObject); ok {
+		if err := validResponse.VisitPostOutdialsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteOutdialsId operation middleware
+func (sh *strictHandler) DeleteOutdialsId(ctx *gin.Context, id string) {
+	var request DeleteOutdialsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteOutdialsId(ctx, request.(DeleteOutdialsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteOutdialsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteOutdialsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteOutdialsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOutdialsId operation middleware
+func (sh *strictHandler) GetOutdialsId(ctx *gin.Context, id string) {
+	var request GetOutdialsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOutdialsId(ctx, request.(GetOutdialsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOutdialsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetOutdialsIdResponseObject); ok {
+		if err := validResponse.VisitGetOutdialsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutOutdialsId operation middleware
+func (sh *strictHandler) PutOutdialsId(ctx *gin.Context, id string) {
+	var request PutOutdialsIdRequestObject
+
+	request.Id = id
+
+	var body PutOutdialsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutOutdialsId(ctx, request.(PutOutdialsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutOutdialsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutOutdialsIdResponseObject); ok {
+		if err := validResponse.VisitPutOutdialsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutOutdialsIdCampaignId operation middleware
+func (sh *strictHandler) PutOutdialsIdCampaignId(ctx *gin.Context, id string) {
+	var request PutOutdialsIdCampaignIdRequestObject
+
+	request.Id = id
+
+	var body PutOutdialsIdCampaignIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutOutdialsIdCampaignId(ctx, request.(PutOutdialsIdCampaignIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutOutdialsIdCampaignId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutOutdialsIdCampaignIdResponseObject); ok {
+		if err := validResponse.VisitPutOutdialsIdCampaignIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutOutdialsIdData operation middleware
+func (sh *strictHandler) PutOutdialsIdData(ctx *gin.Context, id string) {
+	var request PutOutdialsIdDataRequestObject
+
+	request.Id = id
+
+	var body PutOutdialsIdDataJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutOutdialsIdData(ctx, request.(PutOutdialsIdDataRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutOutdialsIdData")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutOutdialsIdDataResponseObject); ok {
+		if err := validResponse.VisitPutOutdialsIdDataResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOutdialsIdTargets operation middleware
+func (sh *strictHandler) GetOutdialsIdTargets(ctx *gin.Context, id string, params GetOutdialsIdTargetsParams) {
+	var request GetOutdialsIdTargetsRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOutdialsIdTargets(ctx, request.(GetOutdialsIdTargetsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOutdialsIdTargets")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetOutdialsIdTargetsResponseObject); ok {
+		if err := validResponse.VisitGetOutdialsIdTargetsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostOutdialsIdTargets operation middleware
+func (sh *strictHandler) PostOutdialsIdTargets(ctx *gin.Context, id string) {
+	var request PostOutdialsIdTargetsRequestObject
+
+	request.Id = id
+
+	var body PostOutdialsIdTargetsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostOutdialsIdTargets(ctx, request.(PostOutdialsIdTargetsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostOutdialsIdTargets")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostOutdialsIdTargetsResponseObject); ok {
+		if err := validResponse.VisitPostOutdialsIdTargetsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteOutdialsIdTargetsTargetId operation middleware
+func (sh *strictHandler) DeleteOutdialsIdTargetsTargetId(ctx *gin.Context, id string, targetId string) {
+	var request DeleteOutdialsIdTargetsTargetIdRequestObject
+
+	request.Id = id
+	request.TargetId = targetId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteOutdialsIdTargetsTargetId(ctx, request.(DeleteOutdialsIdTargetsTargetIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteOutdialsIdTargetsTargetId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteOutdialsIdTargetsTargetIdResponseObject); ok {
+		if err := validResponse.VisitDeleteOutdialsIdTargetsTargetIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOutdialsIdTargetsTargetId operation middleware
+func (sh *strictHandler) GetOutdialsIdTargetsTargetId(ctx *gin.Context, id string, targetId string) {
+	var request GetOutdialsIdTargetsTargetIdRequestObject
+
+	request.Id = id
+	request.TargetId = targetId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOutdialsIdTargetsTargetId(ctx, request.(GetOutdialsIdTargetsTargetIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOutdialsIdTargetsTargetId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetOutdialsIdTargetsTargetIdResponseObject); ok {
+		if err := validResponse.VisitGetOutdialsIdTargetsTargetIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

@@ -3049,18 +3049,18 @@ paths:
   /numbers/renew:
     $ref: './paths/numbers/renew.yaml'
 
-  # /outdials/{id}/campaign_id:
-  #   $ref: './paths/outdials/id_campaign_id.yaml'
-  # /outdials/{id}/data:
-  #   $ref: './paths/outdials/id_data.yaml'
-  # /outdials/{id}/targets/{target_id}:
-  #   $ref: './paths/outdials/id_targets_id.yaml'
-  # /outdials/{id}/targets:
-  #   $ref: './paths/outdials/id_targets.yaml'
-  # /outdials/{id}:
-  #   $ref: './paths/outdials/id.yaml'
-  # /outdials:
-  #   $ref: './paths/outdials/main.yaml'
+  /outdials/{id}/campaign_id:
+    $ref: './paths/outdials/id_campaign_id.yaml'
+  /outdials/{id}/data:
+    $ref: './paths/outdials/id_data.yaml'
+  /outdials/{id}/targets/{target_id}:
+    $ref: './paths/outdials/id_targets_id.yaml'
+  /outdials/{id}/targets:
+    $ref: './paths/outdials/id_targets.yaml'
+  /outdials/{id}:
+    $ref: './paths/outdials/id.yaml'
+  /outdials:
+    $ref: './paths/outdials/main.yaml'
 
   # /outplans/{id}:
   #   $ref: './paths/outplans/id.yaml'

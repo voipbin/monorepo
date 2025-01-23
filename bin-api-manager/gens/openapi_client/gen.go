@@ -3255,6 +3255,70 @@ type PutNumbersIdFlowIdsJSONBody struct {
 	MessageFlowId string `json:"message_flow_id"`
 }
 
+// GetOutdialsParams defines parameters for GetOutdials.
+type GetOutdialsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostOutdialsJSONBody defines parameters for PostOutdials.
+type PostOutdialsJSONBody struct {
+	CampaignId string `json:"campaign_id"`
+	Data       string `json:"data"`
+	Detail     string `json:"detail"`
+	Name       string `json:"name"`
+}
+
+// PutOutdialsIdJSONBody defines parameters for PutOutdialsId.
+type PutOutdialsIdJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+}
+
+// PutOutdialsIdCampaignIdJSONBody defines parameters for PutOutdialsIdCampaignId.
+type PutOutdialsIdCampaignIdJSONBody struct {
+	CampaignId string `json:"campaign_id"`
+}
+
+// PutOutdialsIdDataJSONBody defines parameters for PutOutdialsIdData.
+type PutOutdialsIdDataJSONBody struct {
+	Data string `json:"data"`
+}
+
+// GetOutdialsIdTargetsParams defines parameters for GetOutdialsIdTargets.
+type GetOutdialsIdTargetsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostOutdialsIdTargetsJSONBody defines parameters for PostOutdialsIdTargets.
+type PostOutdialsIdTargetsJSONBody struct {
+	Data string `json:"data"`
+
+	// Destination0 Contains source or destination detail info.
+	Destination0 CommonAddress `json:"destination_0"`
+
+	// Destination1 Contains source or destination detail info.
+	Destination1 CommonAddress `json:"destination_1"`
+
+	// Destination2 Contains source or destination detail info.
+	Destination2 CommonAddress `json:"destination_2"`
+
+	// Destination3 Contains source or destination detail info.
+	Destination3 CommonAddress `json:"destination_3"`
+
+	// Destination4 Contains source or destination detail info.
+	Destination4 CommonAddress `json:"destination_4"`
+	Detail       string        `json:"detail"`
+	Name         string        `json:"name"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -3431,6 +3495,21 @@ type PutNumbersIdJSONRequestBody PutNumbersIdJSONBody
 
 // PutNumbersIdFlowIdsJSONRequestBody defines body for PutNumbersIdFlowIds for application/json ContentType.
 type PutNumbersIdFlowIdsJSONRequestBody PutNumbersIdFlowIdsJSONBody
+
+// PostOutdialsJSONRequestBody defines body for PostOutdials for application/json ContentType.
+type PostOutdialsJSONRequestBody PostOutdialsJSONBody
+
+// PutOutdialsIdJSONRequestBody defines body for PutOutdialsId for application/json ContentType.
+type PutOutdialsIdJSONRequestBody PutOutdialsIdJSONBody
+
+// PutOutdialsIdCampaignIdJSONRequestBody defines body for PutOutdialsIdCampaignId for application/json ContentType.
+type PutOutdialsIdCampaignIdJSONRequestBody PutOutdialsIdCampaignIdJSONBody
+
+// PutOutdialsIdDataJSONRequestBody defines body for PutOutdialsIdData for application/json ContentType.
+type PutOutdialsIdDataJSONRequestBody PutOutdialsIdDataJSONBody
+
+// PostOutdialsIdTargetsJSONRequestBody defines body for PostOutdialsIdTargets for application/json ContentType.
+type PostOutdialsIdTargetsJSONRequestBody PostOutdialsIdTargetsJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -4073,6 +4152,49 @@ type ClientInterface interface {
 	PutNumbersIdFlowIdsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PutNumbersIdFlowIds(ctx context.Context, id string, body PutNumbersIdFlowIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOutdials request
+	GetOutdials(ctx context.Context, params *GetOutdialsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostOutdialsWithBody request with any body
+	PostOutdialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostOutdials(ctx context.Context, body PostOutdialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOutdialsId request
+	DeleteOutdialsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOutdialsId request
+	GetOutdialsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutOutdialsIdWithBody request with any body
+	PutOutdialsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutOutdialsId(ctx context.Context, id string, body PutOutdialsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutOutdialsIdCampaignIdWithBody request with any body
+	PutOutdialsIdCampaignIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutOutdialsIdCampaignId(ctx context.Context, id string, body PutOutdialsIdCampaignIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutOutdialsIdDataWithBody request with any body
+	PutOutdialsIdDataWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutOutdialsIdData(ctx context.Context, id string, body PutOutdialsIdDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOutdialsIdTargets request
+	GetOutdialsIdTargets(ctx context.Context, id string, params *GetOutdialsIdTargetsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostOutdialsIdTargetsWithBody request with any body
+	PostOutdialsIdTargetsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostOutdialsIdTargets(ctx context.Context, id string, body PostOutdialsIdTargetsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOutdialsIdTargetsTargetId request
+	DeleteOutdialsIdTargetsTargetId(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOutdialsIdTargetsTargetId request
+	GetOutdialsIdTargetsTargetId(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccesskeys(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6573,6 +6695,198 @@ func (c *Client) PutNumbersIdFlowIdsWithBody(ctx context.Context, id string, con
 
 func (c *Client) PutNumbersIdFlowIds(ctx context.Context, id string, body PutNumbersIdFlowIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPutNumbersIdFlowIdsRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOutdials(ctx context.Context, params *GetOutdialsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOutdialsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostOutdialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostOutdialsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostOutdials(ctx context.Context, body PostOutdialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostOutdialsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOutdialsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOutdialsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOutdialsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOutdialsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutdialsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutdialsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutdialsId(ctx context.Context, id string, body PutOutdialsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutdialsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutdialsIdCampaignIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutdialsIdCampaignIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutdialsIdCampaignId(ctx context.Context, id string, body PutOutdialsIdCampaignIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutdialsIdCampaignIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutdialsIdDataWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutdialsIdDataRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutOutdialsIdData(ctx context.Context, id string, body PutOutdialsIdDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutOutdialsIdDataRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOutdialsIdTargets(ctx context.Context, id string, params *GetOutdialsIdTargetsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOutdialsIdTargetsRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostOutdialsIdTargetsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostOutdialsIdTargetsRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostOutdialsIdTargets(ctx context.Context, id string, body PostOutdialsIdTargetsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostOutdialsIdTargetsRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOutdialsIdTargetsTargetId(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOutdialsIdTargetsTargetIdRequest(c.Server, id, targetId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOutdialsIdTargetsTargetId(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOutdialsIdTargetsTargetIdRequest(c.Server, id, targetId)
 	if err != nil {
 		return nil, err
 	}
@@ -13291,6 +13605,521 @@ func NewPutNumbersIdFlowIdsRequestWithBody(server string, id string, contentType
 	return req, nil
 }
 
+// NewGetOutdialsRequest generates requests for GetOutdials
+func NewGetOutdialsRequest(server string, params *GetOutdialsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostOutdialsRequest calls the generic PostOutdials builder with application/json body
+func NewPostOutdialsRequest(server string, body PostOutdialsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostOutdialsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostOutdialsRequestWithBody generates requests for PostOutdials with any type of body
+func NewPostOutdialsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOutdialsIdRequest generates requests for DeleteOutdialsId
+func NewDeleteOutdialsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOutdialsIdRequest generates requests for GetOutdialsId
+func NewGetOutdialsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutOutdialsIdRequest calls the generic PutOutdialsId builder with application/json body
+func NewPutOutdialsIdRequest(server string, id string, body PutOutdialsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutOutdialsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutOutdialsIdRequestWithBody generates requests for PutOutdialsId with any type of body
+func NewPutOutdialsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutOutdialsIdCampaignIdRequest calls the generic PutOutdialsIdCampaignId builder with application/json body
+func NewPutOutdialsIdCampaignIdRequest(server string, id string, body PutOutdialsIdCampaignIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutOutdialsIdCampaignIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutOutdialsIdCampaignIdRequestWithBody generates requests for PutOutdialsIdCampaignId with any type of body
+func NewPutOutdialsIdCampaignIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials/%s/campaign_id", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutOutdialsIdDataRequest calls the generic PutOutdialsIdData builder with application/json body
+func NewPutOutdialsIdDataRequest(server string, id string, body PutOutdialsIdDataJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutOutdialsIdDataRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutOutdialsIdDataRequestWithBody generates requests for PutOutdialsIdData with any type of body
+func NewPutOutdialsIdDataRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials/%s/data", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetOutdialsIdTargetsRequest generates requests for GetOutdialsIdTargets
+func NewGetOutdialsIdTargetsRequest(server string, id string, params *GetOutdialsIdTargetsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials/%s/targets", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostOutdialsIdTargetsRequest calls the generic PostOutdialsIdTargets builder with application/json body
+func NewPostOutdialsIdTargetsRequest(server string, id string, body PostOutdialsIdTargetsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostOutdialsIdTargetsRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostOutdialsIdTargetsRequestWithBody generates requests for PostOutdialsIdTargets with any type of body
+func NewPostOutdialsIdTargetsRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials/%s/targets", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOutdialsIdTargetsTargetIdRequest generates requests for DeleteOutdialsIdTargetsTargetId
+func NewDeleteOutdialsIdTargetsTargetIdRequest(server string, id string, targetId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "target_id", runtime.ParamLocationPath, targetId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials/%s/targets/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOutdialsIdTargetsTargetIdRequest generates requests for GetOutdialsIdTargetsTargetId
+func NewGetOutdialsIdTargetsTargetIdRequest(server string, id string, targetId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "target_id", runtime.ParamLocationPath, targetId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/outdials/%s/targets/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -13902,6 +14731,49 @@ type ClientWithResponsesInterface interface {
 	PutNumbersIdFlowIdsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutNumbersIdFlowIdsResponse, error)
 
 	PutNumbersIdFlowIdsWithResponse(ctx context.Context, id string, body PutNumbersIdFlowIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*PutNumbersIdFlowIdsResponse, error)
+
+	// GetOutdialsWithResponse request
+	GetOutdialsWithResponse(ctx context.Context, params *GetOutdialsParams, reqEditors ...RequestEditorFn) (*GetOutdialsResponse, error)
+
+	// PostOutdialsWithBodyWithResponse request with any body
+	PostOutdialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOutdialsResponse, error)
+
+	PostOutdialsWithResponse(ctx context.Context, body PostOutdialsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOutdialsResponse, error)
+
+	// DeleteOutdialsIdWithResponse request
+	DeleteOutdialsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteOutdialsIdResponse, error)
+
+	// GetOutdialsIdWithResponse request
+	GetOutdialsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetOutdialsIdResponse, error)
+
+	// PutOutdialsIdWithBodyWithResponse request with any body
+	PutOutdialsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutdialsIdResponse, error)
+
+	PutOutdialsIdWithResponse(ctx context.Context, id string, body PutOutdialsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutdialsIdResponse, error)
+
+	// PutOutdialsIdCampaignIdWithBodyWithResponse request with any body
+	PutOutdialsIdCampaignIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutdialsIdCampaignIdResponse, error)
+
+	PutOutdialsIdCampaignIdWithResponse(ctx context.Context, id string, body PutOutdialsIdCampaignIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutdialsIdCampaignIdResponse, error)
+
+	// PutOutdialsIdDataWithBodyWithResponse request with any body
+	PutOutdialsIdDataWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutdialsIdDataResponse, error)
+
+	PutOutdialsIdDataWithResponse(ctx context.Context, id string, body PutOutdialsIdDataJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutdialsIdDataResponse, error)
+
+	// GetOutdialsIdTargetsWithResponse request
+	GetOutdialsIdTargetsWithResponse(ctx context.Context, id string, params *GetOutdialsIdTargetsParams, reqEditors ...RequestEditorFn) (*GetOutdialsIdTargetsResponse, error)
+
+	// PostOutdialsIdTargetsWithBodyWithResponse request with any body
+	PostOutdialsIdTargetsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOutdialsIdTargetsResponse, error)
+
+	PostOutdialsIdTargetsWithResponse(ctx context.Context, id string, body PostOutdialsIdTargetsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOutdialsIdTargetsResponse, error)
+
+	// DeleteOutdialsIdTargetsTargetIdWithResponse request
+	DeleteOutdialsIdTargetsTargetIdWithResponse(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*DeleteOutdialsIdTargetsTargetIdResponse, error)
+
+	// GetOutdialsIdTargetsTargetIdWithResponse request
+	GetOutdialsIdTargetsTargetIdWithResponse(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*GetOutdialsIdTargetsTargetIdResponse, error)
 }
 
 type GetAccesskeysResponse struct {
@@ -17322,6 +18194,256 @@ func (r PutNumbersIdFlowIdsResponse) StatusCode() int {
 	return 0
 }
 
+type GetOutdialsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                  `json:"next_page_token,omitempty"`
+		Result        *[]OutdialManagerOutdial `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOutdialsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOutdialsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostOutdialsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OutdialManagerOutdial
+}
+
+// Status returns HTTPResponse.Status
+func (r PostOutdialsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostOutdialsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteOutdialsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OutdialManagerOutdial
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOutdialsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOutdialsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOutdialsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OutdialManagerOutdial
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOutdialsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOutdialsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutOutdialsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OutdialManagerOutdial
+}
+
+// Status returns HTTPResponse.Status
+func (r PutOutdialsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutOutdialsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutOutdialsIdCampaignIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OutdialManagerOutdial
+}
+
+// Status returns HTTPResponse.Status
+func (r PutOutdialsIdCampaignIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutOutdialsIdCampaignIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutOutdialsIdDataResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OutdialManagerOutdial
+}
+
+// Status returns HTTPResponse.Status
+func (r PutOutdialsIdDataResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutOutdialsIdDataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOutdialsIdTargetsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                        `json:"next_page_token,omitempty"`
+		Result        *[]OutdialManagerOutdialtarget `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOutdialsIdTargetsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOutdialsIdTargetsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostOutdialsIdTargetsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OutdialManagerOutdialtarget
+}
+
+// Status returns HTTPResponse.Status
+func (r PostOutdialsIdTargetsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostOutdialsIdTargetsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteOutdialsIdTargetsTargetIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OutdialManagerOutdialtarget
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOutdialsIdTargetsTargetIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOutdialsIdTargetsTargetIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOutdialsIdTargetsTargetIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OutdialManagerOutdialtarget
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOutdialsIdTargetsTargetIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOutdialsIdTargetsTargetIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccesskeysWithResponse request returning *GetAccesskeysResponse
 func (c *ClientWithResponses) GetAccesskeysWithResponse(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*GetAccesskeysResponse, error) {
 	rsp, err := c.GetAccesskeys(ctx, params, reqEditors...)
@@ -19143,6 +20265,145 @@ func (c *ClientWithResponses) PutNumbersIdFlowIdsWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParsePutNumbersIdFlowIdsResponse(rsp)
+}
+
+// GetOutdialsWithResponse request returning *GetOutdialsResponse
+func (c *ClientWithResponses) GetOutdialsWithResponse(ctx context.Context, params *GetOutdialsParams, reqEditors ...RequestEditorFn) (*GetOutdialsResponse, error) {
+	rsp, err := c.GetOutdials(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOutdialsResponse(rsp)
+}
+
+// PostOutdialsWithBodyWithResponse request with arbitrary body returning *PostOutdialsResponse
+func (c *ClientWithResponses) PostOutdialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOutdialsResponse, error) {
+	rsp, err := c.PostOutdialsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostOutdialsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostOutdialsWithResponse(ctx context.Context, body PostOutdialsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOutdialsResponse, error) {
+	rsp, err := c.PostOutdials(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostOutdialsResponse(rsp)
+}
+
+// DeleteOutdialsIdWithResponse request returning *DeleteOutdialsIdResponse
+func (c *ClientWithResponses) DeleteOutdialsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteOutdialsIdResponse, error) {
+	rsp, err := c.DeleteOutdialsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOutdialsIdResponse(rsp)
+}
+
+// GetOutdialsIdWithResponse request returning *GetOutdialsIdResponse
+func (c *ClientWithResponses) GetOutdialsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetOutdialsIdResponse, error) {
+	rsp, err := c.GetOutdialsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOutdialsIdResponse(rsp)
+}
+
+// PutOutdialsIdWithBodyWithResponse request with arbitrary body returning *PutOutdialsIdResponse
+func (c *ClientWithResponses) PutOutdialsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutdialsIdResponse, error) {
+	rsp, err := c.PutOutdialsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutdialsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutOutdialsIdWithResponse(ctx context.Context, id string, body PutOutdialsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutdialsIdResponse, error) {
+	rsp, err := c.PutOutdialsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutdialsIdResponse(rsp)
+}
+
+// PutOutdialsIdCampaignIdWithBodyWithResponse request with arbitrary body returning *PutOutdialsIdCampaignIdResponse
+func (c *ClientWithResponses) PutOutdialsIdCampaignIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutdialsIdCampaignIdResponse, error) {
+	rsp, err := c.PutOutdialsIdCampaignIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutdialsIdCampaignIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutOutdialsIdCampaignIdWithResponse(ctx context.Context, id string, body PutOutdialsIdCampaignIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutdialsIdCampaignIdResponse, error) {
+	rsp, err := c.PutOutdialsIdCampaignId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutdialsIdCampaignIdResponse(rsp)
+}
+
+// PutOutdialsIdDataWithBodyWithResponse request with arbitrary body returning *PutOutdialsIdDataResponse
+func (c *ClientWithResponses) PutOutdialsIdDataWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutdialsIdDataResponse, error) {
+	rsp, err := c.PutOutdialsIdDataWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutdialsIdDataResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutOutdialsIdDataWithResponse(ctx context.Context, id string, body PutOutdialsIdDataJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutdialsIdDataResponse, error) {
+	rsp, err := c.PutOutdialsIdData(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutOutdialsIdDataResponse(rsp)
+}
+
+// GetOutdialsIdTargetsWithResponse request returning *GetOutdialsIdTargetsResponse
+func (c *ClientWithResponses) GetOutdialsIdTargetsWithResponse(ctx context.Context, id string, params *GetOutdialsIdTargetsParams, reqEditors ...RequestEditorFn) (*GetOutdialsIdTargetsResponse, error) {
+	rsp, err := c.GetOutdialsIdTargets(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOutdialsIdTargetsResponse(rsp)
+}
+
+// PostOutdialsIdTargetsWithBodyWithResponse request with arbitrary body returning *PostOutdialsIdTargetsResponse
+func (c *ClientWithResponses) PostOutdialsIdTargetsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOutdialsIdTargetsResponse, error) {
+	rsp, err := c.PostOutdialsIdTargetsWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostOutdialsIdTargetsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostOutdialsIdTargetsWithResponse(ctx context.Context, id string, body PostOutdialsIdTargetsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOutdialsIdTargetsResponse, error) {
+	rsp, err := c.PostOutdialsIdTargets(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostOutdialsIdTargetsResponse(rsp)
+}
+
+// DeleteOutdialsIdTargetsTargetIdWithResponse request returning *DeleteOutdialsIdTargetsTargetIdResponse
+func (c *ClientWithResponses) DeleteOutdialsIdTargetsTargetIdWithResponse(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*DeleteOutdialsIdTargetsTargetIdResponse, error) {
+	rsp, err := c.DeleteOutdialsIdTargetsTargetId(ctx, id, targetId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOutdialsIdTargetsTargetIdResponse(rsp)
+}
+
+// GetOutdialsIdTargetsTargetIdWithResponse request returning *GetOutdialsIdTargetsTargetIdResponse
+func (c *ClientWithResponses) GetOutdialsIdTargetsTargetIdWithResponse(ctx context.Context, id string, targetId string, reqEditors ...RequestEditorFn) (*GetOutdialsIdTargetsTargetIdResponse, error) {
+	rsp, err := c.GetOutdialsIdTargetsTargetId(ctx, id, targetId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOutdialsIdTargetsTargetIdResponse(rsp)
 }
 
 // ParseGetAccesskeysResponse parses an HTTP response from a GetAccesskeysWithResponse call
@@ -23004,6 +24265,300 @@ func ParsePutNumbersIdFlowIdsResponse(rsp *http.Response) (*PutNumbersIdFlowIdsR
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest NumberManagerNumber
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOutdialsResponse parses an HTTP response from a GetOutdialsWithResponse call
+func ParseGetOutdialsResponse(rsp *http.Response) (*GetOutdialsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOutdialsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                  `json:"next_page_token,omitempty"`
+			Result        *[]OutdialManagerOutdial `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostOutdialsResponse parses an HTTP response from a PostOutdialsWithResponse call
+func ParsePostOutdialsResponse(rsp *http.Response) (*PostOutdialsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostOutdialsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OutdialManagerOutdial
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOutdialsIdResponse parses an HTTP response from a DeleteOutdialsIdWithResponse call
+func ParseDeleteOutdialsIdResponse(rsp *http.Response) (*DeleteOutdialsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOutdialsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OutdialManagerOutdial
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOutdialsIdResponse parses an HTTP response from a GetOutdialsIdWithResponse call
+func ParseGetOutdialsIdResponse(rsp *http.Response) (*GetOutdialsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOutdialsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OutdialManagerOutdial
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutOutdialsIdResponse parses an HTTP response from a PutOutdialsIdWithResponse call
+func ParsePutOutdialsIdResponse(rsp *http.Response) (*PutOutdialsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutOutdialsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OutdialManagerOutdial
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutOutdialsIdCampaignIdResponse parses an HTTP response from a PutOutdialsIdCampaignIdWithResponse call
+func ParsePutOutdialsIdCampaignIdResponse(rsp *http.Response) (*PutOutdialsIdCampaignIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutOutdialsIdCampaignIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OutdialManagerOutdial
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutOutdialsIdDataResponse parses an HTTP response from a PutOutdialsIdDataWithResponse call
+func ParsePutOutdialsIdDataResponse(rsp *http.Response) (*PutOutdialsIdDataResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutOutdialsIdDataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OutdialManagerOutdial
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOutdialsIdTargetsResponse parses an HTTP response from a GetOutdialsIdTargetsWithResponse call
+func ParseGetOutdialsIdTargetsResponse(rsp *http.Response) (*GetOutdialsIdTargetsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOutdialsIdTargetsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                        `json:"next_page_token,omitempty"`
+			Result        *[]OutdialManagerOutdialtarget `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostOutdialsIdTargetsResponse parses an HTTP response from a PostOutdialsIdTargetsWithResponse call
+func ParsePostOutdialsIdTargetsResponse(rsp *http.Response) (*PostOutdialsIdTargetsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostOutdialsIdTargetsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OutdialManagerOutdialtarget
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOutdialsIdTargetsTargetIdResponse parses an HTTP response from a DeleteOutdialsIdTargetsTargetIdWithResponse call
+func ParseDeleteOutdialsIdTargetsTargetIdResponse(rsp *http.Response) (*DeleteOutdialsIdTargetsTargetIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOutdialsIdTargetsTargetIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OutdialManagerOutdialtarget
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOutdialsIdTargetsTargetIdResponse parses an HTTP response from a GetOutdialsIdTargetsTargetIdWithResponse call
+func ParseGetOutdialsIdTargetsTargetIdResponse(rsp *http.Response) (*GetOutdialsIdTargetsTargetIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOutdialsIdTargetsTargetIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OutdialManagerOutdialtarget
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
