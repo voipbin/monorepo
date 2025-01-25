@@ -172,10 +172,6 @@ func stringPtr(s string) *string {
 	return &s
 }
 
-func intPtr(s int) *int {
-	return &s
-}
-
 func GenerateListResponse[T any](tmps []*T, nextTokenValue string) struct {
 	Result []*T `json:"result"`
 	openapi_server.CommonPagination
