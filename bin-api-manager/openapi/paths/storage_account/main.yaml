@@ -1,0 +1,10 @@
+get:
+  summary: Get details of a given account's storage account
+  description: Retrieves the details of a given account's storage account.
+  responses:
+    '200':
+      description: The requested storage account details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StorageManagerAccount'

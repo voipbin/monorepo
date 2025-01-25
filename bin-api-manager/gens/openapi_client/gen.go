@@ -3397,6 +3397,418 @@ type PutOutplansIdDialInfoJSONBody struct {
 	TryInterval int `json:"try_interval"`
 }
 
+// GetProvidersParams defines parameters for GetProviders.
+type GetProvidersParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostProvidersJSONBody defines parameters for PostProviders.
+type PostProvidersJSONBody struct {
+	Detail      string                 `json:"detail"`
+	Hostname    string                 `json:"hostname"`
+	Name        string                 `json:"name"`
+	TechHeaders map[string]interface{} `json:"tech_headers"`
+	TechPostfix string                 `json:"tech_postfix"`
+	TechPrefix  string                 `json:"tech_prefix"`
+
+	// Type Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
+	Type RouteManagerProviderType `json:"type"`
+}
+
+// PutProvidersIdJSONBody defines parameters for PutProvidersId.
+type PutProvidersIdJSONBody struct {
+	Detail      string                 `json:"detail"`
+	Hostname    string                 `json:"hostname"`
+	Name        string                 `json:"name"`
+	TechHeaders map[string]interface{} `json:"tech_headers"`
+	TechPostfix string                 `json:"tech_postfix"`
+	TechPrefix  string                 `json:"tech_prefix"`
+
+	// Type Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
+	Type RouteManagerProviderType `json:"type"`
+}
+
+// GetQueuecallsParams defines parameters for GetQueuecalls.
+type GetQueuecallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetQueuesParams defines parameters for GetQueues.
+type GetQueuesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostQueuesJSONBody defines parameters for PostQueues.
+type PostQueuesJSONBody struct {
+	Detail         string                         `json:"detail"`
+	Name           string                         `json:"name"`
+	RoutingMethod  QueueManagerQueueRoutingMethod `json:"routing_method"`
+	ServiceTimeout int                            `json:"service_timeout"`
+	TagIds         []string                       `json:"tag_ids"`
+	WaitActions    []FlowManagerAction            `json:"wait_actions"`
+	WaitTimeout    int                            `json:"wait_timeout"`
+}
+
+// PutQueuesIdJSONBody defines parameters for PutQueuesId.
+type PutQueuesIdJSONBody struct {
+	Detail         string                         `json:"detail"`
+	Name           string                         `json:"name"`
+	RoutingMethod  QueueManagerQueueRoutingMethod `json:"routing_method"`
+	ServiceTimeout int                            `json:"service_timeout"`
+	TagIds         []string                       `json:"tag_ids"`
+	WaitActions    []FlowManagerAction            `json:"wait_actions"`
+	WaitTimeout    int                            `json:"wait_timeout"`
+}
+
+// PutQueuesIdActionsJSONBody defines parameters for PutQueuesIdActions.
+type PutQueuesIdActionsJSONBody struct {
+	TimeoutService int                 `json:"timeout_service"`
+	TimeoutWait    int                 `json:"timeout_wait"`
+	WaitActions    []FlowManagerAction `json:"wait_actions"`
+}
+
+// PutQueuesIdRoutingMethodJSONBody defines parameters for PutQueuesIdRoutingMethod.
+type PutQueuesIdRoutingMethodJSONBody struct {
+	RoutingMethod QueueManagerQueueRoutingMethod `json:"routing_method"`
+}
+
+// PutQueuesIdTagIdsJSONBody defines parameters for PutQueuesIdTagIds.
+type PutQueuesIdTagIdsJSONBody struct {
+	TagIds []string `json:"tag_ids"`
+}
+
+// GetRecordingsParams defines parameters for GetRecordings.
+type GetRecordingsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetRoutesParams defines parameters for GetRoutes.
+type GetRoutesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// CustomerId target customer id
+	CustomerId *string `form:"customer_id,omitempty" json:"customer_id,omitempty"`
+}
+
+// PostRoutesJSONBody defines parameters for PostRoutes.
+type PostRoutesJSONBody struct {
+	// CustomerId The ID of the customer for the route.
+	CustomerId string `json:"customer_id"`
+
+	// Detail The detail information of the route.
+	Detail string `json:"detail"`
+
+	// Name The name of the route.
+	Name string `json:"name"`
+
+	// Priority The priority of the route.
+	Priority int `json:"priority"`
+
+	// ProviderId The provider ID for the route.
+	ProviderId string `json:"provider_id"`
+
+	// Target The target of the route.
+	Target string `json:"target"`
+}
+
+// PutRoutesIdJSONBody defines parameters for PutRoutesId.
+type PutRoutesIdJSONBody struct {
+	// Detail The detail information of the route.
+	Detail string `json:"detail"`
+
+	// Name The name of the route.
+	Name string `json:"name"`
+
+	// Priority The priority of the route.
+	Priority int `json:"priority"`
+
+	// ProviderId The provider ID for the route.
+	ProviderId string `json:"provider_id"`
+
+	// Target The target of the route.
+	Target string `json:"target"`
+}
+
+// GetServiceAgentsAgentsParams defines parameters for GetServiceAgentsAgents.
+type GetServiceAgentsAgentsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetServiceAgentsCallsParams defines parameters for GetServiceAgentsCalls.
+type GetServiceAgentsCallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetServiceAgentsChatroommessagesParams defines parameters for GetServiceAgentsChatroommessages.
+type GetServiceAgentsChatroommessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ChatroomId The ID of the chatroom to retrieve messages for.
+	ChatroomId string `form:"chatroom_id" json:"chatroom_id"`
+}
+
+// PostServiceAgentsChatroommessagesJSONBody defines parameters for PostServiceAgentsChatroommessages.
+type PostServiceAgentsChatroommessagesJSONBody struct {
+	ChatroomId string             `json:"chatroom_id"`
+	Medias     []ChatManagerMedia `json:"medias"`
+	Text       string             `json:"text"`
+}
+
+// GetServiceAgentsChatroomsParams defines parameters for GetServiceAgentsChatrooms.
+type GetServiceAgentsChatroomsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsChatroomsJSONBody defines parameters for PostServiceAgentsChatrooms.
+type PostServiceAgentsChatroomsJSONBody struct {
+	Detail         string   `json:"detail"`
+	Name           string   `json:"name"`
+	ParticipantIds []string `json:"participant_ids"`
+}
+
+// PutServiceAgentsChatroomsIdJSONBody defines parameters for PutServiceAgentsChatroomsId.
+type PutServiceAgentsChatroomsIdJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+}
+
+// GetServiceAgentsConversationsParams defines parameters for GetServiceAgentsConversations.
+type GetServiceAgentsConversationsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetServiceAgentsConversationsIdMessagesParams defines parameters for GetServiceAgentsConversationsIdMessages.
+type GetServiceAgentsConversationsIdMessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsConversationsIdMessagesJSONBody defines parameters for PostServiceAgentsConversationsIdMessages.
+type PostServiceAgentsConversationsIdMessagesJSONBody struct {
+	Medias []ConversationManagerMedia `json:"medias"`
+
+	// Text The text content of the message.
+	Text string `json:"text"`
+}
+
+// GetServiceAgentsExtensionsParams defines parameters for GetServiceAgentsExtensions.
+type GetServiceAgentsExtensionsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetServiceAgentsFilesParams defines parameters for GetServiceAgentsFiles.
+type GetServiceAgentsFilesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsFilesMultipartBody defines parameters for PostServiceAgentsFiles.
+type PostServiceAgentsFilesMultipartBody struct {
+	// File The file to upload.
+	File openapi_types.File `json:"file"`
+}
+
+// PutServiceAgentsMeJSONBody defines parameters for PutServiceAgentsMe.
+type PutServiceAgentsMeJSONBody struct {
+	// Detail Additional details about the agent.
+	Detail string `json:"detail"`
+
+	// Name The updated name of the agent.
+	Name string `json:"name"`
+
+	// RingMethod Represents an agent resource.
+	RingMethod AgentManagerAgentRingMethod `json:"ring_method"`
+}
+
+// PutServiceAgentsMeAddressesJSONBody defines parameters for PutServiceAgentsMeAddresses.
+type PutServiceAgentsMeAddressesJSONBody struct {
+	// Addresses The updated list of addresses.
+	Addresses []CommonAddress `json:"addresses"`
+}
+
+// PutServiceAgentsMePasswordJSONBody defines parameters for PutServiceAgentsMePassword.
+type PutServiceAgentsMePasswordJSONBody struct {
+	// Password The new password for the agent.
+	Password string `json:"password"`
+}
+
+// PutServiceAgentsMeStatusJSONBody defines parameters for PutServiceAgentsMeStatus.
+type PutServiceAgentsMeStatusJSONBody struct {
+	// Status Agent's status
+	Status AgentManagerAgentStatus `json:"status"`
+}
+
+// GetStorageAccountsParams defines parameters for GetStorageAccounts.
+type GetStorageAccountsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostStorageAccountsJSONBody defines parameters for PostStorageAccounts.
+type PostStorageAccountsJSONBody struct {
+	CustomerId string `json:"customer_id"`
+}
+
+// GetStorageFilesParams defines parameters for GetStorageFiles.
+type GetStorageFilesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostStorageFilesMultipartBody defines parameters for PostStorageFiles.
+type PostStorageFilesMultipartBody struct {
+	File openapi_types.File `json:"file"`
+}
+
+// GetTagsParams defines parameters for GetTags.
+type GetTagsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostTagsJSONBody defines parameters for PostTags.
+type PostTagsJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+}
+
+// PutTagsIdJSONBody defines parameters for PutTagsId.
+type PutTagsIdJSONBody struct {
+	Detail string `json:"detail"`
+	Name   string `json:"name"`
+}
+
+// GetTranscribesParams defines parameters for GetTranscribes.
+type GetTranscribesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostTranscribesJSONBody defines parameters for PostTranscribes.
+type PostTranscribesJSONBody struct {
+	Direction TranscribeManagerTranscribeDirection `json:"direction"`
+
+	// Language The language of the transcription.
+	Language string `json:"language"`
+
+	// ReferenceId The ID of the reference for the transcription.
+	ReferenceId   string                                   `json:"reference_id"`
+	ReferenceType TranscribeManagerTranscribeReferenceType `json:"reference_type"`
+}
+
+// GetTranscriptsParams defines parameters for GetTranscripts.
+type GetTranscriptsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken    *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+	TranscribeId string     `form:"transcribe_id" json:"transcribe_id"`
+}
+
+// PostTransfersJSONBody defines parameters for PostTransfers.
+type PostTransfersJSONBody struct {
+	TransferType TransferManagerTransferType `json:"transfer_type"`
+
+	// TransfereeAddresses Addresses of the transfer recipients.
+	TransfereeAddresses []CommonAddress `json:"transferee_addresses"`
+
+	// TransfererCallId Call ID of the transfer initiator.
+	TransfererCallId string `json:"transferer_call_id"`
+}
+
+// GetTrunksParams defines parameters for GetTrunks.
+type GetTrunksParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostTrunksJSONBody defines parameters for PostTrunks.
+type PostTrunksJSONBody struct {
+	AllowedIps []string                   `json:"allowed_ips"`
+	AuthTypes  []RegistrarManagerAuthType `json:"auth_types"`
+	Detail     string                     `json:"detail"`
+	DomainName string                     `json:"domain_name"`
+	Name       string                     `json:"name"`
+	Password   string                     `json:"password"`
+	Username   string                     `json:"username"`
+}
+
+// PutTrunksIdJSONBody defines parameters for PutTrunksId.
+type PutTrunksIdJSONBody struct {
+	AllowedIps []string                   `json:"allowed_ips"`
+	AuthTypes  []RegistrarManagerAuthType `json:"auth_types"`
+	Detail     string                     `json:"detail"`
+	Name       string                     `json:"name"`
+	Password   string                     `json:"password"`
+	Username   string                     `json:"username"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -3597,6 +4009,84 @@ type PutOutplansIdJSONRequestBody PutOutplansIdJSONBody
 
 // PutOutplansIdDialInfoJSONRequestBody defines body for PutOutplansIdDialInfo for application/json ContentType.
 type PutOutplansIdDialInfoJSONRequestBody PutOutplansIdDialInfoJSONBody
+
+// PostProvidersJSONRequestBody defines body for PostProviders for application/json ContentType.
+type PostProvidersJSONRequestBody PostProvidersJSONBody
+
+// PutProvidersIdJSONRequestBody defines body for PutProvidersId for application/json ContentType.
+type PutProvidersIdJSONRequestBody PutProvidersIdJSONBody
+
+// PostQueuesJSONRequestBody defines body for PostQueues for application/json ContentType.
+type PostQueuesJSONRequestBody PostQueuesJSONBody
+
+// PutQueuesIdJSONRequestBody defines body for PutQueuesId for application/json ContentType.
+type PutQueuesIdJSONRequestBody PutQueuesIdJSONBody
+
+// PutQueuesIdActionsJSONRequestBody defines body for PutQueuesIdActions for application/json ContentType.
+type PutQueuesIdActionsJSONRequestBody PutQueuesIdActionsJSONBody
+
+// PutQueuesIdRoutingMethodJSONRequestBody defines body for PutQueuesIdRoutingMethod for application/json ContentType.
+type PutQueuesIdRoutingMethodJSONRequestBody PutQueuesIdRoutingMethodJSONBody
+
+// PutQueuesIdTagIdsJSONRequestBody defines body for PutQueuesIdTagIds for application/json ContentType.
+type PutQueuesIdTagIdsJSONRequestBody PutQueuesIdTagIdsJSONBody
+
+// PostRoutesJSONRequestBody defines body for PostRoutes for application/json ContentType.
+type PostRoutesJSONRequestBody PostRoutesJSONBody
+
+// PutRoutesIdJSONRequestBody defines body for PutRoutesId for application/json ContentType.
+type PutRoutesIdJSONRequestBody PutRoutesIdJSONBody
+
+// PostServiceAgentsChatroommessagesJSONRequestBody defines body for PostServiceAgentsChatroommessages for application/json ContentType.
+type PostServiceAgentsChatroommessagesJSONRequestBody PostServiceAgentsChatroommessagesJSONBody
+
+// PostServiceAgentsChatroomsJSONRequestBody defines body for PostServiceAgentsChatrooms for application/json ContentType.
+type PostServiceAgentsChatroomsJSONRequestBody PostServiceAgentsChatroomsJSONBody
+
+// PutServiceAgentsChatroomsIdJSONRequestBody defines body for PutServiceAgentsChatroomsId for application/json ContentType.
+type PutServiceAgentsChatroomsIdJSONRequestBody PutServiceAgentsChatroomsIdJSONBody
+
+// PostServiceAgentsConversationsIdMessagesJSONRequestBody defines body for PostServiceAgentsConversationsIdMessages for application/json ContentType.
+type PostServiceAgentsConversationsIdMessagesJSONRequestBody PostServiceAgentsConversationsIdMessagesJSONBody
+
+// PostServiceAgentsFilesMultipartRequestBody defines body for PostServiceAgentsFiles for multipart/form-data ContentType.
+type PostServiceAgentsFilesMultipartRequestBody PostServiceAgentsFilesMultipartBody
+
+// PutServiceAgentsMeJSONRequestBody defines body for PutServiceAgentsMe for application/json ContentType.
+type PutServiceAgentsMeJSONRequestBody PutServiceAgentsMeJSONBody
+
+// PutServiceAgentsMeAddressesJSONRequestBody defines body for PutServiceAgentsMeAddresses for application/json ContentType.
+type PutServiceAgentsMeAddressesJSONRequestBody PutServiceAgentsMeAddressesJSONBody
+
+// PutServiceAgentsMePasswordJSONRequestBody defines body for PutServiceAgentsMePassword for application/json ContentType.
+type PutServiceAgentsMePasswordJSONRequestBody PutServiceAgentsMePasswordJSONBody
+
+// PutServiceAgentsMeStatusJSONRequestBody defines body for PutServiceAgentsMeStatus for application/json ContentType.
+type PutServiceAgentsMeStatusJSONRequestBody PutServiceAgentsMeStatusJSONBody
+
+// PostStorageAccountsJSONRequestBody defines body for PostStorageAccounts for application/json ContentType.
+type PostStorageAccountsJSONRequestBody PostStorageAccountsJSONBody
+
+// PostStorageFilesMultipartRequestBody defines body for PostStorageFiles for multipart/form-data ContentType.
+type PostStorageFilesMultipartRequestBody PostStorageFilesMultipartBody
+
+// PostTagsJSONRequestBody defines body for PostTags for application/json ContentType.
+type PostTagsJSONRequestBody PostTagsJSONBody
+
+// PutTagsIdJSONRequestBody defines body for PutTagsId for application/json ContentType.
+type PutTagsIdJSONRequestBody PutTagsIdJSONBody
+
+// PostTranscribesJSONRequestBody defines body for PostTranscribes for application/json ContentType.
+type PostTranscribesJSONRequestBody PostTranscribesJSONBody
+
+// PostTransfersJSONRequestBody defines body for PostTransfers for application/json ContentType.
+type PostTransfersJSONRequestBody PostTransfersJSONBody
+
+// PostTrunksJSONRequestBody defines body for PostTrunks for application/json ContentType.
+type PostTrunksJSONRequestBody PostTrunksJSONBody
+
+// PutTrunksIdJSONRequestBody defines body for PutTrunksId for application/json ContentType.
+type PutTrunksIdJSONRequestBody PutTrunksIdJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -4306,6 +4796,306 @@ type ClientInterface interface {
 	PutOutplansIdDialInfoWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PutOutplansIdDialInfo(ctx context.Context, id string, body PutOutplansIdDialInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProviders request
+	GetProviders(ctx context.Context, params *GetProvidersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostProvidersWithBody request with any body
+	PostProvidersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostProviders(ctx context.Context, body PostProvidersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteProvidersId request
+	DeleteProvidersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProvidersId request
+	GetProvidersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutProvidersIdWithBody request with any body
+	PutProvidersIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutProvidersId(ctx context.Context, id string, body PutProvidersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetQueuecalls request
+	GetQueuecalls(ctx context.Context, params *GetQueuecallsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostQueuecallsReferenceIdIdKick request
+	PostQueuecallsReferenceIdIdKick(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteQueuecallsId request
+	DeleteQueuecallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetQueuecallsId request
+	GetQueuecallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostQueuecallsIdKick request
+	PostQueuecallsIdKick(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetQueues request
+	GetQueues(ctx context.Context, params *GetQueuesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostQueuesWithBody request with any body
+	PostQueuesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostQueues(ctx context.Context, body PostQueuesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteQueuesId request
+	DeleteQueuesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetQueuesId request
+	GetQueuesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutQueuesIdWithBody request with any body
+	PutQueuesIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutQueuesId(ctx context.Context, id string, body PutQueuesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutQueuesIdActionsWithBody request with any body
+	PutQueuesIdActionsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutQueuesIdActions(ctx context.Context, id string, body PutQueuesIdActionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutQueuesIdRoutingMethodWithBody request with any body
+	PutQueuesIdRoutingMethodWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutQueuesIdRoutingMethod(ctx context.Context, id string, body PutQueuesIdRoutingMethodJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutQueuesIdTagIdsWithBody request with any body
+	PutQueuesIdTagIdsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutQueuesIdTagIds(ctx context.Context, id string, body PutQueuesIdTagIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRecordingfilesId request
+	GetRecordingfilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRecordings request
+	GetRecordings(ctx context.Context, params *GetRecordingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRecordingsId request
+	DeleteRecordingsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRecordingsId request
+	GetRecordingsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRoutes request
+	GetRoutes(ctx context.Context, params *GetRoutesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostRoutesWithBody request with any body
+	PostRoutesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostRoutes(ctx context.Context, body PostRoutesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRoutesId request
+	DeleteRoutesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRoutesId request
+	GetRoutesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutRoutesIdWithBody request with any body
+	PutRoutesIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutRoutesId(ctx context.Context, id string, body PutRoutesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsAgents request
+	GetServiceAgentsAgents(ctx context.Context, params *GetServiceAgentsAgentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsAgentsId request
+	GetServiceAgentsAgentsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsCalls request
+	GetServiceAgentsCalls(ctx context.Context, params *GetServiceAgentsCallsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsCallsId request
+	GetServiceAgentsCallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsChatroommessages request
+	GetServiceAgentsChatroommessages(ctx context.Context, params *GetServiceAgentsChatroommessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostServiceAgentsChatroommessagesWithBody request with any body
+	PostServiceAgentsChatroommessagesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostServiceAgentsChatroommessages(ctx context.Context, body PostServiceAgentsChatroommessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteServiceAgentsChatroommessagesId request
+	DeleteServiceAgentsChatroommessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsChatroommessagesId request
+	GetServiceAgentsChatroommessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsChatrooms request
+	GetServiceAgentsChatrooms(ctx context.Context, params *GetServiceAgentsChatroomsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostServiceAgentsChatroomsWithBody request with any body
+	PostServiceAgentsChatroomsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostServiceAgentsChatrooms(ctx context.Context, body PostServiceAgentsChatroomsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteServiceAgentsChatroomsId request
+	DeleteServiceAgentsChatroomsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsChatroomsId request
+	GetServiceAgentsChatroomsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutServiceAgentsChatroomsIdWithBody request with any body
+	PutServiceAgentsChatroomsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutServiceAgentsChatroomsId(ctx context.Context, id string, body PutServiceAgentsChatroomsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsConversations request
+	GetServiceAgentsConversations(ctx context.Context, params *GetServiceAgentsConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsConversationsId request
+	GetServiceAgentsConversationsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsConversationsIdMessages request
+	GetServiceAgentsConversationsIdMessages(ctx context.Context, id string, params *GetServiceAgentsConversationsIdMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostServiceAgentsConversationsIdMessagesWithBody request with any body
+	PostServiceAgentsConversationsIdMessagesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostServiceAgentsConversationsIdMessages(ctx context.Context, id string, body PostServiceAgentsConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsCustomer request
+	GetServiceAgentsCustomer(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsExtensions request
+	GetServiceAgentsExtensions(ctx context.Context, params *GetServiceAgentsExtensionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsExtensionsId request
+	GetServiceAgentsExtensionsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsFiles request
+	GetServiceAgentsFiles(ctx context.Context, params *GetServiceAgentsFilesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostServiceAgentsFilesWithBody request with any body
+	PostServiceAgentsFilesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteServiceAgentsFilesId request
+	DeleteServiceAgentsFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsFilesId request
+	GetServiceAgentsFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsMe request
+	GetServiceAgentsMe(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutServiceAgentsMeWithBody request with any body
+	PutServiceAgentsMeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutServiceAgentsMe(ctx context.Context, body PutServiceAgentsMeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutServiceAgentsMeAddressesWithBody request with any body
+	PutServiceAgentsMeAddressesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutServiceAgentsMeAddresses(ctx context.Context, body PutServiceAgentsMeAddressesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutServiceAgentsMePasswordWithBody request with any body
+	PutServiceAgentsMePasswordWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutServiceAgentsMePassword(ctx context.Context, body PutServiceAgentsMePasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutServiceAgentsMeStatusWithBody request with any body
+	PutServiceAgentsMeStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutServiceAgentsMeStatus(ctx context.Context, body PutServiceAgentsMeStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServiceAgentsWs request
+	GetServiceAgentsWs(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStorageAccount request
+	GetStorageAccount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStorageAccounts request
+	GetStorageAccounts(ctx context.Context, params *GetStorageAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostStorageAccountsWithBody request with any body
+	PostStorageAccountsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostStorageAccounts(ctx context.Context, body PostStorageAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteStorageAccountsId request
+	DeleteStorageAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStorageAccountsId request
+	GetStorageAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStorageFiles request
+	GetStorageFiles(ctx context.Context, params *GetStorageFilesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostStorageFilesWithBody request with any body
+	PostStorageFilesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteStorageFilesId request
+	DeleteStorageFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStorageFilesId request
+	GetStorageFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTags request
+	GetTags(ctx context.Context, params *GetTagsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostTagsWithBody request with any body
+	PostTagsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostTags(ctx context.Context, body PostTagsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteTagsId request
+	DeleteTagsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTagsId request
+	GetTagsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutTagsIdWithBody request with any body
+	PutTagsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutTagsId(ctx context.Context, id string, body PutTagsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTranscribes request
+	GetTranscribes(ctx context.Context, params *GetTranscribesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostTranscribesWithBody request with any body
+	PostTranscribesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostTranscribes(ctx context.Context, body PostTranscribesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteTranscribesId request
+	DeleteTranscribesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTranscribesId request
+	GetTranscribesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostTranscribesIdStop request
+	PostTranscribesIdStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTranscripts request
+	GetTranscripts(ctx context.Context, params *GetTranscriptsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostTransfersWithBody request with any body
+	PostTransfersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostTransfers(ctx context.Context, body PostTransfersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTrunks request
+	GetTrunks(ctx context.Context, params *GetTrunksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostTrunksWithBody request with any body
+	PostTrunksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostTrunks(ctx context.Context, body PostTrunksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteTrunksId request
+	DeleteTrunksId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTrunksId request
+	GetTrunksId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutTrunksIdWithBody request with any body
+	PutTrunksIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutTrunksId(ctx context.Context, id string, body PutTrunksIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWs request
+	GetWs(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccesskeys(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -7106,6 +7896,1302 @@ func (c *Client) PutOutplansIdDialInfoWithBody(ctx context.Context, id string, c
 
 func (c *Client) PutOutplansIdDialInfo(ctx context.Context, id string, body PutOutplansIdDialInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPutOutplansIdDialInfoRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProviders(ctx context.Context, params *GetProvidersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProvidersRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostProvidersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostProvidersRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostProviders(ctx context.Context, body PostProvidersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostProvidersRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteProvidersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteProvidersIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProvidersId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProvidersIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutProvidersIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutProvidersIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutProvidersId(ctx context.Context, id string, body PutProvidersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutProvidersIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetQueuecalls(ctx context.Context, params *GetQueuecallsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetQueuecallsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostQueuecallsReferenceIdIdKick(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostQueuecallsReferenceIdIdKickRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteQueuecallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteQueuecallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetQueuecallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetQueuecallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostQueuecallsIdKick(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostQueuecallsIdKickRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetQueues(ctx context.Context, params *GetQueuesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetQueuesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostQueuesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostQueuesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostQueues(ctx context.Context, body PostQueuesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostQueuesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteQueuesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteQueuesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetQueuesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetQueuesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutQueuesIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutQueuesIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutQueuesId(ctx context.Context, id string, body PutQueuesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutQueuesIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutQueuesIdActionsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutQueuesIdActionsRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutQueuesIdActions(ctx context.Context, id string, body PutQueuesIdActionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutQueuesIdActionsRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutQueuesIdRoutingMethodWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutQueuesIdRoutingMethodRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutQueuesIdRoutingMethod(ctx context.Context, id string, body PutQueuesIdRoutingMethodJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutQueuesIdRoutingMethodRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutQueuesIdTagIdsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutQueuesIdTagIdsRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutQueuesIdTagIds(ctx context.Context, id string, body PutQueuesIdTagIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutQueuesIdTagIdsRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetRecordingfilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRecordingfilesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetRecordings(ctx context.Context, params *GetRecordingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRecordingsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteRecordingsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRecordingsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetRecordingsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRecordingsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetRoutes(ctx context.Context, params *GetRoutesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRoutesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostRoutesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostRoutesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostRoutes(ctx context.Context, body PostRoutesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostRoutesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteRoutesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRoutesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetRoutesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRoutesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutRoutesIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutRoutesIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutRoutesId(ctx context.Context, id string, body PutRoutesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutRoutesIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsAgents(ctx context.Context, params *GetServiceAgentsAgentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsAgentsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsAgentsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsAgentsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsCalls(ctx context.Context, params *GetServiceAgentsCallsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsCallsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsCallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsCallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsChatroommessages(ctx context.Context, params *GetServiceAgentsChatroommessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsChatroommessagesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostServiceAgentsChatroommessagesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostServiceAgentsChatroommessagesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostServiceAgentsChatroommessages(ctx context.Context, body PostServiceAgentsChatroommessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostServiceAgentsChatroommessagesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteServiceAgentsChatroommessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteServiceAgentsChatroommessagesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsChatroommessagesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsChatroommessagesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsChatrooms(ctx context.Context, params *GetServiceAgentsChatroomsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsChatroomsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostServiceAgentsChatroomsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostServiceAgentsChatroomsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostServiceAgentsChatrooms(ctx context.Context, body PostServiceAgentsChatroomsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostServiceAgentsChatroomsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteServiceAgentsChatroomsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteServiceAgentsChatroomsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsChatroomsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsChatroomsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsChatroomsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsChatroomsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsChatroomsId(ctx context.Context, id string, body PutServiceAgentsChatroomsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsChatroomsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsConversations(ctx context.Context, params *GetServiceAgentsConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsConversationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsConversationsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsConversationsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsConversationsIdMessages(ctx context.Context, id string, params *GetServiceAgentsConversationsIdMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsConversationsIdMessagesRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostServiceAgentsConversationsIdMessagesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostServiceAgentsConversationsIdMessagesRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostServiceAgentsConversationsIdMessages(ctx context.Context, id string, body PostServiceAgentsConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostServiceAgentsConversationsIdMessagesRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsCustomer(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsCustomerRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsExtensions(ctx context.Context, params *GetServiceAgentsExtensionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsExtensionsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsExtensionsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsExtensionsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsFiles(ctx context.Context, params *GetServiceAgentsFilesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsFilesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostServiceAgentsFilesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostServiceAgentsFilesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteServiceAgentsFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteServiceAgentsFilesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsFilesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsMe(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsMeRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsMeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsMeRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsMe(ctx context.Context, body PutServiceAgentsMeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsMeRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsMeAddressesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsMeAddressesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsMeAddresses(ctx context.Context, body PutServiceAgentsMeAddressesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsMeAddressesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsMePasswordWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsMePasswordRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsMePassword(ctx context.Context, body PutServiceAgentsMePasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsMePasswordRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsMeStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsMeStatusRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutServiceAgentsMeStatus(ctx context.Context, body PutServiceAgentsMeStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutServiceAgentsMeStatusRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServiceAgentsWs(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServiceAgentsWsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStorageAccount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStorageAccountRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStorageAccounts(ctx context.Context, params *GetStorageAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStorageAccountsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostStorageAccountsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostStorageAccountsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostStorageAccounts(ctx context.Context, body PostStorageAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostStorageAccountsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteStorageAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteStorageAccountsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStorageAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStorageAccountsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStorageFiles(ctx context.Context, params *GetStorageFilesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStorageFilesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostStorageFilesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostStorageFilesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteStorageFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteStorageFilesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStorageFilesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStorageFilesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTags(ctx context.Context, params *GetTagsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTagsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostTagsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostTagsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostTags(ctx context.Context, body PostTagsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostTagsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteTagsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteTagsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTagsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTagsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutTagsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutTagsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutTagsId(ctx context.Context, id string, body PutTagsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutTagsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTranscribes(ctx context.Context, params *GetTranscribesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTranscribesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostTranscribesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostTranscribesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostTranscribes(ctx context.Context, body PostTranscribesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostTranscribesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteTranscribesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteTranscribesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTranscribesId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTranscribesIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostTranscribesIdStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostTranscribesIdStopRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTranscripts(ctx context.Context, params *GetTranscriptsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTranscriptsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostTransfersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostTransfersRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostTransfers(ctx context.Context, body PostTransfersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostTransfersRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTrunks(ctx context.Context, params *GetTrunksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTrunksRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostTrunksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostTrunksRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostTrunks(ctx context.Context, body PostTrunksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostTrunksRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteTrunksId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteTrunksIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTrunksId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTrunksIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutTrunksIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutTrunksIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutTrunksId(ctx context.Context, id string, body PutTrunksIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutTrunksIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetWs(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWsRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -14606,6 +16692,3667 @@ func NewPutOutplansIdDialInfoRequestWithBody(server string, id string, contentTy
 	return req, nil
 }
 
+// NewGetProvidersRequest generates requests for GetProviders
+func NewGetProvidersRequest(server string, params *GetProvidersParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/providers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostProvidersRequest calls the generic PostProviders builder with application/json body
+func NewPostProvidersRequest(server string, body PostProvidersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostProvidersRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostProvidersRequestWithBody generates requests for PostProviders with any type of body
+func NewPostProvidersRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/providers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteProvidersIdRequest generates requests for DeleteProvidersId
+func NewDeleteProvidersIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/providers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProvidersIdRequest generates requests for GetProvidersId
+func NewGetProvidersIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/providers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutProvidersIdRequest calls the generic PutProvidersId builder with application/json body
+func NewPutProvidersIdRequest(server string, id string, body PutProvidersIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutProvidersIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutProvidersIdRequestWithBody generates requests for PutProvidersId with any type of body
+func NewPutProvidersIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/providers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetQueuecallsRequest generates requests for GetQueuecalls
+func NewGetQueuecallsRequest(server string, params *GetQueuecallsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queuecalls")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostQueuecallsReferenceIdIdKickRequest generates requests for PostQueuecallsReferenceIdIdKick
+func NewPostQueuecallsReferenceIdIdKickRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queuecalls/reference_id/%s/kick", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteQueuecallsIdRequest generates requests for DeleteQueuecallsId
+func NewDeleteQueuecallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queuecalls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetQueuecallsIdRequest generates requests for GetQueuecallsId
+func NewGetQueuecallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queuecalls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostQueuecallsIdKickRequest generates requests for PostQueuecallsIdKick
+func NewPostQueuecallsIdKickRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queuecalls/%s/kick", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetQueuesRequest generates requests for GetQueues
+func NewGetQueuesRequest(server string, params *GetQueuesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queues")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostQueuesRequest calls the generic PostQueues builder with application/json body
+func NewPostQueuesRequest(server string, body PostQueuesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostQueuesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostQueuesRequestWithBody generates requests for PostQueues with any type of body
+func NewPostQueuesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queues")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteQueuesIdRequest generates requests for DeleteQueuesId
+func NewDeleteQueuesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queues/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetQueuesIdRequest generates requests for GetQueuesId
+func NewGetQueuesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queues/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutQueuesIdRequest calls the generic PutQueuesId builder with application/json body
+func NewPutQueuesIdRequest(server string, id string, body PutQueuesIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutQueuesIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutQueuesIdRequestWithBody generates requests for PutQueuesId with any type of body
+func NewPutQueuesIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queues/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutQueuesIdActionsRequest calls the generic PutQueuesIdActions builder with application/json body
+func NewPutQueuesIdActionsRequest(server string, id string, body PutQueuesIdActionsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutQueuesIdActionsRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutQueuesIdActionsRequestWithBody generates requests for PutQueuesIdActions with any type of body
+func NewPutQueuesIdActionsRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queues/%s/actions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutQueuesIdRoutingMethodRequest calls the generic PutQueuesIdRoutingMethod builder with application/json body
+func NewPutQueuesIdRoutingMethodRequest(server string, id string, body PutQueuesIdRoutingMethodJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutQueuesIdRoutingMethodRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutQueuesIdRoutingMethodRequestWithBody generates requests for PutQueuesIdRoutingMethod with any type of body
+func NewPutQueuesIdRoutingMethodRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queues/%s/routing_method", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutQueuesIdTagIdsRequest calls the generic PutQueuesIdTagIds builder with application/json body
+func NewPutQueuesIdTagIdsRequest(server string, id string, body PutQueuesIdTagIdsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutQueuesIdTagIdsRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutQueuesIdTagIdsRequestWithBody generates requests for PutQueuesIdTagIds with any type of body
+func NewPutQueuesIdTagIdsRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/queues/%s/tag_ids", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetRecordingfilesIdRequest generates requests for GetRecordingfilesId
+func NewGetRecordingfilesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/recordingfiles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRecordingsRequest generates requests for GetRecordings
+func NewGetRecordingsRequest(server string, params *GetRecordingsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/recordings")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteRecordingsIdRequest generates requests for DeleteRecordingsId
+func NewDeleteRecordingsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/recordings/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRecordingsIdRequest generates requests for GetRecordingsId
+func NewGetRecordingsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/recordings/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRoutesRequest generates requests for GetRoutes
+func NewGetRoutesRequest(server string, params *GetRoutesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/routes")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CustomerId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "customer_id", runtime.ParamLocationQuery, *params.CustomerId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostRoutesRequest calls the generic PostRoutes builder with application/json body
+func NewPostRoutesRequest(server string, body PostRoutesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostRoutesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostRoutesRequestWithBody generates requests for PostRoutes with any type of body
+func NewPostRoutesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/routes")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteRoutesIdRequest generates requests for DeleteRoutesId
+func NewDeleteRoutesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/routes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRoutesIdRequest generates requests for GetRoutesId
+func NewGetRoutesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/routes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutRoutesIdRequest calls the generic PutRoutesId builder with application/json body
+func NewPutRoutesIdRequest(server string, id string, body PutRoutesIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutRoutesIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutRoutesIdRequestWithBody generates requests for PutRoutesId with any type of body
+func NewPutRoutesIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/routes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetServiceAgentsAgentsRequest generates requests for GetServiceAgentsAgents
+func NewGetServiceAgentsAgentsRequest(server string, params *GetServiceAgentsAgentsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/agents")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsAgentsIdRequest generates requests for GetServiceAgentsAgentsId
+func NewGetServiceAgentsAgentsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/agents/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsCallsRequest generates requests for GetServiceAgentsCalls
+func NewGetServiceAgentsCallsRequest(server string, params *GetServiceAgentsCallsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/calls")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsCallsIdRequest generates requests for GetServiceAgentsCallsId
+func NewGetServiceAgentsCallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/calls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsChatroommessagesRequest generates requests for GetServiceAgentsChatroommessages
+func NewGetServiceAgentsChatroommessagesRequest(server string, params *GetServiceAgentsChatroommessagesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/chatroommessages")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chatroom_id", runtime.ParamLocationQuery, params.ChatroomId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostServiceAgentsChatroommessagesRequest calls the generic PostServiceAgentsChatroommessages builder with application/json body
+func NewPostServiceAgentsChatroommessagesRequest(server string, body PostServiceAgentsChatroommessagesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostServiceAgentsChatroommessagesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostServiceAgentsChatroommessagesRequestWithBody generates requests for PostServiceAgentsChatroommessages with any type of body
+func NewPostServiceAgentsChatroommessagesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/chatroommessages")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteServiceAgentsChatroommessagesIdRequest generates requests for DeleteServiceAgentsChatroommessagesId
+func NewDeleteServiceAgentsChatroommessagesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/chatroommessages/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsChatroommessagesIdRequest generates requests for GetServiceAgentsChatroommessagesId
+func NewGetServiceAgentsChatroommessagesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/chatroommessages/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsChatroomsRequest generates requests for GetServiceAgentsChatrooms
+func NewGetServiceAgentsChatroomsRequest(server string, params *GetServiceAgentsChatroomsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/chatrooms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostServiceAgentsChatroomsRequest calls the generic PostServiceAgentsChatrooms builder with application/json body
+func NewPostServiceAgentsChatroomsRequest(server string, body PostServiceAgentsChatroomsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostServiceAgentsChatroomsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostServiceAgentsChatroomsRequestWithBody generates requests for PostServiceAgentsChatrooms with any type of body
+func NewPostServiceAgentsChatroomsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/chatrooms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteServiceAgentsChatroomsIdRequest generates requests for DeleteServiceAgentsChatroomsId
+func NewDeleteServiceAgentsChatroomsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/chatrooms/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsChatroomsIdRequest generates requests for GetServiceAgentsChatroomsId
+func NewGetServiceAgentsChatroomsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/chatrooms/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutServiceAgentsChatroomsIdRequest calls the generic PutServiceAgentsChatroomsId builder with application/json body
+func NewPutServiceAgentsChatroomsIdRequest(server string, id string, body PutServiceAgentsChatroomsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutServiceAgentsChatroomsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutServiceAgentsChatroomsIdRequestWithBody generates requests for PutServiceAgentsChatroomsId with any type of body
+func NewPutServiceAgentsChatroomsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/chatrooms/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetServiceAgentsConversationsRequest generates requests for GetServiceAgentsConversations
+func NewGetServiceAgentsConversationsRequest(server string, params *GetServiceAgentsConversationsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/conversations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsConversationsIdRequest generates requests for GetServiceAgentsConversationsId
+func NewGetServiceAgentsConversationsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/conversations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsConversationsIdMessagesRequest generates requests for GetServiceAgentsConversationsIdMessages
+func NewGetServiceAgentsConversationsIdMessagesRequest(server string, id string, params *GetServiceAgentsConversationsIdMessagesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/conversations/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostServiceAgentsConversationsIdMessagesRequest calls the generic PostServiceAgentsConversationsIdMessages builder with application/json body
+func NewPostServiceAgentsConversationsIdMessagesRequest(server string, id string, body PostServiceAgentsConversationsIdMessagesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostServiceAgentsConversationsIdMessagesRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostServiceAgentsConversationsIdMessagesRequestWithBody generates requests for PostServiceAgentsConversationsIdMessages with any type of body
+func NewPostServiceAgentsConversationsIdMessagesRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/conversations/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetServiceAgentsCustomerRequest generates requests for GetServiceAgentsCustomer
+func NewGetServiceAgentsCustomerRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/customer")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsExtensionsRequest generates requests for GetServiceAgentsExtensions
+func NewGetServiceAgentsExtensionsRequest(server string, params *GetServiceAgentsExtensionsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/extensions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsExtensionsIdRequest generates requests for GetServiceAgentsExtensionsId
+func NewGetServiceAgentsExtensionsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/extensions/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsFilesRequest generates requests for GetServiceAgentsFiles
+func NewGetServiceAgentsFilesRequest(server string, params *GetServiceAgentsFilesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/files")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostServiceAgentsFilesRequestWithBody generates requests for PostServiceAgentsFiles with any type of body
+func NewPostServiceAgentsFilesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/files")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteServiceAgentsFilesIdRequest generates requests for DeleteServiceAgentsFilesId
+func NewDeleteServiceAgentsFilesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/files/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsFilesIdRequest generates requests for GetServiceAgentsFilesId
+func NewGetServiceAgentsFilesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/files/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServiceAgentsMeRequest generates requests for GetServiceAgentsMe
+func NewGetServiceAgentsMeRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/me")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutServiceAgentsMeRequest calls the generic PutServiceAgentsMe builder with application/json body
+func NewPutServiceAgentsMeRequest(server string, body PutServiceAgentsMeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutServiceAgentsMeRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPutServiceAgentsMeRequestWithBody generates requests for PutServiceAgentsMe with any type of body
+func NewPutServiceAgentsMeRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/me")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutServiceAgentsMeAddressesRequest calls the generic PutServiceAgentsMeAddresses builder with application/json body
+func NewPutServiceAgentsMeAddressesRequest(server string, body PutServiceAgentsMeAddressesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutServiceAgentsMeAddressesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPutServiceAgentsMeAddressesRequestWithBody generates requests for PutServiceAgentsMeAddresses with any type of body
+func NewPutServiceAgentsMeAddressesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/me/addresses")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutServiceAgentsMePasswordRequest calls the generic PutServiceAgentsMePassword builder with application/json body
+func NewPutServiceAgentsMePasswordRequest(server string, body PutServiceAgentsMePasswordJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutServiceAgentsMePasswordRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPutServiceAgentsMePasswordRequestWithBody generates requests for PutServiceAgentsMePassword with any type of body
+func NewPutServiceAgentsMePasswordRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/me/password")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutServiceAgentsMeStatusRequest calls the generic PutServiceAgentsMeStatus builder with application/json body
+func NewPutServiceAgentsMeStatusRequest(server string, body PutServiceAgentsMeStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutServiceAgentsMeStatusRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPutServiceAgentsMeStatusRequestWithBody generates requests for PutServiceAgentsMeStatus with any type of body
+func NewPutServiceAgentsMeStatusRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/me/status")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetServiceAgentsWsRequest generates requests for GetServiceAgentsWs
+func NewGetServiceAgentsWsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/service_agents/ws")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStorageAccountRequest generates requests for GetStorageAccount
+func NewGetStorageAccountRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/storage_account")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStorageAccountsRequest generates requests for GetStorageAccounts
+func NewGetStorageAccountsRequest(server string, params *GetStorageAccountsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/storage_accounts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostStorageAccountsRequest calls the generic PostStorageAccounts builder with application/json body
+func NewPostStorageAccountsRequest(server string, body PostStorageAccountsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostStorageAccountsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostStorageAccountsRequestWithBody generates requests for PostStorageAccounts with any type of body
+func NewPostStorageAccountsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/storage_accounts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteStorageAccountsIdRequest generates requests for DeleteStorageAccountsId
+func NewDeleteStorageAccountsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/storage_accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStorageAccountsIdRequest generates requests for GetStorageAccountsId
+func NewGetStorageAccountsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/storage_accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStorageFilesRequest generates requests for GetStorageFiles
+func NewGetStorageFilesRequest(server string, params *GetStorageFilesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/storage_files")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostStorageFilesRequestWithBody generates requests for PostStorageFiles with any type of body
+func NewPostStorageFilesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/storage_files")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteStorageFilesIdRequest generates requests for DeleteStorageFilesId
+func NewDeleteStorageFilesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/storage_files/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStorageFilesIdRequest generates requests for GetStorageFilesId
+func NewGetStorageFilesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/storage_files/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTagsRequest generates requests for GetTags
+func NewGetTagsRequest(server string, params *GetTagsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tags")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostTagsRequest calls the generic PostTags builder with application/json body
+func NewPostTagsRequest(server string, body PostTagsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostTagsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostTagsRequestWithBody generates requests for PostTags with any type of body
+func NewPostTagsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tags")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteTagsIdRequest generates requests for DeleteTagsId
+func NewDeleteTagsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tags/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTagsIdRequest generates requests for GetTagsId
+func NewGetTagsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tags/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutTagsIdRequest calls the generic PutTagsId builder with application/json body
+func NewPutTagsIdRequest(server string, id string, body PutTagsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutTagsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutTagsIdRequestWithBody generates requests for PutTagsId with any type of body
+func NewPutTagsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tags/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetTranscribesRequest generates requests for GetTranscribes
+func NewGetTranscribesRequest(server string, params *GetTranscribesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/transcribes")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostTranscribesRequest calls the generic PostTranscribes builder with application/json body
+func NewPostTranscribesRequest(server string, body PostTranscribesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostTranscribesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostTranscribesRequestWithBody generates requests for PostTranscribes with any type of body
+func NewPostTranscribesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/transcribes")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteTranscribesIdRequest generates requests for DeleteTranscribesId
+func NewDeleteTranscribesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/transcribes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTranscribesIdRequest generates requests for GetTranscribesId
+func NewGetTranscribesIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/transcribes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostTranscribesIdStopRequest generates requests for PostTranscribesIdStop
+func NewPostTranscribesIdStopRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/transcribes/%s/stop", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTranscriptsRequest generates requests for GetTranscripts
+func NewGetTranscriptsRequest(server string, params *GetTranscriptsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/transcripts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "transcribe_id", runtime.ParamLocationQuery, params.TranscribeId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostTransfersRequest calls the generic PostTransfers builder with application/json body
+func NewPostTransfersRequest(server string, body PostTransfersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostTransfersRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostTransfersRequestWithBody generates requests for PostTransfers with any type of body
+func NewPostTransfersRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/transfers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetTrunksRequest generates requests for GetTrunks
+func NewGetTrunksRequest(server string, params *GetTrunksParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/trunks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostTrunksRequest calls the generic PostTrunks builder with application/json body
+func NewPostTrunksRequest(server string, body PostTrunksJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostTrunksRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostTrunksRequestWithBody generates requests for PostTrunks with any type of body
+func NewPostTrunksRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/trunks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteTrunksIdRequest generates requests for DeleteTrunksId
+func NewDeleteTrunksIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/trunks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTrunksIdRequest generates requests for GetTrunksId
+func NewGetTrunksIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/trunks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutTrunksIdRequest calls the generic PutTrunksId builder with application/json body
+func NewPutTrunksIdRequest(server string, id string, body PutTrunksIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutTrunksIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutTrunksIdRequestWithBody generates requests for PutTrunksId with any type of body
+func NewPutTrunksIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/trunks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetWsRequest generates requests for GetWs
+func NewGetWsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/ws")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -15284,6 +21031,306 @@ type ClientWithResponsesInterface interface {
 	PutOutplansIdDialInfoWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutOutplansIdDialInfoResponse, error)
 
 	PutOutplansIdDialInfoWithResponse(ctx context.Context, id string, body PutOutplansIdDialInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*PutOutplansIdDialInfoResponse, error)
+
+	// GetProvidersWithResponse request
+	GetProvidersWithResponse(ctx context.Context, params *GetProvidersParams, reqEditors ...RequestEditorFn) (*GetProvidersResponse, error)
+
+	// PostProvidersWithBodyWithResponse request with any body
+	PostProvidersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostProvidersResponse, error)
+
+	PostProvidersWithResponse(ctx context.Context, body PostProvidersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostProvidersResponse, error)
+
+	// DeleteProvidersIdWithResponse request
+	DeleteProvidersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteProvidersIdResponse, error)
+
+	// GetProvidersIdWithResponse request
+	GetProvidersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetProvidersIdResponse, error)
+
+	// PutProvidersIdWithBodyWithResponse request with any body
+	PutProvidersIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutProvidersIdResponse, error)
+
+	PutProvidersIdWithResponse(ctx context.Context, id string, body PutProvidersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutProvidersIdResponse, error)
+
+	// GetQueuecallsWithResponse request
+	GetQueuecallsWithResponse(ctx context.Context, params *GetQueuecallsParams, reqEditors ...RequestEditorFn) (*GetQueuecallsResponse, error)
+
+	// PostQueuecallsReferenceIdIdKickWithResponse request
+	PostQueuecallsReferenceIdIdKickWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostQueuecallsReferenceIdIdKickResponse, error)
+
+	// DeleteQueuecallsIdWithResponse request
+	DeleteQueuecallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteQueuecallsIdResponse, error)
+
+	// GetQueuecallsIdWithResponse request
+	GetQueuecallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetQueuecallsIdResponse, error)
+
+	// PostQueuecallsIdKickWithResponse request
+	PostQueuecallsIdKickWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostQueuecallsIdKickResponse, error)
+
+	// GetQueuesWithResponse request
+	GetQueuesWithResponse(ctx context.Context, params *GetQueuesParams, reqEditors ...RequestEditorFn) (*GetQueuesResponse, error)
+
+	// PostQueuesWithBodyWithResponse request with any body
+	PostQueuesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostQueuesResponse, error)
+
+	PostQueuesWithResponse(ctx context.Context, body PostQueuesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostQueuesResponse, error)
+
+	// DeleteQueuesIdWithResponse request
+	DeleteQueuesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteQueuesIdResponse, error)
+
+	// GetQueuesIdWithResponse request
+	GetQueuesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetQueuesIdResponse, error)
+
+	// PutQueuesIdWithBodyWithResponse request with any body
+	PutQueuesIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutQueuesIdResponse, error)
+
+	PutQueuesIdWithResponse(ctx context.Context, id string, body PutQueuesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutQueuesIdResponse, error)
+
+	// PutQueuesIdActionsWithBodyWithResponse request with any body
+	PutQueuesIdActionsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutQueuesIdActionsResponse, error)
+
+	PutQueuesIdActionsWithResponse(ctx context.Context, id string, body PutQueuesIdActionsJSONRequestBody, reqEditors ...RequestEditorFn) (*PutQueuesIdActionsResponse, error)
+
+	// PutQueuesIdRoutingMethodWithBodyWithResponse request with any body
+	PutQueuesIdRoutingMethodWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutQueuesIdRoutingMethodResponse, error)
+
+	PutQueuesIdRoutingMethodWithResponse(ctx context.Context, id string, body PutQueuesIdRoutingMethodJSONRequestBody, reqEditors ...RequestEditorFn) (*PutQueuesIdRoutingMethodResponse, error)
+
+	// PutQueuesIdTagIdsWithBodyWithResponse request with any body
+	PutQueuesIdTagIdsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutQueuesIdTagIdsResponse, error)
+
+	PutQueuesIdTagIdsWithResponse(ctx context.Context, id string, body PutQueuesIdTagIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*PutQueuesIdTagIdsResponse, error)
+
+	// GetRecordingfilesIdWithResponse request
+	GetRecordingfilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetRecordingfilesIdResponse, error)
+
+	// GetRecordingsWithResponse request
+	GetRecordingsWithResponse(ctx context.Context, params *GetRecordingsParams, reqEditors ...RequestEditorFn) (*GetRecordingsResponse, error)
+
+	// DeleteRecordingsIdWithResponse request
+	DeleteRecordingsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteRecordingsIdResponse, error)
+
+	// GetRecordingsIdWithResponse request
+	GetRecordingsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetRecordingsIdResponse, error)
+
+	// GetRoutesWithResponse request
+	GetRoutesWithResponse(ctx context.Context, params *GetRoutesParams, reqEditors ...RequestEditorFn) (*GetRoutesResponse, error)
+
+	// PostRoutesWithBodyWithResponse request with any body
+	PostRoutesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostRoutesResponse, error)
+
+	PostRoutesWithResponse(ctx context.Context, body PostRoutesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostRoutesResponse, error)
+
+	// DeleteRoutesIdWithResponse request
+	DeleteRoutesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteRoutesIdResponse, error)
+
+	// GetRoutesIdWithResponse request
+	GetRoutesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetRoutesIdResponse, error)
+
+	// PutRoutesIdWithBodyWithResponse request with any body
+	PutRoutesIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutRoutesIdResponse, error)
+
+	PutRoutesIdWithResponse(ctx context.Context, id string, body PutRoutesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutRoutesIdResponse, error)
+
+	// GetServiceAgentsAgentsWithResponse request
+	GetServiceAgentsAgentsWithResponse(ctx context.Context, params *GetServiceAgentsAgentsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsAgentsResponse, error)
+
+	// GetServiceAgentsAgentsIdWithResponse request
+	GetServiceAgentsAgentsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsAgentsIdResponse, error)
+
+	// GetServiceAgentsCallsWithResponse request
+	GetServiceAgentsCallsWithResponse(ctx context.Context, params *GetServiceAgentsCallsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsCallsResponse, error)
+
+	// GetServiceAgentsCallsIdWithResponse request
+	GetServiceAgentsCallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsCallsIdResponse, error)
+
+	// GetServiceAgentsChatroommessagesWithResponse request
+	GetServiceAgentsChatroommessagesWithResponse(ctx context.Context, params *GetServiceAgentsChatroommessagesParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsChatroommessagesResponse, error)
+
+	// PostServiceAgentsChatroommessagesWithBodyWithResponse request with any body
+	PostServiceAgentsChatroommessagesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostServiceAgentsChatroommessagesResponse, error)
+
+	PostServiceAgentsChatroommessagesWithResponse(ctx context.Context, body PostServiceAgentsChatroommessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostServiceAgentsChatroommessagesResponse, error)
+
+	// DeleteServiceAgentsChatroommessagesIdWithResponse request
+	DeleteServiceAgentsChatroommessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteServiceAgentsChatroommessagesIdResponse, error)
+
+	// GetServiceAgentsChatroommessagesIdWithResponse request
+	GetServiceAgentsChatroommessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsChatroommessagesIdResponse, error)
+
+	// GetServiceAgentsChatroomsWithResponse request
+	GetServiceAgentsChatroomsWithResponse(ctx context.Context, params *GetServiceAgentsChatroomsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsChatroomsResponse, error)
+
+	// PostServiceAgentsChatroomsWithBodyWithResponse request with any body
+	PostServiceAgentsChatroomsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostServiceAgentsChatroomsResponse, error)
+
+	PostServiceAgentsChatroomsWithResponse(ctx context.Context, body PostServiceAgentsChatroomsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostServiceAgentsChatroomsResponse, error)
+
+	// DeleteServiceAgentsChatroomsIdWithResponse request
+	DeleteServiceAgentsChatroomsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteServiceAgentsChatroomsIdResponse, error)
+
+	// GetServiceAgentsChatroomsIdWithResponse request
+	GetServiceAgentsChatroomsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsChatroomsIdResponse, error)
+
+	// PutServiceAgentsChatroomsIdWithBodyWithResponse request with any body
+	PutServiceAgentsChatroomsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsChatroomsIdResponse, error)
+
+	PutServiceAgentsChatroomsIdWithResponse(ctx context.Context, id string, body PutServiceAgentsChatroomsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsChatroomsIdResponse, error)
+
+	// GetServiceAgentsConversationsWithResponse request
+	GetServiceAgentsConversationsWithResponse(ctx context.Context, params *GetServiceAgentsConversationsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsConversationsResponse, error)
+
+	// GetServiceAgentsConversationsIdWithResponse request
+	GetServiceAgentsConversationsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsConversationsIdResponse, error)
+
+	// GetServiceAgentsConversationsIdMessagesWithResponse request
+	GetServiceAgentsConversationsIdMessagesWithResponse(ctx context.Context, id string, params *GetServiceAgentsConversationsIdMessagesParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsConversationsIdMessagesResponse, error)
+
+	// PostServiceAgentsConversationsIdMessagesWithBodyWithResponse request with any body
+	PostServiceAgentsConversationsIdMessagesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostServiceAgentsConversationsIdMessagesResponse, error)
+
+	PostServiceAgentsConversationsIdMessagesWithResponse(ctx context.Context, id string, body PostServiceAgentsConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostServiceAgentsConversationsIdMessagesResponse, error)
+
+	// GetServiceAgentsCustomerWithResponse request
+	GetServiceAgentsCustomerWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetServiceAgentsCustomerResponse, error)
+
+	// GetServiceAgentsExtensionsWithResponse request
+	GetServiceAgentsExtensionsWithResponse(ctx context.Context, params *GetServiceAgentsExtensionsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsExtensionsResponse, error)
+
+	// GetServiceAgentsExtensionsIdWithResponse request
+	GetServiceAgentsExtensionsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsExtensionsIdResponse, error)
+
+	// GetServiceAgentsFilesWithResponse request
+	GetServiceAgentsFilesWithResponse(ctx context.Context, params *GetServiceAgentsFilesParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsFilesResponse, error)
+
+	// PostServiceAgentsFilesWithBodyWithResponse request with any body
+	PostServiceAgentsFilesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostServiceAgentsFilesResponse, error)
+
+	// DeleteServiceAgentsFilesIdWithResponse request
+	DeleteServiceAgentsFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteServiceAgentsFilesIdResponse, error)
+
+	// GetServiceAgentsFilesIdWithResponse request
+	GetServiceAgentsFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsFilesIdResponse, error)
+
+	// GetServiceAgentsMeWithResponse request
+	GetServiceAgentsMeWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetServiceAgentsMeResponse, error)
+
+	// PutServiceAgentsMeWithBodyWithResponse request with any body
+	PutServiceAgentsMeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeResponse, error)
+
+	PutServiceAgentsMeWithResponse(ctx context.Context, body PutServiceAgentsMeJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeResponse, error)
+
+	// PutServiceAgentsMeAddressesWithBodyWithResponse request with any body
+	PutServiceAgentsMeAddressesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeAddressesResponse, error)
+
+	PutServiceAgentsMeAddressesWithResponse(ctx context.Context, body PutServiceAgentsMeAddressesJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeAddressesResponse, error)
+
+	// PutServiceAgentsMePasswordWithBodyWithResponse request with any body
+	PutServiceAgentsMePasswordWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsMePasswordResponse, error)
+
+	PutServiceAgentsMePasswordWithResponse(ctx context.Context, body PutServiceAgentsMePasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsMePasswordResponse, error)
+
+	// PutServiceAgentsMeStatusWithBodyWithResponse request with any body
+	PutServiceAgentsMeStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeStatusResponse, error)
+
+	PutServiceAgentsMeStatusWithResponse(ctx context.Context, body PutServiceAgentsMeStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeStatusResponse, error)
+
+	// GetServiceAgentsWsWithResponse request
+	GetServiceAgentsWsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetServiceAgentsWsResponse, error)
+
+	// GetStorageAccountWithResponse request
+	GetStorageAccountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetStorageAccountResponse, error)
+
+	// GetStorageAccountsWithResponse request
+	GetStorageAccountsWithResponse(ctx context.Context, params *GetStorageAccountsParams, reqEditors ...RequestEditorFn) (*GetStorageAccountsResponse, error)
+
+	// PostStorageAccountsWithBodyWithResponse request with any body
+	PostStorageAccountsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostStorageAccountsResponse, error)
+
+	PostStorageAccountsWithResponse(ctx context.Context, body PostStorageAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostStorageAccountsResponse, error)
+
+	// DeleteStorageAccountsIdWithResponse request
+	DeleteStorageAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteStorageAccountsIdResponse, error)
+
+	// GetStorageAccountsIdWithResponse request
+	GetStorageAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetStorageAccountsIdResponse, error)
+
+	// GetStorageFilesWithResponse request
+	GetStorageFilesWithResponse(ctx context.Context, params *GetStorageFilesParams, reqEditors ...RequestEditorFn) (*GetStorageFilesResponse, error)
+
+	// PostStorageFilesWithBodyWithResponse request with any body
+	PostStorageFilesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostStorageFilesResponse, error)
+
+	// DeleteStorageFilesIdWithResponse request
+	DeleteStorageFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteStorageFilesIdResponse, error)
+
+	// GetStorageFilesIdWithResponse request
+	GetStorageFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetStorageFilesIdResponse, error)
+
+	// GetTagsWithResponse request
+	GetTagsWithResponse(ctx context.Context, params *GetTagsParams, reqEditors ...RequestEditorFn) (*GetTagsResponse, error)
+
+	// PostTagsWithBodyWithResponse request with any body
+	PostTagsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostTagsResponse, error)
+
+	PostTagsWithResponse(ctx context.Context, body PostTagsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostTagsResponse, error)
+
+	// DeleteTagsIdWithResponse request
+	DeleteTagsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteTagsIdResponse, error)
+
+	// GetTagsIdWithResponse request
+	GetTagsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetTagsIdResponse, error)
+
+	// PutTagsIdWithBodyWithResponse request with any body
+	PutTagsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutTagsIdResponse, error)
+
+	PutTagsIdWithResponse(ctx context.Context, id string, body PutTagsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutTagsIdResponse, error)
+
+	// GetTranscribesWithResponse request
+	GetTranscribesWithResponse(ctx context.Context, params *GetTranscribesParams, reqEditors ...RequestEditorFn) (*GetTranscribesResponse, error)
+
+	// PostTranscribesWithBodyWithResponse request with any body
+	PostTranscribesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostTranscribesResponse, error)
+
+	PostTranscribesWithResponse(ctx context.Context, body PostTranscribesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostTranscribesResponse, error)
+
+	// DeleteTranscribesIdWithResponse request
+	DeleteTranscribesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteTranscribesIdResponse, error)
+
+	// GetTranscribesIdWithResponse request
+	GetTranscribesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetTranscribesIdResponse, error)
+
+	// PostTranscribesIdStopWithResponse request
+	PostTranscribesIdStopWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostTranscribesIdStopResponse, error)
+
+	// GetTranscriptsWithResponse request
+	GetTranscriptsWithResponse(ctx context.Context, params *GetTranscriptsParams, reqEditors ...RequestEditorFn) (*GetTranscriptsResponse, error)
+
+	// PostTransfersWithBodyWithResponse request with any body
+	PostTransfersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostTransfersResponse, error)
+
+	PostTransfersWithResponse(ctx context.Context, body PostTransfersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostTransfersResponse, error)
+
+	// GetTrunksWithResponse request
+	GetTrunksWithResponse(ctx context.Context, params *GetTrunksParams, reqEditors ...RequestEditorFn) (*GetTrunksResponse, error)
+
+	// PostTrunksWithBodyWithResponse request with any body
+	PostTrunksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostTrunksResponse, error)
+
+	PostTrunksWithResponse(ctx context.Context, body PostTrunksJSONRequestBody, reqEditors ...RequestEditorFn) (*PostTrunksResponse, error)
+
+	// DeleteTrunksIdWithResponse request
+	DeleteTrunksIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteTrunksIdResponse, error)
+
+	// GetTrunksIdWithResponse request
+	GetTrunksIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetTrunksIdResponse, error)
+
+	// PutTrunksIdWithBodyWithResponse request with any body
+	PutTrunksIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutTrunksIdResponse, error)
+
+	PutTrunksIdWithResponse(ctx context.Context, id string, body PutTrunksIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutTrunksIdResponse, error)
+
+	// GetWsWithResponse request
+	GetWsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetWsResponse, error)
 }
 
 type GetAccesskeysResponse struct {
@@ -19090,6 +25137,1934 @@ func (r PutOutplansIdDialInfoResponse) StatusCode() int {
 	return 0
 }
 
+type GetProvidersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                 `json:"next_page_token,omitempty"`
+		Result        *[]RouteManagerProvider `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProvidersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProvidersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostProvidersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouteManagerProvider
+}
+
+// Status returns HTTPResponse.Status
+func (r PostProvidersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostProvidersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteProvidersIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouteManagerProvider
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteProvidersIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteProvidersIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetProvidersIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouteManagerProvider
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProvidersIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProvidersIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutProvidersIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouteManagerProvider
+}
+
+// Status returns HTTPResponse.Status
+func (r PutProvidersIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutProvidersIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetQueuecallsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                  `json:"next_page_token,omitempty"`
+		Result        *[]QueueManagerQueuecall `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetQueuecallsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetQueuecallsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostQueuecallsReferenceIdIdKickResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueuecall
+}
+
+// Status returns HTTPResponse.Status
+func (r PostQueuecallsReferenceIdIdKickResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostQueuecallsReferenceIdIdKickResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteQueuecallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueuecall
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteQueuecallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteQueuecallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetQueuecallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueuecall
+}
+
+// Status returns HTTPResponse.Status
+func (r GetQueuecallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetQueuecallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostQueuecallsIdKickResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueuecall
+}
+
+// Status returns HTTPResponse.Status
+func (r PostQueuecallsIdKickResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostQueuecallsIdKickResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetQueuesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string              `json:"next_page_token,omitempty"`
+		Result        *[]QueueManagerQueue `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetQueuesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetQueuesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostQueuesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueue
+}
+
+// Status returns HTTPResponse.Status
+func (r PostQueuesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostQueuesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteQueuesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueue
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteQueuesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteQueuesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetQueuesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueue
+}
+
+// Status returns HTTPResponse.Status
+func (r GetQueuesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetQueuesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutQueuesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueue
+}
+
+// Status returns HTTPResponse.Status
+func (r PutQueuesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutQueuesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutQueuesIdActionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueue
+}
+
+// Status returns HTTPResponse.Status
+func (r PutQueuesIdActionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutQueuesIdActionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutQueuesIdRoutingMethodResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueue
+}
+
+// Status returns HTTPResponse.Status
+func (r PutQueuesIdRoutingMethodResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutQueuesIdRoutingMethodResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutQueuesIdTagIdsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueueManagerQueue
+}
+
+// Status returns HTTPResponse.Status
+func (r PutQueuesIdTagIdsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutQueuesIdTagIdsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetRecordingfilesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON307      *string
+	JSON400      *struct {
+		Error *string `json:"error,omitempty"`
+	}
+	JSON404 *struct {
+		Error *string `json:"error,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRecordingfilesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRecordingfilesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetRecordingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                 `json:"next_page_token,omitempty"`
+		Result        *[]CallManagerRecording `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRecordingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRecordingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteRecordingsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerRecording
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRecordingsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRecordingsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetRecordingsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerRecording
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRecordingsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRecordingsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetRoutesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string              `json:"next_page_token,omitempty"`
+		Result        *[]RouteManagerRoute `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRoutesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRoutesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostRoutesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouteManagerRoute
+}
+
+// Status returns HTTPResponse.Status
+func (r PostRoutesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostRoutesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteRoutesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouteManagerRoute
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRoutesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRoutesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetRoutesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouteManagerRoute
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRoutesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRoutesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutRoutesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RouteManagerRoute
+}
+
+// Status returns HTTPResponse.Status
+func (r PutRoutesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutRoutesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsAgentsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string              `json:"next_page_token,omitempty"`
+		Result        *[]AgentManagerAgent `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsAgentsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsAgentsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsAgentsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsAgentsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsAgentsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsCallsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string            `json:"next_page_token,omitempty"`
+		Result        *[]CallManagerCall `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsCallsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsCallsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsCallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerCall
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsCallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsCallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsChatroommessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                       `json:"next_page_token,omitempty"`
+		Result        *[]ChatManagerMessagechatroom `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsChatroommessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsChatroommessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostServiceAgentsChatroommessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerMessagechatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r PostServiceAgentsChatroommessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostServiceAgentsChatroommessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteServiceAgentsChatroommessagesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerMessagechatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteServiceAgentsChatroommessagesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteServiceAgentsChatroommessagesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsChatroommessagesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerMessagechatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsChatroommessagesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsChatroommessagesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsChatroomsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                `json:"next_page_token,omitempty"`
+		Result        *[]ChatManagerChatroom `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsChatroomsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsChatroomsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostServiceAgentsChatroomsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r PostServiceAgentsChatroomsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostServiceAgentsChatroomsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteServiceAgentsChatroomsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteServiceAgentsChatroomsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteServiceAgentsChatroomsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsChatroomsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsChatroomsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsChatroomsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutServiceAgentsChatroomsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ChatManagerChatroom
+}
+
+// Status returns HTTPResponse.Status
+func (r PutServiceAgentsChatroomsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutServiceAgentsChatroomsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsConversationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                            `json:"next_page_token,omitempty"`
+		Result        *[]ConversationManagerConversation `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsConversationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsConversationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsConversationsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConversationManagerConversation
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsConversationsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsConversationsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsConversationsIdMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                       `json:"next_page_token,omitempty"`
+		Result        *[]ConversationManagerMessage `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsConversationsIdMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsConversationsIdMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostServiceAgentsConversationsIdMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConversationManagerMessage
+}
+
+// Status returns HTTPResponse.Status
+func (r PostServiceAgentsConversationsIdMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostServiceAgentsConversationsIdMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsCustomerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomerManagerCustomer
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsCustomerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsCustomerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsExtensionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                      `json:"next_page_token,omitempty"`
+		Result        *[]RegistrarManagerExtension `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsExtensionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsExtensionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsExtensionsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegistrarManagerExtension
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsExtensionsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsExtensionsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsFilesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string               `json:"next_page_token,omitempty"`
+		Result        *[]StorageManagerFile `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsFilesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsFilesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostServiceAgentsFilesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerFile
+}
+
+// Status returns HTTPResponse.Status
+func (r PostServiceAgentsFilesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostServiceAgentsFilesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteServiceAgentsFilesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerFile
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteServiceAgentsFilesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteServiceAgentsFilesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsFilesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerFile
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsFilesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsFilesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsMeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsMeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsMeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutServiceAgentsMeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutServiceAgentsMeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutServiceAgentsMeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutServiceAgentsMeAddressesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutServiceAgentsMeAddressesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutServiceAgentsMeAddressesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutServiceAgentsMePasswordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutServiceAgentsMePasswordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutServiceAgentsMePasswordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutServiceAgentsMeStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutServiceAgentsMeStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutServiceAgentsMeStatusResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServiceAgentsWsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServiceAgentsWsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServiceAgentsWsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStorageAccountResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStorageAccountResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStorageAccountResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStorageAccountsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                  `json:"next_page_token,omitempty"`
+		Result        *[]StorageManagerAccount `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStorageAccountsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStorageAccountsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostStorageAccountsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r PostStorageAccountsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostStorageAccountsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteStorageAccountsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteStorageAccountsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteStorageAccountsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStorageAccountsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStorageAccountsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStorageAccountsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStorageFilesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string               `json:"next_page_token,omitempty"`
+		Result        *[]StorageManagerFile `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStorageFilesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStorageFilesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostStorageFilesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerFile
+}
+
+// Status returns HTTPResponse.Status
+func (r PostStorageFilesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostStorageFilesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteStorageFilesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerFile
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteStorageFilesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteStorageFilesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStorageFilesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StorageManagerFile
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStorageFilesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStorageFilesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTagsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string          `json:"next_page_token,omitempty"`
+		Result        *[]TagManagerTag `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTagsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTagsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostTagsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TagManagerTag
+}
+
+// Status returns HTTPResponse.Status
+func (r PostTagsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostTagsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteTagsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TagManagerTag
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteTagsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteTagsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTagsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TagManagerTag
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTagsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTagsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutTagsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TagManagerTag
+}
+
+// Status returns HTTPResponse.Status
+func (r PutTagsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutTagsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTranscribesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                        `json:"next_page_token,omitempty"`
+		Result        *[]TranscribeManagerTranscribe `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTranscribesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTranscribesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostTranscribesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TranscribeManagerTranscribe
+}
+
+// Status returns HTTPResponse.Status
+func (r PostTranscribesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostTranscribesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteTranscribesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TranscribeManagerTranscribe
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteTranscribesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteTranscribesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTranscribesIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TranscribeManagerTranscribe
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTranscribesIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTranscribesIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostTranscribesIdStopResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TranscribeManagerTranscribe
+}
+
+// Status returns HTTPResponse.Status
+func (r PostTranscribesIdStopResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostTranscribesIdStopResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTranscriptsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                        `json:"next_page_token,omitempty"`
+		Result        *[]TranscribeManagerTranscript `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTranscriptsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTranscriptsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostTransfersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TransferManagerTransfer
+}
+
+// Status returns HTTPResponse.Status
+func (r PostTransfersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostTransfersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTrunksResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                  `json:"next_page_token,omitempty"`
+		Result        *[]RegistrarManagerTrunk `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTrunksResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTrunksResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostTrunksResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegistrarManagerTrunk
+}
+
+// Status returns HTTPResponse.Status
+func (r PostTrunksResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostTrunksResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteTrunksIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegistrarManagerTrunk
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteTrunksIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteTrunksIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTrunksIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegistrarManagerTrunk
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTrunksIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTrunksIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutTrunksIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RegistrarManagerTrunk
+}
+
+// Status returns HTTPResponse.Status
+func (r PutTrunksIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutTrunksIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetWsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccesskeysWithResponse request returning *GetAccesskeysResponse
 func (c *ClientWithResponses) GetAccesskeysWithResponse(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*GetAccesskeysResponse, error) {
 	rsp, err := c.GetAccesskeys(ctx, params, reqEditors...)
@@ -21128,6 +29103,954 @@ func (c *ClientWithResponses) PutOutplansIdDialInfoWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParsePutOutplansIdDialInfoResponse(rsp)
+}
+
+// GetProvidersWithResponse request returning *GetProvidersResponse
+func (c *ClientWithResponses) GetProvidersWithResponse(ctx context.Context, params *GetProvidersParams, reqEditors ...RequestEditorFn) (*GetProvidersResponse, error) {
+	rsp, err := c.GetProviders(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProvidersResponse(rsp)
+}
+
+// PostProvidersWithBodyWithResponse request with arbitrary body returning *PostProvidersResponse
+func (c *ClientWithResponses) PostProvidersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostProvidersResponse, error) {
+	rsp, err := c.PostProvidersWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostProvidersResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostProvidersWithResponse(ctx context.Context, body PostProvidersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostProvidersResponse, error) {
+	rsp, err := c.PostProviders(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostProvidersResponse(rsp)
+}
+
+// DeleteProvidersIdWithResponse request returning *DeleteProvidersIdResponse
+func (c *ClientWithResponses) DeleteProvidersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteProvidersIdResponse, error) {
+	rsp, err := c.DeleteProvidersId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteProvidersIdResponse(rsp)
+}
+
+// GetProvidersIdWithResponse request returning *GetProvidersIdResponse
+func (c *ClientWithResponses) GetProvidersIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetProvidersIdResponse, error) {
+	rsp, err := c.GetProvidersId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProvidersIdResponse(rsp)
+}
+
+// PutProvidersIdWithBodyWithResponse request with arbitrary body returning *PutProvidersIdResponse
+func (c *ClientWithResponses) PutProvidersIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutProvidersIdResponse, error) {
+	rsp, err := c.PutProvidersIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutProvidersIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutProvidersIdWithResponse(ctx context.Context, id string, body PutProvidersIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutProvidersIdResponse, error) {
+	rsp, err := c.PutProvidersId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutProvidersIdResponse(rsp)
+}
+
+// GetQueuecallsWithResponse request returning *GetQueuecallsResponse
+func (c *ClientWithResponses) GetQueuecallsWithResponse(ctx context.Context, params *GetQueuecallsParams, reqEditors ...RequestEditorFn) (*GetQueuecallsResponse, error) {
+	rsp, err := c.GetQueuecalls(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetQueuecallsResponse(rsp)
+}
+
+// PostQueuecallsReferenceIdIdKickWithResponse request returning *PostQueuecallsReferenceIdIdKickResponse
+func (c *ClientWithResponses) PostQueuecallsReferenceIdIdKickWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostQueuecallsReferenceIdIdKickResponse, error) {
+	rsp, err := c.PostQueuecallsReferenceIdIdKick(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostQueuecallsReferenceIdIdKickResponse(rsp)
+}
+
+// DeleteQueuecallsIdWithResponse request returning *DeleteQueuecallsIdResponse
+func (c *ClientWithResponses) DeleteQueuecallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteQueuecallsIdResponse, error) {
+	rsp, err := c.DeleteQueuecallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteQueuecallsIdResponse(rsp)
+}
+
+// GetQueuecallsIdWithResponse request returning *GetQueuecallsIdResponse
+func (c *ClientWithResponses) GetQueuecallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetQueuecallsIdResponse, error) {
+	rsp, err := c.GetQueuecallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetQueuecallsIdResponse(rsp)
+}
+
+// PostQueuecallsIdKickWithResponse request returning *PostQueuecallsIdKickResponse
+func (c *ClientWithResponses) PostQueuecallsIdKickWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostQueuecallsIdKickResponse, error) {
+	rsp, err := c.PostQueuecallsIdKick(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostQueuecallsIdKickResponse(rsp)
+}
+
+// GetQueuesWithResponse request returning *GetQueuesResponse
+func (c *ClientWithResponses) GetQueuesWithResponse(ctx context.Context, params *GetQueuesParams, reqEditors ...RequestEditorFn) (*GetQueuesResponse, error) {
+	rsp, err := c.GetQueues(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetQueuesResponse(rsp)
+}
+
+// PostQueuesWithBodyWithResponse request with arbitrary body returning *PostQueuesResponse
+func (c *ClientWithResponses) PostQueuesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostQueuesResponse, error) {
+	rsp, err := c.PostQueuesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostQueuesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostQueuesWithResponse(ctx context.Context, body PostQueuesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostQueuesResponse, error) {
+	rsp, err := c.PostQueues(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostQueuesResponse(rsp)
+}
+
+// DeleteQueuesIdWithResponse request returning *DeleteQueuesIdResponse
+func (c *ClientWithResponses) DeleteQueuesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteQueuesIdResponse, error) {
+	rsp, err := c.DeleteQueuesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteQueuesIdResponse(rsp)
+}
+
+// GetQueuesIdWithResponse request returning *GetQueuesIdResponse
+func (c *ClientWithResponses) GetQueuesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetQueuesIdResponse, error) {
+	rsp, err := c.GetQueuesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetQueuesIdResponse(rsp)
+}
+
+// PutQueuesIdWithBodyWithResponse request with arbitrary body returning *PutQueuesIdResponse
+func (c *ClientWithResponses) PutQueuesIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutQueuesIdResponse, error) {
+	rsp, err := c.PutQueuesIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutQueuesIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutQueuesIdWithResponse(ctx context.Context, id string, body PutQueuesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutQueuesIdResponse, error) {
+	rsp, err := c.PutQueuesId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutQueuesIdResponse(rsp)
+}
+
+// PutQueuesIdActionsWithBodyWithResponse request with arbitrary body returning *PutQueuesIdActionsResponse
+func (c *ClientWithResponses) PutQueuesIdActionsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutQueuesIdActionsResponse, error) {
+	rsp, err := c.PutQueuesIdActionsWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutQueuesIdActionsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutQueuesIdActionsWithResponse(ctx context.Context, id string, body PutQueuesIdActionsJSONRequestBody, reqEditors ...RequestEditorFn) (*PutQueuesIdActionsResponse, error) {
+	rsp, err := c.PutQueuesIdActions(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutQueuesIdActionsResponse(rsp)
+}
+
+// PutQueuesIdRoutingMethodWithBodyWithResponse request with arbitrary body returning *PutQueuesIdRoutingMethodResponse
+func (c *ClientWithResponses) PutQueuesIdRoutingMethodWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutQueuesIdRoutingMethodResponse, error) {
+	rsp, err := c.PutQueuesIdRoutingMethodWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutQueuesIdRoutingMethodResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutQueuesIdRoutingMethodWithResponse(ctx context.Context, id string, body PutQueuesIdRoutingMethodJSONRequestBody, reqEditors ...RequestEditorFn) (*PutQueuesIdRoutingMethodResponse, error) {
+	rsp, err := c.PutQueuesIdRoutingMethod(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutQueuesIdRoutingMethodResponse(rsp)
+}
+
+// PutQueuesIdTagIdsWithBodyWithResponse request with arbitrary body returning *PutQueuesIdTagIdsResponse
+func (c *ClientWithResponses) PutQueuesIdTagIdsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutQueuesIdTagIdsResponse, error) {
+	rsp, err := c.PutQueuesIdTagIdsWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutQueuesIdTagIdsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutQueuesIdTagIdsWithResponse(ctx context.Context, id string, body PutQueuesIdTagIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*PutQueuesIdTagIdsResponse, error) {
+	rsp, err := c.PutQueuesIdTagIds(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutQueuesIdTagIdsResponse(rsp)
+}
+
+// GetRecordingfilesIdWithResponse request returning *GetRecordingfilesIdResponse
+func (c *ClientWithResponses) GetRecordingfilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetRecordingfilesIdResponse, error) {
+	rsp, err := c.GetRecordingfilesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRecordingfilesIdResponse(rsp)
+}
+
+// GetRecordingsWithResponse request returning *GetRecordingsResponse
+func (c *ClientWithResponses) GetRecordingsWithResponse(ctx context.Context, params *GetRecordingsParams, reqEditors ...RequestEditorFn) (*GetRecordingsResponse, error) {
+	rsp, err := c.GetRecordings(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRecordingsResponse(rsp)
+}
+
+// DeleteRecordingsIdWithResponse request returning *DeleteRecordingsIdResponse
+func (c *ClientWithResponses) DeleteRecordingsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteRecordingsIdResponse, error) {
+	rsp, err := c.DeleteRecordingsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRecordingsIdResponse(rsp)
+}
+
+// GetRecordingsIdWithResponse request returning *GetRecordingsIdResponse
+func (c *ClientWithResponses) GetRecordingsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetRecordingsIdResponse, error) {
+	rsp, err := c.GetRecordingsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRecordingsIdResponse(rsp)
+}
+
+// GetRoutesWithResponse request returning *GetRoutesResponse
+func (c *ClientWithResponses) GetRoutesWithResponse(ctx context.Context, params *GetRoutesParams, reqEditors ...RequestEditorFn) (*GetRoutesResponse, error) {
+	rsp, err := c.GetRoutes(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRoutesResponse(rsp)
+}
+
+// PostRoutesWithBodyWithResponse request with arbitrary body returning *PostRoutesResponse
+func (c *ClientWithResponses) PostRoutesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostRoutesResponse, error) {
+	rsp, err := c.PostRoutesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostRoutesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostRoutesWithResponse(ctx context.Context, body PostRoutesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostRoutesResponse, error) {
+	rsp, err := c.PostRoutes(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostRoutesResponse(rsp)
+}
+
+// DeleteRoutesIdWithResponse request returning *DeleteRoutesIdResponse
+func (c *ClientWithResponses) DeleteRoutesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteRoutesIdResponse, error) {
+	rsp, err := c.DeleteRoutesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRoutesIdResponse(rsp)
+}
+
+// GetRoutesIdWithResponse request returning *GetRoutesIdResponse
+func (c *ClientWithResponses) GetRoutesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetRoutesIdResponse, error) {
+	rsp, err := c.GetRoutesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRoutesIdResponse(rsp)
+}
+
+// PutRoutesIdWithBodyWithResponse request with arbitrary body returning *PutRoutesIdResponse
+func (c *ClientWithResponses) PutRoutesIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutRoutesIdResponse, error) {
+	rsp, err := c.PutRoutesIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutRoutesIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutRoutesIdWithResponse(ctx context.Context, id string, body PutRoutesIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutRoutesIdResponse, error) {
+	rsp, err := c.PutRoutesId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutRoutesIdResponse(rsp)
+}
+
+// GetServiceAgentsAgentsWithResponse request returning *GetServiceAgentsAgentsResponse
+func (c *ClientWithResponses) GetServiceAgentsAgentsWithResponse(ctx context.Context, params *GetServiceAgentsAgentsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsAgentsResponse, error) {
+	rsp, err := c.GetServiceAgentsAgents(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsAgentsResponse(rsp)
+}
+
+// GetServiceAgentsAgentsIdWithResponse request returning *GetServiceAgentsAgentsIdResponse
+func (c *ClientWithResponses) GetServiceAgentsAgentsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsAgentsIdResponse, error) {
+	rsp, err := c.GetServiceAgentsAgentsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsAgentsIdResponse(rsp)
+}
+
+// GetServiceAgentsCallsWithResponse request returning *GetServiceAgentsCallsResponse
+func (c *ClientWithResponses) GetServiceAgentsCallsWithResponse(ctx context.Context, params *GetServiceAgentsCallsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsCallsResponse, error) {
+	rsp, err := c.GetServiceAgentsCalls(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsCallsResponse(rsp)
+}
+
+// GetServiceAgentsCallsIdWithResponse request returning *GetServiceAgentsCallsIdResponse
+func (c *ClientWithResponses) GetServiceAgentsCallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsCallsIdResponse, error) {
+	rsp, err := c.GetServiceAgentsCallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsCallsIdResponse(rsp)
+}
+
+// GetServiceAgentsChatroommessagesWithResponse request returning *GetServiceAgentsChatroommessagesResponse
+func (c *ClientWithResponses) GetServiceAgentsChatroommessagesWithResponse(ctx context.Context, params *GetServiceAgentsChatroommessagesParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsChatroommessagesResponse, error) {
+	rsp, err := c.GetServiceAgentsChatroommessages(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsChatroommessagesResponse(rsp)
+}
+
+// PostServiceAgentsChatroommessagesWithBodyWithResponse request with arbitrary body returning *PostServiceAgentsChatroommessagesResponse
+func (c *ClientWithResponses) PostServiceAgentsChatroommessagesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostServiceAgentsChatroommessagesResponse, error) {
+	rsp, err := c.PostServiceAgentsChatroommessagesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostServiceAgentsChatroommessagesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostServiceAgentsChatroommessagesWithResponse(ctx context.Context, body PostServiceAgentsChatroommessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostServiceAgentsChatroommessagesResponse, error) {
+	rsp, err := c.PostServiceAgentsChatroommessages(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostServiceAgentsChatroommessagesResponse(rsp)
+}
+
+// DeleteServiceAgentsChatroommessagesIdWithResponse request returning *DeleteServiceAgentsChatroommessagesIdResponse
+func (c *ClientWithResponses) DeleteServiceAgentsChatroommessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteServiceAgentsChatroommessagesIdResponse, error) {
+	rsp, err := c.DeleteServiceAgentsChatroommessagesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteServiceAgentsChatroommessagesIdResponse(rsp)
+}
+
+// GetServiceAgentsChatroommessagesIdWithResponse request returning *GetServiceAgentsChatroommessagesIdResponse
+func (c *ClientWithResponses) GetServiceAgentsChatroommessagesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsChatroommessagesIdResponse, error) {
+	rsp, err := c.GetServiceAgentsChatroommessagesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsChatroommessagesIdResponse(rsp)
+}
+
+// GetServiceAgentsChatroomsWithResponse request returning *GetServiceAgentsChatroomsResponse
+func (c *ClientWithResponses) GetServiceAgentsChatroomsWithResponse(ctx context.Context, params *GetServiceAgentsChatroomsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsChatroomsResponse, error) {
+	rsp, err := c.GetServiceAgentsChatrooms(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsChatroomsResponse(rsp)
+}
+
+// PostServiceAgentsChatroomsWithBodyWithResponse request with arbitrary body returning *PostServiceAgentsChatroomsResponse
+func (c *ClientWithResponses) PostServiceAgentsChatroomsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostServiceAgentsChatroomsResponse, error) {
+	rsp, err := c.PostServiceAgentsChatroomsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostServiceAgentsChatroomsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostServiceAgentsChatroomsWithResponse(ctx context.Context, body PostServiceAgentsChatroomsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostServiceAgentsChatroomsResponse, error) {
+	rsp, err := c.PostServiceAgentsChatrooms(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostServiceAgentsChatroomsResponse(rsp)
+}
+
+// DeleteServiceAgentsChatroomsIdWithResponse request returning *DeleteServiceAgentsChatroomsIdResponse
+func (c *ClientWithResponses) DeleteServiceAgentsChatroomsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteServiceAgentsChatroomsIdResponse, error) {
+	rsp, err := c.DeleteServiceAgentsChatroomsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteServiceAgentsChatroomsIdResponse(rsp)
+}
+
+// GetServiceAgentsChatroomsIdWithResponse request returning *GetServiceAgentsChatroomsIdResponse
+func (c *ClientWithResponses) GetServiceAgentsChatroomsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsChatroomsIdResponse, error) {
+	rsp, err := c.GetServiceAgentsChatroomsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsChatroomsIdResponse(rsp)
+}
+
+// PutServiceAgentsChatroomsIdWithBodyWithResponse request with arbitrary body returning *PutServiceAgentsChatroomsIdResponse
+func (c *ClientWithResponses) PutServiceAgentsChatroomsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsChatroomsIdResponse, error) {
+	rsp, err := c.PutServiceAgentsChatroomsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsChatroomsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutServiceAgentsChatroomsIdWithResponse(ctx context.Context, id string, body PutServiceAgentsChatroomsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsChatroomsIdResponse, error) {
+	rsp, err := c.PutServiceAgentsChatroomsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsChatroomsIdResponse(rsp)
+}
+
+// GetServiceAgentsConversationsWithResponse request returning *GetServiceAgentsConversationsResponse
+func (c *ClientWithResponses) GetServiceAgentsConversationsWithResponse(ctx context.Context, params *GetServiceAgentsConversationsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsConversationsResponse, error) {
+	rsp, err := c.GetServiceAgentsConversations(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsConversationsResponse(rsp)
+}
+
+// GetServiceAgentsConversationsIdWithResponse request returning *GetServiceAgentsConversationsIdResponse
+func (c *ClientWithResponses) GetServiceAgentsConversationsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsConversationsIdResponse, error) {
+	rsp, err := c.GetServiceAgentsConversationsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsConversationsIdResponse(rsp)
+}
+
+// GetServiceAgentsConversationsIdMessagesWithResponse request returning *GetServiceAgentsConversationsIdMessagesResponse
+func (c *ClientWithResponses) GetServiceAgentsConversationsIdMessagesWithResponse(ctx context.Context, id string, params *GetServiceAgentsConversationsIdMessagesParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsConversationsIdMessagesResponse, error) {
+	rsp, err := c.GetServiceAgentsConversationsIdMessages(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsConversationsIdMessagesResponse(rsp)
+}
+
+// PostServiceAgentsConversationsIdMessagesWithBodyWithResponse request with arbitrary body returning *PostServiceAgentsConversationsIdMessagesResponse
+func (c *ClientWithResponses) PostServiceAgentsConversationsIdMessagesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostServiceAgentsConversationsIdMessagesResponse, error) {
+	rsp, err := c.PostServiceAgentsConversationsIdMessagesWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostServiceAgentsConversationsIdMessagesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostServiceAgentsConversationsIdMessagesWithResponse(ctx context.Context, id string, body PostServiceAgentsConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostServiceAgentsConversationsIdMessagesResponse, error) {
+	rsp, err := c.PostServiceAgentsConversationsIdMessages(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostServiceAgentsConversationsIdMessagesResponse(rsp)
+}
+
+// GetServiceAgentsCustomerWithResponse request returning *GetServiceAgentsCustomerResponse
+func (c *ClientWithResponses) GetServiceAgentsCustomerWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetServiceAgentsCustomerResponse, error) {
+	rsp, err := c.GetServiceAgentsCustomer(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsCustomerResponse(rsp)
+}
+
+// GetServiceAgentsExtensionsWithResponse request returning *GetServiceAgentsExtensionsResponse
+func (c *ClientWithResponses) GetServiceAgentsExtensionsWithResponse(ctx context.Context, params *GetServiceAgentsExtensionsParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsExtensionsResponse, error) {
+	rsp, err := c.GetServiceAgentsExtensions(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsExtensionsResponse(rsp)
+}
+
+// GetServiceAgentsExtensionsIdWithResponse request returning *GetServiceAgentsExtensionsIdResponse
+func (c *ClientWithResponses) GetServiceAgentsExtensionsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsExtensionsIdResponse, error) {
+	rsp, err := c.GetServiceAgentsExtensionsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsExtensionsIdResponse(rsp)
+}
+
+// GetServiceAgentsFilesWithResponse request returning *GetServiceAgentsFilesResponse
+func (c *ClientWithResponses) GetServiceAgentsFilesWithResponse(ctx context.Context, params *GetServiceAgentsFilesParams, reqEditors ...RequestEditorFn) (*GetServiceAgentsFilesResponse, error) {
+	rsp, err := c.GetServiceAgentsFiles(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsFilesResponse(rsp)
+}
+
+// PostServiceAgentsFilesWithBodyWithResponse request with arbitrary body returning *PostServiceAgentsFilesResponse
+func (c *ClientWithResponses) PostServiceAgentsFilesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostServiceAgentsFilesResponse, error) {
+	rsp, err := c.PostServiceAgentsFilesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostServiceAgentsFilesResponse(rsp)
+}
+
+// DeleteServiceAgentsFilesIdWithResponse request returning *DeleteServiceAgentsFilesIdResponse
+func (c *ClientWithResponses) DeleteServiceAgentsFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteServiceAgentsFilesIdResponse, error) {
+	rsp, err := c.DeleteServiceAgentsFilesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteServiceAgentsFilesIdResponse(rsp)
+}
+
+// GetServiceAgentsFilesIdWithResponse request returning *GetServiceAgentsFilesIdResponse
+func (c *ClientWithResponses) GetServiceAgentsFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetServiceAgentsFilesIdResponse, error) {
+	rsp, err := c.GetServiceAgentsFilesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsFilesIdResponse(rsp)
+}
+
+// GetServiceAgentsMeWithResponse request returning *GetServiceAgentsMeResponse
+func (c *ClientWithResponses) GetServiceAgentsMeWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetServiceAgentsMeResponse, error) {
+	rsp, err := c.GetServiceAgentsMe(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsMeResponse(rsp)
+}
+
+// PutServiceAgentsMeWithBodyWithResponse request with arbitrary body returning *PutServiceAgentsMeResponse
+func (c *ClientWithResponses) PutServiceAgentsMeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeResponse, error) {
+	rsp, err := c.PutServiceAgentsMeWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsMeResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutServiceAgentsMeWithResponse(ctx context.Context, body PutServiceAgentsMeJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeResponse, error) {
+	rsp, err := c.PutServiceAgentsMe(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsMeResponse(rsp)
+}
+
+// PutServiceAgentsMeAddressesWithBodyWithResponse request with arbitrary body returning *PutServiceAgentsMeAddressesResponse
+func (c *ClientWithResponses) PutServiceAgentsMeAddressesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeAddressesResponse, error) {
+	rsp, err := c.PutServiceAgentsMeAddressesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsMeAddressesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutServiceAgentsMeAddressesWithResponse(ctx context.Context, body PutServiceAgentsMeAddressesJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeAddressesResponse, error) {
+	rsp, err := c.PutServiceAgentsMeAddresses(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsMeAddressesResponse(rsp)
+}
+
+// PutServiceAgentsMePasswordWithBodyWithResponse request with arbitrary body returning *PutServiceAgentsMePasswordResponse
+func (c *ClientWithResponses) PutServiceAgentsMePasswordWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsMePasswordResponse, error) {
+	rsp, err := c.PutServiceAgentsMePasswordWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsMePasswordResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutServiceAgentsMePasswordWithResponse(ctx context.Context, body PutServiceAgentsMePasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsMePasswordResponse, error) {
+	rsp, err := c.PutServiceAgentsMePassword(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsMePasswordResponse(rsp)
+}
+
+// PutServiceAgentsMeStatusWithBodyWithResponse request with arbitrary body returning *PutServiceAgentsMeStatusResponse
+func (c *ClientWithResponses) PutServiceAgentsMeStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeStatusResponse, error) {
+	rsp, err := c.PutServiceAgentsMeStatusWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsMeStatusResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutServiceAgentsMeStatusWithResponse(ctx context.Context, body PutServiceAgentsMeStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PutServiceAgentsMeStatusResponse, error) {
+	rsp, err := c.PutServiceAgentsMeStatus(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutServiceAgentsMeStatusResponse(rsp)
+}
+
+// GetServiceAgentsWsWithResponse request returning *GetServiceAgentsWsResponse
+func (c *ClientWithResponses) GetServiceAgentsWsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetServiceAgentsWsResponse, error) {
+	rsp, err := c.GetServiceAgentsWs(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServiceAgentsWsResponse(rsp)
+}
+
+// GetStorageAccountWithResponse request returning *GetStorageAccountResponse
+func (c *ClientWithResponses) GetStorageAccountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetStorageAccountResponse, error) {
+	rsp, err := c.GetStorageAccount(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStorageAccountResponse(rsp)
+}
+
+// GetStorageAccountsWithResponse request returning *GetStorageAccountsResponse
+func (c *ClientWithResponses) GetStorageAccountsWithResponse(ctx context.Context, params *GetStorageAccountsParams, reqEditors ...RequestEditorFn) (*GetStorageAccountsResponse, error) {
+	rsp, err := c.GetStorageAccounts(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStorageAccountsResponse(rsp)
+}
+
+// PostStorageAccountsWithBodyWithResponse request with arbitrary body returning *PostStorageAccountsResponse
+func (c *ClientWithResponses) PostStorageAccountsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostStorageAccountsResponse, error) {
+	rsp, err := c.PostStorageAccountsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostStorageAccountsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostStorageAccountsWithResponse(ctx context.Context, body PostStorageAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostStorageAccountsResponse, error) {
+	rsp, err := c.PostStorageAccounts(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostStorageAccountsResponse(rsp)
+}
+
+// DeleteStorageAccountsIdWithResponse request returning *DeleteStorageAccountsIdResponse
+func (c *ClientWithResponses) DeleteStorageAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteStorageAccountsIdResponse, error) {
+	rsp, err := c.DeleteStorageAccountsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteStorageAccountsIdResponse(rsp)
+}
+
+// GetStorageAccountsIdWithResponse request returning *GetStorageAccountsIdResponse
+func (c *ClientWithResponses) GetStorageAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetStorageAccountsIdResponse, error) {
+	rsp, err := c.GetStorageAccountsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStorageAccountsIdResponse(rsp)
+}
+
+// GetStorageFilesWithResponse request returning *GetStorageFilesResponse
+func (c *ClientWithResponses) GetStorageFilesWithResponse(ctx context.Context, params *GetStorageFilesParams, reqEditors ...RequestEditorFn) (*GetStorageFilesResponse, error) {
+	rsp, err := c.GetStorageFiles(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStorageFilesResponse(rsp)
+}
+
+// PostStorageFilesWithBodyWithResponse request with arbitrary body returning *PostStorageFilesResponse
+func (c *ClientWithResponses) PostStorageFilesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostStorageFilesResponse, error) {
+	rsp, err := c.PostStorageFilesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostStorageFilesResponse(rsp)
+}
+
+// DeleteStorageFilesIdWithResponse request returning *DeleteStorageFilesIdResponse
+func (c *ClientWithResponses) DeleteStorageFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteStorageFilesIdResponse, error) {
+	rsp, err := c.DeleteStorageFilesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteStorageFilesIdResponse(rsp)
+}
+
+// GetStorageFilesIdWithResponse request returning *GetStorageFilesIdResponse
+func (c *ClientWithResponses) GetStorageFilesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetStorageFilesIdResponse, error) {
+	rsp, err := c.GetStorageFilesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStorageFilesIdResponse(rsp)
+}
+
+// GetTagsWithResponse request returning *GetTagsResponse
+func (c *ClientWithResponses) GetTagsWithResponse(ctx context.Context, params *GetTagsParams, reqEditors ...RequestEditorFn) (*GetTagsResponse, error) {
+	rsp, err := c.GetTags(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTagsResponse(rsp)
+}
+
+// PostTagsWithBodyWithResponse request with arbitrary body returning *PostTagsResponse
+func (c *ClientWithResponses) PostTagsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostTagsResponse, error) {
+	rsp, err := c.PostTagsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostTagsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostTagsWithResponse(ctx context.Context, body PostTagsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostTagsResponse, error) {
+	rsp, err := c.PostTags(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostTagsResponse(rsp)
+}
+
+// DeleteTagsIdWithResponse request returning *DeleteTagsIdResponse
+func (c *ClientWithResponses) DeleteTagsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteTagsIdResponse, error) {
+	rsp, err := c.DeleteTagsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteTagsIdResponse(rsp)
+}
+
+// GetTagsIdWithResponse request returning *GetTagsIdResponse
+func (c *ClientWithResponses) GetTagsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetTagsIdResponse, error) {
+	rsp, err := c.GetTagsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTagsIdResponse(rsp)
+}
+
+// PutTagsIdWithBodyWithResponse request with arbitrary body returning *PutTagsIdResponse
+func (c *ClientWithResponses) PutTagsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutTagsIdResponse, error) {
+	rsp, err := c.PutTagsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutTagsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutTagsIdWithResponse(ctx context.Context, id string, body PutTagsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutTagsIdResponse, error) {
+	rsp, err := c.PutTagsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutTagsIdResponse(rsp)
+}
+
+// GetTranscribesWithResponse request returning *GetTranscribesResponse
+func (c *ClientWithResponses) GetTranscribesWithResponse(ctx context.Context, params *GetTranscribesParams, reqEditors ...RequestEditorFn) (*GetTranscribesResponse, error) {
+	rsp, err := c.GetTranscribes(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTranscribesResponse(rsp)
+}
+
+// PostTranscribesWithBodyWithResponse request with arbitrary body returning *PostTranscribesResponse
+func (c *ClientWithResponses) PostTranscribesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostTranscribesResponse, error) {
+	rsp, err := c.PostTranscribesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostTranscribesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostTranscribesWithResponse(ctx context.Context, body PostTranscribesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostTranscribesResponse, error) {
+	rsp, err := c.PostTranscribes(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostTranscribesResponse(rsp)
+}
+
+// DeleteTranscribesIdWithResponse request returning *DeleteTranscribesIdResponse
+func (c *ClientWithResponses) DeleteTranscribesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteTranscribesIdResponse, error) {
+	rsp, err := c.DeleteTranscribesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteTranscribesIdResponse(rsp)
+}
+
+// GetTranscribesIdWithResponse request returning *GetTranscribesIdResponse
+func (c *ClientWithResponses) GetTranscribesIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetTranscribesIdResponse, error) {
+	rsp, err := c.GetTranscribesId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTranscribesIdResponse(rsp)
+}
+
+// PostTranscribesIdStopWithResponse request returning *PostTranscribesIdStopResponse
+func (c *ClientWithResponses) PostTranscribesIdStopWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostTranscribesIdStopResponse, error) {
+	rsp, err := c.PostTranscribesIdStop(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostTranscribesIdStopResponse(rsp)
+}
+
+// GetTranscriptsWithResponse request returning *GetTranscriptsResponse
+func (c *ClientWithResponses) GetTranscriptsWithResponse(ctx context.Context, params *GetTranscriptsParams, reqEditors ...RequestEditorFn) (*GetTranscriptsResponse, error) {
+	rsp, err := c.GetTranscripts(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTranscriptsResponse(rsp)
+}
+
+// PostTransfersWithBodyWithResponse request with arbitrary body returning *PostTransfersResponse
+func (c *ClientWithResponses) PostTransfersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostTransfersResponse, error) {
+	rsp, err := c.PostTransfersWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostTransfersResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostTransfersWithResponse(ctx context.Context, body PostTransfersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostTransfersResponse, error) {
+	rsp, err := c.PostTransfers(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostTransfersResponse(rsp)
+}
+
+// GetTrunksWithResponse request returning *GetTrunksResponse
+func (c *ClientWithResponses) GetTrunksWithResponse(ctx context.Context, params *GetTrunksParams, reqEditors ...RequestEditorFn) (*GetTrunksResponse, error) {
+	rsp, err := c.GetTrunks(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTrunksResponse(rsp)
+}
+
+// PostTrunksWithBodyWithResponse request with arbitrary body returning *PostTrunksResponse
+func (c *ClientWithResponses) PostTrunksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostTrunksResponse, error) {
+	rsp, err := c.PostTrunksWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostTrunksResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostTrunksWithResponse(ctx context.Context, body PostTrunksJSONRequestBody, reqEditors ...RequestEditorFn) (*PostTrunksResponse, error) {
+	rsp, err := c.PostTrunks(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostTrunksResponse(rsp)
+}
+
+// DeleteTrunksIdWithResponse request returning *DeleteTrunksIdResponse
+func (c *ClientWithResponses) DeleteTrunksIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteTrunksIdResponse, error) {
+	rsp, err := c.DeleteTrunksId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteTrunksIdResponse(rsp)
+}
+
+// GetTrunksIdWithResponse request returning *GetTrunksIdResponse
+func (c *ClientWithResponses) GetTrunksIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetTrunksIdResponse, error) {
+	rsp, err := c.GetTrunksId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTrunksIdResponse(rsp)
+}
+
+// PutTrunksIdWithBodyWithResponse request with arbitrary body returning *PutTrunksIdResponse
+func (c *ClientWithResponses) PutTrunksIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutTrunksIdResponse, error) {
+	rsp, err := c.PutTrunksIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutTrunksIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutTrunksIdWithResponse(ctx context.Context, id string, body PutTrunksIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutTrunksIdResponse, error) {
+	rsp, err := c.PutTrunksId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutTrunksIdResponse(rsp)
+}
+
+// GetWsWithResponse request returning *GetWsResponse
+func (c *ClientWithResponses) GetWsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetWsResponse, error) {
+	rsp, err := c.GetWs(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetWsResponse(rsp)
 }
 
 // ParseGetAccesskeysResponse parses an HTTP response from a GetAccesskeysWithResponse call
@@ -25448,6 +34371,2264 @@ func ParsePutOutplansIdDialInfoResponse(rsp *http.Response) (*PutOutplansIdDialI
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseGetProvidersResponse parses an HTTP response from a GetProvidersWithResponse call
+func ParseGetProvidersResponse(rsp *http.Response) (*GetProvidersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProvidersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                 `json:"next_page_token,omitempty"`
+			Result        *[]RouteManagerProvider `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostProvidersResponse parses an HTTP response from a PostProvidersWithResponse call
+func ParsePostProvidersResponse(rsp *http.Response) (*PostProvidersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostProvidersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouteManagerProvider
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteProvidersIdResponse parses an HTTP response from a DeleteProvidersIdWithResponse call
+func ParseDeleteProvidersIdResponse(rsp *http.Response) (*DeleteProvidersIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteProvidersIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouteManagerProvider
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProvidersIdResponse parses an HTTP response from a GetProvidersIdWithResponse call
+func ParseGetProvidersIdResponse(rsp *http.Response) (*GetProvidersIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProvidersIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouteManagerProvider
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutProvidersIdResponse parses an HTTP response from a PutProvidersIdWithResponse call
+func ParsePutProvidersIdResponse(rsp *http.Response) (*PutProvidersIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutProvidersIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouteManagerProvider
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetQueuecallsResponse parses an HTTP response from a GetQueuecallsWithResponse call
+func ParseGetQueuecallsResponse(rsp *http.Response) (*GetQueuecallsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetQueuecallsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                  `json:"next_page_token,omitempty"`
+			Result        *[]QueueManagerQueuecall `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostQueuecallsReferenceIdIdKickResponse parses an HTTP response from a PostQueuecallsReferenceIdIdKickWithResponse call
+func ParsePostQueuecallsReferenceIdIdKickResponse(rsp *http.Response) (*PostQueuecallsReferenceIdIdKickResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostQueuecallsReferenceIdIdKickResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueuecall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteQueuecallsIdResponse parses an HTTP response from a DeleteQueuecallsIdWithResponse call
+func ParseDeleteQueuecallsIdResponse(rsp *http.Response) (*DeleteQueuecallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteQueuecallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueuecall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetQueuecallsIdResponse parses an HTTP response from a GetQueuecallsIdWithResponse call
+func ParseGetQueuecallsIdResponse(rsp *http.Response) (*GetQueuecallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetQueuecallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueuecall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostQueuecallsIdKickResponse parses an HTTP response from a PostQueuecallsIdKickWithResponse call
+func ParsePostQueuecallsIdKickResponse(rsp *http.Response) (*PostQueuecallsIdKickResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostQueuecallsIdKickResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueuecall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetQueuesResponse parses an HTTP response from a GetQueuesWithResponse call
+func ParseGetQueuesResponse(rsp *http.Response) (*GetQueuesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetQueuesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string              `json:"next_page_token,omitempty"`
+			Result        *[]QueueManagerQueue `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostQueuesResponse parses an HTTP response from a PostQueuesWithResponse call
+func ParsePostQueuesResponse(rsp *http.Response) (*PostQueuesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostQueuesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueue
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteQueuesIdResponse parses an HTTP response from a DeleteQueuesIdWithResponse call
+func ParseDeleteQueuesIdResponse(rsp *http.Response) (*DeleteQueuesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteQueuesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueue
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetQueuesIdResponse parses an HTTP response from a GetQueuesIdWithResponse call
+func ParseGetQueuesIdResponse(rsp *http.Response) (*GetQueuesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetQueuesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueue
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutQueuesIdResponse parses an HTTP response from a PutQueuesIdWithResponse call
+func ParsePutQueuesIdResponse(rsp *http.Response) (*PutQueuesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutQueuesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueue
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutQueuesIdActionsResponse parses an HTTP response from a PutQueuesIdActionsWithResponse call
+func ParsePutQueuesIdActionsResponse(rsp *http.Response) (*PutQueuesIdActionsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutQueuesIdActionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueue
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutQueuesIdRoutingMethodResponse parses an HTTP response from a PutQueuesIdRoutingMethodWithResponse call
+func ParsePutQueuesIdRoutingMethodResponse(rsp *http.Response) (*PutQueuesIdRoutingMethodResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutQueuesIdRoutingMethodResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueue
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutQueuesIdTagIdsResponse parses an HTTP response from a PutQueuesIdTagIdsWithResponse call
+func ParsePutQueuesIdTagIdsResponse(rsp *http.Response) (*PutQueuesIdTagIdsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutQueuesIdTagIdsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueueManagerQueue
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRecordingfilesIdResponse parses an HTTP response from a GetRecordingfilesIdWithResponse call
+func ParseGetRecordingfilesIdResponse(rsp *http.Response) (*GetRecordingfilesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRecordingfilesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 307:
+		var dest string
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON307 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Error *string `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest struct {
+			Error *string `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRecordingsResponse parses an HTTP response from a GetRecordingsWithResponse call
+func ParseGetRecordingsResponse(rsp *http.Response) (*GetRecordingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRecordingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                 `json:"next_page_token,omitempty"`
+			Result        *[]CallManagerRecording `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRecordingsIdResponse parses an HTTP response from a DeleteRecordingsIdWithResponse call
+func ParseDeleteRecordingsIdResponse(rsp *http.Response) (*DeleteRecordingsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRecordingsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerRecording
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRecordingsIdResponse parses an HTTP response from a GetRecordingsIdWithResponse call
+func ParseGetRecordingsIdResponse(rsp *http.Response) (*GetRecordingsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRecordingsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerRecording
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRoutesResponse parses an HTTP response from a GetRoutesWithResponse call
+func ParseGetRoutesResponse(rsp *http.Response) (*GetRoutesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRoutesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string              `json:"next_page_token,omitempty"`
+			Result        *[]RouteManagerRoute `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostRoutesResponse parses an HTTP response from a PostRoutesWithResponse call
+func ParsePostRoutesResponse(rsp *http.Response) (*PostRoutesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostRoutesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouteManagerRoute
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRoutesIdResponse parses an HTTP response from a DeleteRoutesIdWithResponse call
+func ParseDeleteRoutesIdResponse(rsp *http.Response) (*DeleteRoutesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRoutesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouteManagerRoute
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRoutesIdResponse parses an HTTP response from a GetRoutesIdWithResponse call
+func ParseGetRoutesIdResponse(rsp *http.Response) (*GetRoutesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRoutesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouteManagerRoute
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutRoutesIdResponse parses an HTTP response from a PutRoutesIdWithResponse call
+func ParsePutRoutesIdResponse(rsp *http.Response) (*PutRoutesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutRoutesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RouteManagerRoute
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsAgentsResponse parses an HTTP response from a GetServiceAgentsAgentsWithResponse call
+func ParseGetServiceAgentsAgentsResponse(rsp *http.Response) (*GetServiceAgentsAgentsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsAgentsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string              `json:"next_page_token,omitempty"`
+			Result        *[]AgentManagerAgent `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsAgentsIdResponse parses an HTTP response from a GetServiceAgentsAgentsIdWithResponse call
+func ParseGetServiceAgentsAgentsIdResponse(rsp *http.Response) (*GetServiceAgentsAgentsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsAgentsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsCallsResponse parses an HTTP response from a GetServiceAgentsCallsWithResponse call
+func ParseGetServiceAgentsCallsResponse(rsp *http.Response) (*GetServiceAgentsCallsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsCallsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string            `json:"next_page_token,omitempty"`
+			Result        *[]CallManagerCall `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsCallsIdResponse parses an HTTP response from a GetServiceAgentsCallsIdWithResponse call
+func ParseGetServiceAgentsCallsIdResponse(rsp *http.Response) (*GetServiceAgentsCallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsCallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerCall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsChatroommessagesResponse parses an HTTP response from a GetServiceAgentsChatroommessagesWithResponse call
+func ParseGetServiceAgentsChatroommessagesResponse(rsp *http.Response) (*GetServiceAgentsChatroommessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsChatroommessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                       `json:"next_page_token,omitempty"`
+			Result        *[]ChatManagerMessagechatroom `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostServiceAgentsChatroommessagesResponse parses an HTTP response from a PostServiceAgentsChatroommessagesWithResponse call
+func ParsePostServiceAgentsChatroommessagesResponse(rsp *http.Response) (*PostServiceAgentsChatroommessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostServiceAgentsChatroommessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerMessagechatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteServiceAgentsChatroommessagesIdResponse parses an HTTP response from a DeleteServiceAgentsChatroommessagesIdWithResponse call
+func ParseDeleteServiceAgentsChatroommessagesIdResponse(rsp *http.Response) (*DeleteServiceAgentsChatroommessagesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteServiceAgentsChatroommessagesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerMessagechatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsChatroommessagesIdResponse parses an HTTP response from a GetServiceAgentsChatroommessagesIdWithResponse call
+func ParseGetServiceAgentsChatroommessagesIdResponse(rsp *http.Response) (*GetServiceAgentsChatroommessagesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsChatroommessagesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerMessagechatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsChatroomsResponse parses an HTTP response from a GetServiceAgentsChatroomsWithResponse call
+func ParseGetServiceAgentsChatroomsResponse(rsp *http.Response) (*GetServiceAgentsChatroomsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsChatroomsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                `json:"next_page_token,omitempty"`
+			Result        *[]ChatManagerChatroom `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostServiceAgentsChatroomsResponse parses an HTTP response from a PostServiceAgentsChatroomsWithResponse call
+func ParsePostServiceAgentsChatroomsResponse(rsp *http.Response) (*PostServiceAgentsChatroomsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostServiceAgentsChatroomsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteServiceAgentsChatroomsIdResponse parses an HTTP response from a DeleteServiceAgentsChatroomsIdWithResponse call
+func ParseDeleteServiceAgentsChatroomsIdResponse(rsp *http.Response) (*DeleteServiceAgentsChatroomsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteServiceAgentsChatroomsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsChatroomsIdResponse parses an HTTP response from a GetServiceAgentsChatroomsIdWithResponse call
+func ParseGetServiceAgentsChatroomsIdResponse(rsp *http.Response) (*GetServiceAgentsChatroomsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsChatroomsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutServiceAgentsChatroomsIdResponse parses an HTTP response from a PutServiceAgentsChatroomsIdWithResponse call
+func ParsePutServiceAgentsChatroomsIdResponse(rsp *http.Response) (*PutServiceAgentsChatroomsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutServiceAgentsChatroomsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ChatManagerChatroom
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsConversationsResponse parses an HTTP response from a GetServiceAgentsConversationsWithResponse call
+func ParseGetServiceAgentsConversationsResponse(rsp *http.Response) (*GetServiceAgentsConversationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsConversationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                            `json:"next_page_token,omitempty"`
+			Result        *[]ConversationManagerConversation `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsConversationsIdResponse parses an HTTP response from a GetServiceAgentsConversationsIdWithResponse call
+func ParseGetServiceAgentsConversationsIdResponse(rsp *http.Response) (*GetServiceAgentsConversationsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsConversationsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConversationManagerConversation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsConversationsIdMessagesResponse parses an HTTP response from a GetServiceAgentsConversationsIdMessagesWithResponse call
+func ParseGetServiceAgentsConversationsIdMessagesResponse(rsp *http.Response) (*GetServiceAgentsConversationsIdMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsConversationsIdMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                       `json:"next_page_token,omitempty"`
+			Result        *[]ConversationManagerMessage `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostServiceAgentsConversationsIdMessagesResponse parses an HTTP response from a PostServiceAgentsConversationsIdMessagesWithResponse call
+func ParsePostServiceAgentsConversationsIdMessagesResponse(rsp *http.Response) (*PostServiceAgentsConversationsIdMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostServiceAgentsConversationsIdMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConversationManagerMessage
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsCustomerResponse parses an HTTP response from a GetServiceAgentsCustomerWithResponse call
+func ParseGetServiceAgentsCustomerResponse(rsp *http.Response) (*GetServiceAgentsCustomerResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsCustomerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomerManagerCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsExtensionsResponse parses an HTTP response from a GetServiceAgentsExtensionsWithResponse call
+func ParseGetServiceAgentsExtensionsResponse(rsp *http.Response) (*GetServiceAgentsExtensionsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsExtensionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                      `json:"next_page_token,omitempty"`
+			Result        *[]RegistrarManagerExtension `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsExtensionsIdResponse parses an HTTP response from a GetServiceAgentsExtensionsIdWithResponse call
+func ParseGetServiceAgentsExtensionsIdResponse(rsp *http.Response) (*GetServiceAgentsExtensionsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsExtensionsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegistrarManagerExtension
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsFilesResponse parses an HTTP response from a GetServiceAgentsFilesWithResponse call
+func ParseGetServiceAgentsFilesResponse(rsp *http.Response) (*GetServiceAgentsFilesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsFilesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string               `json:"next_page_token,omitempty"`
+			Result        *[]StorageManagerFile `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostServiceAgentsFilesResponse parses an HTTP response from a PostServiceAgentsFilesWithResponse call
+func ParsePostServiceAgentsFilesResponse(rsp *http.Response) (*PostServiceAgentsFilesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostServiceAgentsFilesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerFile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteServiceAgentsFilesIdResponse parses an HTTP response from a DeleteServiceAgentsFilesIdWithResponse call
+func ParseDeleteServiceAgentsFilesIdResponse(rsp *http.Response) (*DeleteServiceAgentsFilesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteServiceAgentsFilesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerFile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsFilesIdResponse parses an HTTP response from a GetServiceAgentsFilesIdWithResponse call
+func ParseGetServiceAgentsFilesIdResponse(rsp *http.Response) (*GetServiceAgentsFilesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsFilesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerFile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsMeResponse parses an HTTP response from a GetServiceAgentsMeWithResponse call
+func ParseGetServiceAgentsMeResponse(rsp *http.Response) (*GetServiceAgentsMeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsMeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutServiceAgentsMeResponse parses an HTTP response from a PutServiceAgentsMeWithResponse call
+func ParsePutServiceAgentsMeResponse(rsp *http.Response) (*PutServiceAgentsMeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutServiceAgentsMeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutServiceAgentsMeAddressesResponse parses an HTTP response from a PutServiceAgentsMeAddressesWithResponse call
+func ParsePutServiceAgentsMeAddressesResponse(rsp *http.Response) (*PutServiceAgentsMeAddressesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutServiceAgentsMeAddressesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutServiceAgentsMePasswordResponse parses an HTTP response from a PutServiceAgentsMePasswordWithResponse call
+func ParsePutServiceAgentsMePasswordResponse(rsp *http.Response) (*PutServiceAgentsMePasswordResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutServiceAgentsMePasswordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutServiceAgentsMeStatusResponse parses an HTTP response from a PutServiceAgentsMeStatusWithResponse call
+func ParsePutServiceAgentsMeStatusResponse(rsp *http.Response) (*PutServiceAgentsMeStatusResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutServiceAgentsMeStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServiceAgentsWsResponse parses an HTTP response from a GetServiceAgentsWsWithResponse call
+func ParseGetServiceAgentsWsResponse(rsp *http.Response) (*GetServiceAgentsWsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServiceAgentsWsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetStorageAccountResponse parses an HTTP response from a GetStorageAccountWithResponse call
+func ParseGetStorageAccountResponse(rsp *http.Response) (*GetStorageAccountResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStorageAccountResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetStorageAccountsResponse parses an HTTP response from a GetStorageAccountsWithResponse call
+func ParseGetStorageAccountsResponse(rsp *http.Response) (*GetStorageAccountsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStorageAccountsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                  `json:"next_page_token,omitempty"`
+			Result        *[]StorageManagerAccount `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostStorageAccountsResponse parses an HTTP response from a PostStorageAccountsWithResponse call
+func ParsePostStorageAccountsResponse(rsp *http.Response) (*PostStorageAccountsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostStorageAccountsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteStorageAccountsIdResponse parses an HTTP response from a DeleteStorageAccountsIdWithResponse call
+func ParseDeleteStorageAccountsIdResponse(rsp *http.Response) (*DeleteStorageAccountsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteStorageAccountsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetStorageAccountsIdResponse parses an HTTP response from a GetStorageAccountsIdWithResponse call
+func ParseGetStorageAccountsIdResponse(rsp *http.Response) (*GetStorageAccountsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStorageAccountsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetStorageFilesResponse parses an HTTP response from a GetStorageFilesWithResponse call
+func ParseGetStorageFilesResponse(rsp *http.Response) (*GetStorageFilesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStorageFilesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string               `json:"next_page_token,omitempty"`
+			Result        *[]StorageManagerFile `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostStorageFilesResponse parses an HTTP response from a PostStorageFilesWithResponse call
+func ParsePostStorageFilesResponse(rsp *http.Response) (*PostStorageFilesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostStorageFilesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerFile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteStorageFilesIdResponse parses an HTTP response from a DeleteStorageFilesIdWithResponse call
+func ParseDeleteStorageFilesIdResponse(rsp *http.Response) (*DeleteStorageFilesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteStorageFilesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerFile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetStorageFilesIdResponse parses an HTTP response from a GetStorageFilesIdWithResponse call
+func ParseGetStorageFilesIdResponse(rsp *http.Response) (*GetStorageFilesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStorageFilesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StorageManagerFile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTagsResponse parses an HTTP response from a GetTagsWithResponse call
+func ParseGetTagsResponse(rsp *http.Response) (*GetTagsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTagsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string          `json:"next_page_token,omitempty"`
+			Result        *[]TagManagerTag `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostTagsResponse parses an HTTP response from a PostTagsWithResponse call
+func ParsePostTagsResponse(rsp *http.Response) (*PostTagsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostTagsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TagManagerTag
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteTagsIdResponse parses an HTTP response from a DeleteTagsIdWithResponse call
+func ParseDeleteTagsIdResponse(rsp *http.Response) (*DeleteTagsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteTagsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TagManagerTag
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTagsIdResponse parses an HTTP response from a GetTagsIdWithResponse call
+func ParseGetTagsIdResponse(rsp *http.Response) (*GetTagsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTagsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TagManagerTag
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutTagsIdResponse parses an HTTP response from a PutTagsIdWithResponse call
+func ParsePutTagsIdResponse(rsp *http.Response) (*PutTagsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutTagsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TagManagerTag
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTranscribesResponse parses an HTTP response from a GetTranscribesWithResponse call
+func ParseGetTranscribesResponse(rsp *http.Response) (*GetTranscribesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTranscribesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                        `json:"next_page_token,omitempty"`
+			Result        *[]TranscribeManagerTranscribe `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostTranscribesResponse parses an HTTP response from a PostTranscribesWithResponse call
+func ParsePostTranscribesResponse(rsp *http.Response) (*PostTranscribesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostTranscribesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TranscribeManagerTranscribe
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteTranscribesIdResponse parses an HTTP response from a DeleteTranscribesIdWithResponse call
+func ParseDeleteTranscribesIdResponse(rsp *http.Response) (*DeleteTranscribesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteTranscribesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TranscribeManagerTranscribe
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTranscribesIdResponse parses an HTTP response from a GetTranscribesIdWithResponse call
+func ParseGetTranscribesIdResponse(rsp *http.Response) (*GetTranscribesIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTranscribesIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TranscribeManagerTranscribe
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostTranscribesIdStopResponse parses an HTTP response from a PostTranscribesIdStopWithResponse call
+func ParsePostTranscribesIdStopResponse(rsp *http.Response) (*PostTranscribesIdStopResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostTranscribesIdStopResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TranscribeManagerTranscribe
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTranscriptsResponse parses an HTTP response from a GetTranscriptsWithResponse call
+func ParseGetTranscriptsResponse(rsp *http.Response) (*GetTranscriptsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTranscriptsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                        `json:"next_page_token,omitempty"`
+			Result        *[]TranscribeManagerTranscript `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostTransfersResponse parses an HTTP response from a PostTransfersWithResponse call
+func ParsePostTransfersResponse(rsp *http.Response) (*PostTransfersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostTransfersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TransferManagerTransfer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTrunksResponse parses an HTTP response from a GetTrunksWithResponse call
+func ParseGetTrunksResponse(rsp *http.Response) (*GetTrunksResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTrunksResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                  `json:"next_page_token,omitempty"`
+			Result        *[]RegistrarManagerTrunk `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostTrunksResponse parses an HTTP response from a PostTrunksWithResponse call
+func ParsePostTrunksResponse(rsp *http.Response) (*PostTrunksResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostTrunksResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegistrarManagerTrunk
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteTrunksIdResponse parses an HTTP response from a DeleteTrunksIdWithResponse call
+func ParseDeleteTrunksIdResponse(rsp *http.Response) (*DeleteTrunksIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteTrunksIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegistrarManagerTrunk
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTrunksIdResponse parses an HTTP response from a GetTrunksIdWithResponse call
+func ParseGetTrunksIdResponse(rsp *http.Response) (*GetTrunksIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTrunksIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegistrarManagerTrunk
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutTrunksIdResponse parses an HTTP response from a PutTrunksIdWithResponse call
+func ParsePutTrunksIdResponse(rsp *http.Response) (*PutTrunksIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutTrunksIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegistrarManagerTrunk
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetWsResponse parses an HTTP response from a GetWsWithResponse call
+func ParseGetWsResponse(rsp *http.Response) (*GetWsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

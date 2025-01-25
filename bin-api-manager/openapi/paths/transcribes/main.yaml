@@ -38,7 +38,7 @@ post:
               type: string
               description: The language of the transcription.
             direction:
-              $$ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+              $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
           required:
             - reference_type
             - reference_id

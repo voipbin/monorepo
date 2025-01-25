@@ -33,7 +33,7 @@ post:
               type: string
             detail:
               type: string
-            domainName:
+            domain_name:
               type: string
             auth_types:
               type: array
@@ -50,7 +50,7 @@ post:
           required:
             - name
             - detail
-            - domainName
+            - domain_name
             - auth_types
             - username
             - password

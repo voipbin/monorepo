@@ -14,8 +14,8 @@ post:
               type: string
             medias:
               type: array
-                items:
-                  $ref: '#/components/schemas/ChatManagerMedia'
+              items:
+                $ref: '#/components/schemas/ChatManagerMedia'
           required:
             - chatroom_id
             - text

@@ -43,15 +43,20 @@ put:
       required: true
       description: The ID of the tag.
       schema:
-        type: object
-        properties:
-          name:
-            type: string
-          detail:
-            type: string
-        required:
-          - name
-          - detail
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+          required:
+            - name
+            - detail
   responses:
     '200':
       description: The updated tag details.
