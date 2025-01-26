@@ -7,7 +7,7 @@ get:
     - name: owner_id
       in: query
       description: The ID of the chatroom owner.
-      required: true
+      required: false
       schema:
         type: string
   responses:

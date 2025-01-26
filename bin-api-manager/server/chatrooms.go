@@ -79,10 +79,9 @@ func (h *server) GetChatrooms(c *gin.Context, params openapi_server.GetChatrooms
 		pageToken = *params.PageToken
 	}
 
-	ownerID := uuid.FromStringOrNil(params.OwnerId)
-	if ownerID == uuid.Nil {
-		// has no owner id info. use default owner id
-		ownerID = a.ID
+	ownerID := a.ID
+	if params.OwnerId != nil {
+		ownerID = uuid.FromStringOrNil(*params.OwnerId)
 	}
 
 	tmps, err := h.serviceHandler.ChatroomGetsByOwnerID(c.Request.Context(), &a, ownerID, pageSize, pageToken)

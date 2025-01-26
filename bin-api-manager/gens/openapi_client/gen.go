@@ -2838,7 +2838,7 @@ type GetChatroomsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
 	// OwnerId The ID of the chatroom owner.
-	OwnerId string `form:"owner_id" json:"owner_id"`
+	OwnerId *string `form:"owner_id,omitempty" json:"owner_id,omitempty"`
 }
 
 // PostChatroomsJSONBody defines parameters for PostChatrooms.
@@ -12648,16 +12648,20 @@ func NewGetChatroomsRequest(server string, params *GetChatroomsParams) (*http.Re
 
 		}
 
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "owner_id", runtime.ParamLocationQuery, params.OwnerId); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
+		if params.OwnerId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "owner_id", runtime.ParamLocationQuery, *params.OwnerId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
 				}
 			}
+
 		}
 
 		queryURL.RawQuery = queryValues.Encode()

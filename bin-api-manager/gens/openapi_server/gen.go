@@ -2837,7 +2837,7 @@ type GetChatroomsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
 	// OwnerId The ID of the chatroom owner.
-	OwnerId string `form:"owner_id" json:"owner_id"`
+	OwnerId *string `form:"owner_id,omitempty" json:"owner_id,omitempty"`
 }
 
 // PostChatroomsJSONBody defines parameters for PostChatrooms.
@@ -6794,16 +6794,9 @@ func (siw *ServerInterfaceWrapper) GetChatrooms(c *gin.Context) {
 		return
 	}
 
-	// ------------- Required query parameter "owner_id" -------------
+	// ------------- Optional query parameter "owner_id" -------------
 
-	if paramValue := c.Query("owner_id"); paramValue != "" {
-
-	} else {
-		siw.ErrorHandler(c, fmt.Errorf("Query argument owner_id is required, but not found"), http.StatusBadRequest)
-		return
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "owner_id", c.Request.URL.Query(), &params.OwnerId)
+	err = runtime.BindQueryParameter("form", true, false, "owner_id", c.Request.URL.Query(), &params.OwnerId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner_id: %w", err), http.StatusBadRequest)
 		return

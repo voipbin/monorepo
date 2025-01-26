@@ -119,7 +119,7 @@ func Test_chatroomsGET(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "1 item",
+			name: "all items",
 			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("65c83e84-8df5-11ee-ba8b-1700dcdfa8f2"),
@@ -178,7 +178,30 @@ func Test_chatroomsGET(t *testing.T) {
 			expectPageToken: "2020-09-20 03:23:20.995000",
 			expectRes:       `{"result":[{"id":"20f10a66-38a1-11ed-bd54-d7b834668361","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"211bfb54-38a1-11ed-8d88-f34522ed8844","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"21454f0e-38a1-11ed-bce4-a7b8972af690","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
-	}
+		{
+			name: "empty item",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("65c83e84-8df5-11ee-ba8b-1700dcdfa8f2"),
+				},
+			},
+
+			reqQuery: "/chatrooms",
+
+			responseChatrooms: []*chchatroom.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("16fa73ec-dbc6-11ef-9c58-bbaa2ba3956b"),
+					},
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+			},
+
+			expectOwnerID:   uuid.FromStringOrNil("65c83e84-8df5-11ee-ba8b-1700dcdfa8f2"),
+			expectPageSize:  100,
+			expectPageToken: "",
+			expectRes:       `{"result":[{"id":"16fa73ec-dbc6-11ef-9c58-bbaa2ba3956b","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+		}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
