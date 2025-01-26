@@ -1,0 +1,25 @@
+get:
+  summary: Retrieve a list of transcripts
+  description: Fetch a list of transcripts associated with the customer.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: transcribe_id
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: A list of transcripts.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TranscribeManagerTranscript'

@@ -1,0 +1,53 @@
+get:
+  summary: Retrieve a list of flows
+  description: Retrieves a paginated list of flows accessible to the authenticated agent.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of flows.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FlowManagerFlow'
+
+post:
+  summary: Create a new flow
+  description: Creates a new flow with the provided details and returns the created flow's information.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              description: The name of the flow.
+              type: string
+            detail:
+              description: Detailed information about the flow.
+              type: string
+            actions:
+              description: List of actions associated with the flow.
+              type: array
+              items:
+                $ref: '#/components/schemas/FlowManagerAction'
+          required:
+            - name
+            - detail
+            - actions
+  responses:
+    '200':
+      description: The created flow details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FlowManagerFlow'

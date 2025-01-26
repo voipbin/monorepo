@@ -1,0 +1,60 @@
+get:
+  summary: Get a list of groupcalls
+  description: Retrieves a list of groupcalls based on the provided parameters.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of groupcalls.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CallManagerGroupcall'
+
+post:
+  summary: Create a new groupcall
+  description: Creates a new groupcall with the specified information and returns the created groupcall.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            source:
+              $ref: '#/components/schemas/CommonAddress'
+            destinations:
+              type: array
+              items:
+                $ref: '#/components/schemas/CommonAddress'
+            flow_id:
+              type: string
+            actions:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlowManagerAction'
+            ring_method:
+              $ref: '#/components/schemas/CallManagerGroupcallRingMethod'
+            answer_method:
+              $ref: '#/components/schemas/CallManagerGroupcallAnswerMethod'
+          required:
+            - source
+            - destinations
+            - flow_id
+            - actions
+            - ring_method
+            - answer_method
+  responses:
+    '200':
+      description: The created groupcall details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerGroupcall'

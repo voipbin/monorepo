@@ -1,0 +1,20 @@
+get:
+  summary: Retrieve a list of calls for the given customer
+  description: Fetches a list of calls for the given service agent, with pagination support.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of calls for the service agent.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CallManagerCall'

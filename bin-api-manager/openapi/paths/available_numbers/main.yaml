@@ -1,0 +1,26 @@
+get:
+  summary: List available numbers
+  description: Get available phone numbers for the specified country.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - name: country_code
+      in: query
+      description: The ISO country code.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: A list of available phone numbers.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NumberManagerAvailableNumber'
+    '400':
+      description: Bad Request. The request is invalid or cannot be processed.

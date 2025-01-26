@@ -1,0 +1,35 @@
+get:
+  summary: Get details of a specific storage account
+  description: Retrieves the details of a specific storage account by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the storage account.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The requested storage account details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StorageManagerAccount'
+
+delete:
+  summary: Delete a specific storage account
+  description: Deletes a specific storage account by its ID and returns the details of the deleted account.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the storage account.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The deleted storage account details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StorageManagerAccount'

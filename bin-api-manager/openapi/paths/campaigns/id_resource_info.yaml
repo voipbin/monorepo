@@ -1,0 +1,40 @@
+put:
+  summary: Update campaign's resource info
+  description: Updates the resource info of a specific campaign and return the updated campaign info.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the campaign
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            outplan_id:
+              type: string
+              description: outplan's id.
+            outdial_id:
+              type: string
+              description: outplan's id.
+            queue_id:
+              type: string
+              description: queue's id.
+            next_campaign_id:
+              type: string
+              description: next campaign's id.
+          required:
+            - outplan_id
+            - outdial_id
+            - queue_id
+            - next_campaign_id
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignManagerCampaign'

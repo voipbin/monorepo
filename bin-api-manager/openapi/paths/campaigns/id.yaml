@@ -1,0 +1,76 @@
+get:
+  summary: Get campaign details
+  description: Retrieves detailed information about a specific campaign by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the campaign
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignManagerCampaign'
+
+put:
+  summary: Update a campaign
+  description: Updates the details of an existing campaign and returns the updated campaign.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the campaign
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Updated name of the campaign
+            detail:
+              type: string
+              description: Updated details of the campaign
+            type:
+              $ref: '#/components/schemas/CampaignManagerCampaignType'
+            service_level:
+              type: integer
+              description: Updated service level of the campaign
+            end_handle:
+              $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
+          required:
+            - name
+            - detail
+            - type
+            - service_level
+            - end_handle
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignManagerCampaign'
+
+delete:
+  summary: Delete a campaign
+  description: Deletes a campaign by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the campaign
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignManagerCampaign'

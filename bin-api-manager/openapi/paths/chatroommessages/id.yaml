@@ -1,0 +1,33 @@
+get:
+  summary: Get details of a specific chatroom message
+  description: Retrieves detailed information about a chatroom message by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the chatroom message
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChatManagerMessagechatroom'
+
+delete:
+  summary: Delete a chatroom message
+  description: Deletes a chatroom message by its ID and returns the deleted message details.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the chatroom message
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChatManagerMessagechatroom'

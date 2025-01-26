@@ -1,0 +1,56 @@
+post:
+  summary: Create a new chatroom message
+  description: Creates a new chatroom message with the given information and returns the created message.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            chatroom_id:
+              type: string
+            text:
+              type: string
+            medias:
+              type: array
+              items:
+                $ref: '#/components/schemas/ChatManagerMedia'
+          required:
+            - chatroom_id
+            - text
+            - medias
+  responses:
+    '200':
+      description: The details of the created chatroom message.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChatManagerMessagechatroom'
+
+get:
+  summary: Retrieve a list of chatroom messages
+  description: Retrieves a list of chatroom messages for a specific chatroom, with pagination support.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: chatroom_id
+      in: query
+      description: The ID of the chatroom to retrieve messages for.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: A list of chatroom messages.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatManagerMessagechatroom'

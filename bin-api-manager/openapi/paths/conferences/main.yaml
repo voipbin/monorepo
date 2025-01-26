@@ -1,0 +1,63 @@
+get:
+  summary: Get list of conferences
+  description: Retrieve a paginated list of conferences for the customer.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of conferences.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConferenceManagerConference'
+
+post:
+  summary: Create a new conference
+  description: Create a new conference with the provided details.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            type:
+              $ref: '#/components/schemas/ConferenceManagerConferenceType'
+            name:
+              type: string
+            detail:
+              type: string
+            timeout:
+              type: integer
+            data:
+              type: object
+            pre_actions:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlowManagerAction'
+            post_actions:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlowManagerAction'
+          required:
+            - type
+            - name
+            - detail
+            - timeout
+            - data
+            - pre_actions
+            - post_actions
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConferenceManagerConference'

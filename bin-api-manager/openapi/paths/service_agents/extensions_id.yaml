@@ -1,0 +1,17 @@
+get:
+  summary: Get extension details
+  description: Retrieves detailed information about a specific extension by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the extension.
+  responses:
+    '200':
+      description: The details of the extension.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistrarManagerExtension'

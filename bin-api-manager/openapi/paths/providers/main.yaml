@@ -1,0 +1,59 @@
+get:
+  summary: List providers of the given customer
+  description: Returns a list of providers for the authenticated customer.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of providers for the given customer.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RouteManagerProvider'
+
+post:
+  summary: Create a new provider
+  description: Creates a new provider with the provided details.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            type:
+              $ref: '#/components/schemas/RouteManagerProviderType'
+            hostname:
+              type: string
+            tech_prefix:
+              type: string
+            tech_postfix:
+              type: string
+            tech_headers:
+              type: object
+            name:
+              type: string
+            detail:
+              type: string
+          required:
+            - type
+            - hostname
+            - tech_prefix
+            - tech_postfix
+            - tech_headers
+            - name
+            - detail
+  responses:
+    '200':
+      description: The created provider details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RouteManagerProvider'

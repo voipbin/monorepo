@@ -1,0 +1,33 @@
+get:
+  summary: Get detailed transcribe info
+  description: Retrieves detailed information about a specific transcription by ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The detailed transcription information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TranscribeManagerTranscribe'
+
+delete:
+  summary: Delete a transcribe
+  description: Deletes a transcription by ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The deleted transcription details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TranscribeManagerTranscribe'

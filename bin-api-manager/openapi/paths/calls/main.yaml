@@ -1,0 +1,59 @@
+get:
+  summary: Get list of calls
+  description: Returns a list of calls for the given customer.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of calls.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CallManagerCall'
+
+post:
+  summary: Make an outbound call
+  description: Creates a temporary flow and initiates a call with the specified flow.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            flow_id:
+              type: string
+            actions:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlowManagerAction'
+            source:
+              $ref: '#/components/schemas/CommonAddress'
+            destinations:
+              type: array
+              items:
+                $ref: '#/components/schemas/CommonAddress'
+  responses:
+    '200':
+      description: The details of the created call.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - type: object
+                properties:
+                  calls:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CallManagerCall'
+                  groupcalls:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CallManagerGroupcall'

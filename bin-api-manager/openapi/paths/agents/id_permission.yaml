@@ -1,0 +1,26 @@
+put:
+  summary: Update an agent's permission
+  description: Update an agent's permission and return updated details.
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the agent.
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            permission:
+              $ref: '#/components/schemas/AgentManagerAgentPermission'
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AgentManagerAgent'

@@ -1,0 +1,76 @@
+get:
+  summary: Get order number by ID
+  description: Get the details of the order number identified by the provided ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the order number.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The details of the order number.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NumberManagerNumber'
+
+delete:
+  summary: Delete order number by ID
+  description: Delete the order number identified by the provided ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the order number to delete.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The deleted order number details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NumberManagerNumber'
+
+put:
+  summary: Update order number by ID
+  description: Update the order number's details with the provided information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the order number to update.
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            call_flow_id:
+              description: The ID of the updated call flow.
+              type: string
+            message_flow_id:
+              description: The ID of the updated message flow.
+              type: string
+            name:
+              description: The updated name of the number.
+              type: string
+            detail:
+              description: Updated details for the number.
+              type: string
+          required:
+            - call_flow_id
+            - message_flow_id
+            - name
+            - detail
+  responses:
+    '200':
+      description: The updated order number details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NumberManagerNumber'

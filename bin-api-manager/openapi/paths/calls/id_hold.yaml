@@ -1,0 +1,25 @@
+post:
+  summary: Hold the call
+  description: Puts the specified call on hold.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The result of the hold action.
+
+delete:
+  summary: Unhold the call
+  description: Removes the hold status on the call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The result of the unhold action.

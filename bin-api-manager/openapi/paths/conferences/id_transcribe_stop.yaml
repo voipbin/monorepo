@@ -1,0 +1,13 @@
+post:
+  summary: Stop conference transcription
+  description: Stop the ongoing transcription for the specified conference.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  responses:
+    '200':
+      description: Transcription stopped successfully.

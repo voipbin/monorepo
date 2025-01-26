@@ -1,0 +1,78 @@
+get:
+  summary: Get conference details
+  description: Retrieve detailed information about a specific conference.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConferenceManagerConference'
+
+put:
+  summary: Update conference details
+  description: Update the details of a specific conference.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            timeout:
+              type: integer
+            pre_actions:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlowManagerAction'
+            post_actions:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlowManagerAction'
+          required:
+            - name
+            - detail
+            - timeout
+            - pre_actions
+            - post_actions
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConferenceManagerConference'
+
+delete:
+  summary: Delete a conference
+  description: Delete a specific conference. All participants will be removed.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  responses:
+    '200':
+      description: Conference deleted successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConferenceManagerConference'

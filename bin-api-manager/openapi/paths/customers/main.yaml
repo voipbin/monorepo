@@ -1,0 +1,59 @@
+get:
+  summary: Gets a list of customers.
+  description: Retrieves a paginated list of customers.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of customers.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CustomerManagerCustomer'
+
+post:
+  summary: Create a new customer.
+  description: Creates a new customer with the provided details and returns the created customer.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            email:
+              type: string
+            phone_number:
+              type: string
+            address:
+              type: string
+            webhook_method:
+              $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
+            webhook_uri:
+              type: string
+          required:
+            - name
+            - detail
+            - email
+            - phone_number
+            - address
+            - webhook_method
+            - webhook_uri
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCustomer'

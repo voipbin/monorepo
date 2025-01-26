@@ -1,0 +1,51 @@
+get:
+  summary: Get a list of extensions
+  description: Retrieves a list of extensions.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of extensions.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RegistrarManagerExtension'
+
+post:
+  summary: Create a new extension
+  description: Creates a new extension and returns its details.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            extension:
+              type: string
+            password:
+              type: string
+            name:
+              type: string
+            detail:
+              type: string
+          required:
+            - extension
+            - password
+            - name
+            - detail
+  responses:
+    '200':
+      description: The created extension.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistrarManagerExtension'

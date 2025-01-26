@@ -1,0 +1,17 @@
+get:
+  summary: Retrieve detailed information of a service agent
+  description: Fetches detailed information of a specific service agent by its ID.
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the service agent.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The details of the requested service agent.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AgentManagerAgent'

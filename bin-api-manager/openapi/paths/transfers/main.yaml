@@ -1,0 +1,31 @@
+post:
+  summary: Start a transfer
+  description: Initiates a call transfer and returns the result.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            transfer_type:
+              $ref: '#/components/schemas/TransferManagerTransferType'
+            transferer_call_id:
+              type: string
+              description: Call ID of the transfer initiator.
+            transferee_addresses:
+              type: array
+              items:
+                $ref: '#/components/schemas/CommonAddress'
+              description: Addresses of the transfer recipients.
+          required:
+            - transfer_type
+            - transferer_call_id
+            - transferee_addresses
+  responses:
+    '200':
+      description: The transfer details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TransferManagerTransfer'

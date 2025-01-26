@@ -1,0 +1,33 @@
+get:
+  summary: Get detail call info
+  description: Returns detailed information about the specified call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Detailed call information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerCall'
+
+delete:
+  summary: Delete up the call
+  description: Delete the call
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The result of the deleted call info.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerCall'
