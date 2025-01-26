@@ -1,0 +1,20 @@
+get:
+  summary: Gets a list of chatbot calls
+  description: Retrieves a paginated list of chatbot calls based on the provided query parameters.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of chatbot calls.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatbotManagerChatbotcall'

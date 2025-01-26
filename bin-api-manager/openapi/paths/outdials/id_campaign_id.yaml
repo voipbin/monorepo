@@ -1,0 +1,27 @@
+put:
+  summary: Update an outdial's campaign ID.
+  description: Updates the campaign ID of the specified outdial and returns the updated outdial information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to update.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            campaign_id:
+              type: string
+          required:
+            - campaign_id
+  responses:
+    '200':
+      description: The updated outdial details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OutdialManagerOutdial'

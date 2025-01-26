@@ -1,0 +1,46 @@
+post:
+  summary: Create a new billing account
+  description: Creates a new billing account and returns the created account.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            payment_type:
+              $ref: '#/components/schemas/BillingManagerAccountPaymentType'
+            payment_method:
+              $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
+  responses:
+    200:
+      description: Successfully created billing account
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BillingManagerAccount'
+
+get:
+  summary: Get list of billing accounts
+  description: Retrieves the list of billing accounts associated with the customer.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    200:
+      description: Successfully retrieved list of billing accounts
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BillingManagerAccount'

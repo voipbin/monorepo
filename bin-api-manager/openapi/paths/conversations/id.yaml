@@ -1,0 +1,47 @@
+get:
+  summary: Returns detailed conversation info
+  description: Returns detailed information about a specific conversation by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conversation.
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConversationManagerConversation'
+
+put:
+  summary: Update conversation info
+  description: Updates the details of a specific conversation by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conversation.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+          required:
+            - name
+            - detail
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConversationManagerConversation'

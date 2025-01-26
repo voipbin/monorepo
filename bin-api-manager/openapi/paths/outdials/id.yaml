@@ -1,0 +1,66 @@
+get:
+  summary: Retrieve an outdial by its ID.
+  description: Returns detailed information of a specific outdial based on the provided ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to retrieve.
+  responses:
+    '200':
+      description: The outdial details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OutdialManagerOutdial'
+
+delete:
+  summary: Delete an existing outdial.
+  description: Deletes an outdial specified by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to delete.
+  responses:
+    '200':
+      description: The result of the delete operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OutdialManagerOutdial'
+
+put:
+  summary: Update an outdial.
+  description: Updates the specified outdial and returns the updated information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to update.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+          required:
+            - name
+            - detail
+  responses:
+    '200':
+      description: The updated outdial details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OutdialManagerOutdial'

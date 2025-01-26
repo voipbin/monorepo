@@ -1,0 +1,43 @@
+get:
+  summary: Get a list of files
+  description: Retrieves a paginated list of files.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of files.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StorageManagerFile'
+
+post:
+  summary: Upload a file and create a call with it
+  description: Creates a temporary file and initiates a call with the temporary file.
+  requestBody:
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          properties:
+            file:
+              type: string
+              format: binary
+          required:
+            - file
+  responses:
+    '200':
+      description: The created call details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StorageManagerFile'
+

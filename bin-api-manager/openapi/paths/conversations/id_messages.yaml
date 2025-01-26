@@ -1,0 +1,59 @@
+get:
+  summary: Gets a list of conversation messages
+  description: Gets a paginated list of messages for a specific conversation.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conversation.
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConversationManagerMessage'
+
+post:
+  summary: Send a message
+  description: Sends a message to a specific conversation and returns the sent message info.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conversation.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            text:
+              type: string
+              description: The message text.
+            medias:
+              type: array
+              items:
+                $ref: '#/components/schemas/ConversationManagerMedia'
+          required: 
+            - text
+            - medias
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConversationManagerMessage'

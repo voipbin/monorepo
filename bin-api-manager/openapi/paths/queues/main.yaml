@@ -1,0 +1,63 @@
+get:
+  summary: List queues of the customer
+  description: Retrieves a list of queues associated with the customer.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of queues.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QueueManagerQueue'
+
+post:
+  summary: Create a new queue
+  description: Creates a new queue with the provided details.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            routing_method:
+              $ref: '#/components/schemas/QueueManagerQueueRoutingMethod'
+            tag_ids:
+              type: array
+              items:
+                type: string
+            wait_actions:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlowManagerAction'
+            wait_timeout:
+              type: integer
+            service_timeout:
+              type: integer
+          required:
+            - name
+            - detail
+            - routing_method
+            - tag_ids
+            - wait_actions
+            - wait_timeout
+            - service_timeout
+  responses:
+    '200':
+      description: The created queue details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/QueueManagerQueue'

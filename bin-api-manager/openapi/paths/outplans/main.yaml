@@ -1,0 +1,79 @@
+get:
+  summary: Retrieve a list of outplans.
+  description: Retrieves a paginated list of outplans based on the provided parameters.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of outplans.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CampaignManagerOutplan'
+
+post:
+  summary: Create a new outplan.
+  description: Creates a new outplan with the provided details and returns the created outplan.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The name of the outplan.
+            detail:
+              type: string
+              description: Additional details about the outplan.
+            source:
+              $ref: '#/components/schemas/CommonAddress'
+              description: The source address for the outplan.
+            dial_timeout:
+              type: integer
+              description: The dial timeout in seconds.
+            try_interval:
+              type: integer
+              description: The interval between retry attempts.
+            max_try_count_0:
+              type: integer
+              description: Maximum retry count for destination 0.
+            max_try_count_1:
+              type: integer
+              description: Maximum retry count for destination 1.
+            max_try_count_2:
+              type: integer
+              description: Maximum retry count for destination 2.
+            max_try_count_3:
+              type: integer
+              description: Maximum retry count for destination 3.
+            max_try_count_4:
+              type: integer
+              description: Maximum retry count for destination 4.
+          required:
+            - name
+            - detail
+            - source
+            - dial_timeout
+            - try_interval
+            - max_try_count_0
+            - max_try_count_1
+            - max_try_count_2
+            - max_try_count_3
+            - max_try_count_4
+  responses:
+    '200':
+      description: The created outplan details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignManagerOutplan'

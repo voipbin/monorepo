@@ -1,0 +1,59 @@
+get:
+  summary: List order numbers
+  description: Get a list of order numbers based on the customer's information.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of order numbers.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NumberManagerNumber'
+
+post:
+  summary: Create a new number
+  description: Create a new order number and return the details of the created number.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            number:
+              description: The phone number.
+              type: string
+            call_flow_id:
+              description: The ID of the call flow.
+              type: string
+            message_flow_id:
+              description: The ID of the message flow.
+              type: string
+            name:
+              description: The name of the number.
+              type: string
+            detail:
+              description: Additional details about the number.
+              type: string
+          required:
+            - number
+            - call_flow_id
+            - message_flow_id
+            - name
+            - detail
+  responses:
+    '200':
+      description: The created order number details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NumberManagerNumber'

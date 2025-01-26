@@ -1,0 +1,32 @@
+put:
+  summary: Update the order number's flow ID
+  description: Update the flow ID of the order number identified by the provided ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the order number to update.
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            call_flow_id:
+              description: The ID of the updated call flow.
+              type: string
+            message_flow_id:
+              description: The ID of the updated message flow.
+              type: string
+          required:
+            - call_flow_id
+            - message_flow_id
+  responses:
+    '200':
+      description: The updated order number details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NumberManagerNumber'

@@ -1,0 +1,65 @@
+get:
+  summary: Retrieve a list of trunks.
+  description: Retrieves a paginated list of trunks.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of trunks.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RegistrarManagerTrunk'
+
+post:
+  summary: Create a new trunk.
+  description: Creates a new trunk with the provided details and returns the created trunk's information.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            domain_name:
+              type: string
+            auth_types:
+              type: array
+              items:
+                $ref: '#/components/schemas/RegistrarManagerAuthType'
+            username:
+              type: string
+            password:
+              type: string
+            allowed_ips:
+              type: array
+              items:
+                type: string
+          required:
+            - name
+            - detail
+            - domain_name
+            - auth_types
+            - username
+            - password
+            - allowed_ips
+  responses:
+    '200':
+      description: The created trunk details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistrarManagerTrunk'
+

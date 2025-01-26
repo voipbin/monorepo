@@ -1,0 +1,31 @@
+post:
+  summary: Silence a call
+  description: Mute the audio stream for the specified call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the call
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Call silenced successfully
+    '400':
+      description: Invalid request
+
+delete:
+  summary: Un-silence a call
+  description: Unmute the audio stream for the specified call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the call
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Call un-silenced successfully
+    '400':
+      description: Invalid request

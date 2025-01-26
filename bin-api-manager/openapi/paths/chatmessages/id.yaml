@@ -1,0 +1,33 @@
+get:
+  summary: Retrieve details of a chat message
+  description: Fetches detailed information about a specific chat message by ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the chat message
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChatManagerMessagechat'
+
+delete:
+  summary: Delete a chat message
+  description: Deletes a specific chat message by ID and returns its details.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the chat message
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChatManagerMessagechat'

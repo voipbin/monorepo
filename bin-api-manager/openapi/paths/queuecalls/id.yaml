@@ -1,0 +1,35 @@
+get:
+  summary: Get detailed queue call information
+  description: Returns detailed information for the specified queue call ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the queue call.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The queue call details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/QueueManagerQueuecall'
+
+delete:
+  summary: Delete a queue call
+  description: Deletes the specified queue call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the queue call to delete.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully deleted the queue call.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/QueueManagerQueuecall'

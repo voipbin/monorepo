@@ -1,0 +1,23 @@
+post:
+  summary: Renew the numbers
+  description: Renew the specified numbers and return the updated number details.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            tm_renew:
+              type: string
+              description: The timestamp for renewing the number.
+          required:
+            - tm_renew
+  responses:
+    '200':
+      description: A list of renewed order numbers.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NumberManagerNumber'

@@ -1,0 +1,57 @@
+get:
+  summary: Retrieve a list of chatroom messages
+  description: Fetches a paginated list of chatroom messages for a specified chatroom.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: chatroom_id
+      in: query
+      required: true
+      description: The ID of the chatroom
+      schema:
+        type: string
+  responses:
+    '200':
+      description: A list of chatroom messages.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatManagerMessagechatroom'
+
+post:
+  summary: Create a new chatroom message
+  description: Creates a new chatroom message and returns the created message details.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            chatroom_id:
+              type: string
+              description: ID of the chatroom.
+            text:
+              type: string
+              description: Text of the message.
+            medias:
+              type: array
+              description: List of media URLs.
+              items:
+                $ref: '#/components/schemas/ChatManagerMedia'
+          required:
+            - chatroom_id
+            - text
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChatManagerMessagechatroom'

@@ -1,0 +1,37 @@
+get:
+  summary: Download the recording file
+  description: Retrieves the specified recording file and redirects to the download URI.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The recording file's ID.
+      schema:
+        type: string
+  responses:
+    '307':
+      description: The recording file download URL.
+      content:
+        application/json:
+          schema:
+            type: string
+    '400':
+      description: Bad request. Could not find agent information or recording file.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Could not get a recordingfile."
+    '404':
+      description: The requested recording file was not found.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Recording file not found."

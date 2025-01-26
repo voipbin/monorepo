@@ -1,0 +1,10 @@
+get:
+  summary: Get customer details
+  description: Retrieves detailed information about the customer associated with the authenticated agent.
+  responses:
+    '200':
+      description: The details of the customer.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCustomer'

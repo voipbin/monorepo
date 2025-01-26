@@ -1,0 +1,28 @@
+put:
+  summary: Update campaign's service level
+  description: Updates the sevice level of a specific campaign and return the updated campaign info.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the campaign
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            next_campaign_id:
+              type: string
+              description: The next campaign's id.
+          required:
+            - next_campaign_id
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignManagerCampaign'

@@ -1,0 +1,69 @@
+get:
+  summary: List routes
+  description: Returns a list of routes for the given customer with pagination.
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: customer_id
+      in: query
+      description: target customer id
+      required: false
+      schema:
+        type: string
+  responses:
+    '200':
+      description: A list of routes.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RouteManagerRoute'
+
+post:
+  summary: Create a new route
+  description: Creates a new route with the provided details.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            customer_id:
+              type: string
+              description: The ID of the customer for the route.
+            name:
+              type: string
+              description: The name of the route.
+            detail:
+              type: string
+              description: The detail information of the route.
+            provider_id:
+              type: string
+              description: The provider ID for the route.
+            priority:
+              type: integer
+              description: The priority of the route.
+            target:
+              type: string
+              description: The target of the route.
+          required:
+            - customer_id
+            - name
+            - detail
+            - provider_id
+            - priority
+            - target
+  responses:
+    '200':
+      description: The created route details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RouteManagerRoute'

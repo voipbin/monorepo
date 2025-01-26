@@ -1,0 +1,69 @@
+get:
+  summary: Retrieve outplan details by ID.
+  description: Retrieves the details of the specified outplan based on the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier of the outplan.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The requested outplan details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignManagerOutplan'
+
+delete:
+  summary: Delete an existing outplan.
+  description: Deletes the outplan specified by the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the outplan to delete.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully deleted the outplan.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignManagerOutplan'
+
+put:
+  summary: Update dial information of an existing outplan.
+  description: Updates the dial information for the outplan specified by the given ID and returns the updated outplan.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the outplan to update.
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The new name of the outplan.
+            detail:
+              type: string
+              description: The new detail of the outplan.
+          required:
+            - name
+            - detail
+  responses:
+    '200':
+      description: The updated outplan with new dial information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CampaignManagerOutplan'
