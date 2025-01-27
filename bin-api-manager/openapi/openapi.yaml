@@ -8,7 +8,7 @@ info:
     altText: "voipbin"
     href: "https://api.voipbin.net/docs/"
 servers:
-  - url: http://localhost:8080/v1.0
+  - url: https://api.voipbin.net/v1.0
 
 tags:
   - name: Accesskey
