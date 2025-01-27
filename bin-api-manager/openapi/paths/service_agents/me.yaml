@@ -1,6 +1,8 @@
 get:
   summary: Get authenticated agent's details
   description: Retrieves detailed information about the authenticated agent.
+  tags:
+    - Service Agent
   responses:
     '200':
       description: The authenticated agent's details.
@@ -12,6 +14,8 @@ get:
 put:
   summary: Update authenticated agent's information
   description: Updates the basic information of the authenticated agent and returns the updated details.
+  tags:
+    - Service Agent
   requestBody:
     required: true
     content:

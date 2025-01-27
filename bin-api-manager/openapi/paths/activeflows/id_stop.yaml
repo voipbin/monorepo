@@ -1,16 +1,18 @@
 post:
-  summary: Stop an active flow
-  description: Endpoint to stop an active flow by its ID.
+  summary: Stop an activeflow
+  description: Endpoint to stop an activeflow by its ID.
+  tags:
+    - Activeflow
   parameters:
     - name: id
       in: path
       required: true
       schema:
         type: string
-        description: The ID of the active flow to stop.
+        description: The ID of the activeflow to stop.
   responses:
     '200':
-      description: Active flow stopped successfully.
+      description: Activeflow stopped successfully.
       content:
         application/json:
           schema:

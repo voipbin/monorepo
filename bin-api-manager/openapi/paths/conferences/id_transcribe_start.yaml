@@ -1,6 +1,8 @@
 post:
   summary: Start conference transcription
   description: Begin transcription for the specified conference.
+  tags:
+    - Conference
   parameters:
     - name: id
       in: path

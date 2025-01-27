@@ -1,6 +1,8 @@
 get:
   summary: Get detailed billing account info
   description: Returns detailed billing account info for the given ID.
+  tags:
+    - Billing
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete billing account
   description: Deletes the billing account associated with the given ID.
+  tags:
+    - Billing
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update billing account
   description: Updates the billing account information for the given ID.
+  tags:
+    - Billing
   parameters:
     - name: id
       in: path

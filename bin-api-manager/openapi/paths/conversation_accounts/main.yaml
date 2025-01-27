@@ -1,6 +1,8 @@
 get:
   summary: Gets a list of conversation accounts
   description: Fetches a paginated list of conversation accounts.
+  tags:
+    - Conversation
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new conversation account
   description: Creates a new conversation account and returns its details.
+  tags:
+    - Conversation
   requestBody:
     required: true
     content:

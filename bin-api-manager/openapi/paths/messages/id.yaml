@@ -1,6 +1,8 @@
 get:
   summary: Get a message by ID
   description: Retrieves the message of the given ID.
+  tags:
+    - Message
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete a message by ID
   description: Deletes the message with the given ID and returns the deleted message.
+  tags:
+    - Message
   parameters:
     - name: id
       in: path

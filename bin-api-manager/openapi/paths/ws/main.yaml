@@ -1,3 +1,5 @@
 get:
   summary: Create a new websocket connection.
   description: Establishes a new websocket connection for real-time communication.
+  tags:
+    - Websocket

@@ -1,6 +1,8 @@
 get:
   summary: Get customer details
   description: Retrieves detailed information about the customer associated with the authenticated agent.
+  tags:
+    - Service Agent
   responses:
     '200':
       description: The details of the customer.

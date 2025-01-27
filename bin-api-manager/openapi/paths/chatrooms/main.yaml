@@ -1,6 +1,8 @@
 get:
   summary: Gets a list of chatrooms.
   description: Retrieves a paginated list of chatrooms owned by a specified owner.
+  tags:
+    - Chat
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -28,6 +30,8 @@ get:
 post:
   summary: Create a new chatroom.
   description: Creates a new chatroom and returns the details of the created chatroom.
+  tags:
+    - Chat
   requestBody:
     required: true
     content:

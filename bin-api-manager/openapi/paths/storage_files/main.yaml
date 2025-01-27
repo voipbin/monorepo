@@ -1,6 +1,8 @@
 get:
   summary: Get a list of files
   description: Retrieves a paginated list of files.
+  tags:
+    - Storage
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Upload a file and create a call with it
   description: Creates a temporary file and initiates a call with the temporary file.
+  tags:
+    - Storage
   requestBody:
     content:
       multipart/form-data:

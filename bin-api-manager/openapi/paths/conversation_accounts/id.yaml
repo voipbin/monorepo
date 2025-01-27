@@ -1,6 +1,8 @@
 get:
   summary: Get details of a conversation account
   description: Fetches details of the conversation account specified by ID.
+  tags:
+    - Conversation
   parameters:
     - name: id
       in: path
@@ -18,6 +20,8 @@ get:
 put:
   summary: Update a conversation account
   description: Updates the details of the conversation account specified by ID.
+  tags:
+    - Conversation
   parameters:
     - name: id
       in: path
@@ -55,6 +59,8 @@ put:
 delete:
   summary: Delete a conversation account
   description: Deletes the conversation account specified by ID.
+  tags:
+    - Conversation
   parameters:
     - name: id
       in: path

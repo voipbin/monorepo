@@ -1,6 +1,8 @@
 get:
   summary: Get details of a specific chatbot call
   description: Retrieves detailed information about a chatbot call identified by its ID.
+  tags:
+    - Chatbot
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete a specific chatbot call
   description: Deletes a chatbot call identified by its ID.
+  tags:
+    - Chatbot
   parameters:
     - name: id
       in: path

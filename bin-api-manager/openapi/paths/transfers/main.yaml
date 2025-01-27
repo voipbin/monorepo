@@ -1,6 +1,8 @@
 post:
   summary: Start a transfer
   description: Initiates a call transfer and returns the result.
+  tags:
+    - Transfer
   requestBody:
     required: true
     content:

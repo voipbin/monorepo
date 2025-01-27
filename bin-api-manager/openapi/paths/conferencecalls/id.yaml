@@ -1,6 +1,8 @@
 get:
   summary: Get conference call details
   description: Retrieve detailed information about a specific conference call using its ID.
+  tags:
+    - Conference
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Remove a conference call
   description: Remove a specific conference call from the system by its ID.
+  tags:
+    - Conference
   parameters:
     - name: id
       in: path

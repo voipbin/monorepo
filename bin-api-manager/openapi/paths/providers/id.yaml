@@ -1,6 +1,8 @@
 get:
   summary: Get provider by ID
   description: Retrieves the provider details for the specified ID.
+  tags:
+    - Provider
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete provider by ID
   description: Deletes the provider with the specified ID.
+  tags:
+    - Provider
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update provider information
   description: Updates the provider details for the given ID with the provided information.
+  tags:
+    - Provider
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 post:
   summary: Enable Music on Hold (MOH)
   description: Activates Music on Hold for the call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path
@@ -14,6 +16,8 @@ post:
 delete:
   summary: Disable Music on Hold (MOH)
   description: Deactivates Music on Hold for the call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path

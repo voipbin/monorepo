@@ -1,6 +1,8 @@
 post:
   summary: Mute the call
   description: Mutes the specified call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path
@@ -22,6 +24,8 @@ post:
 delete:
   summary: Unmute the call
   description: Unmutes the specified call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 get:
   summary: Get list of calls
   description: Returns a list of calls for the given customer.
+  tags:
+    - Call
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Make an outbound call
   description: Creates a temporary flow and initiates a call with the specified flow.
+  tags:
+    - Call
   requestBody:
     content:
       application/json:

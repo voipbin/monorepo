@@ -1,6 +1,8 @@
 put:
   summary: Update a customer's billing account ID.
   description: Updates the billing account ID for a specific customer.
+  tags:
+    - Customer
   parameters:
     - name: id
       in: path

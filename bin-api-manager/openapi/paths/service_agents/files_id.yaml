@@ -1,6 +1,8 @@
 get:
   summary: Get file details
   description: Retrieves detailed information about a specific file by its ID.
+  tags:
+    - Service Agent
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete a file
   description: Deletes a specific file by its ID.
+  tags:
+    - Service Agent
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 get:
   summary: Retrieve a list of flows
   description: Retrieves a paginated list of flows accessible to the authenticated agent.
+  tags:
+    - Flow
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new flow
   description: Creates a new flow with the provided details and returns the created flow's information.
+  tags:
+    - Flow
   requestBody:
     required: true
     content:

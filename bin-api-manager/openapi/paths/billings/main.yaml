@@ -1,6 +1,8 @@
 get:
   summary: Get list of billings
   description: Retrieve a list of the customer's billings.
+  tags:
+    - Billing
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

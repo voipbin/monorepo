@@ -1,6 +1,8 @@
 post:
   summary: Add balance to billing account
   description: Adds the given balance to the billing account.
+  tags:
+    - Billing
   parameters:
     - name: id
       in: path

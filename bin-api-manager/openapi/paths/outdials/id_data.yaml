@@ -1,6 +1,8 @@
 put:
   summary: Update an outdial's data.
   description: Updates the data of the specified outdial and returns the updated outdial details.
+  tags:
+    - Outdial
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 get:
   summary: Retrieve a list of transcripts
   description: Fetch a list of transcripts associated with the customer.
+  tags:
+    - Transcribe
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

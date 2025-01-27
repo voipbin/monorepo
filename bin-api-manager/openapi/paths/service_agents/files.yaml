@@ -1,6 +1,8 @@
 post:
   summary: Upload a file
   description: Uploads a file and returns the details of the uploaded file.
+  tags:
+    - Service Agent
   requestBody:
     required: true
     content:
@@ -25,6 +27,8 @@ post:
 get:
   summary: Get list of files
   description: Retrieves a paginated list of files associated with the authenticated agent.
+  tags:
+    - Service Agent
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

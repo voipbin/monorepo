@@ -1,6 +1,8 @@
 get:
   summary: Get extension details
   description: Retrieves details of a specific extension by its ID.
+  tags:
+    - Extension
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 put:
   summary: Update an extension
   description: Updates an existing extension and returns the updated details.
+  tags:
+    - Extension
   parameters:
     - name: id
       in: path
@@ -54,6 +58,8 @@ put:
 delete:
   summary: Delete an extension
   description: Deletes an existing extension by its ID.
+  tags:
+    - Extension
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 put:
   summary: Update the queue's routing method
   description: Updates the routing method of the specified queue.
+  tags:
+    - Queue
   parameters:
     - name: id
       in: path

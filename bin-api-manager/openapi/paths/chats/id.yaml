@@ -1,6 +1,8 @@
 get:
   summary: Get details of a specific chat.
   description: Retrieves detailed information of a chat by its ID.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete a chat.
   description: Deletes a chat by its ID.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update a chat.
   description: Updates the details of an existing chat by its ID.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path

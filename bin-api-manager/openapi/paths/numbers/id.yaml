@@ -1,6 +1,8 @@
 get:
   summary: Get order number by ID
   description: Get the details of the order number identified by the provided ID.
+  tags:
+    - Number
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete order number by ID
   description: Delete the order number identified by the provided ID.
+  tags:
+    - Number
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update order number by ID
   description: Update the order number's details with the provided information.
+  tags:
+    - Number
   parameters:
     - name: id
       in: path

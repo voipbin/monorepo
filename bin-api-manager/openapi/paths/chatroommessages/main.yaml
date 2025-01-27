@@ -1,6 +1,8 @@
 get:
   summary: Retrieve a list of chatroom messages
   description: Fetches a paginated list of chatroom messages for a specified chatroom.
+  tags:
+    - Chat
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -28,6 +30,8 @@ get:
 post:
   summary: Create a new chatroom message
   description: Creates a new chatroom message and returns the created message details.
+  tags:
+    - Chat
   requestBody:
     required: true
     content:

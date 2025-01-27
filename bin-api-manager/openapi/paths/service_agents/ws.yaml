@@ -1,3 +1,5 @@
 get:
   summary: Establish a WebSocket connection
   description: Creates a new WebSocket connection for the authenticated agent.
+  tags:
+    - Service Agent

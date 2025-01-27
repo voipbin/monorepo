@@ -1,6 +1,8 @@
 get:
   summary: Get list of conferences
   description: Retrieve a paginated list of conferences for the customer.
+  tags:
+    - Conference
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new conference
   description: Create a new conference with the provided details.
+  tags:
+    - Conference
   requestBody:
     required: true
     content:

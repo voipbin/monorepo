@@ -1,6 +1,8 @@
 get:
   summary: Get details of a specific chatroom message
   description: Retrieves detailed information about a chatroom message by its ID.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path
@@ -18,6 +20,8 @@ get:
 delete:
   summary: Delete a chatroom message
   description: Deletes a chatroom message by its ID and returns the deleted message details.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 get:
   summary: List routes
   description: Returns a list of routes for the given customer with pagination.
+  tags:
+    - Route
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -28,6 +30,8 @@ get:
 post:
   summary: Create a new route
   description: Creates a new route with the provided details.
+  tags:
+    - Route
   requestBody:
     required: true
     content:

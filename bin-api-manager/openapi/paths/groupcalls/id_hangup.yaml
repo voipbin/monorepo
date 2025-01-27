@@ -1,6 +1,8 @@
 post:
   summary: Hangup the groupcall
   description: Ends the groupcall with the specified ID.
+  tags:
+    - Groupcall
   parameters:
     - name: id
       in: path

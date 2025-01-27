@@ -1,6 +1,8 @@
 get:
   summary: Retrieve a list of outdials.
   description: Gets a list of outdials based on the specified page size and page token.
+  tags:
+    - Outdial
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new outdial.
   description: Creates a new outdial with the specified information and returns the created outdial details.
+  tags:
+    - Outdial
   requestBody:
     content:
       application/json:
