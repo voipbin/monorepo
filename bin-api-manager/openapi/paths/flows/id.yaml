@@ -1,6 +1,8 @@
 get:
   summary: Retrieve flow details
   description: Retrieves the details of a specific flow by its ID.
+  tags:
+    - Flow
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 put:
   summary: Update a flow
   description: Updates the details of an existing flow and returns the updated information.
+  tags:
+    - Flow
   parameters:
     - name: id
       in: path
@@ -59,6 +63,8 @@ put:
 delete:
   summary: Delete a flow
   description: Deletes an existing flow by its ID.
+  tags:
+    - Flow
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 get:
   summary: Get details of a given account's storage account
   description: Retrieves the details of a given account's storage account.
+  tags:
+    - Storage
   responses:
     '200':
       description: The requested storage account details.

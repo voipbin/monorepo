@@ -1,6 +1,8 @@
 get:
   summary: List providers of the given customer
   description: Returns a list of providers for the authenticated customer.
+  tags:
+    - Provider
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new provider
   description: Creates a new provider with the provided details.
+  tags:
+    - Provider
   requestBody:
     content:
       application/json:

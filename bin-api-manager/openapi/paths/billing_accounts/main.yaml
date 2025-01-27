@@ -1,6 +1,8 @@
 post:
   summary: Create a new billing account
   description: Creates a new billing account and returns the created account.
+  tags:
+    - Billing
   requestBody:
     required: true
     content:
@@ -27,6 +29,8 @@ post:
 get:
   summary: Get list of billing accounts
   description: Retrieves the list of billing accounts associated with the customer.
+  tags:
+    - Billing
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

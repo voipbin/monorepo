@@ -1,6 +1,8 @@
 put:
   summary: Update an outdial's campaign ID.
   description: Updates the campaign ID of the specified outdial and returns the updated outdial information.
+  tags:
+    - Outdial
   parameters:
     - name: id
       in: path

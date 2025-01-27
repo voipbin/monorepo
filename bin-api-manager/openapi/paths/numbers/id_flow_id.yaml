@@ -1,6 +1,8 @@
 put:
   summary: Update the order number's flow ID
   description: Update the flow ID of the order number identified by the provided ID.
+  tags:
+    - Number
   parameters:
     - name: id
       in: path

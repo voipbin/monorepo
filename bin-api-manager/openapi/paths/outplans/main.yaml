@@ -1,6 +1,8 @@
 get:
   summary: Retrieve a list of outplans.
   description: Retrieves a paginated list of outplans based on the provided parameters.
+  tags:
+    - Outplan
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new outplan.
   description: Creates a new outplan with the provided details and returns the created outplan.
+  tags:
+    - Outplan
   requestBody:
     required: true
     content:

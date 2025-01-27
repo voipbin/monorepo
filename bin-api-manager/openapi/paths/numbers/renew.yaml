@@ -1,6 +1,8 @@
 post:
   summary: Renew the numbers
   description: Renew the specified numbers and return the updated number details.
+  tags:
+    - Number
   requestBody:
     content:
       application/json:

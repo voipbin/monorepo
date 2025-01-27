@@ -1,6 +1,8 @@
 get:
   summary: Download the recording file
   description: Retrieves the specified recording file and redirects to the download URI.
+  tags:
+    - Recording
   parameters:
     - name: id
       in: path

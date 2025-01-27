@@ -1,6 +1,8 @@
 post:
   summary: Add a participant to a chat.
   description: Adds a new participant ID to a chat and returns the updated chat details.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path

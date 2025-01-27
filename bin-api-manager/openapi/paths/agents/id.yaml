@@ -1,6 +1,8 @@
 get:
   summary: Get the agent
   description: Get the agent of the given ID.
+  tags:
+    - Agent
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete the agent
   description: Delete the agent of the given ID.
+  tags:
+    - Agent
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update an agent
   description: Update an agent and return updated details.
+  tags:
+    - Agent
   parameters:
     - name: id
       in: path

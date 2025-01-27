@@ -1,6 +1,8 @@
 get:
   summary: Get customer info
   description: Retrieve the information of the customer.
+  tags:
+    - Customer
   responses:
     '200':
       description: The customer information.
@@ -12,6 +14,8 @@ get:
 put:
   summary: Update a customer
   description: Update the information of a customer and retrieve the updated details.
+  tags:
+    - Customer
   requestBody:
     description: Customer update payload
     required: true

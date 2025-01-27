@@ -1,6 +1,8 @@
 put:
   summary: Update authenticated agent's addresses
   description: Updates the address details of the authenticated agent and returns the updated information.
+  tags:
+    - Service Agent
   requestBody:
     required: true
     content:

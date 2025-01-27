@@ -1,6 +1,8 @@
 get:
   summary: Gets a list of customers.
   description: Retrieves a paginated list of customers.
+  tags:
+    - Customer
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new customer.
   description: Creates a new customer with the provided details and returns the created customer.
+  tags:
+    - Customer
   requestBody:
     required: true
     content:

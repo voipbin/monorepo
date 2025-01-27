@@ -707,7 +707,7 @@ type BillingManagerBillingreferenceType string
 type CallManagerCall struct {
 	Action *FlowManagerAction `json:"action,omitempty"`
 
-	// ActiveflowId Active flow ID
+	// ActiveflowId Activeflow ID
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
 	// ChainedCallIds Chained call IDs
@@ -970,7 +970,7 @@ type CampaignManagerCampaignType string
 
 // CampaignManagerCampaigncall defines model for CampaignManagerCampaigncall.
 type CampaignManagerCampaigncall struct {
-	// ActiveflowId Identifier of the active flow.
+	// ActiveflowId Identifier of the activeflow.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
 	// CampaignId Identifier of the campaign.
@@ -1293,7 +1293,7 @@ type ChatbotManagerChatbotEngineType string
 
 // ChatbotManagerChatbotcall defines model for ChatbotManagerChatbotcall.
 type ChatbotManagerChatbotcall struct {
-	// ActiveflowId Unique identifier for the active flow.
+	// ActiveflowId Unique identifier for the activeflow.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
 	// ChatbotId Unique identifier of the associated chatbot.
@@ -21366,7 +21366,7 @@ func (r GetAccesskeysResponse) StatusCode() int {
 type PostAccesskeysResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *CustomerManagerAccesskey
+	JSON200      *CustomerManagerAccesskey
 }
 
 // Status returns HTTPResponse.Status
@@ -30101,12 +30101,12 @@ func ParsePostAccesskeysResponse(rsp *http.Response) (*PostAccesskeysResponse, e
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CustomerManagerAccesskey
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON201 = &dest
+		response.JSON200 = &dest
 
 	}
 

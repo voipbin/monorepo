@@ -1,6 +1,8 @@
 put:
   summary: Update an agent's permission
   description: Update an agent's permission and return updated details.
+  tags:
+    - Agent
   parameters:
     - name: id
       in: path

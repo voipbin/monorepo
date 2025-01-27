@@ -1,6 +1,8 @@
 get:
   summary: List recordings
   description: Retrieves a list of recordings for the given customer.
+  tags:
+    - Recording
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

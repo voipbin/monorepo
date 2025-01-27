@@ -1,6 +1,8 @@
 put:
   summary: Update the queue's action handle
   description: Updates the action handle of the specified queue.
+  tags:
+    - Queue
   parameters:
     - name: id
       in: path

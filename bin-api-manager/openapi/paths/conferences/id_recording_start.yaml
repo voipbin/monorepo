@@ -1,6 +1,8 @@
 post:
   summary: Start conference recording
   description: Initiate recording for the specified conference.
+  tags:
+    - Conference
   parameters:
     - name: id
       in: path

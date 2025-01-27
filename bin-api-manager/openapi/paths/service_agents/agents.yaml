@@ -1,6 +1,8 @@
 get:
   summary: Retrieve a list of service agents
   description: Fetches a list of service agents with pagination support.
+  tags:
+    - Service Agent
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

@@ -1,6 +1,8 @@
 put:
   summary: Update campaign's resource info
   description: Updates the resource info of a specific campaign and return the updated campaign info.
+  tags:
+    - Campaign
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 get:
   summary: Get detailed conversation info
   description: Retrieves detailed information about a specific conversation by its ID.
+  tags:
+    - Service Agent
   parameters:
     - name: id
       in: path

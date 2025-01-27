@@ -1,6 +1,8 @@
 get:
   summary: Retrieve outplan details by ID.
   description: Retrieves the details of the specified outplan based on the given ID.
+  tags:
+    - Outplan
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete an existing outplan.
   description: Deletes the outplan specified by the given ID.
+  tags:
+    - Outplan
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update dial information of an existing outplan.
   description: Updates the dial information for the outplan specified by the given ID and returns the updated outplan.
+  tags:
+    - Outplan
   parameters:
     - name: id
       in: path

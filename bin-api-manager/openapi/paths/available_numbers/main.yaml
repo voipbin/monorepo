@@ -1,6 +1,8 @@
 get:
   summary: List available numbers
   description: Get available phone numbers for the specified country.
+  tags:
+    - Number
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - name: country_code

@@ -1,6 +1,8 @@
 get:
   summary: Get detailed queue call information
   description: Returns detailed information for the specified queue call ID.
+  tags:
+    - Queue
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete a queue call
   description: Deletes the specified queue call.
+  tags:
+    - Queue
   parameters:
     - name: id
       in: path

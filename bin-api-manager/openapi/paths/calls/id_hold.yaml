@@ -1,6 +1,8 @@
 post:
   summary: Hold the call
   description: Puts the specified call on hold.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path
@@ -14,6 +16,8 @@ post:
 delete:
   summary: Unhold the call
   description: Removes the hold status on the call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path

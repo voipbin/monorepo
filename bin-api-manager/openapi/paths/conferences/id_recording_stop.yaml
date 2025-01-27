@@ -1,6 +1,8 @@
 post:
   summary: Stop conference recording
   description: Stop the ongoing recording for the specified conference.
+  tags:
+    - Conference
   parameters:
     - name: id
       in: path

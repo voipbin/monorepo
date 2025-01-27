@@ -1,6 +1,8 @@
 post:
   summary: Stop conference transcription
   description: Stop the ongoing transcription for the specified conference.
+  tags:
+    - Conference
   parameters:
     - name: id
       in: path

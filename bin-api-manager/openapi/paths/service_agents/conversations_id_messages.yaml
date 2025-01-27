@@ -1,6 +1,8 @@
 get:
   summary: Get list of conversation messages
   description: Retrieves a paginated list of messages for a specific conversation.
+  tags:
+    - Service Agent
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -28,6 +30,8 @@ get:
 post:
   summary: Send a message to the conversation
   description: Sends a message to a specific conversation and returns the details of the sent message.
+  tags:
+    - Service Agent
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 get:
   summary: Get the queue by ID
   description: Retrieves the details of a specific queue by its ID.
+  tags:
+    - Queue
   parameters:
     - name: id
       in: path
@@ -18,6 +20,8 @@ get:
 delete:
   summary: Delete a queue by ID
   description: Deletes the queue specified by the given ID.
+  tags:
+    - Queue
   parameters:
     - name: id
       in: path
@@ -35,6 +39,8 @@ delete:
 put:
   summary: Update the queue details
   description: Updates the details of the queue identified by the given ID.
+  tags:
+    - Queue
   parameters:
     - name: id
       in: path

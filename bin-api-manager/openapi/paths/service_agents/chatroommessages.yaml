@@ -1,6 +1,8 @@
 post:
   summary: Create a new chatroom message
   description: Creates a new chatroom message with the given information and returns the created message.
+  tags:
+    - Service Agent
   requestBody:
     required: true
     content:
@@ -31,6 +33,8 @@ post:
 get:
   summary: Retrieve a list of chatroom messages
   description: Retrieves a list of chatroom messages for a specific chatroom, with pagination support.
+  tags:
+    - Service Agent
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

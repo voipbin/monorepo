@@ -1,6 +1,8 @@
 get:
   summary: Gets a list of chats.
   description: Retrieves a paginated list of chats based on query parameters.
+  tags:
+    - Chat
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new chat.
   description: Creates a new chat with the provided information and returns the created chat details.
+  tags:
+    - Chat
   requestBody:
     required: true
     content:

@@ -1,6 +1,8 @@
 get:
   summary: Get a route
   description: Returns the details of the route for the given ID.
+  tags:
+    - Route
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete the route
   description: Deletes the route for the given ID.
+  tags:
+    - Route
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update a route
   description: Updates a route with the provided details and returns the updated route.
+  tags:
+    - Route
   parameters:
     - name: id
       in: path

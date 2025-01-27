@@ -1,6 +1,8 @@
 get:
   summary: Get a list of groupcalls
   description: Retrieves a list of groupcalls based on the provided parameters.
+  tags:
+    - Groupcall
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new groupcall
   description: Creates a new groupcall with the specified information and returns the created groupcall.
+  tags:
+    - Groupcall
   requestBody:
     content:
       application/json:
