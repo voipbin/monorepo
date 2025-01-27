@@ -2,8 +2,14 @@ openapi: 3.0.0
 info:
   title: VoipBin API
   version: 1.0.0
+  x-logo:
+    url: "https://github.com/pchero/voipbin/blob/master/logos/voipbin-high-resolution-logo-black-transparent.png?raw=true"
+    backgroundColor: "#FFFFFF"
+    altText: "voipbin"
+    href: "https://api.voipbin.net/docs/"
 servers:
   - url: http://localhost:8080/v1.0
+
 tags:
   - name: Accesskey
     description: Operations related to accesskey
@@ -158,7 +164,7 @@ tags:
       description: Find more about tag
       url: https://api.voipbin.net/docs/tag.html
 
-  - name: Tag
+  - name: Transcribe
     description: Operations related to transcribe
     externalDocs:
       description: Find more about transcribe
@@ -181,7 +187,6 @@ tags:
     externalDocs:
       description: Find more about websocket
       url: https://api.voipbin.net/docs/websocket.html
-
 
 
 components:

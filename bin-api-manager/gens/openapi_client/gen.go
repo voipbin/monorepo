@@ -21366,7 +21366,7 @@ func (r GetAccesskeysResponse) StatusCode() int {
 type PostAccesskeysResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *CustomerManagerAccesskey
+	JSON200      *CustomerManagerAccesskey
 }
 
 // Status returns HTTPResponse.Status
@@ -30101,12 +30101,12 @@ func ParsePostAccesskeysResponse(rsp *http.Response) (*PostAccesskeysResponse, e
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CustomerManagerAccesskey
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON201 = &dest
+		response.JSON200 = &dest
 
 	}
 

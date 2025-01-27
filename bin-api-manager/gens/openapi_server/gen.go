@@ -11377,11 +11377,11 @@ type PostAccesskeysResponseObject interface {
 	VisitPostAccesskeysResponse(w http.ResponseWriter) error
 }
 
-type PostAccesskeys201JSONResponse CustomerManagerAccesskey
+type PostAccesskeys200JSONResponse CustomerManagerAccesskey
 
-func (response PostAccesskeys201JSONResponse) VisitPostAccesskeysResponse(w http.ResponseWriter) error {
+func (response PostAccesskeys200JSONResponse) VisitPostAccesskeysResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(201)
+	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -11394,11 +11394,11 @@ type DeleteAccesskeysIdResponseObject interface {
 	VisitDeleteAccesskeysIdResponse(w http.ResponseWriter) error
 }
 
-type DeleteAccesskeysId204Response struct {
+type DeleteAccesskeysId200Response struct {
 }
 
-func (response DeleteAccesskeysId204Response) VisitDeleteAccesskeysIdResponse(w http.ResponseWriter) error {
-	w.WriteHeader(204)
+func (response DeleteAccesskeysId200Response) VisitDeleteAccesskeysIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
 	return nil
 }
 

@@ -29,7 +29,7 @@ delete:
       schema:
         type: string
   responses:
-    '204':
+    '200':
       description: Accesskey deleted successfully
 
 put:
