@@ -1,6 +1,8 @@
 get:
   summary: Start media streaming for a conference
   description: Start the in/out media streaming of the specified conference.
+  tags:
+    - Conference
   parameters:
     - name: id
       in: path

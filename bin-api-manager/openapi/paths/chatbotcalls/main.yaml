@@ -1,6 +1,8 @@
 get:
   summary: Gets a list of chatbot calls
   description: Retrieves a paginated list of chatbot calls based on the provided query parameters.
+  tags:
+    - Chatbot
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

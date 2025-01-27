@@ -1,6 +1,8 @@
 get:
   summary: Retrieve a list of trunks.
   description: Retrieves a paginated list of trunks.
+  tags:
+    - Trunk
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new trunk.
   description: Creates a new trunk with the provided details and returns the created trunk's information.
+  tags:
+    - Trunk
   requestBody:
     required: true
     content:

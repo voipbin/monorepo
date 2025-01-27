@@ -1,6 +1,8 @@
 get:
   summary: Get list of transcribes
   description: Retrieves a paginated list of transcriptions for the authenticated customer.
+  tags:
+    - Transcribe
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a transcribe
   description: Creates a transcription of a recording and returns the result.
+  tags:
+    - Transcribe
   requestBody:
     required: true
     content:

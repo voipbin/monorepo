@@ -1,6 +1,8 @@
 get:
   summary: Get recording details
   description: Retrieves detailed information about a specific recording.
+  tags:
+    - Recording
   parameters:
     - name: id
       in: path
@@ -23,6 +25,8 @@ get:
 delete:
   summary: Delete recording
   description: Deletes the specified recording and returns the deleted recording information.
+  tags:
+    - Recording
   parameters:
     - name: id
       in: path

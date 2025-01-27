@@ -1,6 +1,8 @@
 put:
   summary: Update campaign's service level
   description: Updates the sevice level of a specific campaign and return the updated campaign info.
+  tags:
+    - Campaign
   parameters:
     - name: id
       in: path

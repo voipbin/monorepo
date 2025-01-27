@@ -1,6 +1,8 @@
 get:
   summary: Get detail call info
   description: Returns detailed information about the specified call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path
@@ -18,6 +20,8 @@ get:
 delete:
   summary: Delete up the call
   description: Delete the call
+  tags:
+    - Call
   parameters:
     - name: id
       in: path

@@ -4,6 +4,185 @@ info:
   version: 1.0.0
 servers:
   - url: http://localhost:8080/v1.0
+tags:
+  - name: Accesskey
+    description: Operations related to accesskey
+    externalDocs:
+      description: Find more about accesskey
+      url: https://api.voipbin.net/docs/accesskey.html
+
+  - name: Activeflow
+    description: Operations related to activeflow
+    externalDocs:
+      description: Find more about activeflow
+      url: https://api.voipbin.net/docs/activeflow.html
+
+  - name: Agent
+    description: Operations related to agent
+    externalDocs:
+      description: Find more about agent
+      url: https://api.voipbin.net/docs/agent.html
+
+  - name: Billing
+    description: Operations related to billing
+    externalDocs:
+      description: Find more about billing
+      url: https://api.voipbin.net/docs/billing_account.html
+
+  - name: Call
+    description: Operations related to call
+    externalDocs:
+      description: Find more about call
+      url: https://api.voipbin.net/docs/call.html
+
+  - name: Campaign
+    description: Operations related to campaign
+    externalDocs:
+      description: Find more about campaign
+      url: https://api.voipbin.net/docs/campaign.html
+
+  - name: Chatbot
+    description: Operations related to chatbot
+    externalDocs:
+      description: Find more about chatbot
+      url: https://api.voipbin.net/docs/chatbot.html
+
+  - name: Chat
+    description: Operations related to chat
+    externalDocs:
+      description: Find more about chat
+      url: https://api.voipbin.net/docs/chat.html
+
+  - name: Conference
+    description: Operations related to conference
+    externalDocs:
+      description: Find more about conference
+      url: https://api.voipbin.net/docs/conference.html
+
+  - name: Conversation
+    description: Operations related to conversation
+    externalDocs:
+      description: Find more about conversation
+      url: https://api.voipbin.net/docs/conversation.html
+
+  - name: Customer
+    description: Operations related to customer
+    externalDocs:
+      description: Find more about customer
+      url: https://api.voipbin.net/docs/customer.html
+
+  - name: Extension
+    description: Operations related to extension
+    externalDocs:
+      description: Find more about extension
+      url: https://api.voipbin.net/docs/extension.html
+
+  - name: File
+    description: Operations related to file
+
+  - name: Flow
+    description: Operations related to flow
+    externalDocs:
+      description: Find more about flow
+      url: https://api.voipbin.net/docs/flow.html
+
+  - name: Groupcall
+    description: Operations related to groupcall
+    externalDocs:
+      description: Find more about groupcall
+      url: https://api.voipbin.net/docs/groupcall.html
+
+  - name: Me
+    description: Operations related to myself data
+
+  - name: Message
+    description: Operations related to message
+    externalDocs:
+      description: Find more about message
+      url: https://api.voipbin.net/docs/message.html
+
+  - name: Number
+    description: Operations related to number
+    externalDocs:
+      description: Find more about number
+      url: https://api.voipbin.net/docs/number.html
+
+  - name: Outdial
+    description: Operations related to outdial
+    externalDocs:
+      description: Find more about outdial
+      url: https://api.voipbin.net/docs/outdial.html
+
+  - name: Outplan
+    description: Operations related to outplan
+    externalDocs:
+      description: Find more about outplan
+      url: https://api.voipbin.net/docs/outplan.html
+
+  - name: Provider
+    description: Operations related to provider
+    externalDocs:
+      description: Find more about provider
+      url: https://api.voipbin.net/docs/provider.html
+
+  - name: Queue
+    description: Operations related to queue
+    externalDocs:
+      description: Find more about queue
+      url: https://api.voipbin.net/docs/queue.html
+
+  - name: Recording
+    description: Operations related to recording
+    externalDocs:
+      description: Find more about recording
+      url: https://api.voipbin.net/docs/recording.html
+
+  - name: Route
+    description: Operations related to route
+    externalDocs:
+      description: Find more about route
+      url: https://api.voipbin.net/docs/route.html
+
+  - name: Service Agent
+    description: Operations related to individual agent service
+
+  - name: Storage
+    description: Operations related to storage
+    externalDocs:
+      description: Find more about storage
+      url: https://api.voipbin.net/docs/storage.html
+
+  - name: Tag
+    description: Operations related to tag
+    externalDocs:
+      description: Find more about tag
+      url: https://api.voipbin.net/docs/tag.html
+
+  - name: Tag
+    description: Operations related to transcribe
+    externalDocs:
+      description: Find more about transcribe
+      url: https://api.voipbin.net/docs/transcribe.html
+
+  - name: Transfer
+    description: Operations related to transfer
+    externalDocs:
+      description: Find more about transfer
+      url: https://api.voipbin.net/docs/transfer.html
+
+  - name: Trunk
+    description: Operations related to trunk
+    externalDocs:
+      description: Find more about trunk
+      url: https://api.voipbin.net/docs/trunk.html
+
+  - name: Websocket
+    description: Operations related to websocket
+    externalDocs:
+      description: Find more about websocket
+      url: https://api.voipbin.net/docs/websocket.html
+
+
 
 components:
 
@@ -379,7 +558,7 @@ components:
           description: Flow ID
         activeflow_id:
           type: string
-          description: Active flow ID
+          description: Activeflow ID
         type:
           $ref: '#/components/schemas/CallManagerCallType'
         master_call_id:
@@ -771,7 +950,7 @@ components:
           description: Identifier of the queue.
         activeflow_id:
           type: string
-          description: Identifier of the active flow.
+          description: Identifier of the activeflow.
         flow_id:
           type: string
           description: Identifier of the flow.
@@ -1197,7 +1376,7 @@ components:
           description: Unique identifier of the associated chatbot.
         activeflow_id:
           type: string
-          description: Unique identifier for the active flow.
+          description: Unique identifier for the activeflow.
         reference_type:
           $ref: '#/components/schemas/ChatbotManagerChatbotcallreferenceType'
         reference_id:

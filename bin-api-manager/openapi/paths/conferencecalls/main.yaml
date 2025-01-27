@@ -1,6 +1,8 @@
 get:
   summary: Get list of conference calls
   description: Retrieve a paginated list of conference calls for the authenticated customer.
+  tags:
+    - Conference
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

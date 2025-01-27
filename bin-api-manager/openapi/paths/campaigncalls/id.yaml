@@ -1,6 +1,8 @@
 get:
   summary: Get campaign call details
   description: Retrieve detailed information for a specific campaign call.
+  tags:
+    - Campaign
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete a campaign call
   description: Deletes an existing campaign call.
+  tags:
+    - Campaign
   parameters:
     - name: id
       in: path

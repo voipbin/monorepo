@@ -1,6 +1,8 @@
 get:
   summary: Get chatbot details.
   description: Retrieves detailed information for a specific chatbot by its ID.
+  tags:
+    - Chatbot
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete a chatbot.
   description: Deletes an existing chatbot by its ID.
+  tags:
+    - Chatbot
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update a chatbot.
   description: Updates an existing chatbot's details and returns the updated information.
+  tags:
+    - Chatbot
   parameters:
     - name: id
       in: path

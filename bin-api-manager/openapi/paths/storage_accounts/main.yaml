@@ -1,6 +1,8 @@
 get:
   summary: Get a list of storage accounts
   description: Retrieves a list of storage accounts with the provided pagination details.
+  tags:
+    - Storage
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new storage account
   description: Creates a new storage account with the provided information and returns the created account details.
+  tags:
+    - Storage
   requestBody:
     content:
       application/json:

@@ -1,6 +1,8 @@
 get:
   summary: Get a list of campaigns
   description: Retrieves a paginated list of campaigns.
+  tags:
+    - Campaign
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new campaign
   description: Creates a new campaign with the provided details and returns the created campaign.
+  tags:
+    - Campaign
   requestBody:
     required: true
     content:
@@ -39,7 +43,6 @@ post:
               $ref: '#/components/schemas/CampaignManagerCampaignType'
             service_level:
               type: integer
-              # format: float
               description: Service level of the campaign
             end_handle:
               $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'

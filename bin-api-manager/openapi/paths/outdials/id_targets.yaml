@@ -1,6 +1,8 @@
 get:
   summary: Retrieve a list of outdial targets.
   description: Gets a list of outdial targets based on the specified page size and page token.
+  tags:
+    - Outdial
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -25,10 +27,11 @@ get:
                     items:
                       $ref: '#/components/schemas/OutdialManagerOutdialtarget'
 
-
 post:
   summary: Create a new target for an outdial.
   description: Creates a new target for the specified outdial and returns the created target information.
+  tags:
+    - Outdial
   parameters:
     - name: id
       description: The ID of the outdial to associate with the target.

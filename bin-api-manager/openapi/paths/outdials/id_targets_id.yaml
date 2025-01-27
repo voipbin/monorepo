@@ -1,6 +1,8 @@
 get:
   summary: Retrieve an outdial target by its ID.
   description: Gets the details of a specific outdial target using its ID.
+  tags:
+    - Outdial
   parameters:
     - name: id
       in: path
@@ -25,6 +27,8 @@ get:
 delete:
   summary: Delete an outdial target.
   description: Deletes a specific outdial target based on its ID.
+  tags:
+    - Outdial
   parameters:
     - name: id
       in: path

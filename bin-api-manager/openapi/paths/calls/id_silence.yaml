@@ -1,6 +1,8 @@
 post:
   summary: Silence a call
   description: Mute the audio stream for the specified call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path
@@ -17,6 +19,8 @@ post:
 delete:
   summary: Un-silence a call
   description: Unmute the audio stream for the specified call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path

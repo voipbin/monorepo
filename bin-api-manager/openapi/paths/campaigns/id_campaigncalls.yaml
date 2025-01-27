@@ -1,6 +1,8 @@
 get:
   summary: Update campaign's actions
   description: Updates the actions of a specific campaign and return the updated campaign info.
+  tags:
+    - Campaign
   parameters:
     - name: id
       in: path

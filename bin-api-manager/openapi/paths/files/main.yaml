@@ -1,6 +1,8 @@
 get:
   summary: Gets a list of files
   description: Retrieves a paginated list of files.
+  tags:
+    - File
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Upload file
   description: Upload file.
+  tags:
+    - File
   requestBody:
     required: true
     content:

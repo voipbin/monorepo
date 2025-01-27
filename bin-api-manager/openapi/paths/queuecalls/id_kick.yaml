@@ -1,6 +1,8 @@
 post:
   summary: Kick a queue call from the queue
   description: Removes the specified queue call from the queue.
+  tags:
+    - Queue
   parameters:
     - name: id
       in: path

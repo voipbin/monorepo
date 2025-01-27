@@ -1,32 +1,36 @@
 delete:
-  summary: Delete an active flow
-  description: Endpoint to delete an active flow by its ID.
+  summary: Delete an activeflow
+  description: Endpoint to delete an activeflow by its ID.
+  tags:
+    - Activeflow
   parameters:
     - name: id
       in: path
       required: true
       schema:
         type: string
-        description: The ID of the active flow to delete.
+        description: The ID of the activeflow to delete.
   responses:
     '204':
-      description: Active flow deleted successfully.
+      description: Activeflow deleted successfully.
     '404':
       description: Flow not found.
 
 get:
-  summary: Get an active flow by ID
-  description: Retrieve details of a specific active flow.
+  summary: Get an activeflow by ID
+  description: Retrieve details of a specific flow.
+  tags:
+    - Activeflow
   parameters:
     - name: id
       in: path
       required: true
       schema:
         type: string
-        description: The ID of the active flow.
+        description: The ID of the activeflow.
   responses:
     '200':
-      description: Active flow details retrieved successfully.
+      description: Activeflow details retrieved successfully.
       content:
         application/json:
           schema:

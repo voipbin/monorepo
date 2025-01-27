@@ -1,6 +1,8 @@
 get:
   summary: Get chatroom details.
   description: Retrieves the details of a specific chatroom by its ID.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete a chatroom.
   description: Deletes a specific chatroom by its ID and returns the deleted chatroom details.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update a chatroom.
   description: Updates a specific chatroom's basic information and returns the updated details.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path

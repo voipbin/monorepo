@@ -1,6 +1,8 @@
 get:
   summary: Get list of chatrooms
   description: Returns a list of chatrooms for the given customer.
+  tags:
+    - Service Agent
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new chatroom and return the created chatroom's details
   description: Creates a new chatroom for the given customer and returns the created chatroom's details.
+  tags:
+    - Service Agent
   requestBody:
     content:
       application/json:

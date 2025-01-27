@@ -1,6 +1,8 @@
 get:
   summary: Returns detail file info
   description: Retrieves detailed information about a file by its ID.
+  tags:
+    - File
   parameters:
     - name: id
       in: path
@@ -18,6 +20,8 @@ get:
 delete:
   summary: Delete a file
   description: Deletes a file identified by its ID.
+  tags:
+    - File
   parameters:
     - name: id
       in: path

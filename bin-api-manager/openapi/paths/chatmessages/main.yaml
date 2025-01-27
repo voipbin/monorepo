@@ -2,6 +2,8 @@
 get:
   summary: Retrieve a list of chat messages
   description: Fetches a paginated list of chat messages.
+  tags:
+    - Chat
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -29,6 +31,8 @@ get:
 post:
   summary: Create a new chat message
   description: Creates a new chat message and returns the details of the created message.
+  tags:
+    - Chat
   requestBody:
     required: true
     content:

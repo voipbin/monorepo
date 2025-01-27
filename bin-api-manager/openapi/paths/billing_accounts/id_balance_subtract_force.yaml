@@ -1,6 +1,8 @@
 post:
   summary: Subtract balance from billing account
   description: Subtracts the given balance from the billing account.
+  tags:
+    - Billing
   parameters:
     - name: id
       in: path

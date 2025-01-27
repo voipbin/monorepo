@@ -1,6 +1,8 @@
 get:
   summary: Retrieve detailed information of a specific call
   description: Fetches detailed information about a specific call by its ID.
+  tags:
+    - Service Agent
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 post:
   summary: Talk to the call
   description: Initiates a talking action to the call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path

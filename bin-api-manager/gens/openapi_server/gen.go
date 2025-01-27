@@ -706,7 +706,7 @@ type BillingManagerBillingreferenceType string
 type CallManagerCall struct {
 	Action *FlowManagerAction `json:"action,omitempty"`
 
-	// ActiveflowId Active flow ID
+	// ActiveflowId Activeflow ID
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
 	// ChainedCallIds Chained call IDs
@@ -969,7 +969,7 @@ type CampaignManagerCampaignType string
 
 // CampaignManagerCampaigncall defines model for CampaignManagerCampaigncall.
 type CampaignManagerCampaigncall struct {
-	// ActiveflowId Identifier of the active flow.
+	// ActiveflowId Identifier of the activeflow.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
 	// CampaignId Identifier of the campaign.
@@ -1292,7 +1292,7 @@ type ChatbotManagerChatbotEngineType string
 
 // ChatbotManagerChatbotcall defines model for ChatbotManagerChatbotcall.
 type ChatbotManagerChatbotcall struct {
-	// ActiveflowId Unique identifier for the active flow.
+	// ActiveflowId Unique identifier for the activeflow.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
 	// ChatbotId Unique identifier of the associated chatbot.
@@ -4110,13 +4110,13 @@ type ServerInterface interface {
 	// Create a new activeflow
 	// (POST /activeflows)
 	PostActiveflows(c *gin.Context)
-	// Delete an active flow
+	// Delete an activeflow
 	// (DELETE /activeflows/{id})
 	DeleteActiveflowsId(c *gin.Context, id string)
-	// Get an active flow by ID
+	// Get an activeflow by ID
 	// (GET /activeflows/{id})
 	GetActiveflowsId(c *gin.Context, id string)
-	// Stop an active flow
+	// Stop an activeflow
 	// (POST /activeflows/{id}/stop)
 	PostActiveflowsIdStop(c *gin.Context, id string)
 	// List agents
@@ -16001,13 +16001,13 @@ type StrictServerInterface interface {
 	// Create a new activeflow
 	// (POST /activeflows)
 	PostActiveflows(ctx context.Context, request PostActiveflowsRequestObject) (PostActiveflowsResponseObject, error)
-	// Delete an active flow
+	// Delete an activeflow
 	// (DELETE /activeflows/{id})
 	DeleteActiveflowsId(ctx context.Context, request DeleteActiveflowsIdRequestObject) (DeleteActiveflowsIdResponseObject, error)
-	// Get an active flow by ID
+	// Get an activeflow by ID
 	// (GET /activeflows/{id})
 	GetActiveflowsId(ctx context.Context, request GetActiveflowsIdRequestObject) (GetActiveflowsIdResponseObject, error)
-	// Stop an active flow
+	// Stop an activeflow
 	// (POST /activeflows/{id}/stop)
 	PostActiveflowsIdStop(ctx context.Context, request PostActiveflowsIdStopRequestObject) (PostActiveflowsIdStopResponseObject, error)
 	// List agents

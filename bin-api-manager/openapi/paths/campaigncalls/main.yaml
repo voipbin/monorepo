@@ -1,6 +1,8 @@
 get:
   summary: Get list of campaign calls
   description: Retrieve a list of campaign calls for a given customer.
+  tags:
+    - Campaign
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

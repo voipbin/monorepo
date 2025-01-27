@@ -1,6 +1,8 @@
 post:
   summary: Create a new tag.
   description: Creates a new tag with the specified information.
+  tags:
+    - Tag
   requestBody:
     content:
       application/json:
@@ -25,6 +27,8 @@ post:
 get:
   summary: List tags
   description: Retrieves a list of tags for the customer.
+  tags:
+    - Tag
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

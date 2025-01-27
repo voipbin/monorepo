@@ -1,6 +1,8 @@
 get:
   summary: Get a list of extensions
   description: Retrieves a list of extensions.
+  tags:
+    - Extension
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new extension
   description: Creates a new extension and returns its details.
+  tags:
+    - Extension
   requestBody:
     required: true
     content:

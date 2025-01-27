@@ -1,6 +1,8 @@
 put:
   summary: Update the queue's tag IDs
   description: Updates the tag IDs of the specified queue.
+  tags:
+    - Queue
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 post:
   summary: Stop an ongoing transcription
   description: Stops an ongoing transcription for the specified ID and returns the result.
+  tags:
+    - Transcribe
   parameters:
     - name: id
       in: path

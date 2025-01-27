@@ -1,6 +1,8 @@
 get:
   summary: Get campaign details
   description: Retrieves detailed information about a specific campaign by its ID.
+  tags:
+    - Campaign
   parameters:
     - name: id
       in: path
@@ -18,6 +20,8 @@ get:
 put:
   summary: Update a campaign
   description: Updates the details of an existing campaign and returns the updated campaign.
+  tags:
+    - Campaign
   parameters:
     - name: id
       in: path
@@ -61,6 +65,8 @@ put:
 delete:
   summary: Delete a campaign
   description: Deletes a campaign by its ID.
+  tags:
+    - Campaign
   parameters:
     - name: id
       in: path

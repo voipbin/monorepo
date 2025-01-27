@@ -1,6 +1,8 @@
 get:
   summary: Get the logged-in agent
   description: Retrieves the information of the currently logged-in agent.
+  tags:
+    - Me
   responses:
     '200':
       description: The logged-in agent's details.

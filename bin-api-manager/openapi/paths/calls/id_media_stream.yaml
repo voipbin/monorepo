@@ -1,6 +1,8 @@
 get:
   summary: Get media stream for the call
   description: Retrieve the media stream information for a specific call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path

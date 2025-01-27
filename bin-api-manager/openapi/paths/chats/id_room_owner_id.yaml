@@ -1,6 +1,8 @@
 put:
   summary: Update the room owner of a chat.
   description: Updates the room owner ID of a chat.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path

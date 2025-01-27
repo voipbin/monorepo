@@ -1,6 +1,8 @@
 get:
   summary: Retrieve customer details.
   description: Fetches detailed information about a specific customer by their ID.
+  tags:
+    - Customer
   parameters:
     - name: id
       in: path
@@ -17,6 +19,8 @@ get:
 put:
   summary: Update a customer.
   description: Updates the details of an existing customer and returns the updated information.
+  tags:
+    - Customer
   parameters:
     - name: id
       in: path
@@ -62,6 +66,8 @@ put:
 delete:
   summary: Delete a customer.
   description: Removes a customer by their ID.
+  tags:
+    - Customer
   parameters:
     - name: id
       in: path

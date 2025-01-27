@@ -1,6 +1,8 @@
 get:
   summary: Retrieve a list of calls for the given customer
   description: Fetches a list of calls for the given service agent, with pagination support.
+  tags:
+    - Service Agent
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

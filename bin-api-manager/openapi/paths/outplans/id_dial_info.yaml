@@ -1,6 +1,8 @@
 put:
   summary: Update dial information of an existing outplan.
   description: Updates the dial information for the outplan specified by the given ID and returns the updated outplan.
+  tags:
+    - Outplan
   parameters:
     - name: id
       in: path

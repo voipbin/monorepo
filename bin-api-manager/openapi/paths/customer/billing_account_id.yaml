@@ -1,6 +1,8 @@
 put:
   summary: Update a customer's billing account ID
   description: Modify the billing account ID associated with a customer.
+  tags:
+    - Customer
   requestBody:
     description: Billing account update payload
     required: true

@@ -1,6 +1,8 @@
 get:
   summary: List queue calls
   description: Returns a list of queue calls for the given customer.
+  tags:
+    - Queue
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'

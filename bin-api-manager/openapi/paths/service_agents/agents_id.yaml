@@ -1,6 +1,8 @@
 get:
   summary: Retrieve detailed information of a service agent
   description: Fetches detailed information of a specific service agent by its ID.
+  tags:
+    - Service Agent
   parameters:
     - name: id
       in: path

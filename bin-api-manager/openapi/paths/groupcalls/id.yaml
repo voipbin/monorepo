@@ -1,6 +1,8 @@
 get:
   summary: Get detailed information of a groupcall
   description: Returns the details of the groupcall with the specified ID.
+  tags:
+    - Groupcall
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete a groupcall
   description: Deletes the groupcall with the specified ID.
+  tags:
+    - Groupcall
   parameters:
     - name: id
       in: path

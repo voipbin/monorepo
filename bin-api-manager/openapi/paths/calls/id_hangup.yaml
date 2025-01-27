@@ -1,6 +1,8 @@
 post:
   summary: Hang up the call
   description: Ends the call.
+  tags:
+    - Call
   parameters:
     - name: id
       in: path

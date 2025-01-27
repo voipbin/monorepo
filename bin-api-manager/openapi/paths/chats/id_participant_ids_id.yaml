@@ -1,6 +1,8 @@
 delete:
   summary: Remove a participant from a chat.
   description: Removes a participant ID from a chat.
+  tags:
+    - Chat
   parameters:
     - name: id
       in: path

@@ -1,6 +1,8 @@
 get:
   summary: Get list of accesskeys
   description: Get accesskeys of the customer
+  tags:
+    - Accesskey
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new accesskey.
   description: Create a new accesskey.
+  tags:
+    - Accesskey
   requestBody:
     required: true
     content:
@@ -43,4 +47,3 @@ post:
         application/json:
           schema:
             $ref: '#/components/schemas/CustomerManagerAccesskey'
-

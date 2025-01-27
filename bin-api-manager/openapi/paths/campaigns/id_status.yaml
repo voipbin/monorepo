@@ -1,6 +1,8 @@
 put:
   summary: Update campaign status
   description: Updates the status of a specific campaign.
+  tags:
+    - Campaign
   parameters:
     - name: id
       in: path

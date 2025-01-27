@@ -1,6 +1,8 @@
 get:
   summary: List agents
   description: Get agents of the user.
+  tags:
+    - Agent
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -34,6 +36,8 @@ get:
 post:
   summary: Create a new agent
   description: Endpoint to create a new agent.
+  tags:
+    - Agent
   requestBody:
     description: Request body to create a new agent.
     required: true

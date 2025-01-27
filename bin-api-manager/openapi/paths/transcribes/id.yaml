@@ -1,6 +1,8 @@
 get:
   summary: Get detailed transcribe info
   description: Retrieves detailed information about a specific transcription by ID.
+  tags:
+    - Transcribe
   parameters:
     - name: id
       in: path
@@ -18,6 +20,8 @@ get:
 delete:
   summary: Delete a transcribe
   description: Deletes a transcription by ID.
+  tags:
+    - Transcribe
   parameters:
     - name: id
       in: path

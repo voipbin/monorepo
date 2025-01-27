@@ -1,6 +1,8 @@
 put:
   summary: Update billing account's payment info
   description: Updates the payment info for the given billing account ID.
+  tags:
+    - Billing
   parameters:
     - name: id
       in: path

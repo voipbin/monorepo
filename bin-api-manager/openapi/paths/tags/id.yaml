@@ -1,6 +1,8 @@
 get:
   summary: Get the tag
   description: Retrieves the tag details by its ID.
+  tags:
+    - Tag
   parameters:
     - name: id
       in: path
@@ -19,6 +21,8 @@ get:
 delete:
   summary: Delete the tag
   description: Deletes the tag identified by the given ID.
+  tags:
+    - Tag
   parameters:
     - name: id
       in: path
@@ -37,6 +41,8 @@ delete:
 put:
   summary: Update the tag info
   description: Updates the tag's name and detail information.
+  tags:
+    - Tag
   parameters:
     - name: id
       in: path

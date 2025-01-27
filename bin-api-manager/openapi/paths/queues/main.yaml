@@ -1,6 +1,8 @@
 get:
   summary: List queues of the customer
   description: Retrieves a list of queues associated with the customer.
+  tags:
+    - Queue
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
@@ -22,6 +24,8 @@ get:
 post:
   summary: Create a new queue
   description: Creates a new queue with the provided details.
+  tags:
+    - Queue
   requestBody:
     content:
       application/json:
