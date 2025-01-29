@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -592,13 +591,13 @@ type AgentManagerAgent struct {
 	TagIds *[]string `json:"tag_ids,omitempty"`
 
 	// TmCreate Created timestamp.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Deleted timestamp.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Updated timestamp.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Username Agent's username.
 	Username *string `json:"username,omitempty"`
@@ -637,13 +636,13 @@ type BillingManagerAccount struct {
 	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
 
 	// TmCreate The timestamp when the account was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete The timestamp when the account was deleted, if applicable.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate The timestamp when the account was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // BillingManagerAccountPaymentMethod The method of payment used for the account.
@@ -682,19 +681,19 @@ type BillingManagerBilling struct {
 	Status *BillingManagerBillingStatus `json:"status,omitempty"`
 
 	// TmBillingEnd The end timestamp of the billing period.
-	TmBillingEnd *time.Time `json:"tm_billing_end,omitempty"`
+	TmBillingEnd *string `json:"tm_billing_end,omitempty"`
 
 	// TmBillingStart The start timestamp of the billing period.
-	TmBillingStart *time.Time `json:"tm_billing_start,omitempty"`
+	TmBillingStart *string `json:"tm_billing_start,omitempty"`
 
 	// TmCreate The creation timestamp.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete The deletion timestamp, if applicable.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate The last update timestamp.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // BillingManagerBillingStatus Status of the billing.
@@ -762,22 +761,22 @@ type CallManagerCall struct {
 	Status *CallManagerCallStatus `json:"status,omitempty"`
 
 	// TmCreate Creation timestamp
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Deletion timestamp
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmHangup Timestamp for call hangup
-	TmHangup *time.Time `json:"tm_hangup,omitempty"`
+	TmHangup *string `json:"tm_hangup,omitempty"`
 
 	// TmProgressing Timestamp for call progressing
-	TmProgressing *time.Time `json:"tm_progressing,omitempty"`
+	TmProgressing *string `json:"tm_progressing,omitempty"`
 
 	// TmRinging Timestamp for call ringing
-	TmRinging *time.Time `json:"tm_ringing,omitempty"`
+	TmRinging *string `json:"tm_ringing,omitempty"`
 
 	// TmUpdate Update timestamp
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Call type
 	Type *CallManagerCallType `json:"type,omitempty"`
@@ -861,13 +860,13 @@ type CallManagerGroupcall struct {
 	Status *CallManagerGroupcallStatus `json:"status,omitempty"`
 
 	// TmCreate Timestamp when the call was created
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the call was deleted
-	TmDelete *time.Time `json:"tm_delete"`
+	TmDelete *string `json:"tm_delete"`
 
 	// TmUpdate Timestamp when the call was last updated
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // CallManagerGroupcallAnswerMethod Method to handle answered calls
@@ -906,19 +905,19 @@ type CallManagerRecording struct {
 	Status *CallManagerRecordingStatus `json:"status,omitempty"`
 
 	// TmCreate The creation timestamp of the recording.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete The timestamp when the recording was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmEnd The end timestamp of the recording.
-	TmEnd *time.Time `json:"tm_end,omitempty"`
+	TmEnd *string `json:"tm_end,omitempty"`
 
 	// TmStart The start timestamp of the recording.
-	TmStart *time.Time `json:"tm_start,omitempty"`
+	TmStart *string `json:"tm_start,omitempty"`
 
 	// TmUpdate The last update timestamp of the recording.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // CallManagerRecordingFormat The format of the recording.
@@ -948,9 +947,9 @@ type CampaignManagerCampaign struct {
 
 	// Status Status of the campaign.
 	Status   *CampaignManagerCampaignStatus `json:"status,omitempty"`
-	TmCreate *time.Time                     `json:"tm_create,omitempty"`
-	TmDelete *time.Time                     `json:"tm_delete,omitempty"`
-	TmUpdate *time.Time                     `json:"tm_update,omitempty"`
+	TmCreate *string                        `json:"tm_create,omitempty"`
+	TmDelete *string                        `json:"tm_delete,omitempty"`
+	TmUpdate *string                        `json:"tm_update,omitempty"`
 
 	// Type Type of campaign.
 	Type *CampaignManagerCampaignType `json:"type,omitempty"`
@@ -1013,13 +1012,13 @@ type CampaignManagerCampaigncall struct {
 	Status *CampaignManagerCampaigncallStatus `json:"status,omitempty"`
 
 	// TmCreate Timestamp when the campaign call was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the campaign call was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the campaign call was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TryCount Number of dialing attempts.
 	TryCount *int `json:"try_count,omitempty"`
@@ -1070,13 +1069,13 @@ type CampaignManagerOutplan struct {
 	Source *CommonAddress `json:"source,omitempty"`
 
 	// TmCreate Timestamp when the outplan was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the outplan was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the outplan was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TryInterval Interval between dialing attempts in milliseconds.
 	TryInterval *int `json:"try_interval,omitempty"`
@@ -1103,13 +1102,13 @@ type ChatManagerChat struct {
 	RoomOwnerId *string `json:"room_owner_id,omitempty"`
 
 	// TmCreate Timestamp when the chat was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the chat was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the chat was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of the chat.
 	Type *ChatManagerChatType `json:"type,omitempty"`
@@ -1146,13 +1145,13 @@ type ChatManagerChatroom struct {
 	RoomOwnerId *string `json:"room_owner_id,omitempty"`
 
 	// TmCreate Timestamp when the chat room was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the chat room was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the chat room was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of the chat room.
 	Type *ChatManagerChatroomType `json:"type,omitempty"`
@@ -1200,13 +1199,13 @@ type ChatManagerMessagechat struct {
 	Text *string `json:"text,omitempty"`
 
 	// TmCreate Timestamp when the message chat was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the message chat was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the message chat was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of the message chat.
 	Type *ChatManagerMessagechatType `json:"type,omitempty"`
@@ -1243,13 +1242,13 @@ type ChatManagerMessagechatroom struct {
 	Text *string `json:"text,omitempty"`
 
 	// TmCreate Timestamp when the message chat room was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the message chat room was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the message chat room was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of the message in the chat room.
 	Type *ChatManagerMessagechatroomType `json:"type,omitempty"`
@@ -1279,13 +1278,13 @@ type ChatbotManagerChatbot struct {
 	Name *string `json:"name,omitempty"`
 
 	// TmCreate Timestamp when the chatbot was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the chatbot was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the chatbot was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // ChatbotManagerChatbotEngineType Type of engine used by the chatbot.
@@ -1324,16 +1323,16 @@ type ChatbotManagerChatbotcall struct {
 	Status *ChatbotManagerChatbotcallStatus `json:"status,omitempty"`
 
 	// TmCreate Timestamp when the chatbot call was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the chatbot call was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmEnd Timestamp when the chatbot call ended.
-	TmEnd *time.Time `json:"tm_end,omitempty"`
+	TmEnd *string `json:"tm_end,omitempty"`
 
 	// TmUpdate Timestamp when the chatbot call was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TranscribeId Unique identifier for the transcription service.
 	TranscribeId *string `json:"transcribe_id,omitempty"`
@@ -1644,15 +1643,15 @@ type ConversationManagerMessageStatus string
 
 // CustomerManagerAccesskey defines model for CustomerManagerAccesskey.
 type CustomerManagerAccesskey struct {
-	CustomerId *string    `json:"customer_id,omitempty"`
-	Detail     *string    `json:"detail,omitempty"`
-	Id         *string    `json:"id,omitempty"`
-	Name       *string    `json:"name,omitempty"`
-	TmCreate   *time.Time `json:"tm_create,omitempty"`
-	TmDelete   *time.Time `json:"tm_delete,omitempty"`
-	TmExpire   *time.Time `json:"tm_expire,omitempty"`
-	TmUpdate   *time.Time `json:"tm_update,omitempty"`
-	Token      *string    `json:"token,omitempty"`
+	CustomerId *string `json:"customer_id,omitempty"`
+	Detail     *string `json:"detail,omitempty"`
+	Id         *string `json:"id,omitempty"`
+	Name       *string `json:"name,omitempty"`
+	TmCreate   *string `json:"tm_create,omitempty"`
+	TmDelete   *string `json:"tm_delete,omitempty"`
+	TmExpire   *string `json:"tm_expire,omitempty"`
+	TmUpdate   *string `json:"tm_update,omitempty"`
+	Token      *string `json:"token,omitempty"`
 }
 
 // CustomerManagerCustomer defines model for CustomerManagerCustomer.
@@ -1747,13 +1746,13 @@ type FlowManagerActiveflow struct {
 	Status *FlowManagerActiveflowStatus `json:"status,omitempty"`
 
 	// TmCreate Timestamp when the flow was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the flow was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the flow was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // FlowManagerActiveflowStatus Status of the activeflow.
@@ -1996,13 +1995,13 @@ type OutdialManagerOutdialtarget struct {
 	Status *OutdialManagerOutdialtargetStatus `json:"status,omitempty"`
 
 	// TmCreate The creation timestamp.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete The deletion timestamp.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate The update timestamp.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TryCount0 The try count for destination 0.
 	TryCount0 *int `json:"try_count_0,omitempty"`
@@ -2167,13 +2166,13 @@ type RouteManagerProvider struct {
 	TechPrefix *string `json:"tech_prefix,omitempty"`
 
 	// TmCreate Timestamp when the provider was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the provider was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the provider was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
 	Type *RouteManagerProviderType `json:"type,omitempty"`
@@ -2206,13 +2205,13 @@ type RouteManagerRoute struct {
 	Target *string `json:"target,omitempty"`
 
 	// TmCreate Timestamp when the route was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the route was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the route was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // StorageManagerAccount defines model for StorageManagerAccount.
@@ -2224,13 +2223,13 @@ type StorageManagerAccount struct {
 	Id *string `json:"id,omitempty"`
 
 	// TmCreate Timestamp when the account was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the account was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the account was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TotalFileCount The total number of files in the account.
 	TotalFileCount *int64 `json:"total_file_count,omitempty"`
@@ -2269,16 +2268,16 @@ type StorageManagerFile struct {
 	ReferenceType *StorageManagerFileReferenceType `json:"reference_type,omitempty"`
 
 	// TmCreate Timestamp when the file was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the file was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmDownloadExpire The timestamp when the download link expires.
-	TmDownloadExpire *time.Time `json:"tm_download_expire,omitempty"`
+	TmDownloadExpire *string `json:"tm_download_expire,omitempty"`
 
 	// TmUpdate Timestamp when the file was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// UriDownload The URI for downloading the file.
 	UriDownload *string `json:"uri_download,omitempty"`
@@ -2299,13 +2298,13 @@ type TagManagerTag struct {
 	Name *string `json:"name,omitempty"`
 
 	// TmCreate Timestamp when the tag was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the tag was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when the tag was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // TranscribeManagerTranscribe defines model for TranscribeManagerTranscribe.
@@ -2326,13 +2325,13 @@ type TranscribeManagerTranscribe struct {
 	Status        *TranscribeManagerTranscribeStatus        `json:"status,omitempty"`
 
 	// TmCreate Timestamp when created
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when deleted
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmUpdate Timestamp when updated
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // TranscribeManagerTranscribeDirection defines model for TranscribeManagerTranscribeDirection.
