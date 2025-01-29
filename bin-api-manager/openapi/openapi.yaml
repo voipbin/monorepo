@@ -301,15 +301,12 @@ components:
           description: Agent's endpoint addresses.
         tm_create:
           type: string
-          format: date-time
           description: Created timestamp.
         tm_update:
           type: string
-          format: date-time
           description: Updated timestamp.
         tm_delete:
           type: string
-          format: date-time
           description: Deleted timestamp.
 
 
@@ -361,15 +358,12 @@ components:
           $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
         tm_create:
           type: string
-          format: date-time
           description: The timestamp when the account was created.
         tm_update:
           type: string
-          format: date-time
           description: The timestamp when the account was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: The timestamp when the account was deleted, if applicable.
 
     BillingManagerBillingreferenceType:
@@ -434,23 +428,18 @@ components:
           description: The total count of billing units.
         tm_billing_start:
           type: string
-          format: date-time
           description: The start timestamp of the billing period.
         tm_billing_end:
           type: string
-          format: date-time
           description: The end timestamp of the billing period.
         tm_create:
           type: string
-          format: date-time
           description: The creation timestamp.
         tm_update:
           type: string
-          format: date-time
           description: The last update timestamp.
         tm_delete:
           type: string
-          format: date-time
           description: The deletion timestamp, if applicable.
 
 
@@ -603,27 +592,21 @@ components:
           $ref: '#/components/schemas/CallManagerCallHangupReason'
         tm_progressing:
           type: string
-          format: date-time
           description: Timestamp for call progressing
         tm_ringing:
           type: string
-          format: date-time
           description: Timestamp for call ringing
         tm_hangup:
           type: string
-          format: date-time
           description: Timestamp for call hangup
         tm_create:
           type: string
-          format: date-time
           description: Creation timestamp
         tm_update:
           type: string
-          format: date-time
           description: Update timestamp
         tm_delete:
           type: string
-          format: date-time
           description: Deletion timestamp
 
     CallManagerGroupcallAnswerMethod:
@@ -727,15 +710,12 @@ components:
           description: Current dial index, valid only when the ring method is "ring_all"
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the call was created
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the call was last updated
         tm_delete:
           type: string
-          format: date-time
           nullable: true
           description: Timestamp when the call was deleted
 
@@ -797,23 +777,18 @@ components:
           description: The format of the recording file (e.g., WAV).
         tm_start:
           type: string
-          format: date-time
           description: The start timestamp of the recording.
         tm_end:
           type: string
-          format: date-time
           description: The end timestamp of the recording.
         tm_create:
           type: string
-          format: date-time
           description: The creation timestamp of the recording.
         tm_update:
           type: string
-          format: date-time
           description: The last update timestamp of the recording.
         tm_delete:
           type: string
-          format: date-time
           description: The timestamp when the recording was deleted.
 
 
@@ -891,13 +866,10 @@ components:
           type: string
         tm_create:
           type: string
-          format: date-time
         tm_update:
           type: string
-          format: date-time
         tm_delete:
           type: string
-          format: date-time
 
     CampaignManagerCampaigncallReferenceType:
       type: string
@@ -980,15 +952,12 @@ components:
           description: Number of dialing attempts.
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the campaign call was created.
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the campaign call was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when the campaign call was deleted.
 
     CampaignManagerOutplan:
@@ -1031,15 +1000,12 @@ components:
           description: Maximum number of tries for level 4.
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the outplan was created.
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the outplan was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when the outplan was deleted.
 
 
@@ -1082,15 +1048,12 @@ components:
           description: Detailed information about the chat.
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the chat was created.
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the chat was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when the chat was deleted.
 
     ChatManagerChatroomType:
@@ -1139,15 +1102,12 @@ components:
           description: Detailed information about the chat room.
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the chat room was created.
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the chat room was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when the chat room was deleted.
 
 
@@ -1215,15 +1175,12 @@ components:
           description: List of associated media objects.
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the message chat was created.
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the message chat was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when the message chat was deleted.
 
     ChatManagerMessagechatroomType:
@@ -1272,15 +1229,12 @@ components:
           description: List of associated media objects.
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the message chat room was created.
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the message chat room was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when the message chat room was deleted.
 
 
@@ -1318,15 +1272,12 @@ components:
           description: Initial prompt to configure the chatbot's behavior.
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the chatbot was created.
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the chatbot was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when the chatbot was deleted.
 
     ChatbotManagerChatbotcallGender:
@@ -1402,19 +1353,15 @@ components:
           description: Language used during the chatbot call.
         tm_end:
           type: string
-          format: date-time
           description: Timestamp when the chatbot call ended.
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the chatbot call was created.
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the chatbot call was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when the chatbot call was deleted.
 
 
@@ -1852,16 +1799,12 @@ components:
           type: string
         tm_expire:
           type: string
-          format: date-time
         tm_create:
           type: string
-          format: date-time
         tm_update:
           type: string
-          format: date-time
         tm_delete:
           type: string
-          format: date-time
 
     CustomerManagerCustomerWebhookMethod:
       type: string
@@ -2082,15 +2025,12 @@ components:
             $ref: '#/components/schemas/FlowManagerAction'
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when the flow was created.
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when the flow was last updated.
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when the flow was deleted.
 
     FlowManagerFlowType:
@@ -2451,15 +2391,12 @@ components:
           description: The try count for destination 4.
         tm_create:
           type: string
-          format: date-time
           description: The creation timestamp.
         tm_update:
           type: string
-          format: date-time
           description: The update timestamp.
         tm_delete:
           type: string
-          format: date-time
           description: The deletion timestamp.
 
 
@@ -2703,15 +2640,12 @@ components:
           description: "The details about the provider."
         tm_create:
           type: string
-          format: date-time
           description: "Timestamp when the provider was created."
         tm_update:
           type: string
-          format: date-time
           description: "Timestamp when the provider was last updated."
         tm_delete:
           type: string
-          format: date-time
           description: "Timestamp when the provider was deleted."
 
     RouteManagerRoute:
@@ -2740,15 +2674,12 @@ components:
           description: "The target destination for the route (e.g., country code or 'all')."
         tm_create:
           type: string
-          format: date-time
           description: "Timestamp when the route was created."
         tm_update:
           type: string
-          format: date-time
           description: "Timestamp when the route was last updated."
         tm_delete:
           type: string
-          format: date-time
           description: "Timestamp when the route was deleted."
 
 
@@ -2774,15 +2705,12 @@ components:
           description: "The total file size in bytes."
         tm_create:
           type: string
-          format: date-time
           description: "Timestamp when the account was created."
         tm_update:
           type: string
-          format: date-time
           description: "Timestamp when the account was last updated."
         tm_delete:
           type: string
-          format: date-time
           description: "Timestamp when the account was deleted."
 
     StorageManagerFileReferenceType:
@@ -2831,19 +2759,15 @@ components:
           description: "The URI for downloading the file."
         tm_download_expire:
           type: string
-          format: date-time
           description: "The timestamp when the download link expires."
         tm_create:
           type: string
-          format: date-time
           description: "Timestamp when the file was created."
         tm_update:
           type: string
-          format: date-time
           description: "Timestamp when the file was last updated."
         tm_delete:
           type: string
-          format: date-time
           description: "Timestamp when the file was deleted."
 
 
@@ -2864,15 +2788,12 @@ components:
           description: "The details about the tag."
         tm_create:
           type: string
-          format: date-time
           description: "Timestamp when the tag was created."
         tm_update:
           type: string
-          format: date-time
           description: "Timestamp when the tag was last updated."
         tm_delete:
           type: string
-          format: date-time
           description: "Timestamp when the tag was deleted."
 
 
@@ -2932,15 +2853,12 @@ components:
           $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
         tm_create:
           type: string
-          format: date-time
           description: Timestamp when created
         tm_update:
           type: string
-          format: date-time
           description: Timestamp when updated
         tm_delete:
           type: string
-          format: date-time
           description: Timestamp when deleted
 
     TranscribeManagerTranscriptDirection:
