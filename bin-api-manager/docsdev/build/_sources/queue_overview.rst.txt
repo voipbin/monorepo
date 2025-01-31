@@ -1,4 +1,4 @@
-.. _queue-overfiw:
+.. _queue-overview:
 
 Overview
 ========
