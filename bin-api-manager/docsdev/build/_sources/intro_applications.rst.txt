@@ -57,7 +57,7 @@ Queue
 -----
 Call queueing in VoIPBIN allows calls to be placed on hold, ensuring a systematic handling of incoming calls. Callers are put in a queue until they can be appropriately attended to or transferred to the desired party.
 
-See detail at :ref:`here <queue-overfiw>`.
+See detail at :ref:`here <queue-overview>`.
 
 .. _intro-applications-webhook:
 
