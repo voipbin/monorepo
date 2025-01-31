@@ -29,6 +29,7 @@ Example
 +++++++
 
 * The tel type address. The target is destination number.
+
 .. code::
 
   {
@@ -37,6 +38,7 @@ Example
   }
 
 * The extension type address. The target is extension number.
+
 .. code::
 
   {
@@ -45,6 +47,7 @@ Example
   }
 
 * The agent type address. The target is agent's id.
+
 .. code::
 
   {
@@ -53,6 +56,7 @@ Example
   }
 
 * The sip type address. The target is sip address.
+
 .. code::
 
   {
