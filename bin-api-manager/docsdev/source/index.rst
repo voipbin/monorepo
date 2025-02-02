@@ -12,7 +12,7 @@ Welcome to voipbin's documentation!
    intro
    quickstart
    common
-   api
+   restful_api
    sdk
    architecture
    accesskey
