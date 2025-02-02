@@ -1,7 +1,7 @@
 .. _sdk-main: sdk-main
 
 ******************************
-SDK(software development kit)
+SDK(Software Development Kit)
 ******************************
 
 .. include:: sdk_overview.rst
