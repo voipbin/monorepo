@@ -29,6 +29,49 @@ The accompanying diagram illustrates the end-to-end flow:
 
 This modular design ensures that Voipbin can provide reliable, scalable, and robust VoIP services, accommodating high traffic loads while maintaining seamless operation.
 
+Kamailio
+--------
+The Kamailio is an open-source SIP server that provides a flexible and scalable platform for handling SIP signaling.
+
+* https://www.kamailio.org/
+
+In the voipbin, the Kamailio farm is responsible for managing SIP signaling, including call routing, registration, and authentication as the edge router.
+
+Key features of voipbin's Kamailio include:
+
+* Load balancing: Distributing incoming SIP traffic across multiple Kamailio instances to ensure optimal performance and fault tolerance.
+* Stateless: Operating in a stateless mode to enable dynamic scaling and seamless failover. It allowes Kamailio instances to be added or removed without affecting ongoing calls.
+
+.. image:: _static/images/architecture_rtc_kamailio.png
+    :alt: Architecture Kamailio
+
+In the picture above, the Kamailio is receiving the SIP traffic from the client and forwarding it to the Asterisk. But the followed SIP messages are going to the different Kamailio instances.
+
+Asterisk
+--------
+Asterisk is an open-source communications platform that provides a wide range of telephony services, including call processing, voicemail, and conferencing.
+
+.. image:: _static/images/architecture_rtc_asterisk.png
+    :alt: Architecture Asterisk
+
+VoIPBIN employs three distinct Asterisk farms to optimize scalability, stability, and failover:
+
+* Asterisk-Call: Handles call processing, including call setup, media handling, and call termination.
+* Asterisk-Conference: Manages conference calls, including setup, participant management, and termination.
+* Asterisk-Registrar: Handles SIP registration, including user authentication and registration lifecycle management.
+
+Each Asterisk farm operates independently to ensure modularity, allowing for targeted scaling and fault isolation. However, Asterisk-Call and Asterisk-Conference communicate when bridging calls into a conference session.
+
+RTPEngine
+----------
+The RTPEngine is an open-source media proxy that provides real-time transport protocol (RTP) processing and media handling capabilities.
+
+.. image:: _static/images/architecture_rtc_rtpengine.png
+    :alt: Architecture RTPEngine
+
+In the voipbin, RTPEngine farm is responsible for codec edge server. All transcoding and media handling are done by the RTPEngine.
+For internal, the voipbin uses ulaw codec only. But for external, it can be changed to other codecs. The RTPEngine is responsible for transcoding the codec for internal and external.
+
 Conference
 ----------
 
