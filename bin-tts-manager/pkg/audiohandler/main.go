@@ -47,15 +47,6 @@ func NewAudioHandler(credentialBase64 string) AudioHandler {
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
-	conn, err := grpc.NewClient(
-		"texttospeech.googleapis.com:443",
-		// grpc.WithTransportCredentials(insecure.NewCredentials()), // Use default SSL/TLS
-		grpc.WithKeepaliveParams(keepAliveParams),
-	)
-	if err != nil {
-		log.Fatalf("Failed to create gRPC connection: %v", err)
-	}
-
 	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
 	if err != nil {
 		log.Printf("Error decoding base64 credential: %v", err)
@@ -63,7 +54,11 @@ func NewAudioHandler(credentialBase64 string) AudioHandler {
 	}
 
 	// create client
-	client, err := texttospeech.NewClient(ctx, option.WithGRPCConn(conn), option.WithCredentialsJSON(decodedCredential))
+	client, err := texttospeech.NewClient(
+		ctx,
+		option.WithCredentialsJSON(decodedCredential),
+		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),
+	)
 	if err != nil {
 		logrus.Errorf("Could not create a new client. err: %v", err)
 		return nil
@@ -74,8 +69,4 @@ func NewAudioHandler(credentialBase64 string) AudioHandler {
 	}
 
 	return h
-}
-
-// Init initialize the Audio handler
-func (h *audioHandler) Init() {
 }
