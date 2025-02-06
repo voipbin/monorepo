@@ -1,7 +1,7 @@
 .. _chatbot-main: chatbot-main
 
 **************
-Chatbot
+Chatbot(AI)
 **************
 
 .. include:: chatbot_overview.rst

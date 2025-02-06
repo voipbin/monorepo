@@ -140,7 +140,7 @@ func initVariable() {
 		log.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
-	engineKeyChatgpt = viper.GetString("redis_password")
+	engineKeyChatgpt = viper.GetString("engine_key_chatgpt")
 
 }
 
