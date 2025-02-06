@@ -15,7 +15,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 
 	"monorepo/bin-tts-manager/models/tts"
@@ -48,9 +47,9 @@ func NewAudioHandler(credentialBase64 string) AudioHandler {
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
-	conn, err := grpc.Dial(
+	conn, err := grpc.NewClient(
 		"texttospeech.googleapis.com:443",
-		grpc.WithTransportCredentials(insecure.NewCredentials()), // Use default SSL/TLS
+		// grpc.WithTransportCredentials(insecure.NewCredentials()), // Use default SSL/TLS
 		grpc.WithKeepaliveParams(keepAliveParams),
 	)
 	if err != nil {
