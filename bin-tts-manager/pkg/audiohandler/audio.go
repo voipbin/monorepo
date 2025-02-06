@@ -57,7 +57,7 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text s
 	}
 
 	// send request
-	log.Debugf("Send speech request. language_code: %s, gender: %d, name: %s", req.Voice.LanguageCode, req.Voice.SsmlGender, voiceName)
+	log.Debugf("Sending speech request. language_code: %s, gender: %d, name: %s", req.Voice.LanguageCode, req.Voice.SsmlGender, voiceName)
 	resp, err := h.client.SynthesizeSpeech(ctx, &req)
 	if err != nil {
 		log.Errorf("Could not get a correct response. text: %s, lang: %s, ssmlGender: %v, err: %v", text, lang, ssmlGender, err)
