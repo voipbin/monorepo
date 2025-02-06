@@ -48,7 +48,7 @@ func NewAudioHandler(credentialBase64 string) AudioHandler {
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
-	conn, err := grpc.NewClient(
+	conn, err := grpc.Dial(
 		"texttospeech.googleapis.com:443",
 		grpc.WithTransportCredentials(insecure.NewCredentials()), // Use default SSL/TLS
 		grpc.WithKeepaliveParams(keepAliveParams),
