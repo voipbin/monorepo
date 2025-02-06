@@ -55,9 +55,9 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text s
 			SampleRateHertz: defaultSampleRate,
 		},
 	}
-	log.Debugf("Send speech request. language_code: %s, gender: %d, name: %s", req.Voice.LanguageCode, req.Voice.SsmlGender, voiceName)
 
 	// send request
+	log.Debugf("Send speech request. language_code: %s, gender: %d, name: %s", req.Voice.LanguageCode, req.Voice.SsmlGender, voiceName)
 	resp, err := h.client.SynthesizeSpeech(ctx, &req)
 	if err != nil {
 		log.Errorf("Could not get a correct response. text: %s, lang: %s, ssmlGender: %v, err: %v", text, lang, ssmlGender, err)
@@ -65,6 +65,7 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text s
 	}
 
 	// create audio
+	log.Debugf("Writing audio content to file. filepath: %s", filepath)
 	if errWrite := os.WriteFile(filepath, resp.AudioContent, defaultFileMode); errWrite != nil {
 		log.Errorf("Could not create a result audio file. err: %v", errWrite)
 		return errWrite
