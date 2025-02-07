@@ -169,7 +169,9 @@ func handleProxyInfo(addr string, db int, asteriskID string, internalAddress str
 	go func() {
 		for {
 			log.Debugf("Updating internal address. key: %s, address: %s", key, internalAddress)
-			client.Set(context.Background(), key, internalAddress, time.Hour*24)
+			if errSet := client.Set(context.Background(), key, internalAddress, time.Hour*24).Err(); errSet != nil {
+				log.Errorf("Could not set internal address. err: %v", errSet)
+			}
 			time.Sleep(time.Minute * 5)
 		}
 	}()
