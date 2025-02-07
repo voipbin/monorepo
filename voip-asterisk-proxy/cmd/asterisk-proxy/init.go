@@ -33,8 +33,9 @@ const (
 	defaultPrometheusEndpoint      = "/metrics"
 	defaultPrometheusListenAddress = ":2112"
 
-	defaultRedisAddress = "localhost:6379"
-	defaultRedisDB      = 1
+	defaultRedisAddress  = "localhost:6379"
+	defaultRedisPassword = ""
+	defaultRedisDB       = 1
 )
 
 // proces init
@@ -71,8 +72,10 @@ func initVariable() {
 	pflag.String("prometheus_endpoint", defaultPrometheusEndpoint, "URL for the Prometheus metrics endpoint")
 	pflag.String("prometheus_listen_address", defaultPrometheusListenAddress, "Address for Prometheus to listen on (e.g., localhost:8080)")
 
-	pflag.String("redis_addr", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
+	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
+	pflag.String("redis_password", defaultRedisPassword, "Password of the Redis server")
 	pflag.Int("redis_database", defaultRedisDB, "Redis database index to use (default is 1)")
+
 	pflag.Parse()
 
 	// ari_address
