@@ -2,28 +2,61 @@
 
 Overview
 ========
-A chatbot is a computer program designed to simulate conversation with human users, typically over messaging platforms or voice calls. Chatbots use natural language processing (NLP) and artificial intelligence (AI) technologies to understand and interpret user requests and respond with appropriate actions.
+VoIPBin's chatbot (AI) is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBin's flow, the chatbot utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.
 
-In VoIPBin, the chatbot is integrated directly with the VoIP services. This enables the chatbot to interact with voice calls, allowing for seamless voice interactions during live calls. Currently, the AI engine uses ChatGPT to process and respond to user inputs.
+How it works
+============
 
-You can set up the chatbot as one of the flow components in VoIPBin. When a call's active flow reaches the chatbot action, the VoIPBin system will trigger the chatbot to engage in the conversation, executing the chatbot's responses via text-to-speech (TTS).
+Action component
+----------------
+
+The chatbot is integrated as one of the configurable components within a VoIPBin flow. When a call reaches a chatbot action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBin executes the defined actions accordingly.
 
 .. image:: _static/images/chatbot_overview_overview.png
     :alt: Chatbot component in action builder
+    :align: center
 
-Init prompt
-===========
+TTS/STT + AI Engine
+-------------------
 
-The initial prompt is the first message given to a chatbot system to initiate a conversation or request information. It sets the context for the chatbot to generate a response.
+VoIPBin's chatbot is built using TTS/STT + AI Engine, where speech-to-text (STT) converts spoken words into text, and text-to-speech (TTS) converts responses back into audio. The system processes these in real time, enabling seamless conversations.
 
-When interacting with the VoIPBin chatbot, the initial prompt plays a critical role in determining the quality and relevance of the chatbot's response. The prompt can be tailored to a specific domain or task, and it can be structured or open-ended based on the desired outcome.
+.. image:: _static/images/chatbot_overview_stt_tts.png
+    :alt: Chatbot implementation using TTS/STT + AI Engine
+    :align: center
 
-There is currently no length limit for the prompt, but this detail should remain confidential for future considerations.
+Voice Detection and Play Interruption:
+--------------------------------------
 
-Exmaple
--------
+In addition to basic TTS and STT functionalities, VoIPBin incorporates voice detection to create a more natural conversational flow. While the chatbot is speaking (i.e., playing TTS media), if the system detects the caller's voice, it immediately stops the TTS playback and routes the caller's speech (via STT) to the AI engine. This play interruption feature ensures that if the user starts talking, their input is prioritized, enabling a dynamic interaction that more closely resembles a real conversation.
 
-Here is a simple example of an initial prompt that requests a chatbot to generate a JSON response for connecting a call:
+External AI Agent Integration
+-----------------------------
+
+For users who prefer to use external AI services, such as VAPI or other AI agent service providers, VoIPBin offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
+
+Multiple Chatbot Actions in a Flow
+----------------------------------
+
+VoIPBin allows multiple chatbot actions within a single flow. Developers can configure different chatbot interactions at various points, enabling flexible and context-aware automation.
+
+Handling Responses
+------------------
+
+* Text String Response: The chatbot's response is played as speech using TTS.
+* JSON Response: The chatbot returns a structured JSON array of action objects, which VoIPBin executes accordingly.
+* Error Handling: If the chatbot generates an invalid JSON response, VoIPBin treats it as a normal text response and plays it via TTS.
+
+Using the Chatbot
+=================
+
+Initial Prompt
+--------------
+
+The initial prompt serves as the foundation for the chatbot's behavior. A well-crafted prompt ensures accurate and relevant responses. There is no limit to prompt length, but this should remain confidential for future considerations.
+
+Example Prompt:
++++++++++++++++
 
 .. code::
 
@@ -31,9 +64,9 @@ Here is a simple example of an initial prompt that requests a chatbot to generat
 
     Please respond kindly.
 
-    But, if you receive a request to connect to the agent,
-    respond with the next message in JSON format.
-    Do not include any explanations in the response. Only provide a RFC8259 compliant JSON response following this format without deviation.
+    But, if you receive a request to connect to the agent, respond with the next message in JSON format.
+    Do not include any explanations in the response.
+    Only provide an RFC8259-compliant JSON response following this format without deviation.
 
     [
         {
@@ -53,30 +86,31 @@ Here is a simple example of an initial prompt that requests a chatbot to generat
         }
     ]
 
-Guidelines for Effective Prompts
---------------------------------
-
-Keep prompts clear and specific to ensure the chatbot generates accurate responses.
-
-The format of the prompt can vary depending on the action required, but the primary goal is to provide context for the chatbot's response.
-
-Standard prompt practices can be followed, but no strict limitations exist at this time.
-
-Response Message
-================
-
-When the chatbot generates a response, it can take the form of a normal text string or a JSON formatted list of action objects.
-
-* Text String Response: This is the usual form of a response, used for regular conversation. It can be played as audio using TTS technology.
-* JSON Response: This is used when the chatbot generates a response containing instructions for executing specific actions. The response will be a structured JSON list of action objects.
-
-The JSON format allows for structured communication between the chatbot and external systems. The list of action objects within the JSON response represents the actions to be performed.
-
 Action Object Structure
 -----------------------
-Each action object should have the following basic fields:
-
-* action: A string that defines the action to be executed (e.g., "connect", "transfer").
-* option: An object containing additional parameters necessary for executing the action (e.g., source and destination details).
 
 See detail :ref:`here <flow-struct-action-action>`.
+
+VoIPBin supports a wide range of actions. Developers should refer to VoIPBin's documentation for a complete list of available actions.
+
+Technical Considerations
+========================
+
+Escalation to Live Agents
+-------------------------
+
+VoIPBin does not provide an automatic escalation mechanism for transferring calls to human agents. Instead, developers must configure chatbot responses accordingly by ensuring that chatbot logic returns a JSON action when escalation is required.
+
+Logging & Debugging
+-------------------
+
+Developers can debug chatbot interactions through VoIPBin's transcription logs, which capture chatbot responses and interactions.
+
+Current Limitations & Future Enhancements
+-----------------------------------------
+
+* TTS Customization: Currently, voice, language, and speed customization are not available but will be added in future updates.
+* Multilingual Support: The chatbot currently supports only English, but additional language support is planned.
+* Context Retention: Each chatbot request is processed independently, meaning there is no built-in conversation memory.
+
+VoIPBin's chatbot feature offers a flexible and intelligent way to automate voice interactions within flows. By leveraging AI-powered responses and structured action execution, developers can enhance call experiences with minimal effort. As VoIPBin continues to evolve, future updates will introduce greater customization options and multilingual capabilities.
