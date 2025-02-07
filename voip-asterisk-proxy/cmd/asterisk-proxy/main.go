@@ -151,7 +151,13 @@ func connectAMI(host, port, username, password string) *amigo.Amigo {
 }
 
 // handleProxyInfo updates the ipaddress for every 3 min
-func handleProxyInfo(addr string, db int, id, internalAddress string) error {
+func handleProxyInfo(addr string, db int, asteriskID string, internalAddress string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":             "handleProxyInfo",
+		"internal_address": internalAddress,
+		"asterisk_id":      asteriskID,
+	})
+
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: "",
@@ -159,9 +165,10 @@ func handleProxyInfo(addr string, db int, id, internalAddress string) error {
 	})
 
 	// update internal address
-	key := fmt.Sprintf("asterisk.%s.address-internal", id)
+	key := fmt.Sprintf("asterisk.%s.address-internal", asteriskID)
 	go func() {
 		for {
+			log.Debugf("Updating internal address. key: %s, address: %s", key, internalAddress)
 			client.Set(context.Background(), key, internalAddress, time.Hour*24)
 			time.Sleep(time.Minute * 5)
 		}
