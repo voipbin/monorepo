@@ -43,8 +43,9 @@ var (
 	rabbitMQAddress     = ""
 	rabbitMQQueueListen = ""
 
-	redisAddr = ""
-	redisDB   = 0
+	redisAddress  = ""
+	redisDatabase = 0
+	redisPassword = ""
 
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
@@ -118,7 +119,7 @@ func main() {
 	}
 	log.Debugf("The listen handler is running now. id: %s, address: %v", asteriskID, asteriskAddress)
 
-	if err := handleProxyInfo(redisAddr, redisDB, asteriskID, asteriskAddress); err != nil {
+	if err := handleProxyInfo(redisAddress, redisPassword, redisDatabase, asteriskID, asteriskAddress); err != nil {
 		log.Errorf("Could not initiate proxy info handler. err: %v", err)
 		return
 	}
@@ -151,7 +152,7 @@ func connectAMI(host, port, username, password string) *amigo.Amigo {
 }
 
 // handleProxyInfo updates the ipaddress for every 3 min
-func handleProxyInfo(addr string, db int, asteriskID string, internalAddress string) error {
+func handleProxyInfo(addr string, password string, database int, asteriskID string, internalAddress string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "handleProxyInfo",
 		"internal_address": internalAddress,
@@ -160,8 +161,8 @@ func handleProxyInfo(addr string, db int, asteriskID string, internalAddress str
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
-		Password: "",
-		DB:       db,
+		Password: password,
+		DB:       database,
 	})
 
 	// update internal address
