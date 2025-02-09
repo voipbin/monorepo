@@ -8,6 +8,7 @@ import (
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
+	"github.com/aws/aws-sdk-go/service/polly"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
@@ -21,6 +22,7 @@ type AudioHandler interface {
 
 type audioHandler struct {
 	gcpClient *texttospeech.Client
+	awsClient *polly.Polly
 }
 
 // list of default variables
@@ -32,10 +34,16 @@ const (
 )
 
 // NewAudioHandler create AudioHandler
-func NewAudioHandler(ctx context.Context, credentialBase64 string) AudioHandler {
+func NewAudioHandler(ctx context.Context, awsAccessKey string, awsSecretKey string, gcpCredentialBase64 string) AudioHandler {
 	log := logrus.WithField("func", "NewAudioHandler")
 
-	gcpClient, err := gcpGetClient(ctx, credentialBase64)
+	gcpClient, err := gcpGetClient(ctx, gcpCredentialBase64)
+	if err != nil {
+		log.Errorf("Could not create a new client. err: %v", err)
+		return nil
+	}
+
+	awsClient, err := awsGetClient(awsAccessKey, awsSecretKey)
 	if err != nil {
 		log.Errorf("Could not create a new client. err: %v", err)
 		return nil
@@ -43,6 +51,7 @@ func NewAudioHandler(ctx context.Context, credentialBase64 string) AudioHandler 
 
 	h := &audioHandler{
 		gcpClient: gcpClient,
+		awsClient: awsClient,
 	}
 
 	return h

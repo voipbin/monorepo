@@ -31,6 +31,9 @@ var (
 	gcpCredentialBase64 = ""
 	gcpProjectID        = ""
 	gcpBucketName       = ""
+
+	awsAccessKey = ""
+	awsSecretKey = ""
 )
 
 func main() {
@@ -77,7 +80,7 @@ func runListen(sockHandler sockhandler.SockHandler, notifyHandler notifyhandler.
 	localAddress := os.Getenv("POD_IP")
 
 	// create tts handler
-	ttsHandler := ttshandler.NewTTSHandler(gcpCredentialBase64, gcpProjectID, gcpBucketName, "/shared-data", localAddress, notifyHandler)
+	ttsHandler := ttshandler.NewTTSHandler(awsAccessKey, awsSecretKey, gcpCredentialBase64, gcpProjectID, gcpBucketName, "/shared-data", localAddress, notifyHandler)
 	if ttsHandler == nil {
 		logrus.Errorf("Could not create tts handler.")
 		return fmt.Errorf("could not create tts handler")

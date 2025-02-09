@@ -53,6 +53,8 @@ func init() {
 
 // NewTTSHandler create TTSHandler
 func NewTTSHandler(
+	awsAccessKey string,
+	awsSecretKey string,
 	credentialBase64 string,
 	projectID string,
 	bucketName string,
@@ -70,7 +72,7 @@ func NewTTSHandler(
 	log.Debugf("Creating a new TTSHandler.")
 
 	ctx := context.Background()
-	audioHandler := audiohandler.NewAudioHandler(ctx, credentialBase64)
+	audioHandler := audiohandler.NewAudioHandler(ctx, awsAccessKey, awsSecretKey, credentialBase64)
 	if audioHandler == nil {
 		log.Errorf("Could not create audio handler.")
 		return nil

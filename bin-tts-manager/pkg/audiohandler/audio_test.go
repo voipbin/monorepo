@@ -27,7 +27,7 @@ func Test_getVoiceName(t *testing.T) {
 			"en-US",
 			tts.GenderFemale,
 
-			"en-US-Standard-C",
+			"en-US-Wavenet-F",
 		},
 	}
 

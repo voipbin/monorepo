@@ -57,6 +57,10 @@ spec:
               value: ${GCP_PROJECT_ID}
             - name: GCP_BUCKET_NAME
               value: ${GCP_BUCKET_NAME_TMP}
+            - name: AWS_ACCESS_KEY
+              value: ${AWS_ACCESS_KEY}
+            - name: AWS_SECRET_KEY
+              value: ${AWS_SECRET_KEY}
           volumeMounts:
             - name: shared-data
               mountPath: /shared-data
