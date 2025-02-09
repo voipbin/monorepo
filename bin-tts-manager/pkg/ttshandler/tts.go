@@ -115,5 +115,5 @@ func (h *ttsHandler) normalizeText(ctx context.Context, ssml string) (string, er
 // isValidSSML returns true if the given text is valid ssml
 func (h *ttsHandler) isValidSSML(text string) bool {
 
-	return xml.Unmarshal([]byte(text), new(interface{})) == nil
+	return xml.Unmarshal([]byte(text), new(any)) == nil
 }
