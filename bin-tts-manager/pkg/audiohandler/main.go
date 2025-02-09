@@ -32,40 +32,14 @@ const (
 )
 
 // NewAudioHandler create AudioHandler
-func NewAudioHandler(credentialBase64 string) AudioHandler {
+func NewAudioHandler(ctx context.Context, credentialBase64 string) AudioHandler {
 	log := logrus.WithField("func", "NewAudioHandler")
-
-	ctx := context.Background()
 
 	gcpClient, err := gcpGetClient(ctx, credentialBase64)
 	if err != nil {
 		log.Errorf("Could not create a new client. err: %v", err)
 		return nil
 	}
-
-	// keepAliveParams := keepalive.ClientParameters{
-	// 	Time:                30 * time.Second, // Ping every 30 seconds
-	// 	Timeout:             10 * time.Second, // Wait 10 seconds for response
-	// 	PermitWithoutStream: true,             // Send pings even if there are no active streams
-	// }
-
-	// decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
-	// if err != nil {
-	// 	log.Printf("Error decoding base64 credential: %v", err)
-	// 	return nil
-	// }
-
-	// // create client
-	// client, err := texttospeech.NewClient(
-	// 	ctx,
-	// 	option.WithCredentialsJSON(decodedCredential),
-	// 	option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),
-	// 	option.WithEndpoint("eu-texttospeech.googleapis.com:443"),
-	// )
-	// if err != nil {
-	// 	logrus.Errorf("Could not create a new client. err: %v", err)
-	// 	return nil
-	// }
 
 	h := &audioHandler{
 		gcpClient: gcpClient,

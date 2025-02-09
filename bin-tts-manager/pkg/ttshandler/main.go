@@ -69,7 +69,8 @@ func NewTTSHandler(
 	})
 	log.Debugf("Creating a new TTSHandler.")
 
-	audioHandler := audiohandler.NewAudioHandler(credentialBase64)
+	ctx := context.Background()
+	audioHandler := audiohandler.NewAudioHandler(ctx, credentialBase64)
 	if audioHandler == nil {
 		log.Errorf("Could not create audio handler.")
 		return nil
