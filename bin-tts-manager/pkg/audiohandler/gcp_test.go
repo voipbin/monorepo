@@ -1,42 +1,5 @@
 package audiohandler
 
-// func Test_gcpGetVoiceName(t *testing.T) {
-
-// 	type test struct {
-// 		name string
-
-// 		lang   string
-// 		gender tts.Gender
-
-// 		expectRes string
-// 	}
-
-// 	tests := []test{
-// 		{
-// 			"en-US female",
-
-// 			"en-US",
-// 			tts.GenderFemale,
-
-// 			"en-US-Wavenet-F",
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			h := &audioHandler{}
-
-// 			res := h.gcpGetVoiceName(tt.lang, tt.gender)
-// 			if !reflect.DeepEqual(res, tt.expectRes) {
-// 				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
-
 import (
 	"reflect"
 	"testing"
@@ -59,84 +22,64 @@ func Test_gcpGetVoiceName(t *testing.T) {
 
 	tests := []test{
 		{
-			"en-US female",
-
-			"en-US",
-			tts.GenderFemale,
-
-			"en-US-Wavenet-F",
+			name:      "en-US female",
+			lang:      "en-US",
+			gender:    tts.GenderFemale,
+			expectRes: "en-US-Wavenet-F",
 		},
 		{
-			"en-US male",
-
-			"en-US",
-			tts.GenderMale,
-
-			"en-US-Wavenet-D",
+			name:      "en-US male",
+			lang:      "en-US",
+			gender:    tts.GenderMale,
+			expectRes: "en-US-Wavenet-D",
 		},
 		{
-			"en-GB neutral",
-
-			"en-GB",
-			tts.GenderNeutral,
-
-			"en-GB-Wavenet-D",
+			name:      "en-GB neutral",
+			lang:      "en-GB",
+			gender:    tts.GenderNeutral,
+			expectRes: "en-GB-Wavenet-D",
 		},
 		{
-			"de-DE female",
-
-			"de-DE",
-			tts.GenderFemale,
-
-			"de-DE-Wavenet-F",
+			name:      "de-DE female",
+			lang:      "de-DE",
+			gender:    tts.GenderFemale,
+			expectRes: "de-DE-Wavenet-F",
 		},
 		{
-			"fr-FR male",
-
-			"fr-FR",
-			tts.GenderMale,
-
-			"fr-FR-Wavenet-B",
+			name:      "fr-FR male",
+			lang:      "fr-FR",
+			gender:    tts.GenderMale,
+			expectRes: "fr-FR-Wavenet-B",
 		},
 		{
-			"es-ES neutral",
-
-			"es-ES",
-			tts.GenderNeutral,
-
-			"es-ES-Wavenet-A",
+			name:      "es-ES neutral",
+			lang:      "es-ES",
+			gender:    tts.GenderNeutral,
+			expectRes: "es-ES-Wavenet-A",
 		},
 		{
-			"it-IT female",
-
-			"it-IT",
-			tts.GenderFemale,
-
-			"it-IT-Wavenet-E",
+			name:      "it-IT female",
+			lang:      "it-IT",
+			gender:    tts.GenderFemale,
+			expectRes: "it-IT-Wavenet-E",
 		},
 		{
-			"ja-JP male",
-
-			"ja-JP",
-			tts.GenderMale,
-
-			"ja-JP-Wavenet-B",
+			name:      "ja-JP male",
+			lang:      "ja-JP",
+			gender:    tts.GenderMale,
+			expectRes: "ja-JP-Wavenet-B",
 		},
 		{
-			"ko-KR neutral",
-
-			"ko-KR",
-			tts.GenderNeutral,
-
-			"ko-KR-Wavenet-A",
+			name:      "ko-KR neutral",
+			lang:      "ko-KR",
+			gender:    tts.GenderNeutral,
+			expectRes: "ko-KR-Wavenet-A",
 		},
 		{
-			"unknown language",
-
-			"unknown",
-			tts.GenderNeutral,
-
-			"",
+			name:      "unknown language",
+			lang:      "unknown",
+			gender:    tts.GenderNeutral,
+			expectRes: "",
 		},
 	}
 

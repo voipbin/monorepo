@@ -97,6 +97,18 @@ func (h *audioHandler) awsGetVoiceID(lang string, gender tts.Gender) string {
 
 		"ko-KR:" + string(tts.GenderFemale):  "Seoyeon",
 		"ko-KR:" + string(tts.GenderNeutral): "Jisoo",
+
+		"pt-BR:" + string(tts.GenderFemale):  "Camila",
+		"pt-BR:" + string(tts.GenderMale):    "Ricardo",
+		"pt-BR:" + string(tts.GenderNeutral): "Vitoria",
+
+		"ru-RU:" + string(tts.GenderFemale):  "Tatyana",
+		"ru-RU:" + string(tts.GenderMale):    "Maxim",
+		"ru-RU:" + string(tts.GenderNeutral): "Katya",
+
+		"zh-CN:" + string(tts.GenderFemale):  "Zhiyu",
+		"zh-CN:" + string(tts.GenderMale):    "Wang",
+		"zh-CN:" + string(tts.GenderNeutral): "Xiaoyan",
 	}
 
 	tmp := fmt.Sprintf("%s:%s", lang, gender)
