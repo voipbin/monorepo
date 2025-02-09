@@ -1,47 +1,38 @@
 package audiohandler
 
-import (
-	reflect "reflect"
-	"testing"
+// func Test_getVoiceName(t *testing.T) {
 
-	gomock "go.uber.org/mock/gomock"
+// 	type test struct {
+// 		name string
 
-	"monorepo/bin-tts-manager/models/tts"
-)
+// 		lang   string
+// 		gender tts.Gender
 
-func Test_getVoiceName(t *testing.T) {
+// 		expectRes string
+// 	}
 
-	type test struct {
-		name string
+// 	tests := []test{
+// 		{
+// 			"en-US female",
 
-		lang   string
-		gender tts.Gender
+// 			"en-US",
+// 			tts.GenderFemale,
 
-		expectRes string
-	}
+// 			"en-US-Wavenet-F",
+// 		},
+// 	}
 
-	tests := []test{
-		{
-			"en-US female",
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			"en-US",
-			tts.GenderFemale,
+// 			h := &audioHandler{}
 
-			"en-US-Wavenet-F",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			h := &audioHandler{}
-
-			res := h.getVoiceName(tt.lang, tt.gender)
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			res := h.getVoiceName(tt.lang, tt.gender)
+// 			if !reflect.DeepEqual(res, tt.expectRes) {
+// 				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }

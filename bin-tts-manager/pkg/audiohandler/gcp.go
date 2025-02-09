@@ -36,7 +36,6 @@ func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.C
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
-	// create res
 	res, err := texttospeech.NewClient(
 		ctx,
 		option.WithCredentialsJSON(decodedCredential),
@@ -59,7 +58,7 @@ func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, tex
 	})
 	log.WithField("text", text).Debugf("Creating a new audio. lang: %s, gender: %s, filepath: %s", lang, gender, filepath)
 
-	voiceName := h.getVoiceName(lang, gender)
+	voiceName := h.gcpGetVoiceName(lang, gender)
 	ssmlGender := texttospeechpb.SsmlVoiceGender_NEUTRAL
 	switch gender {
 	case tts.GenderMale:
@@ -118,20 +117,8 @@ func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, tex
 	return nil
 }
 
-// getVoiceName returns voicename of the given language and gender
-func (h *audioHandler) getVoiceName(lang string, gender tts.Gender) string {
-	// mapVoiceName := map[string]string{
-	// 	"en-US:" + tts.GenderFemale: "en-US-Standard-C",
-	// }
-
-	// tmp := fmt.Sprintf("%s:%s", lang, gender)
-	// res, ok := mapVoiceName[tmp]
-	// if !ok {
-	// 	return ""
-	// }
-
-	// return res
-
+// gcpGetVoiceName returns voicename of the given language and gender
+func (h *audioHandler) gcpGetVoiceName(lang string, gender tts.Gender) string {
 	mapVoiceName := map[string]string{
 		"en-US:" + string(tts.GenderFemale):  "en-US-Wavenet-F",
 		"en-US:" + string(tts.GenderMale):    "en-US-Wavenet-D",

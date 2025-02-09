@@ -29,6 +29,7 @@ type audioHandler struct {
 const (
 	defaultAudioEncoding texttospeechpb.AudioEncoding = texttospeechpb.AudioEncoding_LINEAR16
 	defaultSampleRate    int32                        = 8000
+	defaultChannelNum                                 = 1
 
 	defaultFileMode fs.FileMode = 0644
 )
