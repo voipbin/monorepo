@@ -61,6 +61,8 @@ func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming)
 			AudioChannelCount:          int32(defaultAudioChannelCount),
 			LanguageCode:               st.Language,
 			EnableAutomaticPunctuation: true,
+			Model:                      defaultModel,
+			UseEnhanced:                true,
 		},
 		InterimResults: true,
 	}

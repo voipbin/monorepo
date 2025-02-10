@@ -57,6 +57,7 @@ const (
 	defaultEncoding          = speechpb.RecognitionConfig_MULAW
 	defaultSampleRate        = 8000
 	defaultAudioChannelCount = 1
+	defaultModel             = "phone_call"
 )
 
 type streamingHandler struct {
