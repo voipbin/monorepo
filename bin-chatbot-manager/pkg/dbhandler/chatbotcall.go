@@ -348,7 +348,7 @@ func (h *handler) ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) 
 	`
 
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, chatbotcall.StatusEnd, uuid.Nil, ts, ts, id.Bytes())
+	_, err := h.db.Exec(q, chatbotcall.StatusEnd, uuid.Nil.Bytes(), ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatbotcallUpdateStatusEnd. err: %v", err)
 	}
