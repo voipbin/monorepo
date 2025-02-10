@@ -352,7 +352,8 @@ func Test_ChatbotcallUpdateStatusEnd(t *testing.T) {
 		{
 			"normal",
 			&chatbotcall.Chatbotcall{
-				ID: uuid.FromStringOrNil("a210c140-a5e3-11ed-80e0-b726a1acfc64"),
+				ID:           uuid.FromStringOrNil("a210c140-a5e3-11ed-80e0-b726a1acfc64"),
+				TranscribeID: uuid.FromStringOrNil("e9a4d8c2-e7ca-11ef-b80a-43dbe39bcce9"),
 			},
 
 			uuid.FromStringOrNil("a210c140-a5e3-11ed-80e0-b726a1acfc64"),
