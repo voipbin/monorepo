@@ -13,7 +13,7 @@ import (
 )
 
 // gcpStart starts the stt process using the gcp
-func (h *streamingHandler) gcpStart(ctx context.Context, st *streaming.Streaming, conn *net.UDPConn) error {
+func (h *streamingHandler) gcpStart(st *streaming.Streaming, conn *net.UDPConn) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "gcpStart",
 		"streaming_id":      st.ID,
@@ -21,19 +21,20 @@ func (h *streamingHandler) gcpStart(ctx context.Context, st *streaming.Streaming
 		"external_media_id": st.ExternalMediaID,
 	})
 
-	cctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	streamClient, err := h.gcpInit(cctx, st)
+	streamClient, err := h.gcpInit(ctx, st)
 	if err != nil {
 		log.Errorf("Could not create streaming client: %v", err)
 		return err
 	}
 
-	go h.gcpProcessResult(cctx, st, streamClient)
-	go h.gcpProcessRTPFromAsterisk(cctx, st, conn, streamClient)
+	go h.gcpProcessResult(ctx, cancel, st, streamClient)
+	go h.gcpProcessRTP(ctx, cancel, st, conn, streamClient)
 
-	<-cctx.Done()
+	<-ctx.Done()
+	log.Debugf("Finished the gcp process. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
 
 	return nil
 }
@@ -79,20 +80,21 @@ func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming)
 }
 
 // gcpProcessResult handles transcript result from the google stt
-func (h *streamingHandler) gcpProcessResult(ctx context.Context, st *streaming.Streaming, streamClient speechpb.Speech_StreamingRecognizeClient) {
+func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, streamClient speechpb.Speech_StreamingRecognizeClient) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "gcpProcessResult",
 		"streaming_id":      st.ID,
 		"transcribe_id":     st.TranscribeID,
 		"external_media_id": st.ExternalMediaID,
 	})
-	log.Debugf("Starting gcpProcessResult.")
+	log.Debugf("Starting gcpProcessResult. transcribe_id: %s", st.TranscribeID)
+	defer cancel()
 
 	t1 := time.Now()
 	for {
 		if ctx.Err() != nil {
-			log.Debugf("Context has canceled. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
-			break
+			log.Debugf("Context has finsished. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
+			return
 		}
 
 		tmp, err := streamClient.Recv()
@@ -127,26 +129,28 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, st *streaming.S
 	}
 }
 
-// gcpProcessRTPFromAsterisk receives the RTP from the given the asterisk(conn) and put the received rtp stream to the given channel(chanRTP).
-func (h *streamingHandler) gcpProcessRTPFromAsterisk(ctx context.Context, st *streaming.Streaming, conn *net.UDPConn, streamClient speechpb.Speech_StreamingRecognizeClient) {
+// gcpProcessRTP receives the RTP from the given the asterisk(conn) then send it to the google stt
+func (h *streamingHandler) gcpProcessRTP(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, conn *net.UDPConn, streamClient speechpb.Speech_StreamingRecognizeClient) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "gcpProcessRTPFromAsterisk",
+		"func":              "gcpProcessRTP",
 		"streaming_id":      st.ID,
 		"transcribe_id":     st.TranscribeID,
 		"external_media_id": st.ExternalMediaID,
 	})
+	log.Debugf("Starting gcpProcessRTP. transcribe_id: %s", st.TranscribeID)
+	defer cancel()
 
 	// we are define the some variables which is used in the below go routine to boost up the process spped.
 	data := make([]byte, 2000)
 	for {
 		if ctx.Err() != nil {
-			break
+			return
 		}
 
 		n, remote, err := conn.ReadFromUDP(data)
 		if err != nil {
 			log.Infof("Connection has closed. err: %v", err)
-			break
+			return
 		}
 
 		// Unmarshal the packet and update the PayloadType

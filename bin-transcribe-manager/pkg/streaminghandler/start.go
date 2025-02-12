@@ -68,7 +68,7 @@ func (h *streamingHandler) Start(ctx context.Context, customerID uuid.UUID, tran
 	// run the stt process.
 	// currently, we have only one stt service provider handler
 	go func() {
-		if errStart := h.gcpStart(ctx, res, conn); errStart != nil {
+		if errStart := h.gcpStart(res, conn); errStart != nil {
 			log.Errorf("Could not finish the gcp stt correctly. err: %v", errStart)
 		}
 	}()
