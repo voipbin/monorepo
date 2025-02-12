@@ -30,10 +30,10 @@ func (h *streamingHandler) gcpStart(ctx context.Context, st *streaming.Streaming
 		return err
 	}
 
-	chanRTP := make(chan []byte)
 	go h.gcpProcessResult(cctx, st, streamClient)
-	go h.gcpProcessRTPToSTT(cctx, st, streamClient, chanRTP)
-	h.gcpProcessRTPFromAsterisk(cctx, st, conn, chanRTP)
+	go h.gcpProcessRTPFromAsterisk(cctx, st, conn, streamClient)
+
+	<-cctx.Done()
 
 	return nil
 }
@@ -80,18 +80,21 @@ func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming)
 
 // gcpProcessResult handles transcript result from the google stt
 func (h *streamingHandler) gcpProcessResult(ctx context.Context, st *streaming.Streaming, streamClient speechpb.Speech_StreamingRecognizeClient) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "gcpProcessResult",
-			"streaming_id":      st.ID,
-			"transcribe_id":     st.TranscribeID,
-			"external_media_id": st.ExternalMediaID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "gcpProcessResult",
+		"streaming_id":      st.ID,
+		"transcribe_id":     st.TranscribeID,
+		"external_media_id": st.ExternalMediaID,
+	})
 	log.Debugf("Starting gcpProcessResult.")
 
 	t1 := time.Now()
 	for {
+		if ctx.Err() != nil {
+			log.Debugf("Context has canceled. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
+			break
+		}
+
 		tmp, err := streamClient.Recv()
 		if err != nil {
 			log.Errorf("Could not received the result. err: %v", err)
@@ -125,92 +128,46 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, st *streaming.S
 }
 
 // gcpProcessRTPFromAsterisk receives the RTP from the given the asterisk(conn) and put the received rtp stream to the given channel(chanRTP).
-func (h *streamingHandler) gcpProcessRTPFromAsterisk(ctx context.Context, st *streaming.Streaming, conn *net.UDPConn, chanRTP chan []byte) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "gcpProcessRTPFromAsterisk",
-			"streaming_id":      st.ID,
-			"transcribe_id":     st.TranscribeID,
-			"external_media_id": st.ExternalMediaID,
-		},
-	)
-
-	// we are define the some variables which is used in the below go routine to boost up the process spped.
-	chanTmp := make(chan *rtp.Packet)
-	data := make([]byte, 2000)
-	rtpPacket := &rtp.Packet{}
-	go func() {
-		defer close(chanTmp)
-		for {
-			n, remote, err := conn.ReadFromUDP(data)
-			if err != nil {
-				log.Infof("Connection has closed. err: %v", err)
-				break
-			}
-
-			// Unmarshal the packet and update the PayloadType
-			if errUnmarshal := rtpPacket.Unmarshal(data[:n]); err != nil {
-				log.Errorf("Could not unmarshal the received data. len: %d, remote: %s, err: %v", n, remote, errUnmarshal)
-				break
-			}
-
-			chanTmp <- rtpPacket
-		}
-	}()
-
-	for {
-		cctx, cancel := context.WithTimeout(ctx, time.Minute*5)
-		defer cancel()
-
-		select {
-		case <-cctx.Done():
-			log.Infof("Silience time over. streaming_id: %s, transcribe_id: %s", st.TranscribeID, st.ID)
-			return
-
-		case tmp := <-chanTmp:
-			// check the payload type
-			if tmp.PayloadType > 63 && tmp.PayloadType < 96 {
-				// rtcp packet.
-				continue
-			}
-
-			// send it to the channel
-			chanRTP <- tmp.Payload
-		}
-	}
-}
-
-// gcpProcessRTPToSTT sends the RTP strem to the gcp stt and put the result to the given channel
-func (h *streamingHandler) gcpProcessRTPToSTT(ctx context.Context, st *streaming.Streaming, streamClient speechpb.Speech_StreamingRecognizeClient, chanRTP chan []byte) {
+func (h *streamingHandler) gcpProcessRTPFromAsterisk(ctx context.Context, st *streaming.Streaming, conn *net.UDPConn, streamClient speechpb.Speech_StreamingRecognizeClient) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "gcpProcessRTPToSTT",
+		"func":              "gcpProcessRTPFromAsterisk",
 		"streaming_id":      st.ID,
 		"transcribe_id":     st.TranscribeID,
 		"external_media_id": st.ExternalMediaID,
 	})
 
+	// we are define the some variables which is used in the below go routine to boost up the process spped.
+	data := make([]byte, 2000)
 	for {
-		cctx, cancel := context.WithTimeout(ctx, time.Minute*5)
-		defer cancel()
+		if ctx.Err() != nil {
+			break
+		}
 
-		select {
-		case <-cctx.Done():
-			log.Infof("Silience time over. streaming_id: %s, transcribe_id: %s", st.TranscribeID, st.ID)
-			return
+		n, remote, err := conn.ReadFromUDP(data)
+		if err != nil {
+			log.Infof("Connection has closed. err: %v", err)
+			break
+		}
 
-		case data, ok := <-chanRTP:
-			if !ok {
-				log.Debug("Streaming has finished.")
-				return
-			}
+		// Unmarshal the packet and update the PayloadType
+		rtpPacket := &rtp.Packet{}
+		if errUnmarshal := rtpPacket.Unmarshal(data[:n]); err != nil {
+			log.Errorf("Could not unmarshal the received data. len: %d, remote: %s, err: %v", n, remote, errUnmarshal)
+			break
+		}
 
-			if errSend := streamClient.Send(&speechpb.StreamingRecognizeRequest{
-				StreamingRequest: &speechpb.StreamingRecognizeRequest_AudioContent{
-					AudioContent: data,
-				},
-			}); errSend != nil {
-				log.Debugf("Could not send audio data correctly: %v", errSend)
-			}
+		if rtpPacket.PayloadType > 63 && rtpPacket.PayloadType < 96 {
+			// this is a rtcp packet.
+			// we don't send it
+			continue
+		}
+
+		if errSend := streamClient.Send(&speechpb.StreamingRecognizeRequest{
+			StreamingRequest: &speechpb.StreamingRecognizeRequest_AudioContent{
+				AudioContent: rtpPacket.Payload,
+			},
+		}); errSend != nil {
+			log.Debugf("Could not send audio data correctly: %v", errSend)
 		}
 	}
 }
