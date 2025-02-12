@@ -162,7 +162,7 @@ func (h *streamingHandler) gcpProcessRTP(ctx context.Context, cancel context.Can
 
 		// Unmarshal the packet and update the PayloadType
 		rtpPacket := &rtp.Packet{}
-		if errUnmarshal := rtpPacket.Unmarshal(data[:n]); err != nil {
+		if errUnmarshal := rtpPacket.Unmarshal(data[:n]); errUnmarshal != nil {
 			log.Errorf("Could not unmarshal the received data. len: %d, remote: %s, err: %v", n, remote, errUnmarshal)
 			break
 		}
