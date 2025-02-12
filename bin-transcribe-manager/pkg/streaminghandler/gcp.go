@@ -88,7 +88,10 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 		"external_media_id": st.ExternalMediaID,
 	})
 	log.Debugf("Starting gcpProcessResult. transcribe_id: %s", st.TranscribeID)
-	defer cancel()
+	defer func() {
+		log.Debugf("Finished gcpProcessResult. transcribe_id: %s", st.TranscribeID)
+		cancel()
+	}()
 
 	t1 := time.Now()
 	for {
@@ -138,12 +141,16 @@ func (h *streamingHandler) gcpProcessRTP(ctx context.Context, cancel context.Can
 		"external_media_id": st.ExternalMediaID,
 	})
 	log.Debugf("Starting gcpProcessRTP. transcribe_id: %s", st.TranscribeID)
-	defer cancel()
+	defer func() {
+		log.Debugf("Finished gcpProcessRTP. transcribe_id: %s", st.TranscribeID)
+		cancel()
+	}()
 
 	// we are define the some variables which is used in the below go routine to boost up the process spped.
 	data := make([]byte, 2000)
 	for {
 		if ctx.Err() != nil {
+			log.Debugf("Context has finsished. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
 			return
 		}
 
