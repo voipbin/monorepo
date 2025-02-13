@@ -44,19 +44,48 @@ func (m *MockStreamingHandler) EXPECT() *MockStreamingHandlerMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method.
-func (m *MockStreamingHandler) Start(ctx context.Context, customerID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error) {
+// Run mocks base method.
+func (m *MockStreamingHandler) Run() error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, customerID, transcribeID, referenceType, referenceID, language, direction)
+	ret := m.ctrl.Call(m, "Run")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Run indicates an expected call of Run.
+func (mr *MockStreamingHandlerMockRecorder) Run() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockStreamingHandler)(nil).Run))
+}
+
+// StartTCP mocks base method.
+func (m *MockStreamingHandler) StartTCP(ctx context.Context, customerID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartTCP", ctx, customerID, transcribeID, referenceType, referenceID, language, direction)
 	ret0, _ := ret[0].(*streaming.Streaming)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Start indicates an expected call of Start.
-func (mr *MockStreamingHandlerMockRecorder) Start(ctx, customerID, transcribeID, referenceType, referenceID, language, direction any) *gomock.Call {
+// StartTCP indicates an expected call of StartTCP.
+func (mr *MockStreamingHandlerMockRecorder) StartTCP(ctx, customerID, transcribeID, referenceType, referenceID, language, direction any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockStreamingHandler)(nil).Start), ctx, customerID, transcribeID, referenceType, referenceID, language, direction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartTCP", reflect.TypeOf((*MockStreamingHandler)(nil).StartTCP), ctx, customerID, transcribeID, referenceType, referenceID, language, direction)
+}
+
+// StartUDP mocks base method.
+func (m *MockStreamingHandler) StartUDP(ctx context.Context, customerID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartUDP", ctx, customerID, transcribeID, referenceType, referenceID, language, direction)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StartUDP indicates an expected call of StartUDP.
+func (mr *MockStreamingHandlerMockRecorder) StartUDP(ctx, customerID, transcribeID, referenceType, referenceID, language, direction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartUDP", reflect.TypeOf((*MockStreamingHandler)(nil).StartUDP), ctx, customerID, transcribeID, referenceType, referenceID, language, direction)
 }
 
 // Stop mocks base method.

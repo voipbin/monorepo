@@ -1,6 +1,7 @@
 package streaming
 
 import (
+	"context"
 	"net"
 
 	speechpb "cloud.google.com/go/speech/apiv1/speechpb"
@@ -19,4 +20,6 @@ type Streaming struct {
 	Direction       transcript.Direction                     `json:"direction"`
 	Conn            *net.UDPConn                             `json:"-"`
 	Stream          speechpb.Speech_StreamingRecognizeClient `json:"-"`
+	Context         context.Context                          `json:"-"`
+	Cancel          context.CancelFunc
 }

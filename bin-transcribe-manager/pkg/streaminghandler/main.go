@@ -8,11 +8,14 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"sync"
 	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 
 	speech "cloud.google.com/go/speech/apiv1"
 	"cloud.google.com/go/speech/apiv1/speechpb"
@@ -23,13 +26,16 @@ import (
 	"monorepo/bin-transcribe-manager/models/streaming"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
-	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
 )
 
 // StreamingHandler define
 type StreamingHandler interface {
-	Start(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error)
+	Run() error
+
+	StartUDP(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error)
+	StartTCP(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error)
+
 	Stop(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error)
 }
 
@@ -45,8 +51,9 @@ var defaultListenIP string // listen ip address
 //
 //nolint:deadcode,varcheck
 const (
-	constEncapsulation  = "rtp"
-	constTransport      = "udp"
+	// constEncapsulation  = "rtp"
+	constEncapsulation  = string(cmexternalmedia.EncapsulationAudioSocket)
+	constTransport      = string(cmexternalmedia.TransportTCP)
 	constConnectionType = "client"
 	constFormat         = "ulaw"
 	// externalMediaOptDirection = "both"
@@ -62,20 +69,24 @@ const (
 type streamingHandler struct {
 	utilHandler       utilhandler.UtilHandler
 	reqHandler        requesthandler.RequestHandler
-	db                dbhandler.DBHandler
 	notifyHandler     notifyhandler.NotifyHandler
 	transcriptHandler transcripthandler.TranscriptHandler
 
+	listenAddress string
+
 	clientSpeech *speech.Client
+
+	mapStreaming map[uuid.UUID]*streaming.Streaming
+	muSteaming   sync.Mutex
 }
 
 // NewStreamingHandler define
 func NewStreamingHandler(
 	reqHandler requesthandler.RequestHandler,
-	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	transcriptHandler transcripthandler.TranscriptHandler,
 
+	listenAddress string,
 	credentialBase64 string,
 ) StreamingHandler {
 
@@ -95,9 +106,10 @@ func NewStreamingHandler(
 	return &streamingHandler{
 		utilHandler:       utilhandler.NewUtilHandler(),
 		reqHandler:        reqHandler,
-		db:                db,
 		notifyHandler:     notifyHandler,
 		transcriptHandler: transcriptHandler,
+
+		listenAddress: listenAddress,
 
 		clientSpeech: clientSpeech,
 	}

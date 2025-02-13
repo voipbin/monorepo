@@ -2,10 +2,12 @@ package streaminghandler
 
 import (
 	"context"
+	"io"
 	"net"
 	"time"
 
 	"cloud.google.com/go/speech/apiv1/speechpb"
+	"github.com/CyCoreSystems/audiosocket"
 	"github.com/pion/rtp"
 	"github.com/sirupsen/logrus"
 
@@ -32,6 +34,33 @@ func (h *streamingHandler) gcpStart(st *streaming.Streaming, conn *net.UDPConn) 
 
 	go h.gcpProcessResult(ctx, cancel, st, streamClient)
 	go h.gcpProcessRTP(ctx, cancel, st, conn, streamClient)
+
+	<-ctx.Done()
+	log.Debugf("Finished the gcp process. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
+
+	return nil
+}
+
+// gcpStartTCP starts the stt process using the gcp
+func (h *streamingHandler) gcpStartTCP(st *streaming.Streaming, conn net.Conn) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "gcpStart",
+		"streaming_id":      st.ID,
+		"transcribe_id":     st.TranscribeID,
+		"external_media_id": st.ExternalMediaID,
+	})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	streamClient, err := h.gcpInit(ctx, st)
+	if err != nil {
+		log.Errorf("Could not create streaming client: %v", err)
+		return err
+	}
+
+	go h.gcpProcessResult(ctx, cancel, st, streamClient)
+	go h.gcpProcessAudiosocket(ctx, cancel, st, conn, streamClient)
 
 	<-ctx.Done()
 	log.Debugf("Finished the gcp process. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
@@ -178,7 +207,65 @@ func (h *streamingHandler) gcpProcessRTP(ctx context.Context, cancel context.Can
 				AudioContent: rtpPacket.Payload,
 			},
 		}); errSend != nil {
-			log.Debugf("Could not send audio data correctly: %v", errSend)
+			log.Debugf("Could not send audio data correctly. err: %v", errSend)
+		}
+	}
+}
+
+// gcpProcessAudiosocket receives the Audiosocket from the given the asterisk(conn) then send it to the google stt
+func (h *streamingHandler) gcpProcessAudiosocket(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, conn net.Conn, streamClient speechpb.Speech_StreamingRecognizeClient) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "gcpProcessAudiosocket",
+		"streaming_id":      st.ID,
+		"transcribe_id":     st.TranscribeID,
+		"external_media_id": st.ExternalMediaID,
+	})
+	log.Debugf("Starting gcpProcessAudiosocket. transcribe_id: %s", st.TranscribeID)
+	defer func() {
+		log.Debugf("Finished gcpProcessAudiosocket. transcribe_id: %s", st.TranscribeID)
+		cancel()
+	}()
+
+	for {
+		if ctx.Err() != nil {
+			log.Debugf("Context has finsished. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
+			return
+		}
+
+		m, err := audiosocket.NextMessage(conn)
+		if err != nil {
+			log.Infof("Connection has closed. err: %v", err)
+			return
+		}
+
+		switch {
+		case m.Kind() == audiosocket.KindHangup:
+			log.Debugf("The audiosocket received hangup command")
+			return
+
+		case m.Kind() == audiosocket.KindError:
+			log.Debugf("Received error. err: %d", m.ErrorCode())
+			continue
+
+		case m.Kind() != audiosocket.KindSlin:
+			log.Debugf("Ignoring non-slin message. kind: %v", m.Kind())
+			continue
+		}
+
+		if m.ContentLength() < 1 {
+			log.Debugf("No content")
+			continue
+		}
+
+		if errSend := streamClient.Send(&speechpb.StreamingRecognizeRequest{
+			StreamingRequest: &speechpb.StreamingRecognizeRequest_AudioContent{
+				AudioContent: m.Payload(),
+			},
+		}); errSend != nil {
+			if errSend != io.EOF {
+				log.Errorf("Could not send audio data correctly. err: %v", errSend)
+			}
+			return
 		}
 	}
 }

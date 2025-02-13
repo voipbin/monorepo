@@ -56,6 +56,9 @@ spec:
             - name: metrics
               protocol: "TCP"
               containerPort: 2112
+            - name: audiosocket
+              protocol: "TCP"
+              containerPort: 8080
 
             # rtp open ports.
             # it opens udp ports 10000 - 11000.
