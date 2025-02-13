@@ -6,10 +6,7 @@ import (
 	"context"
 	"encoding/base64"
 	"log"
-	"math/rand"
-	"net"
 	"sync"
-	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -33,30 +30,19 @@ import (
 type StreamingHandler interface {
 	Run() error
 
-	StartUDP(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error)
-	StartTCP(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error)
+	Start(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error)
 
 	Stop(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error)
 }
-
-// default variables
-const (
-	defaultListenPortMin = 10000
-	defaultListenPortMax = 11000
-)
-
-var defaultListenIP string // listen ip address
 
 // list of default external media channel options.
 //
 //nolint:deadcode,varcheck
 const (
-	// constEncapsulation  = "rtp"
-	constEncapsulation  = string(cmexternalmedia.EncapsulationAudioSocket)
-	constTransport      = string(cmexternalmedia.TransportTCP)
-	constConnectionType = "client"
-	constFormat         = "ulaw"
-	// externalMediaOptDirection = "both"
+	defaultEncapsulation  = string(cmexternalmedia.EncapsulationAudioSocket)
+	defaultTransport      = string(cmexternalmedia.TransportTCP)
+	defaultConnectionType = "client"
+	defaultFormat         = "ulaw"
 )
 
 // const gcp stt options
@@ -116,27 +102,4 @@ func NewStreamingHandler(
 		mapStreaming: make(map[uuid.UUID]*streaming.Streaming),
 		muSteaming:   sync.Mutex{},
 	}
-}
-
-func init() {
-	defaultListenIP = getListenIP()
-}
-
-// getListenIP retrurns current listen ip address.
-func getListenIP() string {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		logrus.Errorf("Could not connect to the internet. err: %v", err)
-	}
-	defer conn.Close()
-
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-	return localAddr.IP.String()
-}
-
-// getRandomPort returns random listen port
-func getRandomPort() int {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	res := r.Intn(defaultListenPortMax-defaultListenPortMin+1) + defaultListenPortMin
-	return res
 }

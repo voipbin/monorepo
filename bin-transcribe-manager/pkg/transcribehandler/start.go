@@ -144,19 +144,12 @@ func (h *transcribeHandler) startLive(
 	for _, dr := range directions {
 
 		// start the streaming transcribe
-		st, err := h.streamingHandler.StartTCP(ctx, customerID, id, referenceType, referenceID, language, dr)
+		st, err := h.streamingHandler.Start(ctx, customerID, id, referenceType, referenceID, language, dr)
 		if err != nil {
 			log.Errorf("Could not start the streaming stt. direction: %s, err: %v", dr, err)
 			return nil, err
 		}
 		log.WithField("streaming", st).Debugf("Streaming started. streaming_id: %s", st.ID)
-
-		// st, err := h.streamingHandler.StartUDP(ctx, customerID, id, referenceType, referenceID, language, dr)
-		// if err != nil {
-		// 	log.Errorf("Could not start the streaming stt. direction: %s, err: %v", dr, err)
-		// 	return nil, err
-		// }
-		// log.WithField("streaming", st).Debugf("Streaming started. streaming_id: %s", st.ID)
 
 		streamingIDs = append(streamingIDs, st.ID)
 	}

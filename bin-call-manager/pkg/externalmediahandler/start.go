@@ -210,35 +210,24 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.U
 		format = defaultFormat
 	}
 
-	// because of the audiosocket required to set the channel data as a some random uuid-string,
-	// we can not set the key=value pair string.
-	// so we are putting the bridge here to put the channel into the bridge easily.
-	// create a external media channel
-	chData := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
-		channel.StasisDataTypeContextType, channel.ContextTypeCall,
-		channel.StasisDataTypeContext, channel.ContextExternalMedia,
-		channel.StasisDataTypeBridgeID, bridgeID,
-		channel.StasisDataTypeReferenceType, referenceType,
-		channel.StasisDataTypeReferenceID, referenceID,
-		channel.StasisDataTypeExternalMediaID, id,
-	)
+	var chData string
 	if encapsulation == externalmedia.EncapsulationAudioSocket {
+		// because of the audiosocket required to set the channel data as a some random uuid-string,
+		// we can not set the key=value pair string.
+		// so we are putting the bridge here to put the channel into the bridge easily.
+		// create a external media channel
 		chData = id.String()
 		log.Debugf("The encapsulation is audiosocket. Use the channel id as the channel data in force. ch_data: %s", chData)
+	} else {
+		chData = fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
+			channel.StasisDataTypeContextType, channel.ContextTypeCall,
+			channel.StasisDataTypeContext, channel.ContextExternalMedia,
+			channel.StasisDataTypeBridgeID, bridgeID,
+			channel.StasisDataTypeReferenceType, referenceType,
+			channel.StasisDataTypeReferenceID, referenceID,
+			channel.StasisDataTypeExternalMediaID, id,
+		)
 	}
-
-	// // create a external media channel
-	// chData := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
-	// 	channel.StasisDataTypeContextType, channel.ContextTypeCall,
-	// 	channel.StasisDataTypeContext, channel.ContextExternalMedia,
-	// 	channel.StasisDataTypeBridgeID, bridgeID,
-	// 	channel.StasisDataTypeReferenceType, referenceType,
-	// 	channel.StasisDataTypeReferenceID, referenceID,
-	// )
-	// if encapsulation == externalmedia.EncapsulationAudioSocket {
-	// 	chData = bridgeID
-	// 	log.Debugf("The encapsulation is audiosocket. Use the channel id as the channel data in force. ch_data: %s", chData)
-	// }
 
 	extChannelID := h.utilHandler.UUIDCreate().String()
 

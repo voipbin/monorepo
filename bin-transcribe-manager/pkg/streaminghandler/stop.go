@@ -11,12 +11,10 @@ import (
 
 // Start starts the live streaming transcribe of the given transcribe
 func (h *streamingHandler) Stop(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "Stop",
-			"streaming_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "Stop",
+		"streaming_id": id,
+	})
 
 	st, err := h.Get(ctx, id)
 	if err != nil {
@@ -24,7 +22,9 @@ func (h *streamingHandler) Stop(ctx context.Context, id uuid.UUID) (*streaming.S
 		return nil, err
 	}
 
-	em, err := h.reqHandler.CallV1ExternalMediaStop(ctx, st.ExternalMediaID)
+	// note:
+	// the call-manager's external media id and streaming id are the same.
+	em, err := h.reqHandler.CallV1ExternalMediaStop(ctx, st.ID)
 	if err != nil {
 		log.Errorf("Could not stop the external media.")
 		return nil, err

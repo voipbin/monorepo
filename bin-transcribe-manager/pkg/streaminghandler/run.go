@@ -54,11 +54,13 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 		return
 	}
 
-	if errStart := h.gcpStartTCP(st, conn); errStart != nil {
+	if errStart := h.gcpRun(st, conn); errStart != nil {
 		log.Errorf("Could not start the gcp. err: %v", errStart)
 	}
 }
 
+// getStreamingID gets the streaming id from the connection
+// the first message of the audiosocket should be the streaming id
 func (h *streamingHandler) getStreamingID(c net.Conn) (uuid.UUID, error) {
 	m, err := audiosocket.NextMessage(c)
 	if err != nil {
@@ -66,7 +68,7 @@ func (h *streamingHandler) getStreamingID(c net.Conn) (uuid.UUID, error) {
 	}
 
 	if m.Kind() != audiosocket.KindID {
-		return uuid.Nil, fmt.Errorf("wrong message kind: %v", m.Kind())
+		return uuid.Nil, fmt.Errorf("wrong message kind. kind: %v", m.Kind())
 	}
 
 	res := uuid.FromBytesOrNil(m.Payload())
