@@ -44,6 +44,20 @@ func (m *MockStreamingHandler) EXPECT() *MockStreamingHandlerMockRecorder {
 	return m.recorder
 }
 
+// Run mocks base method.
+func (m *MockStreamingHandler) Run() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Run")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Run indicates an expected call of Run.
+func (mr *MockStreamingHandlerMockRecorder) Run() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockStreamingHandler)(nil).Run))
+}
+
 // Start mocks base method.
 func (m *MockStreamingHandler) Start(ctx context.Context, customerID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error) {
 	m.ctrl.T.Helper()
