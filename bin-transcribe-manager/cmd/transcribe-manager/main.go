@@ -85,7 +85,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	listenIP := os.Getenv("POD_IP")
 	if listenIP == "" {
-		return fmt.Errorf("could not get the listen ip address.")
+		return fmt.Errorf("could not get the listen ip address")
 	}
 	listenAddress := fmt.Sprintf("%s:%d", listenIP, 8080)
 

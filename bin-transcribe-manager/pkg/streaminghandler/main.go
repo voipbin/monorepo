@@ -112,6 +112,9 @@ func NewStreamingHandler(
 		listenAddress: listenAddress,
 
 		clientSpeech: clientSpeech,
+
+		mapStreaming: make(map[uuid.UUID]*streaming.Streaming),
+		muSteaming:   sync.Mutex{},
 	}
 }
 
