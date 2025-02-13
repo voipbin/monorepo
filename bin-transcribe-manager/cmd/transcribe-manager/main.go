@@ -83,12 +83,18 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	hostID := uuid.Must(uuid.NewV4())
 	log.Debugf("Generated host id. host_id: %s", hostID)
 
+	listenIP := os.Getenv("POD_IP")
+	if listenIP == "" {
+		return fmt.Errorf("could not get the listen ip address")
+	}
+	listenAddress := fmt.Sprintf("%s:%d", listenIP, 8080)
+
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager)
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler, gcpCredentialBase64)
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, db, notifyHandler, transcriptHandler, gcpCredentialBase64)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, gcpCredentialBase64)
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
 	// run request listener
@@ -99,6 +105,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// run subscribe listener
 	if errSubscribe := runSubscribe(sockHandler, transcribeHandler); errSubscribe != nil {
 		return errSubscribe
+	}
+
+	// run streaming listener
+	if errStreaming := runStreaming(streamingHandler); errStreaming != nil {
+		return errStreaming
 	}
 
 	return nil
@@ -148,6 +159,21 @@ func runSubscribe(
 	if err := ariEventListenHandler.Run(); err != nil {
 		log.Errorf("Could not run the ari event listen handler correctly. err: %v", err)
 	}
+
+	return nil
+}
+
+// runStreaming runs the ARI event listen service
+func runStreaming(steramingHandler streaminghandler.StreamingHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runStreaming",
+	})
+
+	go func() {
+		if errRun := steramingHandler.Run(); errRun != nil {
+			log.Errorf("Could not run the streaming handler correctly. err: %v", errRun)
+		}
+	}()
 
 	return nil
 }

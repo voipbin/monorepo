@@ -2,23 +2,23 @@ package streaminghandler
 
 import (
 	"context"
+	"io"
 	"net"
 	"time"
 
 	"cloud.google.com/go/speech/apiv1/speechpb"
-	"github.com/pion/rtp"
+	"github.com/CyCoreSystems/audiosocket"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
 )
 
-// gcpStart starts the stt process using the gcp
-func (h *streamingHandler) gcpStart(st *streaming.Streaming, conn *net.UDPConn) error {
+// gcpRun runs the stt process using the gcp
+func (h *streamingHandler) gcpRun(st *streaming.Streaming, conn net.Conn) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "gcpStart",
-		"streaming_id":      st.ID,
-		"transcribe_id":     st.TranscribeID,
-		"external_media_id": st.ExternalMediaID,
+		"func":          "gcpRun",
+		"streaming_id":  st.ID,
+		"transcribe_id": st.TranscribeID,
 	})
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -31,7 +31,7 @@ func (h *streamingHandler) gcpStart(st *streaming.Streaming, conn *net.UDPConn) 
 	}
 
 	go h.gcpProcessResult(ctx, cancel, st, streamClient)
-	go h.gcpProcessRTP(ctx, cancel, st, conn, streamClient)
+	go h.gcpProcessMedia(ctx, cancel, st, conn, streamClient)
 
 	<-ctx.Done()
 	log.Debugf("Finished the gcp process. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
@@ -42,10 +42,9 @@ func (h *streamingHandler) gcpStart(st *streaming.Streaming, conn *net.UDPConn) 
 // gcpInit inits the gcp process
 func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming) (speechpb.Speech_StreamingRecognizeClient, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "gcpInit",
-		"streaming_id":      st.ID,
-		"transcribe_id":     st.TranscribeID,
-		"external_media_id": st.ExternalMediaID,
+		"func":          "gcpInit",
+		"streaming_id":  st.ID,
+		"transcribe_id": st.TranscribeID,
 	})
 
 	// create stt client
@@ -82,10 +81,9 @@ func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming)
 // gcpProcessResult handles transcript result from the google stt
 func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, streamClient speechpb.Speech_StreamingRecognizeClient) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "gcpProcessResult",
-		"streaming_id":      st.ID,
-		"transcribe_id":     st.TranscribeID,
-		"external_media_id": st.ExternalMediaID,
+		"func":          "gcpProcessResult",
+		"streaming_id":  st.ID,
+		"transcribe_id": st.TranscribeID,
 	})
 	log.Debugf("Starting gcpProcessResult. transcribe_id: %s", st.TranscribeID)
 	defer func() {
@@ -102,6 +100,9 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 
 		tmp, err := streamClient.Recv()
 		if err != nil {
+			if err == context.Canceled {
+				return
+			}
 			log.Errorf("Could not received the result. err: %v", err)
 			return
 		} else if len(tmp.Results) == 0 {
@@ -110,7 +111,7 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 		}
 
 		if !tmp.Results[0].IsFinal {
-			time.Sleep(time.Millisecond * 400)
+			time.Sleep(time.Millisecond * 100)
 			continue
 		}
 
@@ -132,53 +133,59 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 	}
 }
 
-// gcpProcessRTP receives the RTP from the given the asterisk(conn) then send it to the google stt
-func (h *streamingHandler) gcpProcessRTP(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, conn *net.UDPConn, streamClient speechpb.Speech_StreamingRecognizeClient) {
+// gcpProcessMedia receives the media from the given the asterisk(conn) then send it to the google stt
+func (h *streamingHandler) gcpProcessMedia(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, conn net.Conn, streamClient speechpb.Speech_StreamingRecognizeClient) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "gcpProcessRTP",
-		"streaming_id":      st.ID,
-		"transcribe_id":     st.TranscribeID,
-		"external_media_id": st.ExternalMediaID,
+		"func":          "gcpProcessMedia",
+		"streaming_id":  st.ID,
+		"transcribe_id": st.TranscribeID,
 	})
-	log.Debugf("Starting gcpProcessRTP. transcribe_id: %s", st.TranscribeID)
+	log.Debugf("Starting gcpProcessAudiosocket. transcribe_id: %s", st.TranscribeID)
 	defer func() {
-		log.Debugf("Finished gcpProcessRTP. transcribe_id: %s", st.TranscribeID)
+		log.Debugf("Finished gcpProcessAudiosocket. transcribe_id: %s", st.TranscribeID)
 		cancel()
 	}()
 
-	// we are define the some variables which is used in the below go routine to boost up the process spped.
-	data := make([]byte, 2000)
 	for {
 		if ctx.Err() != nil {
 			log.Debugf("Context has finsished. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
 			return
 		}
 
-		n, remote, err := conn.ReadFromUDP(data)
+		m, err := audiosocket.NextMessage(conn)
 		if err != nil {
 			log.Infof("Connection has closed. err: %v", err)
 			return
 		}
 
-		// Unmarshal the packet and update the PayloadType
-		rtpPacket := &rtp.Packet{}
-		if errUnmarshal := rtpPacket.Unmarshal(data[:n]); errUnmarshal != nil {
-			log.Errorf("Could not unmarshal the received data. len: %d, remote: %s, err: %v", n, remote, errUnmarshal)
-			break
+		switch {
+		case m.Kind() == audiosocket.KindHangup:
+			log.Debugf("The audiosocket received hangup command")
+			return
+
+		case m.Kind() == audiosocket.KindError:
+			log.Debugf("Received error. err: %d", m.ErrorCode())
+			continue
+
+		case m.Kind() != audiosocket.KindSlin:
+			log.Debugf("Ignoring non-slin message. kind: %v", m.Kind())
+			continue
 		}
 
-		if rtpPacket.PayloadType > 63 && rtpPacket.PayloadType < 96 {
-			// this is a rtcp packet.
-			// we don't send it
+		if m.ContentLength() < 1 {
+			log.Debugf("No content")
 			continue
 		}
 
 		if errSend := streamClient.Send(&speechpb.StreamingRecognizeRequest{
 			StreamingRequest: &speechpb.StreamingRecognizeRequest_AudioContent{
-				AudioContent: rtpPacket.Payload,
+				AudioContent: m.Payload(),
 			},
 		}); errSend != nil {
-			log.Debugf("Could not send audio data correctly: %v", errSend)
+			if errSend != io.EOF {
+				log.Errorf("Could not send audio data correctly. err: %v", errSend)
+			}
+			return
 		}
 	}
 }

@@ -50,6 +50,7 @@ func (h *transcribeHandler) stopLive(ctx context.Context, tr *transcribe.Transcr
 	for _, streamingID := range tr.StreamingIDs {
 		st, err := h.streamingHandler.Stop(ctx, streamingID)
 		if err != nil {
+			// could not stop the streaming, but continue to stop the other streamings
 			log.Errorf("Could not stop the streaming. streaming_id: %s, err: %v", streamingID, err)
 			continue
 		}
