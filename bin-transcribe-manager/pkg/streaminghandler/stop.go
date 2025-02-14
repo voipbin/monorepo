@@ -9,7 +9,7 @@ import (
 	"monorepo/bin-transcribe-manager/models/streaming"
 )
 
-// Start starts the live streaming transcribe of the given transcribe
+// Stop stops the live streaming transcribe of the given streaming id
 func (h *streamingHandler) Stop(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "Stop",

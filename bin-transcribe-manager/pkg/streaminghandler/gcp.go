@@ -48,7 +48,7 @@ func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming)
 	})
 
 	// create stt client
-	res, err := h.clientSpeech.StreamingRecognize(ctx)
+	res, err := h.gcpClient.StreamingRecognize(ctx)
 	if err != nil {
 		log.Errorf("Could not create a client for speech. err: %v", err)
 		return nil, err
@@ -56,9 +56,9 @@ func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming)
 
 	streamingConfig := speechpb.StreamingRecognitionConfig{
 		Config: &speechpb.RecognitionConfig{
-			Encoding:                   defaultEncoding,
-			SampleRateHertz:            int32(defaultSampleRate),
-			AudioChannelCount:          int32(defaultAudioChannelCount),
+			Encoding:                   defaultGCPEncoding,
+			SampleRateHertz:            int32(defaultGCPSampleRate),
+			AudioChannelCount:          int32(defaultGCPAudioChannelCount),
 			LanguageCode:               st.Language,
 			EnableAutomaticPunctuation: true,
 		},

@@ -3,12 +3,11 @@ package streaminghandler
 import (
 	"context"
 	"fmt"
+	"monorepo/bin-transcribe-manager/models/streaming"
 	"net"
 
-	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
-	"github.com/CyCoreSystems/audiosocket"
 	"github.com/sirupsen/logrus"
 )
 
@@ -41,7 +40,7 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	})
 
 	// get streamingID
-	streamingID, err := h.getStreamingID(conn)
+	streamingID, err := h.audiosocketGetStreamingID(conn)
 	if err != nil {
 		log.Errorf("Could not get mediaID. err: %v", err)
 		return
@@ -54,23 +53,16 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 		return
 	}
 
-	if errStart := h.gcpRun(st, conn); errStart != nil {
-		log.Errorf("Could not start the gcp. err: %v", errStart)
-	}
-}
-
-// getStreamingID gets the streaming id from the connection
-// the first message of the audiosocket should be the streaming id
-func (h *streamingHandler) getStreamingID(c net.Conn) (uuid.UUID, error) {
-	m, err := audiosocket.NextMessage(c)
-	if err != nil {
-		return uuid.Nil, err
+	handlers := []func(*streaming.Streaming, net.Conn) error{
+		h.awsRun,
+		h.gcpRun,
 	}
 
-	if m.Kind() != audiosocket.KindID {
-		return uuid.Nil, fmt.Errorf("wrong message kind. kind: %v", m.Kind())
+	for _, handler := range handlers {
+		if errRun := handler(st, conn); errRun == nil {
+			return
+		} else {
+			log.Errorf("Could not run the handler. err: %v", errRun)
+		}
 	}
-
-	res := uuid.FromBytesOrNil(m.Payload())
-	return res, nil
 }
