@@ -54,6 +54,7 @@ const (
 	defaultGCPEncoding          = speechpb.RecognitionConfig_LINEAR16
 	defaultGCPSampleRate        = 8000
 	defaultGCPAudioChannelCount = 1
+	defaultGCPModel             = "phone_call"
 )
 
 // default aws stt options
