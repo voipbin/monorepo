@@ -44,13 +44,11 @@ const (
 	defaultEncapsulation  = string(cmexternalmedia.EncapsulationAudioSocket)
 	defaultTransport      = string(cmexternalmedia.TransportTCP)
 	defaultConnectionType = "client"
-	// defaultFormat         = "ulaw"
-	defaultFormat = "slin"
+	defaultFormat         = "slin" // 8kHz, 16bit, mono signed linear PCM
 )
 
 // default gcp stt options
 const (
-	// defaultGCPEncoding          = speechpb.RecognitionConfig_MULAW
 	defaultGCPEncoding          = speechpb.RecognitionConfig_LINEAR16
 	defaultGCPSampleRate        = 8000
 	defaultGCPAudioChannelCount = 1
