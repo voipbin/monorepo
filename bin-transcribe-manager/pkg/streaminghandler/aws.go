@@ -170,6 +170,8 @@ func (h *streamingHandler) awsProcessMedia(ctx context.Context, cancel context.C
 			continue
 		}
 
+		// stream.Send(ctx, &types.AudioStream{})
+
 		if errSend := stream.Send(ctx, &types.AudioStreamMemberAudioEvent{
 			Value: types.AudioEvent{
 				AudioChunk: m.Payload(),

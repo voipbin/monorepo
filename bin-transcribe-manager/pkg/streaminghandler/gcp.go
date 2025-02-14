@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/speech/apiv1/speechpb"
-	"github.com/CyCoreSystems/audiosocket"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
@@ -152,29 +151,10 @@ func (h *streamingHandler) gcpProcessMedia(ctx context.Context, cancel context.C
 			return
 		}
 
-		m, err := audiosocket.NextMessage(conn)
+		m, err := h.audiosocketGetNextMedia(conn)
 		if err != nil {
 			log.Infof("Connection has closed. err: %v", err)
 			return
-		}
-
-		switch {
-		case m.Kind() == audiosocket.KindHangup:
-			log.Debugf("The audiosocket received hangup command")
-			return
-
-		case m.Kind() == audiosocket.KindError:
-			log.Debugf("Received error. err: %d", m.ErrorCode())
-			continue
-
-		case m.Kind() != audiosocket.KindSlin:
-			log.Debugf("Ignoring non-slin message. kind: %v", m.Kind())
-			continue
-		}
-
-		if m.ContentLength() < 1 {
-			log.Debugf("No content")
-			continue
 		}
 
 		if errSend := streamClient.Send(&speechpb.StreamingRecognizeRequest{

@@ -56,10 +56,9 @@ const (
 
 // default aws stt options
 const (
-	defaultAWSRegion            = "eu-central-1"
-	defaultAWSEncoding          = transcribestreamingservice.MediaEncodingPcm
-	defaultAWSSampleRate        = 8000
-	defaultAWSAudioChannelCount = 1
+	defaultAWSRegion     = "eu-central-1"
+	defaultAWSEncoding   = transcribestreamingservice.MediaEncodingPcm
+	defaultAWSSampleRate = 8000
 )
 
 type streamingHandler struct {
