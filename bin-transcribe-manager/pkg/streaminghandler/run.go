@@ -54,8 +54,8 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	}
 
 	handlers := []func(*streaming.Streaming, net.Conn) error{
-		h.awsRun,
 		h.gcpRun,
+		h.awsRun,
 	}
 
 	for _, handler := range handlers {
