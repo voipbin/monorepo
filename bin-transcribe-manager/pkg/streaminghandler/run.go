@@ -45,13 +45,14 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 		log.Errorf("Could not get mediaID. err: %v", err)
 		return
 	}
-	log.Debugf("Found transcribe id. transcribe_id: %s", streamingID)
+	log.Debugf("Found streaming id. streaming_id: %s", streamingID)
 
 	st, err := h.Get(context.Background(), streamingID)
 	if err != nil {
 		log.Errorf("Could not get streaming. err: %v", err)
 		return
 	}
+	log.WithField("streaming", st).Debugf("Found streaming info. streaming_id: %s", st.ID)
 
 	handlers := []func(*streaming.Streaming, net.Conn) error{
 		h.awsRun,
