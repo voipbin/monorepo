@@ -113,9 +113,13 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 			time.Sleep(time.Millisecond * 100)
 			continue
 		}
+		log.WithField("transceipt_event", tmp).Debugf("Reeived transcript event. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
 
 		// get transcript message and create transcript
 		message := tmp.Results[0].Alternatives[0].Transcript
+		if len(message) == 0 {
+			continue
+		}
 		log.Debugf("Received transcript message. transcribe_id: %s, direction: %s, message: %s", st.TranscribeID, st.Direction, message)
 
 		t2 := time.Now()

@@ -113,6 +113,7 @@ func (h *streamingHandler) awsProcessResult(ctx context.Context, cancel context.
 			if !ok {
 				continue
 			}
+			log.WithField("transceipt_event", transcriptEvent).Debugf("Reeived transcript event. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
 
 			for _, result := range transcriptEvent.Value.Transcript.Results {
 				if result.IsPartial || len(result.Alternatives) == 0 {
@@ -120,6 +121,9 @@ func (h *streamingHandler) awsProcessResult(ctx context.Context, cancel context.
 				}
 
 				message := *result.Alternatives[0].Transcript
+				if len(message) == 0 {
+					continue
+				}
 				log.Debugf("Received transcript message. transcribe_id: %s, direction: %s, message: %s", st.TranscribeID, st.Direction, message)
 
 				t2 := time.Now()
