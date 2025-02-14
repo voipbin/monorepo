@@ -71,7 +71,6 @@ type streamingHandler struct {
 	listenAddress string
 
 	gcpClient *speech.Client
-
 	awsClient *transcribestreaming.Client
 
 	mapStreaming map[uuid.UUID]*streaming.Streaming
@@ -88,7 +87,6 @@ func NewStreamingHandler(
 	gcpCredentialBase64 string,
 	awsAccessKey string,
 	awsSecretKey string,
-
 ) StreamingHandler {
 
 	decodedCredential, err := base64.StdEncoding.DecodeString(gcpCredentialBase64)
