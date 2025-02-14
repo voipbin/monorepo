@@ -1,7 +1,9 @@
 package streaminghandler
 
 import (
+	"bytes"
 	"context"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"net"
@@ -184,5 +186,31 @@ func (h *streamingHandler) awsProcessMedia(ctx context.Context, cancel context.C
 
 		}
 	}
+}
 
+func ulawToPCM(ulaw byte) int16 {
+	const bias = 0x84
+	ulaw ^= 0xFF
+	t := ((int(ulaw) & 0xF) << 3) + bias
+	t <<= uint((ulaw & 0x70) >> 4)
+	t -= bias
+	if ulaw&0x80 != 0 {
+		t = -t
+	}
+	return int16(t)
+}
+
+// u-law 스트림을 PCM 스트림으로 변환
+func convertUlawToPCM(input io.Reader) io.Reader {
+	buf := new(bytes.Buffer)
+	for {
+		var sample [1]byte
+		_, err := input.Read(sample[:])
+		if err != nil {
+			break
+		}
+		pcmSample := ulawToPCM(sample[0])
+		binary.Write(buf, binary.LittleEndian, pcmSample)
+	}
+	return buf
 }
