@@ -45,7 +45,7 @@ const (
 	defaultTransport      = string(cmexternalmedia.TransportTCP)
 	defaultConnectionType = "client"
 	// defaultFormat         = "ulaw"
-	defaultFormat = "slin16"
+	defaultFormat = "slin"
 )
 
 // default gcp stt options
