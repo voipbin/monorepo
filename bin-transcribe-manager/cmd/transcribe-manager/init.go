@@ -22,6 +22,8 @@ const (
 	defaultRedisDatabase           = 1
 	defaultRedisPassword           = ""
 	defaultGCPCredentialBase64     = ""
+	defaultAWSAccessKey            = ""
+	defaultAWSSecretKey            = ""
 )
 
 // proces init
@@ -52,6 +54,8 @@ func initVariable() {
 	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
 	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "Base64 encoded GCP credential.")
+	pflag.String("aws_access_key", defaultAWSAccessKey, "AWS access key.")
+	pflag.String("aws_secret_key", defaultAWSSecretKey, "AWS secret key.")
 	pflag.Parse()
 
 	// rabbitmq_address
@@ -142,6 +146,27 @@ func initVariable() {
 	}
 	gcpCredentialBase64 = viper.GetString("gcp_credential_base64")
 
+	// aws_access_key
+	if errFlag := viper.BindPFlag("aws_access_key", pflag.Lookup("aws_access_key")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("aws_access_key", "AWS_ACCESS_KEY"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	awsAccessKey = viper.GetString("aws_access_key")
+
+	// aws_secret_key
+	if errFlag := viper.BindPFlag("aws_secret_key", pflag.Lookup("aws_secret_key")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("aws_secret_key", "AWS_SECRET_KEY"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	awsSecretKey = viper.GetString("aws_secret_key")
 }
 
 // initLog inits log settings.

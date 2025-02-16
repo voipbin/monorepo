@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/speech/apiv1/speechpb"
-	"github.com/CyCoreSystems/audiosocket"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
@@ -48,7 +47,7 @@ func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming)
 	})
 
 	// create stt client
-	res, err := h.clientSpeech.StreamingRecognize(ctx)
+	res, err := h.gcpClient.StreamingRecognize(ctx)
 	if err != nil {
 		log.Errorf("Could not create a client for speech. err: %v", err)
 		return nil, err
@@ -56,11 +55,13 @@ func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming)
 
 	streamingConfig := speechpb.StreamingRecognitionConfig{
 		Config: &speechpb.RecognitionConfig{
-			Encoding:                   defaultEncoding,
-			SampleRateHertz:            int32(defaultSampleRate),
-			AudioChannelCount:          int32(defaultAudioChannelCount),
+			Encoding:                   defaultGCPEncoding,
+			SampleRateHertz:            int32(defaultGCPSampleRate),
+			AudioChannelCount:          int32(defaultGCPAudioChannelCount),
 			LanguageCode:               st.Language,
 			EnableAutomaticPunctuation: true,
+			Model:                      defaultGCPModel,
+			UseEnhanced:                true,
 		},
 		InterimResults: true,
 	}
@@ -86,6 +87,7 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 		"transcribe_id": st.TranscribeID,
 	})
 	log.Debugf("Starting gcpProcessResult. transcribe_id: %s", st.TranscribeID)
+
 	defer func() {
 		log.Debugf("Finished gcpProcessResult. transcribe_id: %s", st.TranscribeID)
 		cancel()
@@ -100,10 +102,7 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 
 		tmp, err := streamClient.Recv()
 		if err != nil {
-			if err == context.Canceled {
-				return
-			}
-			log.Errorf("Could not received the result. err: %v", err)
+			log.Debugf("Could not received the result. Consider this hangup. err: %v", err)
 			return
 		} else if len(tmp.Results) == 0 {
 			// result end
@@ -117,6 +116,9 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 
 		// get transcript message and create transcript
 		message := tmp.Results[0].Alternatives[0].Transcript
+		if len(message) == 0 {
+			continue
+		}
 		log.Debugf("Received transcript message. transcribe_id: %s, direction: %s, message: %s", st.TranscribeID, st.Direction, message)
 
 		t2 := time.Now()
@@ -152,29 +154,10 @@ func (h *streamingHandler) gcpProcessMedia(ctx context.Context, cancel context.C
 			return
 		}
 
-		m, err := audiosocket.NextMessage(conn)
+		m, err := h.audiosocketGetNextMedia(conn)
 		if err != nil {
 			log.Infof("Connection has closed. err: %v", err)
 			return
-		}
-
-		switch {
-		case m.Kind() == audiosocket.KindHangup:
-			log.Debugf("The audiosocket received hangup command")
-			return
-
-		case m.Kind() == audiosocket.KindError:
-			log.Debugf("Received error. err: %d", m.ErrorCode())
-			continue
-
-		case m.Kind() != audiosocket.KindSlin:
-			log.Debugf("Ignoring non-slin message. kind: %v", m.Kind())
-			continue
-		}
-
-		if m.ContentLength() < 1 {
-			log.Debugf("No content")
-			continue
 		}
 
 		if errSend := streamClient.Send(&speechpb.StreamingRecognizeRequest{

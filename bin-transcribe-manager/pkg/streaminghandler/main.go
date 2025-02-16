@@ -16,6 +16,8 @@ import (
 
 	speech "cloud.google.com/go/speech/apiv1"
 	"cloud.google.com/go/speech/apiv1/speechpb"
+	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming"
+	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
@@ -42,14 +44,22 @@ const (
 	defaultEncapsulation  = string(cmexternalmedia.EncapsulationAudioSocket)
 	defaultTransport      = string(cmexternalmedia.TransportTCP)
 	defaultConnectionType = "client"
-	defaultFormat         = "ulaw"
+	defaultFormat         = "slin" // 8kHz, 16bit, mono signed linear PCM
 )
 
-// const gcp stt options
+// default gcp stt options
 const (
-	defaultEncoding          = speechpb.RecognitionConfig_MULAW
-	defaultSampleRate        = 8000
-	defaultAudioChannelCount = 1
+	defaultGCPEncoding          = speechpb.RecognitionConfig_LINEAR16
+	defaultGCPSampleRate        = 8000
+	defaultGCPAudioChannelCount = 1
+	defaultGCPModel             = "phone_call"
+)
+
+// default aws stt options
+const (
+	defaultAWSRegion     = "eu-central-1"
+	defaultAWSEncoding   = transcribestreamingservice.MediaEncodingPcm
+	defaultAWSSampleRate = 8000
 )
 
 type streamingHandler struct {
@@ -60,7 +70,8 @@ type streamingHandler struct {
 
 	listenAddress string
 
-	clientSpeech *speech.Client
+	gcpClient *speech.Client
+	awsClient *transcribestreaming.Client
 
 	mapStreaming map[uuid.UUID]*streaming.Streaming
 	muSteaming   sync.Mutex
@@ -73,17 +84,26 @@ func NewStreamingHandler(
 	transcriptHandler transcripthandler.TranscriptHandler,
 
 	listenAddress string,
-	credentialBase64 string,
+	gcpCredentialBase64 string,
+	awsAccessKey string,
+	awsSecretKey string,
 ) StreamingHandler {
 
-	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
+	decodedCredential, err := base64.StdEncoding.DecodeString(gcpCredentialBase64)
 	if err != nil {
 		log.Printf("Error decoding base64 credential: %v", err)
 		return nil
 	}
 
-	// create client speech
-	clientSpeech, err := speech.NewClient(context.Background(), option.WithCredentialsJSON(decodedCredential))
+	// create gcp client
+	gcpClient, err := speech.NewClient(context.Background(), option.WithCredentialsJSON(decodedCredential))
+	if err != nil {
+		logrus.Errorf("Could not create a new client for speech. err: %v", err)
+		return nil
+	}
+
+	// create aws client
+	awsClient, err := awsNewClient(awsAccessKey, awsSecretKey)
 	if err != nil {
 		logrus.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil
@@ -97,7 +117,8 @@ func NewStreamingHandler(
 
 		listenAddress: listenAddress,
 
-		clientSpeech: clientSpeech,
+		gcpClient: gcpClient,
+		awsClient: awsClient,
 
 		mapStreaming: make(map[uuid.UUID]*streaming.Streaming),
 		muSteaming:   sync.Mutex{},
