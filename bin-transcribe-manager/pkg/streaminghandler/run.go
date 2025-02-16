@@ -55,8 +55,8 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	log.WithField("streaming", st).Debugf("Found streaming info. streaming_id: %s", st.ID)
 
 	handlers := []func(*streaming.Streaming, net.Conn) error{
-		h.awsRun,
 		h.gcpRun,
+		h.awsRun,
 	}
 
 	for _, handler := range handlers {
