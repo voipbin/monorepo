@@ -88,6 +88,7 @@ func (h *streamingHandler) awsProcessResult(ctx context.Context, cancel context.
 		"transcribe_id": st.TranscribeID,
 	})
 	log.Debugf("Starting awsProcessResult. transcribe_id: %s", st.TranscribeID)
+
 	defer func() {
 		log.Debugf("Finished awsProcessResult. transcribe_id: %s", st.TranscribeID)
 		cancel()

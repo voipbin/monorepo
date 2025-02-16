@@ -87,6 +87,7 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 		"transcribe_id": st.TranscribeID,
 	})
 	log.Debugf("Starting gcpProcessResult. transcribe_id: %s", st.TranscribeID)
+
 	defer func() {
 		log.Debugf("Finished gcpProcessResult. transcribe_id: %s", st.TranscribeID)
 		cancel()
@@ -101,10 +102,7 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 
 		tmp, err := streamClient.Recv()
 		if err != nil {
-			if err == context.Canceled {
-				return
-			}
-			log.Errorf("Could not received the result. err: %v", err)
+			log.Debugf("Could not received the result. Consider this hangup. err: %v", err)
 			return
 		} else if len(tmp.Results) == 0 {
 			// result end
