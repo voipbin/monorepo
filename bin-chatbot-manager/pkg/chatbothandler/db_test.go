@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -21,11 +22,14 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID  uuid.UUID
-		chatbotName string
-		detail      string
-		engineType  chatbot.EngineType
-		initPrompt  string
+		customerID          uuid.UUID
+		chatbotName         string
+		detail              string
+		engineType          chatbot.EngineType
+		engineModel         chatbot.EngineModel
+		initPrompt          string
+		credentialBase64    string
+		credentialProjectID string
 
 		responseUUID    uuid.UUID
 		responseChatbot *chatbot.Chatbot
@@ -35,24 +39,34 @@ func Test_Create(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID:  uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
-			chatbotName: "test name",
-			detail:      "test detail",
-			engineType:  chatbot.EngineTypeChatGPT,
-			initPrompt:  "test init prompt",
+			customerID:          uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
+			chatbotName:         "test name",
+			detail:              "test detail",
+			engineType:          chatbot.EngineTypeChatGPT,
+			engineModel:         chatbot.EngineModelChatGPT4Turbo,
+			initPrompt:          "test init prompt",
+			credentialBase64:    "BASE64String",
+			credentialProjectID: "d89e7114-ecd9-11ef-a641-fbf15192c6b1",
 
 			responseUUID: uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
 			responseChatbot: &chatbot.Chatbot{
-				ID: uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
+				},
 			},
 
 			expectChatbot: &chatbot.Chatbot{
-				ID:         uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
-				CustomerID: uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
-				Name:       "test name",
-				Detail:     "test detail",
-				EngineType: chatbot.EngineTypeChatGPT,
-				InitPrompt: "test init prompt",
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
+					CustomerID: uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
+				},
+				Name:                "test name",
+				Detail:              "test detail",
+				EngineType:          chatbot.EngineTypeChatGPT,
+				EngineModel:         chatbot.EngineModelChatGPT4Turbo,
+				InitPrompt:          "test init prompt",
+				CredentialBase64:    "BASE64String",
+				CredentialProjectID: "d89e7114-ecd9-11ef-a641-fbf15192c6b1",
 			},
 		},
 	}
@@ -81,7 +95,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().ChatbotGet(ctx, tt.responseUUID).Return(tt.responseChatbot, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbot.CustomerID, chatbot.EventTypeChatbotCreated, tt.responseChatbot)
 
-			res, err := h.Create(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
+			res, err := h.Create(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -117,7 +131,9 @@ func Test_Gets(t *testing.T) {
 
 			responseChatbots: []*chatbot.Chatbot{
 				{
-					ID: uuid.FromStringOrNil("31b00c64-f839-11ed-8f59-ab874a16ee9c"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("31b00c64-f839-11ed-8f59-ab874a16ee9c"),
+					},
 				},
 			},
 		},
@@ -171,7 +187,9 @@ func Test_Get(t *testing.T) {
 			uuid.FromStringOrNil("a568e0b2-a70e-11ed-86c5-374896e473bd"),
 
 			&chatbot.Chatbot{
-				ID: uuid.FromStringOrNil("a568e0b2-a70e-11ed-86c5-374896e473bd"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a568e0b2-a70e-11ed-86c5-374896e473bd"),
+				},
 			},
 		},
 	}
@@ -224,7 +242,9 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995"),
 
 			&chatbot.Chatbot{
-				ID: uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995"),
+				},
 			},
 		},
 	}
@@ -269,25 +289,33 @@ func Test_Update(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id          uuid.UUID
-		chatbotName string
-		detail      string
-		engineType  chatbot.EngineType
-		initPrompt  string
+		id                  uuid.UUID
+		chatbotName         string
+		detail              string
+		engineType          chatbot.EngineType
+		engineModel         chatbot.EngineModel
+		initPrompt          string
+		credentialBase64    string
+		credentialProjectID string
 
 		responseChatbot *chatbot.Chatbot
 	}{
 		{
 			name: "normal",
 
-			id:          uuid.FromStringOrNil("fd49c1d6-f82e-11ed-8893-dfb489cd9bb9"),
-			chatbotName: "new name",
-			detail:      "new detail",
-			engineType:  chatbot.EngineTypeChatGPT,
-			initPrompt:  "new init prompt",
+			id:                  uuid.FromStringOrNil("fd49c1d6-f82e-11ed-8893-dfb489cd9bb9"),
+			chatbotName:         "new name",
+			detail:              "new detail",
+			engineType:          chatbot.EngineTypeChatGPT,
+			engineModel:         chatbot.EngineModelChatGPT3Dot5Turbo,
+			initPrompt:          "new init prompt",
+			credentialBase64:    "BASE64String",
+			credentialProjectID: "8a4ef212-ecda-11ef-965d-17a58f7739bc",
 
 			responseChatbot: &chatbot.Chatbot{
-				ID: uuid.FromStringOrNil("fd49c1d6-f82e-11ed-8893-dfb489cd9bb9"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("fd49c1d6-f82e-11ed-8893-dfb489cd9bb9"),
+				},
 			},
 		},
 	}
@@ -311,11 +339,11 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatbotSetInfo(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt).Return(nil)
+			mockDB.EXPECT().ChatbotSetInfo(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID).Return(nil)
 			mockDB.EXPECT().ChatbotGet(ctx, tt.id).Return(tt.responseChatbot, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbot.CustomerID, chatbot.EventTypeChatbotUpdated, tt.responseChatbot)
 
-			res, err := h.Update(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
+			res, err := h.Update(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

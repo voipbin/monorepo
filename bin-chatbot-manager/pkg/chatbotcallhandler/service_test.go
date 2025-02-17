@@ -8,6 +8,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -60,7 +61,10 @@ func Test_ServiceStart(t *testing.T) {
 			language:      "en-US",
 
 			responseChatbot: &chatbot.Chatbot{
-				ID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				},
 				EngineType: chatbot.EngineTypeChatGPT,
 				InitPrompt: "hello, this is init prompt message.",
 			},
@@ -69,7 +73,9 @@ func Test_ServiceStart(t *testing.T) {
 			},
 			responseUUIDChatbotcall: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 			responseChatbotcall: &chatbotcall.Chatbotcall{
-				ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
+				},
 			},
 			responseChatbotcallMessages: []chatbotcall.Message{
 				{
@@ -84,8 +90,10 @@ func Test_ServiceStart(t *testing.T) {
 			responseUUIDAction: uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
 
 			expectChatbotcall: &chatbotcall.Chatbotcall{
-				ID:                uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
-				CustomerID:        uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
+					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				},
 				ChatbotID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
 				ActiveflowID:      uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
 				ChatbotEngineType: chatbot.EngineTypeChatGPT,

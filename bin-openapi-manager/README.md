@@ -1,0 +1,3 @@
+bin-openapi-manager
+
+$ go generate ./...

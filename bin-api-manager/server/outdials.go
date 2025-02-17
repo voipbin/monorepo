@@ -2,7 +2,6 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -434,13 +433,6 @@ func (h *server) GetOutdialsIdTargets(c *gin.Context, id string, params openapi_
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	var req request.ParamOutdialsIDTargetsGET
-	if err := c.BindQuery(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

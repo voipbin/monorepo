@@ -8,15 +8,14 @@ import (
 
 	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-common-handler/models/identity"
 )
 
 // Create is creating a new chatbotcall.
 // it increases corresponded counter
 func (h *chatbotcallHandler) Create(
 	ctx context.Context,
-	customerID uuid.UUID,
-	chatbotID uuid.UUID,
-	chatbotEngineType chatbot.EngineType,
+	c *chatbot.Chatbot,
 	activeflowID uuid.UUID,
 	referenceType chatbotcall.ReferenceType,
 	referenceID uuid.UUID,
@@ -25,17 +24,20 @@ func (h *chatbotcallHandler) Create(
 	language string,
 ) (*chatbotcall.Chatbotcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Create",
-		"customer_id":    customerID,
-		"chatbotcall_id": chatbotID,
+		"func":    "Create",
+		"chatbot": c,
 	})
 
 	id := h.utilHandler.UUIDCreate()
 	tmp := &chatbotcall.Chatbotcall{
-		ID:                id,
-		CustomerID:        customerID,
-		ChatbotID:         chatbotID,
-		ChatbotEngineType: chatbotEngineType,
+		Identity: identity.Identity{
+			ID:         id,
+			CustomerID: c.CustomerID,
+		},
+
+		ChatbotID:          c.ID,
+		ChatbotEngineType:  c.EngineType,
+		ChatbotEngineModel: c.EngineModel,
 
 		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,

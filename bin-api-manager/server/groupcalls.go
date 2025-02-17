@@ -2,7 +2,6 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -74,13 +73,6 @@ func (h *server) GetGroupcalls(c *gin.Context, params openapi_server.GetGroupcal
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
-
-	var req request.ParamGroupcallsGET
-	if err := c.BindQuery(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {

@@ -7,6 +7,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -35,8 +36,10 @@ func Test_ProcessStart(t *testing.T) {
 			"normal",
 
 			&chatbotcall.Chatbotcall{
-				ID:            uuid.FromStringOrNil("6ed69462-a705-11ed-a47b-cfb979f9f07d"),
-				CustomerID:    uuid.FromStringOrNil("6f12ea52-a705-11ed-86d3-8b796a5da603"),
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("6ed69462-a705-11ed-a47b-cfb979f9f07d"),
+					CustomerID: uuid.FromStringOrNil("6f12ea52-a705-11ed-86d3-8b796a5da603"),
+				},
 				ReferenceType: chatbotcall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("6f69db50-a705-11ed-bc35-177b3c1673d4"),
 				Language:      "en-US",
@@ -101,7 +104,9 @@ func Test_ProcessEnd(t *testing.T) {
 			"normal",
 
 			&chatbotcall.Chatbotcall{
-				ID:           uuid.FromStringOrNil("a7c462f8-a706-11ed-9461-cbd173399722"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a7c462f8-a706-11ed-9461-cbd173399722"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("fe18ea48-e12d-43cb-8b40-48caeed6d67b"),
 				TranscribeID: uuid.FromStringOrNil("a7f1d814-a706-11ed-9af7-3f37982d3546"),
 			},

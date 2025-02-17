@@ -76,7 +76,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
 
@@ -233,7 +232,10 @@ type ServiceHandler interface {
 		name string,
 		detail string,
 		engineType chatbotchatbot.EngineType,
+		engineModel chatbotchatbot.EngineModel,
 		initPrompt string,
+		credentialBase64 string,
+		credentialProjectID string,
 	) (*chatbotchatbot.WebhookMessage, error)
 	ChatbotGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatbotchatbot.WebhookMessage, error)
 	ChatbotGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error)
@@ -245,7 +247,10 @@ type ServiceHandler interface {
 		name string,
 		detail string,
 		engineType chatbotchatbot.EngineType,
+		engineModel chatbotchatbot.EngineModel,
 		initPrompt string,
+		credentialBase64 string,
+		credentialProjectID string,
 	) (*chatbotchatbot.WebhookMessage, error)
 
 	// chatbotcall handlers
@@ -660,7 +665,7 @@ type ServiceHandler interface {
 	// transcribe handlers
 	TranscribeGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 	TranscribeGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error)
-	TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType request.TranscribeReferenceType, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error)
+	TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType string, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error)
 	TranscribeStop(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 	TranscribeDelete(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 

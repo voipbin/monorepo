@@ -4,7 +4,6 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +37,7 @@ func (h *server) PostTranscribes(c *gin.Context) {
 
 	referenceID := uuid.FromStringOrNil(req.ReferenceId)
 
-	res, err := h.serviceHandler.TranscribeStart(c.Request.Context(), &a, request.TranscribeReferenceType(req.ReferenceType), referenceID, req.Language, tmtranscribe.Direction(req.Direction))
+	res, err := h.serviceHandler.TranscribeStart(c.Request.Context(), &a, string(req.ReferenceType), referenceID, req.Language, tmtranscribe.Direction(req.Direction))
 	if err != nil {
 		log.Errorf("Could not create a transcribe. err: %v", err)
 		c.AbortWithStatus(400)

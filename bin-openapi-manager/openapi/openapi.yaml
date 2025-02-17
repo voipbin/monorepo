@@ -1246,10 +1246,39 @@ components:
       description: Type of engine used by the chatbot.
       enum:
         - chatGPT
+        - dialogflow
         - clova
       x-enum-varnames:
         - ChatbotManagerChatbotEngineTypeChatGPT
+        - ChatbotManagerChatbotEngineTypeDialogFlow
         - ChatbotManagerChatbotEngineTypeClova
+
+    ChatbotManagerChatbotEngineModel:
+      type: string
+      description: Model of the chatbot engine.
+      enum:
+        - o1-mini
+        - o1-preview
+        - o1
+        - o3-mini
+        - gpt-4o
+        - gpt-4o-mini
+        - gpt-4-turbo
+        - gpt-4-vision-preview
+        - gpt-4
+        - gpt-3.5-turbo
+      x-enum-varnames:
+        - ChatbotManagerChatbotEngineModelChatGPTO1Mini
+        - ChatbotManagerChatbotEngineModelChatGPTO1Preview
+        - ChatbotManagerChatbotEngineModelChatGPTO1
+        - ChatbotManagerChatbotEngineModelChatGPTO3Mini
+        - ChatbotManagerChatbotEngineModelChatGPT4O
+        - ChatbotManagerChatbotEngineModelChatGPT4OMini
+        - ChatbotManagerChatbotEngineModelChatGPT4Turbo
+        - ChatbotManagerChatbotEngineModelChatGPT4VisionPreview
+        - ChatbotManagerChatbotEngineModelChatGPT4
+        - ChatbotManagerChatbotEngineModelChatGPT3Dot5Turbo
+
     ChatbotManagerChatbot:
       type: object
       properties:
@@ -1267,9 +1296,17 @@ components:
           description: Detailed information about the chatbot.
         engine_type:
           $ref: '#/components/schemas/ChatbotManagerChatbotEngineType'
+        engine_model:
+          $ref: '#/components/schemas/ChatbotManagerChatbotEngineModel'
         init_prompt:
           type: string
           description: Initial prompt to configure the chatbot's behavior.
+        credential_base64:
+          type: string
+          description: Base64-encoded credential information.
+        credential_project_id:
+          type: string
+          description: Project ID associated with the credential.
         tm_create:
           type: string
           description: Timestamp when the chatbot was created.
@@ -1291,6 +1328,7 @@ components:
         - ChatbotManagerChatbotcallGenderMale
         - ChatbotManagerChatbotcallGenderFemale
         - ChatbotManagerChatbotcallGenderNeutral
+
     ChatbotManagerChatbotcallMessage:
       type: object
       properties:
@@ -1300,6 +1338,7 @@ components:
         content:
           type: string
           description: Content of the message.
+
     ChatbotManagerChatbotcallreferenceType:
       type: string
       description: Type of reference associated with the chatbot call.
@@ -1307,6 +1346,7 @@ components:
         - call
       x-enum-varnames:
         - ChatbotManagerChatbotcallreferenceTypeCall
+
     ChatbotManagerChatbotcallStatus:
       type: string
       description: Status of the chatbot call.
@@ -1318,6 +1358,7 @@ components:
         - ChatbotManagerChatbotcallStatusInitiating
         - ChatbotManagerChatbotcallStatusProgressing
         - ChatbotManagerChatbotcallStatusEnd
+
     ChatbotManagerChatbotcall:
       type: object
       properties:
@@ -1330,6 +1371,10 @@ components:
         chatbot_id:
           type: string
           description: Unique identifier of the associated chatbot.
+        engine_type:
+          $ref: '#/components/schemas/ChatbotManagerChatbotEngineType'
+        engine_model:
+          $ref: '#/components/schemas/ChatbotManagerChatbotEngineModel'
         activeflow_id:
           type: string
           description: Unique identifier for the activeflow.
@@ -2817,11 +2862,13 @@ components:
         - recording
         - call
         - confbridge
+        - conference
       x-enum-varnames:
         - TranscribeManagerTranscribeReferenceTypeUnknown
         - TranscribeManagerTranscribeReferenceTypeRecording
         - TranscribeManagerTranscribeReferenceTypeCall
         - TranscribeManagerTranscribeReferenceTypeConfbridge
+        - TranscribeManagerTranscribeReferenceTypeConference
     TranscribeManagerTranscribeStatus:
       type: string
       enum:

@@ -28,11 +28,14 @@ func Test_chatbotsPOST(t *testing.T) {
 
 		responseChatbot *cmchatbot.WebhookMessage
 
-		expectName       string
-		expectDetail     string
-		expectEngineType cmchatbot.EngineType
-		expectInitPrompt string
-		expectRes        string
+		expectName                string
+		expectDetail              string
+		expectEngineType          cmchatbot.EngineType
+		expectEngineModel         cmchatbot.EngineModel
+		expectInitPrompt          string
+		expectCredentialBase64    string
+		expectCredentialProjectID string
+		expectRes                 string
 	}{
 		{
 			name: "normal",
@@ -43,17 +46,22 @@ func Test_chatbotsPOST(t *testing.T) {
 			},
 
 			reqQuery: "/chatbots",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","init_prompt":"test init prompt"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"test credential project id"}`),
 
 			responseChatbot: &cmchatbot.WebhookMessage{
-				ID: uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88"),
+				},
 			},
 
-			expectName:       "test name",
-			expectDetail:     "test detail",
-			expectEngineType: cmchatbot.EngineTypeChatGPT,
-			expectInitPrompt: "test init prompt",
-			expectRes:        `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectName:                "test name",
+			expectDetail:              "test detail",
+			expectEngineType:          cmchatbot.EngineTypeChatGPT,
+			expectEngineModel:         cmchatbot.EngineModelChatGPT4,
+			expectInitPrompt:          "test init prompt",
+			expectCredentialBase64:    "test credential base64",
+			expectCredentialProjectID: "test credential project id",
+			expectRes:                 `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -84,7 +92,10 @@ func Test_chatbotsPOST(t *testing.T) {
 				tt.expectName,
 				tt.expectDetail,
 				tt.expectEngineType,
+				tt.expectEngineModel,
 				tt.expectInitPrompt,
+				tt.expectCredentialBase64,
+				tt.expectCredentialProjectID,
 			).Return(tt.responseChatbot, nil)
 
 			r.ServeHTTP(w, req)
@@ -127,13 +138,15 @@ func Test_chatbotsGET(t *testing.T) {
 
 			responseChatbots: []*cmchatbot.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectRes:       `{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000"}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -147,22 +160,28 @@ func Test_chatbotsGET(t *testing.T) {
 
 			responseChatbots: []*cmchatbot.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("6a812daf-6ca6-4c34-892f-6e83dfd976f2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6a812daf-6ca6-4c34-892f-6e83dfd976f2"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("aff6883a-b24f-4d93-ba09-32a276cedcb7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("aff6883a-b24f-4d93-ba09-32a276cedcb7"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("e9a4b1e2-100a-4433-a854-e4fb9b668681"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e9a4b1e2-100a-4433-a854-e4fb9b668681"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectRes:       `{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000"},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000"},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000"}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -224,11 +243,13 @@ func Test_chatbotsIDGET(t *testing.T) {
 			reqQuery: "/chatbots/07f52215-8366-4060-902f-a86857243351",
 
 			responseChatbot: &cmchatbot.WebhookMessage{
-				ID: uuid.FromStringOrNil("07f52215-8366-4060-902f-a86857243351"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("07f52215-8366-4060-902f-a86857243351"),
+				},
 			},
 
 			expectChatbotID: uuid.FromStringOrNil("07f52215-8366-4060-902f-a86857243351"),
-			expectRes:       `{"id":"07f52215-8366-4060-902f-a86857243351","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:       `{"id":"07f52215-8366-4060-902f-a86857243351","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -290,11 +311,13 @@ func Test_chatbotsIDDELETE(t *testing.T) {
 			reqQuery: "/chatbots/ab6f6c84-b9c2-4350-9978-4336b677603c",
 
 			responseChatbot: &cmchatbot.WebhookMessage{
-				ID: uuid.FromStringOrNil("ab6f6c84-b9c2-4350-9978-4336b677603c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab6f6c84-b9c2-4350-9978-4336b677603c"),
+				},
 			},
 
 			expectChatbotID: uuid.FromStringOrNil("ab6f6c84-b9c2-4350-9978-4336b677603c"),
-			expectRes:       `{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:       `{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -343,12 +366,15 @@ func Test_chatbotsIDPUT(t *testing.T) {
 
 		responseChatbot *cmchatbot.WebhookMessage
 
-		expectChatbotID  uuid.UUID
-		expectName       string
-		expectDetail     string
-		expectEngineType cmchatbot.EngineType
-		expectInitPrompt string
-		expectRes        string
+		expectChatbotID           uuid.UUID
+		expectName                string
+		expectDetail              string
+		expectEngineType          cmchatbot.EngineType
+		epxectEngineModel         cmchatbot.EngineModel
+		expectInitPrompt          string
+		expectCredentialBase64    string
+		expectCredentialProjectID string
+		expectRes                 string
 	}{
 		{
 			name: "normal",
@@ -359,18 +385,23 @@ func Test_chatbotsIDPUT(t *testing.T) {
 			},
 
 			reqQuery: "/chatbots/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","init_prompt":"test init prompt"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"test credential project id"}`),
 
 			responseChatbot: &cmchatbot.WebhookMessage{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
-			expectChatbotID:  uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-			expectName:       "test name",
-			expectDetail:     "test detail",
-			expectEngineType: cmchatbot.EngineTypeChatGPT,
-			expectInitPrompt: "test init prompt",
-			expectRes:        `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectChatbotID:           uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			expectName:                "test name",
+			expectDetail:              "test detail",
+			expectEngineType:          cmchatbot.EngineTypeChatGPT,
+			epxectEngineModel:         cmchatbot.EngineModelChatGPT4,
+			expectInitPrompt:          "test init prompt",
+			expectCredentialBase64:    "test credential base64",
+			expectCredentialProjectID: "test credential project id",
+			expectRes:                 `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -402,7 +433,10 @@ func Test_chatbotsIDPUT(t *testing.T) {
 				tt.expectName,
 				tt.expectDetail,
 				tt.expectEngineType,
+				tt.epxectEngineModel,
 				tt.expectInitPrompt,
+				tt.expectCredentialBase64,
+				tt.expectCredentialProjectID,
 			).Return(tt.responseChatbot, nil)
 
 			r.ServeHTTP(w, req)

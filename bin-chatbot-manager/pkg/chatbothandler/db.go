@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-chatbot-manager/models/chatbot"
+	"monorepo/bin-common-handler/models/identity"
 )
 
 // Create creates a new chatbot record.
@@ -16,27 +17,37 @@ func (h *chatbotHandler) Create(
 	name string,
 	detail string,
 	engineType chatbot.EngineType,
+	engineModel chatbot.EngineModel,
 	initPrompt string,
+	credentialBase64 string,
+	credentialProjectID string,
 ) (*chatbot.Chatbot, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Create",
-		"customer_id": customerID,
-		"name":        name,
-		"detail":      detail,
-		"engine_type": engineType,
-		"init_prompt": initPrompt,
+		"func":         "Create",
+		"customer_id":  customerID,
+		"name":         name,
+		"detail":       detail,
+		"engine_type":  engineType,
+		"engine_model": engineModel,
+		"init_prompt":  initPrompt,
 	})
 
 	id := h.utilHandler.UUIDCreate()
 	c := &chatbot.Chatbot{
-		ID:         id,
-		CustomerID: customerID,
+		Identity: identity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 
 		Name:   name,
 		Detail: detail,
 
-		EngineType: engineType,
-		InitPrompt: initPrompt,
+		EngineType:  engineType,
+		EngineModel: engineModel,
+		InitPrompt:  initPrompt,
+
+		CredentialBase64:    credentialBase64,
+		CredentialProjectID: credentialProjectID,
 	}
 	log.WithField("chatbot", c).Debugf("Creating a new chatbot. chatbot_id: %s", c.ID)
 
@@ -111,17 +122,28 @@ func (h *chatbotHandler) Delete(ctx context.Context, id uuid.UUID) (*chatbot.Cha
 }
 
 // Update updates the chatbot info
-func (h *chatbotHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, initPrompt string) (*chatbot.Chatbot, error) {
+func (h *chatbotHandler) Update(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	engineType chatbot.EngineType,
+	engineModel chatbot.EngineModel,
+	initPrompt string,
+	credentialBase64 string,
+	credentialProjectID string,
+) (*chatbot.Chatbot, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Update",
-		"chatbot_id":  id,
-		"name":        name,
-		"detail":      detail,
-		"engine_type": engineType,
-		"init_prompt": initPrompt,
+		"func":         "Update",
+		"chatbot_id":   id,
+		"name":         name,
+		"detail":       detail,
+		"engine_type":  engineType,
+		"engine_model": engineModel,
+		"init_prompt":  initPrompt,
 	})
 
-	if err := h.db.ChatbotSetInfo(ctx, id, name, detail, engineType, initPrompt); err != nil {
+	if err := h.db.ChatbotSetInfo(ctx, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID); err != nil {
 		log.Errorf("Could not update the chatbot. err: %v", err)
 		return nil, err
 	}

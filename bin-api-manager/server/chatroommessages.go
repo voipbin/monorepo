@@ -2,7 +2,7 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/response"
+	// "monorepo/bin-api-manager/api/models/response"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	chmedia "monorepo/bin-chat-manager/models/media"
 
@@ -103,13 +103,8 @@ func (h *server) GetChatroommessages(c *gin.Context, params openapi_server.GetCh
 	if len(tmps) > 0 {
 		nextToken = tmps[len(tmps)-1].TMCreate
 	}
-	res := response.BodyChatroommessagesGET{
-		Result: tmps,
-		Pagination: response.Pagination{
-			NextPageToken: nextToken,
-		},
-	}
 
+	res := GenerateListResponse(tmps, nextToken)
 	c.JSON(200, res)
 }
 

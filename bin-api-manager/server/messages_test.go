@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -231,11 +230,9 @@ func Test_messagesPOST(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		requestBody request.BodyMessagesPOST
-
 		responseMessage *mmmessage.WebhookMessage
 
-		expectSource       commonaddress.Address
+		expectSource       *commonaddress.Address
 		expectDestinations []commonaddress.Address
 		expectText         string
 		expectRes          string
@@ -253,25 +250,11 @@ func Test_messagesPOST(t *testing.T) {
 			reqQuery: "/messages",
 			reqBody:  []byte(`{"source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"}],"text":"hello world"}`),
 
-			requestBody: request.BodyMessagesPOST{
-				Source: &commonaddress.Address{
-					Type:   commonaddress.TypeTel,
-					Target: "+821100000001",
-				},
-				Destinations: []commonaddress.Address{
-					{
-						Type:   commonaddress.TypeTel,
-						Target: "+821100000002",
-					},
-				},
-				Text: "hello world",
-			},
-
 			responseMessage: &mmmessage.WebhookMessage{
 				ID: uuid.FromStringOrNil("d0b1f3f4-a2e9-11ec-8b3b-4b3b3b3b3b3b"),
 			},
 
-			expectSource: commonaddress.Address{
+			expectSource: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
@@ -307,7 +290,7 @@ func Test_messagesPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().MessageSend(req.Context(), &tt.agent, tt.requestBody.Source, tt.requestBody.Destinations, tt.requestBody.Text).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().MessageSend(req.Context(), &tt.agent, tt.expectSource, tt.expectDestinations, tt.expectText).Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
