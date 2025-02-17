@@ -17,8 +17,10 @@ const (
 	select
 		id,
 		customer_id,
+
 		chatbot_id,
 		chatbot_engine_type,
+		chatbot_engine_model,
 
 		activeflow_id,
 		reference_type,
@@ -52,8 +54,10 @@ func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+
 		&res.ChatbotID,
 		&res.ChatbotEngineType,
+		&res.ChatbotEngineModel,
 
 		&res.ActiveflowID,
 		&res.ReferenceType,
@@ -95,8 +99,10 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 	q := `insert into chatbot_chatbotcalls(
 		id,
 		customer_id,
+
 		chatbot_id,
 		chatbot_engine_type,
+		chatbot_engine_model,
 
 		activeflow_id,
 		reference_type,
@@ -117,7 +123,8 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?, ?,
+		?, ?, 
+		?, ?, ?,
 		?, ?, ?,
 		?, ?,
 		?,
@@ -138,8 +145,10 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 	_, err = h.db.Exec(q,
 		cb.ID.Bytes(),
 		cb.CustomerID.Bytes(),
+
 		cb.ChatbotID.Bytes(),
 		cb.ChatbotEngineType,
+		cb.ChatbotEngineModel,
 
 		cb.ActiveflowID.Bytes(),
 		cb.ReferenceType,

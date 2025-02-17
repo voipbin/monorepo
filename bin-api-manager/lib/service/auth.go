@@ -1,14 +1,25 @@
 package service
 
 import (
-	"monorepo/bin-api-manager/api/models/common"
-	"monorepo/bin-api-manager/api/models/request"
-	"monorepo/bin-api-manager/api/models/response"
+	// "monorepo/bin-api-manager/api/models/request"
+	// "monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
+
+type RequestBodyLoginPOST struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// BodyLoginPOST is response body define for POST /login
+type ResponseBodyLoginPOST struct {
+	Username string `json:"username"`
+	Token    string `json:"token"`
+}
 
 // PostLogin handles POST /PostLogin request.
 // It generates and return the JWT token for api use.
@@ -25,7 +36,7 @@ func PostLogin(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	var req request.BodyLoginPOST
+	var req RequestBodyLoginPOST
 	if err := c.BindJSON(&req); err != nil {
 		log.Warnf("Could not bind the request body. err: %v", err)
 		c.AbortWithStatus(400)
@@ -47,7 +58,7 @@ func PostLogin(c *gin.Context) {
 	log.Debugf("Created token string. token: %v", token)
 
 	c.SetCookie("token", token, int(servicehandler.TokenExpiration.Seconds()), "/", "", false, true)
-	res := response.BodyLoginPOST{
+	res := ResponseBodyLoginPOST{
 		Username: req.Username,
 		Token:    token,
 	}

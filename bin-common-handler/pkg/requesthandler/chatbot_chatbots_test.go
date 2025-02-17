@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -56,10 +57,14 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 			},
 			[]cbchatbot.Chatbot{
 				{
-					ID: uuid.FromStringOrNil("db662396-4449-456c-a6ee-39aa2ec30b55"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("db662396-4449-456c-a6ee-39aa2ec30b55"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("0ea936d3-c74f-4744-8ca6-44e47178d88a"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("0ea936d3-c74f-4744-8ca6-44e47178d88a"),
+					},
 				},
 			},
 		},
@@ -123,7 +128,9 @@ func Test_ChatbotV1ChatbotGet(t *testing.T) {
 				Data:       []byte(`{"id":"d628f462-cf28-47d9-ae37-c604c0ea2863"}`),
 			},
 			&cbchatbot.Chatbot{
-				ID: uuid.FromStringOrNil("d628f462-cf28-47d9-ae37-c604c0ea2863"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("d628f462-cf28-47d9-ae37-c604c0ea2863"),
+				},
 			},
 		},
 	}
@@ -158,11 +165,14 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID  uuid.UUID
-		chatbotName string
-		detail      string
-		engineType  cbchatbot.EngineType
-		initPrompt  string
+		customerID          uuid.UUID
+		chatbotName         string
+		detail              string
+		engineType          cbchatbot.EngineType
+		engineModel         cbchatbot.EngineModel
+		initPrompt          string
+		credentialBase64    string
+		credentialProjectID string
 
 		response *sock.Response
 
@@ -173,11 +183,14 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID:  uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
-			chatbotName: "test name",
-			detail:      "test detail",
-			engineType:  cbchatbot.EngineTypeChatGPT,
-			initPrompt:  "test init prompt",
+			customerID:          uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
+			chatbotName:         "test name",
+			detail:              "test detail",
+			engineType:          cbchatbot.EngineTypeChatGPT,
+			engineModel:         cbchatbot.EngineModelChatGPT4,
+			initPrompt:          "test init prompt",
+			credentialBase64:    "test credential base64",
+			credentialProjectID: "c9855e34-ed26-11ef-985d-9fd0d08ceee0",
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -190,10 +203,12 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 				URI:      "/v1/chatbots",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_type":"chatGPT","init_prompt":"test init prompt"}`),
+				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"c9855e34-ed26-11ef-985d-9fd0d08ceee0"}`),
 			},
 			expectRes: &cbchatbot.Chatbot{
-				ID: uuid.FromStringOrNil("e6248322-de4f-4313-bd89-f9de1c6466a8"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e6248322-de4f-4313-bd89-f9de1c6466a8"),
+				},
 			},
 		},
 	}
@@ -211,7 +226,7 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1ChatbotCreate(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
+			cf, err := reqHandler.ChatbotV1ChatbotCreate(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -253,7 +268,9 @@ func Test_ConferenceV1ChatbotDelete(t *testing.T) {
 				Method: sock.RequestMethodDelete,
 			},
 			&cbchatbot.Chatbot{
-				ID: uuid.FromStringOrNil("5d4c38bf-6cd5-4255-950a-9abf52704472"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("5d4c38bf-6cd5-4255-950a-9abf52704472"),
+				},
 			},
 		},
 	}
@@ -288,11 +305,14 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id          uuid.UUID
-		chatbotName string
-		detail      string
-		engineType  cbchatbot.EngineType
-		initPrompt  string
+		id                  uuid.UUID
+		chatbotName         string
+		detail              string
+		engineType          cbchatbot.EngineType
+		engineModel         cbchatbot.EngineModel
+		initPrompt          string
+		credentialBase64    string
+		credentialProjectID string
 
 		response *sock.Response
 
@@ -303,11 +323,14 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			id:          uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
-			chatbotName: "test name",
-			detail:      "test detail",
-			engineType:  cbchatbot.EngineTypeChatGPT,
-			initPrompt:  "test init prompt",
+			id:                  uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
+			chatbotName:         "test name",
+			detail:              "test detail",
+			engineType:          cbchatbot.EngineTypeChatGPT,
+			engineModel:         cbchatbot.EngineModelChatGPT4,
+			initPrompt:          "test init prompt",
+			credentialBase64:    "test credential base64",
+			credentialProjectID: "991f68a2-ed26-11ef-999d-a7383cc28fbf",
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -320,10 +343,12 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 				URI:      "/v1/chatbots/76380ede-f84a-11ed-a288-2bf54d8b92e6",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","init_prompt":"test init prompt"}`),
+				Data:     []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"991f68a2-ed26-11ef-999d-a7383cc28fbf"}`),
 			},
 			expectRes: &cbchatbot.Chatbot{
-				ID: uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
+				},
 			},
 		},
 	}
@@ -341,7 +366,7 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1ChatbotUpdate(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
+			cf, err := reqHandler.ChatbotV1ChatbotUpdate(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

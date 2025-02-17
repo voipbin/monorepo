@@ -23,7 +23,11 @@ const (
 		detail,
 
 		engine_type,
+		engine_model,
 		init_prompt,
+
+		credential_base64,
+		credential_project_id,
 
 		tm_create,
 		tm_update,
@@ -44,7 +48,11 @@ func (h *handler) chatbotGetFromRow(row *sql.Rows) (*chatbot.Chatbot, error) {
 		&res.Detail,
 
 		&res.EngineType,
+		&res.EngineModel,
 		&res.InitPrompt,
+
+		&res.CredentialBase64,
+		&res.CredentialProjectID,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -66,7 +74,11 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 		detail,
 
 		engine_type,
+		engine_model,
 		init_prompt,
+
+		credential_base64,
+		credential_project_id,
 
 		tm_create,
 		tm_update,
@@ -74,6 +86,7 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 	) values (
 		?, ?,
 		?, ?,
+		?, ?, ?,
 		?, ?,
 		?, ?, ?
 		)
@@ -87,7 +100,11 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 		c.Detail,
 
 		c.EngineType,
+		c.EngineModel,
 		c.InitPrompt,
+
+		c.CredentialBase64,
+		c.CredentialProjectID,
 
 		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
@@ -253,21 +270,23 @@ func (h *handler) ChatbotGets(ctx context.Context, customerID uuid.UUID, size ui
 }
 
 // ChatbotSetInfo sets the chatbot info
-func (h *handler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, initPrompt string) error {
-	//prepare
+func (h *handler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, initPrompt string, credentailBase64 string, credentialProjectID string) error {
 	q := `
 	update chatbot_chatbots set
 		name = ?,
 		detail = ?,
 		engine_type = ?,
+		engine_model = ?,
 		init_prompt = ?,
+		credential_base64 = ?,
+		credential_project_id = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, name, detail, engineType, initPrompt, ts, id.Bytes())
+	_, err := h.db.Exec(q, name, detail, engineType, engineModel, initPrompt, credentailBase64, credentialProjectID, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatbotSetInfo. err: %v", err)
 	}

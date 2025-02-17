@@ -72,7 +72,10 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 	name string,
 	detail string,
 	engineType cbchatbot.EngineType,
+	engineModel cbchatbot.EngineModel,
 	initPrompt string,
+	credentialBase64 string,
+	credentialProjectID string,
 ) (*cbchatbot.Chatbot, error) {
 	uri := "/v1/chatbots"
 
@@ -80,8 +83,13 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 		CustomerID: customerID,
 		Name:       name,
 		Detail:     detail,
-		EngineType: engineType,
-		InitPrompt: initPrompt,
+
+		EngineType:  engineType,
+		EngineModel: engineModel,
+		InitPrompt:  initPrompt,
+
+		CredentialBase64:    credentialBase64,
+		CredentialProjectID: credentialProjectID,
 	}
 
 	m, err := json.Marshal(data)
@@ -142,15 +150,23 @@ func (r *requestHandler) ChatbotV1ChatbotUpdate(
 	name string,
 	detail string,
 	engineType cbchatbot.EngineType,
+	engineModel cbchatbot.EngineModel,
 	initPrompt string,
+	credentialBase64 string,
+	credentialProjectID string,
 ) (*cbchatbot.Chatbot, error) {
 	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID)
 
 	data := &cbrequest.V1DataChatbotsIDPut{
-		Name:       name,
-		Detail:     detail,
-		EngineType: engineType,
-		InitPrompt: initPrompt,
+		Name:   name,
+		Detail: detail,
+
+		EngineType:  engineType,
+		EngineModel: engineModel,
+		InitPrompt:  initPrompt,
+
+		CredentialBase64:    credentialBase64,
+		CredentialProjectID: credentialProjectID,
 	}
 
 	m, err := json.Marshal(data)

@@ -2,38 +2,43 @@ package chatbot
 
 import (
 	"encoding/json"
-
-	uuid "github.com/gofrs/uuid"
+	"monorepo/bin-common-handler/models/identity"
 )
 
 // WebhookMessage defines webhook event
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	identity.Identity
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name   string `json:"name,omitempty"`
+	Detail string `json:"detail,omitempty"`
 
-	EngineType EngineType `json:"engine_type"`
-	InitPrompt string     `json:"init_prompt"`
+	EngineType  EngineType  `json:"engine_type,omitempty"`
+	EngineModel EngineModel `json:"engine_model,omitempty"`
+	InitPrompt  string      `json:"init_prompt,omitempty"`
+
+	CredentialBase64    string `json:"credential_base64,omitempty"`
+	CredentialProjectID string `json:"credential_project_id,omitempty"`
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event
 func (h *Chatbot) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
+		Identity: h.Identity,
 
 		Name:   h.Name,
 		Detail: h.Detail,
 
-		EngineType: h.EngineType,
-		InitPrompt: h.InitPrompt,
+		EngineType:  h.EngineType,
+		EngineModel: h.EngineModel,
+		InitPrompt:  h.InitPrompt,
+
+		CredentialBase64:    h.CredentialBase64,
+		CredentialProjectID: h.CredentialProjectID,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

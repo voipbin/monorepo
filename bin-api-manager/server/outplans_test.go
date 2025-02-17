@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	caoutplan "monorepo/bin-campaign-manager/models/outplan"
@@ -366,7 +365,6 @@ func Test_outplansIDPUT(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		requestBody    request.BodyOutplansIDPUT
 		responseOuplan *caoutplan.WebhookMessage
 
 		expectOutplanID uuid.UUID
@@ -385,10 +383,6 @@ func Test_outplansIDPUT(t *testing.T) {
 			reqQuery: "/outplans/5ad57130-c64c-11ec-b131-a787ac641f8a",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail"}`),
 
-			requestBody: request.BodyOutplansIDPUT{
-				Name:   "test name",
-				Detail: "test detail",
-			},
 			responseOuplan: &caoutplan.WebhookMessage{
 				ID: uuid.FromStringOrNil("5ad57130-c64c-11ec-b131-a787ac641f8a"),
 			},

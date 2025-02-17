@@ -18,7 +18,6 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -171,7 +170,7 @@ func Test_TranscribeStart(t *testing.T) {
 		name string
 
 		agent         *amagent.Agent
-		referenceType request.TranscribeReferenceType
+		referenceType string
 		referenceID   uuid.UUID
 		language      string
 		direction     tmtranscribe.Direction
@@ -195,7 +194,7 @@ func Test_TranscribeStart(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			referenceType: request.TranscribeReferenceTypeCall,
+			referenceType: "call",
 			referenceID:   uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
 			language:      "en-US",
 			direction:     tmtranscribe.DirectionBoth,
@@ -236,10 +235,10 @@ func Test_TranscribeStart(t *testing.T) {
 			ctx := context.Background()
 
 			switch tt.referenceType {
-			case request.TranscribeReferenceTypeCall:
+			case "call":
 				mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 
-			case request.TranscribeReferenceTypeRecording:
+			case "recording":
 				mockReq.EXPECT().CallV1RecordingGet(ctx, tt.referenceID).Return(tt.responseRecording, nil)
 			}
 			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.agent.CustomerID, tt.expectReferenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseTranscribe, nil)

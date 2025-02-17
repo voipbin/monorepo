@@ -3,8 +3,9 @@ create table chatbot_chatbotcalls(
   id            binary(16),   -- id
   customer_id   binary(16),   -- customer id
 
-  chatbot_id          binary(16),   -- chatbot id
-  chatbot_engine_type varchar(255), -- chatbot engine type
+  chatbot_id            binary(16),   -- chatbot id
+  chatbot_engine_type   varchar(255), -- chatbot engine type
+  chatbot_engine_model  varchar(255),
 
   activeflow_id     binary(16),
   reference_type    varchar(255),

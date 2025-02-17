@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -101,8 +100,6 @@ func Test_storageAccountsPost(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		req request.BodyStorageAccountsPOST
-
 		responseAccount *smaccount.WebhookMessage
 
 		expectCustomerID uuid.UUID
@@ -120,10 +117,6 @@ func Test_storageAccountsPost(t *testing.T) {
 
 			reqQuery: "/storage_accounts",
 			reqBody:  []byte(`{"customer_id":"a77397a6-1bef-11ef-bb4f-d76f9d478e32"}`),
-
-			req: request.BodyStorageAccountsPOST{
-				CustomerID: uuid.FromStringOrNil("a77397a6-1bef-11ef-bb4f-d76f9d478e32"),
-			},
 
 			responseAccount: &smaccount.WebhookMessage{
 				ID: uuid.FromStringOrNil("ae58a520-1bef-11ef-afdc-571791bb0855"),

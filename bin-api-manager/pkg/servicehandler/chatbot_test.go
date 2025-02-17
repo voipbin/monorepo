@@ -23,11 +23,14 @@ func Test_ChatbotCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
-		chatbotName string
-		detail      string
-		engineType  chatbotchatbot.EngineType
-		initPrompt  string
+		agent               *amagent.Agent
+		chatbotName         string
+		detail              string
+		engineType          chatbotchatbot.EngineType
+		engineModel         chatbotchatbot.EngineModel
+		initPrompt          string
+		credentialBase64    string
+		credentialProjectID string
 
 		response  *chatbotchatbot.Chatbot
 		expectRes *chatbotchatbot.WebhookMessage
@@ -42,16 +45,23 @@ func Test_ChatbotCreate(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			chatbotName: "test name",
-			detail:      "test detail",
-			engineType:  chatbotchatbot.EngineTypeChatGPT,
-			initPrompt:  "test init prompt",
+			chatbotName:         "test name",
+			detail:              "test detail",
+			engineType:          chatbotchatbot.EngineTypeChatGPT,
+			engineModel:         chatbotchatbot.EngineModelChatGPT4,
+			initPrompt:          "test init prompt",
+			credentialBase64:    "test credential base64",
+			credentialProjectID: "test credential project id",
 
 			response: &chatbotchatbot.Chatbot{
-				ID: uuid.FromStringOrNil("ea4b81a9-ffab-4c20-8a77-c9e4d80df548"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ea4b81a9-ffab-4c20-8a77-c9e4d80df548"),
+				},
 			},
 			expectRes: &chatbotchatbot.WebhookMessage{
-				ID: uuid.FromStringOrNil("ea4b81a9-ffab-4c20-8a77-c9e4d80df548"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ea4b81a9-ffab-4c20-8a77-c9e4d80df548"),
+				},
 			},
 		},
 	}
@@ -70,9 +80,9 @@ func Test_ChatbotCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatbotV1ChatbotCreate(ctx, tt.agent.CustomerID, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt).Return(tt.response, nil)
+			mockReq.EXPECT().ChatbotV1ChatbotCreate(ctx, tt.agent.CustomerID, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID).Return(tt.response, nil)
 
-			res, err := h.ChatbotCreate(ctx, tt.agent, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
+			res, err := h.ChatbotCreate(ctx, tt.agent, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -114,12 +124,16 @@ func Test_ChatbotGetsByCustomerID(t *testing.T) {
 
 			[]chatbotchatbot.Chatbot{
 				{
-					ID: uuid.FromStringOrNil("1dacd73f-5dca-46bd-b408-d703409ec557"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1dacd73f-5dca-46bd-b408-d703409ec557"),
+					},
 				},
 			},
 			[]*chatbotchatbot.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("1dacd73f-5dca-46bd-b408-d703409ec557"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1dacd73f-5dca-46bd-b408-d703409ec557"),
+					},
 				},
 			},
 		},
@@ -177,12 +191,16 @@ func Test_ChatbotGet(t *testing.T) {
 			uuid.FromStringOrNil("90c9bd58-0cb0-4e7a-b55a-cef9f1570b63"),
 
 			&chatbotchatbot.Chatbot{
-				ID:         uuid.FromStringOrNil("90c9bd58-0cb0-4e7a-b55a-cef9f1570b63"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("90c9bd58-0cb0-4e7a-b55a-cef9f1570b63"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&chatbotchatbot.WebhookMessage{
-				ID:         uuid.FromStringOrNil("90c9bd58-0cb0-4e7a-b55a-cef9f1570b63"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("90c9bd58-0cb0-4e7a-b55a-cef9f1570b63"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -237,12 +255,16 @@ func Test_ChatbotDelete(t *testing.T) {
 			uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
 
 			&chatbotchatbot.Chatbot{
-				ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&chatbotchatbot.WebhookMessage{
-				ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
