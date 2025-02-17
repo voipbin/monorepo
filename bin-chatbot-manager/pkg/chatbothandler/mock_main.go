@@ -43,18 +43,18 @@ func (m *MockChatbotHandler) EXPECT() *MockChatbotHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockChatbotHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, engineType chatbot.EngineType, initPrompt string) (*chatbot.Chatbot, error) {
+func (m *MockChatbotHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, initPrompt, credentialBase64, credentialProjectID string) (*chatbot.Chatbot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, engineType, initPrompt)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 	ret0, _ := ret[0].(*chatbot.Chatbot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockChatbotHandlerMockRecorder) Create(ctx, customerID, name, detail, engineType, initPrompt any) *gomock.Call {
+func (mr *MockChatbotHandlerMockRecorder) Create(ctx, customerID, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockChatbotHandler)(nil).Create), ctx, customerID, name, detail, engineType, initPrompt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockChatbotHandler)(nil).Create), ctx, customerID, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 }
 
 // Delete mocks base method.
@@ -103,16 +103,16 @@ func (mr *MockChatbotHandlerMockRecorder) Gets(ctx, customerID, size, token, fil
 }
 
 // Update mocks base method.
-func (m *MockChatbotHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, engineType chatbot.EngineType, initPrompt string) (*chatbot.Chatbot, error) {
+func (m *MockChatbotHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, initPrompt, credentialBase64, credentialProjectID string) (*chatbot.Chatbot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, engineType, initPrompt)
+	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 	ret0, _ := ret[0].(*chatbot.Chatbot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockChatbotHandlerMockRecorder) Update(ctx, id, name, detail, engineType, initPrompt any) *gomock.Call {
+func (mr *MockChatbotHandlerMockRecorder) Update(ctx, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockChatbotHandler)(nil).Update), ctx, id, name, detail, engineType, initPrompt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockChatbotHandler)(nil).Update), ctx, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 }

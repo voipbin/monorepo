@@ -13,7 +13,6 @@ import (
 	context "context"
 	multipart "mime/multipart"
 	agent "monorepo/bin-agent-manager/models/agent"
-	request "monorepo/bin-api-manager/api/models/request"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
 	call "monorepo/bin-call-manager/models/call"
@@ -1162,18 +1161,18 @@ func (mr *MockServiceHandlerMockRecorder) ChatUpdateRoomOwnerID(ctx, a, id, room
 }
 
 // ChatbotCreate mocks base method.
-func (m *MockServiceHandler) ChatbotCreate(ctx context.Context, a *agent.Agent, name, detail string, engineType chatbot.EngineType, initPrompt string) (*chatbot.WebhookMessage, error) {
+func (m *MockServiceHandler) ChatbotCreate(ctx context.Context, a *agent.Agent, name, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, initPrompt, credentialBase64, credentialProjectID string) (*chatbot.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotCreate", ctx, a, name, detail, engineType, initPrompt)
+	ret := m.ctrl.Call(m, "ChatbotCreate", ctx, a, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 	ret0, _ := ret[0].(*chatbot.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatbotCreate indicates an expected call of ChatbotCreate.
-func (mr *MockServiceHandlerMockRecorder) ChatbotCreate(ctx, a, name, detail, engineType, initPrompt any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ChatbotCreate(ctx, a, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotCreate", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotCreate), ctx, a, name, detail, engineType, initPrompt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotCreate", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotCreate), ctx, a, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 }
 
 // ChatbotDelete mocks base method.
@@ -1222,18 +1221,18 @@ func (mr *MockServiceHandlerMockRecorder) ChatbotGetsByCustomerID(ctx, a, size, 
 }
 
 // ChatbotUpdate mocks base method.
-func (m *MockServiceHandler) ChatbotUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, engineType chatbot.EngineType, initPrompt string) (*chatbot.WebhookMessage, error) {
+func (m *MockServiceHandler) ChatbotUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, initPrompt, credentialBase64, credentialProjectID string) (*chatbot.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotUpdate", ctx, a, id, name, detail, engineType, initPrompt)
+	ret := m.ctrl.Call(m, "ChatbotUpdate", ctx, a, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 	ret0, _ := ret[0].(*chatbot.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatbotUpdate indicates an expected call of ChatbotUpdate.
-func (mr *MockServiceHandlerMockRecorder) ChatbotUpdate(ctx, a, id, name, detail, engineType, initPrompt any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ChatbotUpdate(ctx, a, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotUpdate), ctx, a, id, name, detail, engineType, initPrompt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotUpdate), ctx, a, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 }
 
 // ChatbotcallDelete mocks base method.
@@ -3681,7 +3680,7 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeGets(ctx, a, size, token any
 }
 
 // TranscribeStart mocks base method.
-func (m *MockServiceHandler) TranscribeStart(ctx context.Context, a *agent.Agent, referenceType request.TranscribeReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction) (*transcribe.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscribeStart(ctx context.Context, a *agent.Agent, referenceType string, referenceID uuid.UUID, language string, direction transcribe.Direction) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeStart", ctx, a, referenceType, referenceID, language, direction)
 	ret0, _ := ret[0].(*transcribe.WebhookMessage)

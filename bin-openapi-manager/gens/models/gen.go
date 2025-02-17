@@ -235,10 +235,25 @@ const (
 	ChatManagerMessagechatroomTypeUnknown ChatManagerMessagechatroomType = ""
 )
 
+// Defines values for ChatbotManagerChatbotEngineModel.
+const (
+	ChatbotManagerChatbotEngineModelChatGPT3Dot5Turbo     ChatbotManagerChatbotEngineModel = "gpt-3.5-turbo"
+	ChatbotManagerChatbotEngineModelChatGPT4              ChatbotManagerChatbotEngineModel = "gpt-4"
+	ChatbotManagerChatbotEngineModelChatGPT4O             ChatbotManagerChatbotEngineModel = "gpt-4o"
+	ChatbotManagerChatbotEngineModelChatGPT4OMini         ChatbotManagerChatbotEngineModel = "gpt-4o-mini"
+	ChatbotManagerChatbotEngineModelChatGPT4Turbo         ChatbotManagerChatbotEngineModel = "gpt-4-turbo"
+	ChatbotManagerChatbotEngineModelChatGPT4VisionPreview ChatbotManagerChatbotEngineModel = "gpt-4-vision-preview"
+	ChatbotManagerChatbotEngineModelChatGPTO1             ChatbotManagerChatbotEngineModel = "o1"
+	ChatbotManagerChatbotEngineModelChatGPTO1Mini         ChatbotManagerChatbotEngineModel = "o1-mini"
+	ChatbotManagerChatbotEngineModelChatGPTO1Preview      ChatbotManagerChatbotEngineModel = "o1-preview"
+	ChatbotManagerChatbotEngineModelChatGPTO3Mini         ChatbotManagerChatbotEngineModel = "o3-mini"
+)
+
 // Defines values for ChatbotManagerChatbotEngineType.
 const (
-	ChatbotManagerChatbotEngineTypeChatGPT ChatbotManagerChatbotEngineType = "chatGPT"
-	ChatbotManagerChatbotEngineTypeClova   ChatbotManagerChatbotEngineType = "clova"
+	ChatbotManagerChatbotEngineTypeChatGPT    ChatbotManagerChatbotEngineType = "chatGPT"
+	ChatbotManagerChatbotEngineTypeClova      ChatbotManagerChatbotEngineType = "clova"
+	ChatbotManagerChatbotEngineTypeDialogFlow ChatbotManagerChatbotEngineType = "dialogflow"
 )
 
 // Defines values for ChatbotManagerChatbotcallGender.
@@ -530,6 +545,7 @@ const (
 const (
 	TranscribeManagerTranscribeReferenceTypeCall       TranscribeManagerTranscribeReferenceType = "call"
 	TranscribeManagerTranscribeReferenceTypeConfbridge TranscribeManagerTranscribeReferenceType = "confbridge"
+	TranscribeManagerTranscribeReferenceTypeConference TranscribeManagerTranscribeReferenceType = "conference"
 	TranscribeManagerTranscribeReferenceTypeRecording  TranscribeManagerTranscribeReferenceType = "recording"
 	TranscribeManagerTranscribeReferenceTypeUnknown    TranscribeManagerTranscribeReferenceType = "unknown"
 )
@@ -1249,11 +1265,20 @@ type ChatManagerMessagechatroomType string
 
 // ChatbotManagerChatbot defines model for ChatbotManagerChatbot.
 type ChatbotManagerChatbot struct {
+	// CredentialBase64 Base64-encoded credential information.
+	CredentialBase64 *string `json:"credential_base64,omitempty"`
+
+	// CredentialProjectId Project ID associated with the credential.
+	CredentialProjectId *string `json:"credential_project_id,omitempty"`
+
 	// CustomerId Unique identifier of the associated customer.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail Detailed information about the chatbot.
 	Detail *string `json:"detail,omitempty"`
+
+	// EngineModel Model of the chatbot engine.
+	EngineModel *ChatbotManagerChatbotEngineModel `json:"engine_model,omitempty"`
 
 	// EngineType Type of engine used by the chatbot.
 	EngineType *ChatbotManagerChatbotEngineType `json:"engine_type,omitempty"`
@@ -1277,6 +1302,9 @@ type ChatbotManagerChatbot struct {
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
+// ChatbotManagerChatbotEngineModel Model of the chatbot engine.
+type ChatbotManagerChatbotEngineModel string
+
 // ChatbotManagerChatbotEngineType Type of engine used by the chatbot.
 type ChatbotManagerChatbotEngineType string
 
@@ -1293,6 +1321,12 @@ type ChatbotManagerChatbotcall struct {
 
 	// CustomerId Unique identifier of the associated customer.
 	CustomerId *string `json:"customer_id,omitempty"`
+
+	// EngineModel Model of the chatbot engine.
+	EngineModel *ChatbotManagerChatbotEngineModel `json:"engine_model,omitempty"`
+
+	// EngineType Type of engine used by the chatbot.
+	EngineType *ChatbotManagerChatbotEngineType `json:"engine_type,omitempty"`
 
 	// Gender Gender associated with the chatbot call.
 	Gender *ChatbotManagerChatbotcallGender `json:"gender,omitempty"`
@@ -2751,7 +2785,12 @@ type GetChatbotsParams struct {
 
 // PostChatbotsJSONBody defines parameters for PostChatbots.
 type PostChatbotsJSONBody struct {
-	Detail string `json:"detail"`
+	CredentialBase64    string `json:"credential_base64"`
+	CredentialProjectId string `json:"credential_project_id"`
+	Detail              string `json:"detail"`
+
+	// EngineModel Model of the chatbot engine.
+	EngineModel ChatbotManagerChatbotEngineModel `json:"engine_model"`
 
 	// EngineType Type of engine used by the chatbot.
 	EngineType ChatbotManagerChatbotEngineType `json:"engine_type"`
@@ -2761,7 +2800,12 @@ type PostChatbotsJSONBody struct {
 
 // PutChatbotsIdJSONBody defines parameters for PutChatbotsId.
 type PutChatbotsIdJSONBody struct {
-	Detail string `json:"detail"`
+	CredentialBase64    string `json:"credential_base64"`
+	CredentialProjectId string `json:"credential_project_id"`
+	Detail              string `json:"detail"`
+
+	// EngineModel Model of the chatbot engine.
+	EngineModel ChatbotManagerChatbotEngineModel `json:"engine_model"`
 
 	// EngineType Type of engine used by the chatbot.
 	EngineType ChatbotManagerChatbotEngineType `json:"engine_type"`

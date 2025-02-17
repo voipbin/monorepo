@@ -6,6 +6,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -40,7 +41,9 @@ func Test_ChatMessage(t *testing.T) {
 			name: "normal",
 
 			chatbotcall: &chatbotcall.Chatbotcall{
-				ID:                uuid.FromStringOrNil("02732972-96f1-4c51-9f76-38b32377493c"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("02732972-96f1-4c51-9f76-38b32377493c"),
+				},
 				ReferenceType:     chatbotcall.ReferenceTypeCall,
 				ChatbotID:         uuid.FromStringOrNil("0f7a3d29-fdb5-41ba-8fa9-3a85e02ce17a"),
 				ChatbotEngineType: chatbot.EngineTypeChatGPT,
@@ -58,7 +61,9 @@ func Test_ChatMessage(t *testing.T) {
 				},
 			},
 			responseChatbotcall: &chatbotcall.Chatbotcall{
-				ID:                uuid.FromStringOrNil("02732972-96f1-4c51-9f76-38b32377493c"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("02732972-96f1-4c51-9f76-38b32377493c"),
+				},
 				ReferenceType:     chatbotcall.ReferenceTypeCall,
 				ChatbotID:         uuid.FromStringOrNil("0f7a3d29-fdb5-41ba-8fa9-3a85e02ce17a"),
 				ChatbotEngineType: chatbot.EngineTypeChatGPT,
@@ -130,7 +135,9 @@ func Test_ChatInit(t *testing.T) {
 				EngineType: chatbot.EngineTypeChatGPT,
 			},
 			chatbotcall: &chatbotcall.Chatbotcall{
-				ID: uuid.FromStringOrNil("9bb7079c-f556-11ed-afbb-0f109793414b"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("9bb7079c-f556-11ed-afbb-0f109793414b"),
+				},
 			},
 
 			responseMessages: []chatbotcall.Message{
@@ -187,7 +194,9 @@ func Test_chatMessageActionsHandle(t *testing.T) {
 			name: "normal",
 
 			chatbotcall: &chatbotcall.Chatbotcall{
-				ID:           uuid.FromStringOrNil("c243f296-fba3-11ed-b685-934f90d45843"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("c243f296-fba3-11ed-b685-934f90d45843"),
+				},
 				ActiveflowID: uuid.FromStringOrNil("75496c7e-fba7-11ed-b6a8-f7993d25b0ab"),
 			},
 			actions: []fmaction.Action{

@@ -8,8 +8,6 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
-	"monorepo/bin-api-manager/api/models/request"
-
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -93,7 +91,7 @@ func (h *serviceHandler) TranscribeGets(ctx context.Context, a *amagent.Agent, s
 // TranscribeStart sends a request to transcribe-manager
 // to start a transcribe.
 // it returns transcribe if it succeed.
-func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType request.TranscribeReferenceType, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error) {
+func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType string, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "TranscribeStart",
 		"customer_id":    a.CustomerID,
@@ -126,7 +124,7 @@ func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, 
 
 // transcribeGetResourceInfo returns corresponding transcribe resource info of the given reference.
 // returns error if the reference is not transcrib-able or has no perrmission
-func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *amagent.Agent, referenceType request.TranscribeReferenceType, referenceID uuid.UUID) (tmtranscribe.ReferenceType, uuid.UUID, error) {
+func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *amagent.Agent, referenceType string, referenceID uuid.UUID) (tmtranscribe.ReferenceType, uuid.UUID, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "transcribeGetResourceInfo",
 		"agent":          a,
@@ -141,7 +139,7 @@ func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *amage
 
 	// get reference resource
 	switch referenceType {
-	case request.TranscribeReferenceTypeCall:
+	case "call":
 		tmpResource, tmpErr := h.callGet(ctx, referenceID)
 		if tmpErr != nil {
 			err = tmpErr
@@ -151,7 +149,7 @@ func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *amage
 		resReferenceType = tmtranscribe.ReferenceTypeCall
 		resReferenceID = tmpResource.ID
 
-	case request.TranscribeReferenceTypeConference:
+	case "conference":
 		tmpResource, tmpErr := h.conferenceGet(ctx, referenceID)
 		if tmpErr != nil {
 			err = tmpErr
@@ -160,7 +158,7 @@ func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *amage
 		resReferenceType = tmtranscribe.ReferenceTypeConfbridge
 		resReferenceID = tmpResource.ConfbridgeID
 
-	case request.TranscribeReferenceTypeRecording:
+	case "recording":
 		tmpResource, tmpErr := h.recordingGet(ctx, referenceID)
 		if tmpErr != nil {
 			err = tmpErr

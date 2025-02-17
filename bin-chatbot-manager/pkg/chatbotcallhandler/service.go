@@ -55,7 +55,7 @@ func (h *chatbotcallHandler) ServiceStart(
 	}
 
 	// create chatbotcall
-	cc, err := h.Create(ctx, customerID, c.ID, c.EngineType, activeflowID, referenceType, referenceID, cb.ID, gender, language)
+	cc, err := h.Create(ctx, c, activeflowID, referenceType, referenceID, cb.ID, gender, language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create chatbotcall.")

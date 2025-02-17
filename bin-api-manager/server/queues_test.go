@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -151,8 +150,6 @@ func Test_queuesPost(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		req request.BodyQueuesPOST
-
 		responseQueue *qmqueue.WebhookMessage
 
 		expectName           string
@@ -176,22 +173,6 @@ func Test_queuesPost(t *testing.T) {
 
 			reqQuery: "/queues",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","routing_method":"random","tag_ids":["296b096c-6476-11ec-8fc0-2f39371fef93"],"wait_actions":[{"type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
-
-			req: request.BodyQueuesPOST{
-				Name:          "test name",
-				Detail:        "test detail",
-				RoutingMethod: qmqueue.RoutingMethodRandom,
-				TagIDs: []uuid.UUID{
-					uuid.FromStringOrNil("296b096c-6476-11ec-8fc0-2f39371fef93"),
-				},
-				WaitActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
-				WaitTimeout:    10000,
-				ServiceTimeout: 100000,
-			},
 
 			responseQueue: &qmqueue.WebhookMessage{
 				ID: uuid.FromStringOrNil("72fe03fa-6475-11ec-b559-0fdf19201178"),

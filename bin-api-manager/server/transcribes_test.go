@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -29,7 +28,7 @@ func Test_transcribesPOST(t *testing.T) {
 
 		responseTranscribe *tmtranscribe.WebhookMessage
 
-		expectReferenceType request.TranscribeReferenceType
+		expectReferenceType string
 		expectReferenceID   uuid.UUID
 		expectLanguage      string
 		expectDirection     tmtranscribe.Direction
@@ -52,7 +51,7 @@ func Test_transcribesPOST(t *testing.T) {
 				ID: uuid.FromStringOrNil("72e68b78-8286-11ed-8875-378ced61c021"),
 			},
 
-			expectReferenceType: request.TranscribeReferenceTypeCall,
+			expectReferenceType: "call",
 			expectReferenceID:   uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf"),
 			expectLanguage:      "en-US",
 			expectDirection:     tmtranscribe.DirectionBoth,

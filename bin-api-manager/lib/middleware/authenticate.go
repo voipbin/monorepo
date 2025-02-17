@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	modelscommon "monorepo/bin-api-manager/api/models/common"
+	modelscommon "monorepo/bin-api-manager/models/common"
 
 	"monorepo/bin-api-manager/pkg/servicehandler"
 

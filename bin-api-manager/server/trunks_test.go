@@ -2,9 +2,7 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -258,9 +256,15 @@ func Test_TrunksIDPUT(t *testing.T) {
 		agent amagent.Agent
 
 		reqQuery string
-		reqBody  request.BodyTrunksIDPUT
+		reqBody  []byte
 
-		expectTrunkID uuid.UUID
+		expectTrunkID    uuid.UUID
+		expectName       string
+		expectDetail     string
+		expectAuthTypes  []rmsipauth.AuthType
+		expectUsername   string
+		expectPassword   string
+		expectAllowedIPs []string
 	}
 
 	tests := []test{
@@ -273,16 +277,19 @@ func Test_TrunksIDPUT(t *testing.T) {
 			},
 
 			reqQuery: "/trunks/6019ea72-5589-11ee-8b45-13603ef0a2d4",
-			reqBody: request.BodyTrunksIDPUT{
-				Name:       "test name",
-				Detail:     "test detail",
-				AuthTypes:  []rmsipauth.AuthType{rmsipauth.AuthTypeBasic},
-				Username:   "testusername",
-				Password:   "testpassword",
-				AllowedIPs: []string{"1.2.3.4"},
-			},
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","auth_types":["basic"],"username":"testusername","password":"testpassword","allowed_ips":["1.2.3.4"]}`),
 
 			expectTrunkID: uuid.FromStringOrNil("6019ea72-5589-11ee-8b45-13603ef0a2d4"),
+			expectName:    "test name",
+			expectDetail:  "test detail",
+			expectAuthTypes: []rmsipauth.AuthType{
+				rmsipauth.AuthTypeBasic,
+			},
+			expectUsername: "testusername",
+			expectPassword: "testpassword",
+			expectAllowedIPs: []string{
+				"1.2.3.4",
+			},
 		},
 	}
 
@@ -304,15 +311,9 @@ func Test_TrunksIDPUT(t *testing.T) {
 			})
 			openapi_server.RegisterHandlers(r, h)
 
-			// create body
-			body, err := json.Marshal(tt.reqBody)
-			if err != nil {
-				t.Errorf("Could not marshal the request. err: %v", err)
-			}
-
-			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TrunkUpdateBasicInfo(req.Context(), &tt.agent, tt.expectTrunkID, tt.reqBody.Name, tt.reqBody.Detail, tt.reqBody.AuthTypes, tt.reqBody.Username, tt.reqBody.Password, tt.reqBody.AllowedIPs).Return(&rmtrunk.WebhookMessage{}, nil)
+			mockSvc.EXPECT().TrunkUpdateBasicInfo(req.Context(), &tt.agent, tt.expectTrunkID, tt.expectName, tt.expectDetail, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs).Return(&rmtrunk.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

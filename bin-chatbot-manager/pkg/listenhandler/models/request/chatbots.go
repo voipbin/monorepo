@@ -10,20 +10,29 @@ import (
 // v1 data type request struct for
 // /v1/chatbots POST
 type V1DataChatbotsPost struct {
-	CustomerID uuid.UUID `json:"customer_id"`
-	Name       string    `json:"name"`
-	Detail     string    `json:"detail"`
+	CustomerID uuid.UUID `json:"customer_id,omitempty"`
+	Name       string    `json:"name,omitempty"`
+	Detail     string    `json:"detail,omitempty"`
 
-	EngineType chatbot.EngineType `json:"engine_type"`
-	InitPrompt string             `json:"init_prompt"`
+	EngineType  chatbot.EngineType  `json:"engine_type,omitempty"`
+	EngineModel chatbot.EngineModel `json:"engine_model,omitempty"`
+	InitPrompt  string              `json:"init_prompt,omitempty"`
+
+	CredentialBase64    string `json:"credential_base64,omitempty"`
+	CredentialProjectID string `json:"credential_project_id,omitempty"`
 }
 
 // V1DataChatbotsIDPut is
 // v1 data type request struct for
 // /v1/chatbots/<chatbot-id> PUT
 type V1DataChatbotsIDPut struct {
-	Name       string             `json:"name"`
-	Detail     string             `json:"detail"`
-	EngineType chatbot.EngineType `json:"engine_type"`
-	InitPrompt string             `json:"init_prompt"`
+	Name   string `json:"name,omitempty"`
+	Detail string `json:"detail,omitempty"`
+
+	EngineType  chatbot.EngineType  `json:"engine_type,omitempty"`
+	EngineModel chatbot.EngineModel `json:"engine_model,omitempty"`
+	InitPrompt  string              `json:"init_prompt,omitempty"`
+
+	CredentialBase64    string `json:"credential_base64,omitempty"`
+	CredentialProjectID string `json:"credential_project_id,omitempty"`
 }

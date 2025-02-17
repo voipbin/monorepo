@@ -34,7 +34,7 @@ func (h *server) PostChatbots(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.ChatbotCreate(c.Request.Context(), &a, req.Name, req.Detail, chchatbot.EngineType(req.EngineType), req.InitPrompt)
+	res, err := h.serviceHandler.ChatbotCreate(c.Request.Context(), &a, req.Name, req.Detail, chchatbot.EngineType(req.EngineType), chchatbot.EngineModel(req.EngineModel), req.InitPrompt, req.CredentialBase64, req.CredentialProjectId)
 	if err != nil {
 		log.Errorf("Could not create a chatbot. err: %v", err)
 		c.AbortWithStatus(400)
@@ -193,7 +193,7 @@ func (h *server) PutChatbotsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ChatbotUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, chchatbot.EngineType(req.EngineType), req.InitPrompt)
+	res, err := h.serviceHandler.ChatbotUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, chchatbot.EngineType(req.EngineType), chchatbot.EngineModel(req.EngineModel), req.InitPrompt, req.CredentialBase64, req.CredentialProjectId)
 	if err != nil {
 		log.Errorf("Could not update the chatbot. err: %v", err)
 		c.AbortWithStatus(400)

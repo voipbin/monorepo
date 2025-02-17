@@ -22,7 +22,7 @@ type DBHandler interface {
 	ChatbotDelete(ctx context.Context, id uuid.UUID) error
 	ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
 	ChatbotGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbot.Chatbot, error)
-	ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, initPrompt string) error
+	ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, initPrompt string, credentialBase64 string, credentialProjectID string) error
 
 	ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbotcall) error
 	ChatbotcallDelete(ctx context.Context, id uuid.UUID) error

@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -37,10 +38,14 @@ func Test_processV1ChatbotsGet(t *testing.T) {
 
 			[]*chatbot.Chatbot{
 				{
-					ID: uuid.FromStringOrNil("0b61dcbe-a770-11ed-bab4-2fc1dac66672"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("0b61dcbe-a770-11ed-bab4-2fc1dac66672"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("0bbe1dee-a770-11ed-b455-cbb60d5dd90b"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("0bbe1dee-a770-11ed-b455-cbb60d5dd90b"),
+					},
 				},
 			},
 
@@ -54,7 +59,7 @@ func Test_processV1ChatbotsGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"0b61dcbe-a770-11ed-bab4-2fc1dac66672","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"0bbe1dee-a770-11ed-b455-cbb60d5dd90b","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"0b61dcbe-a770-11ed-bab4-2fc1dac66672","customer_id":"00000000-0000-0000-0000-000000000000"},{"id":"0bbe1dee-a770-11ed-b455-cbb60d5dd90b","customer_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 	}
@@ -93,12 +98,15 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 
 		responseChatbot *chatbot.Chatbot
 
-		expectCustomerID uuid.UUID
-		expectName       string
-		expectDetail     string
-		expectEngineType chatbot.EngineType
-		expectInitPrompt string
-		expectRes        *sock.Response
+		expectCustomerID          uuid.UUID
+		expectName                string
+		expectDetail              string
+		expectEngineType          chatbot.EngineType
+		expectEngineModel         chatbot.EngineModel
+		expectInitPrompt          string
+		expectCredentialBase64    string
+		expectCredentialProjectID string
+		expectRes                 *sock.Response
 	}{
 		{
 			name: "normal",
@@ -106,22 +114,27 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 				URI:      "/v1/chatbots",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"chatGPT", "init_prompt": "test init prompt"}`),
+				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"chatGPT", "engine_model": "gpt-4", "init_prompt": "test init prompt", "credential_base64": "BASE64String", "credential_project_id": "218906b8-ecdb-11ef-9ddd-7b5d6f0d41e2"}`),
 			},
 
 			responseChatbot: &chatbot.Chatbot{
-				ID: uuid.FromStringOrNil("59230ca2-a770-11ed-b5dd-2783587ed477"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("59230ca2-a770-11ed-b5dd-2783587ed477"),
+				},
 			},
 
-			expectCustomerID: uuid.FromStringOrNil("58e7502c-a770-11ed-9b86-7fabe2dba847"),
-			expectName:       "test name",
-			expectDetail:     "test detail",
-			expectEngineType: chatbot.EngineTypeChatGPT,
-			expectInitPrompt: "test init prompt",
+			expectCustomerID:          uuid.FromStringOrNil("58e7502c-a770-11ed-9b86-7fabe2dba847"),
+			expectName:                "test name",
+			expectDetail:              "test detail",
+			expectEngineType:          chatbot.EngineTypeChatGPT,
+			expectEngineModel:         chatbot.EngineModelChatGPT4,
+			expectInitPrompt:          "test init prompt",
+			expectCredentialBase64:    "BASE64String",
+			expectCredentialProjectID: "218906b8-ecdb-11ef-9ddd-7b5d6f0d41e2",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"59230ca2-a770-11ed-b5dd-2783587ed477","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"59230ca2-a770-11ed-b5dd-2783587ed477","customer_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -139,7 +152,7 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 				chatbotHandler: mockChatbot,
 			}
 
-			mockChatbot.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectInitPrompt).Return(tt.responseChatbot, nil)
+			mockChatbot.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectEngineModel, tt.expectInitPrompt, tt.expectCredentialBase64, tt.expectCredentialProjectID).Return(tt.responseChatbot, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -171,7 +184,9 @@ func Test_processV1ChatbotsIDGet(t *testing.T) {
 			},
 
 			&chatbot.Chatbot{
-				ID: uuid.FromStringOrNil("de740384-a770-11ed-afab-5f9c8a447889"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("de740384-a770-11ed-afab-5f9c8a447889"),
+				},
 			},
 
 			uuid.FromStringOrNil("de740384-a770-11ed-afab-5f9c8a447889"),
@@ -179,7 +194,7 @@ func Test_processV1ChatbotsIDGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"de740384-a770-11ed-afab-5f9c8a447889","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"de740384-a770-11ed-afab-5f9c8a447889","customer_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -229,7 +244,9 @@ func Test_processV1ChatbotsIDDelete(t *testing.T) {
 			},
 
 			&chatbot.Chatbot{
-				ID: uuid.FromStringOrNil("de99e522-a770-11ed-a0ab-5b39ee2db203"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("de99e522-a770-11ed-a0ab-5b39ee2db203"),
+				},
 			},
 
 			uuid.FromStringOrNil("de99e522-a770-11ed-a0ab-5b39ee2db203"),
@@ -237,7 +254,7 @@ func Test_processV1ChatbotsIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"de99e522-a770-11ed-a0ab-5b39ee2db203","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"de99e522-a770-11ed-a0ab-5b39ee2db203","customer_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -276,12 +293,15 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 
 		responseChatbot *chatbot.Chatbot
 
-		expectID         uuid.UUID
-		expectName       string
-		expectDetail     string
-		expectEngineType chatbot.EngineType
-		expectInitPrompt string
-		expectRes        *sock.Response
+		expectID                  uuid.UUID
+		expectName                string
+		expectDetail              string
+		expectEngineType          chatbot.EngineType
+		expectEngineModel         chatbot.EngineModel
+		expectInitPrompt          string
+		expectCredentialBase64    string
+		expectCredentialProjectID string
+		expectRes                 *sock.Response
 	}{
 		{
 			name: "normal",
@@ -289,23 +309,28 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 				URI:      "/v1/chatbots/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"new name","detail":"new detail","engine_type":"chatGPT","init_prompt":"new prompt"}`),
+				Data:     []byte(`{"name":"new name","detail":"new detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"new prompt","credential_base64":"BASE64String","credential_project_id":"05aeb55a-ecdb-11ef-a714-3b889166a428"}`),
 			},
 
 			responseChatbot: &chatbot.Chatbot{
-				ID: uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
+				},
 			},
 
-			expectID:         uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
-			expectName:       "new name",
-			expectDetail:     "new detail",
-			expectEngineType: chatbot.EngineTypeChatGPT,
-			expectInitPrompt: "new prompt",
+			expectID:                  uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
+			expectName:                "new name",
+			expectDetail:              "new detail",
+			expectEngineType:          chatbot.EngineTypeChatGPT,
+			expectEngineModel:         chatbot.EngineModelChatGPT4,
+			expectInitPrompt:          "new prompt",
+			expectCredentialBase64:    "BASE64String",
+			expectCredentialProjectID: "05aeb55a-ecdb-11ef-a714-3b889166a428",
 
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"fa4d3b6a-f82f-11ed-9176-d32f5705e10c","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"fa4d3b6a-f82f-11ed-9176-d32f5705e10c","customer_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -323,7 +348,7 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 				chatbotHandler: mockChatbot,
 			}
 
-			mockChatbot.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectInitPrompt).Return(tt.responseChatbot, nil)
+			mockChatbot.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectEngineModel, tt.expectInitPrompt, tt.expectCredentialBase64, tt.expectCredentialProjectID).Return(tt.responseChatbot, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

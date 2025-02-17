@@ -4,33 +4,35 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-chatbot-manager/models/chatbot"
+	"monorepo/bin-common-handler/models/identity"
 )
 
 // Chatbotcall define
 type Chatbotcall struct {
-	ID                uuid.UUID          `json:"id"`
-	CustomerID        uuid.UUID          `json:"customer_id"`
-	ChatbotID         uuid.UUID          `json:"chatbot_id"`
-	ChatbotEngineType chatbot.EngineType `json:"chatbot_engine_type"`
+	identity.Identity
 
-	ActiveflowID  uuid.UUID     `json:"activeflow_id"`
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"`
+	ChatbotID          uuid.UUID           `json:"chatbot_id,omitempty"`
+	ChatbotEngineType  chatbot.EngineType  `json:"chatbot_engine_type,omitempty"`
+	ChatbotEngineModel chatbot.EngineModel `json:"chatbot_engine_model,omitempty"`
 
-	ConfbridgeID uuid.UUID `json:"confbridge_id"`
-	TranscribeID uuid.UUID `json:"transcribe_id"`
+	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
-	Status Status `json:"status"`
+	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty"`
+	TranscribeID uuid.UUID `json:"transcribe_id,omitempty"`
 
-	Gender   Gender `json:"gender"`
-	Language string `json:"language"`
+	Status Status `json:"status,omitempty"`
 
-	Messages []Message `json:"messages"`
+	Gender   Gender `json:"gender,omitempty"`
+	Language string `json:"language,omitempty"`
 
-	TMEnd    string `json:"tm_end"`
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	Messages []Message `json:"messages,omitempty"`
+
+	TMEnd    string `json:"tm_end,omitempty"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ReferenceType define

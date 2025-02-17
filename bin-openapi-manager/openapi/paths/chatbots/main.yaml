@@ -39,13 +39,22 @@ post:
               type: string
             engine_type:
               $ref: '#/components/schemas/ChatbotManagerChatbotEngineType'
+            engine_model:
+              $ref: '#/components/schemas/ChatbotManagerChatbotEngineModel'
             init_prompt:
+              type: string
+            credential_base64:
+              type: string
+            credential_project_id:
               type: string
           required:
             - name
             - detail
             - engine_type
+            - engine_model
             - init_prompt
+            - credential_base64
+            - credential_project_id
   responses:
     '200':
       description: Details of the created chatbot.

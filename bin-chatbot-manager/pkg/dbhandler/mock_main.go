@@ -102,17 +102,17 @@ func (mr *MockDBHandlerMockRecorder) ChatbotGets(ctx, customerID, size, token, f
 }
 
 // ChatbotSetInfo mocks base method.
-func (m *MockDBHandler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name, detail string, engineType chatbot.EngineType, initPrompt string) error {
+func (m *MockDBHandler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, initPrompt, credentialBase64, credentialProjectID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotSetInfo", ctx, id, name, detail, engineType, initPrompt)
+	ret := m.ctrl.Call(m, "ChatbotSetInfo", ctx, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChatbotSetInfo indicates an expected call of ChatbotSetInfo.
-func (mr *MockDBHandlerMockRecorder) ChatbotSetInfo(ctx, id, name, detail, engineType, initPrompt any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChatbotSetInfo(ctx, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotSetInfo", reflect.TypeOf((*MockDBHandler)(nil).ChatbotSetInfo), ctx, id, name, detail, engineType, initPrompt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotSetInfo", reflect.TypeOf((*MockDBHandler)(nil).ChatbotSetInfo), ctx, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
 }
 
 // ChatbotcallCreate mocks base method.

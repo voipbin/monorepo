@@ -3,8 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
-	"monorepo/bin-api-manager/api/models/common"
-	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +24,7 @@ func Test_TagsPOST(t *testing.T) {
 	type test struct {
 		name string
 
-		reqBody request.BodyLoginPOST
+		reqBody RequestBodyLoginPOST
 
 		responseToken string
 		expectCookie  string
@@ -36,7 +35,7 @@ func Test_TagsPOST(t *testing.T) {
 		{
 			name: "normal",
 
-			reqBody: request.BodyLoginPOST{
+			reqBody: RequestBodyLoginPOST{
 				Username: "test@test.com",
 				Password: "testpassword",
 			},

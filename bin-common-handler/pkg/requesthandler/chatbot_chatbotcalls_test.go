@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -58,10 +59,14 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 			},
 			[]cbchatbotcall.Chatbotcall{
 				{
-					ID: uuid.FromStringOrNil("c3ac26c7-567c-4230-aaf8-d19b6fde4d6c"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("c3ac26c7-567c-4230-aaf8-d19b6fde4d6c"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("eb36875a-0d7a-4a8f-92a9-7551f4f29fd6"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("eb36875a-0d7a-4a8f-92a9-7551f4f29fd6"),
+					},
 				},
 			},
 		},
@@ -126,7 +131,9 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 				Data:       []byte(`{"id":"d3937170-ee3b-40d0-8b81-4261e5bb5ba4"}`),
 			},
 			&cbchatbotcall.Chatbotcall{
-				ID: uuid.FromStringOrNil("d3937170-ee3b-40d0-8b81-4261e5bb5ba4"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("d3937170-ee3b-40d0-8b81-4261e5bb5ba4"),
+				},
 			},
 		},
 	}
@@ -186,7 +193,9 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 				Method: sock.RequestMethodDelete,
 			},
 			&cbchatbotcall.Chatbotcall{
-				ID: uuid.FromStringOrNil("6078c492-25e6-4f31-baa0-2fef98379db7"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("6078c492-25e6-4f31-baa0-2fef98379db7"),
+				},
 			},
 		},
 	}

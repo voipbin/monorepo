@@ -36,15 +36,19 @@ func (h *serviceHandler) ChatbotCreate(
 	name string,
 	detail string,
 	engineType chatbotchatbot.EngineType,
+	engineModel chatbotchatbot.EngineModel,
 	initPrompt string,
+	credentialBase64 string,
+	credentialProjectID string,
 ) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ChatbotCreate",
-		"customer_id": a.CustomerID,
-		"name":        name,
-		"detail":      detail,
-		"engine_type": engineType,
-		"init_prompt": initPrompt,
+		"func":         "ChatbotCreate",
+		"customer_id":  a.CustomerID,
+		"name":         name,
+		"detail":       detail,
+		"engine_type":  engineType,
+		"engine_model": engineModel,
+		"init_prompt":  initPrompt,
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -58,7 +62,10 @@ func (h *serviceHandler) ChatbotCreate(
 		name,
 		detail,
 		engineType,
+		engineModel,
 		initPrompt,
+		credentialBase64,
+		credentialProjectID,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new chatbot. err: %v", err)
@@ -178,16 +185,20 @@ func (h *serviceHandler) ChatbotUpdate(
 	name string,
 	detail string,
 	engineType chatbotchatbot.EngineType,
+	engineModel chatbotchatbot.EngineModel,
 	initPrompt string,
+	credentialBase64 string,
+	credentialProjectID string,
 ) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ChatbotUpdate",
-		"customer_id": a.CustomerID,
-		"id":          id,
-		"name":        name,
-		"detail":      detail,
-		"engine_type": engineType,
-		"init_prompt": initPrompt,
+		"func":         "ChatbotUpdate",
+		"customer_id":  a.CustomerID,
+		"id":           id,
+		"name":         name,
+		"detail":       detail,
+		"engine_type":  engineType,
+		"engine_model": engineModel,
+		"init_prompt":  initPrompt,
 	})
 
 	// get chat
@@ -208,7 +219,10 @@ func (h *serviceHandler) ChatbotUpdate(
 		name,
 		detail,
 		engineType,
+		engineModel,
 		initPrompt,
+		credentialBase64,
+		credentialProjectID,
 	)
 	if err != nil {
 		log.Errorf("Could not update the chatbot. err: %v", err)
