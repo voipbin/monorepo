@@ -43,7 +43,7 @@ func (h *chatbotcallHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Ch
 	switch cc.ChatbotEngineType {
 	case chatbot.EngineTypeChatGPT:
 		// chat to the chatbot engine and get answer from them.
-		messages, err = h.chatgptHandler.ChatMessage(ctx, cc.Messages, message)
+		messages, err = h.chatgptHandler.ChatMessage(ctx, cc, message)
 		if err != nil {
 			log.Errorf("Could not get chat message from the chatbot engine. err: %v", err)
 			return errors.Wrap(err, "could not get chat message from the chatbot engine")
@@ -148,7 +148,7 @@ func (h *chatbotcallHandler) ChatInit(ctx context.Context, cb *chatbot.Chatbot, 
 	start := time.Now()
 	switch cb.EngineType {
 	case chatbot.EngineTypeChatGPT:
-		messages, err = h.chatgptHandler.ChatNew(ctx, cb.InitPrompt)
+		messages, err = h.chatgptHandler.ChatNew(ctx, cc, cb.InitPrompt)
 
 	default:
 		log.Errorf("Unsupported engine type. engine_type: %s", cb.EngineType)

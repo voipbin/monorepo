@@ -12,10 +12,8 @@ import (
 
 // ChatgptHandler define
 type ChatgptHandler interface {
-	ChatNew(ctx context.Context, initPrompt string) ([]chatbotcall.Message, error)
-	ChatMessage(ctx context.Context, messages []chatbotcall.Message, text string) ([]chatbotcall.Message, error)
-
-	MessageSend(ctx context.Context, messages []chatbotcall.Message, role string, text string) ([]chatbotcall.Message, error)
+	ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, initPrompt string) ([]chatbotcall.Message, error)
+	ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, text string) ([]chatbotcall.Message, error)
 }
 
 // chatgptHandler define

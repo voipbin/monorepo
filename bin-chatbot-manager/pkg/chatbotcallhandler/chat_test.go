@@ -106,7 +106,7 @@ func Test_ChatMessage(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.chatbotcall.ReferenceID).Return(nil)
-			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall.Messages, tt.message).Return(tt.responseMessages, nil)
+			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessages, nil)
 			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.responseChatbotcall, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.chatbotcall.ReferenceID, tt.expectText, string(tt.chatbotcall.Gender), tt.chatbotcall.Language, 10000).Return(nil)
@@ -171,7 +171,7 @@ func Test_ChatInit(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChatgpt.EXPECT().ChatNew(ctx, tt.chatbot.InitPrompt).Return(tt.responseMessages, nil)
+			mockChatgpt.EXPECT().ChatNew(ctx, tt.chatbotcall, tt.chatbot.InitPrompt).Return(tt.responseMessages, nil)
 			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.chatbotcall, nil)
 

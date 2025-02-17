@@ -11,14 +11,14 @@ import (
 )
 
 // ChatNew starts a new chat
-func (h *chatgptHandler) ChatNew(ctx context.Context, initPrompt string) ([]chatbotcall.Message, error) {
+func (h *chatgptHandler) ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, initPrompt string) ([]chatbotcall.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatNew",
 		"init_prompt": initPrompt,
 	})
 
 	log.Debugf("Sending initial prompt message. init_prompt: %s", initPrompt)
-	res, err := h.MessageSend(ctx, []chatbotcall.Message{}, openai.ChatMessageRoleSystem, initPrompt)
+	res, err := h.messageSend(ctx, cc, openai.ChatMessageRoleSystem, initPrompt)
 	if err != nil {
 		log.Errorf("Could not start a new chat. err: %v", err)
 		return nil, errors.Wrap(err, "could not start a new chat")
@@ -29,13 +29,13 @@ func (h *chatgptHandler) ChatNew(ctx context.Context, initPrompt string) ([]chat
 }
 
 // ChatMessage sends/receives the chat messages
-func (h *chatgptHandler) ChatMessage(ctx context.Context, messages []chatbotcall.Message, text string) ([]chatbotcall.Message, error) {
+func (h *chatgptHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, text string) ([]chatbotcall.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "ChatMessage",
 		"text": text,
 	})
 
-	res, err := h.MessageSend(ctx, messages, openai.ChatMessageRoleUser, text)
+	res, err := h.messageSend(ctx, cc, openai.ChatMessageRoleUser, text)
 	if err != nil {
 		log.Errorf("Could not send the message. err: %v", err)
 		return nil, errors.Wrap(err, "could not send the message")

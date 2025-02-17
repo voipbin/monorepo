@@ -42,46 +42,31 @@ func (m *MockChatgptHandler) EXPECT() *MockChatgptHandlerMockRecorder {
 }
 
 // ChatMessage mocks base method.
-func (m *MockChatgptHandler) ChatMessage(ctx context.Context, messages []chatbotcall.Message, text string) ([]chatbotcall.Message, error) {
+func (m *MockChatgptHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, text string) ([]chatbotcall.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatMessage", ctx, messages, text)
+	ret := m.ctrl.Call(m, "ChatMessage", ctx, cc, text)
 	ret0, _ := ret[0].([]chatbotcall.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatMessage indicates an expected call of ChatMessage.
-func (mr *MockChatgptHandlerMockRecorder) ChatMessage(ctx, messages, text any) *gomock.Call {
+func (mr *MockChatgptHandlerMockRecorder) ChatMessage(ctx, cc, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessage", reflect.TypeOf((*MockChatgptHandler)(nil).ChatMessage), ctx, messages, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessage", reflect.TypeOf((*MockChatgptHandler)(nil).ChatMessage), ctx, cc, text)
 }
 
 // ChatNew mocks base method.
-func (m *MockChatgptHandler) ChatNew(ctx context.Context, initPrompt string) ([]chatbotcall.Message, error) {
+func (m *MockChatgptHandler) ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, initPrompt string) ([]chatbotcall.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatNew", ctx, initPrompt)
+	ret := m.ctrl.Call(m, "ChatNew", ctx, cc, initPrompt)
 	ret0, _ := ret[0].([]chatbotcall.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatNew indicates an expected call of ChatNew.
-func (mr *MockChatgptHandlerMockRecorder) ChatNew(ctx, initPrompt any) *gomock.Call {
+func (mr *MockChatgptHandlerMockRecorder) ChatNew(ctx, cc, initPrompt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatNew", reflect.TypeOf((*MockChatgptHandler)(nil).ChatNew), ctx, initPrompt)
-}
-
-// MessageSend mocks base method.
-func (m *MockChatgptHandler) MessageSend(ctx context.Context, messages []chatbotcall.Message, role, text string) ([]chatbotcall.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageSend", ctx, messages, role, text)
-	ret0, _ := ret[0].([]chatbotcall.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// MessageSend indicates an expected call of MessageSend.
-func (mr *MockChatgptHandlerMockRecorder) MessageSend(ctx, messages, role, text any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSend", reflect.TypeOf((*MockChatgptHandler)(nil).MessageSend), ctx, messages, role, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatNew", reflect.TypeOf((*MockChatgptHandler)(nil).ChatNew), ctx, cc, initPrompt)
 }

@@ -149,7 +149,7 @@ func Test_ServiceStart(t *testing.T) {
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUIDChatbotcall).Return(tt.responseChatbotcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
 
-			mockChatgpt.EXPECT().ChatNew(ctx, tt.responseChatbot.InitPrompt).Return(tt.responseChatbotcallMessages, nil)
+			mockChatgpt.EXPECT().ChatNew(ctx, tt.responseChatbotcall, tt.responseChatbot.InitPrompt).Return(tt.responseChatbotcallMessages, nil)
 			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.responseChatbotcall.ID, tt.responseChatbotcallMessages).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUIDChatbotcall).Return(tt.responseChatbotcall, nil)
 
