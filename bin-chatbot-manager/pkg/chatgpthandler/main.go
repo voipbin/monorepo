@@ -7,7 +7,12 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 
+	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
+)
+
+const (
+	defaultModel = chatbot.EngineModelChatGPT4Turbo
 )
 
 // ChatgptHandler define

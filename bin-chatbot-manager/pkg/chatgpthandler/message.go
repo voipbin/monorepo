@@ -36,8 +36,12 @@ func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbo
 	tmpMessages = append(tmpMessages, tmpMessage)
 
 	// create request
+	model := cc.ChatbotEngineModel
+	if model == "" {
+		model = defaultModel
+	}
 	req := openai.ChatCompletionRequest{
-		Model:    string(cc.ChatbotEngineModel),
+		Model:    string(model),
 		Messages: tmpMessages,
 	}
 
