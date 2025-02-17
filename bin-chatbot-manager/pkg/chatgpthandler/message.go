@@ -10,17 +10,17 @@ import (
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
-// MessageSend send the message to the openai
-func (h *chatgptHandler) MessageSend(ctx context.Context, messages []chatbotcall.Message, role string, text string) ([]chatbotcall.Message, error) {
+// messageSend send the message to the openai
+func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, role string, text string) ([]chatbotcall.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "MessageSend",
+		"func": "messageSend",
 		"role": role,
 		"text": text,
 	})
 
 	// create message array of old messages
 	tmpMessages := []openai.ChatCompletionMessage{}
-	for _, m := range messages {
+	for _, m := range cc.Messages {
 		tmp := openai.ChatCompletionMessage{
 			Role:    m.Role,
 			Content: m.Content,
@@ -36,8 +36,12 @@ func (h *chatgptHandler) MessageSend(ctx context.Context, messages []chatbotcall
 	tmpMessages = append(tmpMessages, tmpMessage)
 
 	// create request
+	model := cc.ChatbotEngineModel
+	if model == "" {
+		model = defaultModel
+	}
 	req := openai.ChatCompletionRequest{
-		Model:    openai.GPT3Dot5Turbo,
+		Model:    string(model),
 		Messages: tmpMessages,
 	}
 
@@ -60,6 +64,6 @@ func (h *chatgptHandler) MessageSend(ctx context.Context, messages []chatbotcall
 		},
 	}
 
-	res := append(messages, tmpRes...)
+	res := append(cc.Messages, tmpRes...)
 	return res, nil
 }
