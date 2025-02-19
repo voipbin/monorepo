@@ -3,6 +3,7 @@ package chatbotcallhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
@@ -47,15 +48,43 @@ func (h *chatbotcallHandler) ServiceStart(
 		return nil, errors.Wrap(err, "could not get chatbot info")
 	}
 
+	if c.CustomerID != customerID {
+		log.Errorf("Chatbot does not belong to the customer. chatbot_id: %s, customer_id: %s", chatbotID, customerID)
+		return nil, fmt.Errorf("chatbot does not belong to the customer. chatbot_id: %s, customer_id: %s", chatbotID, customerID)
+	}
+
+	switch referenceType {
+	case chatbotcall.ReferenceTypeCall:
+		res, err := h.serviceStartReferenceTypeCall(ctx, c, activeflowID, referenceID, gender, language)
+		if err != nil {
+			log.Errorf("Could not create chatbotcall. err: %v", err)
+			return nil, err
+		}
+
+		return res, nil
+
+	default:
+		log.Errorf("Unsupported reference type. reference_type: %s", referenceType)
+		return nil, fmt.Errorf("unsupported reference type. reference_type: %s", referenceType)
+	}
+}
+
+// ServiceStart is creating a new chatbotcall.
+// it increases corresponded counter
+func (h *chatbotcallHandler) serviceStartReferenceTypeCall(ctx context.Context, c *chatbot.Chatbot, activeflowID uuid.UUID, referenceID uuid.UUID, gender chatbotcall.Gender, language string) (*service.Service, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "ServiceStart",
+	})
+
 	// create confbridge
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, customerID, cmconfbridge.TypeConference)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, c.CustomerID, cmconfbridge.TypeConference)
 	if err != nil {
 		log.Errorf("Could not create confbridge. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create confbridge")
 	}
 
 	// create chatbotcall
-	cc, err := h.Create(ctx, c, activeflowID, referenceType, referenceID, cb.ID, gender, language)
+	cc, err := h.Create(ctx, c, activeflowID, chatbotcall.ReferenceTypeCall, referenceID, cb.ID, gender, language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create chatbotcall.")
@@ -92,4 +121,5 @@ func (h *chatbotcallHandler) ServiceStart(
 	}
 
 	return res, nil
+
 }

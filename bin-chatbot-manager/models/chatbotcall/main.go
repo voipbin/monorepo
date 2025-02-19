@@ -40,6 +40,7 @@ type ReferenceType string
 
 // list of reference types
 const (
+	ReferenceTypeNone ReferenceType = ""
 	ReferenceTypeCall ReferenceType = "call"
 )
 
