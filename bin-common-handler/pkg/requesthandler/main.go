@@ -527,7 +527,6 @@ type RequestHandler interface {
 	// chatbot-manager service
 	ChatbotV1ServiceTypeChabotcallStart(
 		ctx context.Context,
-		customerID uuid.UUID,
 		chatbotID uuid.UUID,
 		activeflowID uuid.UUID,
 		referenceType cbchatbotcall.ReferenceType,

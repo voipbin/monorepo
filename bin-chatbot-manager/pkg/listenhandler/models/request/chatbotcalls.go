@@ -10,8 +10,7 @@ import (
 // v1 data type request struct for
 // /v1/chatbotcalls POST
 type V1DataChatbotcallsPost struct {
-	CustomerID uuid.UUID `json:"customer_id"`
-	ChatbotID  uuid.UUID `json:"chatbot_id"`
+	ChatbotID uuid.UUID `json:"chatbot_id"`
 
 	ReferenceType chatbotcall.ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID                 `json:"reference_id"`

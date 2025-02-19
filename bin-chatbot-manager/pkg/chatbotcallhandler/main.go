@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
+	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/service"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
@@ -21,6 +22,16 @@ import (
 
 // ChatbotcallHandler define
 type ChatbotcallHandler interface {
+	Create(
+		ctx context.Context,
+		c *chatbot.Chatbot,
+		activeflowID uuid.UUID,
+		referenceType chatbotcall.ReferenceType,
+		referenceID uuid.UUID,
+		confbridgeID uuid.UUID,
+		gender chatbotcall.Gender,
+		language string,
+	) (*chatbotcall.Chatbotcall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	Get(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error)
@@ -30,9 +41,18 @@ type ChatbotcallHandler interface {
 	ProcessStart(ctx context.Context, cb *chatbotcall.Chatbotcall) (*chatbotcall.Chatbotcall, error)
 	ProcessEnd(ctx context.Context, cb *chatbotcall.Chatbotcall) (*chatbotcall.Chatbotcall, error)
 
+	Start(
+		ctx context.Context,
+		chatbotID uuid.UUID,
+		activeflowID uuid.UUID,
+		referenceType chatbotcall.ReferenceType,
+		referenceID uuid.UUID,
+		gender chatbotcall.Gender,
+		language string,
+	) (*chatbotcall.Chatbotcall, error)
+
 	ServiceStart(
 		ctx context.Context,
-		customerID uuid.UUID,
 		chatbotID uuid.UUID,
 		activeflowID uuid.UUID,
 		referenceType chatbotcall.ReferenceType,
