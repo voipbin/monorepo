@@ -238,3 +238,189 @@ func Test_chatMessageActionsHandle(t *testing.T) {
 		})
 	}
 }
+
+func Test_chatMessageReferenceTypeCall(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatbotcall *chatbotcall.Chatbotcall
+		message     string
+
+		responseMessages    []chatbotcall.Message
+		responseChatbotcall *chatbotcall.Chatbotcall
+
+		expectText string
+	}{
+		{
+			name: "normal",
+
+			chatbotcall: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("47ea05dc-ef4c-11ef-8318-af1841553e05"),
+				},
+				ReferenceType:     chatbotcall.ReferenceTypeCall,
+				ChatbotID:         uuid.FromStringOrNil("48445be0-ef4c-11ef-9ac6-f39d9cadacfd"),
+				ChatbotEngineType: chatbot.EngineTypeChatGPT,
+				Gender:            chatbotcall.GenderFemale,
+				Language:          "en-US",
+			},
+			message: "Hi",
+
+			responseMessages: []chatbotcall.Message{
+				{
+					Content: "hi",
+				},
+				{
+					Content: "Hello, my name is chat-gpt.",
+				},
+			},
+			responseChatbotcall: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("47ea05dc-ef4c-11ef-8318-af1841553e05"),
+				},
+				ReferenceType:     chatbotcall.ReferenceTypeCall,
+				ChatbotID:         uuid.FromStringOrNil("48445be0-ef4c-11ef-9ac6-f39d9cadacfd"),
+				ChatbotEngineType: chatbot.EngineTypeChatGPT,
+				Gender:            chatbotcall.GenderFemale,
+				Language:          "en-US",
+				Messages: []chatbotcall.Message{
+					{
+						Content: "hi",
+					},
+					{
+						Content: "Hello, my name is chat-gpt.",
+					},
+				},
+			},
+
+			expectText: "Hello, my name is chat-gpt.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
+			mockChatgpt := chatgpthandler.NewMockChatgptHandler(mc)
+
+			h := &chatbotcallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				chatbotHandler: mockChatbot,
+				chatgptHandler: mockChatgpt,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.chatbotcall.ReferenceID).Return(nil)
+			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages)
+			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.responseChatbotcall, nil)
+			mockReq.EXPECT().CallV1CallTalk(ctx, tt.chatbotcall.ReferenceID, tt.expectText, string(tt.chatbotcall.Gender), tt.chatbotcall.Language, 10000).Return(nil)
+
+			if err := h.chatMessageReferenceTypeCall(ctx, tt.chatbotcall, tt.message); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_chatMessageReferenceTypeNone(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatbotcall *chatbotcall.Chatbotcall
+		message     string
+
+		responseMessages    []chatbotcall.Message
+		responseChatbotcall *chatbotcall.Chatbotcall
+
+		expectText string
+	}{
+		{
+			name: "normal",
+
+			chatbotcall: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("ac59d614-ef4c-11ef-92c4-d3fac6f89f7c"),
+				},
+				ReferenceType:     chatbotcall.ReferenceTypeCall,
+				ChatbotID:         uuid.FromStringOrNil("ac802da0-ef4c-11ef-ae2e-4bb145b60231"),
+				ChatbotEngineType: chatbot.EngineTypeChatGPT,
+				Gender:            chatbotcall.GenderFemale,
+				Language:          "en-US",
+			},
+			message: "Hi",
+
+			responseMessages: []chatbotcall.Message{
+				{
+					Content: "hi",
+				},
+				{
+					Content: "Hello, my name is chat-gpt.",
+				},
+			},
+			responseChatbotcall: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("ac59d614-ef4c-11ef-92c4-d3fac6f89f7c"),
+				},
+				ReferenceType:     chatbotcall.ReferenceTypeCall,
+				ChatbotID:         uuid.FromStringOrNil("ac802da0-ef4c-11ef-ae2e-4bb145b60231"),
+				ChatbotEngineType: chatbot.EngineTypeChatGPT,
+				Gender:            chatbotcall.GenderFemale,
+				Language:          "en-US",
+				Messages: []chatbotcall.Message{
+					{
+						Content: "hi",
+					},
+					{
+						Content: "Hello, my name is chat-gpt.",
+					},
+				},
+			},
+
+			expectText: "Hello, my name is chat-gpt.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
+			mockChatgpt := chatgpthandler.NewMockChatgptHandler(mc)
+
+			h := &chatbotcallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				chatbotHandler: mockChatbot,
+				chatgptHandler: mockChatgpt,
+			}
+			ctx := context.Background()
+
+			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages)
+			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.responseChatbotcall, nil)
+
+			if err := h.chatMessageReferenceTypeNone(ctx, tt.chatbotcall, tt.message); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

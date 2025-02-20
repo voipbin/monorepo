@@ -17,79 +17,16 @@ import (
 
 // ChatMessage sends/receives the messages from/to a chatbot
 func (h *chatbotcallHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "ChatMessage",
-		"chatbotcall": cc,
-		"message":     message,
-	})
+	switch cc.ReferenceType {
+	case chatbotcall.ReferenceTypeCall:
+		return h.chatMessageReferenceTypeCall(ctx, cc, message)
 
-	// currently only the reference type call supported
-	if cc.ReferenceType != chatbotcall.ReferenceTypeCall {
-		log.Errorf("Unsupported reference type. reference_type: %s", cc.ReferenceType)
-		return fmt.Errorf("unsupported referencd type")
-	}
-
-	// stop the media because chat will talk soon
-	if errStop := h.reqHandler.CallV1CallMediaStop(ctx, cc.ReferenceID); errStop != nil {
-		log.Errorf("Could not stop the media. err: %v", errStop)
-		return errors.Wrap(errStop, "Could not stop the media")
-	}
-
-	log.Debugf("Sending a message. message: %s", message)
-	var messages []chatbotcall.Message
-	var err error
-	start := time.Now()
-	// send message
-	switch cc.ChatbotEngineType {
-	case chatbot.EngineTypeChatGPT:
-		// chat to the chatbot engine and get answer from them.
-		messages, err = h.chatgptHandler.ChatMessage(ctx, cc, message)
-		if err != nil {
-			log.Errorf("Could not get chat message from the chatbot engine. err: %v", err)
-			return errors.Wrap(err, "could not get chat message from the chatbot engine")
-		}
+	case chatbotcall.ReferenceTypeNone:
+		return h.chatMessageReferenceTypeNone(ctx, cc, message)
 
 	default:
-		log.Errorf("Could not find correct chatbot engine handler. engine_type: %s", cc.ChatbotEngineType)
-		return fmt.Errorf("could not find chatbot engine type handler. engine_type: %s", cc.ChatbotEngineType)
+		return fmt.Errorf("unsupported reference type. reference_type: %s", cc.ReferenceType)
 	}
-	elapsed := time.Since(start)
-	promChatMessageProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(elapsed.Milliseconds()))
-	log.WithField("response_message", messages[len(messages)-1]).Debugf("Processed chat message. elapsed: %v, response_content: %s", elapsed, messages[len(messages)-1].Content)
-
-	// update chatbotcall messages
-	tmp, err := h.UpdateChatbotcallMessages(ctx, cc.ID, messages)
-	if err != nil {
-		log.Errorf("Could not update the chatbotcall's messages. err: %v", err)
-		return errors.Wrap(err, "could not update the chatbotcall's messages")
-	}
-
-	// get response message text
-	text := tmp.Messages[len(tmp.Messages)-1].Content
-	if text == "" {
-		// nothing to say.
-		log.Debug("Nothing to say.")
-		return nil
-	}
-
-	// check the response message
-	tmpActions := []fmaction.Action{}
-	errUnmarshal := json.Unmarshal([]byte(text), &tmpActions)
-	if errUnmarshal == nil {
-		log.WithField("actions", tmpActions).Debugf("Got a action arrays. len_actions: %d", len(tmpActions))
-		if errHandle := h.chatMessageActionsHandle(ctx, cc, tmpActions); errHandle != nil {
-			log.Errorf("Could not handle the response actions correctly. err: %v", errHandle)
-			return errors.Wrap(err, "could not handle the response actions correctly")
-		}
-	} else {
-		log.WithField("text", text).Debugf("Got an message text. text: %s", text)
-		if errHandle := h.chatMessageTextHandle(ctx, cc, text); errHandle != nil {
-			log.Errorf("Could not handle the response message text correctly. err: %v", errHandle)
-			return errors.Wrap(err, "could not handle the response message text correctly")
-		}
-	}
-
-	return nil
 }
 
 // chatMessageActionsHandle handles chat message actions
@@ -169,6 +106,67 @@ func (h *chatbotcallHandler) ChatInit(ctx context.Context, cb *chatbot.Chatbot, 
 	elapsed := time.Since(start)
 	promChatInitProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(elapsed.Milliseconds()))
 	log.Debugf("Chat has initialized. elapsed: %v", elapsed)
+
+	return nil
+}
+
+func (h *chatbotcallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *chatbotcall.Chatbotcall, message string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "chatMessageReferenceTypeCall",
+		"chatbotcall": cc,
+		"message":     message,
+	})
+
+	// currently only the reference type call supported
+	if cc.ReferenceType != chatbotcall.ReferenceTypeCall {
+		log.Errorf("Unsupported reference type. reference_type: %s", cc.ReferenceType)
+		return fmt.Errorf("unsupported referencd type")
+	}
+
+	// stop the media because chat will talk soon
+	if errStop := h.reqHandler.CallV1CallMediaStop(ctx, cc.ReferenceID); errStop != nil {
+		log.Errorf("Could not stop the media. err: %v", errStop)
+		return errors.Wrap(errStop, "Could not stop the media")
+	}
+
+	tmp, err := h.messageSend(ctx, cc, message)
+	if err != nil {
+		return errors.Wrapf(err, "could not send the message to the chatbot. chatbotcall_id: %s", cc.ID)
+	}
+
+	// get response message text
+	text := tmp.Messages[len(tmp.Messages)-1].Content
+	if text == "" {
+		// nothing to say.
+		log.Debug("Nothing to say.")
+		return nil
+	}
+
+	// check the response message
+	tmpActions := []fmaction.Action{}
+	errUnmarshal := json.Unmarshal([]byte(text), &tmpActions)
+	if errUnmarshal == nil {
+		log.WithField("actions", tmpActions).Debugf("Got a action arrays. len_actions: %d", len(tmpActions))
+		if errHandle := h.chatMessageActionsHandle(ctx, cc, tmpActions); errHandle != nil {
+			log.Errorf("Could not handle the response actions correctly. err: %v", errHandle)
+			return errors.Wrap(err, "could not handle the response actions correctly")
+		}
+	} else {
+		log.WithField("text", text).Debugf("Got an message text. text: %s", text)
+		if errHandle := h.chatMessageTextHandle(ctx, cc, text); errHandle != nil {
+			log.Errorf("Could not handle the response message text correctly. err: %v", errHandle)
+			return errors.Wrap(err, "could not handle the response message text correctly")
+		}
+	}
+
+	return nil
+}
+
+func (h *chatbotcallHandler) chatMessageReferenceTypeNone(ctx context.Context, cc *chatbotcall.Chatbotcall, message string) error {
+	_, err := h.messageSend(ctx, cc, message)
+	if err != nil {
+		return errors.Wrapf(err, "could not send the message to the chatbot. chatbotcall_id: %s", cc.ID)
+	}
 
 	return nil
 }

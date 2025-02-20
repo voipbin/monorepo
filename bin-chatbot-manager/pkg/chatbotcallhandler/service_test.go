@@ -74,6 +74,7 @@ func Test_ServiceStart(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 				},
+				ConfbridgeID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 			},
 			responseChatbotcallMessages: []chatbotcall.Message{
 				{
