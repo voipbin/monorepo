@@ -966,7 +966,7 @@ func (h *activeflowHandler) actionHandleChatbotTalk(ctx context.Context, af *act
 	}
 
 	// start service
-	sv, err := h.reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, af.CustomerID, opt.ChatbotID, af.ID, cbchatbotcall.ReferenceTypeCall, af.ReferenceID, opt.Gender, opt.Language, 3000)
+	sv, err := h.reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, opt.ChatbotID, af.ID, cbchatbotcall.ReferenceTypeCall, af.ReferenceID, opt.Gender, opt.Language, 3000)
 	if err != nil {
 		log.Errorf("Could not start the service. err: %v", err)
 		return errors.Wrap(err, "Could not start the service.")

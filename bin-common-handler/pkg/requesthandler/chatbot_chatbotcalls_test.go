@@ -296,3 +296,71 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_ChatbotV1ChatbotcallSendMessage(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatbotcallID uuid.UUID
+		role          cbchatbotcall.MessageRole
+		text          string
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *cbchatbotcall.Chatbotcall
+	}{
+		{
+			name: "normal",
+
+			chatbotcallID: uuid.FromStringOrNil("60b22c96-efa3-11ef-b811-a354bf59c327"),
+			role:          cbchatbotcall.MessageRoleUser,
+			text:          "Hello, World!",
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"60b22c96-efa3-11ef-b811-a354bf59c327"}`),
+			},
+
+			expectTarget: "bin-manager.chatbot-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/chatbotcalls/60b22c96-efa3-11ef-b811-a354bf59c327/messages",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"role":"user","text":"Hello, World!"}`),
+			},
+			expectRes: &cbchatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("60b22c96-efa3-11ef-b811-a354bf59c327"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			cf, err := reqHandler.ChatbotV1ChatbotcallSendMessage(ctx, tt.chatbotcallID, tt.role, tt.text)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(cf, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, cf)
+			}
+		})
+	}
+}

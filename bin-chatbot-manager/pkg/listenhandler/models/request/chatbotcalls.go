@@ -18,3 +18,11 @@ type V1DataChatbotcallsPost struct {
 	Gender   chatbotcall.Gender `json:"gender"`
 	Language string             `json:"language"`
 }
+
+// V1DataChatbotcallsIDMessagesPost is
+// v1 data type request struct for
+// /v1/chatbotcalls/<chatbotcall-id>/messages POST
+type V1DataChatbotcallsIDMessagesPost struct {
+	Role chatbotcall.MessageRole `json:"role,omitempty"`
+	Text string                  `json:"text,omitempty"`
+}

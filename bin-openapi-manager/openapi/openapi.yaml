@@ -1329,23 +1329,15 @@ components:
         - ChatbotManagerChatbotcallGenderFemale
         - ChatbotManagerChatbotcallGenderNeutral
 
-    ChatbotManagerChatbotcallMessage:
-      type: object
-      properties:
-        role:
-          type: string
-          description: Role of the entity in the conversation.
-        content:
-          type: string
-          description: Content of the message.
-
-    ChatbotManagerChatbotcallreferenceType:
+    ChatbotManagerChatbotcallReferenceType:
       type: string
       description: Type of reference associated with the chatbot call.
       enum:
+        - ""
         - call
       x-enum-varnames:
-        - ChatbotManagerChatbotcallreferenceTypeCall
+        - ChatbotManagerChatbotcallReferenceTypeNone
+        - ChatbotManagerChatbotcallReferenceTypeCall
 
     ChatbotManagerChatbotcallStatus:
       type: string
@@ -1358,6 +1350,31 @@ components:
         - ChatbotManagerChatbotcallStatusInitiating
         - ChatbotManagerChatbotcallStatusProgressing
         - ChatbotManagerChatbotcallStatusEnd
+
+    ChatbotManagerChatbotcallMessageRole:
+      type: string
+      description: Role of the entity in the conversation.
+      enum:
+        - system
+        - user
+        - assistant
+        - function
+        - tool
+      x-enum-varnames:
+        - ChatbotManagerChatbotcallMessageRoleSystem
+        - ChatbotManagerChatbotcallMessageRoleUser
+        - ChatbotManagerChatbotcallMessageRoleAssistant
+        - ChatbotManagerChatbotcallMessageRoleFunction
+        - ChatbotManagerChatbotcallMessageRoleTool
+
+    ChatbotManagerChatbotcallMessage:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/ChatbotManagerChatbotcallMessageRole'
+        content:
+          type: string
+          description: Content of the message.
 
     ChatbotManagerChatbotcall:
       type: object
@@ -1379,7 +1396,7 @@ components:
           type: string
           description: Unique identifier for the activeflow.
         reference_type:
-          $ref: '#/components/schemas/ChatbotManagerChatbotcallreferenceType'
+          $ref: '#/components/schemas/ChatbotManagerChatbotcallReferenceType'
         reference_id:
           type: string
           description: Unique identifier for the reference.
@@ -1396,6 +1413,11 @@ components:
         language:
           type: string
           description: Language used during the chatbot call.
+        messages:
+          type: array
+          description: List of messages associated with the chatbot call.
+          items:
+            $ref: '#/components/schemas/ChatbotManagerChatbotcallMessage'
         tm_end:
           type: string
           description: Timestamp when the chatbot call ended.
@@ -3079,6 +3101,8 @@ paths:
   /campaigns:
     $ref: './paths/campaigns/main.yaml'
 
+  /chatbotcalls/{id}/messages:
+    $ref: './paths/chatbotcalls/id_messages.yaml'
   /chatbotcalls/{id}:
     $ref: './paths/chatbotcalls/id.yaml'
   /chatbotcalls:

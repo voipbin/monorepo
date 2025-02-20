@@ -61,7 +61,8 @@ type ChatbotcallHandler interface {
 		language string,
 	) (*service.Service, error)
 
-	ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, message *chatbotcall.Message) error
+	ChatMessageByID(ctx context.Context, chatbotcallID uuid.UUID, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error)
+	ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error)
 }
 
 // chatbotcallHandler define

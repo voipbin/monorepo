@@ -25,20 +25,16 @@ func (h *subscribeHandler) processEventTMTranscriptCreated(ctx context.Context, 
 		return err
 	}
 
-	cb, errChat := h.chatbotcallHandler.GetByTranscribeID(ctx, evt.TranscribeID)
-	if errChat != nil {
+	cb, err := h.chatbotcallHandler.GetByTranscribeID(ctx, evt.TranscribeID)
+	if err != nil {
 		// no transcribe id found
 		return nil
 	}
 
-	message := &chatbotcall.Message{
-		Role:    chatbotcall.MessageRoleUser,
-		Content: evt.Message,
-	}
-
-	if errChat = h.chatbotcallHandler.ChatMessage(ctx, cb, message); errChat != nil {
-		log.Errorf("Could not chat to the chatbotcall. err: %v", errChat)
-		return errors.Wrap(errChat, "could not chat to the chatbotcall")
+	_, err = h.chatbotcallHandler.ChatMessage(ctx, cb, chatbotcall.MessageRoleUser, evt.Message)
+	if err != nil {
+		log.Errorf("Could not chat to the chatbotcall. err: %v", err)
+		return errors.Wrap(err, "could not chat to the chatbotcall")
 	}
 
 	return nil

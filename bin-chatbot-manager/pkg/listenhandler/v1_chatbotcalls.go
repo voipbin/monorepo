@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
 
@@ -65,10 +66,10 @@ func (h *listenHandler) processV1ChatbotcallsGet(ctx context.Context, m *sock.Re
 	return res, nil
 }
 
-// processV1ChatbotsPost handles POST /v1/chatbots request
+// processV1ChatbotcallsPost handles POST /v1/chatbotcalls request
 func (h *listenHandler) processV1ChatbotcallsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1ChatbotsPost",
+		"handler": "processV1ChatbotcallsPost",
 		"request": m,
 	})
 
@@ -151,6 +152,47 @@ func (h *listenHandler) processV1ChatbotcallsIDDelete(ctx context.Context, m *so
 	tmp, err := h.chatbotcallHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete chatbotcall. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ChatbotcallsIDMessagesPost handles POST /v1/chatbotcalls/<chatbotcall-id>/messages request
+func (h *listenHandler) processV1ChatbotcallsIDMessagesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ChatbotcallsIDMessagesPost",
+		"request": m,
+	})
+
+	var req request.V1DataChatbotcallsIDMessagesPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return nil, err
+	}
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.chatbotcallHandler.ChatMessageByID(ctx, id, chatbotcall.MessageRole(req.Role), req.Text)
+	if err != nil {
+		log.Errorf("Could not create chatbot. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

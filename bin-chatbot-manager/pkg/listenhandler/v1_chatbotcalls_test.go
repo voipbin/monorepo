@@ -281,3 +281,68 @@ func Test_processV1ChatbotcallsIDGet(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1ChatbotcallsIDMessagesPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		responseChatbotcall *chatbotcall.Chatbotcall
+
+		expectID   uuid.UUID
+		expectRole chatbotcall.MessageRole
+		expectText string
+		expectRes  *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/chatbotcalls/e961fcc6-efa1-11ef-8e16-db99776061e2/messages",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"role": "user", "text": "hello world"}`),
+			},
+
+			responseChatbotcall: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e961fcc6-efa1-11ef-8e16-db99776061e2"),
+				},
+			},
+
+			expectID:   uuid.FromStringOrNil("e961fcc6-efa1-11ef-8e16-db99776061e2"),
+			expectRole: chatbotcall.MessageRoleUser,
+			expectText: "hello world",
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e961fcc6-efa1-11ef-8e16-db99776061e2","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:        mockSock,
+				chatbotcallHandler: mockChatbotcall,
+			}
+
+			mockChatbotcall.EXPECT().ChatMessageByID(gomock.Any(), tt.expectID, tt.expectRole, tt.expectText).Return(tt.responseChatbotcall, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
