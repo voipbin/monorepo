@@ -40,6 +40,7 @@ type ReferenceType string
 
 // list of reference types
 const (
+	ReferenceTypeNone ReferenceType = ""
 	ReferenceTypeCall ReferenceType = "call"
 )
 
@@ -65,6 +66,18 @@ const (
 
 // Message defines
 type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role    MessageRole `json:"role"`
+	Content string      `json:"content"`
 }
+
+// MessageRole defiens
+type MessageRole string
+
+// list of roles
+const (
+	MessageRoleSystem    MessageRole = "system"
+	MessageRoleUser      MessageRole = "user"
+	MessageRoleAssistant MessageRole = "assistant"
+	MessageRoleFunction  MessageRole = "function"
+	MessageRoleTool      MessageRole = "tool"
+)

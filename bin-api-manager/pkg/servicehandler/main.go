@@ -31,8 +31,9 @@ import (
 	chatmedia "monorepo/bin-chat-manager/models/media"
 	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
-	chatbotchatbot "monorepo/bin-chatbot-manager/models/chatbot"
-	chatbotchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+
+	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
+	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
@@ -231,32 +232,42 @@ type ServiceHandler interface {
 		a *amagent.Agent,
 		name string,
 		detail string,
-		engineType chatbotchatbot.EngineType,
-		engineModel chatbotchatbot.EngineModel,
+		engineType cbchatbot.EngineType,
+		engineModel cbchatbot.EngineModel,
 		initPrompt string,
 		credentialBase64 string,
 		credentialProjectID string,
-	) (*chatbotchatbot.WebhookMessage, error)
-	ChatbotGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatbotchatbot.WebhookMessage, error)
-	ChatbotGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error)
-	ChatbotDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error)
+	) (*cbchatbot.WebhookMessage, error)
+	ChatbotGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cbchatbot.WebhookMessage, error)
+	ChatbotGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbot.WebhookMessage, error)
+	ChatbotDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbot.WebhookMessage, error)
 	ChatbotUpdate(
 		ctx context.Context,
 		a *amagent.Agent,
 		id uuid.UUID,
 		name string,
 		detail string,
-		engineType chatbotchatbot.EngineType,
-		engineModel chatbotchatbot.EngineModel,
+		engineType cbchatbot.EngineType,
+		engineModel cbchatbot.EngineModel,
 		initPrompt string,
 		credentialBase64 string,
 		credentialProjectID string,
-	) (*chatbotchatbot.WebhookMessage, error)
+	) (*cbchatbot.WebhookMessage, error)
 
 	// chatbotcall handlers
-	ChatbotcallGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatbotchatbotcall.WebhookMessage, error)
-	ChatbotcallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbotcall.WebhookMessage, error)
-	ChatbotcallDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbotcall.WebhookMessage, error)
+	ChatbotcallCreate(
+		ctx context.Context,
+		a *amagent.Agent,
+		chatbotID uuid.UUID,
+		referenceType cbchatbotcall.ReferenceType,
+		referenceID uuid.UUID,
+		gender cbchatbotcall.Gender,
+		language string,
+	) (*cbchatbotcall.WebhookMessage, error)
+	ChatbotcallGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cbchatbotcall.WebhookMessage, error)
+	ChatbotcallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbotcall.WebhookMessage, error)
+	ChatbotcallDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbotcall.WebhookMessage, error)
+	ChatbotcallSendMessage(ctx context.Context, a *amagent.Agent, id uuid.UUID, role cbchatbotcall.MessageRole, text string) (*cbchatbotcall.WebhookMessage, error)
 
 	// chatmessage handlers
 	ChatmessageCreate(

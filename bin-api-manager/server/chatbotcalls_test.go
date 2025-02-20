@@ -1,10 +1,11 @@
 package server
 
 import (
+	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
-	cmchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"net/http"
@@ -16,6 +17,98 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+func Test_PostChatbotcalls(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+		reqBody  []byte
+
+		response *cbchatbotcall.WebhookMessage
+
+		expectChatbotID     uuid.UUID
+		expectReferenceType cbchatbotcall.ReferenceType
+		expectReferenceID   uuid.UUID
+		expectGender        cbchatbotcall.Gender
+		expectLanguage      string
+		expectRes           string
+	}{
+		{
+			name: "full data",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/chatbotcalls",
+			reqBody:  []byte(`{"chatbot_id":"d9e18e8c-efac-11ef-903a-9710c6837217","reference_type":"call","reference_id":"da12e23e-efac-11ef-aa18-172cb9693b33","gender":"male","language":"en-US"}`),
+
+			response: &cbchatbotcall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b71393dc-efac-11ef-829f-5330fc080fd2"),
+				},
+				Messages: []cbchatbotcall.Message{
+					{
+						Role:    cbchatbotcall.MessageRoleUser,
+						Content: "hello world",
+					},
+				},
+			},
+
+			expectChatbotID:     uuid.FromStringOrNil("d9e18e8c-efac-11ef-903a-9710c6837217"),
+			expectReferenceType: cbchatbotcall.ReferenceTypeCall,
+			expectReferenceID:   uuid.FromStringOrNil("da12e23e-efac-11ef-aa18-172cb9693b33"),
+			expectGender:        cbchatbotcall.GenderMale,
+			expectLanguage:      "en-US",
+			expectRes:           `{"id":"b71393dc-efac-11ef-829f-5330fc080fd2","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","messages":[{"role":"user","content":"hello world"}]}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().ChatbotcallCreate(
+				req.Context(),
+				&tt.agent,
+				tt.expectChatbotID,
+				tt.expectReferenceType,
+				tt.expectReferenceID,
+				tt.expectGender,
+				tt.expectLanguage,
+			).Return(tt.response, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
 func Test_chatbotcallsGET(t *testing.T) {
 
 	type test struct {
@@ -24,7 +117,7 @@ func Test_chatbotcallsGET(t *testing.T) {
 
 		reqQuery string
 
-		responseChatbotcalls []*cmchatbotcall.WebhookMessage
+		responseChatbotcalls []*cbchatbotcall.WebhookMessage
 
 		expectPageSize  uint64
 		expectPageToken string
@@ -42,7 +135,7 @@ func Test_chatbotcallsGET(t *testing.T) {
 
 			reqQuery: "/chatbotcalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 
-			responseChatbotcalls: []*cmchatbotcall.WebhookMessage{
+			responseChatbotcalls: []*cbchatbotcall.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("fa136fec-eca6-4958-b9a8-21fd8d61b8aa"),
@@ -65,7 +158,7 @@ func Test_chatbotcallsGET(t *testing.T) {
 
 			reqQuery: "/chatbotcalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 
-			responseChatbotcalls: []*cmchatbotcall.WebhookMessage{
+			responseChatbotcalls: []*cbchatbotcall.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("f7576695-a944-4427-b7d6-1a776f83aa9a"),
@@ -134,7 +227,7 @@ func Test_chatbotcallsIDGET(t *testing.T) {
 
 		reqQuery string
 
-		responseChatbotcall *cmchatbotcall.WebhookMessage
+		responseChatbotcall *cbchatbotcall.WebhookMessage
 
 		expectChatbotcallID uuid.UUID
 		expectRes           string
@@ -149,7 +242,7 @@ func Test_chatbotcallsIDGET(t *testing.T) {
 
 			reqQuery: "/chatbotcalls/f199188b-8d78-4778-8891-8f276cd56de5",
 
-			responseChatbotcall: &cmchatbotcall.WebhookMessage{
+			responseChatbotcall: &cbchatbotcall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f199188b-8d78-4778-8891-8f276cd56de5"),
 				},
@@ -202,7 +295,7 @@ func Test_chatbotcallsIDDELETE(t *testing.T) {
 
 		reqQuery string
 
-		responseChatbotcall *cmchatbotcall.WebhookMessage
+		responseChatbotcall *cbchatbotcall.WebhookMessage
 
 		expectChatbotcallID uuid.UUID
 		expectRes           string
@@ -217,7 +310,7 @@ func Test_chatbotcallsIDDELETE(t *testing.T) {
 
 			reqQuery: "/chatbotcalls/c1a95988-5382-4769-98a9-b404823a64bf",
 
-			responseChatbotcall: &cmchatbotcall.WebhookMessage{
+			responseChatbotcall: &cbchatbotcall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c1a95988-5382-4769-98a9-b404823a64bf"),
 				},
@@ -249,6 +342,86 @@ func Test_chatbotcallsIDDELETE(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			mockSvc.EXPECT().ChatbotcallDelete(req.Context(), &tt.agent, tt.expectChatbotcallID).Return(tt.responseChatbotcall, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+func Test_PostChatbotcallsIdMessages(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+		reqBody  []byte
+
+		response *cbchatbotcall.WebhookMessage
+
+		expectChatbotcallID uuid.UUID
+		expectRole          cbchatbotcall.MessageRole
+		expectText          string
+		expectRes           string
+	}{
+		{
+			name: "full data",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/chatbotcalls/81eb3506-efad-11ef-8d67-133377751a43/messages",
+			reqBody:  []byte(`{"role":"user","text":"hello world"}`),
+
+			response: &cbchatbotcall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b71393dc-efac-11ef-829f-5330fc080fd2"),
+				},
+			},
+
+			expectChatbotcallID: uuid.FromStringOrNil("81eb3506-efad-11ef-8d67-133377751a43"),
+			expectRole:          cbchatbotcall.MessageRoleUser,
+			expectText:          "hello world",
+			expectRes:           `{"id":"b71393dc-efac-11ef-829f-5330fc080fd2","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().ChatbotcallSendMessage(
+				req.Context(),
+				&tt.agent,
+				tt.expectChatbotcallID,
+				tt.expectRole,
+				tt.expectText,
+			).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

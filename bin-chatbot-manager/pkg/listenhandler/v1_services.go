@@ -24,7 +24,7 @@ func (h *listenHandler) processV1ServicesTypeChatbotcallPost(ctx context.Context
 		return nil, err
 	}
 
-	tmp, err := h.chatbotcallHandler.ServiceStart(ctx, req.CustomerID, req.ChatbotID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Gender, req.Language)
+	tmp, err := h.chatbotcallHandler.ServiceStart(ctx, req.ChatbotID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Gender, req.Language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return simpleResponse(500), nil

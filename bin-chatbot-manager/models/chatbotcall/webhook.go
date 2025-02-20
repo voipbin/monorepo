@@ -28,6 +28,8 @@ type WebhookMessage struct {
 	Gender   Gender `json:"gender,omitempty"`
 	Language string `json:"language,omitempty"`
 
+	Messages []Message `json:"messages,omitempty"`
+
 	TMEnd    string `json:"tm_end,omitempty"`
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
@@ -54,6 +56,8 @@ func (h *Chatbotcall) ConvertWebhookMessage() *WebhookMessage {
 
 		Gender:   h.Gender,
 		Language: h.Language,
+
+		Messages: h.Messages,
 
 		TMEnd:    h.TMEnd,
 		TMCreate: h.TMCreate,

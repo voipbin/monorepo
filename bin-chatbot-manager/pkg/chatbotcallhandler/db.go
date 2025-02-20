@@ -201,12 +201,10 @@ func (h *chatbotcallHandler) Gets(ctx context.Context, customerID uuid.UUID, siz
 
 // UpdateChatbotcallMessages updates the chatbotcall's messages
 func (h *chatbotcallHandler) UpdateChatbotcallMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) (*chatbotcall.Chatbotcall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "UpdateChatbotcallMessages",
-			"chatbot_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdateChatbotcallMessages",
+		"chatbot_id": id,
+	})
 
 	if errSet := h.db.ChatbotcallSetMessages(ctx, id, messages); errSet != nil {
 		log.Errorf("Could not set chatbotcall messages. err: %v", errSet)

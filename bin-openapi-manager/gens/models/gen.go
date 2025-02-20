@@ -263,16 +263,26 @@ const (
 	ChatbotManagerChatbotcallGenderNeutral ChatbotManagerChatbotcallGender = "neutral"
 )
 
+// Defines values for ChatbotManagerChatbotcallMessageRole.
+const (
+	ChatbotManagerChatbotcallMessageRoleAssistant ChatbotManagerChatbotcallMessageRole = "assistant"
+	ChatbotManagerChatbotcallMessageRoleFunction  ChatbotManagerChatbotcallMessageRole = "function"
+	ChatbotManagerChatbotcallMessageRoleSystem    ChatbotManagerChatbotcallMessageRole = "system"
+	ChatbotManagerChatbotcallMessageRoleTool      ChatbotManagerChatbotcallMessageRole = "tool"
+	ChatbotManagerChatbotcallMessageRoleUser      ChatbotManagerChatbotcallMessageRole = "user"
+)
+
+// Defines values for ChatbotManagerChatbotcallReferenceType.
+const (
+	ChatbotManagerChatbotcallReferenceTypeCall ChatbotManagerChatbotcallReferenceType = "call"
+	ChatbotManagerChatbotcallReferenceTypeNone ChatbotManagerChatbotcallReferenceType = ""
+)
+
 // Defines values for ChatbotManagerChatbotcallStatus.
 const (
 	ChatbotManagerChatbotcallStatusEnd         ChatbotManagerChatbotcallStatus = "end"
 	ChatbotManagerChatbotcallStatusInitiating  ChatbotManagerChatbotcallStatus = "initiating"
 	ChatbotManagerChatbotcallStatusProgressing ChatbotManagerChatbotcallStatus = "progressing"
-)
-
-// Defines values for ChatbotManagerChatbotcallreferenceType.
-const (
-	ChatbotManagerChatbotcallreferenceTypeCall ChatbotManagerChatbotcallreferenceType = "call"
 )
 
 // Defines values for CommonAddressType.
@@ -1337,11 +1347,14 @@ type ChatbotManagerChatbotcall struct {
 	// Language Language used during the chatbot call.
 	Language *string `json:"language,omitempty"`
 
+	// Messages List of messages associated with the chatbot call.
+	Messages *[]ChatbotManagerChatbotcallMessage `json:"messages,omitempty"`
+
 	// ReferenceId Unique identifier for the reference.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType Type of reference associated with the chatbot call.
-	ReferenceType *ChatbotManagerChatbotcallreferenceType `json:"reference_type,omitempty"`
+	ReferenceType *ChatbotManagerChatbotcallReferenceType `json:"reference_type,omitempty"`
 
 	// Status Status of the chatbot call.
 	Status *ChatbotManagerChatbotcallStatus `json:"status,omitempty"`
@@ -1371,14 +1384,17 @@ type ChatbotManagerChatbotcallMessage struct {
 	Content *string `json:"content,omitempty"`
 
 	// Role Role of the entity in the conversation.
-	Role *string `json:"role,omitempty"`
+	Role *ChatbotManagerChatbotcallMessageRole `json:"role,omitempty"`
 }
+
+// ChatbotManagerChatbotcallMessageRole Role of the entity in the conversation.
+type ChatbotManagerChatbotcallMessageRole string
+
+// ChatbotManagerChatbotcallReferenceType Type of reference associated with the chatbot call.
+type ChatbotManagerChatbotcallReferenceType string
 
 // ChatbotManagerChatbotcallStatus Status of the chatbot call.
 type ChatbotManagerChatbotcallStatus string
-
-// ChatbotManagerChatbotcallreferenceType Type of reference associated with the chatbot call.
-type ChatbotManagerChatbotcallreferenceType string
 
 // CommonAddress Contains source or destination detail info.
 type CommonAddress struct {
@@ -2774,6 +2790,26 @@ type GetChatbotcallsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// PostChatbotcallsJSONBody defines parameters for PostChatbotcalls.
+type PostChatbotcallsJSONBody struct {
+	ChatbotId string `json:"chatbot_id"`
+
+	// Gender Gender associated with the chatbot call.
+	Gender      ChatbotManagerChatbotcallGender `json:"gender"`
+	Language    string                          `json:"language"`
+	ReferenceId string                          `json:"reference_id"`
+
+	// ReferenceType Type of reference associated with the chatbot call.
+	ReferenceType ChatbotManagerChatbotcallReferenceType `json:"reference_type"`
+}
+
+// PostChatbotcallsIdMessagesJSONBody defines parameters for PostChatbotcallsIdMessages.
+type PostChatbotcallsIdMessagesJSONBody struct {
+	// Role Role of the entity in the conversation.
+	Role ChatbotManagerChatbotcallMessageRole `json:"role"`
+	Text string                               `json:"text"`
+}
+
 // GetChatbotsParams defines parameters for GetChatbots.
 type GetChatbotsParams struct {
 	// PageSize The size of results.
@@ -3919,6 +3955,12 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
+
+// PostChatbotcallsJSONRequestBody defines body for PostChatbotcalls for application/json ContentType.
+type PostChatbotcallsJSONRequestBody PostChatbotcallsJSONBody
+
+// PostChatbotcallsIdMessagesJSONRequestBody defines body for PostChatbotcallsIdMessages for application/json ContentType.
+type PostChatbotcallsIdMessagesJSONRequestBody PostChatbotcallsIdMessagesJSONBody
 
 // PostChatbotsJSONRequestBody defines body for PostChatbots for application/json ContentType.
 type PostChatbotsJSONRequestBody PostChatbotsJSONBody

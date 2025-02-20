@@ -52,8 +52,10 @@ var (
 	regV1ChatbotsID  = regexp.MustCompile("/v1/chatbots/" + regUUID + "$")
 
 	// chatbotcalls
-	regV1ChatbotcallsGet = regexp.MustCompile(`/v1/chatbotcalls\?`)
-	regV1ChatbotcallsID  = regexp.MustCompile("/v1/chatbotcalls/" + regUUID + "$")
+	regV1ChatbotcallsGet        = regexp.MustCompile(`/v1/chatbotcalls\?`)
+	regV1Chatbotcalls           = regexp.MustCompile(`/v1/chatbotcalls$`)
+	regV1ChatbotcallsID         = regexp.MustCompile("/v1/chatbotcalls/" + regUUID + "$")
+	regV1ChatbotcallsIDMessages = regexp.MustCompile("/v1/chatbotcalls/" + regUUID + "/messages$")
 
 	// service
 	regV1ServicesTypeChatbotcall = regexp.MustCompile("/v1/services/type/chatbotcall$")
@@ -202,6 +204,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1ChatbotcallsGet(ctx, m)
 		requestType = "/v1/chatbotcalls"
 
+	// POST /chatbots
+	case regV1Chatbotcalls.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ChatbotcallsPost(ctx, m)
+		requestType = "/v1/chatbotcalls"
+
 	// GET /chatbotcalls/<chatbotcall-id>
 	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ChatbotcallsIDGet(ctx, m)
@@ -211,6 +218,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ChatbotcallsIDDelete(ctx, m)
 		requestType = "/v1/chatbotcalls/<chatbotcall-id>"
+
+	// POST /chatbotcalls/<chatbotcall-id>/messages
+	case regV1ChatbotcallsIDMessages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ChatbotcallsIDMessagesPost(ctx, m)
+		requestType = "/v1/chatbotcalls/<chatbotcall-id>/messages"
 
 	/////////////////
 	// services
