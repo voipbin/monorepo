@@ -42,31 +42,31 @@ func (m *MockChatgptHandler) EXPECT() *MockChatgptHandlerMockRecorder {
 }
 
 // ChatMessage mocks base method.
-func (m *MockChatgptHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, text string) ([]chatbotcall.Message, error) {
+func (m *MockChatgptHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatMessage", ctx, cc, text)
-	ret0, _ := ret[0].([]chatbotcall.Message)
+	ret := m.ctrl.Call(m, "ChatMessage", ctx, cc, message)
+	ret0, _ := ret[0].(*chatbotcall.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatMessage indicates an expected call of ChatMessage.
-func (mr *MockChatgptHandlerMockRecorder) ChatMessage(ctx, cc, text any) *gomock.Call {
+func (mr *MockChatgptHandlerMockRecorder) ChatMessage(ctx, cc, message any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessage", reflect.TypeOf((*MockChatgptHandler)(nil).ChatMessage), ctx, cc, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessage", reflect.TypeOf((*MockChatgptHandler)(nil).ChatMessage), ctx, cc, message)
 }
 
 // ChatNew mocks base method.
-func (m *MockChatgptHandler) ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, initPrompt string) ([]chatbotcall.Message, error) {
+func (m *MockChatgptHandler) ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatNew", ctx, cc, initPrompt)
-	ret0, _ := ret[0].([]chatbotcall.Message)
+	ret := m.ctrl.Call(m, "ChatNew", ctx, cc, message)
+	ret0, _ := ret[0].(*chatbotcall.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatNew indicates an expected call of ChatNew.
-func (mr *MockChatgptHandlerMockRecorder) ChatNew(ctx, cc, initPrompt any) *gomock.Call {
+func (mr *MockChatgptHandlerMockRecorder) ChatNew(ctx, cc, message any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatNew", reflect.TypeOf((*MockChatgptHandler)(nil).ChatNew), ctx, cc, initPrompt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatNew", reflect.TypeOf((*MockChatgptHandler)(nil).ChatNew), ctx, cc, message)
 }

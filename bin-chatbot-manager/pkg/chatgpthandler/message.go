@@ -11,18 +11,18 @@ import (
 )
 
 // messageSend send the message to the openai
-func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, role string, text string) ([]chatbotcall.Message, error) {
+func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "messageSend",
-		"role": role,
-		"text": text,
+		"func":        "messageSend",
+		"chatbotcall": cc,
+		"message":     message,
 	})
 
 	// create message array of old messages
 	tmpMessages := []openai.ChatCompletionMessage{}
 	for _, m := range cc.Messages {
 		tmp := openai.ChatCompletionMessage{
-			Role:    m.Role,
+			Role:    string(m.Role),
 			Content: m.Content,
 		}
 		tmpMessages = append(tmpMessages, tmp)
@@ -30,8 +30,8 @@ func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbo
 
 	// add the new message
 	tmpMessage := openai.ChatCompletionMessage{
-		Role:    role,
-		Content: text,
+		Role:    string(message.Role),
+		Content: message.Content,
 	}
 	tmpMessages = append(tmpMessages, tmpMessage)
 
@@ -52,18 +52,10 @@ func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbo
 		return nil, errors.Wrap(err, "could not send the request")
 	}
 
-	// result
-	tmpRes := []chatbotcall.Message{
-		{
-			Role:    role,
-			Content: text,
-		},
-		{
-			Role:    resp.Choices[0].Message.Role,
-			Content: resp.Choices[0].Message.Content,
-		},
+	res := &chatbotcall.Message{
+		Role:    chatbotcall.MessageRole(resp.Choices[0].Message.Role),
+		Content: resp.Choices[0].Message.Content,
 	}
 
-	res := append(cc.Messages, tmpRes...)
 	return res, nil
 }

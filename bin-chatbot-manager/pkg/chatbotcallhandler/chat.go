@@ -16,7 +16,7 @@ import (
 )
 
 // ChatMessage sends/receives the messages from/to a chatbot
-func (h *chatbotcallHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message string) error {
+func (h *chatbotcallHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) error {
 	switch cc.ReferenceType {
 	case chatbotcall.ReferenceTypeCall:
 		return h.chatMessageReferenceTypeCall(ctx, cc, message)
@@ -80,12 +80,17 @@ func (h *chatbotcallHandler) ChatInit(ctx context.Context, cb *chatbot.Chatbot, 
 		"chatbotcall": cc,
 	})
 
+	message := &chatbotcall.Message{
+		Role:    chatbotcall.MessageRoleSystem,
+		Content: cb.InitPrompt,
+	}
+
 	var err error
-	var messages []chatbotcall.Message
+	var tmpMessage *chatbotcall.Message
 	start := time.Now()
 	switch cb.EngineType {
 	case chatbot.EngineTypeChatGPT:
-		messages, err = h.chatgptHandler.ChatNew(ctx, cc, cb.InitPrompt)
+		tmpMessage, err = h.chatgptHandler.ChatNew(ctx, cc, message)
 
 	default:
 		log.Errorf("Unsupported engine type. engine_type: %s", cb.EngineType)
@@ -95,6 +100,9 @@ func (h *chatbotcallHandler) ChatInit(ctx context.Context, cb *chatbot.Chatbot, 
 		log.Errorf("Could not start new chat. err: %v", err)
 		return errors.Wrap(err, "could not start new chat")
 	}
+
+	messages := append(cc.Messages, *message)
+	messages = append(messages, *tmpMessage)
 
 	tmp, err := h.UpdateChatbotcallMessages(ctx, cc.ID, messages)
 	if err != nil {
@@ -110,7 +118,7 @@ func (h *chatbotcallHandler) ChatInit(ctx context.Context, cb *chatbot.Chatbot, 
 	return nil
 }
 
-func (h *chatbotcallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *chatbotcall.Chatbotcall, message string) error {
+func (h *chatbotcallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "chatMessageReferenceTypeCall",
 		"chatbotcall": cc,
@@ -162,7 +170,7 @@ func (h *chatbotcallHandler) chatMessageReferenceTypeCall(ctx context.Context, c
 	return nil
 }
 
-func (h *chatbotcallHandler) chatMessageReferenceTypeNone(ctx context.Context, cc *chatbotcall.Chatbotcall, message string) error {
+func (h *chatbotcallHandler) chatMessageReferenceTypeNone(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) error {
 	_, err := h.messageSend(ctx, cc, message)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the message to the chatbot. chatbotcall_id: %s", cc.ID)

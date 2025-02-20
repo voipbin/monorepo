@@ -18,6 +18,78 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
+func Test_ChatbotV1ChatbotcallStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatbotID     uuid.UUID
+		referenceType cbchatbotcall.ReferenceType
+		referenceID   uuid.UUID
+		gender        cbchatbotcall.Gender
+		language      string
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *cbchatbotcall.Chatbotcall
+	}{
+		{
+			name: "normal",
+
+			chatbotID:     uuid.FromStringOrNil("e8604e8a-ef52-11ef-88be-43d681e412f7"),
+			referenceType: cbchatbotcall.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9"),
+			gender:        cbchatbotcall.GenderFemale,
+			language:      "en-US",
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e8ec8062-ef52-11ef-8fe9-27921b0be03c"}`),
+			},
+
+			expectTarget: "bin-manager.chatbot-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/chatbotcalls",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"chatbot_id":"e8604e8a-ef52-11ef-88be-43d681e412f7","reference_type":"call","reference_id":"e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9","gender":"female","language":"en-US"}`),
+			},
+			expectRes: &cbchatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e8ec8062-ef52-11ef-8fe9-27921b0be03c"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			cf, err := reqHandler.ChatbotV1ChatbotcallStart(ctx, tt.chatbotID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(cf, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, cf)
+			}
+		})
+	}
+}
+
 func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {

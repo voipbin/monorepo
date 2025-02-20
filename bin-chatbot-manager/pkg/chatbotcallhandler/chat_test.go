@@ -30,12 +30,13 @@ func Test_ChatMessage(t *testing.T) {
 		name string
 
 		chatbotcall *chatbotcall.Chatbotcall
-		message     string
+		message     *chatbotcall.Message
 
-		responseMessages    []chatbotcall.Message
 		responseChatbotcall *chatbotcall.Chatbotcall
+		responseMessage     *chatbotcall.Message
 
-		expectText string
+		expectMessages []chatbotcall.Message
+		expectText     string
 	}{
 		{
 			name: "normal",
@@ -50,16 +51,10 @@ func Test_ChatMessage(t *testing.T) {
 				Gender:            chatbotcall.GenderFemale,
 				Language:          "en-US",
 			},
-			message: "Hi",
-
-			responseMessages: []chatbotcall.Message{
-				{
-					Content: "hi",
-				},
-				{
-					Content: "Hello, my name is chat-gpt.",
-				},
+			message: &chatbotcall.Message{
+				Content: "hi",
 			},
+
 			responseChatbotcall: &chatbotcall.Chatbotcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("02732972-96f1-4c51-9f76-38b32377493c"),
@@ -78,7 +73,18 @@ func Test_ChatMessage(t *testing.T) {
 					},
 				},
 			},
+			responseMessage: &chatbotcall.Message{
+				Content: "Hello, my name is chat-gpt.",
+			},
 
+			expectMessages: []chatbotcall.Message{
+				{
+					Content: "hi",
+				},
+				{
+					Content: "Hello, my name is chat-gpt.",
+				},
+			},
 			expectText: "Hello, my name is chat-gpt.",
 		},
 	}
@@ -106,8 +112,8 @@ func Test_ChatMessage(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.chatbotcall.ReferenceID).Return(nil)
-			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessages, nil)
-			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages)
+			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessage, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.expectMessages)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.responseChatbotcall, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.chatbotcall.ReferenceID, tt.expectText, string(tt.chatbotcall.Gender), tt.chatbotcall.Language, 10000).Return(nil)
 
@@ -126,13 +132,17 @@ func Test_ChatInit(t *testing.T) {
 		chatbot     *chatbot.Chatbot
 		chatbotcall *chatbotcall.Chatbotcall
 
-		responseMessages []chatbotcall.Message
+		responseMessage *chatbotcall.Message
+
+		expectMessage  *chatbotcall.Message
+		expectMessages []chatbotcall.Message
 	}{
 		{
 			name: "normal",
 
 			chatbot: &chatbot.Chatbot{
 				EngineType: chatbot.EngineTypeChatGPT,
+				InitPrompt: "test message",
 			},
 			chatbotcall: &chatbotcall.Chatbotcall{
 				Identity: identity.Identity{
@@ -140,10 +150,23 @@ func Test_ChatInit(t *testing.T) {
 				},
 			},
 
-			responseMessages: []chatbotcall.Message{
+			responseMessage: &chatbotcall.Message{
+				Role:    chatbotcall.MessageRoleAssistant,
+				Content: "test assist",
+			},
+
+			expectMessage: &chatbotcall.Message{
+				Role:    chatbotcall.MessageRoleSystem,
+				Content: "test message",
+			},
+			expectMessages: []chatbotcall.Message{
 				{
-					Role:    "system",
+					Role:    chatbotcall.MessageRoleSystem,
 					Content: "test message",
+				},
+				{
+					Role:    chatbotcall.MessageRoleAssistant,
+					Content: "test assist",
 				},
 			},
 		},
@@ -171,8 +194,8 @@ func Test_ChatInit(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChatgpt.EXPECT().ChatNew(ctx, tt.chatbotcall, tt.chatbot.InitPrompt).Return(tt.responseMessages, nil)
-			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages).Return(nil)
+			mockChatgpt.EXPECT().ChatNew(ctx, tt.chatbotcall, tt.expectMessage).Return(tt.responseMessage, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.expectMessages).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.chatbotcall, nil)
 
 			if errInit := h.ChatInit(ctx, tt.chatbot, tt.chatbotcall); errInit != nil {
@@ -245,12 +268,13 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 		name string
 
 		chatbotcall *chatbotcall.Chatbotcall
-		message     string
+		message     *chatbotcall.Message
 
-		responseMessages    []chatbotcall.Message
 		responseChatbotcall *chatbotcall.Chatbotcall
+		responseMessage     *chatbotcall.Message
 
-		expectText string
+		expectMessages []chatbotcall.Message
+		expectText     string
 	}{
 		{
 			name: "normal",
@@ -265,16 +289,11 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 				Gender:            chatbotcall.GenderFemale,
 				Language:          "en-US",
 			},
-			message: "Hi",
-
-			responseMessages: []chatbotcall.Message{
-				{
-					Content: "hi",
-				},
-				{
-					Content: "Hello, my name is chat-gpt.",
-				},
+			message: &chatbotcall.Message{
+				Role:    chatbotcall.MessageRoleUser,
+				Content: "hi",
 			},
+
 			responseChatbotcall: &chatbotcall.Chatbotcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("47ea05dc-ef4c-11ef-8318-af1841553e05"),
@@ -293,7 +312,19 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 					},
 				},
 			},
+			responseMessage: &chatbotcall.Message{
+				Content: "Hello, my name is chat-gpt.",
+			},
 
+			expectMessages: []chatbotcall.Message{
+				{
+					Role:    chatbotcall.MessageRoleUser,
+					Content: "hi",
+				},
+				{
+					Content: "Hello, my name is chat-gpt.",
+				},
+			},
 			expectText: "Hello, my name is chat-gpt.",
 		},
 	}
@@ -321,8 +352,8 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.chatbotcall.ReferenceID).Return(nil)
-			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessages, nil)
-			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages)
+			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessage, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.expectMessages)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.responseChatbotcall, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.chatbotcall.ReferenceID, tt.expectText, string(tt.chatbotcall.Gender), tt.chatbotcall.Language, 10000).Return(nil)
 
@@ -339,12 +370,12 @@ func Test_chatMessageReferenceTypeNone(t *testing.T) {
 		name string
 
 		chatbotcall *chatbotcall.Chatbotcall
-		message     string
+		message     *chatbotcall.Message
 
-		responseMessages    []chatbotcall.Message
+		responseMessage     *chatbotcall.Message
 		responseChatbotcall *chatbotcall.Chatbotcall
 
-		expectText string
+		expectMessages []chatbotcall.Message
 	}{
 		{
 			name: "normal",
@@ -359,15 +390,14 @@ func Test_chatMessageReferenceTypeNone(t *testing.T) {
 				Gender:            chatbotcall.GenderFemale,
 				Language:          "en-US",
 			},
-			message: "Hi",
+			message: &chatbotcall.Message{
+				Role:    chatbotcall.MessageRoleUser,
+				Content: "hi",
+			},
 
-			responseMessages: []chatbotcall.Message{
-				{
-					Content: "hi",
-				},
-				{
-					Content: "Hello, my name is chat-gpt.",
-				},
+			responseMessage: &chatbotcall.Message{
+				Role:    chatbotcall.MessageRoleAssistant,
+				Content: "Hello, my name is chat-gpt.",
 			},
 			responseChatbotcall: &chatbotcall.Chatbotcall{
 				Identity: identity.Identity{
@@ -380,15 +410,26 @@ func Test_chatMessageReferenceTypeNone(t *testing.T) {
 				Language:          "en-US",
 				Messages: []chatbotcall.Message{
 					{
+						Role:    chatbotcall.MessageRoleUser,
 						Content: "hi",
 					},
 					{
+						Role:    chatbotcall.MessageRoleAssistant,
 						Content: "Hello, my name is chat-gpt.",
 					},
 				},
 			},
 
-			expectText: "Hello, my name is chat-gpt.",
+			expectMessages: []chatbotcall.Message{
+				{
+					Role:    chatbotcall.MessageRoleUser,
+					Content: "hi",
+				},
+				{
+					Role:    chatbotcall.MessageRoleAssistant,
+					Content: "Hello, my name is chat-gpt.",
+				},
+			},
 		},
 	}
 
@@ -414,8 +455,8 @@ func Test_chatMessageReferenceTypeNone(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessages, nil)
-			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages)
+			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessage, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.expectMessages)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.responseChatbotcall, nil)
 
 			if err := h.chatMessageReferenceTypeNone(ctx, tt.chatbotcall, tt.message); err != nil {

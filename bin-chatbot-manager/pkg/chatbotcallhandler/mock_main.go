@@ -45,7 +45,7 @@ func (m *MockChatbotcallHandler) EXPECT() *MockChatbotcallHandlerMockRecorder {
 }
 
 // ChatMessage mocks base method.
-func (m *MockChatbotcallHandler) ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, message string) error {
+func (m *MockChatbotcallHandler) ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, message *chatbotcall.Message) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChatMessage", ctx, cb, message)
 	ret0, _ := ret[0].(error)

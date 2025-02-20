@@ -38,15 +38,17 @@ func Test_ServiceStart(t *testing.T) {
 		gender        chatbotcall.Gender
 		language      string
 
-		responseChatbot             *chatbot.Chatbot
-		responseConfbridge          *cmconfbridge.Confbridge
-		responseUUIDChatbotcall     uuid.UUID
-		responseChatbotcall         *chatbotcall.Chatbotcall
-		responseChatbotcallMessages []chatbotcall.Message
-		responseUUIDAction          uuid.UUID
+		responseChatbot         *chatbot.Chatbot
+		responseConfbridge      *cmconfbridge.Confbridge
+		responseUUIDChatbotcall uuid.UUID
+		responseChatbotcall     *chatbotcall.Chatbotcall
+		responseMessage         *chatbotcall.Message
+		responseUUIDAction      uuid.UUID
 
-		expectChatbotcall *chatbotcall.Chatbotcall
-		expectRes         *service.Service
+		expectChatbotcall         *chatbotcall.Chatbotcall
+		expectChatbotcallMessages []chatbotcall.Message
+		expectMessage             *chatbotcall.Message
+		expectRes                 *service.Service
 	}{
 		{
 			name: "normal",
@@ -76,15 +78,9 @@ func Test_ServiceStart(t *testing.T) {
 				},
 				ConfbridgeID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 			},
-			responseChatbotcallMessages: []chatbotcall.Message{
-				{
-					Role:    "system",
-					Content: "test system message.",
-				},
-				{
-					Role:    "assistant",
-					Content: "test assistant message.",
-				},
+			responseMessage: &chatbotcall.Message{
+				Role:    "assistant",
+				Content: "test assistant message.",
 			},
 			responseUUIDAction: uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
 
@@ -103,6 +99,20 @@ func Test_ServiceStart(t *testing.T) {
 				Language:          "en-US",
 				Messages:          []chatbotcall.Message{},
 				Status:            chatbotcall.StatusInitiating,
+			},
+			expectMessage: &chatbotcall.Message{
+				Role:    chatbotcall.MessageRoleSystem,
+				Content: "hello, this is init prompt message.",
+			},
+			expectChatbotcallMessages: []chatbotcall.Message{
+				{
+					Role:    "system",
+					Content: "hello, this is init prompt message.",
+				},
+				{
+					Role:    "assistant",
+					Content: "test assistant message.",
+				},
 			},
 			expectRes: &service.Service{
 				ID:   uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
@@ -148,8 +158,8 @@ func Test_ServiceStart(t *testing.T) {
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUIDChatbotcall).Return(tt.responseChatbotcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
 
-			mockChatgpt.EXPECT().ChatNew(ctx, tt.responseChatbotcall, tt.responseChatbot.InitPrompt).Return(tt.responseChatbotcallMessages, nil)
-			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.responseChatbotcall.ID, tt.responseChatbotcallMessages).Return(nil)
+			mockChatgpt.EXPECT().ChatNew(ctx, tt.responseChatbotcall, tt.expectMessage).Return(tt.responseMessage, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.responseChatbotcall.ID, tt.expectChatbotcallMessages).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUIDChatbotcall).Return(tt.responseChatbotcall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)

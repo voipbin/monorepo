@@ -24,12 +24,13 @@ func Test_messageSend(t *testing.T) {
 		name string
 
 		chatbotcall *chatbotcall.Chatbotcall
-		message     string
+		message     *chatbotcall.Message
 
-		responseMessages    []chatbotcall.Message
+		responseMessage     *chatbotcall.Message
 		responseChatbotcall *chatbotcall.Chatbotcall
 
-		expectedRes *chatbotcall.Chatbotcall
+		expectMessages []chatbotcall.Message
+		expectedRes    *chatbotcall.Chatbotcall
 	}{
 		{
 			name: "normal",
@@ -44,15 +45,14 @@ func Test_messageSend(t *testing.T) {
 				Gender:            chatbotcall.GenderFemale,
 				Language:          "en-US",
 			},
-			message: "Hi",
+			message: &chatbotcall.Message{
+				Role:    chatbotcall.MessageRoleUser,
+				Content: "hi",
+			},
 
-			responseMessages: []chatbotcall.Message{
-				{
-					Content: "hi",
-				},
-				{
-					Content: "Hello, my name is chat-gpt.",
-				},
+			responseMessage: &chatbotcall.Message{
+				Role:    chatbotcall.MessageRoleAssistant,
+				Content: "Hello, my name is chat-gpt.",
 			},
 			responseChatbotcall: &chatbotcall.Chatbotcall{
 				Identity: identity.Identity{
@@ -73,6 +73,16 @@ func Test_messageSend(t *testing.T) {
 				},
 			},
 
+			expectMessages: []chatbotcall.Message{
+				{
+					Role:    chatbotcall.MessageRoleUser,
+					Content: "hi",
+				},
+				{
+					Role:    chatbotcall.MessageRoleAssistant,
+					Content: "Hello, my name is chat-gpt.",
+				},
+			},
 			expectedRes: &chatbotcall.Chatbotcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("8a238e4a-ef43-11ef-9c7a-53ede0c53f5c"),
@@ -116,8 +126,8 @@ func Test_messageSend(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessages, nil)
-			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages)
+			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall, tt.message).Return(tt.responseMessage, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.expectMessages)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.responseChatbotcall, nil)
 
 			res, err := h.messageSend(ctx, tt.chatbotcall, tt.message)

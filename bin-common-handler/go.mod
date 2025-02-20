@@ -61,7 +61,7 @@ require (
 require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.20.5
+	github.com/prometheus/client_golang v1.21.0
 	github.com/rabbitmq/amqp091-go v1.10.0
 	golang.org/x/crypto v0.33.0
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-common-handler/models/sock"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -30,7 +31,12 @@ func (h *subscribeHandler) processEventTMTranscriptCreated(ctx context.Context, 
 		return nil
 	}
 
-	if errChat = h.chatbotcallHandler.ChatMessage(ctx, cb, evt.Message); errChat != nil {
+	message := &chatbotcall.Message{
+		Role:    chatbotcall.MessageRoleUser,
+		Content: evt.Message,
+	}
+
+	if errChat = h.chatbotcallHandler.ChatMessage(ctx, cb, message); errChat != nil {
 		log.Errorf("Could not chat to the chatbotcall. err: %v", errChat)
 		return errors.Wrap(errChat, "could not chat to the chatbotcall")
 	}
