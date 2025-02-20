@@ -50,6 +50,12 @@ func Test_PostChatbotcalls(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b71393dc-efac-11ef-829f-5330fc080fd2"),
 				},
+				Messages: []cbchatbotcall.Message{
+					{
+						Role:    cbchatbotcall.MessageRoleUser,
+						Content: "hello world",
+					},
+				},
 			},
 
 			expectChatbotID:     uuid.FromStringOrNil("d9e18e8c-efac-11ef-903a-9710c6837217"),
@@ -57,7 +63,7 @@ func Test_PostChatbotcalls(t *testing.T) {
 			expectReferenceID:   uuid.FromStringOrNil("da12e23e-efac-11ef-aa18-172cb9693b33"),
 			expectGender:        cbchatbotcall.GenderMale,
 			expectLanguage:      "en-US",
-			expectRes:           `{"id":"b71393dc-efac-11ef-829f-5330fc080fd2","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:           `{"id":"b71393dc-efac-11ef-829f-5330fc080fd2","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","messages":[{"role":"user","content":"hello world"}]}`,
 		},
 	}
 
