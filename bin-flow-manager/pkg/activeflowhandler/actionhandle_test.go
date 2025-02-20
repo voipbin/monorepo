@@ -3381,7 +3381,6 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 		responseService *cbservice.Service
 
-		expectCustomerID    uuid.UUID
 		expectChatbotID     uuid.UUID
 		expectActiveflowID  uuid.UUID
 		expectReferenceType cbchatbotcall.ReferenceType
@@ -3390,9 +3389,9 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 		expectLanguage      string
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&activeflow.Activeflow{
+			activeflow: &activeflow.Activeflow{
 				ID:            uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
 				CustomerID:    uuid.FromStringOrNil("baba6a92-a8f5-11ed-926f-fb93cea60103"),
 				ReferenceType: activeflow.ReferenceTypeCall,
@@ -3417,7 +3416,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 				},
 			},
 
-			&cbservice.Service{
+			responseService: &cbservice.Service{
 				ID:   uuid.FromStringOrNil("bb68f67a-a8f5-11ed-9a2f-63b973d60f8c"),
 				Type: cbservice.TypeChatbotcall,
 				PushActions: []action.Action{
@@ -3427,13 +3426,12 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("baba6a92-a8f5-11ed-926f-fb93cea60103"),
-			uuid.FromStringOrNil("bb17f504-a8f5-11ed-a974-2f810c03cbf8"),
-			uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
-			cbchatbotcall.ReferenceTypeCall,
-			uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
-			cbchatbotcall.GenderFemale,
-			"en-US",
+			expectChatbotID:     uuid.FromStringOrNil("bb17f504-a8f5-11ed-a974-2f810c03cbf8"),
+			expectActiveflowID:  uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
+			expectReferenceType: cbchatbotcall.ReferenceTypeCall,
+			expectReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
+			expectGender:        cbchatbotcall.GenderFemale,
+			expectLanguage:      "en-US",
 		},
 	}
 
@@ -3459,7 +3457,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectCustomerID, tt.expectChatbotID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage, 3000).Return(tt.responseService, nil)
+			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectChatbotID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage, 3000).Return(tt.responseService, nil)
 
 			// push stack
 			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)

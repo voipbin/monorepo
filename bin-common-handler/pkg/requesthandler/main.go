@@ -520,14 +520,15 @@ type RequestHandler interface {
 	) (*cbchatbot.Chatbot, error)
 
 	// chatbot-manager chatbotcall
+	ChatbotV1ChatbotcallStart(ctx context.Context, chatbotID uuid.UUID, referenceType cbchatbotcall.ReferenceType, referenceID uuid.UUID, gender cbchatbotcall.Gender, language string) (*cbchatbotcall.Chatbotcall, error)
 	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbotcall.Chatbotcall, error)
 	ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
 	ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
+	ChatbotV1ChatbotcallSendMessage(ctx context.Context, chatbotcallID uuid.UUID, role cbchatbotcall.MessageRole, text string) (*cbchatbotcall.Chatbotcall, error)
 
 	// chatbot-manager service
 	ChatbotV1ServiceTypeChabotcallStart(
 		ctx context.Context,
-		customerID uuid.UUID,
 		chatbotID uuid.UUID,
 		activeflowID uuid.UUID,
 		referenceType cbchatbotcall.ReferenceType,

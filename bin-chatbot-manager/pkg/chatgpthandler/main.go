@@ -17,8 +17,8 @@ const (
 
 // ChatgptHandler define
 type ChatgptHandler interface {
-	ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, initPrompt string) ([]chatbotcall.Message, error)
-	ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, text string) ([]chatbotcall.Message, error)
+	ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error)
+	ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error)
 }
 
 // chatgptHandler define

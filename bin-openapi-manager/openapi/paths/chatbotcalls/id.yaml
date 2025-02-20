@@ -32,7 +32,7 @@ delete:
       description: The ID of the chatbot call.
   responses:
     '200':
-      description: The chatbot call was successfully deleted.
+      description: The chatbotcall was successfully deleted.
       content:
         application/json:
           schema:

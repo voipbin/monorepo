@@ -3,8 +3,7 @@ package chatbotcallhandler
 import (
 	"context"
 	"encoding/json"
-
-	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	"fmt"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -12,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/service"
 )
@@ -21,7 +19,6 @@ import (
 // it increases corresponded counter
 func (h *chatbotcallHandler) ServiceStart(
 	ctx context.Context,
-	customerID uuid.UUID,
 	chatbotID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceType chatbotcall.ReferenceType,
@@ -31,7 +28,6 @@ func (h *chatbotcallHandler) ServiceStart(
 ) (*service.Service, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ServiceStart",
-		"customer_id":    customerID,
 		"chatbot_id":     chatbotID,
 		"activeflow_id":  activeflowID,
 		"reference_type": referenceType,
@@ -40,37 +36,15 @@ func (h *chatbotcallHandler) ServiceStart(
 		"language":       language,
 	})
 
-	// get chatbot
-	c, err := h.chatbotHandler.Get(ctx, chatbotID)
+	cc, err := h.Start(ctx, chatbotID, activeflowID, referenceType, referenceID, gender, language)
 	if err != nil {
-		log.Errorf("Could not get chatbot. err: %v", err)
-		return nil, errors.Wrap(err, "could not get chatbot info")
+		log.Errorf("Could not start chatbotcall. err: %v", err)
+		return nil, fmt.Errorf("could not start chatbotcall. err: %v", err)
 	}
-
-	// create confbridge
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, customerID, cmconfbridge.TypeConference)
-	if err != nil {
-		log.Errorf("Could not create confbridge. err: %v", err)
-		return nil, errors.Wrap(err, "Could not create confbridge")
-	}
-
-	// create chatbotcall
-	cc, err := h.Create(ctx, c, activeflowID, referenceType, referenceID, cb.ID, gender, language)
-	if err != nil {
-		log.Errorf("Could not create chatbotcall. err: %v", err)
-		return nil, errors.Wrap(err, "Could not create chatbotcall.")
-	}
-	log.WithField("chatbotcall", cc).Debugf("Created chatbotcall. chatbotcall_id: %s", cc.ID)
-
-	go func(c *chatbot.Chatbot, cc *chatbotcall.Chatbotcall) {
-		if errInit := h.ChatInit(ctx, c, cc); errInit != nil {
-			log.Errorf("Could not init chatbotcall. err: %v", errInit)
-		}
-	}(c, cc)
 
 	// create push actions for service start
 	optJoin := fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: cb.ID,
+		ConfbridgeID: cc.ConfbridgeID,
 	}
 	optString, err := json.Marshal(optJoin)
 	if err != nil {

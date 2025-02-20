@@ -20,3 +20,39 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/ChatbotManagerChatbotcall'
+
+post:
+  summary: Create a new chatbotcall.
+  description: Creates a new chatbotcall and returns the created chatbotcall's details.
+  tags:
+    - Chatbot
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            chatbot_id:
+              type: string
+            reference_type:
+              $ref: '#/components/schemas/ChatbotManagerChatbotcallReferenceType'
+            reference_id:
+              type: string
+            gender:
+              $ref: '#/components/schemas/ChatbotManagerChatbotcallGender'
+            language:
+              type: string
+          required:
+            - chatbot_id
+            - reference_type
+            - reference_id
+            - gender
+            - language
+  responses:
+    '200':
+      description: Details of the created chatbotcall.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChatbotManagerChatbotcall'

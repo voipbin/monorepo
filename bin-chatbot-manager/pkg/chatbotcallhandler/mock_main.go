@@ -11,6 +11,7 @@ package chatbotcallhandler
 
 import (
 	context "context"
+	chatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 	service "monorepo/bin-chatbot-manager/models/service"
 	reflect "reflect"
@@ -44,17 +45,48 @@ func (m *MockChatbotcallHandler) EXPECT() *MockChatbotcallHandlerMockRecorder {
 }
 
 // ChatMessage mocks base method.
-func (m *MockChatbotcallHandler) ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, message string) error {
+func (m *MockChatbotcallHandler) ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatMessage", ctx, cb, message)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "ChatMessage", ctx, cb, role, text)
+	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ChatMessage indicates an expected call of ChatMessage.
-func (mr *MockChatbotcallHandlerMockRecorder) ChatMessage(ctx, cb, message any) *gomock.Call {
+func (mr *MockChatbotcallHandlerMockRecorder) ChatMessage(ctx, cb, role, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessage", reflect.TypeOf((*MockChatbotcallHandler)(nil).ChatMessage), ctx, cb, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessage", reflect.TypeOf((*MockChatbotcallHandler)(nil).ChatMessage), ctx, cb, role, text)
+}
+
+// ChatMessageByID mocks base method.
+func (m *MockChatbotcallHandler) ChatMessageByID(ctx context.Context, chatbotcallID uuid.UUID, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatMessageByID", ctx, chatbotcallID, role, text)
+	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatMessageByID indicates an expected call of ChatMessageByID.
+func (mr *MockChatbotcallHandlerMockRecorder) ChatMessageByID(ctx, chatbotcallID, role, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessageByID", reflect.TypeOf((*MockChatbotcallHandler)(nil).ChatMessageByID), ctx, chatbotcallID, role, text)
+}
+
+// Create mocks base method.
+func (m *MockChatbotcallHandler) Create(ctx context.Context, c *chatbot.Chatbot, activeflowID uuid.UUID, referenceType chatbotcall.ReferenceType, referenceID, confbridgeID uuid.UUID, gender chatbotcall.Gender, language string) (*chatbotcall.Chatbotcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language)
+	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockChatbotcallHandlerMockRecorder) Create(ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockChatbotcallHandler)(nil).Create), ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language)
 }
 
 // Delete mocks base method.
@@ -163,16 +195,31 @@ func (mr *MockChatbotcallHandlerMockRecorder) ProcessStart(ctx, cb any) *gomock.
 }
 
 // ServiceStart mocks base method.
-func (m *MockChatbotcallHandler) ServiceStart(ctx context.Context, customerID, chatbotID, activeflowID uuid.UUID, referenceType chatbotcall.ReferenceType, referenceID uuid.UUID, gender chatbotcall.Gender, language string) (*service.Service, error) {
+func (m *MockChatbotcallHandler) ServiceStart(ctx context.Context, chatbotID, activeflowID uuid.UUID, referenceType chatbotcall.ReferenceType, referenceID uuid.UUID, gender chatbotcall.Gender, language string) (*service.Service, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceStart", ctx, customerID, chatbotID, activeflowID, referenceType, referenceID, gender, language)
+	ret := m.ctrl.Call(m, "ServiceStart", ctx, chatbotID, activeflowID, referenceType, referenceID, gender, language)
 	ret0, _ := ret[0].(*service.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceStart indicates an expected call of ServiceStart.
-func (mr *MockChatbotcallHandlerMockRecorder) ServiceStart(ctx, customerID, chatbotID, activeflowID, referenceType, referenceID, gender, language any) *gomock.Call {
+func (mr *MockChatbotcallHandlerMockRecorder) ServiceStart(ctx, chatbotID, activeflowID, referenceType, referenceID, gender, language any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockChatbotcallHandler)(nil).ServiceStart), ctx, customerID, chatbotID, activeflowID, referenceType, referenceID, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockChatbotcallHandler)(nil).ServiceStart), ctx, chatbotID, activeflowID, referenceType, referenceID, gender, language)
+}
+
+// Start mocks base method.
+func (m *MockChatbotcallHandler) Start(ctx context.Context, chatbotID, activeflowID uuid.UUID, referenceType chatbotcall.ReferenceType, referenceID uuid.UUID, gender chatbotcall.Gender, language string) (*chatbotcall.Chatbotcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Start", ctx, chatbotID, activeflowID, referenceType, referenceID, gender, language)
+	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Start indicates an expected call of Start.
+func (mr *MockChatbotcallHandlerMockRecorder) Start(ctx, chatbotID, activeflowID, referenceType, referenceID, gender, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockChatbotcallHandler)(nil).Start), ctx, chatbotID, activeflowID, referenceType, referenceID, gender, language)
 }

@@ -24,7 +24,6 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 
 		responseService *service.Service
 
-		expectCustomerID    uuid.UUID
 		expectChatbotID     uuid.UUID
 		expectActiveflowID  uuid.UUID
 		expectReferenceType chatbotcall.ReferenceType
@@ -49,7 +48,6 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 				ID: uuid.FromStringOrNil("9d5b7e72-2cc9-4868-bfab-c8e758cd5045"),
 			},
 
-			expectCustomerID:    uuid.FromStringOrNil("71db8f9c-abde-475e-a060-dc95e63281c3"),
 			expectChatbotID:     uuid.FromStringOrNil("e7f085d0-c7d9-4da4-9992-eda14282cb86"),
 			expectActiveflowID:  uuid.FromStringOrNil("80a5199e-fba5-11ed-90aa-6b9821d2ad5b"),
 			expectReferenceType: chatbotcall.ReferenceTypeCall,
@@ -78,7 +76,7 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 				chatbotcallHandler: mockChatbotcall,
 			}
 
-			mockChatbotcall.EXPECT().ServiceStart(gomock.Any(), tt.expectCustomerID, tt.expectChatbotID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage).Return(tt.responseService, nil)
+			mockChatbotcall.EXPECT().ServiceStart(gomock.Any(), tt.expectChatbotID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage).Return(tt.responseService, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

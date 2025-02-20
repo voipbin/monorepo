@@ -18,7 +18,6 @@ import (
 // it returns created service if it succeed.
 func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 	ctx context.Context,
-	customerID uuid.UUID,
 	chatbotID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceType cbchatbotcall.ReferenceType,
@@ -30,7 +29,6 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 	uri := "/v1/services/type/chatbotcall"
 
 	data := &cbrequest.V1DataServicesTypeChatbotcallPost{
-		CustomerID:    customerID,
 		ChatbotID:     chatbotID,
 		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
