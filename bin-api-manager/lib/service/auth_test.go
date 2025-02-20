@@ -19,7 +19,7 @@ func setupServer(app *gin.Engine) {
 	auth.POST("/login", PostLogin)
 }
 
-func Test_TagsPOST(t *testing.T) {
+func Test_loginPOST(t *testing.T) {
 
 	type test struct {
 		name string
