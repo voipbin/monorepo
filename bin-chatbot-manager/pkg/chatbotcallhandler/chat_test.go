@@ -282,6 +282,7 @@ func Test_ChatInit(t *testing.T) {
 
 		expectMessage  *chatbotcall.Message
 		expectMessages []chatbotcall.Message
+		expectRes      *chatbotcall.Chatbotcall
 	}{
 		{
 			name: "normal",
@@ -315,6 +316,11 @@ func Test_ChatInit(t *testing.T) {
 					Content: "test assist",
 				},
 			},
+			expectRes: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("9bb7079c-f556-11ed-afbb-0f109793414b"),
+				},
+			},
 		},
 	}
 
@@ -344,8 +350,13 @@ func Test_ChatInit(t *testing.T) {
 			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.expectMessages).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.chatbotcall, nil)
 
-			if errInit := h.ChatInit(ctx, tt.chatbot, tt.chatbotcall); errInit != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", errInit)
+			res, err := h.chatInit(ctx, tt.chatbot, tt.chatbotcall)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}

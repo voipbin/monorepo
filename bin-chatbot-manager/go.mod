@@ -53,6 +53,7 @@ replace monorepo/bin-tts-manager => ../bin-tts-manager
 replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
+	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/gofrs/uuid v4.4.0+incompatible
