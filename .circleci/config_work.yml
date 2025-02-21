@@ -74,6 +74,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-openapi-manager:
+    type: boolean
+    default: false
+
   run-bin-outdial-manager:
     type: boolean
     default: false
@@ -151,7 +155,7 @@ workflows:
 
   bin-api-manager:
     when: 
-      or: [<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+      or: [<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-common-handler >>, << pipeline.parameters.run-bin-openapi-manager >>]
     jobs:
       - bin-api-manager-test
       - bin-api-manager-build:
