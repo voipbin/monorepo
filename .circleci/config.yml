@@ -30,6 +30,7 @@ workflows:
             bin-message-manager/.*      run-bin-message-manager true
             bin-number-manager/.*       run-bin-number-manager true
             bin-outdial-manager/.*      run-bin-outdial-manager true
+            bin-openapi-manager/.*      run-bin-openapi-manager true
             bin-queue-manager/.*        run-bin-queue-manager true
             bin-registrar-manager/.*    run-bin-registrar-manager true
             bin-route-manager/.*        run-bin-route-manager true
