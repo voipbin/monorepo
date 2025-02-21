@@ -81,7 +81,7 @@ func (h *listenHandler) processV1ChatbotcallsPost(ctx context.Context, m *sock.R
 
 	tmp, err := h.chatbotcallHandler.Start(ctx, req.ChatbotID, uuid.Nil, req.ReferenceType, req.ReferenceID, req.Gender, req.Language)
 	if err != nil {
-		log.Errorf("Could not create chatbot. err: %v", err)
+		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -192,7 +192,7 @@ func (h *listenHandler) processV1ChatbotcallsIDMessagesPost(ctx context.Context,
 
 	tmp, err := h.chatbotcallHandler.ChatMessageByID(ctx, id, chatbotcall.MessageRole(req.Role), req.Text)
 	if err != nil {
-		log.Errorf("Could not create chatbot. err: %v", err)
+		log.Errorf("Could not create chatbotcall message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
