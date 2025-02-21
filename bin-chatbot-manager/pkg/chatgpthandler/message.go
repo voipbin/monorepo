@@ -40,13 +40,13 @@ func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbo
 	if model == "" {
 		model = defaultModel
 	}
-	req := openai.ChatCompletionRequest{
+	req := &openai.ChatCompletionRequest{
 		Model:    string(model),
 		Messages: tmpMessages,
 	}
 
 	// send the request
-	resp, err := h.client.CreateChatCompletion(ctx, req)
+	resp, err := h.send(ctx, req)
 	if err != nil {
 		log.Debugf("Could not send the request. err: %v\n", err)
 		return nil, errors.Wrap(err, "could not send the request")

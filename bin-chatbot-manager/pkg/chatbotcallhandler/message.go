@@ -13,9 +13,9 @@ import (
 
 func (h *chatbotcallHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Chatbotcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "messageSend",
-		"chatbotcall": cc,
-		"message":     message,
+		"func":           "messageSend",
+		"chatbotcall_id": cc.ID,
+		"message":        message,
 	})
 
 	var tmpMessage *chatbotcall.Message
