@@ -60,16 +60,17 @@ func (h *chatbotcallHandler) startReferenceTypeCall(ctx context.Context, c *chat
 		return nil, errors.Wrap(err, "Could not create confbridge")
 	}
 
-	res, err := h.Create(ctx, c, activeflowID, chatbotcall.ReferenceTypeCall, referenceID, cb.ID, gender, language)
+	tmp, err := h.Create(ctx, c, activeflowID, chatbotcall.ReferenceTypeCall, referenceID, cb.ID, gender, language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create chatbotcall.")
 	}
-	log.WithField("chatbotcall", res).Debugf("Created chatbotcall. chatbotcall_id: %s", res.ID)
+	log.WithField("chatbotcall", tmp).Debugf("Created chatbotcall. chatbotcall_id: %s", tmp.ID)
 
-	if errInit := h.ChatInit(ctx, c, res); errInit != nil {
-		log.Errorf("Could not initialize chat. err: %v", errInit)
-		return nil, errors.Wrap(errInit, "Could not initialize chat")
+	res, err := h.chatInit(ctx, c, tmp)
+	if err != nil {
+		log.Errorf("Could not initialize chat. err: %v", err)
+		return nil, errors.Wrap(err, "Could not initialize chat")
 	}
 
 	return res, nil
@@ -77,19 +78,20 @@ func (h *chatbotcallHandler) startReferenceTypeCall(ctx context.Context, c *chat
 
 func (h *chatbotcallHandler) startReferenceTypeNone(ctx context.Context, c *chatbot.Chatbot, gender chatbotcall.Gender, language string) (*chatbotcall.Chatbotcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "startReferenceTypeCall",
+		"func": "startReferenceTypeNone",
 	})
 
-	res, err := h.Create(ctx, c, uuid.Nil, chatbotcall.ReferenceTypeCall, uuid.Nil, uuid.Nil, gender, language)
+	tmp, err := h.Create(ctx, c, uuid.Nil, chatbotcall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create chatbotcall.")
 	}
-	log.WithField("chatbotcall", res).Debugf("Created chatbotcall. chatbotcall_id: %s", res.ID)
+	log.WithField("chatbotcall", tmp).Debugf("Created chatbotcall. chatbotcall_id: %s", tmp.ID)
 
-	if errInit := h.ChatInit(ctx, c, res); errInit != nil {
-		log.Errorf("Could not initialize chat. err: %v", errInit)
-		return nil, errors.Wrap(errInit, "Could not initialize chat")
+	res, err := h.chatInit(ctx, c, tmp)
+	if err != nil {
+		log.Errorf("Could not initialize chat. err: %v", err)
+		return nil, errors.Wrap(err, "Could not initialize chat")
 	}
 
 	return res, nil

@@ -88,12 +88,12 @@ func (h *chatbotcallHandler) chatMessageTextHandle(ctx context.Context, cc *chat
 	return nil
 }
 
-// ChatInit sends the chat's init_prompt
-func (h *chatbotcallHandler) ChatInit(ctx context.Context, cb *chatbot.Chatbot, cc *chatbotcall.Chatbotcall) error {
+// chatInit sends the chat's init_prompt
+func (h *chatbotcallHandler) chatInit(ctx context.Context, cb *chatbot.Chatbot, cc *chatbotcall.Chatbotcall) (*chatbotcall.Chatbotcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ChatInit",
-		"chatbot":     cb,
-		"chatbotcall": cc,
+		"func":           "chatInit",
+		"chatbot_id":     cb.ID,
+		"chatbotcall_id": cc.ID,
 	})
 
 	message := &chatbotcall.Message{
@@ -110,28 +110,28 @@ func (h *chatbotcallHandler) ChatInit(ctx context.Context, cb *chatbot.Chatbot, 
 
 	default:
 		log.Errorf("Unsupported engine type. engine_type: %s", cb.EngineType)
-		return fmt.Errorf("unsupported engine type")
+		return nil, fmt.Errorf("unsupported engine type")
 	}
 	if err != nil {
 		log.Errorf("Could not start new chat. err: %v", err)
-		return errors.Wrap(err, "could not start new chat")
+		return nil, errors.Wrap(err, "could not start new chat")
 	}
 
 	messages := append(cc.Messages, *message)
 	messages = append(messages, *tmpMessage)
 
-	tmp, err := h.UpdateChatbotcallMessages(ctx, cc.ID, messages)
+	res, err := h.UpdateChatbotcallMessages(ctx, cc.ID, messages)
 	if err != nil {
 		log.Errorf("Could not update the chatbotcall messages. err: %v", err)
-		return errors.Wrap(err, "could not update the chatbotcall messages")
+		return nil, errors.Wrap(err, "could not update the chatbotcall messages")
 	}
-	log.WithField("chatbotcall", tmp).Debugf("Updated chatbotcall messages. chatbotcall_id: %s", tmp.ID)
+	log.WithField("chatbotcall", res).Debugf("Updated chatbotcall messages. chatbotcall_id: %s", res.ID)
 
 	elapsed := time.Since(start)
 	promChatInitProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(elapsed.Milliseconds()))
 	log.Debugf("Chat has initialized. elapsed: %v", elapsed)
 
-	return nil
+	return res, nil
 }
 
 func (h *chatbotcallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Chatbotcall, error) {
