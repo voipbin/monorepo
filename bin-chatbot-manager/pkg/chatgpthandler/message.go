@@ -53,6 +53,11 @@ func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbo
 	}
 	log.Debugf("Received response. response: %v", tmp)
 
+	if len(tmp.Choices) == 0 {
+		log.Debugf("Received response with empty choices")
+		return nil, errors.New("received response with empty choices")
+	}
+
 	res := &chatbotcall.Message{
 		Role:    chatbotcall.MessageRole(tmp.Choices[0].Message.Role),
 		Content: tmp.Choices[0].Message.Content,
