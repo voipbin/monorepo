@@ -46,15 +46,16 @@ func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbo
 	}
 
 	// send the request
-	resp, err := h.send(ctx, req)
+	tmp, err := h.send(ctx, req)
 	if err != nil {
 		log.Debugf("Could not send the request. err: %v\n", err)
 		return nil, errors.Wrap(err, "could not send the request")
 	}
+	log.Debugf("Received response. response: %v", tmp)
 
 	res := &chatbotcall.Message{
-		Role:    chatbotcall.MessageRole(resp.Choices[0].Message.Role),
-		Content: resp.Choices[0].Message.Content,
+		Role:    chatbotcall.MessageRole(tmp.Choices[0].Message.Role),
+		Content: tmp.Choices[0].Message.Content,
 	}
 
 	return res, nil
