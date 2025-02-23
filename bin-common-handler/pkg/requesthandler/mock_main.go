@@ -2573,18 +2573,18 @@ func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotcallGetsByCustomerID(c
 }
 
 // ChatbotV1ChatbotcallSendMessage mocks base method.
-func (m *MockRequestHandler) ChatbotV1ChatbotcallSendMessage(ctx context.Context, chatbotcallID uuid.UUID, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error) {
+func (m *MockRequestHandler) ChatbotV1ChatbotcallSendMessage(ctx context.Context, chatbotcallID uuid.UUID, role chatbotcall.MessageRole, text string, timeout int) (*chatbotcall.Chatbotcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotV1ChatbotcallSendMessage", ctx, chatbotcallID, role, text)
+	ret := m.ctrl.Call(m, "ChatbotV1ChatbotcallSendMessage", ctx, chatbotcallID, role, text, timeout)
 	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatbotV1ChatbotcallSendMessage indicates an expected call of ChatbotV1ChatbotcallSendMessage.
-func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotcallSendMessage(ctx, chatbotcallID, role, text any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotcallSendMessage(ctx, chatbotcallID, role, text, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotcallSendMessage", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotcallSendMessage), ctx, chatbotcallID, role, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotcallSendMessage", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotcallSendMessage), ctx, chatbotcallID, role, text, timeout)
 }
 
 // ChatbotV1ChatbotcallStart mocks base method.

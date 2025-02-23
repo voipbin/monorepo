@@ -370,7 +370,7 @@ func Test_ChatbotcallSendMessage(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ChatbotV1ChatbotcallGet(ctx, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
-			mockReq.EXPECT().ChatbotV1ChatbotcallSendMessage(ctx, tt.chatbotcallID, tt.role, tt.text).Return(tt.responseChatbotcall, nil)
+			mockReq.EXPECT().ChatbotV1ChatbotcallSendMessage(ctx, tt.chatbotcallID, tt.role, tt.text, 30000).Return(tt.responseChatbotcall, nil)
 
 			res, err := h.ChatbotcallSendMessage(ctx, tt.agent, tt.chatbotcallID, tt.role, tt.text)
 			if err != nil {

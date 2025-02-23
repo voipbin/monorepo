@@ -125,7 +125,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallDelete(ctx context.Context, chatbot
 	return &res, nil
 }
 
-func (r *requestHandler) ChatbotV1ChatbotcallSendMessage(ctx context.Context, chatbotcallID uuid.UUID, role cbchatbotcall.MessageRole, text string) (*cbchatbotcall.Chatbotcall, error) {
+func (r *requestHandler) ChatbotV1ChatbotcallSendMessage(ctx context.Context, chatbotcallID uuid.UUID, role cbchatbotcall.MessageRole, text string, timeout int) (*cbchatbotcall.Chatbotcall, error) {
 	uri := fmt.Sprintf("/v1/chatbotcalls/%s/messages", chatbotcallID)
 
 	data := &cbrequest.V1DataChatbotcallsIDMessagesPost{
@@ -138,7 +138,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallSendMessage(ctx context.Context, ch
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPost, "chatbot/chatbotcalls/<chatbotcall-id>/messages", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPost, "chatbot/chatbotcalls/<chatbotcall-id>/messages", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

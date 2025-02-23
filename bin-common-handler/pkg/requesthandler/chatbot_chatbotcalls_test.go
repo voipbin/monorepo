@@ -305,6 +305,7 @@ func Test_ChatbotV1ChatbotcallSendMessage(t *testing.T) {
 		chatbotcallID uuid.UUID
 		role          cbchatbotcall.MessageRole
 		text          string
+		timeout       int
 
 		response *sock.Response
 
@@ -318,6 +319,7 @@ func Test_ChatbotV1ChatbotcallSendMessage(t *testing.T) {
 			chatbotcallID: uuid.FromStringOrNil("60b22c96-efa3-11ef-b811-a354bf59c327"),
 			role:          cbchatbotcall.MessageRoleUser,
 			text:          "Hello, World!",
+			timeout:       3000, // 3 seconds
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -353,7 +355,7 @@ func Test_ChatbotV1ChatbotcallSendMessage(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1ChatbotcallSendMessage(ctx, tt.chatbotcallID, tt.role, tt.text)
+			cf, err := reqHandler.ChatbotV1ChatbotcallSendMessage(ctx, tt.chatbotcallID, tt.role, tt.text, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
