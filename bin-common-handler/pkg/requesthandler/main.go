@@ -524,7 +524,7 @@ type RequestHandler interface {
 	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbotcall.Chatbotcall, error)
 	ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
 	ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
-	ChatbotV1ChatbotcallSendMessage(ctx context.Context, chatbotcallID uuid.UUID, role cbchatbotcall.MessageRole, text string) (*cbchatbotcall.Chatbotcall, error)
+	ChatbotV1ChatbotcallSendMessage(ctx context.Context, chatbotcallID uuid.UUID, role cbchatbotcall.MessageRole, text string, timeout int) (*cbchatbotcall.Chatbotcall, error)
 
 	// chatbot-manager service
 	ChatbotV1ServiceTypeChabotcallStart(
