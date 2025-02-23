@@ -195,7 +195,7 @@ func (h *serviceHandler) ChatbotcallSendMessage(ctx context.Context, a *amagent.
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.ChatbotV1ChatbotcallSendMessage(ctx, id, role, text)
+	tmp, err := h.reqHandler.ChatbotV1ChatbotcallSendMessage(ctx, id, role, text, 30000)
 	if err != nil {
 		log.Errorf("Could not delete the chatbotcall. err: %v", err)
 		return nil, err
