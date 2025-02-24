@@ -58,7 +58,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"829d8866-f25d-11ef-9b3a-dbb10220cf40","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000","direction":"","role":"","content":""},{"id":"82d92b5a-f25d-11ef-8ee2-db3e98ba4d00","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000","direction":"","role":"","content":""}]`),
+				Data:       []byte(`[{"id":"829d8866-f25d-11ef-9b3a-dbb10220cf40","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000"},{"id":"82d92b5a-f25d-11ef-8ee2-db3e98ba4d00","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 	}
@@ -125,7 +125,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"532777f8-f25e-11ef-8618-1f7ef1d18d75","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000","direction":"","role":"","content":""}`),
+				Data:       []byte(`{"id":"532777f8-f25e-11ef-8618-1f7ef1d18d75","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -186,7 +186,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e56b73fa-f2c0-11ef-a99b-fb5e1f39d249","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000","direction":"","role":"","content":""}`),
+				Data:       []byte(`{"id":"e56b73fa-f2c0-11ef-a99b-fb5e1f39d249","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}

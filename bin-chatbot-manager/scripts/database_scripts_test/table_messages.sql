@@ -10,6 +10,7 @@ create table chatbot_messages(
 
   -- timestamps
   tm_create datetime(6),  --
+  tm_delete datetime(6),
 
   primary key(id)
 );

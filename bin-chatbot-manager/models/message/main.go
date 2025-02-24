@@ -11,11 +11,12 @@ type Message struct {
 	identity.Identity
 	ChatbotcallID uuid.UUID `json:"chatbotcall_id,omitempty"`
 
-	Direction Direction `json:"direction"`
-	Role      Role      `json:"role"`
-	Content   string    `json:"content"`
+	Direction Direction `json:"direction,omitempty"`
+	Role      Role      `json:"role,omitempty"`
+	Content   string    `json:"content,omitempty"`
 
 	TMCreate string `json:"tm_create,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // Role defiens

@@ -18,10 +18,13 @@ const (
 		id,
 		customer_id,
 		chatbotcall_id,
+		
 		direction,
 		role,
 		content,
-		tm_create
+
+		tm_create,
+		tm_delete
 	from
 		chatbot_messages
 	`
@@ -34,10 +37,13 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 		&res.ID,
 		&res.CustomerID,
 		&res.ChatbotcallID,
+
 		&res.Direction,
 		&res.Role,
 		&res.Content,
+
 		&res.TMCreate,
+		&res.TMDelete,
 	); err != nil {
 		return nil, errors.Wrap(err, "messageGetFromRow: Could not scan the row")
 	}
@@ -56,11 +62,12 @@ func (h *handler) MessageCreate(ctx context.Context, c *message.Message) error {
 		role,
 		content,
 
-		tm_create
+		tm_create,
+		tm_delete
 	) values (
 		?, ?, ?, 
 		?, ?, ?, 
-		?
+		?, ?
 		)
 	`
 
@@ -74,6 +81,7 @@ func (h *handler) MessageCreate(ctx context.Context, c *message.Message) error {
 		c.Content,
 
 		h.utilHandler.TimeGetCurTime(),
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("MessageCreate: Could not execute query. err: %v", err)

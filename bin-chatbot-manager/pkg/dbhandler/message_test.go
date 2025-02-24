@@ -49,6 +49,7 @@ func Test_MessageCreate(t *testing.T) {
 				Role:     message.RoleUser,
 				Content:  "Hello",
 				TMCreate: "2023-01-03 21:35:02.809",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -68,6 +69,7 @@ func Test_MessageCreate(t *testing.T) {
 				},
 				ChatbotcallID: uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
 				TMCreate:      "2023-01-03 21:35:02.809",
+				TMDelete:      DefaultTimeStamp,
 			},
 		},
 	}
