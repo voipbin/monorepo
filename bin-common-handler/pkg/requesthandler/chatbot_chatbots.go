@@ -14,8 +14,8 @@ import (
 )
 
 // ChatbotV1ChatbotGetsByCustomerID sends a request to chatbot-manager
-// to getting a list of chatbot info of the given customer id.
-// it returns detail list of chatbot info if it succeed.
+// to getting a list of chatbots info of the given customer id.
+// it returns detail list of chatbots info if it succeed.
 func (r *requestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbot.Chatbot, error) {
 	uri := fmt.Sprintf("/v1/chatbots?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
@@ -65,7 +65,7 @@ func (r *requestHandler) ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid
 
 // ChatbotV1ChatbotCreate sends a request to chatbot-manager
 // to creating a chatbot.
-// it returns created chat if it succeed.
+// it returns created chatbot if it succeed.
 func (r *requestHandler) ChatbotV1ChatbotCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -118,7 +118,7 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 
 // ChatbotV1ChatbotDelete sends a request to chatbot-manager
 // to deleting a chatbot.
-// it returns deleted conference if it succeed.
+// it returns deleted chatbot if it succeed.
 func (r *requestHandler) ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
 	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID)
 
