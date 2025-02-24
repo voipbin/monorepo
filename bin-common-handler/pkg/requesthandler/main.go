@@ -30,6 +30,7 @@ import (
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbmessage "monorepo/bin-chatbot-manager/models/message"
 	cbservice "monorepo/bin-chatbot-manager/models/service"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
@@ -525,6 +526,12 @@ type RequestHandler interface {
 	ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
 	ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
 	ChatbotV1ChatbotcallSendMessage(ctx context.Context, chatbotcallID uuid.UUID, role cbchatbotcall.MessageRole, text string, timeout int) (*cbchatbotcall.Chatbotcall, error)
+
+	// chatbot-manager message
+	ChatbotV1MessageGetsByChatbotcallID(ctx context.Context, chatbotcallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbmessage.Message, error)
+	ChatbotV1MessageSend(ctx context.Context, chatbotcallID uuid.UUID, role cbmessage.Role, content string, timeout int) (*cbmessage.Message, error)
+	ChatbotV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
+	ChatbotV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
 
 	// chatbot-manager service
 	ChatbotV1ServiceTypeChabotcallStart(
