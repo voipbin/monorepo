@@ -10,6 +10,7 @@ import (
 
 	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/message"
 )
 
 type handler struct {
@@ -31,6 +32,9 @@ type CacheHandler interface {
 	ChatbotcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	ChatbotcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	ChatbotcallSet(ctx context.Context, data *chatbotcall.Chatbotcall) error
+
+	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
+	MessageSet(ctx context.Context, data *message.Message) error
 }
 
 // NewHandler creates DBHandler

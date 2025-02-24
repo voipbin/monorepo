@@ -13,6 +13,7 @@ import (
 
 	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/message"
 	"monorepo/bin-chatbot-manager/pkg/cachehandler"
 )
 
@@ -33,6 +34,11 @@ type DBHandler interface {
 	ChatbotcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
 	ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error
 	ChatbotcallSetMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) error
+
+	MessageCreate(ctx context.Context, c *message.Message) error
+	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
+	MessageGets(ctx context.Context, chatbotcallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error)
+	MessageDelete(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler

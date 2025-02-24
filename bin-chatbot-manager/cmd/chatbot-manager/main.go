@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-chatbot-manager/pkg/chatgpthandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
 	"monorepo/bin-chatbot-manager/pkg/listenhandler"
+	"monorepo/bin-chatbot-manager/pkg/messagehandler"
 	"monorepo/bin-chatbot-manager/pkg/subscribehandler"
 )
 
@@ -91,9 +92,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	chatgptHandler := chatgpthandler.NewChatgptHandler(engineKeyChatgpt)
 	chatbotcallHandler := chatbotcallhandler.NewChatbotcallHandler(requestHandler, notifyHandler, db, chatbotHandler, chatgptHandler)
+	messageHandler := messagehandler.NewMessageHandler(notifyHandler, db, chatbotcallHandler, chatgptHandler)
 
 	// run listen
-	if errListen := runListen(sockHandler, chatbotHandler, chatbotcallHandler); errListen != nil {
+	if errListen := runListen(sockHandler, chatbotHandler, chatbotcallHandler, messageHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -140,6 +142,7 @@ func runListen(
 	sockHandler sockhandler.SockHandler,
 	chatbotHandler chatbothandler.ChatbotHandler,
 	chatbotcallhandler chatbotcallhandler.ChatbotcallHandler,
+	messageHandler messagehandler.MessageHandler,
 ) error {
 	listenHandler := listenhandler.NewListenHandler(
 		sockHandler,
@@ -147,6 +150,7 @@ func runListen(
 		string(commonoutline.QueueNameDelay),
 		chatbotHandler,
 		chatbotcallhandler,
+		messageHandler,
 	)
 
 	// run

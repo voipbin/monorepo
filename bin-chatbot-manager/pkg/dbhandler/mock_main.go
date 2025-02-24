@@ -13,6 +13,7 @@ import (
 	context "context"
 	chatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	message "monorepo/bin-chatbot-manager/models/message"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -243,4 +244,62 @@ func (m *MockDBHandler) ChatbotcallUpdateStatusProgressing(ctx context.Context, 
 func (mr *MockDBHandlerMockRecorder) ChatbotcallUpdateStatusProgressing(ctx, id, transcribeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallUpdateStatusProgressing", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallUpdateStatusProgressing), ctx, id, transcribeID)
+}
+
+// MessageCreate mocks base method.
+func (m *MockDBHandler) MessageCreate(ctx context.Context, c *message.Message) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageCreate", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageCreate indicates an expected call of MessageCreate.
+func (mr *MockDBHandlerMockRecorder) MessageCreate(ctx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageCreate", reflect.TypeOf((*MockDBHandler)(nil).MessageCreate), ctx, c)
+}
+
+// MessageDelete mocks base method.
+func (m *MockDBHandler) MessageDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageDelete indicates an expected call of MessageDelete.
+func (mr *MockDBHandlerMockRecorder) MessageDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageDelete", reflect.TypeOf((*MockDBHandler)(nil).MessageDelete), ctx, id)
+}
+
+// MessageGet mocks base method.
+func (m *MockDBHandler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageGet", ctx, id)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageGet indicates an expected call of MessageGet.
+func (mr *MockDBHandlerMockRecorder) MessageGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGet", reflect.TypeOf((*MockDBHandler)(nil).MessageGet), ctx, id)
+}
+
+// MessageGets mocks base method.
+func (m *MockDBHandler) MessageGets(ctx context.Context, chatbotcallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageGets", ctx, chatbotcallID, size, token, filters)
+	ret0, _ := ret[0].([]*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageGets indicates an expected call of MessageGets.
+func (mr *MockDBHandlerMockRecorder) MessageGets(ctx, chatbotcallID, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockDBHandler)(nil).MessageGets), ctx, chatbotcallID, size, token, filters)
 }
