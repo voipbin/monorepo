@@ -10,6 +10,7 @@ import (
 
 	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/message"
 )
 
 // getSerialize returns cached serialized info.
@@ -116,4 +117,27 @@ func (h *handler) ChatbotcallGetByReferenceID(ctx context.Context, referenceID u
 	}
 
 	return &res, nil
+}
+
+// MessageGet returns cached message info
+func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	key := fmt.Sprintf("chatbot:message:%s", id)
+
+	var res message.Message
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// MessageSet sets the chatbot info into the cache.
+func (h *handler) MessageSet(ctx context.Context, data *message.Message) error {
+	key := fmt.Sprintf("chatbot:message:%s", data.ID)
+
+	if err := h.setSerialize(ctx, key, data); err != nil {
+		return err
+	}
+
+	return nil
 }

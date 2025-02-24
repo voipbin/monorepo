@@ -18,6 +18,7 @@ import (
 
 	"monorepo/bin-chatbot-manager/pkg/chatbotcallhandler"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
+	"monorepo/bin-chatbot-manager/pkg/messagehandler"
 )
 
 // pagination parameters
@@ -39,6 +40,7 @@ type listenHandler struct {
 
 	chatbotHandler     chatbothandler.ChatbotHandler
 	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler
+	messageHandler     messagehandler.MessageHandler
 }
 
 var (
@@ -56,6 +58,11 @@ var (
 	regV1Chatbotcalls           = regexp.MustCompile(`/v1/chatbotcalls$`)
 	regV1ChatbotcallsID         = regexp.MustCompile("/v1/chatbotcalls/" + regUUID + "$")
 	regV1ChatbotcallsIDMessages = regexp.MustCompile("/v1/chatbotcalls/" + regUUID + "/messages$")
+
+	// messages
+	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
+	regV1Messages    = regexp.MustCompile("/v1/messages$")
+	regV1MessagesID  = regexp.MustCompile("/v1/messages/" + regUUID + "$")
 
 	// service
 	regV1ServicesTypeChatbotcall = regexp.MustCompile("/v1/services/type/chatbotcall$")
@@ -116,6 +123,7 @@ func NewListenHandler(
 	exchangeDelay string,
 	chatbotHandler chatbothandler.ChatbotHandler,
 	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler,
+	messageHandler messagehandler.MessageHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:        sockHandler,
@@ -123,6 +131,7 @@ func NewListenHandler(
 		exchangeDelay:      exchangeDelay,
 		chatbotHandler:     chatbotHandler,
 		chatbotcallHandler: chatbotcallHandler,
+		messageHandler:     messageHandler,
 	}
 
 	return h
@@ -223,6 +232,24 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ChatbotcallsIDMessages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ChatbotcallsIDMessagesPost(ctx, m)
 		requestType = "/v1/chatbotcalls/<chatbotcall-id>/messages"
+
+	///////////////
+	// messages
+	///////////////
+	// GET /messages
+	case regV1MessagesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1MessagesGet(ctx, m)
+		requestType = "/v1/messages"
+
+	// POST /messages
+	case regV1Messages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1MessagesPost(ctx, m)
+		requestType = "/v1/messages"
+
+	// POST /messages/<message-id>
+	case regV1MessagesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1MessagesIDGet(ctx, m)
+		requestType = "/v1/messages/<message-id>"
 
 	/////////////////
 	// services
