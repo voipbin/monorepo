@@ -33,6 +33,7 @@ import (
 	messagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 	chatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	message "monorepo/bin-chatbot-manager/models/message"
 	service "monorepo/bin-chatbot-manager/models/service"
 	address "monorepo/bin-common-handler/models/address"
 	outline "monorepo/bin-common-handler/models/outline"
@@ -43,7 +44,7 @@ import (
 	account0 "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media0 "monorepo/bin-conversation-manager/models/media"
-	message "monorepo/bin-conversation-manager/models/message"
+	message0 "monorepo/bin-conversation-manager/models/message"
 	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
 	action "monorepo/bin-flow-manager/models/action"
@@ -51,7 +52,7 @@ import (
 	flow "monorepo/bin-flow-manager/models/flow"
 	variable "monorepo/bin-flow-manager/models/variable"
 	hook "monorepo/bin-hook-manager/models/hook"
-	message0 "monorepo/bin-message-manager/models/message"
+	message1 "monorepo/bin-message-manager/models/message"
 	availablenumber "monorepo/bin-number-manager/models/availablenumber"
 	number "monorepo/bin-number-manager/models/number"
 	outdial "monorepo/bin-outdial-manager/models/outdial"
@@ -2602,6 +2603,66 @@ func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotcallStart(ctx, chatbot
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotcallStart", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotcallStart), ctx, chatbotID, referenceType, referenceID, gender, language)
 }
 
+// ChatbotV1MessageDelete mocks base method.
+func (m *MockRequestHandler) ChatbotV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1MessageDelete", ctx, messageID)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1MessageDelete indicates an expected call of ChatbotV1MessageDelete.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1MessageDelete(ctx, messageID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1MessageDelete", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1MessageDelete), ctx, messageID)
+}
+
+// ChatbotV1MessageGet mocks base method.
+func (m *MockRequestHandler) ChatbotV1MessageGet(ctx context.Context, messageID uuid.UUID) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1MessageGet", ctx, messageID)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1MessageGet indicates an expected call of ChatbotV1MessageGet.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1MessageGet(ctx, messageID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1MessageGet", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1MessageGet), ctx, messageID)
+}
+
+// ChatbotV1MessageGetsByChatbotcallID mocks base method.
+func (m *MockRequestHandler) ChatbotV1MessageGetsByChatbotcallID(ctx context.Context, chatbotcallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1MessageGetsByChatbotcallID", ctx, chatbotcallID, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1MessageGetsByChatbotcallID indicates an expected call of ChatbotV1MessageGetsByChatbotcallID.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1MessageGetsByChatbotcallID(ctx, chatbotcallID, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1MessageGetsByChatbotcallID", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1MessageGetsByChatbotcallID), ctx, chatbotcallID, pageToken, pageSize, filters)
+}
+
+// ChatbotV1MessageSend mocks base method.
+func (m *MockRequestHandler) ChatbotV1MessageSend(ctx context.Context, chatbotcallID uuid.UUID, role message.Role, content string, timeout int) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1MessageSend", ctx, chatbotcallID, role, content, timeout)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1MessageSend indicates an expected call of ChatbotV1MessageSend.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1MessageSend(ctx, chatbotcallID, role, content, timeout any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1MessageSend), ctx, chatbotcallID, role, content, timeout)
+}
+
 // ChatbotV1ServiceTypeChabotcallStart mocks base method.
 func (m *MockRequestHandler) ChatbotV1ServiceTypeChabotcallStart(ctx context.Context, chatbotID, activeflowID uuid.UUID, referenceType chatbotcall.ReferenceType, referenceID uuid.UUID, gender chatbotcall.Gender, language string, requestTimeout int) (*service.Service, error) {
 	m.ctrl.T.Helper()
@@ -2976,10 +3037,10 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGets(ctx, pa
 }
 
 // ConversationV1ConversationMessageGetsByConversationID mocks base method.
-func (m *MockRequestHandler) ConversationV1ConversationMessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]message.Message, error) {
+func (m *MockRequestHandler) ConversationV1ConversationMessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]message0.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1ConversationMessageGetsByConversationID", ctx, conversationID, pageToken, pageSize)
-	ret0, _ := ret[0].([]message.Message)
+	ret0, _ := ret[0].([]message0.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -3020,10 +3081,10 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1Hook(ctx, hm any) *gomoc
 }
 
 // ConversationV1MessageSend mocks base method.
-func (m *MockRequestHandler) ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media0.Media) (*message.Message, error) {
+func (m *MockRequestHandler) ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media0.Media) (*message0.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1MessageSend", ctx, conversationID, text, medias)
-	ret0, _ := ret[0].(*message.Message)
+	ret0, _ := ret[0].(*message0.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -3510,10 +3571,10 @@ func (mr *MockRequestHandlerMockRecorder) MessageV1Hook(ctx, hm any) *gomock.Cal
 }
 
 // MessageV1MessageDelete mocks base method.
-func (m *MockRequestHandler) MessageV1MessageDelete(ctx context.Context, id uuid.UUID) (*message0.Message, error) {
+func (m *MockRequestHandler) MessageV1MessageDelete(ctx context.Context, id uuid.UUID) (*message1.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageV1MessageDelete", ctx, id)
-	ret0, _ := ret[0].(*message0.Message)
+	ret0, _ := ret[0].(*message1.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -3525,10 +3586,10 @@ func (mr *MockRequestHandlerMockRecorder) MessageV1MessageDelete(ctx, id any) *g
 }
 
 // MessageV1MessageGet mocks base method.
-func (m *MockRequestHandler) MessageV1MessageGet(ctx context.Context, id uuid.UUID) (*message0.Message, error) {
+func (m *MockRequestHandler) MessageV1MessageGet(ctx context.Context, id uuid.UUID) (*message1.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageV1MessageGet", ctx, id)
-	ret0, _ := ret[0].(*message0.Message)
+	ret0, _ := ret[0].(*message1.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -3540,10 +3601,10 @@ func (mr *MockRequestHandlerMockRecorder) MessageV1MessageGet(ctx, id any) *gomo
 }
 
 // MessageV1MessageGets mocks base method.
-func (m *MockRequestHandler) MessageV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]message0.Message, error) {
+func (m *MockRequestHandler) MessageV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]message1.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageV1MessageGets", ctx, customerID, pageToken, pageSize)
-	ret0, _ := ret[0].([]message0.Message)
+	ret0, _ := ret[0].([]message1.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -3555,10 +3616,10 @@ func (mr *MockRequestHandlerMockRecorder) MessageV1MessageGets(ctx, customerID, 
 }
 
 // MessageV1MessageSend mocks base method.
-func (m *MockRequestHandler) MessageV1MessageSend(ctx context.Context, id, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message0.Message, error) {
+func (m *MockRequestHandler) MessageV1MessageSend(ctx context.Context, id, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message1.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageV1MessageSend", ctx, id, customerID, source, destinations, text)
-	ret0, _ := ret[0].(*message0.Message)
+	ret0, _ := ret[0].(*message1.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
