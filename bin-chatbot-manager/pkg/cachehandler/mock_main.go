@@ -13,6 +13,7 @@ import (
 	context "context"
 	chatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	message "monorepo/bin-chatbot-manager/models/message"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -143,4 +144,33 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
+}
+
+// MessageGet mocks base method.
+func (m *MockCacheHandler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageGet", ctx, id)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageGet indicates an expected call of MessageGet.
+func (mr *MockCacheHandlerMockRecorder) MessageGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGet", reflect.TypeOf((*MockCacheHandler)(nil).MessageGet), ctx, id)
+}
+
+// MessageSet mocks base method.
+func (m *MockCacheHandler) MessageSet(ctx context.Context, data *message.Message) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageSet", ctx, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageSet indicates an expected call of MessageSet.
+func (mr *MockCacheHandlerMockRecorder) MessageSet(ctx, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSet", reflect.TypeOf((*MockCacheHandler)(nil).MessageSet), ctx, data)
 }

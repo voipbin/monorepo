@@ -12,6 +12,7 @@ package chatgpthandler
 import (
 	context "context"
 	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	message "monorepo/bin-chatbot-manager/models/message"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -69,4 +70,19 @@ func (m *MockChatgptHandler) ChatNew(ctx context.Context, cc *chatbotcall.Chatbo
 func (mr *MockChatgptHandlerMockRecorder) ChatNew(ctx, cc, message any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatNew", reflect.TypeOf((*MockChatgptHandler)(nil).ChatNew), ctx, cc, message)
+}
+
+// MessageSend mocks base method.
+func (m *MockChatgptHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageSend", ctx, cc, messages)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageSend indicates an expected call of MessageSend.
+func (mr *MockChatgptHandlerMockRecorder) MessageSend(ctx, cc, messages any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSend", reflect.TypeOf((*MockChatgptHandler)(nil).MessageSend), ctx, cc, messages)
 }

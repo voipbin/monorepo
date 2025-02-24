@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/message"
 )
 
 const (
@@ -19,6 +20,8 @@ const (
 type ChatgptHandler interface {
 	ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error)
 	ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error)
+
+	MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error)
 }
 
 // chatgptHandler define
