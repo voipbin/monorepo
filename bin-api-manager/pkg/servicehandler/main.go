@@ -34,6 +34,7 @@ import (
 
 	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbmessage "monorepo/bin-chatbot-manager/models/message"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
@@ -268,6 +269,19 @@ type ServiceHandler interface {
 	ChatbotcallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbotcall.WebhookMessage, error)
 	ChatbotcallDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbotcall.WebhookMessage, error)
 	ChatbotcallSendMessage(ctx context.Context, a *amagent.Agent, id uuid.UUID, role cbchatbotcall.MessageRole, text string) (*cbchatbotcall.WebhookMessage, error)
+
+	// chatbotmessage handlers
+	chatbotmessageGet(ctx context.Context, id uuid.UUID) (*cbmessage.Message, error)
+	ChatbotmessageCreate(
+		ctx context.Context,
+		a *amagent.Agent,
+		chatbotcallID uuid.UUID,
+		role cbmessage.Role,
+		content string,
+	) (*cbmessage.WebhookMessage, error)
+	ChatbotmessageGetsByChatbotcallID(ctx context.Context, a *amagent.Agent, chatbotcallID uuid.UUID, size uint64, token string) ([]*cbmessage.WebhookMessage, error)
+	ChatbotmessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbmessage.WebhookMessage, error)
+	ChatbotmessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbmessage.WebhookMessage, error)
 
 	// chatmessage handlers
 	ChatmessageCreate(
