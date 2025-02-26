@@ -34,7 +34,7 @@ func (h *serviceHandler) ChatbotmessageCreate(
 
 	tmp, err := h.reqHandler.ChatbotV1MessageSend(ctx, chatbotcallID, role, content, 30000)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not create a new messagechat. err: %v", err)
+		return nil, errors.Wrapf(err, "could not create a new chatbot message. err: %v", err)
 	}
 
 	res := tmp.ConvertWebhookMessage()
