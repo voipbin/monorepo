@@ -1,5 +1,5 @@
 package message
 
 const (
-	EventTypeMessageCreated string = "message_created"
+	EventTypeMessageCreated string = "chatbotmessage_created"
 )

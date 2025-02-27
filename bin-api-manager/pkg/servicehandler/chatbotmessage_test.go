@@ -2,39 +2,32 @@ package servicehandler
 
 import (
 	"context"
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/pkg/dbhandler"
+	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbmessage "monorepo/bin-chatbot-manager/models/message"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"reflect"
 	"testing"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/requesthandler"
-
-	chatchat "monorepo/bin-chat-manager/models/chat"
-	chatmedia "monorepo/bin-chat-manager/models/media"
-	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
-
-	amagent "monorepo/bin-agent-manager/models/agent"
-
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
-
-	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_ChatmessageCreate(t *testing.T) {
+func Test_ChatbotmessageCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
-		chatID      uuid.UUID
-		source      commonaddress.Address
-		messageType chatmessagechat.Type
-		text        string
-		medias      []chatmedia.Media
+		agent         *amagent.Agent
+		chatbotcallID uuid.UUID
+		role          cbmessage.Role
+		content       string
 
-		response  *chatmessagechat.Messagechat
-		expectRes *chatmessagechat.WebhookMessage
+		responseChatbotcall *cbchatbotcall.Chatbotcall
+		response            *cbmessage.Message
+		expectRes           *cbmessage.WebhookMessage
 	}{
 		{
 			name: "normal",
@@ -46,23 +39,24 @@ func Test_ChatmessageCreate(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			chatID: uuid.FromStringOrNil("1768c58e-3774-11ed-ac88-3b7ca9a452f4"),
-			source: commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "+821100000001",
-			},
-			messageType: chatmessagechat.TypeNormal,
-			text:        "test text",
-			medias:      []chatmedia.Media{},
+			chatbotcallID: uuid.FromStringOrNil("556b07aa-f31c-11ef-8b45-8782c358d446"),
+			role:          cbmessage.RoleUser,
+			content:       "test text",
 
-			response: &chatmessagechat.Messagechat{
+			responseChatbotcall: &cbchatbotcall.Chatbotcall{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("17cea962-3774-11ed-88d8-4f22aa82ba39"),
+					ID:         uuid.FromStringOrNil("556b07aa-f31c-11ef-8b45-8782c358d446"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			expectRes: &chatmessagechat.WebhookMessage{
+			response: &cbmessage.Message{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("17cea962-3774-11ed-88d8-4f22aa82ba39"),
+					ID: uuid.FromStringOrNil("55c7ed9e-f31c-11ef-9fcd-9fde09fbb4e8"),
+				},
+			},
+			expectRes: &cbmessage.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("55c7ed9e-f31c-11ef-9fcd-9fde09fbb4e8"),
 				},
 			},
 		},
@@ -82,9 +76,10 @@ func Test_ChatmessageCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatCreate(ctx, tt.agent.CustomerID, tt.chatID, tt.source, tt.messageType, tt.text, tt.medias).Return(tt.response, nil)
+			mockReq.EXPECT().ChatbotV1ChatbotcallGet(ctx, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
+			mockReq.EXPECT().ChatbotV1MessageSend(ctx, tt.chatbotcallID, tt.role, tt.content, 30000).Return(tt.response, nil)
 
-			res, err := h.ChatmessageCreate(ctx, tt.agent, tt.chatID, tt.source, tt.messageType, tt.text, tt.medias)
+			res, err := h.ChatbotmessageCreate(ctx, tt.agent, tt.chatbotcallID, tt.role, tt.content)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -96,21 +91,21 @@ func Test_ChatmessageCreate(t *testing.T) {
 	}
 }
 
-func Test_ChatmessageGetsByChatID(t *testing.T) {
+func Test_ChatbotmessageGetsByChatbotcallID(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
-		chatID uuid.UUID
-		size   uint64
-		token  string
+		agent         *amagent.Agent
+		chatbotcallID uuid.UUID
+		size          uint64
+		token         string
 
-		responseChat *chatchat.Chat
-		response     []chatmessagechat.Messagechat
+		responseChatbotcall *cbchatbotcall.Chatbotcall
+		response            []cbmessage.Message
 
 		expectFilters map[string]string
-		expectRes     []*chatmessagechat.WebhookMessage
+		expectRes     []*cbmessage.WebhookMessage
 	}{
 		{
 			name: "normal",
@@ -121,32 +116,42 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			chatID: uuid.FromStringOrNil("8ec6c9be-3774-11ed-a626-73312e33dc72"),
-			size:   10,
-			token:  "2020-09-20 03:23:20.995000",
+			chatbotcallID: uuid.FromStringOrNil("24d250de-f31d-11ef-846e-9ba3307567d6"),
+			size:          10,
+			token:         "2020-09-20 03:23:20.995000",
 
-			responseChat: &chatchat.Chat{
+			responseChatbotcall: &cbchatbotcall.Chatbotcall{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("8ec6c9be-3774-11ed-a626-73312e33dc72"),
+					ID:         uuid.FromStringOrNil("24d250de-f31d-11ef-846e-9ba3307567d6"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			response: []chatmessagechat.Messagechat{
+			response: []cbmessage.Message{
 				{
 					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("b45b1da6-3774-11ed-856d-1b95e72acae8"),
+						ID: uuid.FromStringOrNil("252bafd0-f31d-11ef-983f-b72b407260c8"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("254f2e6a-f31d-11ef-8721-0389c730e82e"),
 					},
 				},
 			},
 
 			expectFilters: map[string]string{
-				"deleted": "false",
-				"chat_id": "8ec6c9be-3774-11ed-a626-73312e33dc72",
+				"deleted":        "false",
+				"chatbotcall_id": "24d250de-f31d-11ef-846e-9ba3307567d6",
 			},
-			expectRes: []*chatmessagechat.WebhookMessage{
+			expectRes: []*cbmessage.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("b45b1da6-3774-11ed-856d-1b95e72acae8"),
+						ID: uuid.FromStringOrNil("252bafd0-f31d-11ef-983f-b72b407260c8"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("254f2e6a-f31d-11ef-8721-0389c730e82e"),
 					},
 				},
 			},
@@ -168,10 +173,10 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1MessagechatGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().ChatbotV1ChatbotcallGet(ctx, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
+			mockReq.EXPECT().ChatbotV1MessageGetsByChatbotcallID(ctx, tt.chatbotcallID, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
-			res, err := h.ChatmessageGetsByChatID(ctx, tt.agent, tt.chatID, tt.size, tt.token)
+			res, err := h.ChatbotmessageGetsByChatbotcallID(ctx, tt.agent, tt.chatbotcallID, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -183,16 +188,16 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 	}
 }
 
-func Test_ChatmessageGet(t *testing.T) {
+func Test_ChatbotmessageGet(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
-		chatmessageID uuid.UUID
+		agent     *amagent.Agent
+		messageID uuid.UUID
 
-		response  *chatmessagechat.Messagechat
-		expectRes *chatmessagechat.WebhookMessage
+		response  *cbmessage.Message
+		expectRes *cbmessage.WebhookMessage
 	}{
 		{
 			name: "normal",
@@ -203,17 +208,17 @@ func Test_ChatmessageGet(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			chatmessageID: uuid.FromStringOrNil("e00fa786-3775-11ed-ac3f-f7eb62abd600"),
+			messageID: uuid.FromStringOrNil("b8bf966c-f31d-11ef-ba3b-834c48052c25"),
 
-			response: &chatmessagechat.Messagechat{
+			response: &cbmessage.Message{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("e00fa786-3775-11ed-ac3f-f7eb62abd600"),
+					ID:         uuid.FromStringOrNil("b8bf966c-f31d-11ef-ba3b-834c48052c25"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			expectRes: &chatmessagechat.WebhookMessage{
+			expectRes: &cbmessage.WebhookMessage{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("e00fa786-3775-11ed-ac3f-f7eb62abd600"),
+					ID:         uuid.FromStringOrNil("b8bf966c-f31d-11ef-ba3b-834c48052c25"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
@@ -233,9 +238,9 @@ func Test_ChatmessageGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatGet(ctx, tt.chatmessageID).Return(tt.response, nil)
+			mockReq.EXPECT().ChatbotV1MessageGet(ctx, tt.messageID).Return(tt.response, nil)
 
-			res, err := h.ChatmessageGet(ctx, tt.agent, tt.chatmessageID)
+			res, err := h.ChatbotmessageGet(ctx, tt.agent, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -247,15 +252,17 @@ func Test_ChatmessageGet(t *testing.T) {
 	}
 }
 
-func Test_ChatmessageDelete(t *testing.T) {
+func Test_ChatbotmessageDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
-		messagechatID uuid.UUID
+		agent     *amagent.Agent
+		messageID uuid.UUID
 
-		responseChat *chatmessagechat.Messagechat
+		response *cbmessage.Message
+
+		expectRes *cbmessage.WebhookMessage
 	}{
 		{
 			name: "normal",
@@ -266,11 +273,17 @@ func Test_ChatmessageDelete(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			messagechatID: uuid.FromStringOrNil("587ecd5a-3776-11ed-b8be-93dc6a90e040"),
+			messageID: uuid.FromStringOrNil("b8e73d98-f31d-11ef-8b29-8b31b17b57dc"),
 
-			responseChat: &chatmessagechat.Messagechat{
+			response: &cbmessage.Message{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("587ecd5a-3776-11ed-b8be-93dc6a90e040"),
+					ID:         uuid.FromStringOrNil("b8e73d98-f31d-11ef-8b29-8b31b17b57dc"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			expectRes: &cbmessage.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b8e73d98-f31d-11ef-8b29-8b31b17b57dc"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
@@ -292,10 +305,10 @@ func Test_ChatmessageDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatGet(ctx, tt.messagechatID).Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1MessagechatDelete(ctx, tt.messagechatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatbotV1MessageGet(ctx, tt.messageID).Return(tt.response, nil)
+			mockReq.EXPECT().ChatbotV1MessageDelete(ctx, tt.messageID).Return(tt.response, nil)
 
-			_, err := h.ChatmessageDelete(ctx, tt.agent, tt.messagechatID)
+			_, err := h.ChatbotmessageDelete(ctx, tt.agent, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
