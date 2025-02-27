@@ -1431,6 +1431,57 @@ components:
           type: string
           description: Timestamp when the chatbot call was deleted.
 
+    ChatbotManagerMessageDirection:
+      type: string
+      description: Direction of the message.
+      enum:
+        - incoming
+        - outgoing
+      x-enum-varnames:
+        - ChatbotManagerMessageDirectionIncoming
+        - ChatbotManagerMessageDirectionOutgoing
+
+    ChatbotManagerMessageRole:
+      type: string
+      description: Role of the entity in the conversation.
+      enum:
+        - system
+        - user
+        - assistant
+        - function
+        - tool
+      x-enum-varnames:
+        - ChatbotManagerMessageRoleSystem
+        - ChatbotManagerMessageRoleUser
+        - ChatbotManagerMessageRoleAssistant
+        - ChatbotManagerMessageRoleFunction
+        - ChatbotManagerMessageRoleTool
+
+    ChatbotManagerMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the message.
+        chatbotcall_id:
+          type: string
+          description: Unique identifier for the associated chatbot call.
+        direction:
+          $ref: '#/components/schemas/ChatbotManagerMessageDirection'
+          description: Direction of the message.
+        role:
+          $ref: '#/components/schemas/ChatbotManagerMessageRole'
+          description: Role of the entity in the conversation.
+        content:
+          type: string
+          description: Content of the message.
+        tm_create:
+          type: string
+          description: Timestamp when the message was created.
+        tm_delete:
+          type: string
+          description: Timestamp when the message was deleted.
+
 
 #########################################
 # Common
@@ -3100,6 +3151,11 @@ paths:
     $ref: './paths/campaigns/id.yaml'
   /campaigns:
     $ref: './paths/campaigns/main.yaml'
+
+  /chatbotmessages/{id}:
+    $ref: './paths/chatbotmessages/id.yaml'
+  /chatbotmessages:
+    $ref: './paths/chatbotmessages/main.yaml'
 
   /chatbotcalls/{id}/messages:
     $ref: './paths/chatbotcalls/id_messages.yaml'

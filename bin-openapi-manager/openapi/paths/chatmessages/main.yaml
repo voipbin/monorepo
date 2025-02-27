@@ -1,4 +1,3 @@
-/chatmessages:
 get:
   summary: Retrieve a list of chat messages
   description: Fetches a paginated list of chat messages.

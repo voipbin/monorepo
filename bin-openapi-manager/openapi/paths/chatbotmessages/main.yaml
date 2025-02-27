@@ -1,0 +1,57 @@
+get:
+  summary: Retrieve a list of chatbotcall messages
+  description: Fetches a paginated list of chatbotcall messages.
+  tags:
+    - Chatbot
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: chatbotcall_id
+      in: query
+      description: The chatbotcall id.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: A list of chatbotcall messages.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatbotManagerMessage'
+
+post:
+  summary: Send a chatbotcall message
+  description: Creates and send a new chatbotcall message and returns the details of the created message.
+  tags:
+    - Chatbot
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            chatbotcall_id:
+              type: string
+            role:
+              $ref: '#/components/schemas/ChatbotManagerMessageRole'
+            content:
+              type: string
+          required:
+            - chatbotcall_id
+            - role
+            - content
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChatbotManagerMessage'

@@ -294,6 +294,21 @@ const (
 	ChatbotManagerChatbotcallStatusProgressing ChatbotManagerChatbotcallStatus = "progressing"
 )
 
+// Defines values for ChatbotManagerMessageDirection.
+const (
+	ChatbotManagerMessageDirectionIncoming ChatbotManagerMessageDirection = "incoming"
+	ChatbotManagerMessageDirectionOutgoing ChatbotManagerMessageDirection = "outgoing"
+)
+
+// Defines values for ChatbotManagerMessageRole.
+const (
+	ChatbotManagerMessageRoleAssistant ChatbotManagerMessageRole = "assistant"
+	ChatbotManagerMessageRoleFunction  ChatbotManagerMessageRole = "function"
+	ChatbotManagerMessageRoleSystem    ChatbotManagerMessageRole = "system"
+	ChatbotManagerMessageRoleTool      ChatbotManagerMessageRole = "tool"
+	ChatbotManagerMessageRoleUser      ChatbotManagerMessageRole = "user"
+)
+
 // Defines values for CommonAddressType.
 const (
 	CommonAddressTypeAgent      CommonAddressType = "agent"
@@ -1404,6 +1419,36 @@ type ChatbotManagerChatbotcallReferenceType string
 
 // ChatbotManagerChatbotcallStatus Status of the chatbot call.
 type ChatbotManagerChatbotcallStatus string
+
+// ChatbotManagerMessage defines model for ChatbotManagerMessage.
+type ChatbotManagerMessage struct {
+	// ChatbotcallId Unique identifier for the associated chatbot call.
+	ChatbotcallId *string `json:"chatbotcall_id,omitempty"`
+
+	// Content Content of the message.
+	Content *string `json:"content,omitempty"`
+
+	// Direction Direction of the message.
+	Direction *ChatbotManagerMessageDirection `json:"direction,omitempty"`
+
+	// Id Unique identifier for the message.
+	Id *string `json:"id,omitempty"`
+
+	// Role Role of the entity in the conversation.
+	Role *ChatbotManagerMessageRole `json:"role,omitempty"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+}
+
+// ChatbotManagerMessageDirection Direction of the message.
+type ChatbotManagerMessageDirection string
+
+// ChatbotManagerMessageRole Role of the entity in the conversation.
+type ChatbotManagerMessageRole string
 
 // CommonAddress Contains source or destination detail info.
 type CommonAddress struct {
@@ -2819,6 +2864,27 @@ type PostChatbotcallsIdMessagesJSONBody struct {
 	Text string                               `json:"text"`
 }
 
+// GetChatbotmessagesParams defines parameters for GetChatbotmessages.
+type GetChatbotmessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ChatbotcallId The chatbotcall id.
+	ChatbotcallId string `form:"chatbotcall_id" json:"chatbotcall_id"`
+}
+
+// PostChatbotmessagesJSONBody defines parameters for PostChatbotmessages.
+type PostChatbotmessagesJSONBody struct {
+	ChatbotcallId string `json:"chatbotcall_id"`
+	Content       string `json:"content"`
+
+	// Role Role of the entity in the conversation.
+	Role ChatbotManagerMessageRole `json:"role"`
+}
+
 // GetChatbotsParams defines parameters for GetChatbots.
 type GetChatbotsParams struct {
 	// PageSize The size of results.
@@ -3971,6 +4037,9 @@ type PostChatbotcallsJSONRequestBody PostChatbotcallsJSONBody
 // PostChatbotcallsIdMessagesJSONRequestBody defines body for PostChatbotcallsIdMessages for application/json ContentType.
 type PostChatbotcallsIdMessagesJSONRequestBody PostChatbotcallsIdMessagesJSONBody
 
+// PostChatbotmessagesJSONRequestBody defines body for PostChatbotmessages for application/json ContentType.
+type PostChatbotmessagesJSONRequestBody PostChatbotmessagesJSONBody
+
 // PostChatbotsJSONRequestBody defines body for PostChatbots for application/json ContentType.
 type PostChatbotsJSONRequestBody PostChatbotsJSONBody
 
@@ -4366,6 +4435,18 @@ type ServerInterface interface {
 	// Send the chatbotcall message
 	// (POST /chatbotcalls/{id}/messages)
 	PostChatbotcallsIdMessages(c *gin.Context, id string)
+	// Retrieve a list of chatbotcall messages
+	// (GET /chatbotmessages)
+	GetChatbotmessages(c *gin.Context, params GetChatbotmessagesParams)
+	// Send a chatbotcall message
+	// (POST /chatbotmessages)
+	PostChatbotmessages(c *gin.Context)
+	// Delete a chatbotcall message
+	// (DELETE /chatbotmessages/{id})
+	DeleteChatbotmessagesId(c *gin.Context, id string)
+	// Retrieve details of a chatbotcall message
+	// (GET /chatbotmessages/{id})
+	GetChatbotmessagesId(c *gin.Context, id string)
 	// Gets a list of chatbots.
 	// (GET /chatbots)
 	GetChatbots(c *gin.Context, params GetChatbotsParams)
@@ -6557,6 +6638,116 @@ func (siw *ServerInterfaceWrapper) PostChatbotcallsIdMessages(c *gin.Context) {
 	}
 
 	siw.Handler.PostChatbotcallsIdMessages(c, id)
+}
+
+// GetChatbotmessages operation middleware
+func (siw *ServerInterfaceWrapper) GetChatbotmessages(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChatbotmessagesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Required query parameter "chatbotcall_id" -------------
+
+	if paramValue := c.Query("chatbotcall_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument chatbotcall_id is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "chatbotcall_id", c.Request.URL.Query(), &params.ChatbotcallId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chatbotcall_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatbotmessages(c, params)
+}
+
+// PostChatbotmessages operation middleware
+func (siw *ServerInterfaceWrapper) PostChatbotmessages(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostChatbotmessages(c)
+}
+
+// DeleteChatbotmessagesId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChatbotmessagesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteChatbotmessagesId(c, id)
+}
+
+// GetChatbotmessagesId operation middleware
+func (siw *ServerInterfaceWrapper) GetChatbotmessagesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChatbotmessagesId(c, id)
 }
 
 // GetChatbots operation middleware
@@ -11286,6 +11477,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/chatbotcalls/:id", wrapper.DeleteChatbotcallsId)
 	router.GET(options.BaseURL+"/chatbotcalls/:id", wrapper.GetChatbotcallsId)
 	router.POST(options.BaseURL+"/chatbotcalls/:id/messages", wrapper.PostChatbotcallsIdMessages)
+	router.GET(options.BaseURL+"/chatbotmessages", wrapper.GetChatbotmessages)
+	router.POST(options.BaseURL+"/chatbotmessages", wrapper.PostChatbotmessages)
+	router.DELETE(options.BaseURL+"/chatbotmessages/:id", wrapper.DeleteChatbotmessagesId)
+	router.GET(options.BaseURL+"/chatbotmessages/:id", wrapper.GetChatbotmessagesId)
 	router.GET(options.BaseURL+"/chatbots", wrapper.GetChatbots)
 	router.POST(options.BaseURL+"/chatbots", wrapper.PostChatbots)
 	router.DELETE(options.BaseURL+"/chatbots/:id", wrapper.DeleteChatbotsId)
@@ -12696,6 +12891,78 @@ type PostChatbotcallsIdMessagesResponseObject interface {
 type PostChatbotcallsIdMessages200JSONResponse ChatbotManagerChatbotcall
 
 func (response PostChatbotcallsIdMessages200JSONResponse) VisitPostChatbotcallsIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatbotmessagesRequestObject struct {
+	Params GetChatbotmessagesParams
+}
+
+type GetChatbotmessagesResponseObject interface {
+	VisitGetChatbotmessagesResponse(w http.ResponseWriter) error
+}
+
+type GetChatbotmessages200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                  `json:"next_page_token,omitempty"`
+	Result        *[]ChatbotManagerMessage `json:"result,omitempty"`
+}
+
+func (response GetChatbotmessages200JSONResponse) VisitGetChatbotmessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChatbotmessagesRequestObject struct {
+	Body *PostChatbotmessagesJSONRequestBody
+}
+
+type PostChatbotmessagesResponseObject interface {
+	VisitPostChatbotmessagesResponse(w http.ResponseWriter) error
+}
+
+type PostChatbotmessages200JSONResponse ChatbotManagerMessage
+
+func (response PostChatbotmessages200JSONResponse) VisitPostChatbotmessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChatbotmessagesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteChatbotmessagesIdResponseObject interface {
+	VisitDeleteChatbotmessagesIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChatbotmessagesId200JSONResponse ChatbotManagerMessage
+
+func (response DeleteChatbotmessagesId200JSONResponse) VisitDeleteChatbotmessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChatbotmessagesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetChatbotmessagesIdResponseObject interface {
+	VisitGetChatbotmessagesIdResponse(w http.ResponseWriter) error
+}
+
+type GetChatbotmessagesId200JSONResponse ChatbotManagerMessage
+
+func (response GetChatbotmessagesId200JSONResponse) VisitGetChatbotmessagesIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -16337,6 +16604,18 @@ type StrictServerInterface interface {
 	// Send the chatbotcall message
 	// (POST /chatbotcalls/{id}/messages)
 	PostChatbotcallsIdMessages(ctx context.Context, request PostChatbotcallsIdMessagesRequestObject) (PostChatbotcallsIdMessagesResponseObject, error)
+	// Retrieve a list of chatbotcall messages
+	// (GET /chatbotmessages)
+	GetChatbotmessages(ctx context.Context, request GetChatbotmessagesRequestObject) (GetChatbotmessagesResponseObject, error)
+	// Send a chatbotcall message
+	// (POST /chatbotmessages)
+	PostChatbotmessages(ctx context.Context, request PostChatbotmessagesRequestObject) (PostChatbotmessagesResponseObject, error)
+	// Delete a chatbotcall message
+	// (DELETE /chatbotmessages/{id})
+	DeleteChatbotmessagesId(ctx context.Context, request DeleteChatbotmessagesIdRequestObject) (DeleteChatbotmessagesIdResponseObject, error)
+	// Retrieve details of a chatbotcall message
+	// (GET /chatbotmessages/{id})
+	GetChatbotmessagesId(ctx context.Context, request GetChatbotmessagesIdRequestObject) (GetChatbotmessagesIdResponseObject, error)
 	// Gets a list of chatbots.
 	// (GET /chatbots)
 	GetChatbots(ctx context.Context, request GetChatbotsRequestObject) (GetChatbotsResponseObject, error)
@@ -18854,6 +19133,120 @@ func (sh *strictHandler) PostChatbotcallsIdMessages(ctx *gin.Context, id string)
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostChatbotcallsIdMessagesResponseObject); ok {
 		if err := validResponse.VisitPostChatbotcallsIdMessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatbotmessages operation middleware
+func (sh *strictHandler) GetChatbotmessages(ctx *gin.Context, params GetChatbotmessagesParams) {
+	var request GetChatbotmessagesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatbotmessages(ctx, request.(GetChatbotmessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatbotmessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatbotmessagesResponseObject); ok {
+		if err := validResponse.VisitGetChatbotmessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChatbotmessages operation middleware
+func (sh *strictHandler) PostChatbotmessages(ctx *gin.Context) {
+	var request PostChatbotmessagesRequestObject
+
+	var body PostChatbotmessagesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChatbotmessages(ctx, request.(PostChatbotmessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChatbotmessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChatbotmessagesResponseObject); ok {
+		if err := validResponse.VisitPostChatbotmessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChatbotmessagesId operation middleware
+func (sh *strictHandler) DeleteChatbotmessagesId(ctx *gin.Context, id string) {
+	var request DeleteChatbotmessagesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChatbotmessagesId(ctx, request.(DeleteChatbotmessagesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChatbotmessagesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChatbotmessagesIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChatbotmessagesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChatbotmessagesId operation middleware
+func (sh *strictHandler) GetChatbotmessagesId(ctx *gin.Context, id string) {
+	var request GetChatbotmessagesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChatbotmessagesId(ctx, request.(GetChatbotmessagesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChatbotmessagesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChatbotmessagesIdResponseObject); ok {
+		if err := validResponse.VisitGetChatbotmessagesIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
