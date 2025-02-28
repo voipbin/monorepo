@@ -24,6 +24,7 @@ type Role string
 
 // list of roles
 const (
+	RoleNone      Role = ""
 	RoleSystem    Role = "system"
 	RoleUser      Role = "user"
 	RoleAssistant Role = "assistant"

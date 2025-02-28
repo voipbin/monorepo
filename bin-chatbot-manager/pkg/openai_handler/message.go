@@ -103,6 +103,15 @@ func (h *openaiHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbot
 		return nil, errors.Wrap(err, "could not send the request")
 	}
 
+	if tmp == nil || len(tmp.Choices) == 0 {
+		log.Debugf("Received response with empty choices")
+		res := &message.Message{
+			Role:    message.RoleNone,
+			Content: "",
+		}
+		return res, nil
+	}
+
 	res := &message.Message{
 		Role:    message.Role(tmp.Choices[0].Message.Role),
 		Content: tmp.Choices[0].Message.Content,
