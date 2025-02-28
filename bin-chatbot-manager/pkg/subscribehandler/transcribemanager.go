@@ -31,10 +31,9 @@ func (h *subscribeHandler) processEventTMTranscriptCreated(ctx context.Context, 
 		return nil
 	}
 
-	_, err = h.chatbotcallHandler.ChatMessage(ctx, cb, chatbotcall.MessageRoleUser, evt.Message)
-	if err != nil {
-		log.Errorf("Could not chat to the chatbotcall. err: %v", err)
-		return errors.Wrap(err, "could not chat to the chatbotcall")
+	if errChat := h.chatbotcallHandler.ChatMessage(ctx, cb, chatbotcall.MessageRoleUser, evt.Message); errChat != nil {
+		log.Errorf("Could not chat to the chatbotcall. err: %v", errChat)
+		return errors.Wrap(errChat, "could not chat to the chatbotcall")
 	}
 
 	return nil

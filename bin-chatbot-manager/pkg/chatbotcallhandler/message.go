@@ -1,51 +1,40 @@
 package chatbotcallhandler
 
-import (
-	"context"
-	"fmt"
-	"monorepo/bin-chatbot-manager/models/chatbot"
-	"monorepo/bin-chatbot-manager/models/chatbotcall"
-	"time"
+// func (h *chatbotcallHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Chatbotcall, error) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":           "messageSend",
+// 		"chatbotcall_id": cc.ID,
+// 		"message":        message,
+// 	})
 
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-)
+// 	var tmpMessage *chatbotcall.Message
+// 	var err error
+// 	start := time.Now()
 
-func (h *chatbotcallHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Chatbotcall, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "messageSend",
-		"chatbotcall_id": cc.ID,
-		"message":        message,
-	})
+// 	// send message
+// 	switch cc.ChatbotEngineType {
+// 	case chatbot.EngineTypeChatGPT:
+// 		tmpMessage, err = h.openaiHandler.ChatMessage(ctx, cc, message)
+// 		if err != nil {
+// 			return nil, errors.Wrap(err, "could not get chat message from the chatbot engine")
+// 		}
 
-	var tmpMessage *chatbotcall.Message
-	var err error
-	start := time.Now()
+// 	default:
+// 		return nil, fmt.Errorf("could not find chatbot engine type handler. engine_type: %s", cc.ChatbotEngineType)
+// 	}
+// 	elapsed := time.Since(start)
+// 	promChatMessageProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(elapsed.Milliseconds()))
+// 	log.WithField("response_message", tmpMessage).Debugf("Processed chat message. elapsed: %v, response_content: %s", elapsed, tmpMessage.Content)
 
-	// send message
-	switch cc.ChatbotEngineType {
-	case chatbot.EngineTypeChatGPT:
-		tmpMessage, err = h.chatgptHandler.ChatMessage(ctx, cc, message)
-		if err != nil {
-			return nil, errors.Wrap(err, "could not get chat message from the chatbot engine")
-		}
+// 	messages := append(cc.Messages, *message)
+// 	messages = append(messages, *tmpMessage)
 
-	default:
-		return nil, fmt.Errorf("could not find chatbot engine type handler. engine_type: %s", cc.ChatbotEngineType)
-	}
-	elapsed := time.Since(start)
-	promChatMessageProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(elapsed.Milliseconds()))
-	log.WithField("response_message", tmpMessage).Debugf("Processed chat message. elapsed: %v, response_content: %s", elapsed, tmpMessage.Content)
+// 	// update chatbotcall messages
+// 	res, err := h.UpdateChatbotcallMessages(ctx, cc.ID, messages)
+// 	if err != nil {
+// 		log.Errorf("Could not update the chatbotcall's messages. err: %v", err)
+// 		return nil, errors.Wrap(err, "could not update the chatbotcall's messages")
+// 	}
 
-	messages := append(cc.Messages, *message)
-	messages = append(messages, *tmpMessage)
-
-	// update chatbotcall messages
-	res, err := h.UpdateChatbotcallMessages(ctx, cc.ID, messages)
-	if err != nil {
-		log.Errorf("Could not update the chatbotcall's messages. err: %v", err)
-		return nil, errors.Wrap(err, "could not update the chatbotcall's messages")
-	}
-
-	return res, nil
-}
+// 	return res, nil
+// }

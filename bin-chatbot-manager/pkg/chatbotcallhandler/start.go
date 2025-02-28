@@ -60,17 +60,16 @@ func (h *chatbotcallHandler) startReferenceTypeCall(ctx context.Context, c *chat
 		return nil, errors.Wrap(err, "Could not create confbridge")
 	}
 
-	tmp, err := h.Create(ctx, c, activeflowID, chatbotcall.ReferenceTypeCall, referenceID, cb.ID, gender, language)
+	res, err := h.Create(ctx, c, activeflowID, chatbotcall.ReferenceTypeCall, referenceID, cb.ID, gender, language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create chatbotcall.")
 	}
-	log.WithField("chatbotcall", tmp).Debugf("Created chatbotcall. chatbotcall_id: %s", tmp.ID)
+	log.WithField("chatbotcall", res).Debugf("Created chatbotcall. chatbotcall_id: %s", res.ID)
 
-	res, err := h.chatInit(ctx, c, tmp)
-	if err != nil {
-		log.Errorf("Could not initialize chat. err: %v", err)
-		return nil, errors.Wrap(err, "Could not initialize chat")
+	if errInit := h.chatInit(ctx, c, res); errInit != nil {
+		log.Errorf("Could not initialize chat. err: %v", errInit)
+		return nil, errors.Wrap(errInit, "Could not initialize chat")
 	}
 
 	return res, nil
@@ -81,17 +80,16 @@ func (h *chatbotcallHandler) startReferenceTypeNone(ctx context.Context, c *chat
 		"func": "startReferenceTypeNone",
 	})
 
-	tmp, err := h.Create(ctx, c, uuid.Nil, chatbotcall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language)
+	res, err := h.Create(ctx, c, uuid.Nil, chatbotcall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create chatbotcall.")
 	}
-	log.WithField("chatbotcall", tmp).Debugf("Created chatbotcall. chatbotcall_id: %s", tmp.ID)
+	log.WithField("chatbotcall", res).Debugf("Created chatbotcall. chatbotcall_id: %s", res.ID)
 
-	res, err := h.chatInit(ctx, c, tmp)
-	if err != nil {
-		log.Errorf("Could not initialize chat. err: %v", err)
-		return nil, errors.Wrap(err, "Could not initialize chat")
+	if errInit := h.chatInit(ctx, c, res); errInit != nil {
+		log.Errorf("Could not initialize chat. err: %v", errInit)
+		return nil, errors.Wrap(errInit, "Could not initialize chat")
 	}
 
 	return res, nil

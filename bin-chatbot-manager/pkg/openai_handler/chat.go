@@ -1,4 +1,4 @@
-package chatgpthandler
+package openai_handler
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 )
 
 // ChatNew starts a new chat
-func (h *chatgptHandler) ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
+func (h *openaiHandler) ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
 	res, err := h.messageSend(ctx, cc, message)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not start a new chat")
@@ -19,7 +19,7 @@ func (h *chatgptHandler) ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcal
 }
 
 // ChatMessage sends the message and return the receives the messages
-func (h *chatgptHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
+func (h *openaiHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
 	res, err := h.messageSend(ctx, cc, message)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not send the message")

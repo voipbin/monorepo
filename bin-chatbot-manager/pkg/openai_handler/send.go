@@ -1,4 +1,4 @@
-package chatgpthandler
+package openai_handler
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-func (h *chatgptHandler) send(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+func (h *openaiHandler) send(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
 	expBackoff := backoff.NewExponentialBackOff()
 	expBackoff.InitialInterval = 1 * time.Second
 	expBackoff.MaxInterval = 10 * time.Second

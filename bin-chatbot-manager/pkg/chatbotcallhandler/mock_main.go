@@ -45,33 +45,17 @@ func (m *MockChatbotcallHandler) EXPECT() *MockChatbotcallHandlerMockRecorder {
 }
 
 // ChatMessage mocks base method.
-func (m *MockChatbotcallHandler) ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error) {
+func (m *MockChatbotcallHandler) ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, role chatbotcall.MessageRole, text string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChatMessage", ctx, cb, role, text)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ChatMessage indicates an expected call of ChatMessage.
 func (mr *MockChatbotcallHandlerMockRecorder) ChatMessage(ctx, cb, role, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessage", reflect.TypeOf((*MockChatbotcallHandler)(nil).ChatMessage), ctx, cb, role, text)
-}
-
-// ChatMessageByID mocks base method.
-func (m *MockChatbotcallHandler) ChatMessageByID(ctx context.Context, chatbotcallID uuid.UUID, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatMessageByID", ctx, chatbotcallID, role, text)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ChatMessageByID indicates an expected call of ChatMessageByID.
-func (mr *MockChatbotcallHandlerMockRecorder) ChatMessageByID(ctx, chatbotcallID, role, text any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessageByID", reflect.TypeOf((*MockChatbotcallHandler)(nil).ChatMessageByID), ctx, chatbotcallID, role, text)
 }
 
 // Create mocks base method.

@@ -6,8 +6,8 @@ import (
 	"context"
 	"monorepo/bin-chatbot-manager/models/message"
 	"monorepo/bin-chatbot-manager/pkg/chatbotcallhandler"
-	"monorepo/bin-chatbot-manager/pkg/chatgpthandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
+	openaihandler "monorepo/bin-chatbot-manager/pkg/openai_handler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -29,7 +29,7 @@ type messageHandler struct {
 
 	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler
 
-	chatgptHandler chatgpthandler.ChatgptHandler
+	openaiHandler openaihandler.OpenaiHandler
 }
 
 var (
@@ -68,7 +68,7 @@ func NewMessageHandler(
 	db dbhandler.DBHandler,
 	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler,
 
-	chatgptHandler chatgpthandler.ChatgptHandler,
+	chatgptHandler openaihandler.OpenaiHandler,
 ) MessageHandler {
 	return &messageHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -77,6 +77,6 @@ func NewMessageHandler(
 
 		chatbotcallHandler: chatbotcallHandler,
 
-		chatgptHandler: chatgptHandler,
+		openaiHandler: chatgptHandler,
 	}
 }

@@ -16,8 +16,8 @@ import (
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/service"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
-	"monorepo/bin-chatbot-manager/pkg/chatgpthandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
+	"monorepo/bin-chatbot-manager/pkg/openai_handler"
 )
 
 // ChatbotcallHandler define
@@ -61,8 +61,8 @@ type ChatbotcallHandler interface {
 		language string,
 	) (*service.Service, error)
 
-	ChatMessageByID(ctx context.Context, chatbotcallID uuid.UUID, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error)
-	ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error)
+	// ChatMessageByID(ctx context.Context, chatbotcallID uuid.UUID, role chatbotcall.MessageRole, text string) (*chatbotcall.Chatbotcall, error)
+	ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, role chatbotcall.MessageRole, text string) error
 }
 
 // chatbotcallHandler define
@@ -73,7 +73,7 @@ type chatbotcallHandler struct {
 	db            dbhandler.DBHandler
 
 	chatbotHandler chatbothandler.ChatbotHandler
-	chatgptHandler chatgpthandler.ChatgptHandler
+	openaiHandler  openai_handler.OpenaiHandler
 }
 
 var (
@@ -125,7 +125,7 @@ func NewChatbotcallHandler(
 	notify notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
 	chatbotHandler chatbothandler.ChatbotHandler,
-	chatgptHandler chatgpthandler.ChatgptHandler,
+	chatgptHandler openai_handler.OpenaiHandler,
 ) ChatbotcallHandler {
 	return &chatbotcallHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -134,6 +134,6 @@ func NewChatbotcallHandler(
 		db:            db,
 
 		chatbotHandler: chatbotHandler,
-		chatgptHandler: chatgptHandler,
+		openaiHandler:  chatgptHandler,
 	}
 }

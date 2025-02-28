@@ -1,4 +1,4 @@
-package chatgpthandler
+package openai_handler
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 // messageSend send the message to the openai
-func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
+func (h *openaiHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "messageSend",
 		"chatbotcall": cc,
@@ -71,7 +71,7 @@ func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbo
 	return res, nil
 }
 
-func (h *chatgptHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error) {
+func (h *openaiHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "messageSend",
 		"chatbotcall": cc,

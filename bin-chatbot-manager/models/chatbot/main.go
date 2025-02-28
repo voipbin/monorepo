@@ -29,23 +29,56 @@ type EngineType string
 
 // list of engine types
 const (
-	EngineTypeChatGPT    EngineType = "chatGPT"    // openai chatGPT. https://chat.openai.com/chat
-	EngineTypeDialogFlow EngineType = "dialogflow" // google dialogflow. https://cloud.google.com/dialogflow
-	EngineTypeClova      EngineType = "clova"      // naver clova. https://www.ncloud.com/product/aiService/chatbot
+	EngineTypeNone EngineType = ""
+
+	// EngineTypeChatGPT    EngineType = "chatGPT"    // openai chatGPT. https://chat.openai.com/chat
+	// EngineTypeDialogFlow EngineType = "dialogflow" // google dialogflow. https://cloud.google.com/dialogflow
+	// EngineTypeClova      EngineType = "clova"      // naver clova. https://www.ncloud.com/product/aiService/chatbot
+)
+
+type EngineModelTarget string
+
+const (
+	EngineModelTargetNone   EngineModelTarget = ""
+	EngineModelTargetOpenai EngineModelTarget = "openai" // openai. https://chat.openai.com/chat
+	EngineModelTargetGoogle EngineModelTarget = "google"
+	EngineModelTargetNaver  EngineModelTarget = "naver"
 )
 
 type EngineModel string
 
 // list of engine models
 const (
-	EngineModelChatGPTO1Mini         EngineModel = "o1-mini"
-	EngineModelChatGPTO1Preview      EngineModel = "o1-preview"
-	EngineModelChatGPTO1             EngineModel = "o1"
-	EngineModelChatGPTO3Mini         EngineModel = "o3-mini"
-	EngineModelChatGPT4O             EngineModel = "gpt-4o"
-	EngineModelChatGPT4OMini         EngineModel = "gpt-4o-mini"
-	EngineModelChatGPT4Turbo         EngineModel = "gpt-4-turbo"
-	EngineModelChatGPT4VisionPreview EngineModel = "gpt-4-vision-preview"
-	EngineModelChatGPT4              EngineModel = "gpt-4"
-	EngineModelChatGPT3Dot5Turbo     EngineModel = "gpt-3.5-turbo"
+	EngineModelOpenaiO1Mini            EngineModel = "openai.o1-mini"
+	EngineModelOpenaiO1Preview         EngineModel = "openai.o1-preview"
+	EngineModelOpenaiO1                EngineModel = "openai.o1"
+	EngineModelOpenaiO3Mini            EngineModel = "openai.o3-mini"
+	EngineModelOpenaiGPT4O             EngineModel = "openai.gpt-4o"
+	EngineModelOpenaiGPT4OMini         EngineModel = "openai.gpt-4o-mini"
+	EngineModelOpenaiGPT4Turbo         EngineModel = "openai.gpt-4-turbo"
+	EngineModelOpenaiGPT4VisionPreview EngineModel = "openai.gpt-4-vision-preview"
+	EngineModelOpenaiGPT4              EngineModel = "openai.gpt-4"
+	EngineModelOpenaiGPT3Dot5Turbo     EngineModel = "openai.gpt-3.5-turbo"
 )
+
+func GetEngineModelTarget(engineModel EngineModel) EngineModelTarget {
+	mapModelTarget := map[EngineModel]EngineModelTarget{
+		EngineModelOpenaiO1Mini:            EngineModelTargetOpenai,
+		EngineModelOpenaiO1Preview:         EngineModelTargetOpenai,
+		EngineModelOpenaiO1:                EngineModelTargetOpenai,
+		EngineModelOpenaiO3Mini:            EngineModelTargetOpenai,
+		EngineModelOpenaiGPT4O:             EngineModelTargetOpenai,
+		EngineModelOpenaiGPT4OMini:         EngineModelTargetOpenai,
+		EngineModelOpenaiGPT4Turbo:         EngineModelTargetOpenai,
+		EngineModelOpenaiGPT4VisionPreview: EngineModelTargetOpenai,
+		EngineModelOpenaiGPT4:              EngineModelTargetOpenai,
+		EngineModelOpenaiGPT3Dot5Turbo:     EngineModelTargetOpenai,
+	}
+
+	res, ok := mapModelTarget[engineModel]
+	if !ok {
+		return EngineModelTargetNone
+	}
+
+	return res
+}
