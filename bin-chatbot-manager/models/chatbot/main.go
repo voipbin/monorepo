@@ -2,6 +2,7 @@ package chatbot
 
 import (
 	"monorepo/bin-common-handler/models/identity"
+	"strings"
 )
 
 // Chatbot define
@@ -81,4 +82,12 @@ func GetEngineModelTarget(engineModel EngineModel) EngineModelTarget {
 	}
 
 	return res
+}
+
+func GetEngineModelName(engineModel EngineModel) string {
+	tmp := strings.Split(string(engineModel), ".")
+	if len(tmp) < 2 {
+		return ""
+	}
+	return tmp[1]
 }

@@ -7,13 +7,12 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 
-	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/message"
 )
 
 const (
-	defaultModel = chatbot.EngineModelOpenaiGPT4Turbo
+	defaultModel = "gpt-4-turbo"
 )
 
 // OpenaiHandler define
