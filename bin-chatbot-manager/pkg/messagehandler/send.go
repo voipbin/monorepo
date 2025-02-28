@@ -54,6 +54,11 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 	t2 := time.Since(t1)
 	promMessageProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(t2.Milliseconds()))
 
+	if len(tmpMessage.Content) == 0 {
+		// if the messsage is empty, return the message as it is
+		return tmpMessage, nil
+	}
+
 	// create a message for incoming(response)
 	res, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
 	if err != nil {
