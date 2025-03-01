@@ -10,9 +10,20 @@ database resources:
 -   **bin-manager** -- Manages most of **VoIPBin's** database
     resources.
 
-When this project runs via **GitLab CI/CD**, the associated pod and job
+When this project runs via **GitLab CI/CD** or other CI/CD, the associated pod and job
 remain until the next pipeline execution, at which point they are
 automatically removed.
+
+## Database Setup
+
+Before using **Alembic**, you must create the required databases.
+
+Run the following SQL commands:
+
+```sql
+CREATE DATABASE asterisk CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE voipbin CHARACTER SET utf8 COLLATE utf8_general_ci;
+```
 
 ## Initial Setup
 
@@ -37,7 +48,6 @@ cp alembic.ini.sample alembic.ini
 Then, edit `alembic.ini` in each directory to set the correct database
 connection details.
 
-\-\--
 
 ## Adding a Database Change
 
@@ -73,7 +83,6 @@ alembic -c alembic.ini revision -m "customers add column email phone_number addr
 alembic -c alembic.ini revision -m "registrar_trunks create table"
 ```
 
-\-\--
 
 ## Applying Database Migrations
 
@@ -92,8 +101,6 @@ For **asterisk_config**:
 cd asterisk_config
 alembic -c alembic.ini upgrade head
 ```
-
-\-\--
 
 ## Rolling Back Migrations
 
@@ -119,7 +126,6 @@ alembic -c alembic.ini downgrade ae1027a6acf
 Run these commands inside either `bin-manager` or `asterisk_config`,
 depending on which schema you need to roll back.
 
-\-\--
 
 ## Checking Migration Status
 
