@@ -1351,31 +1351,6 @@ components:
         - ChatbotManagerChatbotcallStatusProgressing
         - ChatbotManagerChatbotcallStatusEnd
 
-    ChatbotManagerChatbotcallMessageRole:
-      type: string
-      description: Role of the entity in the conversation.
-      enum:
-        - system
-        - user
-        - assistant
-        - function
-        - tool
-      x-enum-varnames:
-        - ChatbotManagerChatbotcallMessageRoleSystem
-        - ChatbotManagerChatbotcallMessageRoleUser
-        - ChatbotManagerChatbotcallMessageRoleAssistant
-        - ChatbotManagerChatbotcallMessageRoleFunction
-        - ChatbotManagerChatbotcallMessageRoleTool
-
-    ChatbotManagerChatbotcallMessage:
-      type: object
-      properties:
-        role:
-          $ref: '#/components/schemas/ChatbotManagerChatbotcallMessageRole'
-        content:
-          type: string
-          description: Content of the message.
-
     ChatbotManagerChatbotcall:
       type: object
       properties:
@@ -1413,11 +1388,6 @@ components:
         language:
           type: string
           description: Language used during the chatbot call.
-        messages:
-          type: array
-          description: List of messages associated with the chatbot call.
-          items:
-            $ref: '#/components/schemas/ChatbotManagerChatbotcallMessage'
         tm_end:
           type: string
           description: Timestamp when the chatbot call ended.
@@ -3157,8 +3127,6 @@ paths:
   /chatbotmessages:
     $ref: './paths/chatbotmessages/main.yaml'
 
-  /chatbotcalls/{id}/messages:
-    $ref: './paths/chatbotcalls/id_messages.yaml'
   /chatbotcalls/{id}:
     $ref: './paths/chatbotcalls/id.yaml'
   /chatbotcalls:

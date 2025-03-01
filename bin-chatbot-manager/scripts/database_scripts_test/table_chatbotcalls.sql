@@ -19,8 +19,6 @@ create table chatbot_chatbotcalls(
   gender    varchar(255), -- gender
   language  varchar(255), -- language
 
-  messages json,
-
   -- timestamps
   tm_end    datetime(6),  --
   tm_create datetime(6),  --

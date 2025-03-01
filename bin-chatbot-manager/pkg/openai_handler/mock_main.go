@@ -42,36 +42,6 @@ func (m *MockOpenaiHandler) EXPECT() *MockOpenaiHandlerMockRecorder {
 	return m.recorder
 }
 
-// ChatMessage mocks base method.
-func (m *MockOpenaiHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatMessage", ctx, cc, message)
-	ret0, _ := ret[0].(*chatbotcall.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ChatMessage indicates an expected call of ChatMessage.
-func (mr *MockOpenaiHandlerMockRecorder) ChatMessage(ctx, cc, message any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessage", reflect.TypeOf((*MockOpenaiHandler)(nil).ChatMessage), ctx, cc, message)
-}
-
-// ChatNew mocks base method.
-func (m *MockOpenaiHandler) ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatNew", ctx, cc, message)
-	ret0, _ := ret[0].(*chatbotcall.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ChatNew indicates an expected call of ChatNew.
-func (mr *MockOpenaiHandlerMockRecorder) ChatNew(ctx, cc, message any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatNew", reflect.TypeOf((*MockOpenaiHandler)(nil).ChatNew), ctx, cc, message)
-}
-
 // MessageSend mocks base method.
 func (m *MockOpenaiHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error) {
 	m.ctrl.T.Helper()

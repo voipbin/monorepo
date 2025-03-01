@@ -90,7 +90,6 @@ func Test_ServiceStart(t *testing.T) {
 				ConfbridgeID:      uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				Gender:            chatbotcall.GenderFemale,
 				Language:          "en-US",
-				Messages:          []chatbotcall.Message{},
 				Status:            chatbotcall.StatusInitiating,
 			},
 			expectRes: &service.Service{

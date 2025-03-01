@@ -48,8 +48,6 @@ func (h *chatbotcallHandler) Create(
 		Gender:   gender,
 		Language: language,
 
-		Messages: []chatbotcall.Message{},
-
 		Status: chatbotcall.StatusInitiating,
 	}
 	log = log.WithField("chatbotcall_id", id.String())
@@ -193,27 +191,6 @@ func (h *chatbotcallHandler) Gets(ctx context.Context, customerID uuid.UUID, siz
 	res, err := h.db.ChatbotcallGets(ctx, customerID, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get chatbotcalls. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// UpdateChatbotcallMessages updates the chatbotcall's messages
-func (h *chatbotcallHandler) UpdateChatbotcallMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) (*chatbotcall.Chatbotcall, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "UpdateChatbotcallMessages",
-		"chatbot_id": id,
-	})
-
-	if errSet := h.db.ChatbotcallSetMessages(ctx, id, messages); errSet != nil {
-		log.Errorf("Could not set chatbotcall messages. err: %v", errSet)
-		return nil, errSet
-	}
-
-	res, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated chatbotcall info. err: %v", err)
 		return nil, err
 	}
 
