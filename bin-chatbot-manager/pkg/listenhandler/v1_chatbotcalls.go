@@ -172,41 +172,4 @@ func (h *listenHandler) processV1ChatbotcallsIDDelete(ctx context.Context, m *so
 // processV1ChatbotcallsIDMessagesPost handles POST /v1/chatbotcalls/<chatbotcall-id>/messages request
 func (h *listenHandler) processV1ChatbotcallsIDMessagesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	return nil, nil
-	// log := logrus.WithFields(logrus.Fields{
-	// 	"handler": "processV1ChatbotcallsIDMessagesPost",
-	// 	"request": m,
-	// })
-
-	// var req request.V1DataChatbotcallsIDMessagesPost
-	// if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-	// 	log.Errorf("Could not unmarshal the requested data. err: %v", err)
-	// 	return nil, err
-	// }
-
-	// uriItems := strings.Split(m.URI, "/")
-	// if len(uriItems) < 4 {
-	// 	log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
-	// 	return simpleResponse(400), nil
-	// }
-	// id := uuid.FromStringOrNil(uriItems[3])
-
-	// tmp, err := h.chatbotcallHandler.ChatMessageByID(ctx, id, chatbotcall.MessageRole(req.Role), req.Text)
-	// if err != nil {
-	// 	log.Errorf("Could not create chatbotcall message. err: %v", err)
-	// 	return simpleResponse(500), nil
-	// }
-
-	// data, err := json.Marshal(tmp)
-	// if err != nil {
-	// 	log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
-	// 	return simpleResponse(500), nil
-	// }
-
-	// res := &sock.Response{
-	// 	StatusCode: 200,
-	// 	DataType:   "application/json",
-	// 	Data:       data,
-	// }
-
-	// return res, nil
 }
