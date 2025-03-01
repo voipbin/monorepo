@@ -1,4 +1,4 @@
-package chatgpthandler
+package openai_handler
 
 import (
 	"context"
@@ -7,12 +7,13 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/message"
 )
 
 // messageSend send the message to the openai
-func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
+func (h *openaiHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "messageSend",
 		"chatbotcall": cc,
@@ -71,10 +72,10 @@ func (h *chatgptHandler) messageSend(ctx context.Context, cc *chatbotcall.Chatbo
 	return res, nil
 }
 
-func (h *chatgptHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error) {
+func (h *openaiHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "messageSend",
-		"chatbotcall": cc,
+		"func":           "messageSend",
+		"chatbotcall_id": cc.ID,
 	})
 
 	tmpMessages := []openai.ChatCompletionMessage{}
@@ -87,7 +88,7 @@ func (h *chatgptHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbo
 	}
 
 	// create request
-	model := cc.ChatbotEngineModel
+	model := chatbot.GetEngineModelName(cc.ChatbotEngineModel)
 	if model == "" {
 		model = defaultModel
 	}
@@ -95,6 +96,7 @@ func (h *chatgptHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbo
 		Model:    string(model),
 		Messages: tmpMessages,
 	}
+	log = log.WithField("request", req)
 
 	// send the request
 	tmp, err := h.send(ctx, req)
@@ -103,20 +105,18 @@ func (h *chatgptHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbo
 		return nil, errors.Wrap(err, "could not send the request")
 	}
 
-	var res *message.Message
 	if tmp == nil || len(tmp.Choices) == 0 {
 		log.Debugf("Received response with empty choices")
-
-		res = &message.Message{
-			Role:    message.RoleAssistant,
+		res := &message.Message{
+			Role:    message.RoleNone,
 			Content: "",
 		}
-	} else {
-		res = &message.Message{
-			Role:    message.Role(tmp.Choices[0].Message.Role),
-			Content: tmp.Choices[0].Message.Content,
-		}
+		return res, nil
 	}
 
+	res := &message.Message{
+		Role:    message.Role(tmp.Choices[0].Message.Role),
+		Content: tmp.Choices[0].Message.Content,
+	}
 	return res, nil
 }

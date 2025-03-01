@@ -19,8 +19,8 @@ import (
 
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
-	"monorepo/bin-chatbot-manager/pkg/chatgpthandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
+	"monorepo/bin-chatbot-manager/pkg/openai_handler"
 )
 
 func Test_ProcessStart(t *testing.T) {
@@ -61,7 +61,7 @@ func Test_ProcessStart(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := chatgpthandler.NewMockChatgptHandler(mc)
+			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -69,7 +69,7 @@ func Test_ProcessStart(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				chatbotHandler: mockChatbot,
-				chatgptHandler: mockChatgpt,
+				openaiHandler:  mockChatgpt,
 			}
 
 			ctx := context.Background()
@@ -127,7 +127,7 @@ func Test_ProcessEnd(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := chatgpthandler.NewMockChatgptHandler(mc)
+			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -135,7 +135,7 @@ func Test_ProcessEnd(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				chatbotHandler: mockChatbot,
-				chatgptHandler: mockChatgpt,
+				openaiHandler:  mockChatgpt,
 			}
 
 			ctx := context.Background()

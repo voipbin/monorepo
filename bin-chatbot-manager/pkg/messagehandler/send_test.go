@@ -6,8 +6,8 @@ import (
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/message"
 	"monorepo/bin-chatbot-manager/pkg/chatbotcallhandler"
-	"monorepo/bin-chatbot-manager/pkg/chatgpthandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
+	"monorepo/bin-chatbot-manager/pkg/openai_handler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -86,14 +86,14 @@ func Test_sendChatGPT(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockGPT := chatgpthandler.NewMockChatgptHandler(mc)
+			mockGPT := openai_handler.NewMockOpenaiHandler(mc)
 
 			h := &messageHandler{
 				utilHandler:   mockUtil,
 				notifyHandler: mockNotify,
 				db:            mockDB,
 
-				chatgptHandler: mockGPT,
+				openaiHandler: mockGPT,
 			}
 
 			ctx := context.Background()
@@ -101,7 +101,7 @@ func Test_sendChatGPT(t *testing.T) {
 			mockDB.EXPECT().MessageGets(ctx, tt.cc.ID, tt.expectSize, "", tt.expectFilters).Return(tt.responseMessages, nil)
 			mockGPT.EXPECT().MessageSend(ctx, tt.cc, tt.expectMessages).Return(tt.responseMessage, nil)
 
-			res, err := h.sendChatGPT(ctx, tt.cc)
+			res, err := h.sendOpenai(ctx, tt.cc)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -148,7 +148,8 @@ func Test_Send_sendChatGPT(t *testing.T) {
 					ID:         uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
 				},
-				ChatbotEngineType: chatbot.EngineTypeChatGPT,
+				Status:             chatbotcall.StatusProgressing,
+				ChatbotEngineModel: chatbot.EngineModelOpenaiGPT3Dot5Turbo,
 			},
 			responseUUID1: uuid.FromStringOrNil("7734c35e-f2bc-11ef-a0ec-afc67dff1ffc"),
 			responseUUID2: uuid.FromStringOrNil("7786dba8-f2bc-11ef-b9de-4b764cfeef4d"),
@@ -224,7 +225,7 @@ func Test_Send_sendChatGPT(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
-			mockGPT := chatgpthandler.NewMockChatgptHandler(mc)
+			mockGPT := openai_handler.NewMockOpenaiHandler(mc)
 
 			h := &messageHandler{
 				utilHandler:   mockUtil,
@@ -232,7 +233,7 @@ func Test_Send_sendChatGPT(t *testing.T) {
 				db:            mockDB,
 
 				chatbotcallHandler: mockChatbotcall,
-				chatgptHandler:     mockGPT,
+				openaiHandler:      mockGPT,
 			}
 
 			ctx := context.Background()

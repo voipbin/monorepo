@@ -1,4 +1,4 @@
-package chatgpthandler
+package openai_handler
 
 // func Test_Create(t *testing.T) {
 

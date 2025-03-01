@@ -19,6 +19,10 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 		return nil, errors.Wrapf(err, "could not get the chatbotcall correctly")
 	}
 
+	if cc.Status != chatbotcall.StatusProgressing {
+		return nil, errors.New("chatbotcall is not in progressing status")
+	}
+
 	// create a message for outgoing(request)
 	_, err = h.Create(ctx, cc.CustomerID, chatbotcallID, message.DirectionOutgoing, role, content)
 	if err != nil {
@@ -27,18 +31,27 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 
 	t1 := time.Now()
 	var tmpMessage *message.Message
-	switch cc.ChatbotEngineType {
-	case chatbot.EngineTypeChatGPT:
-		tmpMessage, err = h.sendChatGPT(ctx, cc)
+
+	modelTarget := chatbot.GetEngineModelTarget(cc.ChatbotEngineModel)
+	switch modelTarget {
+	case chatbot.EngineModelTargetOpenai:
+		tmpMessage, err = h.sendOpenai(ctx, cc)
 
 	default:
-		err = fmt.Errorf("unsupported chatbot engine type: %s", cc.ChatbotEngineType)
+		err = fmt.Errorf("unsupported chatbot engine model: %s", cc.ChatbotEngineModel)
+
 	}
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message correctly")
 	}
+
 	t2 := time.Since(t1)
 	promMessageProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(t2.Milliseconds()))
+
+	if len(tmpMessage.Content) == 0 {
+		// if the messsage is empty, return the message as it is
+		return tmpMessage, nil
+	}
 
 	// create a message for incoming(response)
 	res, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
@@ -49,7 +62,7 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 	return res, nil
 }
 
-func (h *messageHandler) sendChatGPT(ctx context.Context, cc *chatbotcall.Chatbotcall) (*message.Message, error) {
+func (h *messageHandler) sendOpenai(ctx context.Context, cc *chatbotcall.Chatbotcall) (*message.Message, error) {
 	filters := map[string]string{
 		"deleted": "false",
 	}
@@ -61,7 +74,7 @@ func (h *messageHandler) sendChatGPT(ctx context.Context, cc *chatbotcall.Chatbo
 	}
 
 	slices.Reverse(messages)
-	res, err := h.chatgptHandler.MessageSend(ctx, cc, messages)
+	res, err := h.openaiHandler.MessageSend(ctx, cc, messages)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message correctly")
 	}
