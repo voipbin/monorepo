@@ -16,7 +16,7 @@ import (
 )
 
 // ChatMessage sends/receives the messages from/to a chatbot
-func (h *chatbotcallHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, role chatbotcall.MessageRole, text string) error {
+func (h *chatbotcallHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, text string) error {
 	switch cc.ReferenceType {
 	case chatbotcall.ReferenceTypeCall:
 		if errChat := h.chatMessageReferenceTypeCall(ctx, cc, text); errChat != nil {
