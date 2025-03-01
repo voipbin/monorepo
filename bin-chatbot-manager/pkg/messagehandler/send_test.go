@@ -148,6 +148,7 @@ func Test_Send_sendChatGPT(t *testing.T) {
 					ID:         uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
 				},
+				Status:             chatbotcall.StatusProgressing,
 				ChatbotEngineModel: chatbot.EngineModelOpenaiGPT3Dot5Turbo,
 			},
 			responseUUID1: uuid.FromStringOrNil("7734c35e-f2bc-11ef-a0ec-afc67dff1ffc"),

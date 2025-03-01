@@ -115,9 +115,10 @@ func Test_ChatInit(t *testing.T) {
 					ID:         uuid.FromStringOrNil("9bb7079c-f556-11ed-afbb-0f109793414b"),
 					CustomerID: uuid.FromStringOrNil("123e4567-e89b-12d3-a456-426614174000"),
 				},
-				ReferenceID: uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
-				Gender:      chatbotcall.GenderNuetral,
-				Language:    "en-US",
+				ReferenceType: chatbotcall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
+				Gender:        chatbotcall.GenderNuetral,
+				Language:      "en-US",
 			},
 		},
 	}
@@ -280,8 +281,9 @@ func Test_chatMessageHandle_actions(t *testing.T) {
 		{
 			name: "Action_Message",
 			chatbotcall: &chatbotcall.Chatbotcall{
-				ActiveflowID: uuid.FromStringOrNil("456789ab-1234-6543-3456-89abcdef0124"),
-				ConfbridgeID: uuid.FromStringOrNil("11223344-5566-7788-9900-aabbccddeef2"),
+				ActiveflowID:  uuid.FromStringOrNil("456789ab-1234-6543-3456-89abcdef0124"),
+				ConfbridgeID:  uuid.FromStringOrNil("11223344-5566-7788-9900-aabbccddeef2"),
+				ReferenceType: chatbotcall.ReferenceTypeCall,
 			},
 			message: &message.Message{
 				Content: `[{"type": "some_action"}]`,
@@ -336,9 +338,10 @@ func Test_chatMessageHandle_text(t *testing.T) {
 		{
 			name: "Text_Message",
 			chatbotcall: &chatbotcall.Chatbotcall{
-				ReferenceID: uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
-				Gender:      chatbotcall.GenderNuetral,
-				Language:    "ja-JP",
+				ReferenceType: chatbotcall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
+				Gender:        chatbotcall.GenderNuetral,
+				Language:      "ja-JP",
 			},
 			message: &message.Message{
 				Content: "Hello",

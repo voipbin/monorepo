@@ -64,7 +64,8 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 				},
-				ConfbridgeID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				ReferenceType: chatbotcall.ReferenceTypeCall,
+				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 			},
 			responseMessage: &message.Message{
 				Role:    "assistant",
@@ -98,7 +99,8 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 				},
-				ConfbridgeID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				ReferenceType: chatbotcall.ReferenceTypeCall,
+				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 			},
 		},
 	}
@@ -163,7 +165,6 @@ func Test_startReferenceTypeNone(t *testing.T) {
 		responseMessage         *message.Message
 
 		expectChatbotcall *chatbotcall.Chatbotcall
-		expectMessage     *message.Message
 		expectRes         *chatbotcall.Chatbotcall
 	}{
 		{
@@ -200,10 +201,6 @@ func Test_startReferenceTypeNone(t *testing.T) {
 				Language:          "en-US",
 				Messages:          []chatbotcall.Message{},
 				Status:            chatbotcall.StatusInitiating,
-			},
-			expectMessage: &message.Message{
-				Role:    message.RoleSystem,
-				Content: "hello, this is init prompt message.",
 			},
 			expectRes: &chatbotcall.Chatbotcall{
 				Identity: identity.Identity{
@@ -245,7 +242,10 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
 
 			mockReq.EXPECT().ChatbotV1MessageSend(ctx, tt.responseChatbotcall.ID, message.RoleSystem, tt.chatbot.InitPrompt, 30000).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.responseChatbotcall.ReferenceID, tt.responseMessage.Content, string(tt.responseChatbotcall.Gender), tt.responseChatbotcall.Language, 10000).Return(nil)
+
+			mockDB.EXPECT().ChatbotcallUpdateStatusProgressing(ctx, tt.responseChatbotcall.ID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseChatbotcall.ID).Return(tt.responseChatbotcall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallProgressing, tt.responseChatbotcall)
 
 			res, err := h.startReferenceTypeNone(ctx, tt.chatbot, tt.gender, tt.language)
 			if err != nil {

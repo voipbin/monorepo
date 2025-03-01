@@ -80,16 +80,22 @@ func (h *chatbotcallHandler) startReferenceTypeNone(ctx context.Context, c *chat
 		"func": "startReferenceTypeNone",
 	})
 
-	res, err := h.Create(ctx, c, uuid.Nil, chatbotcall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language)
+	tmp, err := h.Create(ctx, c, uuid.Nil, chatbotcall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create chatbotcall.")
 	}
-	log.WithField("chatbotcall", res).Debugf("Created chatbotcall. chatbotcall_id: %s", res.ID)
+	log.WithField("chatbotcall", tmp).Debugf("Created chatbotcall. chatbotcall_id: %s", tmp.ID)
 
-	if errInit := h.chatInit(ctx, c, res); errInit != nil {
+	if errInit := h.chatInit(ctx, c, tmp); errInit != nil {
 		log.Errorf("Could not initialize chat. err: %v", errInit)
 		return nil, errors.Wrap(errInit, "Could not initialize chat")
+	}
+
+	res, err := h.UpdateStatusStart(ctx, tmp.ID, uuid.Nil)
+	if err != nil {
+		log.Errorf("Could not update the status to start. err: %v", err)
+		return nil, errors.Wrapf(err, "Could not update the status to start. chatbotcall_id: %s", tmp.ID)
 	}
 
 	return res, nil

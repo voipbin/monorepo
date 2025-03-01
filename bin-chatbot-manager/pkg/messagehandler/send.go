@@ -19,6 +19,10 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 		return nil, errors.Wrapf(err, "could not get the chatbotcall correctly")
 	}
 
+	if cc.Status != chatbotcall.StatusProgressing {
+		return nil, errors.New("chatbotcall is not in progressing status")
+	}
+
 	// create a message for outgoing(request)
 	_, err = h.Create(ctx, cc.CustomerID, chatbotcallID, message.DirectionOutgoing, role, content)
 	if err != nil {

@@ -129,6 +129,26 @@ func (h *chatbotcallHandler) chatMessageHandle(ctx context.Context, cc *chatbotc
 		return nil
 	}
 
+	switch cc.ReferenceType {
+	case chatbotcall.ReferenceTypeCall:
+		return h.chatMessageHandleReferenceTypeCall(ctx, cc, m)
+
+	case chatbotcall.ReferenceTypeNone:
+		// nothing todo
+		return nil
+
+	default:
+		return fmt.Errorf("unsupported reference type. reference_type: %s", cc.ReferenceType)
+
+	}
+}
+
+func (h *chatbotcallHandler) chatMessageHandleReferenceTypeCall(ctx context.Context, cc *chatbotcall.Chatbotcall, m *message.Message) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "chatMessageHandleReferenceTypeCall",
+		"chatbotcall_id": cc.ID,
+	})
+
 	// check the response message
 	tmpActions := []fmaction.Action{}
 	errUnmarshal := json.Unmarshal([]byte(m.Content), &tmpActions)
