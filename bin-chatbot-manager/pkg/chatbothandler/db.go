@@ -11,7 +11,7 @@ import (
 )
 
 // Create creates a new chatbot record.
-func (h *chatbotHandler) Create(
+func (h *chatbotHandler) dbCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	name string,
@@ -122,7 +122,7 @@ func (h *chatbotHandler) Delete(ctx context.Context, id uuid.UUID) (*chatbot.Cha
 }
 
 // Update updates the chatbot info
-func (h *chatbotHandler) Update(
+func (h *chatbotHandler) dbUpdate(
 	ctx context.Context,
 	id uuid.UUID,
 	name string,

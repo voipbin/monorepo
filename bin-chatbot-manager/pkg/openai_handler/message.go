@@ -96,6 +96,7 @@ func (h *openaiHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbot
 		Model:    string(model),
 		Messages: tmpMessages,
 	}
+	log = log.WithField("request", req)
 
 	// send the request
 	tmp, err := h.send(ctx, req)
