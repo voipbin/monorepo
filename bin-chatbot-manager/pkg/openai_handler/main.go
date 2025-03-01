@@ -1,39 +1,38 @@
-package chatgpthandler
+package openai_handler
 
-//go:generate mockgen -package chatgpthandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package openai_handler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
 
 	"github.com/sashabaranov/go-openai"
 
-	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/message"
 )
 
 const (
-	defaultModel = chatbot.EngineModelChatGPT4Turbo
+	defaultModel = "gpt-4-turbo"
 )
 
-// ChatgptHandler define
-type ChatgptHandler interface {
+// OpenaiHandler define
+type OpenaiHandler interface {
 	ChatNew(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error)
 	ChatMessage(ctx context.Context, cc *chatbotcall.Chatbotcall, message *chatbotcall.Message) (*chatbotcall.Message, error)
 
 	MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error)
 }
 
-// chatgptHandler define
-type chatgptHandler struct {
+// openaiHandler define
+type openaiHandler struct {
 	client *openai.Client
 }
 
-// NewChatgptHandler define
-func NewChatgptHandler(apiKey string) ChatgptHandler {
+// NewOpenaiHandler define
+func NewOpenaiHandler(apiKey string) OpenaiHandler {
 	client := openai.NewClient(apiKey)
 
-	return &chatgptHandler{
+	return &openaiHandler{
 		client: client,
 	}
 }

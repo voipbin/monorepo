@@ -114,7 +114,7 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 				URI:      "/v1/chatbots",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"chatGPT", "engine_model": "gpt-4", "init_prompt": "test init prompt", "credential_base64": "BASE64String", "credential_project_id": "218906b8-ecdb-11ef-9ddd-7b5d6f0d41e2"}`),
+				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"", "engine_model": "openai.gpt-4", "init_prompt": "test init prompt", "credential_base64": "BASE64String", "credential_project_id": "218906b8-ecdb-11ef-9ddd-7b5d6f0d41e2"}`),
 			},
 
 			responseChatbot: &chatbot.Chatbot{
@@ -126,8 +126,8 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 			expectCustomerID:          uuid.FromStringOrNil("58e7502c-a770-11ed-9b86-7fabe2dba847"),
 			expectName:                "test name",
 			expectDetail:              "test detail",
-			expectEngineType:          chatbot.EngineTypeChatGPT,
-			expectEngineModel:         chatbot.EngineModelChatGPT4,
+			expectEngineType:          chatbot.EngineTypeNone,
+			expectEngineModel:         chatbot.EngineModelOpenaiGPT4,
 			expectInitPrompt:          "test init prompt",
 			expectCredentialBase64:    "BASE64String",
 			expectCredentialProjectID: "218906b8-ecdb-11ef-9ddd-7b5d6f0d41e2",
@@ -309,7 +309,7 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 				URI:      "/v1/chatbots/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"new name","detail":"new detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"new prompt","credential_base64":"BASE64String","credential_project_id":"05aeb55a-ecdb-11ef-a714-3b889166a428"}`),
+				Data:     []byte(`{"name":"new name","detail":"new detail","engine_type":"","engine_model":"openai.gpt-4","init_prompt":"new prompt","credential_base64":"BASE64String","credential_project_id":"05aeb55a-ecdb-11ef-a714-3b889166a428"}`),
 			},
 
 			responseChatbot: &chatbot.Chatbot{
@@ -321,8 +321,8 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 			expectID:                  uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
 			expectName:                "new name",
 			expectDetail:              "new detail",
-			expectEngineType:          chatbot.EngineTypeChatGPT,
-			expectEngineModel:         chatbot.EngineModelChatGPT4,
+			expectEngineType:          chatbot.EngineTypeNone,
+			expectEngineModel:         chatbot.EngineModelOpenaiGPT4,
 			expectInitPrompt:          "new prompt",
 			expectCredentialBase64:    "BASE64String",
 			expectCredentialProjectID: "05aeb55a-ecdb-11ef-a714-3b889166a428",
