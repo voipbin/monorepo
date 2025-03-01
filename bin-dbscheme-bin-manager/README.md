@@ -1,51 +1,143 @@
 # dbscheme-bin-manager
 
-Database scheme manage project for bin-manager
+Database schema management for **VoIPBin**.
 
-After run this project using the gitlab-ci/cd, the used pod and job will be remained. But it will be destroyed once this poject runs in pipelie again.
+This project is divided into two directories, each managing its own
+database resources:
 
-# Add alembic change
-Add the database change.
+-   **asterisk_config** -- Manages Asterisk-related database
+    schema.
+-   **bin-manager** -- Manages most of **VoIPBin's** database
+    resources.
 
+When this project runs via **GitLab CI/CD** or other CI/CD, the associated pod and job
+remain until the next pipeline execution, at which point they are
+automatically removed.
+
+## Database Setup
+
+Before using **Alembic**, you must create the required databases.
+
+Run the following SQL commands:
+
+```sql
+CREATE DATABASE asterisk CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE voipbin CHARACTER SET utf8 COLLATE utf8_general_ci;
 ```
-$ cd bin-manager
-$ alembic -c alembic.ini revision -m "<your change title>"
+
+## Initial Setup
+
+Each directory contains an **alembic.ini.sample** file. Before
+running Alembic commands, you **must** copy it to `alembic.ini` and
+update the database connection settings.
+
+For **bin-manager**:
+
+``` sh
+cd bin-manager
+cp alembic.ini.sample alembic.ini
 ```
 
-Title rule.
-```
-<table name>_<verb: create/remove/add/update>_<type: column/table>_<items: ...>
+For **asterisk_config**:
 
-ex)
+``` sh
+cd asterisk_config
+cp alembic.ini.sample alembic.ini
+```
+
+Then, edit `alembic.ini` in each directory to set the correct database
+connection details.
+
+
+## Adding a Database Change
+
+To create a new database migration, navigate to the appropriate
+directory.
+
+For **bin-manager**:
+
+``` sh
+cd bin-manager
+alembic -c alembic.ini revision -m "<your change title>"
+```
+
+For **asterisk_config**:
+
+``` sh
+cd asterisk_config
+alembic -c alembic.ini revision -m "<your change title>"
+```
+
+\### Naming Convention for Migration Titles
+
+Follow this format for migration messages:
+
+``` text
+<table_name>_<action: create/remove/add/update>_<type: column/table>_<items>
+```
+
+\#### Examples:
+
+``` sh
 alembic -c alembic.ini revision -m "customers add column email phone_number address"
 alembic -c alembic.ini revision -m "registrar_trunks create table"
 ```
 
 
-# Run
-Need a connection to the VPN.
+## Applying Database Migrations
 
-```
-$ cd bin-manager
-$ alembic -c alembic.ini upgrade head
-```
+Ensure you are connected to the **VPN** before running migrations.
 
-# Rollback
-Rollback the database change.
+For **bin-manager**:
 
-```
-$ cd bin-manager
+``` sh
+cd bin-manager
+alembic -c alembic.ini upgrade head
 ```
 
-Run one of the below.
-```
-$ alembic -c alembic.ini downgrade -1
-$ alembic -c alembic.ini downgrade ae1027a6acf
+For **asterisk_config**:
+
+``` sh
+cd asterisk_config
+alembic -c alembic.ini upgrade head
 ```
 
-# Status check
+## Rolling Back Migrations
+
+To revert the last applied migration:
+
+``` sh
+alembic -c alembic.ini downgrade -1
 ```
-$ alembic current --verbose
+
+To revert to a specific migration (replace `<revision_id>` with the
+actual ID):
+
+``` sh
+alembic -c alembic.ini downgrade <revision_id>
+```
+
+Example:
+
+``` sh
+alembic -c alembic.ini downgrade ae1027a6acf
+```
+
+Run these commands inside either `bin-manager` or `asterisk_config`,
+depending on which schema you need to roll back.
+
+
+## Checking Migration Status
+
+To check the current applied migration:
+
+``` sh
+alembic current --verbose
+```
+
+Example output:
+
+``` text
 INFO  [alembic.runtime.migration] Context impl MySQLImpl.
 INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
 Current revision(s) for mysql://bin-manager:XXXXX@10.126.80.5/bin_manager:
@@ -60,9 +152,20 @@ Path: /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/bin-manager/m
     Create Date: 2021-02-23 14:17:17.716292
 ```
 
-# history check
+Run this inside `bin-manager` or `asterisk_config` to check the status
+for each database.
+
+## Viewing Migration History
+
+To list all migrations:
+
+``` sh
+alembic history --verbose
 ```
-alembic history --verbose                                                                   7s
+
+Example output:
+
+``` text
 Rev: 5d2aab77fd9d (head)
 Parent: c939ba877f8f
 Path: /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/bin-manager/main/versions/5d2aab77fd9d_add_provider_info.py
@@ -75,15 +178,24 @@ Path: /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/bin-manager/m
 ...
 ```
 
-# databases
-## asterisk_config
-Asterisk database.
-Fixed alembic table name.
-alembic_version_config -> alembic_version
+Run this inside `bin-manager` or `asterisk_config` to check migration
+history for each database.
 
-Get newest version of asterisk db scheme.
-```
-$ cd /home/pchero/gittmp/asterisk
-$ git pull
-$ cp /home/pchero/gittmp/asterisk/contrib/ast-db-manage/config/versions/* /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/asterisk_config/config/versions
+## Database Details
+
+**Asterisk Configuration (asterisk_config)** 
+- Manages **Asterisk-related** database schema. 
+- Uses a **fixed Alembic table name**: `alembic_version_config → alembic_version`
+
+**VoIPBin Database (bin-manager)**
+- Manages most of **VoIPBin's** database resources, excluding Asterisk-related data.
+
+## Updating Asterisk Database Schema
+
+To fetch the latest Asterisk DB schema:
+
+``` sh
+cd /home/pchero/gittmp/asterisk
+git pull
+cp /home/pchero/gittmp/asterisk/contrib/ast-db-manage/config/versions/* /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/asterisk_config/config/versions
 ```
