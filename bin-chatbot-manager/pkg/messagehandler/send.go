@@ -41,16 +41,6 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 		return nil, errors.Wrapf(err, "could not send the message correctly")
 	}
 
-	// switch cc.ChatbotEngineType {
-	// case chatbot.EngineTypeChatGPT:
-	// 	tmpMessage, err = h.sendChatGPT(ctx, cc)
-
-	// default:
-	// 	err = fmt.Errorf("unsupported chatbot engine type: %s", cc.ChatbotEngineType)
-	// }
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "could not send the message correctly")
-	// }
 	t2 := time.Since(t1)
 	promMessageProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(t2.Milliseconds()))
 

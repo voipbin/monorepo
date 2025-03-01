@@ -31,10 +31,6 @@ type EngineType string
 // list of engine types
 const (
 	EngineTypeNone EngineType = ""
-
-	// EngineTypeChatGPT    EngineType = "chatGPT"    // openai chatGPT. https://chat.openai.com/chat
-	// EngineTypeDialogFlow EngineType = "dialogflow" // google dialogflow. https://cloud.google.com/dialogflow
-	// EngineTypeClova      EngineType = "clova"      // naver clova. https://www.ncloud.com/product/aiService/chatbot
 )
 
 type EngineModelTarget string
@@ -42,8 +38,7 @@ type EngineModelTarget string
 const (
 	EngineModelTargetNone   EngineModelTarget = ""
 	EngineModelTargetOpenai EngineModelTarget = "openai" // openai. https://chat.openai.com/chat
-	EngineModelTargetGoogle EngineModelTarget = "google"
-	EngineModelTargetNaver  EngineModelTarget = "naver"
+	EngineModelTargetGoogle EngineModelTarget = "google" // google sdk use
 )
 
 type EngineModel string
