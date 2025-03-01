@@ -19,8 +19,8 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 		return nil, errors.Wrapf(err, "could not get the chatbotcall correctly")
 	}
 
-	if cc.Status != chatbotcall.StatusProgressing {
-		return nil, errors.New("chatbotcall is not in progressing status")
+	if cc.Status == chatbotcall.StatusEnd {
+		return nil, errors.New("chatbotcall is already ended")
 	}
 
 	// create a message for outgoing(request)

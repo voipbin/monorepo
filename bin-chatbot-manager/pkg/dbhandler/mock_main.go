@@ -204,20 +204,6 @@ func (mr *MockDBHandlerMockRecorder) ChatbotcallGets(ctx, customerID, size, toke
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGets", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallGets), ctx, customerID, size, token, filters)
 }
 
-// ChatbotcallSetMessages mocks base method.
-func (m *MockDBHandler) ChatbotcallSetMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallSetMessages", ctx, id, messages)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ChatbotcallSetMessages indicates an expected call of ChatbotcallSetMessages.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallSetMessages(ctx, id, messages any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallSetMessages", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallSetMessages), ctx, id, messages)
-}
-
 // ChatbotcallUpdateStatusEnd mocks base method.
 func (m *MockDBHandler) ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()

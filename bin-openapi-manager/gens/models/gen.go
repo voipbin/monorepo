@@ -263,15 +263,6 @@ const (
 	ChatbotManagerChatbotcallGenderNeutral ChatbotManagerChatbotcallGender = "neutral"
 )
 
-// Defines values for ChatbotManagerChatbotcallMessageRole.
-const (
-	ChatbotManagerChatbotcallMessageRoleAssistant ChatbotManagerChatbotcallMessageRole = "assistant"
-	ChatbotManagerChatbotcallMessageRoleFunction  ChatbotManagerChatbotcallMessageRole = "function"
-	ChatbotManagerChatbotcallMessageRoleSystem    ChatbotManagerChatbotcallMessageRole = "system"
-	ChatbotManagerChatbotcallMessageRoleTool      ChatbotManagerChatbotcallMessageRole = "tool"
-	ChatbotManagerChatbotcallMessageRoleUser      ChatbotManagerChatbotcallMessageRole = "user"
-)
-
 // Defines values for ChatbotManagerChatbotcallReferenceType.
 const (
 	ChatbotManagerChatbotcallReferenceTypeCall ChatbotManagerChatbotcallReferenceType = "call"
@@ -283,6 +274,21 @@ const (
 	ChatbotManagerChatbotcallStatusEnd         ChatbotManagerChatbotcallStatus = "end"
 	ChatbotManagerChatbotcallStatusInitiating  ChatbotManagerChatbotcallStatus = "initiating"
 	ChatbotManagerChatbotcallStatusProgressing ChatbotManagerChatbotcallStatus = "progressing"
+)
+
+// Defines values for ChatbotManagerMessageDirection.
+const (
+	ChatbotManagerMessageDirectionIncoming ChatbotManagerMessageDirection = "incoming"
+	ChatbotManagerMessageDirectionOutgoing ChatbotManagerMessageDirection = "outgoing"
+)
+
+// Defines values for ChatbotManagerMessageRole.
+const (
+	ChatbotManagerMessageRoleAssistant ChatbotManagerMessageRole = "assistant"
+	ChatbotManagerMessageRoleFunction  ChatbotManagerMessageRole = "function"
+	ChatbotManagerMessageRoleSystem    ChatbotManagerMessageRole = "system"
+	ChatbotManagerMessageRoleTool      ChatbotManagerMessageRole = "tool"
+	ChatbotManagerMessageRoleUser      ChatbotManagerMessageRole = "user"
 )
 
 // Defines values for CommonAddressType.
@@ -1347,9 +1353,6 @@ type ChatbotManagerChatbotcall struct {
 	// Language Language used during the chatbot call.
 	Language *string `json:"language,omitempty"`
 
-	// Messages List of messages associated with the chatbot call.
-	Messages *[]ChatbotManagerChatbotcallMessage `json:"messages,omitempty"`
-
 	// ReferenceId Unique identifier for the reference.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
@@ -1378,23 +1381,41 @@ type ChatbotManagerChatbotcall struct {
 // ChatbotManagerChatbotcallGender Gender associated with the chatbot call.
 type ChatbotManagerChatbotcallGender string
 
-// ChatbotManagerChatbotcallMessage defines model for ChatbotManagerChatbotcallMessage.
-type ChatbotManagerChatbotcallMessage struct {
-	// Content Content of the message.
-	Content *string `json:"content,omitempty"`
-
-	// Role Role of the entity in the conversation.
-	Role *ChatbotManagerChatbotcallMessageRole `json:"role,omitempty"`
-}
-
-// ChatbotManagerChatbotcallMessageRole Role of the entity in the conversation.
-type ChatbotManagerChatbotcallMessageRole string
-
 // ChatbotManagerChatbotcallReferenceType Type of reference associated with the chatbot call.
 type ChatbotManagerChatbotcallReferenceType string
 
 // ChatbotManagerChatbotcallStatus Status of the chatbot call.
 type ChatbotManagerChatbotcallStatus string
+
+// ChatbotManagerMessage defines model for ChatbotManagerMessage.
+type ChatbotManagerMessage struct {
+	// ChatbotcallId Unique identifier for the associated chatbot call.
+	ChatbotcallId *string `json:"chatbotcall_id,omitempty"`
+
+	// Content Content of the message.
+	Content *string `json:"content,omitempty"`
+
+	// Direction Direction of the message.
+	Direction *ChatbotManagerMessageDirection `json:"direction,omitempty"`
+
+	// Id Unique identifier for the message.
+	Id *string `json:"id,omitempty"`
+
+	// Role Role of the entity in the conversation.
+	Role *ChatbotManagerMessageRole `json:"role,omitempty"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+}
+
+// ChatbotManagerMessageDirection Direction of the message.
+type ChatbotManagerMessageDirection string
+
+// ChatbotManagerMessageRole Role of the entity in the conversation.
+type ChatbotManagerMessageRole string
 
 // CommonAddress Contains source or destination detail info.
 type CommonAddress struct {
@@ -2803,11 +2824,25 @@ type PostChatbotcallsJSONBody struct {
 	ReferenceType ChatbotManagerChatbotcallReferenceType `json:"reference_type"`
 }
 
-// PostChatbotcallsIdMessagesJSONBody defines parameters for PostChatbotcallsIdMessages.
-type PostChatbotcallsIdMessagesJSONBody struct {
+// GetChatbotmessagesParams defines parameters for GetChatbotmessages.
+type GetChatbotmessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ChatbotcallId The chatbotcall id.
+	ChatbotcallId string `form:"chatbotcall_id" json:"chatbotcall_id"`
+}
+
+// PostChatbotmessagesJSONBody defines parameters for PostChatbotmessages.
+type PostChatbotmessagesJSONBody struct {
+	ChatbotcallId string `json:"chatbotcall_id"`
+	Content       string `json:"content"`
+
 	// Role Role of the entity in the conversation.
-	Role ChatbotManagerChatbotcallMessageRole `json:"role"`
-	Text string                               `json:"text"`
+	Role ChatbotManagerMessageRole `json:"role"`
 }
 
 // GetChatbotsParams defines parameters for GetChatbots.
@@ -3959,8 +3994,8 @@ type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
 // PostChatbotcallsJSONRequestBody defines body for PostChatbotcalls for application/json ContentType.
 type PostChatbotcallsJSONRequestBody PostChatbotcallsJSONBody
 
-// PostChatbotcallsIdMessagesJSONRequestBody defines body for PostChatbotcallsIdMessages for application/json ContentType.
-type PostChatbotcallsIdMessagesJSONRequestBody PostChatbotcallsIdMessagesJSONBody
+// PostChatbotmessagesJSONRequestBody defines body for PostChatbotmessages for application/json ContentType.
+type PostChatbotmessagesJSONRequestBody PostChatbotmessagesJSONBody
 
 // PostChatbotsJSONRequestBody defines body for PostChatbots for application/json ContentType.
 type PostChatbotsJSONRequestBody PostChatbotsJSONBody

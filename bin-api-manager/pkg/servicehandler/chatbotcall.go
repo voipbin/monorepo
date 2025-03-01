@@ -174,33 +174,3 @@ func (h *serviceHandler) ChatbotcallDelete(ctx context.Context, a *amagent.Agent
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
-
-// ChatbotcallSendMessage sends the message.
-func (h *serviceHandler) ChatbotcallSendMessage(ctx context.Context, a *amagent.Agent, id uuid.UUID, role cbchatbotcall.MessageRole, text string) (*cbchatbotcall.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "ChatbotcallSendMessage",
-		"agent": a,
-	})
-	log.Debug("Send a new message.")
-
-	// get chatbotcall
-	c, err := h.chatbotcallGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get chat info from the chatbot manager. err: %v", err)
-		return nil, fmt.Errorf("could not find chatbotcall info. err: %v", err)
-	}
-
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	tmp, err := h.reqHandler.ChatbotV1ChatbotcallSendMessage(ctx, id, role, text, 30000)
-	if err != nil {
-		log.Errorf("Could not delete the chatbotcall. err: %v", err)
-		return nil, err
-	}
-
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}

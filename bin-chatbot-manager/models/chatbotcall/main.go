@@ -27,8 +27,6 @@ type Chatbotcall struct {
 	Gender   Gender `json:"gender,omitempty"`
 	Language string `json:"language,omitempty"`
 
-	Messages []Message `json:"messages,omitempty"`
-
 	TMEnd    string `json:"tm_end,omitempty"`
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`

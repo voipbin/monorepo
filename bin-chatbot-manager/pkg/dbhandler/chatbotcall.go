@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -34,8 +33,6 @@ const (
 		gender,
 		language,
 
-		messages,
-
 		tm_end,
 		tm_create,
 		tm_update,
@@ -48,7 +45,6 @@ const (
 
 // chatbotcallGetFromRow gets the chatbotcall from the row.
 func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall, error) {
-	var messages sql.NullString
 
 	res := &chatbotcall.Chatbotcall{}
 	if err := row.Scan(
@@ -71,24 +67,12 @@ func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall
 		&res.Gender,
 		&res.Language,
 
-		&messages,
-
 		&res.TMEnd,
 		&res.TMCreate,
 		&res.TMUpdate,
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. chatbotcallGetFromRow. err: %v", err)
-	}
-
-	// messages
-	if messages.Valid {
-		if err := json.Unmarshal([]byte(messages.String), &res.Messages); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the chained_call_ids. callGetFromRow. err: %v", err)
-		}
-	}
-	if res.Messages == nil {
-		res.Messages = []chatbotcall.Message{}
 	}
 
 	return res, nil
@@ -115,9 +99,7 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 
 		gender,
 		language,
-
-		messages,
-
+ 
 		tm_end,
 		tm_create,
 		tm_update,
@@ -129,20 +111,11 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		?, ?,
 		?,
 		?, ?,
-		?,
-		?, ?, ?, ?
+ 		?, ?, ?, ?
 		)
 	`
 
-	if cb.Messages == nil {
-		cb.Messages = []chatbotcall.Message{}
-	}
-	tmpMessages, err := json.Marshal(cb.Messages)
-	if err != nil {
-		return fmt.Errorf("could not marshal calls. ChatbotcallCreate. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q,
+	_, err := h.db.Exec(q,
 		cb.ID.Bytes(),
 		cb.CustomerID.Bytes(),
 
@@ -161,8 +134,6 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 
 		cb.Gender,
 		cb.Language,
-
-		tmpMessages,
 
 		DefaultTimeStamp,
 		h.utilHandler.TimeGetCurTime(),
@@ -436,33 +407,4 @@ func (h *handler) ChatbotcallGets(ctx context.Context, customerID uuid.UUID, siz
 	}
 
 	return res, nil
-}
-
-// ChatbotcallSetMessages sets the chatbotcall's messages
-func (h *handler) ChatbotcallSetMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) error {
-
-	//prepare
-	q := `
-	update chatbot_chatbotcalls set
-		messages = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpMessages, err := json.Marshal(messages)
-	if err != nil {
-		return fmt.Errorf("could not marshal calls. ChatbotcallSetMessages. err: %v", err)
-	}
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err = h.db.Exec(q, tmpMessages, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ChatbotcallSetMessages. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.chatbotcallUpdateToCache(ctx, id)
-
-	return nil
 }

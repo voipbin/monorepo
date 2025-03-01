@@ -33,7 +33,6 @@ type DBHandler interface {
 	ChatbotcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbotcall.Chatbotcall, error)
 	ChatbotcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
 	ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error
-	ChatbotcallSetMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) error
 
 	MessageCreate(ctx context.Context, c *message.Message) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
