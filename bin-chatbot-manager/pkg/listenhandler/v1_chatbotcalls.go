@@ -168,8 +168,3 @@ func (h *listenHandler) processV1ChatbotcallsIDDelete(ctx context.Context, m *so
 
 	return res, nil
 }
-
-// processV1ChatbotcallsIDMessagesPost handles POST /v1/chatbotcalls/<chatbotcall-id>/messages request
-func (h *listenHandler) processV1ChatbotcallsIDMessagesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	return nil, nil
-}

@@ -124,36 +124,3 @@ func (r *requestHandler) ChatbotV1ChatbotcallDelete(ctx context.Context, chatbot
 
 	return &res, nil
 }
-
-func (r *requestHandler) ChatbotV1ChatbotcallSendMessage(ctx context.Context, chatbotcallID uuid.UUID, role cbchatbotcall.MessageRole, text string, timeout int) (*cbchatbotcall.Chatbotcall, error) {
-	uri := fmt.Sprintf("/v1/chatbotcalls/%s/messages", chatbotcallID)
-
-	data := &cbrequest.V1DataChatbotcallsIDMessagesPost{
-		Role: role,
-		Text: text,
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPost, "chatbot/chatbotcalls/<chatbotcall-id>/messages", timeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var res cbchatbotcall.Chatbotcall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-
-}

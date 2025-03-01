@@ -186,8 +186,8 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 			customerID:          uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
 			chatbotName:         "test name",
 			detail:              "test detail",
-			engineType:          cbchatbot.EngineTypeChatGPT,
-			engineModel:         cbchatbot.EngineModelChatGPT4,
+			engineType:          cbchatbot.EngineTypeNone,
+			engineModel:         cbchatbot.EngineModelOpenaiGPT4,
 			initPrompt:          "test init prompt",
 			credentialBase64:    "test credential base64",
 			credentialProjectID: "c9855e34-ed26-11ef-985d-9fd0d08ceee0",
@@ -203,7 +203,7 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 				URI:      "/v1/chatbots",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"c9855e34-ed26-11ef-985d-9fd0d08ceee0"}`),
+				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"c9855e34-ed26-11ef-985d-9fd0d08ceee0"}`),
 			},
 			expectRes: &cbchatbot.Chatbot{
 				Identity: identity.Identity{
@@ -326,8 +326,8 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 			id:                  uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
 			chatbotName:         "test name",
 			detail:              "test detail",
-			engineType:          cbchatbot.EngineTypeChatGPT,
-			engineModel:         cbchatbot.EngineModelChatGPT4,
+			engineType:          cbchatbot.EngineTypeNone,
+			engineModel:         cbchatbot.EngineModelOpenaiGPT4,
 			initPrompt:          "test init prompt",
 			credentialBase64:    "test credential base64",
 			credentialProjectID: "991f68a2-ed26-11ef-999d-a7383cc28fbf",
@@ -343,7 +343,7 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 				URI:      "/v1/chatbots/76380ede-f84a-11ed-a288-2bf54d8b92e6",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"991f68a2-ed26-11ef-999d-a7383cc28fbf"}`),
+				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"991f68a2-ed26-11ef-999d-a7383cc28fbf"}`),
 			},
 			expectRes: &cbchatbot.Chatbot{
 				Identity: identity.Identity{
