@@ -46,7 +46,7 @@ func Test_chatbotsPOST(t *testing.T) {
 			},
 
 			reqQuery: "/chatbots",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"test credential project id"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"test credential project id"}`),
 
 			responseChatbot: &cmchatbot.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -56,8 +56,8 @@ func Test_chatbotsPOST(t *testing.T) {
 
 			expectName:                "test name",
 			expectDetail:              "test detail",
-			expectEngineType:          cmchatbot.EngineTypeChatGPT,
-			expectEngineModel:         cmchatbot.EngineModelChatGPT4,
+			expectEngineType:          cmchatbot.EngineTypeNone,
+			expectEngineModel:         cmchatbot.EngineModelOpenaiGPT4,
 			expectInitPrompt:          "test init prompt",
 			expectCredentialBase64:    "test credential base64",
 			expectCredentialProjectID: "test credential project id",
@@ -385,7 +385,7 @@ func Test_chatbotsIDPUT(t *testing.T) {
 			},
 
 			reqQuery: "/chatbots/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","engine_model":"gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"test credential project id"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"test credential project id"}`),
 
 			responseChatbot: &cmchatbot.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -396,8 +396,8 @@ func Test_chatbotsIDPUT(t *testing.T) {
 			expectChatbotID:           uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			expectName:                "test name",
 			expectDetail:              "test detail",
-			expectEngineType:          cmchatbot.EngineTypeChatGPT,
-			epxectEngineModel:         cmchatbot.EngineModelChatGPT4,
+			expectEngineType:          cmchatbot.EngineTypeNone,
+			epxectEngineModel:         cmchatbot.EngineModelOpenaiGPT4,
 			expectInitPrompt:          "test init prompt",
 			expectCredentialBase64:    "test credential base64",
 			expectCredentialProjectID: "test credential project id",

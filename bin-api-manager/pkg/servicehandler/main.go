@@ -268,7 +268,6 @@ type ServiceHandler interface {
 	ChatbotcallGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cbchatbotcall.WebhookMessage, error)
 	ChatbotcallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbotcall.WebhookMessage, error)
 	ChatbotcallDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbotcall.WebhookMessage, error)
-	ChatbotcallSendMessage(ctx context.Context, a *amagent.Agent, id uuid.UUID, role cbchatbotcall.MessageRole, text string) (*cbchatbotcall.WebhookMessage, error)
 
 	// chatbotmessage handlers
 	chatbotmessageGet(ctx context.Context, id uuid.UUID) (*cbmessage.Message, error)

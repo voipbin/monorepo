@@ -78,7 +78,6 @@ func Test_Create(t *testing.T) {
 				Gender:             chatbotcall.GenderFemale,
 				Language:           "en-US",
 				Status:             chatbotcall.StatusInitiating,
-				Messages:           []chatbotcall.Message{},
 			},
 		},
 	}
