@@ -25,6 +25,7 @@ type VariableHandler interface {
 	SetVariable(ctx context.Context, id uuid.UUID, variables map[string]string) error
 	DeleteVariable(ctx context.Context, id uuid.UUID, key string) error
 
+	Substitute(ctx context.Context, id uuid.UUID, data string) (string, error)
 	SubstituteString(ctx context.Context, data string, v *variable.Variable) string
 	SubstituteByte(ctx context.Context, data []byte, v *variable.Variable) []byte
 }

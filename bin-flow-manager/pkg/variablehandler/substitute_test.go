@@ -12,6 +12,62 @@ import (
 	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
 
+func Test_Substitute(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id   uuid.UUID
+		data string
+
+		responseVariable *variable.Variable
+
+		expectRes string
+	}{
+		{
+			name: "normal",
+
+			id:   uuid.FromStringOrNil("202edeaa-f78f-11ef-a7df-639fb04c39b2"),
+			data: `{"conversation_id":"${voipbin.test.id}","text":"test message. ${voipbin.test.name}.","sync":true}`,
+
+			responseVariable: &variable.Variable{
+				ID: uuid.FromStringOrNil("202edeaa-f78f-11ef-a7df-639fb04c39b2"),
+				Variables: map[string]string{
+					"voipbin.test.id":   "7e5116e2-f477-11ec-9c08-b343a05abaee",
+					"voipbin.test.name": "test name",
+				},
+			},
+
+			expectRes: `{"conversation_id":"7e5116e2-f477-11ec-9c08-b343a05abaee","text":"test message. test name.","sync":true}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &variableHandler{
+				db: mockDB,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().VariableGet(ctx, tt.id).Return(tt.responseVariable, nil)
+
+			res, err := h.Substitute(ctx, tt.id, string(tt.data))
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
 func Test_SubstituteString(t *testing.T) {
 
 	tests := []struct {
