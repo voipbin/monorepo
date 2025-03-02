@@ -656,6 +656,7 @@ type RequestHandler interface {
 	FlowV1VariableGet(ctx context.Context, variableID uuid.UUID) (*fmvariable.Variable, error)
 	FlowV1VariableDeleteVariable(ctx context.Context, variableID uuid.UUID, key string) error
 	FlowV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, variables map[string]string) error
+	FlowV1VariableSubstitute(ctx context.Context, variableID uuid.UUID, dataString string) (string, error)
 
 	// message-manager hook
 	MessageV1Hook(ctx context.Context, hm *hmhook.Hook) error

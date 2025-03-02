@@ -114,6 +114,21 @@ func (mr *MockVariableHandlerMockRecorder) SetVariable(ctx, id, variables any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetVariable", reflect.TypeOf((*MockVariableHandler)(nil).SetVariable), ctx, id, variables)
 }
 
+// Substitute mocks base method.
+func (m *MockVariableHandler) Substitute(ctx context.Context, id uuid.UUID, data string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Substitute", ctx, id, data)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Substitute indicates an expected call of Substitute.
+func (mr *MockVariableHandlerMockRecorder) Substitute(ctx, id, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Substitute", reflect.TypeOf((*MockVariableHandler)(nil).Substitute), ctx, id, data)
+}
+
 // SubstituteByte mocks base method.
 func (m *MockVariableHandler) SubstituteByte(ctx context.Context, data []byte, v *variable.Variable) []byte {
 	m.ctrl.T.Helper()

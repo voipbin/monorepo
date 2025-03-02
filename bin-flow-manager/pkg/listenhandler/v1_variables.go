@@ -9,9 +9,11 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-flow-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-flow-manager/pkg/listenhandler/models/response"
 )
 
 // v1VariablesIDGet handles /v1/variables/{id} GET request
@@ -114,6 +116,49 @@ func (h *listenHandler) v1VariablesIDVariablesKeyDelete(ctx context.Context, m *
 	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
+// v1VariablesIDSubstitutePost handles /v1/variables/{id}/substitute POST request
+func (h *listenHandler) v1VariablesIDSubstitutePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1VariablesIDSubstitutePost",
+		"request": m,
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/variables/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/variables"
+	tmpVals := strings.Split(u.Path, "/")
+	variableID := uuid.FromStringOrNil(tmpVals[3])
+
+	var req request.V1DataVariablesIDSubstitutePost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.variableHandler.Substitute(ctx, variableID, req.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(&response.V1ResponseVariablesIDSubstitutePost{
+		Data: tmp,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal the response data. data: %s", tmp)
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

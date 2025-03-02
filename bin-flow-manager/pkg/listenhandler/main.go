@@ -63,6 +63,7 @@ var (
 
 	// variables
 	regV1VariablesID             = regexp.MustCompile("/v1/variables/" + regUUID + "$")
+	regV1VariablesIDSubstitute   = regexp.MustCompile("/v1/variables/" + regUUID + "/substitute$")
 	regV1VariablesIDVariables    = regexp.MustCompile("/v1/variables/" + regUUID + "/variables$")
 	regV1VariablesIDVariablesKey = regexp.MustCompile("/v1/variables/" + regUUID + "/variables/" + regAny + "$")
 )
@@ -248,6 +249,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1VariablesIDVariablesKey.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/variables/<variable-id>/variables/key"
 		response, err = h.v1VariablesIDVariablesKeyDelete(ctx, m)
+
+	// variables/<variable-id>/substitute
+	case regV1VariablesIDSubstitute.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/variables/<variable-id>/substitute"
+		response, err = h.v1VariablesIDSubstitutePost(ctx, m)
 
 	default:
 		log.Errorf("Could not find corresponded request handler. data: %s", m.Data)

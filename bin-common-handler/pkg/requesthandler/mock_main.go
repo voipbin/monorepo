@@ -3541,6 +3541,21 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1VariableSetVariable(ctx, variabl
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1VariableSetVariable", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1VariableSetVariable), ctx, variableID, variables)
 }
 
+// FlowV1VariableSubstitute mocks base method.
+func (m *MockRequestHandler) FlowV1VariableSubstitute(ctx context.Context, variableID uuid.UUID, dataString string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowV1VariableSubstitute", ctx, variableID, dataString)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowV1VariableSubstitute indicates an expected call of FlowV1VariableSubstitute.
+func (mr *MockRequestHandlerMockRecorder) FlowV1VariableSubstitute(ctx, variableID, dataString any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1VariableSubstitute", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1VariableSubstitute), ctx, variableID, dataString)
+}
+
 // MessageV1Hook mocks base method.
 func (m *MockRequestHandler) MessageV1Hook(ctx context.Context, hm *hook.Hook) error {
 	m.ctrl.T.Helper()

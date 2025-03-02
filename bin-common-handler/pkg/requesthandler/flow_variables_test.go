@@ -207,3 +207,65 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 		})
 	}
 }
+
+func Test_FlowV1VariableSubstitute(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		variableID uuid.UUID
+		dataString string
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     string
+	}{
+		{
+			name: "normal",
+
+			variableID: uuid.FromStringOrNil("4d3c129c-cd07-11ec-bd2f-2fcee708f983"),
+			dataString: "test data string",
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"data":"test response string"}`),
+			},
+
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/variables/4d3c129c-cd07-11ec-bd2f-2fcee708f983/substitute",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"data":"test data string"}`),
+			},
+			expectRes: "test response string",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.FlowV1VariableSubstitute(ctx, tt.variableID, tt.dataString)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

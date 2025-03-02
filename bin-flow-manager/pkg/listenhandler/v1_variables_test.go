@@ -206,3 +206,62 @@ func Test_v1VariablesIDVariablesKeyDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_v1VariablesIDSubstitutePost(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		responseData string
+
+		expectID   uuid.UUID
+		expectData string
+		expectRes  *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/variables/d13811e2-f791-11ef-8f37-33b45eb5dfae/substitute",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"data":"test data string"}`),
+			},
+
+			responseData: "test response string",
+
+			expectID:   uuid.FromStringOrNil("d13811e2-f791-11ef-8f37-33b45eb5dfae"),
+			expectData: `test data string`,
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"data":"test response string"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:     mockSock,
+				variableHandler: mockVariableHandler,
+			}
+
+			mockVariableHandler.EXPECT().Substitute(gomock.Any(), tt.expectID, tt.expectData).Return(tt.responseData, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
