@@ -6,7 +6,22 @@ import (
 	"strings"
 
 	"monorepo/bin-flow-manager/models/variable"
+
+	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
+
+// Substitute substitutes the given data string with variables
+func (h *variableHandler) Substitute(ctx context.Context, id uuid.UUID, data string) (string, error) {
+
+	vars, err := h.Get(ctx, id)
+	if err != nil {
+		return "", errors.Wrapf(err, "could not get variable info. id: %s", id)
+	}
+
+	res := h.SubstituteString(ctx, data, vars)
+	return res, nil
+}
 
 // SubstituteString substitutes the given data string with variables
 func (h *variableHandler) SubstituteString(ctx context.Context, data string, v *variable.Variable) string {
