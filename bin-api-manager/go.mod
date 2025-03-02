@@ -83,7 +83,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/pebbe/zmq4 v1.2.11
-	github.com/pion/rtp v1.8.11
+	github.com/pion/rtp v1.8.12
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.19.0
