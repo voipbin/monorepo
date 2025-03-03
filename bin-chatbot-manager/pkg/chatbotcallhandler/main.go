@@ -64,6 +64,15 @@ type ChatbotcallHandler interface {
 	ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, text string) error
 }
 
+const (
+	variableChatbotcallID      = "voipbin.chatbot.chatbotcall_id"
+	variableChatbotID          = "voipbin.chatbot.chatbot_id"
+	variableChatbotEngineModel = "voipbin.chatbot.chatbot_engine_model"
+	variableConfbridgeID       = "voipbin.chatbot.confbridge_id"
+	variableGender             = "voipbin.chatbot.gender"
+	variableLanguage           = "voipbin.chatbot.language"
+)
+
 // chatbotcallHandler define
 type chatbotcallHandler struct {
 	utilHandler   utilhandler.UtilHandler
