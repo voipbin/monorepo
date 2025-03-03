@@ -7,6 +7,7 @@ import (
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -74,7 +75,19 @@ func (h *chatbotcallHandler) chatMessageTextHandle(ctx context.Context, cc *chat
 
 // chatInit sends the chat's init_prompt
 func (h *chatbotcallHandler) chatInit(ctx context.Context, cb *chatbot.Chatbot, cc *chatbotcall.Chatbotcall) error {
-	tmp, err := h.reqHandler.ChatbotV1MessageSend(ctx, cc.ID, message.RoleSystem, cb.InitPrompt, 30000)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "chatInit",
+		"chatbot_id":     cb.ID,
+		"chatbotcall_id": cc.ID,
+	})
+
+	if errSet := h.chatSetVariables(ctx, cc); errSet != nil {
+		// we couldn't set the variables, but we can continue
+		log.Errorf("Could not set the variables. err: %v", errSet)
+	}
+
+	initPrompt := h.chatGetInitPrompt(ctx, cb, cc)
+	tmp, err := h.reqHandler.ChatbotV1MessageSend(ctx, cc.ID, message.RoleSystem, initPrompt, 30000)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the init prompt to the chatbot. chatbotcall_id: %s", cc.ID)
 	}
@@ -167,4 +180,46 @@ func (h *chatbotcallHandler) chatMessageHandleReferenceTypeCall(ctx context.Cont
 	}
 
 	return nil
+}
+
+func (h *chatbotcallHandler) chatSetVariables(ctx context.Context, cc *chatbotcall.Chatbotcall) error {
+	if cc.ActiveflowID == uuid.Nil {
+		// nothing todo
+		return nil
+	}
+
+	variables := map[string]string{
+		variableChatbotcallID:      cc.ID.String(),
+		variableChatbotID:          cc.ChatbotID.String(),
+		variableChatbotEngineModel: string(cc.ChatbotEngineModel),
+		variableConfbridgeID:       cc.ConfbridgeID.String(),
+		variableGender:             string(cc.Gender),
+		variableLanguage:           cc.Language,
+	}
+
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, cc.ActiveflowID, variables); errSet != nil {
+		return errors.Wrap(errSet, "could not set the variables")
+	}
+	return nil
+}
+
+func (h *chatbotcallHandler) chatGetInitPrompt(ctx context.Context, cb *chatbot.Chatbot, cc *chatbotcall.Chatbotcall) string {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "chatGetInitPrompt",
+		"chatbot_id":     cb.ID,
+		"chatbotcall_id": cc.ID,
+	})
+
+	res := cb.InitPrompt
+	if cc.ActiveflowID != uuid.Nil {
+		tmp, err := h.reqHandler.FlowV1VariableSubstitute(ctx, cc.ActiveflowID, cb.InitPrompt)
+		if err != nil {
+			log.Errorf("Could not substitute the init prompt. err: %v", err)
+			return res
+		} else {
+			res = tmp
+		}
+	}
+
+	return res
 }

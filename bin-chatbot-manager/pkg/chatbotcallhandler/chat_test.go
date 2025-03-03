@@ -103,6 +103,91 @@ func Test_ChatInit(t *testing.T) {
 		name        string
 		chatbot     *chatbot.Chatbot
 		chatbotcall *chatbotcall.Chatbotcall
+
+		responseInitPrompt string
+
+		expectVariables  map[string]string
+		expectInitPrompt string
+	}{
+		{
+			name: "normal",
+			chatbot: &chatbot.Chatbot{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a6d0f872-f7e8-11ef-a1fa-8b9babb2a9f5"),
+				},
+				InitPrompt: "test message",
+			},
+			chatbotcall: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("a5f77d7c-f7e8-11ef-a28e-3babccbf3e47"),
+					CustomerID: uuid.FromStringOrNil("a64db8b8-f7e8-11ef-9a8e-f3357aace0ff"),
+				},
+				ChatbotID:          uuid.FromStringOrNil("a6d0f872-f7e8-11ef-a1fa-8b9babb2a9f5"),
+				ActiveflowID:       uuid.FromStringOrNil("a6aec4b4-f7e8-11ef-9b61-37d5c56e8086"),
+				ReferenceType:      chatbotcall.ReferenceTypeCall,
+				ReferenceID:        uuid.FromStringOrNil("a6830630-f7e8-11ef-9fc4-7fd9341c5fe5"),
+				ConfbridgeID:       uuid.FromStringOrNil("333d4aea-f7e9-11ef-873e-efd62602ccad"),
+				ChatbotEngineModel: chatbot.EngineModelOpenaiGPT4,
+				Gender:             chatbotcall.GenderNuetral,
+				Language:           "en-US",
+			},
+
+			responseInitPrompt: "test init prompt",
+
+			expectVariables: map[string]string{
+				variableChatbotcallID:      "a5f77d7c-f7e8-11ef-a28e-3babccbf3e47",
+				variableChatbotID:          "a6d0f872-f7e8-11ef-a1fa-8b9babb2a9f5",
+				variableChatbotEngineModel: string(chatbot.EngineModelOpenaiGPT4),
+				variableConfbridgeID:       "333d4aea-f7e9-11ef-873e-efd62602ccad",
+				variableGender:             string(chatbotcall.GenderNuetral),
+				variableLanguage:           "en-US",
+			},
+			expectInitPrompt: "test init prompt",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
+			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
+
+			h := &chatbotcallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				chatbotHandler: mockChatbot,
+				openaiHandler:  mockChatgpt,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.chatbotcall.ActiveflowID, tt.expectVariables).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.chatbotcall.ActiveflowID, tt.chatbot.InitPrompt).Return(tt.responseInitPrompt, nil)
+
+			mockReq.EXPECT().ChatbotV1MessageSend(ctx, tt.chatbotcall.Identity.ID, message.RoleSystem, tt.expectInitPrompt, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
+			mockReq.EXPECT().CallV1CallTalk(ctx, tt.chatbotcall.ReferenceID, "test assist", string(tt.chatbotcall.Gender), tt.chatbotcall.Language, 10000).Return(nil)
+
+			err := h.chatInit(ctx, tt.chatbot, tt.chatbotcall)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_ChatInit_without_activeflow_id(t *testing.T) {
+
+	tests := []struct {
+		name        string
+		chatbot     *chatbot.Chatbot
+		chatbotcall *chatbotcall.Chatbotcall
 	}{
 		{
 			name: "normal",
