@@ -17,6 +17,7 @@ import (
 	fmaction "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -149,6 +150,8 @@ func Test_ServiceStart(t *testing.T) {
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Expected result %#v, got %#v", tt.expectRes, res)
 			}
+
+			time.Sleep(100 * time.Millisecond)
 		})
 	}
 }
