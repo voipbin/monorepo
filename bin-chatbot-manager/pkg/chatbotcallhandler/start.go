@@ -67,10 +67,12 @@ func (h *chatbotcallHandler) startReferenceTypeCall(ctx context.Context, c *chat
 	}
 	log.WithField("chatbotcall", res).Debugf("Created chatbotcall. chatbotcall_id: %s", res.ID)
 
-	if errInit := h.chatInit(ctx, c, res); errInit != nil {
-		log.Errorf("Could not initialize chat. err: %v", errInit)
-		return nil, errors.Wrap(errInit, "Could not initialize chat")
-	}
+	go func(cctx context.Context) {
+		if errInit := h.chatInit(cctx, c, res); errInit != nil {
+			log.Errorf("Could not initialize chat. err: %v", errInit)
+		}
+
+	}(context.Background())
 
 	return res, nil
 }
