@@ -91,7 +91,7 @@ func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflo
 	}
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, fetchedActions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, uuid.Nil, fetchedActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}
@@ -122,7 +122,7 @@ func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activ
 	}
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, fetchedActions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, uuid.Nil, fetchedActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}
@@ -437,7 +437,7 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 	}
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, sv.PushActions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, sv.ID, sv.PushActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}
@@ -565,7 +565,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, pushActions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, uuid.Nil, pushActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}
@@ -698,7 +698,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	}
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, sv.PushActions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, sv.ID, sv.PushActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}
@@ -974,7 +974,7 @@ func (h *activeflowHandler) actionHandleChatbotTalk(ctx context.Context, af *act
 	log.WithField("service", sv).Debugf("Started service. service_type: %s, service_id: %s", sv.Type, sv.ID)
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, sv.PushActions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, sv.ID, sv.PushActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}
@@ -995,7 +995,7 @@ func (h *activeflowHandler) actionHandleStop(ctx context.Context, af *activeflow
 	}
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, actions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, uuid.Nil, actions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}

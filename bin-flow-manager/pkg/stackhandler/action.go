@@ -104,7 +104,7 @@ func (h *stackHandler) GetAction(ctx context.Context, stackMap map[uuid.UUID]*st
 
 		resStackID = s.ReturnStackID
 		if releaseStack {
-			h.remove(ctx, stackMap, s.ID)
+			h.remove(stackMap, s.ID)
 		}
 
 		if resStackID == stack.IDEmpty {
@@ -206,7 +206,7 @@ func (h *stackHandler) GetNextAction(ctx context.Context, stackMap map[uuid.UUID
 		tmpActionID = s.ReturnActionID
 
 		if relaseStack {
-			h.remove(ctx, stackMap, s.ID)
+			h.remove(stackMap, s.ID)
 		}
 
 		if tmpStackID == stack.IDEmpty {

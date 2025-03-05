@@ -89,10 +89,24 @@ func (mr *MockStackHandlerMockRecorder) GetNextAction(ctx, stackMap, currentStac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextAction", reflect.TypeOf((*MockStackHandler)(nil).GetNextAction), ctx, stackMap, currentStackID, currentAction, relaseStack)
 }
 
-// Push mocks base method.
-func (m *MockStackHandler) Push(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, actions []action.Action, currentStackID, currentActionID uuid.UUID) (uuid.UUID, *action.Action, error) {
+// InitStackMap mocks base method.
+func (m *MockStackHandler) InitStackMap(ctx context.Context, actions []action.Action) map[uuid.UUID]*stack.Stack {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Push", ctx, stackMap, actions, currentStackID, currentActionID)
+	ret := m.ctrl.Call(m, "InitStackMap", ctx, actions)
+	ret0, _ := ret[0].(map[uuid.UUID]*stack.Stack)
+	return ret0
+}
+
+// InitStackMap indicates an expected call of InitStackMap.
+func (mr *MockStackHandlerMockRecorder) InitStackMap(ctx, actions any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitStackMap", reflect.TypeOf((*MockStackHandler)(nil).InitStackMap), ctx, actions)
+}
+
+// Push mocks base method.
+func (m *MockStackHandler) Push(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, actions []action.Action, currentStackID, currentActionID uuid.UUID) (uuid.UUID, *action.Action, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Push", ctx, stackMap, stackID, actions, currentStackID, currentActionID)
 	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(*action.Action)
 	ret2, _ := ret[2].(error)
@@ -100,9 +114,9 @@ func (m *MockStackHandler) Push(ctx context.Context, stackMap map[uuid.UUID]*sta
 }
 
 // Push indicates an expected call of Push.
-func (mr *MockStackHandlerMockRecorder) Push(ctx, stackMap, actions, currentStackID, currentActionID any) *gomock.Call {
+func (mr *MockStackHandlerMockRecorder) Push(ctx, stackMap, stackID, actions, currentStackID, currentActionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Push", reflect.TypeOf((*MockStackHandler)(nil).Push), ctx, stackMap, actions, currentStackID, currentActionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Push", reflect.TypeOf((*MockStackHandler)(nil).Push), ctx, stackMap, stackID, actions, currentStackID, currentActionID)
 }
 
 // SearchAction mocks base method.
