@@ -5,14 +5,13 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/stack"
 )
 
 // FlowGet returns flow
-func (h *stackHandler) create(ctx context.Context, stackID uuid.UUID, actions []action.Action, returnStackID uuid.UUID, returnActionID uuid.UUID) *stack.Stack {
+func (h *stackHandler) create(stackID uuid.UUID, actions []action.Action, returnStackID uuid.UUID, returnActionID uuid.UUID) *stack.Stack {
 
 	res := &stack.Stack{
 		ID:             stackID,
@@ -24,7 +23,7 @@ func (h *stackHandler) create(ctx context.Context, stackID uuid.UUID, actions []
 	return res
 }
 
-func (h *stackHandler) remove(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID) {
+func (h *stackHandler) remove(stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID) {
 	tmp, ok := stackMap[stackID]
 	if !ok || tmp == nil {
 		return
@@ -44,40 +43,29 @@ func (h *stackHandler) Get(ctx context.Context, stackMap map[uuid.UUID]*stack.St
 
 // Push creates a new stack and push it to the stackMap.
 // it returns stack_id and action for next execution.
-func (h *stackHandler) Push(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, actions []action.Action, currentStackID uuid.UUID, currentActionID uuid.UUID) (uuid.UUID, *action.Action, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":              "Push",
-		"current_stack_id":  currentStackID,
-		"current_action_id": currentActionID,
-	})
-	log.WithField("action", actions).Debugf("Pushing a new stack.")
+func (h *stackHandler) Push(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, actions []action.Action, currentStackID uuid.UUID, currentActionID uuid.UUID) (uuid.UUID, *action.Action, error) {
 
-	// generate stackID
-	var stackID uuid.UUID = uuid.Nil
-	if len(stackMap) == 0 {
-		stackID = stack.IDMain
-	} else {
-		exist := false
-		for i := 0; i < 10; i++ {
-			stackID = uuid.Must(uuid.NewV4())
-			_, err := h.Get(ctx, stackMap, stackID)
-			if err != nil {
-				exist = false
-				break
-			}
-			exist = true
-		}
-		if exist {
-			return stack.IDEmpty, nil, fmt.Errorf("could not generate uniq stack_id")
-		}
+	if stackID == uuid.Nil {
+		stackID = h.utilHandler.UUIDCreate()
 	}
 
-	// create a new stack
-	s := h.create(ctx, stackID, actions, currentStackID, currentActionID)
-	log.WithField("stack", s).Debugf("Created a new stack. stack_id: %s", s.ID)
+	_, err := h.Get(ctx, stackMap, stackID)
+	if err == nil {
+		return stack.IDEmpty, nil, fmt.Errorf("stack already exists. stack_id: %s", stackID)
+	}
 
-	// push it
-	stackMap[stackID] = s
+	tmp := h.create(stackID, actions, currentStackID, currentActionID)
 
-	return s.ID, &s.Actions[0], nil
+	stackMap[stackID] = tmp
+
+	return tmp.ID, &tmp.Actions[0], nil
+}
+
+func (h *stackHandler) InitStackMap(ctx context.Context, actions []action.Action) map[uuid.UUID]*stack.Stack {
+	tmp := h.create(stack.IDMain, actions, stack.IDEmpty, action.IDEmpty)
+	res := map[uuid.UUID]*stack.Stack{
+		stack.IDMain: tmp,
+	}
+
+	return res
 }

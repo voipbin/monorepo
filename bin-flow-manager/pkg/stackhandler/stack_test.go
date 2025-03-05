@@ -56,9 +56,7 @@ func Test_Create(t *testing.T) {
 
 			h := &stackHandler{}
 
-			ctx := context.Background()
-
-			res := h.create(ctx, tt.stackID, tt.actions, tt.returnStrackID, tt.returnActionID)
+			res := h.create(tt.stackID, tt.actions, tt.returnStrackID, tt.returnActionID)
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -133,6 +131,7 @@ func Test_Push(t *testing.T) {
 		name string
 
 		stackMap        map[uuid.UUID]*stack.Stack
+		stackID         uuid.UUID
 		actions         []action.Action
 		currentStackID  uuid.UUID
 		currentActionID uuid.UUID
@@ -141,149 +140,136 @@ func Test_Push(t *testing.T) {
 		expectResStackMap map[uuid.UUID]*stack.Stack
 	}{
 		{
-			"empty stack",
+			name: "empty stack",
 
-			map[uuid.UUID]*stack.Stack{},
-			[]action.Action{
+			stackMap: map[uuid.UUID]*stack.Stack{},
+			stackID:  stack.IDMain,
+			actions: []action.Action{
 				{
-					ID:   uuid.FromStringOrNil("128f9aa0-d438-11ec-bdb8-279917da3e16"),
+					ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 					Type: action.TypeAnswer,
 				},
 			},
-			uuid.Nil,
-			uuid.Nil,
+			currentStackID:  stack.IDEmpty,
+			currentActionID: action.IDEmpty,
 
-			&action.Action{
-				ID:   uuid.FromStringOrNil("128f9aa0-d438-11ec-bdb8-279917da3e16"),
+			expectResAction: &action.Action{
+				ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 				Type: action.TypeAnswer,
 			},
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			expectResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
-							ID:   uuid.FromStringOrNil("128f9aa0-d438-11ec-bdb8-279917da3e16"),
+							ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 							Type: action.TypeAnswer,
 						},
 					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
-					ReturnActionID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
 				},
 			},
 		},
 		{
-			"stack 1",
+			name: "non-empty stack",
 
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
 					Actions: []action.Action{
 						{
-							ID:   uuid.FromStringOrNil("5795b980-d3b2-11ec-91c7-1b9727f56f87"),
+							ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 							Type: action.TypeAnswer,
 						},
 					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
-					ReturnActionID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
 				},
 			},
-			[]action.Action{
+			stackID: uuid.FromStringOrNil("2976187e-f9cf-11ef-a24b-0379d7b40894"),
+			actions: []action.Action{
 				{
-					ID:   uuid.FromStringOrNil("01d4de42-d45f-11ec-9ebc-7381a12a81fe"),
+					ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878df"),
 					Type: action.TypeAnswer,
 				},
 			},
-			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-			uuid.FromStringOrNil("5795b980-d3b2-11ec-91c7-1b9727f56f87"),
+			currentStackID:  stack.IDMain,
+			currentActionID: uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 
-			&action.Action{
-				ID:   uuid.FromStringOrNil("01d4de42-d45f-11ec-9ebc-7381a12a81fe"),
+			expectResAction: &action.Action{
+				ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878df"),
 				Type: action.TypeAnswer,
 			},
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			expectResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
-							ID:   uuid.FromStringOrNil("5795b980-d3b2-11ec-91c7-1b9727f56f87"),
+							ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 							Type: action.TypeAnswer,
 						},
 					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
-					ReturnActionID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
 				},
-				uuid.FromStringOrNil("0ff75fbe-d45e-11ec-b74d-e7cf7a495d7a"): {
-					ID: uuid.FromStringOrNil("0ff75fbe-d45e-11ec-b74d-e7cf7a495d7a"),
+				uuid.FromStringOrNil("2976187e-f9cf-11ef-a24b-0379d7b40894"): {
+					ID: uuid.FromStringOrNil("2976187e-f9cf-11ef-a24b-0379d7b40894"),
 					Actions: []action.Action{
 						{
-							ID:   uuid.FromStringOrNil("01d4de42-d45f-11ec-9ebc-7381a12a81fe"),
+							ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878df"),
 							Type: action.TypeAnswer,
 						},
 					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-					ReturnActionID: uuid.FromStringOrNil("5795b980-d3b2-11ec-91c7-1b9727f56f87"),
+					ReturnStackID:  stack.IDMain,
+					ReturnActionID: uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 				},
 			},
 		},
 		{
-			"stack 1 and actions have 2 actions",
+			name: "push multiple actions",
 
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-					Actions: []action.Action{
-						{
-							ID:   uuid.FromStringOrNil("5795b980-d3b2-11ec-91c7-1b9727f56f87"),
-							Type: action.TypeAnswer,
-						},
-					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
-					ReturnActionID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					Actions: []action.Action{},
 				},
 			},
-			[]action.Action{
+			stackID: uuid.FromStringOrNil("074264c2-f9d1-11ef-9150-cbe1e547761d"),
+			actions: []action.Action{
 				{
-					ID:   uuid.FromStringOrNil("01d4de42-d45f-11ec-9ebc-7381a12a81fe"),
+					ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878e0"),
 					Type: action.TypeAnswer,
 				},
 				{
-					ID:   uuid.FromStringOrNil("e75e3d90-d460-11ec-a32b-6399bdc94bd7"),
+					ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878e1"),
 					Type: action.TypeAnswer,
 				},
 			},
-			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-			uuid.FromStringOrNil("5795b980-d3b2-11ec-91c7-1b9727f56f87"),
+			currentStackID:  stack.IDMain,
+			currentActionID: action.IDEmpty,
 
-			&action.Action{
-				ID:   uuid.FromStringOrNil("01d4de42-d45f-11ec-9ebc-7381a12a81fe"),
+			expectResAction: &action.Action{
+				ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878e0"),
 				Type: action.TypeAnswer,
 			},
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-					Actions: []action.Action{
-						{
-							ID:   uuid.FromStringOrNil("5795b980-d3b2-11ec-91c7-1b9727f56f87"),
-							Type: action.TypeAnswer,
-						},
-					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
-					ReturnActionID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+			expectResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID:             stack.IDMain,
+					Actions:        []action.Action{},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
 				},
-				uuid.FromStringOrNil("0ff75fbe-d45e-11ec-b74d-e7cf7a495d7a"): {
-					ID: uuid.FromStringOrNil("0ff75fbe-d45e-11ec-b74d-e7cf7a495d7a"),
+				uuid.FromStringOrNil("074264c2-f9d1-11ef-9150-cbe1e547761d"): {
+					ID: uuid.FromStringOrNil("074264c2-f9d1-11ef-9150-cbe1e547761d"),
 					Actions: []action.Action{
 						{
-							ID:   uuid.FromStringOrNil("01d4de42-d45f-11ec-9ebc-7381a12a81fe"),
+							ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878e0"),
 							Type: action.TypeAnswer,
 						},
 						{
-							ID:   uuid.FromStringOrNil("e75e3d90-d460-11ec-a32b-6399bdc94bd7"),
+							ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878e1"),
 							Type: action.TypeAnswer,
 						},
 					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-					ReturnActionID: uuid.FromStringOrNil("5795b980-d3b2-11ec-91c7-1b9727f56f87"),
+					ReturnStackID:  stack.IDMain,
+					ReturnActionID: action.IDEmpty,
 				},
 			},
 		},
@@ -296,7 +282,7 @@ func Test_Push(t *testing.T) {
 
 			ctx := context.Background()
 
-			_, resAction, err := h.Push(ctx, tt.stackMap, tt.actions, tt.currentStackID, tt.currentActionID)
+			_, resAction, err := h.Push(ctx, tt.stackMap, tt.stackID, tt.actions, tt.currentStackID, tt.currentActionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
