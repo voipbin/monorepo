@@ -26,7 +26,6 @@ import (
 
 	mmmessage "monorepo/bin-message-manager/models/message"
 
-	"monorepo/bin-queue-manager/models/queuecall"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 	qmservice "monorepo/bin-queue-manager/models/service"
 
@@ -61,6 +60,7 @@ func Test_actionHandleConnect(t *testing.T) {
 		responseGroupcalls         []*cmgroupcall.Groupcall
 		responseUUIDConfbridgeJoin uuid.UUID
 		responseUUIDHangup         uuid.UUID
+		responsePushStack          *stack.Stack
 		responsePushStackID        uuid.UUID
 		responsePushAction         *action.Action
 
@@ -113,10 +113,15 @@ func Test_actionHandleConnect(t *testing.T) {
 			responseGroupcalls: []*cmgroupcall.Groupcall{},
 
 			responseUUIDConfbridgeJoin: uuid.FromStringOrNil("b7181286-a256-11ed-bcab-8bfb6884800b"),
-			responsePushStackID:        uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
-			responsePushAction: &action.Action{
-				ID:   uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
-				Type: action.TypeConfbridgeJoin,
+			responsePushStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
+						Type:   action.TypeConfbridgeJoin,
+						Option: []byte(`{"confbridge_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
+					},
+				},
 			},
 
 			expectFlowCreateActions: []action.Action{
@@ -216,10 +221,15 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 			responseGroupcalls:         []*cmgroupcall.Groupcall{},
 			responseUUIDConfbridgeJoin: uuid.FromStringOrNil("8b138d81-5d06-44d0-b7fb-36dea3a00ded"),
-			responsePushStackID:        uuid.FromStringOrNil("73af2dfc-d4c2-11ec-a692-9b1eafe93075"),
-			responsePushAction: &action.Action{
-				ID:   uuid.FromStringOrNil("845b566c-d4c2-11ec-ba4e-f739bb357410"),
-				Type: action.TypeConferenceJoin,
+			responsePushStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("73af2dfc-d4c2-11ec-a692-9b1eafe93075"),
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("845b566c-d4c2-11ec-ba4e-f739bb357410"),
+						Type:   action.TypeConfbridgeJoin,
+						Option: []byte(`{"confbridge_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
+					},
+				},
 			},
 
 			expectFlowCreateActions: []action.Action{
@@ -321,10 +331,15 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 			responseGroupcalls:         []*cmgroupcall.Groupcall{},
 			responseUUIDConfbridgeJoin: uuid.FromStringOrNil("6f9adfc1-7d2e-49bc-b8b2-ca5123b013c3"),
-			responsePushStackID:        uuid.FromStringOrNil("d913dcf6-d4c2-11ec-902b-37f50ff7b4b4"),
-			responsePushAction: &action.Action{
-				ID:   uuid.FromStringOrNil("d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"),
-				Type: action.TypeConferenceJoin,
+			responsePushStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("d913dcf6-d4c2-11ec-902b-37f50ff7b4b4"),
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"),
+						Type:   action.TypeConfbridgeJoin,
+						Option: []byte(`{"confbridge_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
+					},
+				},
 			},
 
 			expectFlowCreateActions: []action.Action{
@@ -427,10 +442,15 @@ func Test_actionHandleConnect(t *testing.T) {
 			responseGroupcalls:         []*cmgroupcall.Groupcall{},
 			responseUUIDConfbridgeJoin: uuid.FromStringOrNil("222a9d00-a257-11ed-8e79-5309100e27e4"),
 			responseUUIDHangup:         uuid.FromStringOrNil("2257c8e8-a257-11ed-b228-a38777d47451"),
-			responsePushStackID:        uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
-			responsePushAction: &action.Action{
-				ID:   uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
-				Type: action.TypeConferenceJoin,
+			responsePushStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
+				Actions: []action.Action{
+					{
+						ID:     uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
+						Type:   action.TypeConfbridgeJoin,
+						Option: []byte(`{"confbridge_id":"d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"}`),
+					},
+				},
 			},
 
 			expectCallSource: &commonaddress.Address{
@@ -522,7 +542,7 @@ func Test_actionHandleConnect(t *testing.T) {
 			if tt.responseUUIDHangup != uuid.Nil {
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDHangup)
 			}
-			mockStack.EXPECT().Push(ctx, tt.af.StackMap, uuid.Nil, tt.expectPushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(tt.responsePushStackID, tt.responsePushAction, nil)
+			mockStack.EXPECT().Push(ctx, tt.af.StackMap, uuid.Nil, tt.expectPushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(tt.responsePushStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
 			if err := h.actionHandleConnect(ctx, tt.af); err != nil {
@@ -751,6 +771,7 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 		responseExitStackID uuid.UUID
 		responseExitAction  *action.Action
 		responseService     *qmservice.Service
+		responseStack       *stack.Stack
 
 		expectQueueID uuid.UUID
 	}{
@@ -789,6 +810,21 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 			},
 			responseService: &qmservice.Service{
 				ID: uuid.FromStringOrNil("af231114-ad02-11ed-a485-2bce52de1ce4"),
+				PushActions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("f51e6456-f9e1-11ef-8b03-d728628eb40d"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			responseStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("af231114-ad02-11ed-a485-2bce52de1ce4"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("f51e6456-f9e1-11ef-8b03-d728628eb40d"),
+						Type: action.TypeAnswer,
+					},
+				},
 			},
 
 			expectQueueID: uuid.FromStringOrNil("bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"),
@@ -815,10 +851,10 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 			mockReq.EXPECT().QueueV1ServiceTypeQueuecallStart(ctx, tt.expectQueueID, tt.activeflow.ID, qmqueuecall.ReferenceType(qmqueuecall.ReferenceTypeCall), tt.activeflow.ReferenceID, tt.responseExitAction.ID).Return(tt.responseService, nil)
 
 			// PushStack
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
+			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 
-			mockReq.EXPECT().QueueV1QueuecallUpdateStatusWaiting(ctx, tt.responseService.ID).Return(&queuecall.Queuecall{}, nil)
+			mockReq.EXPECT().QueueV1QueuecallUpdateStatusWaiting(ctx, tt.responseService.ID).Return(&qmqueuecall.Queuecall{}, nil)
 
 			if err := h.actionHandleQueueJoin(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -835,9 +871,7 @@ func Test_actionHandleFetch(t *testing.T) {
 		activeFlow *activeflow.Activeflow
 
 		responseFetch []action.Action
-
-		responseStackID uuid.UUID
-		responseAction  *action.Action
+		responseStack *stack.Stack
 
 		expectUpdateActiveflow *activeflow.Activeflow
 	}{
@@ -878,10 +912,14 @@ func Test_actionHandleFetch(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 			},
-			responseStackID: uuid.FromStringOrNil("5d18b072-d4e0-11ec-a4ab-1fcd7ec4f258"),
-			responseAction: &action.Action{
-				ID:   uuid.FromStringOrNil("0dc5e10c-d4e0-11ec-8dd0-a326b2d87c71"),
-				Type: action.TypeAnswer,
+			responseStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("5d18b072-d4e0-11ec-a4ab-1fcd7ec4f258"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("0dc5e10c-d4e0-11ec-8dd0-a326b2d87c71"),
+						Type: action.TypeAnswer,
+					},
+				},
 			},
 
 			expectUpdateActiveflow: &activeflow.Activeflow{
@@ -936,7 +974,7 @@ func Test_actionHandleFetch(t *testing.T) {
 			ctx := context.Background()
 
 			mockAction.EXPECT().ActionFetchGet(&tt.activeFlow.CurrentAction, tt.activeFlow.ID, tt.activeFlow.ReferenceID).Return(tt.responseFetch, nil)
-			mockStack.EXPECT().Push(ctx, tt.activeFlow.StackMap, uuid.Nil, tt.responseFetch, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
+			mockStack.EXPECT().Push(ctx, tt.activeFlow.StackMap, uuid.Nil, tt.responseFetch, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
 			if err := h.actionHandleFetch(ctx, tt.activeFlow); err != nil {
@@ -954,11 +992,10 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 		flowID     uuid.UUID
 		activeflow *activeflow.Activeflow
 
-		responseflow           *flow.Flow
-		expectUpdateActiveflow *activeflow.Activeflow
+		responseflow  *flow.Flow
+		responseStack *stack.Stack
 
-		responseStackID uuid.UUID
-		responseAction  *action.Action
+		expectUpdateActiveflow *activeflow.Activeflow
 	}{
 		{
 			name: "normal",
@@ -1000,6 +1037,16 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 					},
 				},
 			},
+			responseStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("ede4083a-d4e1-11ec-917f-7f730832f0d0"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
+						Type: action.TypeAMD,
+					},
+				},
+			},
+
 			expectUpdateActiveflow: &activeflow.Activeflow{
 				ForwardStackID:  uuid.FromStringOrNil("ede4083a-d4e1-11ec-917f-7f730832f0d0"),
 				ForwardActionID: uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
@@ -1027,12 +1074,6 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 						},
 					},
 				},
-			},
-
-			responseStackID: uuid.FromStringOrNil("ede4083a-d4e1-11ec-917f-7f730832f0d0"),
-			responseAction: &action.Action{
-				ID:   uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
-				Type: action.TypeAMD,
 			},
 		},
 		{
@@ -1079,6 +1120,15 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 					},
 				},
 			},
+			responseStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("b0a90640-d4e2-11ec-ac01-878f8d902c0b"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
+						Type: action.TypeAMD,
+					},
+				},
+			},
 
 			expectUpdateActiveflow: &activeflow.Activeflow{
 				ForwardStackID:  uuid.FromStringOrNil("b0a90640-d4e2-11ec-ac01-878f8d902c0b"),
@@ -1108,12 +1158,6 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 					},
 				},
 			},
-
-			responseStackID: uuid.FromStringOrNil("b0a90640-d4e2-11ec-ac01-878f8d902c0b"),
-			responseAction: &action.Action{
-				ID:   uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
-				Type: action.TypeAMD,
-			},
 		},
 	}
 
@@ -1138,7 +1182,7 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseflow, nil)
 
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, uuid.Nil, tt.responseflow.Actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
+			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, uuid.Nil, tt.responseflow.Actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
 			if err := h.actionHandleFetchFlow(ctx, tt.activeflow); err != nil {
@@ -1156,6 +1200,7 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 		activeflow *activeflow.Activeflow
 
 		responseService *cfservice.Service
+		responseStack   *stack.Stack
 
 		expectConferenceID uuid.UUID
 		expectActiveFlow   *activeflow.Activeflow
@@ -1189,6 +1234,14 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 				ID:   uuid.FromStringOrNil("2b2f8fe8-ab74-11ed-a3a0-b7d673c42e64"),
 				Type: cfservice.TypeConferencecall,
 				PushActions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("3dba7cea-ab74-11ed-83b9-2b746a7d46a1"),
+					},
+				},
+			},
+			responseStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("2b2f8fe8-ab74-11ed-a3a0-b7d673c42e64"),
+				Actions: []action.Action{
 					{
 						ID: uuid.FromStringOrNil("3dba7cea-ab74-11ed-83b9-2b746a7d46a1"),
 					},
@@ -1242,7 +1295,7 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 			mockReq.EXPECT().ConferenceV1ServiceTypeConferencecallStart(ctx, tt.expectConferenceID, cfconferencecall.ReferenceTypeCall, tt.activeflow.ReferenceID).Return(tt.responseService, nil)
 
 			// push stack
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
+			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 
 			if err := h.actionHandleConferenceJoin(ctx, tt.activeflow); err != nil {
@@ -3380,6 +3433,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 		activeflow *activeflow.Activeflow
 
 		responseService *cbservice.Service
+		responseStack   *stack.Stack
 
 		expectChatbotID     uuid.UUID
 		expectActiveflowID  uuid.UUID
@@ -3425,6 +3479,14 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 					},
 				},
 			},
+			responseStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("bb68f67a-a8f5-11ed-9a2f-63b973d60f8c"),
+				Actions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("bb9239cc-a8f5-11ed-b21f-f7e43c6b6a60"),
+					},
+				},
+			},
 
 			expectChatbotID:     uuid.FromStringOrNil("bb17f504-a8f5-11ed-a974-2f810c03cbf8"),
 			expectActiveflowID:  uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
@@ -3460,7 +3522,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectChatbotID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage, 3000).Return(tt.responseService, nil)
 
 			// push stack
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
+			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 
 			if errCall := h.actionHandleChatbotTalk(ctx, tt.activeflow); errCall != nil {
