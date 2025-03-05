@@ -262,27 +262,55 @@ func (h *activeflowHandler) Gets(ctx context.Context, token string, size uint64,
 
 // PushStack pushes the given action to the stack with a new stack
 func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Activeflow, stackID uuid.UUID, actions []action.Action) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "PushStack",
-		"activeflow_id": af.ID,
-		"stack_id":      stackID,
-		"actions":       actions,
-	})
+	if len(actions) == 0 {
+		return fmt.Errorf("no actions to push")
+	}
 
-	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, stackID, actions, af.CurrentStackID, af.CurrentAction.ID)
+	tmp, err := h.stackHandler.Push(ctx, af.StackMap, stackID, actions, af.CurrentStackID, af.CurrentAction.ID)
 	if err != nil {
-		log.Errorf("Could not push the actions. err: %s", err)
-		return err
+		return errors.Wrapf(err, "could not push the actions. stack_id: %s", stackID)
 	}
 
 	// update forward actions
-	af.ForwardStackID = resStackID
-	af.ForwardActionID = resAction.ID
+	af.ForwardStackID = tmp.ID
+	af.ForwardActionID = tmp.Actions[0].ID
 
 	// update activeflow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not update the active flow after pushed the actions. stack_id: %s", stackID)
+	}
+
+	return nil
+}
+
+// PopStack pop the given activeflow's current stack
+func (h *activeflowHandler) PopStack(ctx context.Context, af *activeflow.Activeflow) error {
+
+	if errPop := h.PopStackWithStackID(ctx, af, af.CurrentStackID); errPop != nil {
+		return errors.Wrapf(errPop, "could not pop the stack. stack_id: %s", af.CurrentStackID)
+	}
+
+	return nil
+}
+
+// PopStackWithStackID pop the given activeflow's current stack
+func (h *activeflowHandler) PopStackWithStackID(ctx context.Context, af *activeflow.Activeflow, stackID uuid.UUID) error {
+	if stackID != af.CurrentStackID {
+		return fmt.Errorf("stack id is not matched. stack_id: %s, current_stack_id: %s", stackID, af.CurrentStackID)
+	}
+
+	tmp, err := h.stackHandler.Pop(ctx, af.StackMap, af.CurrentStackID)
+	if err != nil {
+		return errors.Wrapf(err, "could not pop the stack. stack_id: %s", af.CurrentStackID)
+	}
+
+	// update forward actions
+	af.ForwardStackID = tmp.ReturnStackID
+	af.ForwardActionID = tmp.ReturnActionID
+
+	// update activeflow
+	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+		return errors.Wrapf(err, "could not update the active flow after popped the stack. stack_id: %s", af.CurrentStackID)
 	}
 
 	return nil
