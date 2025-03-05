@@ -8,7 +8,7 @@ import (
 )
 
 // V1DataActiveFlowsPost is
-// v1 data type request struct for
+// data type request struct for
 // /v1/activeflows POST
 type V1DataActiveFlowsPost struct {
 	ID     uuid.UUID `json:"id"`
@@ -19,14 +19,14 @@ type V1DataActiveFlowsPost struct {
 }
 
 // V1DataActiveFlowsIDNextGet is
-// v1 data type request struct for
+// data type request struct for
 // /v1/activeflows/{id}/next GET
 type V1DataActiveFlowsIDNextGet struct {
 	CurrentActionID uuid.UUID `json:"current_action_id"`
 }
 
 // V1DataActiveFlowsIDForwardActionIDPut is
-// v1 data type request struct for
+// data type request struct for
 // /v1/activeflows/{id}/forward_action_id PUT
 type V1DataActiveFlowsIDForwardActionIDPut struct {
 	ForwardActionID uuid.UUID `json:"forward_action_id"`
@@ -34,15 +34,22 @@ type V1DataActiveFlowsIDForwardActionIDPut struct {
 }
 
 // V1DataFlowIDActionsPut is
-// v1 data type request struct for
+// data type request struct for
 // /v1/flows/{id}/actions PUT
 type V1DataFlowIDActionsPut struct {
 	Actions []action.Action `json:"actions"` // actions
 }
 
 // V1DataActiveFlowsIDPushActionPost is
-// v1 data type request struct for
+// data type request struct for
 // /v1/activeflows/{id}/push_action POST
 type V1DataActiveFlowsIDPushActionPost struct {
 	Actions []action.Action `json:"actions"` // actions
+}
+
+// V1DataActiveFlowsIDServiceStopPost is
+// data type request struct for
+// /v1/activeflows/{id}/service_stop POST
+type V1DataActiveFlowsIDServiceStopPost struct {
+	ServiceID uuid.UUID `json:"service_id"`
 }

@@ -162,6 +162,20 @@ func (mr *MockActiveflowHandlerMockRecorder) Gets(ctx, token, size, filters any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockActiveflowHandler)(nil).Gets), ctx, token, size, filters)
 }
 
+// PopStackWithStackID mocks base method.
+func (m *MockActiveflowHandler) PopStackWithStackID(ctx context.Context, af *activeflow.Activeflow, stackID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PopStackWithStackID", ctx, af, stackID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PopStackWithStackID indicates an expected call of PopStackWithStackID.
+func (mr *MockActiveflowHandlerMockRecorder) PopStackWithStackID(ctx, af, stackID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PopStackWithStackID", reflect.TypeOf((*MockActiveflowHandler)(nil).PopStackWithStackID), ctx, af, stackID)
+}
+
 // PushActions mocks base method.
 func (m *MockActiveflowHandler) PushActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
@@ -175,6 +189,20 @@ func (m *MockActiveflowHandler) PushActions(ctx context.Context, id uuid.UUID, a
 func (mr *MockActiveflowHandlerMockRecorder) PushActions(ctx, id, actions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushActions", reflect.TypeOf((*MockActiveflowHandler)(nil).PushActions), ctx, id, actions)
+}
+
+// ServiceStop mocks base method.
+func (m *MockActiveflowHandler) ServiceStop(ctx context.Context, id, serviceID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceStop", ctx, id, serviceID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ServiceStop indicates an expected call of ServiceStop.
+func (mr *MockActiveflowHandlerMockRecorder) ServiceStop(ctx, id, serviceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStop", reflect.TypeOf((*MockActiveflowHandler)(nil).ServiceStop), ctx, id, serviceID)
 }
 
 // SetForwardActionID mocks base method.

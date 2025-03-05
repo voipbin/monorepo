@@ -1123,3 +1123,120 @@ func Test_PopStack(t *testing.T) {
 		})
 	}
 }
+
+func Test_ServiceStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id        uuid.UUID
+		serviceID uuid.UUID
+
+		responseActiveflow *activeflow.Activeflow
+
+		responseStack *stack.Stack
+
+		expectStackID    uuid.UUID
+		expectActiveflow *activeflow.Activeflow
+	}{
+		{
+			name: "normal",
+
+			id:        uuid.FromStringOrNil("0bfb993e-f9ea-11ef-8a00-87061c4d89e7"),
+			serviceID: uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
+
+			responseActiveflow: &activeflow.Activeflow{
+				ID:             uuid.FromStringOrNil("0bfb993e-f9ea-11ef-8a00-87061c4d89e7"),
+				CurrentStackID: uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
+							},
+						},
+					},
+					uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"): {
+						ID: uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
+						Actions: []action.Action{
+							{
+								ID: uuid.FromStringOrNil("62931778-f9e4-11ef-8c40-e7607cdb16ea"),
+							},
+						},
+						ReturnStackID:  stack.IDMain,
+						ReturnActionID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
+					},
+				},
+			},
+
+			responseStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
+				Actions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("62931778-f9e4-11ef-8c40-e7607cdb16ea"),
+					},
+				},
+				ReturnStackID:  stack.IDMain,
+				ReturnActionID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
+			},
+			expectStackID: uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
+			expectActiveflow: &activeflow.Activeflow{
+				ID:             uuid.FromStringOrNil("0bfb993e-f9ea-11ef-8a00-87061c4d89e7"),
+				CurrentStackID: uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
+							},
+						},
+					},
+					uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"): {
+						ID: uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
+						Actions: []action.Action{
+							{
+								ID: uuid.FromStringOrNil("62931778-f9e4-11ef-8c40-e7607cdb16ea"),
+							},
+						},
+						ReturnStackID:  stack.IDMain,
+						ReturnActionID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
+					},
+				},
+				ForwardStackID:  stack.IDMain,
+				ForwardActionID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+
+			h := &activeflowHandler{
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				variableHandler: mockVariableHandler,
+				stackHandler:    mockStack,
+				actionHandler:   mockAction,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockStack.EXPECT().Pop(ctx, tt.responseActiveflow.StackMap, tt.expectStackID).Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflow).Return(nil)
+
+			if err := h.ServiceStop(ctx, tt.id, tt.serviceID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

@@ -695,3 +695,58 @@ func Test_FlowV1ActiveflowPushActions(t *testing.T) {
 		})
 	}
 }
+
+func Test_FlowV1ActiveflowServiceStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflowID uuid.UUID
+		serviceID    uuid.UUID
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *fmactiveflow.Activeflow
+	}{
+		{
+			name: "normal",
+
+			activeflowID: uuid.FromStringOrNil("cad183f0-f9ea-11ef-84f4-63c4cb4776ac"),
+			serviceID:    uuid.FromStringOrNil("cb1b9472-f9ea-11ef-9c09-4f2e84854f03"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/activeflows/cad183f0-f9ea-11ef-84f4-63c4cb4776ac/service_stop",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"service_id":"cb1b9472-f9ea-11ef-9c09-4f2e84854f03"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if errStop := reqHandler.FlowV1ActiveflowServiceStop(ctx, tt.activeflowID, tt.serviceID); errStop != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errStop)
+			}
+		})
+	}
+}
