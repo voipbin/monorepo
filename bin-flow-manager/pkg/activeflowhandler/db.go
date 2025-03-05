@@ -37,6 +37,8 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 		log = log.WithField("id", activeflowID)
 	}
 
+	stackMap := h.stackHandler.InitStackMap(ctx, f.Actions)
+
 	// create activeflow
 	tmp := &activeflow.Activeflow{
 		ID:         activeflowID,
@@ -48,14 +50,7 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
-		StackMap: map[uuid.UUID]*stack.Stack{
-			stack.IDMain: {
-				ID:             stack.IDMain,
-				Actions:        f.Actions,
-				ReturnStackID:  stack.IDEmpty,
-				ReturnActionID: action.IDEmpty,
-			},
-		},
+		StackMap: stackMap,
 
 		CurrentStackID: stack.IDMain,
 		CurrentAction: action.Action{
@@ -266,14 +261,15 @@ func (h *activeflowHandler) Gets(ctx context.Context, token string, size uint64,
 }
 
 // PushStack pushes the given action to the stack with a new stack
-func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Activeflow, actions []action.Action) error {
+func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Activeflow, stackID uuid.UUID, actions []action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "PushStack",
 		"activeflow_id": af.ID,
+		"stack_id":      stackID,
 		"actions":       actions,
 	})
 
-	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, actions, af.CurrentStackID, af.CurrentAction.ID)
+	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, stackID, actions, af.CurrentStackID, af.CurrentAction.ID)
 	if err != nil {
 		log.Errorf("Could not push the actions. err: %s", err)
 		return err
@@ -313,7 +309,7 @@ func (h *activeflowHandler) PushActions(ctx context.Context, id uuid.UUID, actio
 		return nil, errors.Wrap(err, "could not generate the flow actions")
 	}
 
-	if errPush := h.PushStack(ctx, af, flowActions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, uuid.Nil, flowActions); errPush != nil {
 		log.Errorf("Could not push the new stack for flow actions. err: %v", errPush)
 		return nil, errors.Wrap(err, "could not push the new stack for flow actions")
 	}

@@ -35,6 +35,7 @@ func Test_Create(t *testing.T) {
 		flowID       uuid.UUID
 
 		responseFlow       *flow.Flow
+		responseStackMap   map[uuid.UUID]*stack.Stack
 		responseUUID       uuid.UUID
 		responseActiveflow *activeflow.Activeflow
 
@@ -55,6 +56,17 @@ func Test_Create(t *testing.T) {
 					{
 						ID:   uuid.FromStringOrNil("770e7166-d692-11ec-b2e7-37e6f0fdd5ea"),
 						Type: action.TypeAnswer,
+					},
+				},
+			},
+			responseStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("770e7166-d692-11ec-b2e7-37e6f0fdd5ea"),
+							Type: action.TypeAnswer,
+						},
 					},
 				},
 			},
@@ -105,6 +117,12 @@ func Test_Create(t *testing.T) {
 			responseFlow: &flow.Flow{
 				ID:      uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
 				Actions: []action.Action{},
+			},
+			responseStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID:      stack.IDMain,
+					Actions: []action.Action{},
+				},
 			},
 			responseUUID: uuid.FromStringOrNil("5f0d58fe-c8cf-11ed-b23d-9b5ebf2aca94"),
 			responseActiveflow: &activeflow.Activeflow{
@@ -159,12 +177,14 @@ func Test_Create(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackhandler.NewMockStackHandler(mc)
 
 			h := &activeflowHandler{
 				utilHandler:     mockUtil,
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
+				stackHandler:    mockStack,
 			}
 
 			ctx := context.Background()
@@ -174,6 +194,7 @@ func Test_Create(t *testing.T) {
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			}
 
+			mockStack.EXPECT().InitStackMap(ctx, tt.responseFlow.Actions).Return(tt.responseStackMap)
 			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectActiveflow).Return(nil)
 			mockVariableHandler.EXPECT().Create(ctx, tt.expectActiveflow.ID, map[string]string{}).Return(&variable.Variable{}, nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.expectActiveflow.ID).Return(tt.responseActiveflow, nil)
@@ -663,6 +684,7 @@ func Test_PushStack(t *testing.T) {
 		name string
 
 		activeflow *activeflow.Activeflow
+		stackID    uuid.UUID
 		actions    []action.Action
 
 		responseStackID uuid.UUID
@@ -691,6 +713,7 @@ func Test_PushStack(t *testing.T) {
 					},
 				},
 			},
+			stackID: uuid.FromStringOrNil("1c18d8a8-f9af-11ef-9d84-571979c7a171"),
 			actions: []action.Action{
 				{
 					Type: action.TypeAnswer,
@@ -744,10 +767,10 @@ func Test_PushStack(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
+			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.stackID, tt.actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflow).Return(nil)
 
-			if err := h.PushStack(ctx, tt.activeflow, tt.actions); err != nil {
+			if err := h.PushStack(ctx, tt.activeflow, tt.stackID, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -860,7 +883,7 @@ func Test_PushActions(t *testing.T) {
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.responseActions, nil)
 
 			// push stack
-			mockStack.EXPECT().Push(ctx, tt.responseActiveflow.StackMap, tt.responseActions, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
+			mockStack.EXPECT().Push(ctx, tt.responseActiveflow.StackMap, uuid.Nil, tt.responseActions, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflow).Return(nil)
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.expectActiveflow, nil)
