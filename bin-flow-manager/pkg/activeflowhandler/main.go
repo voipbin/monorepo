@@ -47,10 +47,12 @@ type ActiveflowHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error)
 
+	PopStackWithStackID(ctx context.Context, af *activeflow.Activeflow, stackID uuid.UUID) error
 	PushActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error)
 
 	SetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
 	Stop(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
+	ServiceStop(ctx context.Context, id uuid.UUID, serviceID uuid.UUID) error
 
 	Execute(ctx context.Context, id uuid.UUID) error
 	ExecuteNextAction(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)

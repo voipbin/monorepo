@@ -325,3 +325,33 @@ func (h *listenHandler) v1ActiveflowsIDPushActionsPost(ctx context.Context, m *s
 
 	return res, nil
 }
+
+// v1ActiveflowsIDServiceStopPost handles
+// /v1/activeflows/<activeflow-id>/service_stop Post
+func (h *listenHandler) v1ActiveflowsIDServiceStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1ActiveflowsIDServiceStopPost",
+		"request": m,
+	})
+
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/service_stop"
+	tmpVals := strings.Split(m.URI, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	var req request.V1DataActiveFlowsIDServiceStopPost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	if errStop := h.activeflowHandler.ServiceStop(ctx, id, req.ServiceID); errStop != nil {
+		return nil, errors.Wrapf(errStop, "Could not stop the service. service_id: %s", req.ServiceID)
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}

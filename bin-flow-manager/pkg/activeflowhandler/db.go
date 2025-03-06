@@ -350,3 +350,18 @@ func (h *activeflowHandler) PushActions(ctx context.Context, id uuid.UUID, actio
 
 	return res, nil
 }
+
+// ServiceStop stops the service in the activeflow.
+// the service should run in the current stack.
+func (h *activeflowHandler) ServiceStop(ctx context.Context, id uuid.UUID, serviceID uuid.UUID) error {
+	af, err := h.Get(ctx, id)
+	if err != nil {
+		return errors.Wrapf(err, "could not get activeflow info. activeflow_id: %s", id)
+	}
+
+	if errPop := h.PopStackWithStackID(ctx, af, serviceID); errPop != nil {
+		return errors.Wrapf(errPop, "could not pop the stack. stack_id: %s", serviceID)
+	}
+
+	return nil
+}
