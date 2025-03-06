@@ -243,3 +243,27 @@ func (r *requestHandler) FlowV1ActiveflowPushActions(ctx context.Context, active
 
 	return &res, nil
 }
+
+// FlowV1ActiveflowPushActions pushes actions to next to the current action of the given activeflow.
+func (r *requestHandler) FlowV1ActiveflowServiceStop(ctx context.Context, activeflowID uuid.UUID, serviceID uuid.UUID) error {
+
+	uri := fmt.Sprintf("/v1/activeflows/%s/service_stop", activeflowID)
+
+	m, err := json.Marshal(fmrequest.V1DataActiveFlowsIDServiceStopPost{
+		ServiceID: serviceID,
+	})
+	if err != nil {
+		return err
+	}
+
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/service_stop", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return err
+	}
+
+	if tmp.StatusCode >= 299 {
+		return fmt.Errorf("could not stop the service")
+	}
+
+	return nil
+}
