@@ -542,7 +542,11 @@ func Test_actionHandleConnect(t *testing.T) {
 			if tt.responseUUIDHangup != uuid.Nil {
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDHangup)
 			}
-			mockStack.EXPECT().Push(ctx, tt.af.StackMap, uuid.Nil, tt.expectPushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(tt.responsePushStack, nil)
+
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.expectPushActions).Return(tt.expectPushActions, nil)
+			mockStack.EXPECT().Create(uuid.Nil, tt.expectPushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(tt.responsePushStack)
+			mockStack.EXPECT().StackMapPush(tt.af.StackMap, tt.responsePushStack).Return(nil)
+
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
 			if err := h.actionHandleConnect(ctx, tt.af); err != nil {
@@ -839,11 +843,13 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				stackHandler:  mockStack,
+				actionHandler: mockAction,
 			}
 			ctx := context.Background()
 
@@ -851,7 +857,10 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 			mockReq.EXPECT().QueueV1ServiceTypeQueuecallStart(ctx, tt.expectQueueID, tt.activeflow.ID, qmqueuecall.ReferenceType(qmqueuecall.ReferenceTypeCall), tt.activeflow.ReferenceID, tt.responseExitAction.ID).Return(tt.responseService, nil)
 
 			// PushStack
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.responseService.PushActions).Return(tt.responseService.PushActions, nil)
+			mockStack.EXPECT().Create(tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack)
+			mockStack.EXPECT().StackMapPush(tt.activeflow.StackMap, tt.responseStack).Return(nil)
+
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 
 			mockReq.EXPECT().QueueV1QueuecallUpdateStatusWaiting(ctx, tt.responseService.ID).Return(&qmqueuecall.Queuecall{}, nil)
@@ -870,8 +879,8 @@ func Test_actionHandleFetch(t *testing.T) {
 
 		activeFlow *activeflow.Activeflow
 
-		responseFetch []action.Action
-		responseStack *stack.Stack
+		responseFetchActions []action.Action
+		responseStackMap     map[uuid.UUID]*stack.Stack
 
 		expectUpdateActiveflow *activeflow.Activeflow
 	}{
@@ -906,27 +915,35 @@ func Test_actionHandleFetch(t *testing.T) {
 				},
 			},
 
-			responseFetch: []action.Action{
+			responseFetchActions: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("0dc5e10c-d4e0-11ec-8dd0-a326b2d87c71"),
 					Type: action.TypeAnswer,
 				},
 			},
-			responseStack: &stack.Stack{
-				ID: uuid.FromStringOrNil("5d18b072-d4e0-11ec-a4ab-1fcd7ec4f258"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("0dc5e10c-d4e0-11ec-8dd0-a326b2d87c71"),
-						Type: action.TypeAnswer,
+			responseStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("f0b5605e-648e-11ec-b318-a7f267cc71fc"),
+							Type: action.TypeAnswer,
+						},
+						{
+							ID:   uuid.FromStringOrNil("c1c76320-d4df-11ec-acdf-8304c3ca8c1f"),
+							Type: action.TypeFetch,
+						},
+						{
+							ID:   uuid.FromStringOrNil("ad108d6a-648e-11ec-a226-536bc1253066"),
+							Type: action.TypeTalk,
+						},
 					},
 				},
 			},
 
 			expectUpdateActiveflow: &activeflow.Activeflow{
-				ID:              uuid.FromStringOrNil("de10062c-d4df-11ec-bd42-a76fe4d96b2f"),
-				ForwardStackID:  uuid.FromStringOrNil("5d18b072-d4e0-11ec-a4ab-1fcd7ec4f258"),
-				ForwardActionID: uuid.FromStringOrNil("0dc5e10c-d4e0-11ec-8dd0-a326b2d87c71"),
-				ReferenceID:     uuid.FromStringOrNil("d79ad434-d4df-11ec-8edf-0f15868a6578"),
+				ID:          uuid.FromStringOrNil("de10062c-d4df-11ec-bd42-a76fe4d96b2f"),
+				ReferenceID: uuid.FromStringOrNil("d79ad434-d4df-11ec-8edf-0f15868a6578"),
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("c1c76320-d4df-11ec-acdf-8304c3ca8c1f"),
 					Type: action.TypeFetch,
@@ -973,9 +990,13 @@ func Test_actionHandleFetch(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockAction.EXPECT().ActionFetchGet(&tt.activeFlow.CurrentAction, tt.activeFlow.ID, tt.activeFlow.ReferenceID).Return(tt.responseFetch, nil)
-			mockStack.EXPECT().Push(ctx, tt.activeFlow.StackMap, uuid.Nil, tt.responseFetch, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockAction.EXPECT().ActionFetchGet(&tt.activeFlow.CurrentAction, tt.activeFlow.ID, tt.activeFlow.ReferenceID).Return(tt.responseFetchActions, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeFlow.ID).Return(tt.activeFlow, nil)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.responseFetchActions).Return(tt.responseFetchActions, nil)
+			mockStack.EXPECT().PushActions(ctx, tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID, tt.responseFetchActions).Return(tt.responseStackMap, nil)
+
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeFlow.ID).Return(tt.expectUpdateActiveflow, nil)
 
 			if err := h.actionHandleFetch(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1182,7 +1203,11 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseflow, nil)
 
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, uuid.Nil, tt.responseflow.Actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.responseflow.Actions).Return(tt.responseflow.Actions, nil)
+			mockStack.EXPECT().Create(uuid.Nil, tt.responseflow.Actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack)
+			mockStack.EXPECT().StackMapPush(tt.activeflow.StackMap, tt.responseStack).Return(nil)
+
+			// mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, uuid.Nil, tt.responseflow.Actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
 			if err := h.actionHandleFetchFlow(ctx, tt.activeflow); err != nil {
@@ -1283,11 +1308,13 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				stackHandler:  mockStack,
+				actionHandler: mockAction,
 			}
 
 			ctx := context.Background()
@@ -1295,7 +1322,9 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 			mockReq.EXPECT().ConferenceV1ServiceTypeConferencecallStart(ctx, tt.expectConferenceID, cfconferencecall.ReferenceTypeCall, tt.activeflow.ReferenceID).Return(tt.responseService, nil)
 
 			// push stack
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.responseService.PushActions).Return(tt.responseService.PushActions, nil)
+			mockStack.EXPECT().Create(tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack)
+			mockStack.EXPECT().StackMapPush(tt.activeflow.StackMap, tt.responseStack).Return(nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 
 			if err := h.actionHandleConferenceJoin(ctx, tt.activeflow); err != nil {
@@ -3522,7 +3551,10 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectChatbotID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage, 3000).Return(tt.responseService, nil)
 
 			// push stack
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.responseService.PushActions).Return(tt.responseService.PushActions, nil)
+			mockStack.EXPECT().Create(tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack)
+			mockStack.EXPECT().StackMapPush(tt.activeflow.StackMap, tt.responseStack).Return(nil)
+
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 
 			if errCall := h.actionHandleChatbotTalk(ctx, tt.activeflow); errCall != nil {

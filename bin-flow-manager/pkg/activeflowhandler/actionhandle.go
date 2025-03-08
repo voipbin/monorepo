@@ -76,24 +76,19 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 // actionHandleFetch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
 func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflow.Activeflow) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleFetch",
-		"activeflow": af,
-	})
 
 	act := &af.CurrentAction
 
 	// patch the actions from the remote
 	fetchedActions, err := h.actionHandler.ActionFetchGet(act, af.ID, af.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not fetch the actions from the remote. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not fetch the actions from the remote")
 	}
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, uuid.Nil, fetchedActions); errPush != nil {
-		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
-		return errPush
+	_, err = h.PushActions(ctx, af.ID, fetchedActions)
+	if err != nil {
+		return errors.Wrapf(err, "could not push the actions to the stack")
 	}
 
 	return nil

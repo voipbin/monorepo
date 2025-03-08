@@ -56,7 +56,7 @@ func Test_Create(t *testing.T) {
 
 			h := &stackHandler{}
 
-			res := h.create(tt.stackID, tt.actions, tt.returnStrackID, tt.returnActionID)
+			res := h.Create(tt.stackID, tt.actions, tt.returnStrackID, tt.returnActionID)
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

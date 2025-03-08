@@ -721,7 +721,7 @@ func Test_findAction(t *testing.T) {
 
 			h := &stackHandler{}
 
-			res := h.findAction(tt.actions, tt.actionID)
+			res := h.actionFind(tt.actions, tt.actionID)
 
 			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
@@ -784,6 +784,166 @@ func Test_SearchAction(t *testing.T) {
 			}
 			if !reflect.DeepEqual(tt.expectResAction, resAction) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResAction, resAction)
+			}
+		})
+	}
+}
+
+func Test_PushActions(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		stackMap       map[uuid.UUID]*stack.Stack
+		stackID        uuid.UUID
+		targetActionID uuid.UUID
+		actions        []action.Action
+
+		expectRes map[uuid.UUID]*stack.Stack
+	}{
+		{
+			name: "normal",
+
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID: uuid.FromStringOrNil("ff5b8474-fbcd-11ef-b2d8-635dcecb71e6"),
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+			},
+			stackID:        stack.IDMain,
+			targetActionID: uuid.FromStringOrNil("ff5b8474-fbcd-11ef-b2d8-635dcecb71e6"),
+			actions: []action.Action{
+				{
+					ID: uuid.FromStringOrNil("ff9a8480-fbcd-11ef-b111-3bb24eb836d9"),
+				},
+				{
+					ID: uuid.FromStringOrNil("ffc0c6fe-fbcd-11ef-a6b7-93565861c0ba"),
+				},
+			},
+
+			expectRes: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID: uuid.FromStringOrNil("ff5b8474-fbcd-11ef-b2d8-635dcecb71e6"),
+						},
+						{
+							ID: uuid.FromStringOrNil("ff9a8480-fbcd-11ef-b111-3bb24eb836d9"),
+						},
+						{
+							ID: uuid.FromStringOrNil("ffc0c6fe-fbcd-11ef-a6b7-93565861c0ba"),
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+			},
+		},
+		{
+			name: "push in the middle",
+
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID: uuid.FromStringOrNil("982baf32-fbd1-11ef-86d7-bf6ab6ee0323"),
+						},
+						{
+							ID: uuid.FromStringOrNil("991b1c8e-fbd1-11ef-8fdd-eb909f840bd9"),
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+				uuid.FromStringOrNil("9888e026-fbd1-11ef-b1e5-c7c42b317c7f"): {
+					ID: uuid.FromStringOrNil("9888e026-fbd1-11ef-b1e5-c7c42b317c7f"),
+					Actions: []action.Action{
+						{
+							ID: uuid.FromStringOrNil("98a98704-fbd1-11ef-9ccb-bfa46af0d721"),
+						},
+						{
+							ID: uuid.FromStringOrNil("98ce6452-fbd1-11ef-866b-d3f4e1bec4fc"),
+						},
+						{
+							ID: uuid.FromStringOrNil("98f5b156-fbd1-11ef-b5e6-9b611231d004"),
+						},
+					},
+					ReturnStackID:  stack.IDMain,
+					ReturnActionID: uuid.FromStringOrNil("982baf32-fbd1-11ef-86d7-bf6ab6ee0323"),
+				},
+			},
+			stackID:        uuid.FromStringOrNil("9888e026-fbd1-11ef-b1e5-c7c42b317c7f"),
+			targetActionID: uuid.FromStringOrNil("98ce6452-fbd1-11ef-866b-d3f4e1bec4fc"),
+			actions: []action.Action{
+				{
+					ID: uuid.FromStringOrNil("99419134-fbd1-11ef-9aad-dfa75b8ff53e"),
+				},
+				{
+					ID: uuid.FromStringOrNil("99633c4e-fbd1-11ef-9b36-77dc4559204e"),
+				},
+			},
+
+			expectRes: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID: uuid.FromStringOrNil("982baf32-fbd1-11ef-86d7-bf6ab6ee0323"),
+						},
+						{
+							ID: uuid.FromStringOrNil("991b1c8e-fbd1-11ef-8fdd-eb909f840bd9"),
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+				uuid.FromStringOrNil("9888e026-fbd1-11ef-b1e5-c7c42b317c7f"): {
+					ID: uuid.FromStringOrNil("9888e026-fbd1-11ef-b1e5-c7c42b317c7f"),
+					Actions: []action.Action{
+						{
+							ID: uuid.FromStringOrNil("98a98704-fbd1-11ef-9ccb-bfa46af0d721"),
+						},
+						{
+							ID: uuid.FromStringOrNil("98ce6452-fbd1-11ef-866b-d3f4e1bec4fc"),
+						},
+						{
+							ID: uuid.FromStringOrNil("99419134-fbd1-11ef-9aad-dfa75b8ff53e"),
+						},
+						{
+							ID: uuid.FromStringOrNil("99633c4e-fbd1-11ef-9b36-77dc4559204e"),
+						},
+						{
+							ID: uuid.FromStringOrNil("98f5b156-fbd1-11ef-b5e6-9b611231d004"),
+						},
+					},
+					ReturnStackID:  stack.IDMain,
+					ReturnActionID: uuid.FromStringOrNil("982baf32-fbd1-11ef-86d7-bf6ab6ee0323"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			h := &stackHandler{}
+			ctx := context.Background()
+
+			res, err := h.PushActions(ctx, tt.stackMap, tt.stackID, tt.targetActionID, tt.actions)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

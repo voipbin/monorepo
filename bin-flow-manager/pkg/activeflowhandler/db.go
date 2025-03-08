@@ -266,18 +266,23 @@ func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Active
 		return fmt.Errorf("no actions to push")
 	}
 
-	tmp, err := h.stackHandler.Push(ctx, af.StackMap, stackID, actions, af.CurrentStackID, af.CurrentAction.ID)
+	tmpActions, err := h.actionHandler.GenerateFlowActions(ctx, actions)
 	if err != nil {
-		return errors.Wrapf(err, "could not push the actions. stack_id: %s", stackID)
+		return errors.Wrap(err, "could not generate the flow actions")
+	}
+
+	tmpStack := h.stackHandler.Create(stackID, tmpActions, af.CurrentStackID, af.CurrentAction.ID)
+	if errPush := h.stackHandler.StackMapPush(af.StackMap, tmpStack); errPush != nil {
+		return errors.Wrapf(errPush, "could not push the stack. stack_id: %s", stackID)
 	}
 
 	// update forward actions
-	af.ForwardStackID = tmp.ID
-	af.ForwardActionID = tmp.Actions[0].ID
+	af.ForwardStackID = tmpStack.ID
+	af.ForwardActionID = tmpStack.Actions[0].ID
 
 	// update activeflow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		return errors.Wrapf(err, "could not update the active flow after pushed the actions. stack_id: %s", stackID)
+		return errors.Wrapf(err, "could not update the activeflow after pushed the stack. stack_id: %s", stackID)
 	}
 
 	return nil
@@ -337,9 +342,15 @@ func (h *activeflowHandler) PushActions(ctx context.Context, id uuid.UUID, actio
 		return nil, errors.Wrap(err, "could not generate the flow actions")
 	}
 
-	if errPush := h.PushStack(ctx, af, uuid.Nil, flowActions); errPush != nil {
-		log.Errorf("Could not push the new stack for flow actions. err: %v", errPush)
-		return nil, errors.Wrap(err, "could not push the new stack for flow actions")
+	tmp, err := h.stackHandler.PushActions(ctx, af.StackMap, af.CurrentStackID, af.CurrentAction.ID, flowActions)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not push the actions. activeflow_id: %s", id)
+	}
+	af.StackMap = tmp
+
+	// update activeflow
+	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+		return nil, errors.Wrapf(err, "could not update the activeflow after pushed the actions. activeflow_id: %s", id)
 	}
 
 	res, err := h.Get(ctx, id)

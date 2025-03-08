@@ -11,12 +11,17 @@ import (
 	"monorepo/bin-flow-manager/models/stack"
 )
 
-// FlowGet returns flow
-func (h *stackHandler) create(stackID uuid.UUID, actions []action.Action, returnStackID uuid.UUID, returnActionID uuid.UUID) *stack.Stack {
+// Create creates a new stack.
+func (h *stackHandler) Create(stackID uuid.UUID, actions []action.Action, returnStackID uuid.UUID, returnActionID uuid.UUID) *stack.Stack {
+
+	if stackID == uuid.Nil {
+		stackID = h.utilHandler.UUIDCreate()
+	}
 
 	res := &stack.Stack{
-		ID:             stackID,
-		Actions:        actions,
+		ID:      stackID,
+		Actions: actions,
+
 		ReturnStackID:  returnStackID,
 		ReturnActionID: returnActionID,
 	}
@@ -55,7 +60,7 @@ func (h *stackHandler) Push(ctx context.Context, stackMap map[uuid.UUID]*stack.S
 		return nil, fmt.Errorf("stack already exists. stack_id: %s", stackID)
 	}
 
-	res := h.create(stackID, actions, currentStackID, currentActionID)
+	res := h.Create(stackID, actions, currentStackID, currentActionID)
 
 	stackMap[stackID] = res
 
@@ -63,7 +68,7 @@ func (h *stackHandler) Push(ctx context.Context, stackMap map[uuid.UUID]*stack.S
 }
 
 func (h *stackHandler) InitStackMap(ctx context.Context, actions []action.Action) map[uuid.UUID]*stack.Stack {
-	tmp := h.create(stack.IDMain, actions, stack.IDEmpty, action.IDEmpty)
+	tmp := h.Create(stack.IDMain, actions, stack.IDEmpty, action.IDEmpty)
 	res := map[uuid.UUID]*stack.Stack{
 		stack.IDMain: tmp,
 	}

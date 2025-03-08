@@ -43,6 +43,20 @@ func (m *MockStackHandler) EXPECT() *MockStackHandlerMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockStackHandler) Create(stackID uuid.UUID, actions []action.Action, returnStackID, returnActionID uuid.UUID) *stack.Stack {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", stackID, actions, returnStackID, returnActionID)
+	ret0, _ := ret[0].(*stack.Stack)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockStackHandlerMockRecorder) Create(stackID, actions, returnStackID, returnActionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockStackHandler)(nil).Create), stackID, actions, returnStackID, returnActionID)
+}
+
 // Get mocks base method.
 func (m *MockStackHandler) Get(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID) (*stack.Stack, error) {
 	m.ctrl.T.Helper()
@@ -133,6 +147,21 @@ func (mr *MockStackHandlerMockRecorder) Push(ctx, stackMap, stackID, actions, cu
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Push", reflect.TypeOf((*MockStackHandler)(nil).Push), ctx, stackMap, stackID, actions, currentStackID, currentActionID)
 }
 
+// PushActions mocks base method.
+func (m *MockStackHandler) PushActions(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, stackID, targetActionID uuid.UUID, actions []action.Action) (map[uuid.UUID]*stack.Stack, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushActions", ctx, stackMap, stackID, targetActionID, actions)
+	ret0, _ := ret[0].(map[uuid.UUID]*stack.Stack)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushActions indicates an expected call of PushActions.
+func (mr *MockStackHandlerMockRecorder) PushActions(ctx, stackMap, stackID, targetActionID, actions any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushActions", reflect.TypeOf((*MockStackHandler)(nil).PushActions), ctx, stackMap, stackID, targetActionID, actions)
+}
+
 // SearchAction mocks base method.
 func (m *MockStackHandler) SearchAction(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, stackID, actionID uuid.UUID) (uuid.UUID, *action.Action, error) {
 	m.ctrl.T.Helper()
@@ -147,4 +176,62 @@ func (m *MockStackHandler) SearchAction(ctx context.Context, stackMap map[uuid.U
 func (mr *MockStackHandlerMockRecorder) SearchAction(ctx, stackMap, stackID, actionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchAction", reflect.TypeOf((*MockStackHandler)(nil).SearchAction), ctx, stackMap, stackID, actionID)
+}
+
+// StackMapGet mocks base method.
+func (m *MockStackHandler) StackMapGet(stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID) (*stack.Stack, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StackMapGet", stackMap, stackID)
+	ret0, _ := ret[0].(*stack.Stack)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StackMapGet indicates an expected call of StackMapGet.
+func (mr *MockStackHandlerMockRecorder) StackMapGet(stackMap, stackID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StackMapGet", reflect.TypeOf((*MockStackHandler)(nil).StackMapGet), stackMap, stackID)
+}
+
+// StackMapInit mocks base method.
+func (m *MockStackHandler) StackMapInit(actions []action.Action) map[uuid.UUID]*stack.Stack {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StackMapInit", actions)
+	ret0, _ := ret[0].(map[uuid.UUID]*stack.Stack)
+	return ret0
+}
+
+// StackMapInit indicates an expected call of StackMapInit.
+func (mr *MockStackHandlerMockRecorder) StackMapInit(actions any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StackMapInit", reflect.TypeOf((*MockStackHandler)(nil).StackMapInit), actions)
+}
+
+// StackMapPop mocks base method.
+func (m *MockStackHandler) StackMapPop(stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID) (*stack.Stack, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StackMapPop", stackMap, stackID)
+	ret0, _ := ret[0].(*stack.Stack)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StackMapPop indicates an expected call of StackMapPop.
+func (mr *MockStackHandlerMockRecorder) StackMapPop(stackMap, stackID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StackMapPop", reflect.TypeOf((*MockStackHandler)(nil).StackMapPop), stackMap, stackID)
+}
+
+// StackMapPush mocks base method.
+func (m *MockStackHandler) StackMapPush(stackMap map[uuid.UUID]*stack.Stack, s *stack.Stack) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StackMapPush", stackMap, s)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StackMapPush indicates an expected call of StackMapPush.
+func (mr *MockStackHandlerMockRecorder) StackMapPush(stackMap, s any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StackMapPush", reflect.TypeOf((*MockStackHandler)(nil).StackMapPush), stackMap, s)
 }

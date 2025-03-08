@@ -11,8 +11,8 @@ import (
 	"monorepo/bin-flow-manager/models/stack"
 )
 
-// findAction returns a pointer of the given actionID's action from the actions
-func (h *stackHandler) findAction(actions []action.Action, actionID uuid.UUID) *action.Action {
+// actionFind returns a pointer of the given actionID's action from the actions
+func (h *stackHandler) actionFind(actions []action.Action, actionID uuid.UUID) *action.Action {
 
 	i := 0
 	for _, a := range actions {
@@ -44,7 +44,7 @@ func (h *stackHandler) SearchAction(ctx context.Context, stackMap map[uuid.UUID]
 			return stack.IDEmpty, nil, err
 		}
 
-		a := h.findAction(s.Actions, actionID)
+		a := h.actionFind(s.Actions, actionID)
 		if a == nil {
 			return stack.IDEmpty, nil, fmt.Errorf("action not found")
 		}
@@ -55,7 +55,7 @@ func (h *stackHandler) SearchAction(ctx context.Context, stackMap map[uuid.UUID]
 	// if stackID not specified, we run through all stacks
 	for tmpStackID, s := range stackMap {
 
-		a := h.findAction(s.Actions, actionID)
+		a := h.actionFind(s.Actions, actionID)
 		if a != nil {
 			// found
 			return tmpStackID, a, nil
@@ -96,7 +96,7 @@ func (h *stackHandler) GetAction(ctx context.Context, stackMap map[uuid.UUID]*st
 		}
 
 		// get action
-		tmpAction := h.findAction(s.Actions, targetActionID)
+		tmpAction := h.actionFind(s.Actions, targetActionID)
 		if tmpAction != nil {
 			// found
 			return resStackID, tmpAction, nil
@@ -218,4 +218,22 @@ func (h *stackHandler) GetNextAction(ctx context.Context, stackMap map[uuid.UUID
 
 	log.Errorf("Exceed max stack count.")
 	return stack.IDMain, &action.ActionFinish
+}
+
+// PushActions
+func (h *stackHandler) PushActions(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, targetActionID uuid.UUID, actions []action.Action) (map[uuid.UUID]*stack.Stack, error) {
+
+	tmp, err := h.Get(ctx, stackMap, stackID)
+	if err != nil {
+		return nil, fmt.Errorf("no stack found. stack_id: %s", stackID)
+	}
+
+	for i, a := range tmp.Actions {
+		if a.ID == targetActionID {
+			tmp.Actions = append(tmp.Actions[:i+1], append(actions, tmp.Actions[i+1:]...)...)
+			break
+		}
+	}
+
+	return stackMap, nil
 }

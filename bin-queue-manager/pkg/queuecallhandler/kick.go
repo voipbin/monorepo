@@ -30,10 +30,9 @@ func (h *queuecallHandler) Kick(ctx context.Context, id uuid.UUID) (*queuecall.Q
 		return nil, fmt.Errorf("invalid queuecall status. status: %s", qc.Status)
 	}
 
-	// send the forward request
-	if errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceActiveflowID, qc.ExitActionID, true); errForward != nil {
-		log.Errorf("Could not forward the call. err: %v", errForward)
-		return nil, errForward
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID); errStop != nil {
+		log.Errorf("Could not stop the call. err: %v", errStop)
+		return nil, errStop
 	}
 
 	if qc.Status == queuecall.StatusService {

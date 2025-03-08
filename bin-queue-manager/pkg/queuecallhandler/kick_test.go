@@ -121,7 +121,7 @@ func Test_Kick(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ExitActionID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
 				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, tt.expectDurationWaiting, tt.responseCurTime)
@@ -214,7 +214,7 @@ func Test_KickByReferenceID(t *testing.T) {
 			mockDB.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseQueuecall, nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ExitActionID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
 				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime)

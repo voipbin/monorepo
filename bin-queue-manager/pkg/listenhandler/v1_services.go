@@ -13,12 +13,10 @@ import (
 
 // processV1ServicesTypeQueuecallPost handles POST /v1/services/type/queuecall request
 func (h *listenHandler) processV1ServicesTypeQueuecallPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ServicesTypeQueuecallPost",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ServicesTypeQueuecallPost",
+		"uri":     m.URI,
+	})
 
 	var req request.V1DataServicesTypeQueuecallPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
