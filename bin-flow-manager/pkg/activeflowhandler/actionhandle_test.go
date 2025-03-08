@@ -993,7 +993,7 @@ func Test_actionHandleFetch(t *testing.T) {
 			mockAction.EXPECT().ActionFetchGet(&tt.activeFlow.CurrentAction, tt.activeFlow.ID, tt.activeFlow.ReferenceID).Return(tt.responseFetchActions, nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeFlow.ID).Return(tt.activeFlow, nil)
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.responseFetchActions).Return(tt.responseFetchActions, nil)
-			mockStack.EXPECT().PushActions(ctx, tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID, tt.responseFetchActions).Return(tt.responseStackMap, nil)
+			mockStack.EXPECT().StackMapPushActions(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID, tt.responseFetchActions).Return(nil)
 
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeFlow.ID).Return(tt.expectUpdateActiveflow, nil)

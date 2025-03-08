@@ -68,3 +68,20 @@ func (h *stackHandler) StackMapPop(stackMap map[uuid.UUID]*stack.Stack, stackID 
 	h.stackMapRemove(stackMap, stackID)
 	return res, nil
 }
+
+// StackMapPushActions pushes the actions to the given stack id after target action id.
+func (h *stackHandler) StackMapPushActions(stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, targetActionID uuid.UUID, actions []action.Action) error {
+	tmp, err := h.StackMapGet(stackMap, stackID)
+	if err != nil {
+		return fmt.Errorf("no stack found. stack_id: %s", stackID)
+	}
+
+	for i, a := range tmp.Actions {
+		if a.ID == targetActionID {
+			tmp.Actions = append(tmp.Actions[:i+1], append(actions, tmp.Actions[i+1:]...)...)
+			break
+		}
+	}
+
+	return nil
+}

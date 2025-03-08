@@ -37,7 +37,7 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 		log = log.WithField("id", activeflowID)
 	}
 
-	stackMap := h.stackHandler.InitStackMap(ctx, f.Actions)
+	stackMap := h.stackHandler.StackMapInit(f.Actions)
 
 	// create activeflow
 	tmp := &activeflow.Activeflow{
@@ -342,11 +342,9 @@ func (h *activeflowHandler) PushActions(ctx context.Context, id uuid.UUID, actio
 		return nil, errors.Wrap(err, "could not generate the flow actions")
 	}
 
-	tmp, err := h.stackHandler.PushActions(ctx, af.StackMap, af.CurrentStackID, af.CurrentAction.ID, flowActions)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not push the actions. activeflow_id: %s", id)
+	if errPush := h.stackHandler.StackMapPushActions(af.StackMap, af.CurrentStackID, af.CurrentAction.ID, flowActions); errPush != nil {
+		return nil, errors.Wrapf(errPush, "could not push the actions. activeflow_id: %s", id)
 	}
-	af.StackMap = tmp
 
 	// update activeflow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
