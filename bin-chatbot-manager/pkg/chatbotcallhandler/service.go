@@ -36,6 +36,10 @@ func (h *chatbotcallHandler) ServiceStart(
 		"language":       language,
 	})
 
+	if referenceType == chatbotcall.ReferenceTypeNone {
+		return nil, errors.New("unsupported reference type")
+	}
+
 	cc, err := h.Start(ctx, chatbotID, activeflowID, referenceType, referenceID, gender, language)
 	if err != nil {
 		log.Errorf("Could not start chatbotcall. err: %v", err)

@@ -168,8 +168,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	var response *sock.Response
 
 	ctx := context.Background()
-	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
-
 	start := time.Now()
 	switch {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,12 +264,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
-		log.Errorf("Could not handle the request message correctly. method: %s, uri: %s, err: %v", m.Method, m.URI, err)
+		log.Errorf("Could not handle the requested message correctly. method: %s, uri: %s, err: %v", m.Method, m.URI, err)
 		response = simpleResponse(400)
 		err = nil
 	}
-
-	log.WithField("response", response).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }
