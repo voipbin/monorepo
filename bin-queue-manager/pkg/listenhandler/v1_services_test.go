@@ -26,32 +26,31 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 		activeflowID  uuid.UUID
 		referenceType queuecall.ReferenceType
 		referenceID   uuid.UUID
-		exitActionID  uuid.UUID
 
 		responseService *service.Service
 
 		expectRes *sock.Response
 	}{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+
+			request: &sock.Request{
 				URI:      "/v1/services/type/queuecall",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"queue_id":"61ff907c-acfa-11ed-978c-f76de62bf9f4","activeflow_id":"622931d4-acfa-11ed-9689-7b028764e072","reference_type":"call","reference_id":"624fe626-acfa-11ed-a358-0b881bcb40b0","exit_action_id":"62739c88-acfa-11ed-b338-67d80143d77e"}`),
 			},
 
-			uuid.FromStringOrNil("61ff907c-acfa-11ed-978c-f76de62bf9f4"),
-			uuid.FromStringOrNil("622931d4-acfa-11ed-9689-7b028764e072"),
-			queuecall.ReferenceTypeCall,
-			uuid.FromStringOrNil("624fe626-acfa-11ed-a358-0b881bcb40b0"),
-			uuid.FromStringOrNil("62739c88-acfa-11ed-b338-67d80143d77e"),
+			queueID:       uuid.FromStringOrNil("61ff907c-acfa-11ed-978c-f76de62bf9f4"),
+			activeflowID:  uuid.FromStringOrNil("622931d4-acfa-11ed-9689-7b028764e072"),
+			referenceType: queuecall.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("624fe626-acfa-11ed-a358-0b881bcb40b0"),
 
-			&service.Service{
+			responseService: &service.Service{
 				ID: uuid.FromStringOrNil("6299086a-acfa-11ed-a8ff-4f23e0ae71fd"),
 			},
 
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"6299086a-acfa-11ed-a8ff-4f23e0ae71fd","type":"","push_actions":null}`),
@@ -79,7 +78,6 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 				tt.activeflowID,
 				tt.referenceType,
 				tt.referenceID,
-				tt.exitActionID,
 			).Return(tt.responseService, nil)
 
 			res, err := h.processRequest(tt.request)

@@ -25,8 +25,7 @@ const (
 		reference_activeflow_id,
 
 		forward_action_id,
-		exit_action_id,
-		confbridge_id,
+ 		confbridge_id,
 
 		source,
 		routing_method,
@@ -68,7 +67,6 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 		&referenceActiveflowID,
 
 		&res.ForwardActionID,
-		&res.ExitActionID,
 		&res.ConfbridgeID,
 
 		&source,
@@ -130,8 +128,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		reference_activeflow_id,
 
 		forward_action_id,
-		exit_action_id,
-		confbridge_id,
+ 		confbridge_id,
 
 		source,
 		routing_method,
@@ -154,7 +151,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 	) values(
 		?, ?, ?,
 		?, ?, ?,
-		?, ?, ?,
+		?, ?,
 		?, ?, ?,
 		?, ?,
 		?, ?,
@@ -183,7 +180,6 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		a.ReferenceActiveflowID.Bytes(),
 
 		a.ForwardActionID.Bytes(),
-		a.ExitActionID.Bytes(),
 		a.ConfbridgeID.Bytes(),
 
 		tmpSource,

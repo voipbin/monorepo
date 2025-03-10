@@ -35,7 +35,6 @@ func Test_ServiceStart(t *testing.T) {
 		activeflowID  uuid.UUID
 		referenceType queuecall.ReferenceType
 		referenceID   uuid.UUID
-		exitActionID  uuid.UUID
 
 		responseQueue         *queue.Queue
 		responseCall          *cmcall.Call
@@ -54,7 +53,6 @@ func Test_ServiceStart(t *testing.T) {
 			activeflowID:  uuid.FromStringOrNil("e8004cda-acef-11ed-8af6-1f155a5daa45"),
 			referenceType: queuecall.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("e82487ee-acef-11ed-b6a0-d375ffdc940c"),
-			exitActionID:  uuid.FromStringOrNil("e85c4fb2-acef-11ed-870b-23a9cdef3376"),
 
 			responseQueue: &queue.Queue{
 				ID:            uuid.FromStringOrNil("e7d1c428-acef-11ed-9009-f32fafb30091"),
@@ -94,7 +92,6 @@ func Test_ServiceStart(t *testing.T) {
 				ReferenceID:           uuid.FromStringOrNil("e82487ee-acef-11ed-b6a0-d375ffdc940c"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("e8004cda-acef-11ed-8af6-1f155a5daa45"),
 				ForwardActionID:       uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
-				ExitActionID:          uuid.FromStringOrNil("e85c4fb2-acef-11ed-870b-23a9cdef3376"),
 				ConfbridgeID:          uuid.FromStringOrNil("b0c77a26-acf0-11ed-8fd7-37de63b3d029"),
 				Source:                commonaddress.Address{},
 				RoutingMethod:         queue.RoutingMethodRandom,
@@ -162,7 +159,7 @@ func Test_ServiceStart(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseQueuecall.ReferenceActiveflowID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().QueueV1QueuecallHealthCheck(ctx, tt.responseQueuecall.ID, defaultHealthCheckDelay, 0).Return(nil)
 
-			res, err := h.ServiceStart(ctx, tt.queueID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.exitActionID)
+			res, err := h.ServiceStart(ctx, tt.queueID, tt.activeflowID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

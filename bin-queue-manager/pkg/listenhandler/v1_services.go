@@ -27,7 +27,7 @@ func (h *listenHandler) processV1ServicesTypeQueuecallPost(ctx context.Context, 
 	}
 
 	// start the service
-	tmp, err := h.queuecallHandler.ServiceStart(ctx, req.QueueID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.ExitActionID)
+	tmp, err := h.queuecallHandler.ServiceStart(ctx, req.QueueID, req.ActiveflowID, req.ReferenceType, req.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return simpleResponse(500), nil

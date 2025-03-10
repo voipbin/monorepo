@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-queue-manager/models/queuecall"
@@ -31,9 +32,8 @@ func (h *queuecallHandler) Kick(ctx context.Context, id uuid.UUID) (*queuecall.Q
 	}
 
 	// send the forward request
-	if errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceActiveflowID, qc.ExitActionID, true); errForward != nil {
-		log.Errorf("Could not forward the call. err: %v", errForward)
-		return nil, errForward
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID); errStop != nil {
+		return nil, errors.Wrapf(errStop, "Could not stop the activeflow. activeflow_id: %s", qc.ReferenceActiveflowID)
 	}
 
 	if qc.Status == queuecall.StatusService {
@@ -99,10 +99,8 @@ func (h *queuecallHandler) kickForce(ctx context.Context, id uuid.UUID) (*queuec
 		return nil, fmt.Errorf("already done")
 	}
 
-	// send the forward request
-	if errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceActiveflowID, qc.ExitActionID, true); errForward != nil {
-		// could not forward the call. but keep continuing
-		log.Errorf("Could not forward the ca=o0mll. err: %v", errForward)
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID); errStop != nil {
+		log.Errorf("Could not stop the activeflow. err: %v", errStop)
 	}
 
 	var res *queuecall.Queuecall
