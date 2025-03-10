@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-flow-manager/models/action"
@@ -11,102 +12,62 @@ import (
 )
 
 // findAction returns a pointer of the given actionID's action from the actions
-func (h *stackHandler) findAction(actions []action.Action, actionID uuid.UUID) *action.Action {
+func (h *stackHandler) findAction(actions []action.Action, actionID uuid.UUID) (int, *action.Action) {
 
 	i := 0
 	for _, a := range actions {
 		if a.ID == actionID {
 			// found
-			return &actions[i]
+			return i, &actions[i]
 		}
 		i++
 	}
 
-	return nil
-}
-
-// SearchAction returns a pointer of the given action id's action.
-// it checks all stacks from the given stackMap if the stackID is empty.
-func (h *stackHandler) SearchAction(stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, actionID uuid.UUID) (uuid.UUID, *action.Action, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":      "SearchAction",
-		"action_id": actionID,
-	})
-	log.Debugf("Getting the action. action_id: %s", actionID)
-
-	if stackID != stack.IDEmpty {
-		// get stack
-		s, err := h.GetStack(stackMap, stackID)
-
-		if err != nil {
-			log.Errorf("Could not find stack. err: %v", err)
-			return stack.IDEmpty, nil, err
-		}
-
-		a := h.findAction(s.Actions, actionID)
-		if a == nil {
-			return stack.IDEmpty, nil, fmt.Errorf("action not found")
-		}
-
-		return stackID, a, nil
-	}
-
-	// if stackID not specified, we run through all stacks
-	for tmpStackID, s := range stackMap {
-
-		a := h.findAction(s.Actions, actionID)
-		if a != nil {
-			// found
-			return tmpStackID, a, nil
-		}
-	}
-
-	return stack.IDEmpty, nil, fmt.Errorf("action not found")
+	return -1, nil
 }
 
 // GetAction returns given action id's action
 // it follows stack's return addresses and release the memory when it gets out from the stack.
-func (h *stackHandler) GetAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, targetActionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":             "GetAction",
-		"current_stack_id": currentStackID,
-		"target_action_id": targetActionID,
-	})
-	log.Debugf("Getting the action. action_id: %s", targetActionID)
+func (h *stackHandler) GetAction(stackMap map[uuid.UUID]*stack.Stack, startStackID uuid.UUID, actionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action, error) {
+	if startStackID == stack.IDEmpty {
+		return stack.IDEmpty, nil, fmt.Errorf("invalid stack id")
+	}
+	if actionID == action.IDEmpty {
+		return stack.IDEmpty, nil, fmt.Errorf("invalid action id")
+	}
 
-	resStackID := currentStackID
-	for i := 0; i < maxStackCount; i++ {
+	tmpStackID := startStackID
+	for range maxStackCount {
 
 		// get stack
-		s, err := h.GetStack(stackMap, resStackID)
+		s, err := h.GetStack(stackMap, tmpStackID)
 		if err != nil {
-			log.Errorf("Could not find stack. err: %v", err)
-			return stack.IDEmpty, nil, err
+			return stack.IDEmpty, nil, errors.Wrapf(err, "could not find stack. stack_id: %s", tmpStackID)
 		}
 
-		if currentStackID == stack.IDMain {
+		if startStackID == stack.IDMain {
 			if len(s.Actions) == 0 {
 				return stack.IDEmpty, nil, fmt.Errorf("actions are empty")
 			}
 
-			if targetActionID == action.IDStart {
-				return resStackID, &s.Actions[0], nil
+			if actionID == action.IDStart {
+				return tmpStackID, &s.Actions[0], nil
 			}
 		}
 
 		// get action
-		tmpAction := h.findAction(s.Actions, targetActionID)
+		_, tmpAction := h.findAction(s.Actions, actionID)
 		if tmpAction != nil {
 			// found
-			return resStackID, tmpAction, nil
+			return tmpStackID, tmpAction, nil
 		}
 
-		resStackID = s.ReturnStackID
+		tmpStackID = s.ReturnStackID
 		if releaseStack {
 			h.DeleteStack(stackMap, s.ID)
 		}
 
-		if resStackID == stack.IDEmpty {
+		if tmpStackID == stack.IDEmpty {
 			return stack.IDEmpty, nil, fmt.Errorf("no more stack left")
 		}
 	}
@@ -125,78 +86,52 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 	})
 	log.WithField("action", currentAction).Debugf("Getting next action.")
 
-	// check the currrent stack_id is the main stack
-	if currentStackID == stack.IDMain {
-		s, err := h.GetStack(stackMap, currentStackID)
-		if err != nil {
-			log.Errorf("Could not find stack. err: %v", err)
-			return stack.IDEmpty, &action.ActionFinish
-		}
-
-		if len(s.Actions) == 0 {
-			log.Debugf("Actions are empty.")
-			return stack.IDEmpty, &action.ActionFinish
-		}
-
-		if currentAction.ID == action.IDStart {
-			return currentStackID, &s.Actions[0]
-		}
-	}
-
-	// check next id.
-	if currentAction.NextID != action.IDEmpty {
-		resStackID, resAction, err := h.GetAction(stackMap, currentStackID, currentAction.NextID, true)
-		if err != nil {
-			log.Errorf("Could not get action. err: %v", err)
-			return stack.IDEmpty, &action.ActionFinish
-		}
-
-		return resStackID, resAction
-	}
-
-	// var tmpAction *action.Action = nil
 	tmpStackID := currentStackID
 	tmpActionID := currentAction.ID
-	for i := 0; i < maxStackCount; i++ {
+	for range maxStackCount {
+
+		if tmpStackID == stack.IDEmpty {
+			// no more return stack left
+			return stack.IDMain, &action.ActionFinish
+		}
 
 		// get stack
 		s, err := h.GetStack(stackMap, tmpStackID)
 		if err != nil {
-			log.Errorf("Could not find stack. err: %v", err)
+			//stack not found
+			log.Infof("Could not find stack. err: %v", err)
 			return stack.IDEmpty, &action.ActionFinish
 		}
 
-		// get action
-		found := false
-		idx := 0
-		for j, a := range s.Actions {
-			if a.ID == tmpActionID {
-				found = true
-				idx = j
-				break
+		idx, a := h.findAction(s.Actions, tmpActionID)
+		if a == nil {
+			//action not found
+			log.Infof("Could not find action in the stack.")
+			return stack.IDEmpty, &action.ActionFinish
+		}
+
+		// next id is not empty. get the next action
+		if a.NextID != action.IDEmpty {
+			resStackID, resAction, err := h.GetAction(stackMap, tmpStackID, a.NextID, true)
+			if err != nil {
+				//action not found
+				log.Infof("Could not get action for next_id. next_id: %s, err: %v", a.NextID, err)
+				return stack.IDEmpty, &action.ActionFinish
 			}
+
+			return resStackID, resAction
 		}
 
-		if !found {
-			log.Errorf("Could not find action in the stack.")
-			return stack.IDEmpty, &action.ActionFinish
-		}
-
+		// check the action is the last action in the stack
 		if idx < (len(s.Actions) - 1) {
-			tmpAction := s.Actions[idx]
-			if tmpAction.NextID != action.IDEmpty {
-
-				resStackID, resAction, err := h.GetAction(stackMap, tmpStackID, tmpAction.NextID, true)
-				if err != nil {
-					log.Errorf("Could not get action for next_id. err: %v", err)
-					return stack.IDEmpty, &action.ActionFinish
-				}
-
-				return resStackID, resAction
+			tmpAction := s.Actions[idx+1]
+			resStackID, resAction, err := h.GetAction(stackMap, tmpStackID, tmpAction.ID, true)
+			if err != nil {
+				//action not found
+				return stack.IDEmpty, &action.ActionFinish
 			}
 
-			resAction := &s.Actions[idx+1]
-			return tmpStackID, resAction
+			return resStackID, resAction
 		}
 
 		// the found action is placed in the end of actions.
@@ -207,14 +142,8 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 		if relaseStack {
 			h.DeleteStack(stackMap, s.ID)
 		}
-
-		if tmpStackID == stack.IDEmpty {
-			// no more return stack left
-			log.Debugf("No more return stack left.")
-			return stack.IDMain, &action.ActionFinish
-		}
 	}
 
-	log.Errorf("Exceed max stack count.")
+	// exceed max stack count
 	return stack.IDMain, &action.ActionFinish
 }

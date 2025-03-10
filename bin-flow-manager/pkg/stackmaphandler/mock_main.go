@@ -116,19 +116,3 @@ func (mr *MockStackmapHandlerMockRecorder) PushStackByActions(stackMap, stackID,
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushStackByActions", reflect.TypeOf((*MockStackmapHandler)(nil).PushStackByActions), stackMap, stackID, actions, currentStackID, currentActionID)
 }
-
-// SearchAction mocks base method.
-func (m *MockStackmapHandler) SearchAction(stackMap map[uuid.UUID]*stack.Stack, stackID, actionID uuid.UUID) (uuid.UUID, *action.Action, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchAction", stackMap, stackID, actionID)
-	ret0, _ := ret[0].(uuid.UUID)
-	ret1, _ := ret[1].(*action.Action)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// SearchAction indicates an expected call of SearchAction.
-func (mr *MockStackmapHandlerMockRecorder) SearchAction(stackMap, stackID, actionID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchAction", reflect.TypeOf((*MockStackmapHandler)(nil).SearchAction), stackMap, stackID, actionID)
-}

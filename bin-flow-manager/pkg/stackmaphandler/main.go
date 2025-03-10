@@ -23,7 +23,6 @@ type stackHandler struct {
 type StackmapHandler interface {
 	Create(actions []action.Action) map[uuid.UUID]*stack.Stack
 
-	SearchAction(stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, actionID uuid.UUID) (uuid.UUID, *action.Action, error)
 	GetAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, targetActionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action, error)
 	GetNextAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, currentAction *action.Action, relaseStack bool) (uuid.UUID, *action.Action)
 
