@@ -461,3 +461,89 @@ func Test_PushStackByActions(t *testing.T) {
 		})
 	}
 }
+
+func Test_PopStack(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		stackMap map[uuid.UUID]*stack.Stack
+		stackID  uuid.UUID
+
+		expectResStackMap map[uuid.UUID]*stack.Stack
+		expectResStack    *stack.Stack
+	}{
+		{
+			name: "normal",
+
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("690901cc-f9d9-11ef-b47a-43629eae889c"),
+							Type: action.TypeAnswer,
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+				uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"): {
+					ID: uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"),
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("697628e2-f9d9-11ef-a7ac-5784b43997cc"),
+							Type: action.TypeAnswer,
+						},
+					},
+					ReturnStackID:  stack.IDMain,
+					ReturnActionID: uuid.FromStringOrNil("690901cc-f9d9-11ef-b47a-43629eae889c"),
+				},
+			},
+			stackID: uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"),
+
+			expectResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("690901cc-f9d9-11ef-b47a-43629eae889c"),
+							Type: action.TypeAnswer,
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+			},
+			expectResStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("697628e2-f9d9-11ef-a7ac-5784b43997cc"),
+						Type: action.TypeAnswer,
+					},
+				},
+				ReturnStackID:  stack.IDMain,
+				ReturnActionID: uuid.FromStringOrNil("690901cc-f9d9-11ef-b47a-43629eae889c"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			h := &stackHandler{}
+
+			res, err := h.PopStack(tt.stackMap, tt.stackID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.stackMap, tt.expectResStackMap) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStackMap, tt.stackMap)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectResStack) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStack, res)
+			}
+		})
+	}
+}

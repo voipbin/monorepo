@@ -28,6 +28,7 @@ func (h *stackHandler) findAction(actions []action.Action, actionID uuid.UUID) (
 
 // GetAction returns given action id's action
 // it follows stack's return addresses and release the memory when it gets out from the stack.
+// it retuns stack id and action.
 func (h *stackHandler) GetAction(stackMap map[uuid.UUID]*stack.Stack, startStackID uuid.UUID, actionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action, error) {
 	if startStackID == stack.IDEmpty {
 		return stack.IDEmpty, nil, fmt.Errorf("invalid stack id")
@@ -38,6 +39,10 @@ func (h *stackHandler) GetAction(stackMap map[uuid.UUID]*stack.Stack, startStack
 
 	tmpStackID := startStackID
 	for range maxStackCount {
+
+		if tmpStackID == stack.IDEmpty {
+			return stack.IDEmpty, nil, fmt.Errorf("no more stack left")
+		}
 
 		// get stack
 		s, err := h.GetStack(stackMap, tmpStackID)
@@ -65,10 +70,6 @@ func (h *stackHandler) GetAction(stackMap map[uuid.UUID]*stack.Stack, startStack
 		tmpStackID = s.ReturnStackID
 		if releaseStack {
 			h.DeleteStack(stackMap, s.ID)
-		}
-
-		if tmpStackID == stack.IDEmpty {
-			return stack.IDEmpty, nil, fmt.Errorf("no more stack left")
 		}
 	}
 
