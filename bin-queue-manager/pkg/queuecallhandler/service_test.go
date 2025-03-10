@@ -94,7 +94,6 @@ func Test_ServiceStart(t *testing.T) {
 				ReferenceID:           uuid.FromStringOrNil("e82487ee-acef-11ed-b6a0-d375ffdc940c"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("e8004cda-acef-11ed-8af6-1f155a5daa45"),
 				ForwardActionID:       uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
-				ExitActionID:          uuid.FromStringOrNil("e85c4fb2-acef-11ed-870b-23a9cdef3376"),
 				ConfbridgeID:          uuid.FromStringOrNil("b0c77a26-acf0-11ed-8fd7-37de63b3d029"),
 				Source:                commonaddress.Address{},
 				RoutingMethod:         queue.RoutingMethodRandom,

@@ -84,7 +84,6 @@ func (h *queuecallHandler) Create(
 		ReferenceActiveflowID: referenceActiveflowID,
 
 		ForwardActionID: forwardActionID,
-		ExitActionID:    exitActionID,
 		ConfbridgeID:    conferenceID,
 
 		Source:        source,

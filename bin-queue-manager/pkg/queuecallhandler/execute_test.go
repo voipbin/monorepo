@@ -48,7 +48,6 @@ func Test_Execute(t *testing.T) {
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("b658394e-5ee0-11ec-92ba-5f2f2eabf000"),
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
-				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
