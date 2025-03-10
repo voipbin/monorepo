@@ -14,5 +14,4 @@ type V1DataServicesTypeQueuecallPost struct {
 	ActiveflowID  uuid.UUID               `json:"activeflow_id"`
 	ReferenceType queuecall.ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID               `json:"reference_id"`
-	ExitActionID  uuid.UUID               `json:"exit_action_id"`
 }

@@ -34,13 +34,12 @@ import (
 	chatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 	message "monorepo/bin-chatbot-manager/models/message"
-	service "monorepo/bin-chatbot-manager/models/service"
 	address "monorepo/bin-common-handler/models/address"
 	outline "monorepo/bin-common-handler/models/outline"
+	service "monorepo/bin-common-handler/models/service"
 	sock "monorepo/bin-common-handler/models/sock"
 	conference "monorepo/bin-conference-manager/models/conference"
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
-	service0 "monorepo/bin-conference-manager/models/service"
 	account0 "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media0 "monorepo/bin-conversation-manager/models/media"
@@ -59,7 +58,6 @@ import (
 	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
-	service1 "monorepo/bin-queue-manager/models/service"
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 	extension "monorepo/bin-registrar-manager/models/extension"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
@@ -2902,10 +2900,10 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallKick(ctx, co
 }
 
 // ConferenceV1ServiceTypeConferencecallStart mocks base method.
-func (m *MockRequestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*service0.Service, error) {
+func (m *MockRequestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceV1ServiceTypeConferencecallStart", ctx, conferenceID, referenceType, referenceID)
-	ret0, _ := ret[0].(*service0.Service)
+	ret0, _ := ret[0].(*service.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4346,18 +4344,18 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallUpdateStatusWaiting(ct
 }
 
 // QueueV1ServiceTypeQueuecallStart mocks base method.
-func (m *MockRequestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID, activeflowID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, exitActionID uuid.UUID) (*service1.Service, error) {
+func (m *MockRequestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID, activeflowID uuid.UUID, referenceType queuecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1ServiceTypeQueuecallStart", ctx, queueID, activeflowID, referenceType, referenceID, exitActionID)
-	ret0, _ := ret[0].(*service1.Service)
+	ret := m.ctrl.Call(m, "QueueV1ServiceTypeQueuecallStart", ctx, queueID, activeflowID, referenceType, referenceID)
+	ret0, _ := ret[0].(*service.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueueV1ServiceTypeQueuecallStart indicates an expected call of QueueV1ServiceTypeQueuecallStart.
-func (mr *MockRequestHandlerMockRecorder) QueueV1ServiceTypeQueuecallStart(ctx, queueID, activeflowID, referenceType, referenceID, exitActionID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) QueueV1ServiceTypeQueuecallStart(ctx, queueID, activeflowID, referenceType, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1ServiceTypeQueuecallStart", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1ServiceTypeQueuecallStart), ctx, queueID, activeflowID, referenceType, referenceID, exitActionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1ServiceTypeQueuecallStart", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1ServiceTypeQueuecallStart), ctx, queueID, activeflowID, referenceType, referenceID)
 }
 
 // RegistrarV1ContactGets mocks base method.

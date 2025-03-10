@@ -12,10 +12,10 @@ package queuecallhandler
 import (
 	context "context"
 	address "monorepo/bin-common-handler/models/address"
+	service "monorepo/bin-common-handler/models/service"
 	customer "monorepo/bin-customer-manager/models/customer"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
-	service "monorepo/bin-queue-manager/models/service"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"

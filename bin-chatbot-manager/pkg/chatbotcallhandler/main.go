@@ -14,10 +14,10 @@ import (
 
 	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
-	"monorepo/bin-chatbot-manager/models/service"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
 	"monorepo/bin-chatbot-manager/pkg/openai_handler"
+	commonservice "monorepo/bin-common-handler/models/service"
 )
 
 // ChatbotcallHandler define
@@ -59,7 +59,7 @@ type ChatbotcallHandler interface {
 		referenceID uuid.UUID,
 		gender chatbotcall.Gender,
 		language string,
-	) (*service.Service, error)
+	) (*commonservice.Service, error)
 
 	ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, text string) error
 }

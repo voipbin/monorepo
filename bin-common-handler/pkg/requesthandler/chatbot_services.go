@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
-	cbservice "monorepo/bin-chatbot-manager/models/service"
 	cbrequest "monorepo/bin-chatbot-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
@@ -25,7 +25,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 	gender cbchatbotcall.Gender,
 	language string,
 	requestTimeout int,
-) (*cbservice.Service, error) {
+) (*service.Service, error) {
 	uri := "/v1/services/type/chatbotcall"
 
 	data := &cbrequest.V1DataServicesTypeChatbotcallPost{
@@ -53,7 +53,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res cbservice.Service
+	var res service.Service
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

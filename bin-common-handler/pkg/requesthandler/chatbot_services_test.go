@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
-	cbservice "monorepo/bin-chatbot-manager/models/service"
+	"monorepo/bin-common-handler/models/service"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -32,7 +32,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		expectRes     *cbservice.Service
+		expectRes     *service.Service
 	}{
 		{
 			name: "normal",
@@ -58,7 +58,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"chatbot_id":"9469e101-d269-4895-9679-fe49531f7c12","activeflow_id":"db21d8b6-fbab-11ed-8d21-332400f26ee4","reference_type":"call","reference_id":"865089bd-dc1b-45d5-89af-4a09c1d90cea","gender":"female","language":"en-US"}`),
 			},
-			expectRes: &cbservice.Service{
+			expectRes: &service.Service{
 				ID: uuid.FromStringOrNil("134c25c9-c9f9-4800-83bb-b5eaa84bb4ab"),
 			},
 		},

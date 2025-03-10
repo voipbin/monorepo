@@ -31,11 +31,10 @@ import (
 	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 	cbmessage "monorepo/bin-chatbot-manager/models/message"
-	cbservice "monorepo/bin-chatbot-manager/models/service"
+	"monorepo/bin-common-handler/models/service"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
-	cfservice "monorepo/bin-conference-manager/models/service"
 
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
@@ -56,7 +55,6 @@ import (
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
-	qmservice "monorepo/bin-queue-manager/models/service"
 
 	rmastcontact "monorepo/bin-registrar-manager/models/astcontact"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
@@ -542,7 +540,7 @@ type RequestHandler interface {
 		gender cbchatbotcall.Gender,
 		language string,
 		requestTimeout int,
-	) (*cbservice.Service, error)
+	) (*service.Service, error)
 
 	// customer-manager accesskeys
 	CustomerV1AccesskeyCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, expire int32) (*csaccesskey.Accesskey, error)
@@ -611,7 +609,7 @@ type RequestHandler interface {
 	ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int, delay int) error
 
 	// conference-manager service
-	ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*cfservice.Service, error)
+	ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error)
 
 	// conversation-manager account
 	ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)
@@ -758,7 +756,7 @@ type RequestHandler interface {
 	QueueV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
 
 	// queue-manager service
-	QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID uuid.UUID, activeflowID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID uuid.UUID, exitActionID uuid.UUID) (*qmservice.Service, error)
+	QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID uuid.UUID, activeflowID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error)
 
 	// registrar-manager contact
 	RegistrarV1ContactGets(ctx context.Context, customerID uuid.UUID, extension string) ([]rmastcontact.AstContact, error)

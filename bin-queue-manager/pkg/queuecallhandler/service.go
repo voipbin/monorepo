@@ -16,9 +16,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-queue-manager/models/queue"
 	"monorepo/bin-queue-manager/models/queuecall"
-	"monorepo/bin-queue-manager/models/service"
 )
 
 func (h *queuecallHandler) ServiceStart(
@@ -27,7 +27,7 @@ func (h *queuecallHandler) ServiceStart(
 	activeflowID uuid.UUID,
 	referenceType queuecall.ReferenceType,
 	referenceID uuid.UUID,
-) (*service.Service, error) {
+) (*commonservice.Service, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ServiceStart",
 		"queue_id":       queueID,
@@ -99,9 +99,9 @@ func (h *queuecallHandler) ServiceStart(
 		return nil, err
 	}
 
-	res := &service.Service{
+	res := &commonservice.Service{
 		ID:          qc.ID,
-		Type:        service.TypeQueuecall,
+		Type:        commonservice.TypeQueuecall,
 		PushActions: actions,
 	}
 

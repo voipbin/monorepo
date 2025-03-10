@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -11,7 +12,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
-	"monorepo/bin-chatbot-manager/models/service"
 	"monorepo/bin-chatbot-manager/pkg/chatbotcallhandler"
 )
 
@@ -22,7 +22,7 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 
 		request *sock.Request
 
-		responseService *service.Service
+		responseService *commonservice.Service
 
 		expectChatbotID     uuid.UUID
 		expectActiveflowID  uuid.UUID
@@ -44,7 +44,7 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 				Data:     []byte(`{"customer_id":"71db8f9c-abde-475e-a060-dc95e63281c3","chatbot_id":"e7f085d0-c7d9-4da4-9992-eda14282cb86","activeflow_id":"80a5199e-fba5-11ed-90aa-6b9821d2ad5b","reference_type":"call","reference_id":"10662882-5ff8-4788-a605-55614dc8d330","gender":"female","language":"en-US"}`),
 			},
 
-			responseService: &service.Service{
+			responseService: &commonservice.Service{
 				ID: uuid.FromStringOrNil("9d5b7e72-2cc9-4868-bfab-c8e758cd5045"),
 			},
 

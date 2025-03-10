@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/models/sock"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
-	qmservice "monorepo/bin-queue-manager/models/service"
 	qmrequest "monorepo/bin-queue-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +16,7 @@ import (
 // QueueV1ServiceTypeQueuecallStart sends a request to queue-manager
 // to starts a queuecall service.
 // it returns created service if it succeed.
-func (r *requestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID uuid.UUID, activeflowID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID uuid.UUID, exitActionID uuid.UUID) (*qmservice.Service, error) {
+func (r *requestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID uuid.UUID, activeflowID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error) {
 	uri := "/v1/services/type/queuecall"
 
 	data := &qmrequest.V1DataServicesTypeQueuecallPost{
@@ -24,7 +24,6 @@ func (r *requestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, q
 		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
-		ExitActionID:  exitActionID,
 	}
 
 	m, err := json.Marshal(data)
@@ -43,7 +42,7 @@ func (r *requestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, q
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res qmservice.Service
+	var res service.Service
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

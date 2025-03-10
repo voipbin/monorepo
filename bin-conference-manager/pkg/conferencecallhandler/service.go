@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-conference-manager/models/conferencecall"
-	"monorepo/bin-conference-manager/models/service"
 )
 
 // ServiceStart is starting a new service conferencecall.
@@ -21,7 +21,7 @@ func (h *conferencecallHandler) ServiceStart(
 	conferenceID uuid.UUID,
 	referenceType conferencecall.ReferenceType,
 	referenceID uuid.UUID,
-) (*service.Service, error) {
+) (*commonservice.Service, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ServiceStart",
 		"conference_id":  conferenceID,
@@ -61,9 +61,9 @@ func (h *conferencecallHandler) ServiceStart(
 		},
 	}
 
-	res := &service.Service{
+	res := &commonservice.Service{
 		ID:          cc.ID,
-		Type:        service.TypeConferencecall,
+		Type:        commonservice.TypeConferencecall,
 		PushActions: actions,
 	}
 

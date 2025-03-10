@@ -10,8 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-queue-manager/models/queuecall"
-	"monorepo/bin-queue-manager/models/service"
 	"monorepo/bin-queue-manager/pkg/queuecallhandler"
 )
 
@@ -27,7 +27,7 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 		referenceType queuecall.ReferenceType
 		referenceID   uuid.UUID
 
-		responseService *service.Service
+		responseService *commonservice.Service
 
 		expectRes *sock.Response
 	}{
@@ -46,7 +46,7 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 			referenceType: queuecall.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("624fe626-acfa-11ed-a358-0b881bcb40b0"),
 
-			responseService: &service.Service{
+			responseService: &commonservice.Service{
 				ID: uuid.FromStringOrNil("6299086a-acfa-11ed-a8ff-4f23e0ae71fd"),
 			},
 
