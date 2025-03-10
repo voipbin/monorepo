@@ -52,10 +52,10 @@ func Test_GetAction(t *testing.T) {
 					ReturnActionID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
 				},
 			},
-			startStackID:   uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			startStackID:   stack.IDMain,
 			targetActionID: uuid.FromStringOrNil("b1afd956-a8ae-11ed-a7fb-fba3920318fd"),
 
-			expectResStackID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			expectResStackID: stack.IDMain,
 			epxectResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("b1afd956-a8ae-11ed-a7fb-fba3920318fd"),
 				Type: action.TypeAnswer,
@@ -90,8 +90,8 @@ func Test_GetAction(t *testing.T) {
 			name: "action exist in the other stack depth 1",
 
 			stackMap: map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:   uuid.FromStringOrNil("9453b73e-d3b5-11ec-b636-0fcf55d52956"),
@@ -109,21 +109,21 @@ func Test_GetAction(t *testing.T) {
 							Type: action.TypeAnswer,
 						},
 					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+					ReturnStackID:  stack.IDMain,
 					ReturnActionID: uuid.FromStringOrNil("9453b73e-d3b5-11ec-b636-0fcf55d52956"),
 				},
 			},
 			startStackID:   uuid.FromStringOrNil("93def85e-d3b5-11ec-b6e5-6751b01de122"),
 			targetActionID: uuid.FromStringOrNil("9453b73e-d3b5-11ec-b636-0fcf55d52956"),
 
-			expectResStackID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			expectResStackID: stack.IDMain,
 			epxectResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("9453b73e-d3b5-11ec-b636-0fcf55d52956"),
 				Type: action.TypeAnswer,
 			},
 			expectResStackMap: map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:   uuid.FromStringOrNil("9453b73e-d3b5-11ec-b636-0fcf55d52956"),
@@ -201,8 +201,8 @@ func Test_GetAction(t *testing.T) {
 				Type: action.TypeAnswer,
 			},
 			expectResStackMap: map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:   uuid.FromStringOrNil("5edb555c-d3b6-11ec-8c3d-43092e3123e7"),
@@ -409,15 +409,15 @@ func Test_GetNextAction(t *testing.T) {
 		currentAction  *action.Action
 
 		expectResStackID  uuid.UUID
-		epxectResAction   *action.Action
+		expectResAction   *action.Action
 		expectResStackMap map[uuid.UUID]*stack.Stack
 	}{
 		{
-			"next action exist in the same stack",
+			name: "next action exist in the same stack",
 
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:   uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
@@ -432,20 +432,20 @@ func Test_GetNextAction(t *testing.T) {
 					ReturnActionID: action.IDEmpty,
 				},
 			},
-			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-			&action.Action{
+			currentStackID: stack.IDMain,
+			currentAction: &action.Action{
 				ID:   uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
 				Type: action.TypeAnswer,
 			},
 
-			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-			&action.Action{
+			expectResStackID: stack.IDMain,
+			expectResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 				Type: action.TypeAnswer,
 			},
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			expectResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:   uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
@@ -462,11 +462,11 @@ func Test_GetNextAction(t *testing.T) {
 			},
 		},
 		{
-			"the current action has next id and the next action exist in the same stack",
+			name: "the current action has next id and the next action exist in the same stack",
 
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:     uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
@@ -486,21 +486,21 @@ func Test_GetNextAction(t *testing.T) {
 					ReturnActionID: action.IDEmpty,
 				},
 			},
-			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-			&action.Action{
+			currentStackID: stack.IDMain,
+			currentAction: &action.Action{
 				ID:     uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
 				Type:   action.TypeAnswer,
 				NextID: uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 			},
 
-			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-			&action.Action{
+			expectResStackID: stack.IDMain,
+			expectResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 				Type: action.TypeAnswer,
 			},
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			expectResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:     uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
@@ -522,11 +522,11 @@ func Test_GetNextAction(t *testing.T) {
 			},
 		},
 		{
-			"the current action in the end of actions",
+			name: "the current action in the end of actions",
 
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:   uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
@@ -560,24 +560,24 @@ func Test_GetNextAction(t *testing.T) {
 							Type: action.TypeAnswer,
 						},
 					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+					ReturnStackID:  stack.IDMain,
 					ReturnActionID: uuid.FromStringOrNil("342f0e56-d3b7-11ec-a9a6-1b8c6f3600ee"),
 				},
 			},
-			uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
-			&action.Action{
+			currentStackID: uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
+			currentAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f5c379b2-d466-11ec-af74-6fee9d235883"),
 				Type: action.TypeAnswer,
 			},
 
-			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-			&action.Action{
+			expectResStackID: stack.IDMain,
+			expectResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 				Type: action.TypeAnswer,
 			},
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			expectResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:   uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
@@ -598,11 +598,11 @@ func Test_GetNextAction(t *testing.T) {
 			},
 		},
 		{
-			"the current action in the end of actions and retrun action has next id",
+			name: "the current action in the end of actions and retrun action has next id",
 
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:     uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
@@ -637,24 +637,24 @@ func Test_GetNextAction(t *testing.T) {
 							Type: action.TypeAnswer,
 						},
 					},
-					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+					ReturnStackID:  stack.IDMain,
 					ReturnActionID: uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
 				},
 			},
-			uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
-			&action.Action{
+			currentStackID: uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
+			currentAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f5c379b2-d466-11ec-af74-6fee9d235883"),
 				Type: action.TypeAnswer,
 			},
 
-			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
-			&action.Action{
+			expectResStackID: stack.IDMain,
+			expectResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 				Type: action.TypeAnswer,
 			},
-			map[uuid.UUID]*stack.Stack{
-				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
-					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			expectResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
 							ID:     uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
@@ -668,6 +668,55 @@ func Test_GetNextAction(t *testing.T) {
 						{
 							ID:   uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 							Type: action.TypeAnswer,
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+			},
+		},
+		{
+			name: "the current action is start action",
+
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID: uuid.FromStringOrNil("502a96ba-fda4-11ef-85b7-e7df9e7f94c2"),
+						},
+						{
+							ID: uuid.FromStringOrNil("5073826c-fda4-11ef-a5f0-f78b1e53c254"),
+						},
+						{
+							ID: uuid.FromStringOrNil("509ceeb8-fda4-11ef-b102-434dca711dbc"),
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+			},
+			currentStackID: stack.IDMain,
+			currentAction: &action.Action{
+				ID: action.IDStart,
+			},
+
+			expectResStackID: stack.IDMain,
+			expectResAction: &action.Action{
+				ID: uuid.FromStringOrNil("502a96ba-fda4-11ef-85b7-e7df9e7f94c2"),
+			},
+			expectResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID: uuid.FromStringOrNil("502a96ba-fda4-11ef-85b7-e7df9e7f94c2"),
+						},
+						{
+							ID: uuid.FromStringOrNil("5073826c-fda4-11ef-a5f0-f78b1e53c254"),
+						},
+						{
+							ID: uuid.FromStringOrNil("509ceeb8-fda4-11ef-b102-434dca711dbc"),
 						},
 					},
 					ReturnStackID:  stack.IDEmpty,
@@ -688,12 +737,12 @@ func Test_GetNextAction(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStackID, resStackID)
 			}
 
-			if !reflect.DeepEqual(resAction, tt.epxectResAction) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.epxectResAction, resAction)
+			if !reflect.DeepEqual(resAction, tt.expectResAction) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResAction, resAction)
 			}
 
 			if !reflect.DeepEqual(tt.stackMap, tt.expectResStackMap) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.epxectResAction, resAction)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResAction, resAction)
 			}
 
 		})

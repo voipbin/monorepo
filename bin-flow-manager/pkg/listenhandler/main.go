@@ -156,7 +156,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 	}()
 
-	log.Debugf("Received request. uri: %s, method: %s", m.URI, m.Method)
 	switch {
 
 	// v1
@@ -274,8 +273,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response = simpleResponse(400)
 		err = nil
 	}
-
-	log.WithField("response", response).Debugf("Response the request. uri: %s, method: %s", m.URI, m.Method)
 
 	return response, err
 }
