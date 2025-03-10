@@ -20,7 +20,7 @@ import (
 	"monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-flow-manager/pkg/actionhandler"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
-	"monorepo/bin-flow-manager/pkg/stackhandler"
+	"monorepo/bin-flow-manager/pkg/stackmaphandler"
 	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
@@ -177,14 +177,14 @@ func Test_Create(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
 				utilHandler:     mockUtil,
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -194,7 +194,7 @@ func Test_Create(t *testing.T) {
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			}
 
-			mockStack.EXPECT().InitStackMap(ctx, tt.responseFlow.Actions).Return(tt.responseStackMap)
+			mockStack.EXPECT().Create(tt.responseFlow.Actions).Return(tt.responseStackMap)
 			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectActiveflow).Return(nil)
 			mockVariableHandler.EXPECT().Create(ctx, tt.expectActiveflow.ID, map[string]string{}).Return(&variable.Variable{}, nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.expectActiveflow.ID).Return(tt.responseActiveflow, nil)
@@ -530,19 +530,19 @@ func Test_SetForwardActionID(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
 				db:         mockDB,
 				reqHandler: mockReq,
 
-				actionHandler: mockAction,
-				stackHandler:  mockStack,
+				actionHandler:   mockAction,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.id).Return(tt.af, nil)
-			mockStack.EXPECT().GetAction(ctx, tt.af.StackMap, tt.af.CurrentStackID, tt.actionID, false).Return(tt.responseStackID, tt.responseAction, nil)
+			mockStack.EXPECT().GetAction(tt.af.StackMap, tt.af.CurrentStackID, tt.actionID, false).Return(tt.responseStackID, tt.responseAction, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
 			if tt.forwardNow && tt.af.ReferenceType == activeflow.ReferenceTypeCall {
@@ -760,17 +760,17 @@ func Test_PushStack(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 			}
 			ctx := context.Background()
 
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.stackID, tt.actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.stackID, tt.actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflow).Return(nil)
 
 			if err := h.PushStack(ctx, tt.activeflow, tt.stackID, tt.actions); err != nil {
@@ -871,14 +871,14 @@ func Test_PushActions(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
 
 			h := &activeflowHandler{
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				actionHandler:   mockAction,
 			}
 			ctx := context.Background()
@@ -887,7 +887,7 @@ func Test_PushActions(t *testing.T) {
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.responseActions, nil)
 
 			// push stack
-			mockStack.EXPECT().Push(ctx, tt.responseActiveflow.StackMap, uuid.Nil, tt.responseActions, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockStack.EXPECT().PushStackByActions(tt.responseActiveflow.StackMap, uuid.Nil, tt.responseActions, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflow).Return(nil)
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.expectActiveflow, nil)
@@ -992,19 +992,19 @@ func Test_PopStackWithStackID(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
 
 			h := &activeflowHandler{
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				actionHandler:   mockAction,
 			}
 			ctx := context.Background()
 
-			mockStack.EXPECT().Pop(ctx, tt.af.StackMap, tt.stackID).Return(tt.responseStack, nil)
+			mockStack.EXPECT().PopStack(tt.af.StackMap, tt.stackID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflow).Return(nil)
 
 			if err := h.PopStackWithStackID(ctx, tt.af, tt.stackID); err != nil {
@@ -1102,19 +1102,19 @@ func Test_PopStack(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
 
 			h := &activeflowHandler{
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				actionHandler:   mockAction,
 			}
 			ctx := context.Background()
 
-			mockStack.EXPECT().Pop(ctx, tt.af.StackMap, tt.expectStackID).Return(tt.responseStack, nil)
+			mockStack.EXPECT().PopStack(tt.af.StackMap, tt.expectStackID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflow).Return(nil)
 
 			if err := h.PopStack(ctx, tt.af); err != nil {
@@ -1218,20 +1218,20 @@ func Test_ServiceStop(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
 
 			h := &activeflowHandler{
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				actionHandler:   mockAction,
 			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockStack.EXPECT().Pop(ctx, tt.responseActiveflow.StackMap, tt.expectStackID).Return(tt.responseStack, nil)
+			mockStack.EXPECT().PopStack(tt.responseActiveflow.StackMap, tt.expectStackID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflow).Return(nil)
 
 			if err := h.ServiceStop(ctx, tt.id, tt.serviceID); err != nil {
