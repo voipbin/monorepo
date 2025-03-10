@@ -37,7 +37,7 @@ type activeflowHandler struct {
 
 	actionHandler   actionhandler.ActionHandler
 	variableHandler variablehandler.VariableHandler
-	stackHandler    stackmaphandler.StackmapHandler
+	stackmapHandler stackmaphandler.StackmapHandler
 }
 
 // ActiveflowHandler defines
@@ -80,7 +80,7 @@ func NewActiveflowHandler(
 
 		actionHandler:   actionHandler,
 		variableHandler: variableHandler,
-		stackHandler:    stackHandler,
+		stackmapHandler: stackHandler,
 	}
 }
 

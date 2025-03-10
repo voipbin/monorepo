@@ -79,7 +79,7 @@ func Test_Execute(t *testing.T) {
 				utilHandler:     mockUtil,
 				db:              mockDB,
 				notifyHandler:   mockNotify,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				variableHandler: mockVar,
 			}
 
@@ -255,7 +255,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				actionHandler:   mockAction,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				variableHandler: mockVar,
 			}
 
@@ -329,10 +329,10 @@ func Test_ExecuteNextActionError(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				actionHandler: mockAction,
-				stackHandler:  mockStack,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				actionHandler:   mockAction,
+				stackmapHandler: mockStack,
 			}
 			ctx := context.Background()
 
@@ -394,7 +394,7 @@ func Test_executeAction(t *testing.T) {
 				utilHandler:     mockUtil,
 				db:              mockDB,
 				notifyHandler:   mockNotify,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				variableHandler: mockVar,
 			}
 			ctx := context.Background()

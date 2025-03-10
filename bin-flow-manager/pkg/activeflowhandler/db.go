@@ -37,7 +37,7 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 		log = log.WithField("id", activeflowID)
 	}
 
-	stackMap := h.stackHandler.Create(f.Actions)
+	stackMap := h.stackmapHandler.Create(f.Actions)
 
 	// create activeflow
 	tmp := &activeflow.Activeflow{
@@ -107,7 +107,7 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 	}()
 
 	// get target action
-	targetStackID, targetAction, err := h.stackHandler.GetAction(af.StackMap, af.CurrentStackID, actionID, false)
+	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, actionID, false)
 	if err != nil {
 		log.Errorf("Could not find forward action in the stacks. err: %v", err)
 		return fmt.Errorf("forward action not found")
@@ -266,7 +266,7 @@ func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Active
 		return fmt.Errorf("no actions to push")
 	}
 
-	tmp, err := h.stackHandler.PushStackByActions(af.StackMap, stackID, actions, af.CurrentStackID, af.CurrentAction.ID)
+	tmp, err := h.stackmapHandler.PushStackByActions(af.StackMap, stackID, actions, af.CurrentStackID, af.CurrentAction.ID)
 	if err != nil {
 		return errors.Wrapf(err, "could not push the actions. stack_id: %s", stackID)
 	}
@@ -299,7 +299,7 @@ func (h *activeflowHandler) PopStackWithStackID(ctx context.Context, af *activef
 		return fmt.Errorf("stack id is not matched. stack_id: %s, current_stack_id: %s", stackID, af.CurrentStackID)
 	}
 
-	tmp, err := h.stackHandler.PopStack(af.StackMap, af.CurrentStackID)
+	tmp, err := h.stackmapHandler.PopStack(af.StackMap, af.CurrentStackID)
 	if err != nil {
 		return errors.Wrapf(err, "could not pop the stack. stack_id: %s", af.CurrentStackID)
 	}

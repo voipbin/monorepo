@@ -184,7 +184,7 @@ func Test_Create(t *testing.T) {
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -536,8 +536,8 @@ func Test_SetForwardActionID(t *testing.T) {
 				db:         mockDB,
 				reqHandler: mockReq,
 
-				actionHandler: mockAction,
-				stackHandler:  mockStack,
+				actionHandler:   mockAction,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -766,7 +766,7 @@ func Test_PushStack(t *testing.T) {
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 			}
 			ctx := context.Background()
 
@@ -878,7 +878,7 @@ func Test_PushActions(t *testing.T) {
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				actionHandler:   mockAction,
 			}
 			ctx := context.Background()
@@ -999,7 +999,7 @@ func Test_PopStackWithStackID(t *testing.T) {
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				actionHandler:   mockAction,
 			}
 			ctx := context.Background()
@@ -1109,7 +1109,7 @@ func Test_PopStack(t *testing.T) {
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				actionHandler:   mockAction,
 			}
 			ctx := context.Background()
@@ -1225,7 +1225,7 @@ func Test_ServiceStop(t *testing.T) {
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				actionHandler:   mockAction,
 			}
 			ctx := context.Background()

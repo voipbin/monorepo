@@ -74,7 +74,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 				reqHandler:      mockReq,
 				notifyHandler:   mockNotify,
 				actionHandler:   mockAction,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				variableHandler: mockVar,
 			}
 

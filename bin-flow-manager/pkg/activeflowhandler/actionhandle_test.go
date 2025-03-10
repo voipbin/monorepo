@@ -528,8 +528,8 @@ func Test_actionHandleConnect(t *testing.T) {
 				db:          mockDB,
 				reqHandler:  mockReq,
 
-				actionHandler: mockAction,
-				stackHandler:  mockStack,
+				actionHandler:   mockAction,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -646,9 +646,9 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -841,9 +841,9 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				stackmapHandler: mockStack,
 			}
 			ctx := context.Background()
 
@@ -965,10 +965,10 @@ func Test_actionHandleFetch(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				actionHandler: mockAction,
-				stackHandler:  mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				actionHandler:   mockAction,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -1172,10 +1172,10 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				actionHandler: mockAction,
-				stackHandler:  mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				actionHandler:   mockAction,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -1285,9 +1285,9 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -1494,7 +1494,7 @@ func Test_actionHandleBranch(t *testing.T) {
 			h := &activeflowHandler{
 				db:              mockDB,
 				reqHandler:      mockReq,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				variableHandler: mockVar,
 			}
 
@@ -1791,9 +1791,9 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -1985,9 +1985,9 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -2069,9 +2069,9 @@ func Test_actionHandleConditionDatetime_match(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				stackmapHandler: mockStack,
 			}
 
 			af := &activeflow.Activeflow{
@@ -2196,9 +2196,9 @@ func Test_actionHandleConditionDatetime_unmatch(t *testing.T) {
 			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				stackmapHandler: mockStack,
 			}
 
 			af := &activeflow.Activeflow{
@@ -2526,7 +2526,7 @@ func Test_actionHandleConditionVariable_unmatch(t *testing.T) {
 				db:              mockDB,
 				reqHandler:      mockReq,
 				variableHandler: mockVar,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
@@ -3514,7 +3514,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 				actionHandler:   mockAction,
 				variableHandler: mockVariable,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 			}
 
 			ctx := context.Background()
