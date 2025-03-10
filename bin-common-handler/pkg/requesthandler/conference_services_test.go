@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/service"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
-	cfservice "monorepo/bin-conference-manager/models/service"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -28,29 +28,29 @@ func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		expectRes     *cfservice.Service
+		expectRes     *service.Service
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("ef5341ba-ab71-11ed-8b32-b3ea2332246a"),
-			cfconferencecall.ReferenceTypeCall,
-			uuid.FromStringOrNil("ef7fa3e0-ab71-11ed-9a00-3f98e88afb4e"),
+			conferenceID:  uuid.FromStringOrNil("ef5341ba-ab71-11ed-8b32-b3ea2332246a"),
+			referenceType: cfconferencecall.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("ef7fa3e0-ab71-11ed-9a00-3f98e88afb4e"),
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"efa863ca-ab71-11ed-a65f-0730598fc7d9"}`),
 			},
 
-			"bin-manager.conference-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.conference-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/services/type/conferencecall",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"conference_id":"ef5341ba-ab71-11ed-8b32-b3ea2332246a","reference_type":"call","reference_id":"ef7fa3e0-ab71-11ed-9a00-3f98e88afb4e"}`),
 			},
-			&cfservice.Service{
+			expectRes: &service.Service{
 				ID: uuid.FromStringOrNil("efa863ca-ab71-11ed-a65f-0730598fc7d9"),
 			},
 		},

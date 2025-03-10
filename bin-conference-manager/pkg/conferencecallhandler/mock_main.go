@@ -11,8 +11,8 @@ package conferencecallhandler
 
 import (
 	context "context"
+	service "monorepo/bin-common-handler/models/service"
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
-	service "monorepo/bin-conference-manager/models/service"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"

@@ -17,9 +17,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-queue-manager/models/queue"
 	"monorepo/bin-queue-manager/models/queuecall"
-	"monorepo/bin-queue-manager/models/service"
 	"monorepo/bin-queue-manager/pkg/dbhandler"
 	"monorepo/bin-queue-manager/pkg/queuehandler"
 )
@@ -67,7 +67,7 @@ type QueuecallHandler interface {
 		activeflowID uuid.UUID,
 		referenceType queuecall.ReferenceType,
 		referenceID uuid.UUID,
-	) (*service.Service, error)
+	) (*commonservice.Service, error)
 }
 
 // queuecallHandler define

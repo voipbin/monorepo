@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -12,7 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
-	"monorepo/bin-chatbot-manager/models/service"
 )
 
 // ServiceStart is creating a new chatbotcall.
@@ -25,7 +25,7 @@ func (h *chatbotcallHandler) ServiceStart(
 	referenceID uuid.UUID,
 	gender chatbotcall.Gender,
 	language string,
-) (*service.Service, error) {
+) (*commonservice.Service, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ServiceStart",
 		"chatbot_id":     chatbotID,
@@ -63,9 +63,9 @@ func (h *chatbotcallHandler) ServiceStart(
 		},
 	}
 
-	res := &service.Service{
+	res := &commonservice.Service{
 		ID:          cc.ID,
-		Type:        service.TypeChatbotcall,
+		Type:        commonservice.TypeChatbotcall,
 		PushActions: actions,
 	}
 

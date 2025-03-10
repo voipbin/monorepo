@@ -16,18 +16,16 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
-	cbservice "monorepo/bin-chatbot-manager/models/service"
 
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
-	cfservice "monorepo/bin-conference-manager/models/service"
 
 	conversationmedia "monorepo/bin-conversation-manager/models/media"
 	conversationmessage "monorepo/bin-conversation-manager/models/message"
 
 	mmmessage "monorepo/bin-message-manager/models/message"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
-	qmservice "monorepo/bin-queue-manager/models/service"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
@@ -768,10 +766,8 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 
 		activeflow *activeflow.Activeflow
 
-		responseExitStackID uuid.UUID
-		responseExitAction  *action.Action
-		responseService     *qmservice.Service
-		responseStack       *stack.Stack
+		responseService *commonservice.Service
+		responseStack   *stack.Stack
 
 		expectQueueID uuid.UUID
 	}{
@@ -803,12 +799,7 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 				},
 			},
 
-			responseExitStackID: stack.IDMain,
-			responseExitAction: &action.Action{
-				ID:   uuid.FromStringOrNil("cdd46f0e-6591-11ec-aff5-63bb1f2f2e5f"),
-				Type: action.TypeTalk,
-			},
-			responseService: &qmservice.Service{
+			responseService: &commonservice.Service{
 				ID: uuid.FromStringOrNil("af231114-ad02-11ed-a485-2bce52de1ce4"),
 				PushActions: []action.Action{
 					{
@@ -847,8 +838,7 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockStack.EXPECT().GetNextAction(tt.activeflow.StackMap, tt.activeflow.CurrentStackID, &tt.activeflow.CurrentAction, false).Return(tt.responseExitStackID, tt.responseExitAction)
-			mockReq.EXPECT().QueueV1ServiceTypeQueuecallStart(ctx, tt.expectQueueID, tt.activeflow.ID, qmqueuecall.ReferenceType(qmqueuecall.ReferenceTypeCall), tt.activeflow.ReferenceID, tt.responseExitAction.ID).Return(tt.responseService, nil)
+			mockReq.EXPECT().QueueV1ServiceTypeQueuecallStart(ctx, tt.expectQueueID, tt.activeflow.ID, qmqueuecall.ReferenceType(qmqueuecall.ReferenceTypeCall), tt.activeflow.ReferenceID).Return(tt.responseService, nil)
 
 			// PushStack
 			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
@@ -1199,7 +1189,7 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 
 		activeflow *activeflow.Activeflow
 
-		responseService *cfservice.Service
+		responseService *commonservice.Service
 		responseStack   *stack.Stack
 
 		expectConferenceID uuid.UUID
@@ -1230,9 +1220,9 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("c71e769a-155f-11ed-9bfb-9b3081a1b9f0"),
 			},
 
-			responseService: &cfservice.Service{
+			responseService: &commonservice.Service{
 				ID:   uuid.FromStringOrNil("2b2f8fe8-ab74-11ed-a3a0-b7d673c42e64"),
-				Type: cfservice.TypeConferencecall,
+				Type: commonservice.TypeConferencecall,
 				PushActions: []action.Action{
 					{
 						ID: uuid.FromStringOrNil("3dba7cea-ab74-11ed-83b9-2b746a7d46a1"),
@@ -3432,7 +3422,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 		activeflow *activeflow.Activeflow
 
-		responseService *cbservice.Service
+		responseService *commonservice.Service
 		responseStack   *stack.Stack
 
 		expectChatbotID     uuid.UUID
@@ -3470,9 +3460,9 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 				},
 			},
 
-			responseService: &cbservice.Service{
+			responseService: &commonservice.Service{
 				ID:   uuid.FromStringOrNil("bb68f67a-a8f5-11ed-9a2f-63b973d60f8c"),
-				Type: cbservice.TypeChatbotcall,
+				Type: commonservice.TypeChatbotcall,
 				PushActions: []action.Action{
 					{
 						ID: uuid.FromStringOrNil("bb9239cc-a8f5-11ed-b21f-f7e43c6b6a60"),

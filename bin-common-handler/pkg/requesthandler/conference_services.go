@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/models/sock"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
-	cfservice "monorepo/bin-conference-manager/models/service"
 	cfrequest "monorepo/bin-conference-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +16,7 @@ import (
 // ChatbotV1ServiceTypeChabotcallStart sends a request to chat-manager
 // to starts a chatbotcall service.
 // it returns created service if it succeed.
-func (r *requestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*cfservice.Service, error) {
+func (r *requestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error) {
 	uri := "/v1/services/type/conferencecall"
 
 	data := &cfrequest.V1DataServicesTypeConferencecallPost{
@@ -41,7 +41,7 @@ func (r *requestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx context.
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res cfservice.Service
+	var res service.Service
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

@@ -13,8 +13,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-conference-manager/models/conferencecall"
-	"monorepo/bin-conference-manager/models/service"
 	"monorepo/bin-conference-manager/pkg/conferencehandler"
 	"monorepo/bin-conference-manager/pkg/dbhandler"
 )
@@ -39,7 +39,7 @@ type ConferencecallHandler interface {
 		conferenceID uuid.UUID,
 		referenceType conferencecall.ReferenceType,
 		referenceID uuid.UUID,
-	) (*service.Service, error)
+	) (*commonservice.Service, error)
 
 	Terminate(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	Terminated(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error)
