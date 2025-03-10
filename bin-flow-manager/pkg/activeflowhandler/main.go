@@ -20,7 +20,7 @@ import (
 	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/pkg/actionhandler"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
-	"monorepo/bin-flow-manager/pkg/stackhandler"
+	"monorepo/bin-flow-manager/pkg/stackmaphandler"
 	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
@@ -37,7 +37,7 @@ type activeflowHandler struct {
 
 	actionHandler   actionhandler.ActionHandler
 	variableHandler variablehandler.VariableHandler
-	stackHandler    stackhandler.StackHandler
+	stackmapHandler stackmaphandler.StackmapHandler
 }
 
 // ActiveflowHandler defines
@@ -70,7 +70,7 @@ func NewActiveflowHandler(
 	variableHandler variablehandler.VariableHandler,
 ) ActiveflowHandler {
 
-	stackHandler := stackhandler.NewStackHandler()
+	stackHandler := stackmaphandler.NewStackmapHandler()
 
 	return &activeflowHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -80,7 +80,7 @@ func NewActiveflowHandler(
 
 		actionHandler:   actionHandler,
 		variableHandler: variableHandler,
-		stackHandler:    stackHandler,
+		stackmapHandler: stackHandler,
 	}
 }
 

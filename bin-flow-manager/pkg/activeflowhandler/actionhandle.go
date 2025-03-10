@@ -42,14 +42,14 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 	})
 
 	// find action
-	_, orgAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, act.ID, false)
+	_, orgAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, act.ID, false)
 	if err != nil {
 		log.Errorf("Could not get original action. err: %v", err)
 		return err
 	}
 
 	// find goto action
-	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.TargetID, false)
+	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.TargetID, false)
 	if err != nil {
 		log.Errorf("Could not find loop target action. err: %v", err)
 		return err
@@ -163,7 +163,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 		return nil
 	}
 
-	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
+	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
 	if err != nil {
 		log.Errorf("Could not find false target action. err: %v", err)
 		return err
@@ -211,7 +211,7 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 		return nil
 	}
 
-	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
+	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
 	if err != nil {
 		log.Errorf("Could not find false target action. err: %v", err)
 		return err
@@ -332,7 +332,7 @@ func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, a
 
 	// could not pass the match conditions.
 	// gets the false target action
-	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
+	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
 	if err != nil {
 		log.Errorf("Could not find false target action. err: %v", err)
 		return err
@@ -389,7 +389,7 @@ func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, a
 
 	// could not pass the match conditions.
 	// gets the false target action
-	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
+	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
 	if err != nil {
 		log.Errorf("Could not find false target action. err: %v", err)
 		return err
@@ -688,7 +688,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	log = log.WithField("queue_id", opt.QueueID)
 
 	// get exit action info
-	exitStackID, exitAction := h.stackHandler.GetNextAction(ctx, af.StackMap, af.CurrentStackID, &af.CurrentAction, false)
+	exitStackID, exitAction := h.stackmapHandler.GetNextAction(af.StackMap, af.CurrentStackID, &af.CurrentAction, false)
 	log.WithField("exit_action", exitAction).Debugf("Found exit action info. stack_id: %s, action_id: %s", exitStackID, exitAction.ID)
 
 	sv, err := h.reqHandler.QueueV1ServiceTypeQueuecallStart(ctx, opt.QueueID, af.ID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, exitAction.ID)
@@ -761,7 +761,7 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 		log.Debugf("Input digit is not listed in the branch. variable: %s, variable_value: %s, default_target_id: %s", tmpVar, targetVar, targetID)
 	}
 
-	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, targetID, false)
+	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, targetID, false)
 	if err != nil {
 		log.Errorf("Could not get target action. err: %v", err)
 		return err

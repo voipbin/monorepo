@@ -18,7 +18,7 @@ import (
 	"monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-flow-manager/pkg/actionhandler"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
-	"monorepo/bin-flow-manager/pkg/stackhandler"
+	"monorepo/bin-flow-manager/pkg/stackmaphandler"
 	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
@@ -72,14 +72,14 @@ func Test_Execute(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
 				utilHandler:     mockUtil,
 				db:              mockDB,
 				notifyHandler:   mockNotify,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				variableHandler: mockVar,
 			}
 
@@ -89,7 +89,7 @@ func Test_Execute(t *testing.T) {
 
 			// getNextAction
 			mockDB.EXPECT().ActiveflowGetWithLock(gomock.Any(), tt.id).Return(tt.responseActiveflow, nil)
-			mockStack.EXPECT().GetNextAction(ctx, gomock.Any(), gomock.Any(), gomock.Any(), true).Return(tt.responseStackID, tt.responseAction)
+			mockStack.EXPECT().GetNextAction(gomock.Any(), gomock.Any(), gomock.Any(), true).Return(tt.responseStackID, tt.responseAction)
 			mockVar.EXPECT().Get(ctx, tt.id).Return(&variable.Variable{}, nil)
 			mockVar.EXPECT().SubstituteByte(ctx, tt.responseAction.Option, &variable.Variable{}).Return(tt.responseAction.Option)
 			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.id)
@@ -247,7 +247,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
@@ -255,7 +255,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				actionHandler:   mockAction,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				variableHandler: mockVar,
 			}
 
@@ -266,9 +266,9 @@ func Test_ExecuteNextAction(t *testing.T) {
 			// getNextAction
 			mockDB.EXPECT().ActiveflowGetWithLock(gomock.Any(), tt.id).Return(tt.responseActiveflow, nil)
 			if tt.responseActiveflow.ForwardStackID != stack.IDEmpty && tt.responseActiveflow.ForwardActionID != action.IDEmpty {
-				mockStack.EXPECT().GetAction(ctx, tt.responseActiveflow.StackMap, tt.responseActiveflow.ForwardStackID, tt.responseActiveflow.ForwardActionID, true).Return(tt.responseStackID, tt.responseAction, nil)
+				mockStack.EXPECT().GetAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.ForwardStackID, tt.responseActiveflow.ForwardActionID, true).Return(tt.responseStackID, tt.responseAction, nil)
 			} else {
-				mockStack.EXPECT().GetNextAction(ctx, tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, &tt.responseActiveflow.CurrentAction, true).Return(tt.responseStackID, tt.responseAction)
+				mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, &tt.responseActiveflow.CurrentAction, true).Return(tt.responseStackID, tt.responseAction)
 			}
 
 			mockVar.EXPECT().Get(ctx, tt.id).Return(&variable.Variable{}, nil)
@@ -326,13 +326,13 @@ func Test_ExecuteNextActionError(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				actionHandler: mockAction,
-				stackHandler:  mockStack,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				actionHandler:   mockAction,
+				stackmapHandler: mockStack,
 			}
 			ctx := context.Background()
 
@@ -387,14 +387,14 @@ func Test_executeAction(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
 				utilHandler:     mockUtil,
 				db:              mockDB,
 				notifyHandler:   mockNotify,
-				stackHandler:    mockStack,
+				stackmapHandler: mockStack,
 				variableHandler: mockVar,
 			}
 			ctx := context.Background()

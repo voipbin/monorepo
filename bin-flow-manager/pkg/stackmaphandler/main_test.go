@@ -1,4 +1,4 @@
-package stackhandler
+package stackmaphandler
 
 import (
 	"sort"
