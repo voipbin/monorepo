@@ -57,7 +57,6 @@ func (h *queuecallHandler) Create(
 	referenceID uuid.UUID,
 	referenceActiveflowID uuid.UUID,
 	forwardActionID uuid.UUID,
-	exitActionID uuid.UUID,
 	conferenceID uuid.UUID,
 	source commonaddress.Address,
 ) (*queuecall.Queuecall, error) {

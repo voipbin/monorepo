@@ -215,7 +215,6 @@ func Test_Create(t *testing.T) {
 
 		flowID          uuid.UUID
 		forwardActionID uuid.UUID
-		exitActionID    uuid.UUID
 		confbridgeID    uuid.UUID
 		source          commonaddress.Address
 
@@ -244,7 +243,6 @@ func Test_Create(t *testing.T) {
 			referenceActiveflowID: uuid.FromStringOrNil("28063f02-af52-11ec-9025-6775fa083464"),
 			flowID:                uuid.FromStringOrNil("c9e87138-7699-11ec-aa80-0321af12db91"),
 			forwardActionID:       uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
-			exitActionID:          uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 			confbridgeID:          uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 			source: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -323,7 +321,6 @@ func Test_Create(t *testing.T) {
 				tt.referenceID,
 				tt.referenceActiveflowID,
 				tt.forwardActionID,
-				tt.exitActionID,
 				tt.confbridgeID,
 				tt.source,
 			)

@@ -68,7 +68,7 @@ cd asterisk_config
 alembic -c alembic.ini revision -m "<your change title>"
 ```
 
-\### Naming Convention for Migration Titles
+## Naming Convention for Migration Titles
 
 Follow this format for migration messages:
 
@@ -76,7 +76,7 @@ Follow this format for migration messages:
 <table_name>_<action: create/remove/add/update>_<type: column/table>_<items>
 ```
 
-\#### Examples:
+### Examples:
 
 ``` sh
 alembic -c alembic.ini revision -m "customers add column email phone_number address"
