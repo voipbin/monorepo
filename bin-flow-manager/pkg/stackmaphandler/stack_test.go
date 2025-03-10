@@ -1,62 +1,107 @@
-package stackhandler
+package stackmaphandler
 
 import (
-	"context"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/stack"
 	"reflect"
 	"sort"
 	"testing"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-flow-manager/models/action"
-	"monorepo/bin-flow-manager/models/stack"
+	"go.uber.org/mock/gomock"
 )
 
-func Test_Create(t *testing.T) {
+func Test_CreateStack(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		stackID        uuid.UUID
 		actions        []action.Action
-		returnStrackID uuid.UUID
+		returnStackID  uuid.UUID
 		returnActionID uuid.UUID
+
+		responseUUID uuid.UUID
 
 		expectRes *stack.Stack
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("12725288-d3b1-11ec-bed2-efc5fa0d4d4d"),
-			[]action.Action{
+			stackID: uuid.FromStringOrNil("e2d7bba0-fd6d-11ef-983e-9fec845d9958"),
+			actions: []action.Action{
 				{
-					ID:   uuid.FromStringOrNil("3f7490a2-d3b1-11ec-841f-476ef3aa19b4"),
-					Type: action.TypeAnswer,
+					ID: uuid.FromStringOrNil("e2f2b25c-fd6d-11ef-a462-d73cddea8db0"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e31c33de-fd6d-11ef-8119-9bee28a1440d"),
 				},
 			},
-			uuid.FromStringOrNil("24dd1ad4-d3b1-11ec-af44-53536de24817"),
-			uuid.FromStringOrNil("250395ce-d3b1-11ec-b2a1-5b16a7f48e78"),
+			returnStackID:  uuid.FromStringOrNil("e34ab358-fd6d-11ef-9742-177d3a238163"),
+			returnActionID: uuid.FromStringOrNil("e3736794-fd6d-11ef-a9b0-3701760a71d6"),
 
-			&stack.Stack{
-				ID: uuid.FromStringOrNil("12725288-d3b1-11ec-bed2-efc5fa0d4d4d"),
+			expectRes: &stack.Stack{
+				ID: uuid.FromStringOrNil("e2d7bba0-fd6d-11ef-983e-9fec845d9958"),
 				Actions: []action.Action{
 					{
-						ID:   uuid.FromStringOrNil("3f7490a2-d3b1-11ec-841f-476ef3aa19b4"),
-						Type: action.TypeAnswer,
+						ID: uuid.FromStringOrNil("e2f2b25c-fd6d-11ef-a462-d73cddea8db0"),
+					},
+					{
+						ID: uuid.FromStringOrNil("e31c33de-fd6d-11ef-8119-9bee28a1440d"),
 					},
 				},
-				ReturnStackID:  uuid.FromStringOrNil("24dd1ad4-d3b1-11ec-af44-53536de24817"),
-				ReturnActionID: uuid.FromStringOrNil("250395ce-d3b1-11ec-b2a1-5b16a7f48e78"),
+				ReturnStackID:  uuid.FromStringOrNil("e34ab358-fd6d-11ef-9742-177d3a238163"),
+				ReturnActionID: uuid.FromStringOrNil("e3736794-fd6d-11ef-a9b0-3701760a71d6"),
+			},
+		},
+		{
+			name: "stack id is nil",
+
+			stackID: uuid.Nil,
+			actions: []action.Action{
+				{
+					ID: uuid.FromStringOrNil("c9bb3880-fd6e-11ef-a2cc-ff5b3670cbad"),
+				},
+				{
+					ID: uuid.FromStringOrNil("c9e40526-fd6e-11ef-afbc-d343037a71b5"),
+				},
+			},
+			returnStackID:  uuid.FromStringOrNil("ca08b650-fd6e-11ef-94af-1f7127f822ab"),
+			returnActionID: uuid.FromStringOrNil("ca2d6bf8-fd6e-11ef-9add-4fe642b56405"),
+
+			responseUUID: uuid.FromStringOrNil("ca521ab6-fd6e-11ef-aa1f-47246bdfa4e8"),
+			expectRes: &stack.Stack{
+				ID: uuid.FromStringOrNil("ca521ab6-fd6e-11ef-aa1f-47246bdfa4e8"),
+				Actions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("c9bb3880-fd6e-11ef-a2cc-ff5b3670cbad"),
+					},
+					{
+						ID: uuid.FromStringOrNil("c9e40526-fd6e-11ef-afbc-d343037a71b5"),
+					},
+				},
+				ReturnStackID:  uuid.FromStringOrNil("ca08b650-fd6e-11ef-94af-1f7127f822ab"),
+				ReturnActionID: uuid.FromStringOrNil("ca2d6bf8-fd6e-11ef-9add-4fe642b56405"),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			h := &stackHandler{}
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := &stackHandler{
+				utilHandler: mockUtil,
+			}
 
-			res := h.create(tt.stackID, tt.actions, tt.returnStrackID, tt.returnActionID)
+			if tt.responseUUID != uuid.Nil {
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			}
+
+			res := h.CreateStack(tt.stackID, tt.actions, tt.returnStackID, tt.returnActionID)
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -64,7 +109,72 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_Get(t *testing.T) {
+func Test_deleteStack(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		stackmap map[uuid.UUID]*stack.Stack
+		stackID  uuid.UUID
+
+		expectRes map[uuid.UUID]*stack.Stack
+	}{
+		{
+			name: "normal",
+
+			stackmap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+				},
+				uuid.FromStringOrNil("e2d7bba0-fd6d-11ef-983e-9fec845d9958"): {
+					ID: uuid.FromStringOrNil("9c8a6682-fd6f-11ef-bc3d-23f8b2fdcb0b"),
+				},
+			},
+			stackID: uuid.FromStringOrNil("e2d7bba0-fd6d-11ef-983e-9fec845d9958"),
+
+			expectRes: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+				},
+			},
+		},
+		{
+			name: "delete stack id is main stack id",
+
+			stackmap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+				},
+			},
+			stackID: stack.IDMain,
+
+			expectRes: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := &stackHandler{
+				utilHandler: mockUtil,
+			}
+
+			h.DeleteStack(tt.stackmap, tt.stackID)
+			if reflect.DeepEqual(tt.stackmap, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, tt.stackmap)
+			}
+		})
+	}
+}
+
+func Test_GetStack(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -111,9 +221,7 @@ func Test_Get(t *testing.T) {
 
 			h := &stackHandler{}
 
-			ctx := context.Background()
-
-			res, err := h.Get(ctx, tt.stackMap, tt.stackID)
+			res, err := h.GetStack(tt.stackMap, tt.stackID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -124,8 +232,7 @@ func Test_Get(t *testing.T) {
 		})
 	}
 }
-
-func Test_Push(t *testing.T) {
+func Test_PushStackByActions(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -318,9 +425,7 @@ func Test_Push(t *testing.T) {
 
 			h := &stackHandler{}
 
-			ctx := context.Background()
-
-			res, err := h.Push(ctx, tt.stackMap, tt.stackID, tt.actions, tt.currentStackID, tt.currentActionID)
+			res, err := h.PushStackByActions(tt.stackMap, tt.stackID, tt.actions, tt.currentStackID, tt.currentActionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -352,94 +457,6 @@ func Test_Push(t *testing.T) {
 				}
 
 				i++
-			}
-		})
-	}
-}
-
-func Test_Pop(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		stackMap map[uuid.UUID]*stack.Stack
-		stackID  uuid.UUID
-
-		expectResStackMap map[uuid.UUID]*stack.Stack
-		expectResStack    *stack.Stack
-	}{
-		{
-			name: "normal",
-
-			stackMap: map[uuid.UUID]*stack.Stack{
-				stack.IDMain: {
-					Actions: []action.Action{
-						{
-							ID:   uuid.FromStringOrNil("690901cc-f9d9-11ef-b47a-43629eae889c"),
-							Type: action.TypeAnswer,
-						},
-					},
-					ReturnStackID:  stack.IDEmpty,
-					ReturnActionID: action.IDEmpty,
-				},
-				uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"): {
-					ID: uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"),
-					Actions: []action.Action{
-						{
-							ID:   uuid.FromStringOrNil("697628e2-f9d9-11ef-a7ac-5784b43997cc"),
-							Type: action.TypeAnswer,
-						},
-					},
-					ReturnStackID:  stack.IDMain,
-					ReturnActionID: uuid.FromStringOrNil("690901cc-f9d9-11ef-b47a-43629eae889c"),
-				},
-			},
-			stackID: uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"),
-
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
-				stack.IDMain: {
-					Actions: []action.Action{
-						{
-							ID:   uuid.FromStringOrNil("690901cc-f9d9-11ef-b47a-43629eae889c"),
-							Type: action.TypeAnswer,
-						},
-					},
-					ReturnStackID:  stack.IDEmpty,
-					ReturnActionID: action.IDEmpty,
-				},
-			},
-			expectResStack: &stack.Stack{
-				ID: uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("697628e2-f9d9-11ef-a7ac-5784b43997cc"),
-						Type: action.TypeAnswer,
-					},
-				},
-				ReturnStackID:  stack.IDMain,
-				ReturnActionID: uuid.FromStringOrNil("690901cc-f9d9-11ef-b47a-43629eae889c"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			h := &stackHandler{}
-
-			ctx := context.Background()
-
-			res, err := h.Pop(ctx, tt.stackMap, tt.stackID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.stackMap, tt.expectResStackMap) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStackMap, tt.stackMap)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectResStack) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStack, res)
 			}
 		})
 	}

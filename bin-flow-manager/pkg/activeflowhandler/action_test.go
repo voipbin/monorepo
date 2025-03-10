@@ -15,7 +15,7 @@ import (
 	"monorepo/bin-flow-manager/models/flow"
 	"monorepo/bin-flow-manager/pkg/actionhandler"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
-	"monorepo/bin-flow-manager/pkg/stackhandler"
+	"monorepo/bin-flow-manager/pkg/stackmaphandler"
 	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
@@ -66,7 +66,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
@@ -147,7 +147,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 // 			mockReq := requesthandler.NewMockRequestHandler(mc)
 // 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 // 			mockAction := actionhandler.NewMockActionHandler(mc)
-// 			mockStack := stackhandler.NewMockStackHandler(mc)
+// 			mockStack := stackhandler.NewMockStackmapHandler(mc)
 // 			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 // 			h := &activeflowHandler{

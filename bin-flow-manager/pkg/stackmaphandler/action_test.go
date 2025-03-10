@@ -1,7 +1,6 @@
-package stackhandler
+package stackmaphandler
 
 import (
-	"context"
 	"encoding/json"
 	"reflect"
 	"testing"
@@ -241,9 +240,7 @@ func Test_GetAction(t *testing.T) {
 
 			h := &stackHandler{}
 
-			ctx := context.Background()
-
-			resStackID, resAction, err := h.GetAction(ctx, tt.stackMap, tt.currentStackID, tt.targetActionID, true)
+			resStackID, resAction, err := h.GetAction(tt.stackMap, tt.currentStackID, tt.targetActionID, true)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -298,9 +295,7 @@ func Test_GetAction_error(t *testing.T) {
 
 			h := &stackHandler{}
 
-			ctx := context.Background()
-
-			_, _, err := h.GetAction(ctx, tt.stackMap, tt.currentStackID, tt.targetActionID, true)
+			_, _, err := h.GetAction(tt.stackMap, tt.currentStackID, tt.targetActionID, true)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
@@ -365,9 +360,7 @@ func Test_GetActionReference(t *testing.T) {
 
 			h := &stackHandler{}
 
-			ctx := context.Background()
-
-			_, resAction, err := h.GetAction(ctx, tt.stackMap, tt.currentStackID, tt.targetActionID, false)
+			_, resAction, err := h.GetAction(tt.stackMap, tt.currentStackID, tt.targetActionID, false)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -664,9 +657,7 @@ func Test_GetNextAction(t *testing.T) {
 
 			h := &stackHandler{}
 
-			ctx := context.Background()
-
-			resStackID, resAction := h.GetNextAction(ctx, tt.stackMap, tt.currentStackID, tt.currentAction, true)
+			resStackID, resAction := h.GetNextAction(tt.stackMap, tt.currentStackID, tt.currentAction, true)
 
 			if !reflect.DeepEqual(resStackID, tt.expectResStackID) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStackID, resStackID)
@@ -772,9 +763,7 @@ func Test_SearchAction(t *testing.T) {
 
 			h := &stackHandler{}
 
-			ctx := context.Background()
-
-			resStackID, resAction, err := h.SearchAction(ctx, tt.stackMap, tt.stackID, tt.actionID)
+			resStackID, resAction, err := h.SearchAction(tt.stackMap, tt.stackID, tt.actionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

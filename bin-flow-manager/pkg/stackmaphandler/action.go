@@ -1,7 +1,6 @@
-package stackhandler
+package stackmaphandler
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -28,7 +27,7 @@ func (h *stackHandler) findAction(actions []action.Action, actionID uuid.UUID) *
 
 // SearchAction returns a pointer of the given action id's action.
 // it checks all stacks from the given stackMap if the stackID is empty.
-func (h *stackHandler) SearchAction(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, actionID uuid.UUID) (uuid.UUID, *action.Action, error) {
+func (h *stackHandler) SearchAction(stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, actionID uuid.UUID) (uuid.UUID, *action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "SearchAction",
 		"action_id": actionID,
@@ -37,7 +36,7 @@ func (h *stackHandler) SearchAction(ctx context.Context, stackMap map[uuid.UUID]
 
 	if stackID != stack.IDEmpty {
 		// get stack
-		s, err := h.Get(ctx, stackMap, stackID)
+		s, err := h.GetStack(stackMap, stackID)
 
 		if err != nil {
 			log.Errorf("Could not find stack. err: %v", err)
@@ -67,7 +66,7 @@ func (h *stackHandler) SearchAction(ctx context.Context, stackMap map[uuid.UUID]
 
 // GetAction returns given action id's action
 // it follows stack's return addresses and release the memory when it gets out from the stack.
-func (h *stackHandler) GetAction(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, targetActionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action, error) {
+func (h *stackHandler) GetAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, targetActionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "GetAction",
 		"current_stack_id": currentStackID,
@@ -79,7 +78,7 @@ func (h *stackHandler) GetAction(ctx context.Context, stackMap map[uuid.UUID]*st
 	for i := 0; i < maxStackCount; i++ {
 
 		// get stack
-		s, err := h.Get(ctx, stackMap, resStackID)
+		s, err := h.GetStack(stackMap, resStackID)
 		if err != nil {
 			log.Errorf("Could not find stack. err: %v", err)
 			return stack.IDEmpty, nil, err
@@ -104,7 +103,7 @@ func (h *stackHandler) GetAction(ctx context.Context, stackMap map[uuid.UUID]*st
 
 		resStackID = s.ReturnStackID
 		if releaseStack {
-			h.remove(stackMap, s.ID)
+			h.DeleteStack(stackMap, s.ID)
 		}
 
 		if resStackID == stack.IDEmpty {
@@ -118,7 +117,7 @@ func (h *stackHandler) GetAction(ctx context.Context, stackMap map[uuid.UUID]*st
 // GetNextAction returns next action.
 // it checks all of related stacks.
 // if it couldn't find next action, returns finish action.
-func (h *stackHandler) GetNextAction(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, currentAction *action.Action, relaseStack bool) (uuid.UUID, *action.Action) {
+func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, currentAction *action.Action, relaseStack bool) (uuid.UUID, *action.Action) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "GetNextAction",
 		"current_stack_id":  currentStackID,
@@ -128,7 +127,7 @@ func (h *stackHandler) GetNextAction(ctx context.Context, stackMap map[uuid.UUID
 
 	// check the currrent stack_id is the main stack
 	if currentStackID == stack.IDMain {
-		s, err := h.Get(ctx, stackMap, currentStackID)
+		s, err := h.GetStack(stackMap, currentStackID)
 		if err != nil {
 			log.Errorf("Could not find stack. err: %v", err)
 			return stack.IDEmpty, &action.ActionFinish
@@ -146,7 +145,7 @@ func (h *stackHandler) GetNextAction(ctx context.Context, stackMap map[uuid.UUID
 
 	// check next id.
 	if currentAction.NextID != action.IDEmpty {
-		resStackID, resAction, err := h.GetAction(ctx, stackMap, currentStackID, currentAction.NextID, true)
+		resStackID, resAction, err := h.GetAction(stackMap, currentStackID, currentAction.NextID, true)
 		if err != nil {
 			log.Errorf("Could not get action. err: %v", err)
 			return stack.IDEmpty, &action.ActionFinish
@@ -161,7 +160,7 @@ func (h *stackHandler) GetNextAction(ctx context.Context, stackMap map[uuid.UUID
 	for i := 0; i < maxStackCount; i++ {
 
 		// get stack
-		s, err := h.Get(ctx, stackMap, tmpStackID)
+		s, err := h.GetStack(stackMap, tmpStackID)
 		if err != nil {
 			log.Errorf("Could not find stack. err: %v", err)
 			return stack.IDEmpty, &action.ActionFinish
@@ -187,7 +186,7 @@ func (h *stackHandler) GetNextAction(ctx context.Context, stackMap map[uuid.UUID
 			tmpAction := s.Actions[idx]
 			if tmpAction.NextID != action.IDEmpty {
 
-				resStackID, resAction, err := h.GetAction(ctx, stackMap, tmpStackID, tmpAction.NextID, true)
+				resStackID, resAction, err := h.GetAction(stackMap, tmpStackID, tmpAction.NextID, true)
 				if err != nil {
 					log.Errorf("Could not get action for next_id. err: %v", err)
 					return stack.IDEmpty, &action.ActionFinish
@@ -206,7 +205,7 @@ func (h *stackHandler) GetNextAction(ctx context.Context, stackMap map[uuid.UUID
 		tmpActionID = s.ReturnActionID
 
 		if relaseStack {
-			h.remove(stackMap, s.ID)
+			h.DeleteStack(stackMap, s.ID)
 		}
 
 		if tmpStackID == stack.IDEmpty {
