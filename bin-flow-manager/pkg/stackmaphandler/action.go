@@ -104,6 +104,11 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 			return stack.IDEmpty, &action.ActionFinish
 		}
 
+		if tmpActionID == action.IDStart {
+			// start action
+			return tmpStackID, &s.Actions[0]
+		}
+
 		idx, a := h.findAction(s.Actions, tmpActionID)
 		if a == nil {
 			//action not found
