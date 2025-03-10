@@ -10,8 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-conference-manager/models/conferencecall"
-	"monorepo/bin-conference-manager/models/service"
 	"monorepo/bin-conference-manager/pkg/conferencecallhandler"
 	"monorepo/bin-conference-manager/pkg/conferencehandler"
 )
@@ -22,7 +22,7 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		responseService *service.Service
+		responseService *commonservice.Service
 
 		expectConferenceID  uuid.UUID
 		expectReferenceType conferencecall.ReferenceType
@@ -37,7 +37,7 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"conference_id":"43c7671e-c0ab-11ed-a8bc-6f436b081030","reference_type":"call","reference_id":"440e58f4-c0ab-11ed-89d9-7340c26c4034"}`),
 			},
-			responseService: &service.Service{
+			responseService: &commonservice.Service{
 				ID: uuid.FromStringOrNil("95cf180c-98c6-11ed-8330-bb119cab4678"),
 			},
 

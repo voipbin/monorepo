@@ -19,9 +19,9 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-queue-manager/models/queue"
 	"monorepo/bin-queue-manager/models/queuecall"
-	"monorepo/bin-queue-manager/models/service"
 	"monorepo/bin-queue-manager/pkg/dbhandler"
 	"monorepo/bin-queue-manager/pkg/queuehandler"
 )
@@ -44,7 +44,7 @@ func Test_ServiceStart(t *testing.T) {
 		responseQueuecall     *queuecall.Queuecall
 
 		expectQueuecall *queuecall.Queuecall
-		expectRes       *service.Service
+		expectRes       *commonservice.Service
 	}{
 		{
 			name: "normal",
@@ -103,9 +103,9 @@ func Test_ServiceStart(t *testing.T) {
 				DurationWaiting:       0,
 				DurationService:       0,
 			},
-			expectRes: &service.Service{
+			expectRes: &commonservice.Service{
 				ID:   uuid.FromStringOrNil("b0fd8d1e-acf0-11ed-9430-6f880d5c9104"),
-				Type: service.TypeQueuecall,
+				Type: commonservice.TypeQueuecall,
 				PushActions: []fmaction.Action{
 					{
 						ID:   uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),

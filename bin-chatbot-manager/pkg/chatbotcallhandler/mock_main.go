@@ -13,7 +13,7 @@ import (
 	context "context"
 	chatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
-	service "monorepo/bin-chatbot-manager/models/service"
+	service "monorepo/bin-common-handler/models/service"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"

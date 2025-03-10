@@ -6,11 +6,11 @@ import (
 	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/message"
-	"monorepo/bin-chatbot-manager/models/service"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
 	"monorepo/bin-chatbot-manager/pkg/openai_handler"
 	"monorepo/bin-common-handler/models/identity"
+	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -42,7 +42,7 @@ func Test_ServiceStart(t *testing.T) {
 		responseUUIDAction      uuid.UUID
 
 		expectChatbotcall *chatbotcall.Chatbotcall
-		expectRes         *service.Service
+		expectRes         *commonservice.Service
 	}{
 		{
 			name:          "normal - english female",
@@ -93,9 +93,9 @@ func Test_ServiceStart(t *testing.T) {
 				Language:          "en-US",
 				Status:            chatbotcall.StatusInitiating,
 			},
-			expectRes: &service.Service{
+			expectRes: &commonservice.Service{
 				ID:   uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
-				Type: service.TypeChatbotcall,
+				Type: commonservice.TypeChatbotcall,
 				PushActions: []fmaction.Action{
 					{
 						ID:     uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),

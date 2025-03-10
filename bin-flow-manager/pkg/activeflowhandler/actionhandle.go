@@ -687,11 +687,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	}
 	log = log.WithField("queue_id", opt.QueueID)
 
-	// get exit action info
-	exitStackID, exitAction := h.stackmapHandler.GetNextAction(af.StackMap, af.CurrentStackID, &af.CurrentAction, false)
-	log.WithField("exit_action", exitAction).Debugf("Found exit action info. stack_id: %s, action_id: %s", exitStackID, exitAction.ID)
-
-	sv, err := h.reqHandler.QueueV1ServiceTypeQueuecallStart(ctx, opt.QueueID, af.ID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, exitAction.ID)
+	sv, err := h.reqHandler.QueueV1ServiceTypeQueuecallStart(ctx, opt.QueueID, af.ID, qmqueuecall.ReferenceTypeCall, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not start the service. err: %v", err)
 		return errors.Wrap(err, "Could not start the service.")
