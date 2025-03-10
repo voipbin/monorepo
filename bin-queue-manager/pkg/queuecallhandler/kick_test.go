@@ -45,7 +45,6 @@ func Test_Kick(t *testing.T) {
 				ReferenceID:           uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("f1268a84-bcc3-11ed-8326-9bd295279b92"),
 				ForwardActionID:       uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
-				ExitActionID:          uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:          uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -77,7 +76,6 @@ func Test_Kick(t *testing.T) {
 				ReferenceID:           uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("fbe9b6b2-bcc3-11ed-895f-57ec8caa42da"),
 				ForwardActionID:       uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
-				ExitActionID:          uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:          uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -121,7 +119,7 @@ func Test_Kick(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ExitActionID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.queuecallID).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
 				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, tt.expectDurationWaiting, tt.responseCurTime)
@@ -170,7 +168,6 @@ func Test_KickByReferenceID(t *testing.T) {
 				ReferenceID:           uuid.FromStringOrNil("04f47408-d1b6-11ec-b497-c7ab793dd73d"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("0f15c000-bcc4-11ed-a64f-ab5cd3031ac1"),
 				ForwardActionID:       uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
-				ExitActionID:          uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:          uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -214,7 +211,7 @@ func Test_KickByReferenceID(t *testing.T) {
 			mockDB.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseQueuecall, nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ExitActionID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
 				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime)
@@ -261,7 +258,6 @@ func Test_kickForce(t *testing.T) {
 				ReferenceID:           uuid.FromStringOrNil("04f47408-d1b6-11ec-b497-c7ab793dd73d"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("0f15c000-bcc4-11ed-a64f-ab5cd3031ac1"),
 				ForwardActionID:       uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
-				ExitActionID:          uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:          uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -291,7 +287,6 @@ func Test_kickForce(t *testing.T) {
 				ReferenceID:           uuid.FromStringOrNil("04f47408-d1b6-11ec-b497-c7ab793dd73d"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("0f15c000-bcc4-11ed-a64f-ab5cd3031ac1"),
 				ForwardActionID:       uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
-				ExitActionID:          uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:          uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -333,7 +328,7 @@ func Test_kickForce(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ExitActionID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID).Return(nil)
 
 			if tt.responseQueuecall.Status == queuecall.StatusService {
 				// update status done

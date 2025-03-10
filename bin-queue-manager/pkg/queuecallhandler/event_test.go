@@ -42,7 +42,6 @@ func Test_EventCallCallHangup(t *testing.T) {
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
-				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -124,7 +123,6 @@ func Test_EventCallConfbridgeJoined(t *testing.T) {
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
-				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -207,7 +205,6 @@ func Test_EventCallConfbridgeLeaved(t *testing.T) {
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
-				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,

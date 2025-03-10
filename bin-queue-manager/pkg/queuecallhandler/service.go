@@ -27,7 +27,6 @@ func (h *queuecallHandler) ServiceStart(
 	activeflowID uuid.UUID,
 	referenceType queuecall.ReferenceType,
 	referenceID uuid.UUID,
-	exitActionID uuid.UUID,
 ) (*service.Service, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ServiceStart",
@@ -92,7 +91,6 @@ func (h *queuecallHandler) ServiceStart(
 		referenceID,
 		activeflowID,
 		forwardActionID,
-		exitActionID,
 		cb.ID,
 		source,
 	)

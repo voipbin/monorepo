@@ -38,7 +38,6 @@ type QueuecallHandler interface {
 		referenceID uuid.UUID,
 		referenceActiveflowID uuid.UUID,
 		forwardActionID uuid.UUID,
-		exitActionID uuid.UUID,
 		conferenceID uuid.UUID,
 		source commonaddress.Address,
 	) (*queuecall.Queuecall, error)
@@ -68,7 +67,6 @@ type QueuecallHandler interface {
 		activeflowID uuid.UUID,
 		referenceType queuecall.ReferenceType,
 		referenceID uuid.UUID,
-		exitActionID uuid.UUID,
 	) (*service.Service, error)
 }
 

@@ -9,7 +9,6 @@ create table queue_queuecalls(
   reference_activeflow_id binary(16),   -- reference's activeflow id
 
   forward_action_id binary(16),   -- action id for forward.
-  exit_action_id    binary(16),   -- action id for queue exit.
   confbridge_id     binary(16),
 
   source            json,
