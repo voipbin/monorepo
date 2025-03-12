@@ -16,10 +16,9 @@ type V1DataChatbotsPost struct {
 
 	EngineType  chatbot.EngineType  `json:"engine_type,omitempty"`
 	EngineModel chatbot.EngineModel `json:"engine_model,omitempty"`
-	InitPrompt  string              `json:"init_prompt,omitempty"`
+	EngineData  map[string]any      `json:"engine_data,omitempty"`
 
-	CredentialBase64    string `json:"credential_base64,omitempty"`
-	CredentialProjectID string `json:"credential_project_id,omitempty"`
+	InitPrompt string `json:"init_prompt,omitempty"`
 }
 
 // V1DataChatbotsIDPut is
@@ -31,8 +30,7 @@ type V1DataChatbotsIDPut struct {
 
 	EngineType  chatbot.EngineType  `json:"engine_type,omitempty"`
 	EngineModel chatbot.EngineModel `json:"engine_model,omitempty"`
-	InitPrompt  string              `json:"init_prompt,omitempty"`
+	EngineData  map[string]any      `json:"engine_data,omitempty"`
 
-	CredentialBase64    string `json:"credential_base64,omitempty"`
-	CredentialProjectID string `json:"credential_project_id,omitempty"`
+	InitPrompt string `json:"init_prompt,omitempty"`
 }

@@ -501,9 +501,8 @@ type RequestHandler interface {
 		detail string,
 		engineType cbchatbot.EngineType,
 		engineModel cbchatbot.EngineModel,
+		engineData map[string]any,
 		initPrompt string,
-		credentialBase64 string,
-		credentialProjectID string,
 	) (*cbchatbot.Chatbot, error)
 	ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error)
 	ChatbotV1ChatbotUpdate(
@@ -513,9 +512,8 @@ type RequestHandler interface {
 		detail string,
 		engineType cbchatbot.EngineType,
 		engineModel cbchatbot.EngineModel,
+		engineData map[string]any,
 		initPrompt string,
-		credentialBase64 string,
-		credentialProjectID string,
 	) (*cbchatbot.Chatbot, error)
 
 	// chatbot-manager chatbotcall

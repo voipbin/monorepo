@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -20,6 +21,7 @@ const (
 		chatbot_id,
 		chatbot_engine_type,
 		chatbot_engine_model,
+		chatbot_engine_data,
 
 		activeflow_id,
 		reference_type,
@@ -45,6 +47,7 @@ const (
 
 // chatbotcallGetFromRow gets the chatbotcall from the row.
 func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall, error) {
+	var tmpChatbotEngineData sql.NullString
 
 	res := &chatbotcall.Chatbotcall{}
 	if err := row.Scan(
@@ -54,6 +57,7 @@ func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall
 		&res.ChatbotID,
 		&res.ChatbotEngineType,
 		&res.ChatbotEngineModel,
+		&tmpChatbotEngineData,
 
 		&res.ActiveflowID,
 		&res.ReferenceType,
@@ -75,6 +79,15 @@ func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall
 		return nil, fmt.Errorf("could not scan the row. chatbotcallGetFromRow. err: %v", err)
 	}
 
+	if tmpChatbotEngineData.Valid {
+		if err := json.Unmarshal([]byte(tmpChatbotEngineData.String), &res.ChatbotEngineData); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
+		}
+	}
+	if res.ChatbotEngineData == nil {
+		res.ChatbotEngineData = map[string]any{}
+	}
+
 	return res, nil
 }
 
@@ -87,6 +100,7 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		chatbot_id,
 		chatbot_engine_type,
 		chatbot_engine_model,
+		chatbot_engine_data,
 
 		activeflow_id,
 		reference_type,
@@ -106,7 +120,7 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		tm_delete
 	) values(
 		?, ?, 
-		?, ?, ?,
+		?, ?, ?, ?,
 		?, ?, ?,
 		?, ?,
 		?,
@@ -115,13 +129,19 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		)
 	`
 
-	_, err := h.db.Exec(q,
+	tmpChatbotEngineData, err := json.Marshal(cb.ChatbotEngineData)
+	if err != nil {
+		return fmt.Errorf("ChatbotCreate: Could not marshal the data. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q,
 		cb.ID.Bytes(),
 		cb.CustomerID.Bytes(),
 
 		cb.ChatbotID.Bytes(),
 		cb.ChatbotEngineType,
 		cb.ChatbotEngineModel,
+		tmpChatbotEngineData,
 
 		cb.ActiveflowID.Bytes(),
 		cb.ReferenceType,

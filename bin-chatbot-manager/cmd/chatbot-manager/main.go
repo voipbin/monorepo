@@ -17,9 +17,9 @@ import (
 	"monorepo/bin-chatbot-manager/pkg/chatbotcallhandler"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
+	"monorepo/bin-chatbot-manager/pkg/engine_openai_handler"
 	"monorepo/bin-chatbot-manager/pkg/listenhandler"
 	"monorepo/bin-chatbot-manager/pkg/messagehandler"
-	"monorepo/bin-chatbot-manager/pkg/openai_handler"
 	"monorepo/bin-chatbot-manager/pkg/subscribehandler"
 )
 
@@ -90,7 +90,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	chatbotHandler := chatbothandler.NewChatbotHandler(requestHandler, notifyHandler, db)
 
-	chatgptHandler := openai_handler.NewOpenaiHandler(engineKeyChatgpt)
+	chatgptHandler := engine_openai_handler.NewEngineOpenaiHandler(engineKeyChatgpt)
 	chatbotcallHandler := chatbotcallhandler.NewChatbotcallHandler(requestHandler, notifyHandler, db, chatbotHandler, chatgptHandler)
 	messageHandler := messagehandler.NewMessageHandler(notifyHandler, db, chatbotcallHandler, chatgptHandler)
 

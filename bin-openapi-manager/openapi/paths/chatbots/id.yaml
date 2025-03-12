@@ -65,20 +65,19 @@ put:
               $ref: '#/components/schemas/ChatbotManagerChatbotEngineType'
             engine_model:
               $ref: '#/components/schemas/ChatbotManagerChatbotEngineModel'
+            engine_data:
+              type: object
+              additionalProperties: true
+              description: Data associated with the chatbot's engine, can be dynamic and vary based on the engine type.
             init_prompt:
-              type: string
-            credential_base64:
-              type: string
-            credential_project_id:
               type: string
           required:
             - name
             - detail
             - engine_type
             - engine_model
+            - engine_data
             - init_prompt
-            - credential_base64
-            - credential_project_id
   responses:
     '200':
       description: Details of the updated chatbot.

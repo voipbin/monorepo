@@ -28,8 +28,8 @@ func Test_ChatbotCreate(t *testing.T) {
 		expectRes *chatbot.Chatbot
 	}{
 		{
-			"have all",
-			&chatbot.Chatbot{
+			name: "have all",
+			chatbot: &chatbot.Chatbot{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("165c9f1e-a5e0-11ed-8521-db074e85944c"),
 					CustomerID: uuid.FromStringOrNil("168e154e-a5e0-11ed-b40c-e7bb8f3f9928"),
@@ -37,11 +37,15 @@ func Test_ChatbotCreate(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				EngineType: chatbot.EngineTypeNone,
-				InitPrompt: "test is test init prompt",
+				EngineData: map[string]any{
+					"key1": "val1",
+					"key2": 2.0,
+				},
+				InitPrompt: "test init prompt",
 			},
 
-			"2023-01-03 21:35:02.809",
-			&chatbot.Chatbot{
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes: &chatbot.Chatbot{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("165c9f1e-a5e0-11ed-8521-db074e85944c"),
 					CustomerID: uuid.FromStringOrNil("168e154e-a5e0-11ed-b40c-e7bb8f3f9928"),
@@ -49,7 +53,11 @@ func Test_ChatbotCreate(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				EngineType: chatbot.EngineTypeNone,
-				InitPrompt: "test is test init prompt",
+				EngineData: map[string]any{
+					"key1": "val1",
+					"key2": 2.0,
+				},
+				InitPrompt: "test init prompt",
 
 				TMCreate: "2023-01-03 21:35:02.809",
 				TMUpdate: DefaultTimeStamp,
@@ -57,21 +65,22 @@ func Test_ChatbotCreate(t *testing.T) {
 			},
 		},
 		{
-			"empty",
-			&chatbot.Chatbot{
+			name: "empty",
+			chatbot: &chatbot.Chatbot{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("16bbdc18-a5e0-11ed-8762-5771d36fd113"),
 				},
 			},
 
-			"2023-01-03 21:35:02.809",
-			&chatbot.Chatbot{
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes: &chatbot.Chatbot{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("16bbdc18-a5e0-11ed-8762-5771d36fd113"),
 				},
-				TMCreate: "2023-01-03 21:35:02.809",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				EngineData: map[string]any{},
+				TMCreate:   "2023-01-03 21:35:02.809",
+				TMUpdate:   DefaultTimeStamp,
+				TMDelete:   DefaultTimeStamp,
 			},
 		},
 	}
@@ -124,23 +133,24 @@ func Test_ChatbotDelete(t *testing.T) {
 		expectRes       *chatbot.Chatbot
 	}{
 		{
-			"normal",
-			&chatbot.Chatbot{
+			name: "normal",
+			chatbot: &chatbot.Chatbot{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
 				},
 			},
 
-			uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
+			id: uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
 
-			"2023-01-03 21:35:02.809",
-			&chatbot.Chatbot{
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes: &chatbot.Chatbot{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
 				},
-				TMCreate: "2023-01-03 21:35:02.809",
-				TMUpdate: "2023-01-03 21:35:02.809",
-				TMDelete: "2023-01-03 21:35:02.809",
+				EngineData: map[string]any{},
+				TMCreate:   "2023-01-03 21:35:02.809",
+				TMUpdate:   "2023-01-03 21:35:02.809",
+				TMDelete:   "2023-01-03 21:35:02.809",
 			},
 		},
 	}
@@ -201,8 +211,8 @@ func Test_ChatbotGets(t *testing.T) {
 		expectRes       []*chatbot.Chatbot
 	}{
 		{
-			"normal",
-			[]*chatbot.Chatbot{
+			name: "normal",
+			chatbots: []*chatbot.Chatbot{
 				{
 					Identity: identity.Identity{
 						ID:         uuid.FromStringOrNil("6d060150-a76d-11ed-9e96-fb09644b04ca"),
@@ -217,46 +227,48 @@ func Test_ChatbotGets(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
-			10,
-			map[string]string{
+			customerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
+			count:      10,
+			filters: map[string]string{
 				"deleted": "false",
 			},
 
-			"2023-01-03 21:35:02.809",
-			[]*chatbot.Chatbot{
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes: []*chatbot.Chatbot{
 				{
 					Identity: identity.Identity{
 						ID:         uuid.FromStringOrNil("6d060150-a76d-11ed-9e96-fb09644b04ca"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					TMCreate: "2023-01-03 21:35:02.809",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					EngineData: map[string]any{},
+					TMCreate:   "2023-01-03 21:35:02.809",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
 					Identity: identity.Identity{
 						ID:         uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					TMCreate: "2023-01-03 21:35:02.809",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					EngineData: map[string]any{},
+					TMCreate:   "2023-01-03 21:35:02.809",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 		},
 		{
-			"empty",
-			[]*chatbot.Chatbot{},
+			name:     "empty",
+			chatbots: []*chatbot.Chatbot{},
 
-			uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
-			0,
-			map[string]string{
+			customerID: uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
+			count:      0,
+			filters: map[string]string{
 				"deleted": "false",
 			},
 
-			"2023-01-03 21:35:02.809",
-			[]*chatbot.Chatbot{},
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes:       []*chatbot.Chatbot{},
 		},
 	}
 
@@ -302,14 +314,13 @@ func Test_ChatbotSetInfo(t *testing.T) {
 		name    string
 		chatbot *chatbot.Chatbot
 
-		id                  uuid.UUID
-		chatbotName         string
-		detail              string
-		engineType          chatbot.EngineType
-		engineModel         chatbot.EngineModel
-		initPrompt          string
-		credentialBase64    string
-		credentialProjectID string
+		id          uuid.UUID
+		chatbotName string
+		detail      string
+		engineType  chatbot.EngineType
+		engineModel chatbot.EngineModel
+		engineData  map[string]any
+		initPrompt  string
 
 		responseCurTime string
 		expectRes       *chatbot.Chatbot
@@ -322,30 +333,34 @@ func Test_ChatbotSetInfo(t *testing.T) {
 				},
 			},
 
-			id:                  uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
-			chatbotName:         "new name",
-			detail:              "new detail",
-			engineType:          chatbot.EngineTypeNone,
-			engineModel:         chatbot.EngineModelOpenaiGPT3Dot5Turbo,
-			initPrompt:          "new init prompt",
-			credentialBase64:    "CredentialBASE64",
-			credentialProjectID: "543ba65c-ecda-11ef-883f-ab6f1d3a08da",
+			id:          uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
+			chatbotName: "new name",
+			detail:      "new detail",
+			engineType:  chatbot.EngineTypeNone,
+			engineModel: chatbot.EngineModelOpenaiGPT3Dot5Turbo,
+			engineData: map[string]any{
+				"key1": "val1",
+				"key2": 2.0,
+			},
+			initPrompt: "new init prompt",
 
 			responseCurTime: "2023-01-03 21:35:02.809",
 			expectRes: &chatbot.Chatbot{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
 				},
-				Name:                "new name",
-				Detail:              "new detail",
-				EngineType:          chatbot.EngineTypeNone,
-				EngineModel:         chatbot.EngineModelOpenaiGPT3Dot5Turbo,
-				InitPrompt:          "new init prompt",
-				CredentialBase64:    "CredentialBASE64",
-				CredentialProjectID: "543ba65c-ecda-11ef-883f-ab6f1d3a08da",
-				TMCreate:            "2023-01-03 21:35:02.809",
-				TMUpdate:            "2023-01-03 21:35:02.809",
-				TMDelete:            DefaultTimeStamp,
+				Name:        "new name",
+				Detail:      "new detail",
+				EngineType:  chatbot.EngineTypeNone,
+				EngineModel: chatbot.EngineModelOpenaiGPT3Dot5Turbo,
+				EngineData: map[string]any{
+					"key1": "val1",
+					"key2": 2.0,
+				},
+				InitPrompt: "new init prompt",
+				TMCreate:   "2023-01-03 21:35:02.809",
+				TMUpdate:   "2023-01-03 21:35:02.809",
+				TMDelete:   DefaultTimeStamp,
 			},
 		},
 	}
@@ -373,7 +388,7 @@ func Test_ChatbotSetInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotSet(ctx, gomock.Any())
-			if errDel := h.ChatbotSetInfo(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID); errDel != nil {
+			if errDel := h.ChatbotSetInfo(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 

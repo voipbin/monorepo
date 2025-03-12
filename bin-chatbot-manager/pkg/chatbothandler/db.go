@@ -18,9 +18,8 @@ func (h *chatbotHandler) dbCreate(
 	detail string,
 	engineType chatbot.EngineType,
 	engineModel chatbot.EngineModel,
+	engineData map[string]any,
 	initPrompt string,
-	credentialBase64 string,
-	credentialProjectID string,
 ) (*chatbot.Chatbot, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "Create",
@@ -29,7 +28,7 @@ func (h *chatbotHandler) dbCreate(
 		"detail":       detail,
 		"engine_type":  engineType,
 		"engine_model": engineModel,
-		"init_prompt":  initPrompt,
+		"data":         engineData,
 	})
 
 	id := h.utilHandler.UUIDCreate()
@@ -44,10 +43,9 @@ func (h *chatbotHandler) dbCreate(
 
 		EngineType:  engineType,
 		EngineModel: engineModel,
-		InitPrompt:  initPrompt,
+		EngineData:  engineData,
 
-		CredentialBase64:    credentialBase64,
-		CredentialProjectID: credentialProjectID,
+		InitPrompt: initPrompt,
 	}
 	log.WithField("chatbot", c).Debugf("Creating a new chatbot. chatbot_id: %s", c.ID)
 
@@ -129,9 +127,8 @@ func (h *chatbotHandler) dbUpdate(
 	detail string,
 	engineType chatbot.EngineType,
 	engineModel chatbot.EngineModel,
+	engineData map[string]any,
 	initPrompt string,
-	credentialBase64 string,
-	credentialProjectID string,
 ) (*chatbot.Chatbot, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "Update",
@@ -140,10 +137,11 @@ func (h *chatbotHandler) dbUpdate(
 		"detail":       detail,
 		"engine_type":  engineType,
 		"engine_model": engineModel,
+		"engine_data":  engineData,
 		"init_prompt":  initPrompt,
 	})
 
-	if err := h.db.ChatbotSetInfo(ctx, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID); err != nil {
+	if err := h.db.ChatbotSetInfo(ctx, id, name, detail, engineType, engineModel, engineData, initPrompt); err != nil {
 		log.Errorf("Could not update the chatbot. err: %v", err)
 		return nil, err
 	}

@@ -25,14 +25,22 @@ type ChatbotHandler interface {
 		detail string,
 		engineType chatbot.EngineType,
 		engineModel chatbot.EngineModel,
+		engineData map[string]any,
 		initPrompt string,
-		credentialBase64 string,
-		credentialProjectID string,
 	) (*chatbot.Chatbot, error)
 	Get(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbot.Chatbot, error)
 	Delete(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
-	Update(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, initPrompt string, credentialBase64 string, credentialProjectID string) (*chatbot.Chatbot, error)
+	Update(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		engineType chatbot.EngineType,
+		engineModel chatbot.EngineModel,
+		engineData map[string]any,
+		initPrompt string,
+	) (*chatbot.Chatbot, error)
 }
 
 // chatbotHandler structure for service handle

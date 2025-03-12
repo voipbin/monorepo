@@ -14,6 +14,7 @@ type Chatbotcall struct {
 	ChatbotID          uuid.UUID           `json:"chatbot_id,omitempty"`
 	ChatbotEngineType  chatbot.EngineType  `json:"chatbot_engine_type,omitempty"`
 	ChatbotEngineModel chatbot.EngineModel `json:"chatbot_engine_model,omitempty"`
+	ChatbotEngineData  map[string]any      `json:"chatbot_engine_data,omitempty"`
 
 	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`

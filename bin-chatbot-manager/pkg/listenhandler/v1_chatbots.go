@@ -79,7 +79,7 @@ func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *sock.Reque
 		return nil, err
 	}
 
-	tmp, err := h.chatbotHandler.Create(ctx, req.CustomerID, req.Name, req.Detail, req.EngineType, req.EngineModel, req.InitPrompt, req.CredentialBase64, req.CredentialProjectID)
+	tmp, err := h.chatbotHandler.Create(ctx, req.CustomerID, req.Name, req.Detail, req.EngineType, req.EngineModel, req.EngineData, req.InitPrompt)
 	if err != nil {
 		log.Errorf("Could not create chatbot. err: %v", err)
 		return simpleResponse(500), nil
@@ -190,7 +190,7 @@ func (h *listenHandler) processV1ChatbotsIDPut(ctx context.Context, m *sock.Requ
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	tmp, err := h.chatbotHandler.Update(ctx, id, req.Name, req.Detail, req.EngineType, req.EngineModel, req.InitPrompt, req.CredentialBase64, req.CredentialProjectID)
+	tmp, err := h.chatbotHandler.Update(ctx, id, req.Name, req.Detail, req.EngineType, req.EngineModel, req.EngineData, req.InitPrompt)
 	if err != nil {
 		log.Errorf("Could not update chatbot. err: %v", err)
 		return simpleResponse(500), nil
