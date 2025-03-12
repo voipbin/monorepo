@@ -1,0 +1,133 @@
+package engine_dialogflow_handler
+
+import (
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/engine_dialogflow"
+	"monorepo/bin-chatbot-manager/models/message"
+	"monorepo/bin-common-handler/models/identity"
+	"testing"
+
+	dialogflowpb "cloud.google.com/go/dialogflow/apiv2/dialogflowpb"
+	"github.com/gofrs/uuid"
+	"github.com/golang/protobuf/proto"
+)
+
+func Test_getRequest(t *testing.T) {
+	tests := []struct {
+		name string
+
+		engineData  *engine_dialogflow.EngineDialogflow
+		chatbotcall *chatbotcall.Chatbotcall
+		message     *message.Message
+
+		expectRes *dialogflowpb.DetectIntentRequest
+	}{
+		{
+			name: "normal ES",
+
+			engineData: &engine_dialogflow.EngineDialogflow{
+				ProjectID: "test-project",
+				Type:      engine_dialogflow.TypeES,
+			},
+			chatbotcall: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("53ae45c0-ff1b-11ef-9018-7b56cb798145"),
+				},
+				Language: "en-US",
+			},
+			message: &message.Message{
+				Content: "test message",
+			},
+
+			expectRes: &dialogflowpb.DetectIntentRequest{
+				Session: "projects/test-project/agent/sessions/53ae45c0-ff1b-11ef-9018-7b56cb798145",
+				QueryInput: &dialogflowpb.QueryInput{
+					Input: &dialogflowpb.QueryInput_Text{
+						Text: &dialogflowpb.TextInput{
+							Text:         "test message",
+							LanguageCode: "en",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "normal CX",
+
+			engineData: &engine_dialogflow.EngineDialogflow{
+				ProjectID: "test-project",
+				Type:      engine_dialogflow.TypeCX,
+				Region:    "us-central1",
+				AgentID:   "test-agent",
+			},
+			chatbotcall: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("53fa04ba-ff1b-11ef-a65c-cf8e61d0c4ae"),
+				},
+				Language: "en-US",
+			},
+			message: &message.Message{
+				Content: "test message CX",
+			},
+
+			expectRes: &dialogflowpb.DetectIntentRequest{
+				Session: "projects/test-project/locations/us-central1/agents/test-agent/sessions/53fa04ba-ff1b-11ef-a65c-cf8e61d0c4ae",
+				QueryInput: &dialogflowpb.QueryInput{
+					Input: &dialogflowpb.QueryInput_Text{
+						Text: &dialogflowpb.TextInput{
+							Text:         "test message CX",
+							LanguageCode: "en",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &engineDialogflowHandler{} // Create an instance of the handler
+
+			res := h.getRequest(tt.engineData, tt.chatbotcall, tt.message)
+
+			if !proto.Equal(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %#v\ngot: %#v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// func Test_getRequest(t *testing.T) {
+
+// 	tests := []struct {
+// 		name string
+
+// 		engineData  *engine_dialogflow.EngineDialogflow
+// 		chatbotcall *chatbotcall.Chatbotcall
+// 		message     *message.Message
+
+// 		expectRes *dialogflowpb.DetectIntentRequest
+// 	}{
+// 		{
+// 			name: "normal",
+
+// 			engineData:  &engine_dialogflow.EngineDialogflow{},
+// 			chatbotcall: &chatbotcall.Chatbotcall{},
+// 			message:     &message.Message{},
+
+// 			expectRes: &dialogflowpb.DetectIntentRequest{},
+// 		},
+// 	}
+
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			h := &engineDialogflowHandler{}
+
+// 			res := h.getRequest(tt.engineData, tt.chatbotcall, tt.message)
+
+// 			if reflect.DeepEqual(res, tt.expectRes) != true {
+// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }

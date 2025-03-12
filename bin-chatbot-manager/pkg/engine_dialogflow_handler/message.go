@@ -15,9 +15,15 @@ import (
 	"monorepo/bin-chatbot-manager/models/message"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, m *message.Message) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "MessageSend",
+		"chatbotcall": cc,
+		"message":     m,
+	})
 
 	var data engine_dialogflow.EngineDialogflow
 	tmpData, err := json.Marshal(cc.ChatbotEngineData)
@@ -33,8 +39,10 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *chatbotca
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not decode the credential base64")
 	}
-
 	endpoint := GetEndpointAddress(data.Region)
+	log.WithFields(logrus.Fields{
+		"endpoint": endpoint,
+	}).Debugf("Checking session data.")
 
 	// Create a Dialogflow client with the credentials in-memory
 	client, err := dialogflow.NewSessionsClient(ctx,
@@ -72,10 +80,10 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *chatbotca
 	return res, nil
 }
 
-func (h *engineDialogflowHandler) getRequest(data *engine_dialogflow.EngineDialogflow, cc *chatbotcall.Chatbotcall, message *message.Message) *dialogflowpb.DetectIntentRequest {
-	sessionPath := fmt.Sprintf("projects/%s/agent/sessions/%s", data.ProjectID, cc.ID)
-	if data.Type == engine_dialogflow.TypeCX {
-		sessionPath = fmt.Sprintf("projects/%s/locations/%s/agents/%s/sessions/%s", data.ProjectID, data.Region, data.AgentID, cc.ID)
+func (h *engineDialogflowHandler) getRequest(engineData *engine_dialogflow.EngineDialogflow, cc *chatbotcall.Chatbotcall, message *message.Message) *dialogflowpb.DetectIntentRequest {
+	sessionPath := fmt.Sprintf("projects/%s/agent/sessions/%s", engineData.ProjectID, cc.ID)
+	if engineData.Type == engine_dialogflow.TypeCX {
+		sessionPath = fmt.Sprintf("projects/%s/locations/%s/agents/%s/sessions/%s", engineData.ProjectID, engineData.Region, engineData.AgentID, cc.ID)
 	}
 
 	lang := GetLanguage(cc.Language)
