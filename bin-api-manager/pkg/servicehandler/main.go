@@ -235,9 +235,8 @@ type ServiceHandler interface {
 		detail string,
 		engineType cbchatbot.EngineType,
 		engineModel cbchatbot.EngineModel,
+		engineData map[string]any,
 		initPrompt string,
-		credentialBase64 string,
-		credentialProjectID string,
 	) (*cbchatbot.WebhookMessage, error)
 	ChatbotGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cbchatbot.WebhookMessage, error)
 	ChatbotGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbot.WebhookMessage, error)
@@ -250,9 +249,8 @@ type ServiceHandler interface {
 		detail string,
 		engineType cbchatbot.EngineType,
 		engineModel cbchatbot.EngineModel,
+		engineData map[string]any,
 		initPrompt string,
-		credentialBase64 string,
-		credentialProjectID string,
 	) (*cbchatbot.WebhookMessage, error)
 
 	// chatbotcall handlers
