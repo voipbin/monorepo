@@ -9,7 +9,7 @@ import (
 
 	dialogflowpb "cloud.google.com/go/dialogflow/apiv2/dialogflowpb"
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 func Test_getRequest(t *testing.T) {
@@ -96,38 +96,3 @@ func Test_getRequest(t *testing.T) {
 		})
 	}
 }
-
-// func Test_getRequest(t *testing.T) {
-
-// 	tests := []struct {
-// 		name string
-
-// 		engineData  *engine_dialogflow.EngineDialogflow
-// 		chatbotcall *chatbotcall.Chatbotcall
-// 		message     *message.Message
-
-// 		expectRes *dialogflowpb.DetectIntentRequest
-// 	}{
-// 		{
-// 			name: "normal",
-
-// 			engineData:  &engine_dialogflow.EngineDialogflow{},
-// 			chatbotcall: &chatbotcall.Chatbotcall{},
-// 			message:     &message.Message{},
-
-// 			expectRes: &dialogflowpb.DetectIntentRequest{},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			h := &engineDialogflowHandler{}
-
-// 			res := h.getRequest(tt.engineData, tt.chatbotcall, tt.message)
-
-// 			if reflect.DeepEqual(res, tt.expectRes) != true {
-// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }

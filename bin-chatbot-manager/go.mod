@@ -58,7 +58,6 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang/protobuf v1.5.4
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
@@ -70,6 +69,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	go.uber.org/mock v0.5.0
 	google.golang.org/api v0.225.0
+	google.golang.org/protobuf v1.36.5
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4
@@ -90,6 +90,7 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.5 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
@@ -128,7 +129,6 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20250311190419-81fb87f6b8bf // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250311190419-81fb87f6b8bf // indirect
 	google.golang.org/grpc v1.71.0 // indirect
-	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
