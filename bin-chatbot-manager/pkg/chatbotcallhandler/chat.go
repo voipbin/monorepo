@@ -87,6 +87,11 @@ func (h *chatbotcallHandler) chatInit(ctx context.Context, cb *chatbot.Chatbot, 
 	}
 
 	initPrompt := h.chatGetInitPrompt(ctx, cb, cc)
+	if initPrompt == "" {
+		// has no init prompt. nothing todo
+		return nil
+	}
+
 	tmp, err := h.reqHandler.ChatbotV1MessageSend(ctx, cc.ID, message.RoleSystem, initPrompt, 30000)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the init prompt to the chatbot. chatbotcall_id: %s", cc.ID)

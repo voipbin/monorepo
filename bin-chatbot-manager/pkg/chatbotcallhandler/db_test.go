@@ -17,7 +17,6 @@ import (
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
-	"monorepo/bin-chatbot-manager/pkg/engine_openai_handler"
 )
 
 func Test_Create(t *testing.T) {
@@ -48,6 +47,9 @@ func Test_Create(t *testing.T) {
 				},
 				EngineType:  chatbot.EngineTypeNone,
 				EngineModel: chatbot.EngineModelOpenaiGPT4,
+				EngineData: map[string]any{
+					"key1": "value1",
+				},
 			},
 			activeflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
 			referenceType: chatbotcall.ReferenceTypeCall,
@@ -71,13 +73,16 @@ func Test_Create(t *testing.T) {
 				ChatbotID:          uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
 				ChatbotEngineType:  chatbot.EngineTypeNone,
 				ChatbotEngineModel: chatbot.EngineModelOpenaiGPT4,
-				ActiveflowID:       uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
-				ReferenceType:      chatbotcall.ReferenceTypeCall,
-				ReferenceID:        uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
-				ConfbridgeID:       uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
-				Gender:             chatbotcall.GenderFemale,
-				Language:           "en-US",
-				Status:             chatbotcall.StatusInitiating,
+				ChatbotEngineData: map[string]any{
+					"key1": "value1",
+				},
+				ActiveflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
+				ReferenceType: chatbotcall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
+				ConfbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
+				Gender:        chatbotcall.GenderFemale,
+				Language:      "en-US",
+				Status:        chatbotcall.StatusInitiating,
 			},
 		},
 	}
@@ -92,7 +97,6 @@ func Test_Create(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -100,7 +104,6 @@ func Test_Create(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				chatbotHandler: mockChatbot,
-				openaiHandler:  mockChatgpt,
 			}
 
 			ctx := context.Background()
@@ -154,7 +157,6 @@ func Test_Get(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -162,7 +164,6 @@ func Test_Get(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				chatbotHandler: mockChatbot,
-				openaiHandler:  mockChatgpt,
 			}
 
 			ctx := context.Background()
@@ -213,7 +214,6 @@ func Test_GetByReferenceID(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -221,7 +221,6 @@ func Test_GetByReferenceID(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				chatbotHandler: mockChatbot,
-				openaiHandler:  mockChatgpt,
 			}
 
 			ctx := context.Background()
@@ -272,7 +271,6 @@ func Test_GetByTranscribeID(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -280,7 +278,6 @@ func Test_GetByTranscribeID(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				chatbotHandler: mockChatbot,
-				openaiHandler:  mockChatgpt,
 			}
 
 			ctx := context.Background()
@@ -333,7 +330,6 @@ func Test_UpdateStatusStart(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -341,7 +337,6 @@ func Test_UpdateStatusStart(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				chatbotHandler: mockChatbot,
-				openaiHandler:  mockChatgpt,
 			}
 
 			ctx := context.Background()
@@ -394,7 +389,6 @@ func Test_UpdateStatusEnd(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -402,7 +396,6 @@ func Test_UpdateStatusEnd(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				chatbotHandler: mockChatbot,
-				openaiHandler:  mockChatgpt,
 			}
 
 			ctx := context.Background()

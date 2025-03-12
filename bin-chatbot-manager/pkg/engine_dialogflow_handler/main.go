@@ -1,5 +1,7 @@
 package engine_dialogflow_handler
 
+//go:generate mockgen -package engine_dialogflow_handler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
 import (
 	"context"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"

@@ -70,8 +70,10 @@ func NewMessageHandler(
 	db dbhandler.DBHandler,
 	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler,
 
-	engineOpenaiHandler engine_openai_handler.EngineOpenaiHandler,
+	engineKeyChatgpt string,
 ) MessageHandler {
+
+	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(engineKeyChatgpt)
 	engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
 
 	return &messageHandler{

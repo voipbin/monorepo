@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-chatbot-manager/models/message"
 	"monorepo/bin-chatbot-manager/pkg/chatbotcallhandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
+	"monorepo/bin-chatbot-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-chatbot-manager/pkg/engine_openai_handler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -258,8 +259,121 @@ func Test_Send_sendChatGPT(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectMessage2) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectMessage2, res)
+			if !reflect.DeepEqual(res, tt.expectMessage1) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectMessage1, res)
+			}
+		})
+	}
+}
+
+func Test_Send_sendDialogflow(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatbotcallID uuid.UUID
+		role          message.Role
+		content       string
+
+		responseChatbotcall *chatbotcall.Chatbotcall
+		responseUUID1       uuid.UUID
+		responseUUID2       uuid.UUID
+
+		responseMessage1 *message.Message
+		responseMessage2 *message.Message
+
+		expectMessage1 *message.Message
+		expectMessage2 *message.Message
+	}{
+		{
+			name: "normal",
+
+			chatbotcallID: uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
+			role:          message.RoleUser,
+			content:       "hello world!",
+
+			responseChatbotcall: &chatbotcall.Chatbotcall{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
+					CustomerID: uuid.FromStringOrNil("7e03ad6c-ff50-11ef-a910-efdcf54f7d9b"),
+				},
+				Status:             chatbotcall.StatusProgressing,
+				ChatbotEngineModel: chatbot.EngineModelDialogflowES,
+			},
+			responseUUID1: uuid.FromStringOrNil("7e431876-ff50-11ef-a5ba-a7251571b293"),
+			responseUUID2: uuid.FromStringOrNil("7e7594c2-ff50-11ef-93cf-9f3f35e9f012"),
+
+			expectMessage1: &message.Message{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("7e431876-ff50-11ef-a5ba-a7251571b293"),
+					CustomerID: uuid.FromStringOrNil("7e03ad6c-ff50-11ef-a910-efdcf54f7d9b"),
+				},
+				ChatbotcallID: uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
+
+				Direction: message.DirectionOutgoing,
+				Role:      message.RoleUser,
+				Content:   "hello world!",
+			},
+			expectMessage2: &message.Message{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("7e7594c2-ff50-11ef-93cf-9f3f35e9f012"),
+					CustomerID: uuid.FromStringOrNil("7e03ad6c-ff50-11ef-a910-efdcf54f7d9b"),
+				},
+				ChatbotcallID: uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
+
+				Direction: message.DirectionIncoming,
+				Role:      message.RoleAssistant,
+				Content:   "Hi there!",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
+			mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+			mockDialogflow := engine_dialogflow_handler.NewMockEngineDialogflowHandler(mc)
+
+			h := &messageHandler{
+				utilHandler:   mockUtil,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+
+				chatbotcallHandler: mockChatbotcall,
+
+				engineOpenaiHandler:     mockOpenai,
+				engineDialogflowHandler: mockDialogflow,
+			}
+
+			ctx := context.Background()
+
+			mockChatbotcall.EXPECT().Get(ctx, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID1)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage1).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID1).Return(tt.expectMessage1, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage1.CustomerID, message.EventTypeMessageCreated, tt.expectMessage1)
+
+			mockDialogflow.EXPECT().MessageSend(ctx, tt.responseChatbotcall, tt.expectMessage1).Return(tt.expectMessage2, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID2)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage2).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID2).Return(tt.expectMessage2, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage2.CustomerID, message.EventTypeMessageCreated, tt.expectMessage2)
+
+			res, err := h.Send(ctx, tt.chatbotcallID, tt.role, tt.content)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectMessage1) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectMessage1, res)
 			}
 		})
 	}
