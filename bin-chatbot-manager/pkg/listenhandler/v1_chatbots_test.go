@@ -98,15 +98,14 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 
 		responseChatbot *chatbot.Chatbot
 
-		expectCustomerID          uuid.UUID
-		expectName                string
-		expectDetail              string
-		expectEngineType          chatbot.EngineType
-		expectEngineModel         chatbot.EngineModel
-		expectInitPrompt          string
-		expectCredentialBase64    string
-		expectCredentialProjectID string
-		expectRes                 *sock.Response
+		expectCustomerID  uuid.UUID
+		expectName        string
+		expectDetail      string
+		expectEngineType  chatbot.EngineType
+		expectEngineModel chatbot.EngineModel
+		expectEngineData  map[string]any
+		expectInitPrompt  string
+		expectRes         *sock.Response
 	}{
 		{
 			name: "normal",
@@ -114,7 +113,7 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 				URI:      "/v1/chatbots",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"", "engine_model": "openai.gpt-4", "init_prompt": "test init prompt", "credential_base64": "BASE64String", "credential_project_id": "218906b8-ecdb-11ef-9ddd-7b5d6f0d41e2"}`),
+				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"", "engine_model": "openai.gpt-4", "engine_data": {"key1": "val1"}, "init_prompt": "test init prompt"}`),
 			},
 
 			responseChatbot: &chatbot.Chatbot{
@@ -123,14 +122,15 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 				},
 			},
 
-			expectCustomerID:          uuid.FromStringOrNil("58e7502c-a770-11ed-9b86-7fabe2dba847"),
-			expectName:                "test name",
-			expectDetail:              "test detail",
-			expectEngineType:          chatbot.EngineTypeNone,
-			expectEngineModel:         chatbot.EngineModelOpenaiGPT4,
-			expectInitPrompt:          "test init prompt",
-			expectCredentialBase64:    "BASE64String",
-			expectCredentialProjectID: "218906b8-ecdb-11ef-9ddd-7b5d6f0d41e2",
+			expectCustomerID:  uuid.FromStringOrNil("58e7502c-a770-11ed-9b86-7fabe2dba847"),
+			expectName:        "test name",
+			expectDetail:      "test detail",
+			expectEngineType:  chatbot.EngineTypeNone,
+			expectEngineModel: chatbot.EngineModelOpenaiGPT4,
+			expectEngineData: map[string]any{
+				"key1": "val1",
+			},
+			expectInitPrompt: "test init prompt",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -152,7 +152,7 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 				chatbotHandler: mockChatbot,
 			}
 
-			mockChatbot.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectEngineModel, tt.expectInitPrompt, tt.expectCredentialBase64, tt.expectCredentialProjectID).Return(tt.responseChatbot, nil)
+			mockChatbot.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectEngineModel, tt.expectEngineData, tt.expectInitPrompt).Return(tt.responseChatbot, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -293,15 +293,14 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 
 		responseChatbot *chatbot.Chatbot
 
-		expectID                  uuid.UUID
-		expectName                string
-		expectDetail              string
-		expectEngineType          chatbot.EngineType
-		expectEngineModel         chatbot.EngineModel
-		expectInitPrompt          string
-		expectCredentialBase64    string
-		expectCredentialProjectID string
-		expectRes                 *sock.Response
+		expectID          uuid.UUID
+		expectName        string
+		expectDetail      string
+		expectEngineType  chatbot.EngineType
+		expectEngineModel chatbot.EngineModel
+		expectEngineData  map[string]any
+		expectInitPrompt  string
+		expectRes         *sock.Response
 	}{
 		{
 			name: "normal",
@@ -309,7 +308,7 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 				URI:      "/v1/chatbots/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"new name","detail":"new detail","engine_type":"","engine_model":"openai.gpt-4","init_prompt":"new prompt","credential_base64":"BASE64String","credential_project_id":"05aeb55a-ecdb-11ef-a714-3b889166a428"}`),
+				Data:     []byte(`{"name":"new name","detail":"new detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"init_prompt":"new prompt"}`),
 			},
 
 			responseChatbot: &chatbot.Chatbot{
@@ -318,14 +317,15 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 				},
 			},
 
-			expectID:                  uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
-			expectName:                "new name",
-			expectDetail:              "new detail",
-			expectEngineType:          chatbot.EngineTypeNone,
-			expectEngineModel:         chatbot.EngineModelOpenaiGPT4,
-			expectInitPrompt:          "new prompt",
-			expectCredentialBase64:    "BASE64String",
-			expectCredentialProjectID: "05aeb55a-ecdb-11ef-a714-3b889166a428",
+			expectID:          uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
+			expectName:        "new name",
+			expectDetail:      "new detail",
+			expectEngineType:  chatbot.EngineTypeNone,
+			expectEngineModel: chatbot.EngineModelOpenaiGPT4,
+			expectEngineData: map[string]any{
+				"key1": "val1",
+			},
+			expectInitPrompt: "new prompt",
 
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -348,7 +348,7 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 				chatbotHandler: mockChatbot,
 			}
 
-			mockChatbot.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectEngineModel, tt.expectInitPrompt, tt.expectCredentialBase64, tt.expectCredentialProjectID).Return(tt.responseChatbot, nil)
+			mockChatbot.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectEngineModel, tt.expectEngineData, tt.expectInitPrompt).Return(tt.responseChatbot, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

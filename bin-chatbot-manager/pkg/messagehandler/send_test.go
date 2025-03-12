@@ -7,7 +7,7 @@ import (
 	"monorepo/bin-chatbot-manager/models/message"
 	"monorepo/bin-chatbot-manager/pkg/chatbotcallhandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
-	"monorepo/bin-chatbot-manager/pkg/openai_handler"
+	"monorepo/bin-chatbot-manager/pkg/engine_openai_handler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -86,14 +86,14 @@ func Test_sendChatGPT(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockGPT := openai_handler.NewMockOpenaiHandler(mc)
+			mockGPT := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &messageHandler{
 				utilHandler:   mockUtil,
 				notifyHandler: mockNotify,
 				db:            mockDB,
 
-				openaiHandler: mockGPT,
+				engineOpenaiHandler: mockGPT,
 			}
 
 			ctx := context.Background()
@@ -225,15 +225,15 @@ func Test_Send_sendChatGPT(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
-			mockGPT := openai_handler.NewMockOpenaiHandler(mc)
+			mockGPT := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &messageHandler{
 				utilHandler:   mockUtil,
 				notifyHandler: mockNotify,
 				db:            mockDB,
 
-				chatbotcallHandler: mockChatbotcall,
-				openaiHandler:      mockGPT,
+				chatbotcallHandler:  mockChatbotcall,
+				engineOpenaiHandler: mockGPT,
 			}
 
 			ctx := context.Background()

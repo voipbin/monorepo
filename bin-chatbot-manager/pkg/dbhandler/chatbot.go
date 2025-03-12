@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -24,10 +25,9 @@ const (
 
 		engine_type,
 		engine_model,
-		init_prompt,
+		engine_data,
 
-		credential_base64,
-		credential_project_id,
+		init_prompt,
 
 		tm_create,
 		tm_update,
@@ -39,6 +39,8 @@ const (
 
 // chatbotGetFromRow gets the chatbot from the row.
 func (h *handler) chatbotGetFromRow(row *sql.Rows) (*chatbot.Chatbot, error) {
+	var tmpEngineData sql.NullString
+
 	res := &chatbot.Chatbot{}
 	if err := row.Scan(
 		&res.ID,
@@ -49,16 +51,24 @@ func (h *handler) chatbotGetFromRow(row *sql.Rows) (*chatbot.Chatbot, error) {
 
 		&res.EngineType,
 		&res.EngineModel,
-		&res.InitPrompt,
+		&tmpEngineData,
 
-		&res.CredentialBase64,
-		&res.CredentialProjectID,
+		&res.InitPrompt,
 
 		&res.TMCreate,
 		&res.TMUpdate,
 		&res.TMDelete,
 	); err != nil {
 		return nil, errors.Wrap(err, "chatbotGetFromRow: Could not scan the row")
+	}
+
+	if tmpEngineData.Valid {
+		if err := json.Unmarshal([]byte(tmpEngineData.String), &res.EngineData); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
+		}
+	}
+	if res.EngineData == nil {
+		res.EngineData = map[string]any{}
 	}
 
 	return res, nil
@@ -75,10 +85,9 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 
 		engine_type,
 		engine_model,
-		init_prompt,
+		engine_data,
 
-		credential_base64,
-		credential_project_id,
+		init_prompt,
 
 		tm_create,
 		tm_update,
@@ -87,12 +96,16 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 		?, ?,
 		?, ?,
 		?, ?, ?,
-		?, ?,
+		?,
 		?, ?, ?
 		)
 	`
 
-	_, err := h.db.Exec(q,
+	tmpEngineData, err := json.Marshal(c.EngineData)
+	if err != nil {
+		return fmt.Errorf("ChatbotCreate: Could not marshal the data. err: %v", err)
+	}
+	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
 
@@ -101,10 +114,9 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 
 		c.EngineType,
 		c.EngineModel,
-		c.InitPrompt,
+		tmpEngineData,
 
-		c.CredentialBase64,
-		c.CredentialProjectID,
+		c.InitPrompt,
 
 		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
@@ -270,23 +282,27 @@ func (h *handler) ChatbotGets(ctx context.Context, customerID uuid.UUID, size ui
 }
 
 // ChatbotSetInfo sets the chatbot info
-func (h *handler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, initPrompt string, credentailBase64 string, credentialProjectID string) error {
+func (h *handler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, engineData map[string]any, initPrompt string) error {
 	q := `
 	update chatbot_chatbots set
 		name = ?,
 		detail = ?,
 		engine_type = ?,
 		engine_model = ?,
+		engine_data = ?,
 		init_prompt = ?,
-		credential_base64 = ?,
-		credential_project_id = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
+	tmpEngineData, err := json.Marshal(engineData)
+	if err != nil {
+		return errors.Wrapf(err, "ChatbotSetInfo: Could not marshal the data")
+	}
+
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, name, detail, engineType, engineModel, initPrompt, credentailBase64, credentialProjectID, ts, id.Bytes())
+	_, err = h.db.Exec(q, name, detail, engineType, engineModel, tmpEngineData, initPrompt, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatbotSetInfo. err: %v", err)
 	}

@@ -1,4 +1,4 @@
-package openai_handler
+package engine_openai_handler
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"monorepo/bin-chatbot-manager/models/message"
 )
 
-func (h *openaiHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error) {
+func (h *engineOpenaiHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "messageSend",
 		"chatbotcall_id": cc.ID,

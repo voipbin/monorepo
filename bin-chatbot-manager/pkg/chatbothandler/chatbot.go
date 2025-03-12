@@ -15,9 +15,8 @@ func (h *chatbotHandler) Create(
 	detail string,
 	engineType chatbot.EngineType,
 	engineModel chatbot.EngineModel,
+	engineData map[string]any,
 	initPrompt string,
-	credentialBase64 string,
-	credentialProjectID string,
 ) (*chatbot.Chatbot, error) {
 
 	target := chatbot.GetEngineModelTarget(engineModel)
@@ -25,7 +24,7 @@ func (h *chatbotHandler) Create(
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
-	return h.dbCreate(ctx, customerID, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
+	return h.dbCreate(ctx, customerID, name, detail, engineType, engineModel, engineData, initPrompt)
 }
 
 // Update updates the chatbot info
@@ -36,9 +35,8 @@ func (h *chatbotHandler) Update(
 	detail string,
 	engineType chatbot.EngineType,
 	engineModel chatbot.EngineModel,
+	engineData map[string]any,
 	initPrompt string,
-	credentialBase64 string,
-	credentialProjectID string,
 ) (*chatbot.Chatbot, error) {
 
 	target := chatbot.GetEngineModelTarget(engineModel)
@@ -46,5 +44,5 @@ func (h *chatbotHandler) Update(
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
-	return h.dbUpdate(ctx, id, name, detail, engineType, engineModel, initPrompt, credentialBase64, credentialProjectID)
+	return h.dbUpdate(ctx, id, name, detail, engineType, engineModel, engineData, initPrompt)
 }

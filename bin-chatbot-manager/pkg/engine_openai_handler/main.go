@@ -1,6 +1,6 @@
-package openai_handler
+package engine_openai_handler
 
-//go:generate mockgen -package openai_handler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package engine_openai_handler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -15,21 +15,21 @@ const (
 	defaultModel = "gpt-4-turbo"
 )
 
-// OpenaiHandler define
-type OpenaiHandler interface {
+// EngineOpenaiHandler define
+type EngineOpenaiHandler interface {
 	MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error)
 }
 
-// openaiHandler define
-type openaiHandler struct {
+// engineOpenaiHandler define
+type engineOpenaiHandler struct {
 	client *openai.Client
 }
 
-// NewOpenaiHandler define
-func NewOpenaiHandler(apiKey string) OpenaiHandler {
+// NewEngineOpenaiHandler define
+func NewEngineOpenaiHandler(apiKey string) EngineOpenaiHandler {
 	client := openai.NewClient(apiKey)
 
-	return &openaiHandler{
+	return &engineOpenaiHandler{
 		client: client,
 	}
 }

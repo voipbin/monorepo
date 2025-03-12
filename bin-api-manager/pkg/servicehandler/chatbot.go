@@ -37,9 +37,8 @@ func (h *serviceHandler) ChatbotCreate(
 	detail string,
 	engineType chatbotchatbot.EngineType,
 	engineModel chatbotchatbot.EngineModel,
+	engineData map[string]any,
 	initPrompt string,
-	credentialBase64 string,
-	credentialProjectID string,
 ) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ChatbotCreate",
@@ -48,6 +47,7 @@ func (h *serviceHandler) ChatbotCreate(
 		"detail":       detail,
 		"engine_type":  engineType,
 		"engine_model": engineModel,
+		"engine_data":  engineData,
 		"init_prompt":  initPrompt,
 	})
 

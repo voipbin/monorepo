@@ -12,12 +12,14 @@ type Chatbot struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	EngineType  EngineType  `json:"engine_type,omitempty"`
-	EngineModel EngineModel `json:"engine_model,omitempty"`
-	InitPrompt  string      `json:"init_prompt,omitempty"`
+	EngineType  EngineType     `json:"engine_type,omitempty"`
+	EngineModel EngineModel    `json:"engine_model,omitempty"`
+	EngineData  map[string]any `json:"engine_data,omitempty"`
 
-	CredentialBase64    string `json:"credential_base64,omitempty"`
-	CredentialProjectID string `json:"credential_project_id,omitempty"`
+	InitPrompt string `json:"init_prompt,omitempty"`
+
+	// CredentialBase64    string `json:"credential_base64,omitempty"`
+	// CredentialProjectID string `json:"credential_project_id,omitempty"`
 
 	// timestamp
 	TMCreate string `json:"tm_create,omitempty"`
@@ -36,9 +38,9 @@ const (
 type EngineModelTarget string
 
 const (
-	EngineModelTargetNone   EngineModelTarget = ""
-	EngineModelTargetOpenai EngineModelTarget = "openai" // openai. https://chat.openai.com/chat
-	EngineModelTargetGoogle EngineModelTarget = "google" // google sdk use
+	EngineModelTargetNone       EngineModelTarget = ""
+	EngineModelTargetOpenai     EngineModelTarget = "openai"     // openai. https://chat.openai.com/chat
+	EngineModelTargetDialogflow EngineModelTarget = "dialogflow" // dialogflow use
 )
 
 type EngineModel string
@@ -55,6 +57,9 @@ const (
 	EngineModelOpenaiGPT4VisionPreview EngineModel = "openai.gpt-4-vision-preview"
 	EngineModelOpenaiGPT4              EngineModel = "openai.gpt-4"
 	EngineModelOpenaiGPT3Dot5Turbo     EngineModel = "openai.gpt-3.5-turbo"
+
+	EngineModelDialogflowCX EngineModel = "dialogflow.cx"
+	EngineModelDialogflowES EngineModel = "dialogflow.es"
 )
 
 func GetEngineModelTarget(engineModel EngineModel) EngineModelTarget {
@@ -69,6 +74,9 @@ func GetEngineModelTarget(engineModel EngineModel) EngineModelTarget {
 		EngineModelOpenaiGPT4VisionPreview: EngineModelTargetOpenai,
 		EngineModelOpenaiGPT4:              EngineModelTargetOpenai,
 		EngineModelOpenaiGPT3Dot5Turbo:     EngineModelTargetOpenai,
+
+		EngineModelDialogflowCX: EngineModelTargetDialogflow,
+		EngineModelDialogflowES: EngineModelTargetDialogflow,
 	}
 
 	res, ok := mapModelTarget[engineModel]

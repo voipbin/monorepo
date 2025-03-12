@@ -1,24 +1,26 @@
-package openai_handler
+package engine_dialogflow_handler
 
 import (
 	"context"
 	"time"
 
 	"github.com/cenkalti/backoff"
-	"github.com/sashabaranov/go-openai"
+
+	dialogflow "cloud.google.com/go/dialogflow/apiv2"
+	dialogflowpb "cloud.google.com/go/dialogflow/apiv2/dialogflowpb"
 )
 
-func (h *openaiHandler) send(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+func (h *engineDialogflowHandler) send(ctx context.Context, client *dialogflow.SessionsClient, req *dialogflowpb.DetectIntentRequest) (*dialogflowpb.DetectIntentResponse, error) {
 	expBackoff := backoff.NewExponentialBackOff()
 	expBackoff.InitialInterval = 1 * time.Second
 	expBackoff.MaxInterval = 10 * time.Second
 	expBackoff.MaxElapsedTime = 1 * time.Minute
 
-	var resp openai.ChatCompletionResponse
+	var resp *dialogflowpb.DetectIntentResponse
 	var err error
 	operation := func() error {
 		var err error
-		resp, err = h.client.CreateChatCompletion(ctx, *req)
+		resp, err = client.DetectIntent(ctx, req)
 		if err != nil {
 			return err
 		}
@@ -29,5 +31,5 @@ func (h *openaiHandler) send(ctx context.Context, req *openai.ChatCompletionRequ
 		return nil, err
 	}
 
-	return &resp, nil
+	return resp, nil
 }
