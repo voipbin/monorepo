@@ -33,7 +33,7 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 	}
 
 	// create a message for outgoing(request)
-	m, err := h.Create(ctx, cc.CustomerID, chatbotcallID, message.DirectionOutgoing, role, content)
+	res, err := h.Create(ctx, cc.CustomerID, chatbotcallID, message.DirectionOutgoing, role, content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the sending message correctly")
 	}
@@ -47,7 +47,7 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 		tmpMessage, err = h.sendOpenai(ctx, cc)
 
 	case chatbot.EngineModelTargetDialogflow:
-		tmpMessage, err = h.sendDialogflow(ctx, cc, m)
+		tmpMessage, err = h.sendDialogflow(ctx, cc, res)
 
 	default:
 		err = fmt.Errorf("unsupported chatbot engine model: %s", cc.ChatbotEngineModel)
@@ -67,7 +67,7 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 	}
 
 	// create a message for incoming(response)
-	res, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
+	_, err = h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the recevied message correctly")
 	}

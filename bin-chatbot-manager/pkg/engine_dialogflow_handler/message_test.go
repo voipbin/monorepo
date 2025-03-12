@@ -1,6 +1,7 @@
 package engine_dialogflow_handler
 
 import (
+	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/engine_dialogflow"
 	"monorepo/bin-chatbot-manager/models/message"
@@ -27,13 +28,13 @@ func Test_getRequest(t *testing.T) {
 
 			engineData: &engine_dialogflow.EngineDialogflow{
 				ProjectID: "test-project",
-				Type:      engine_dialogflow.TypeES,
 			},
 			chatbotcall: &chatbotcall.Chatbotcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("53ae45c0-ff1b-11ef-9018-7b56cb798145"),
 				},
-				Language: "en-US",
+				ChatbotEngineModel: chatbot.EngineModelDialogflowES,
+				Language:           "en-US",
 			},
 			message: &message.Message{
 				Content: "test message",
@@ -56,7 +57,6 @@ func Test_getRequest(t *testing.T) {
 
 			engineData: &engine_dialogflow.EngineDialogflow{
 				ProjectID: "test-project",
-				Type:      engine_dialogflow.TypeCX,
 				Region:    "us-central1",
 				AgentID:   "test-agent",
 			},
@@ -64,7 +64,8 @@ func Test_getRequest(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("53fa04ba-ff1b-11ef-a65c-cf8e61d0c4ae"),
 				},
-				Language: "en-US",
+				ChatbotEngineModel: chatbot.EngineModelDialogflowCX,
+				Language:           "en-US",
 			},
 			message: &message.Message{
 				Content: "test message CX",

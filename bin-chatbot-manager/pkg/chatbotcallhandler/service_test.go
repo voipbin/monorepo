@@ -8,7 +8,6 @@ import (
 	"monorepo/bin-chatbot-manager/models/message"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
-	"monorepo/bin-chatbot-manager/pkg/engine_openai_handler"
 	"monorepo/bin-common-handler/models/identity"
 	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -119,7 +118,6 @@ func Test_ServiceStart(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -127,7 +125,6 @@ func Test_ServiceStart(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				chatbotHandler: mockChatbot,
-				openaiHandler:  mockChatgpt,
 			}
 
 			ctx := context.Background()

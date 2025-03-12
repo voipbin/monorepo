@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"monorepo/bin-chatbot-manager/models/chatbot"
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/models/engine_dialogflow"
 
@@ -85,7 +86,7 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *chatbotca
 
 func (h *engineDialogflowHandler) getRequest(engineData *engine_dialogflow.EngineDialogflow, cc *chatbotcall.Chatbotcall, message *message.Message) *dialogflowpb.DetectIntentRequest {
 	sessionPath := fmt.Sprintf("projects/%s/agent/sessions/%s", engineData.ProjectID, cc.ID)
-	if engineData.Type == engine_dialogflow.TypeCX {
+	if cc.ChatbotEngineModel == chatbot.EngineModelDialogflowCX {
 		sessionPath = fmt.Sprintf("projects/%s/locations/%s/agents/%s/sessions/%s", engineData.ProjectID, engineData.Region, engineData.AgentID, cc.ID)
 	}
 
