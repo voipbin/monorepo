@@ -28,14 +28,13 @@ func Test_chatbotsPOST(t *testing.T) {
 
 		responseChatbot *cmchatbot.WebhookMessage
 
-		expectName                string
-		expectDetail              string
-		expectEngineType          cmchatbot.EngineType
-		expectEngineModel         cmchatbot.EngineModel
-		expectInitPrompt          string
-		expectCredentialBase64    string
-		expectCredentialProjectID string
-		expectRes                 string
+		expectName        string
+		expectDetail      string
+		expectEngineType  cmchatbot.EngineType
+		expectEngineModel cmchatbot.EngineModel
+		expectEngineData  map[string]any
+		expectInitPrompt  string
+		expectRes         string
 	}{
 		{
 			name: "normal",
@@ -46,7 +45,7 @@ func Test_chatbotsPOST(t *testing.T) {
 			},
 
 			reqQuery: "/chatbots",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"test credential project id"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"init_prompt":"test init prompt"}`),
 
 			responseChatbot: &cmchatbot.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -54,14 +53,15 @@ func Test_chatbotsPOST(t *testing.T) {
 				},
 			},
 
-			expectName:                "test name",
-			expectDetail:              "test detail",
-			expectEngineType:          cmchatbot.EngineTypeNone,
-			expectEngineModel:         cmchatbot.EngineModelOpenaiGPT4,
-			expectInitPrompt:          "test init prompt",
-			expectCredentialBase64:    "test credential base64",
-			expectCredentialProjectID: "test credential project id",
-			expectRes:                 `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectName:        "test name",
+			expectDetail:      "test detail",
+			expectEngineType:  cmchatbot.EngineTypeNone,
+			expectEngineModel: cmchatbot.EngineModelOpenaiGPT4,
+			expectEngineData: map[string]any{
+				"key1": "val1",
+			},
+			expectInitPrompt: "test init prompt",
+			expectRes:        `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -93,9 +93,8 @@ func Test_chatbotsPOST(t *testing.T) {
 				tt.expectDetail,
 				tt.expectEngineType,
 				tt.expectEngineModel,
+				tt.expectEngineData,
 				tt.expectInitPrompt,
-				tt.expectCredentialBase64,
-				tt.expectCredentialProjectID,
 			).Return(tt.responseChatbot, nil)
 
 			r.ServeHTTP(w, req)
@@ -366,15 +365,14 @@ func Test_chatbotsIDPUT(t *testing.T) {
 
 		responseChatbot *cmchatbot.WebhookMessage
 
-		expectChatbotID           uuid.UUID
-		expectName                string
-		expectDetail              string
-		expectEngineType          cmchatbot.EngineType
-		epxectEngineModel         cmchatbot.EngineModel
-		expectInitPrompt          string
-		expectCredentialBase64    string
-		expectCredentialProjectID string
-		expectRes                 string
+		expectChatbotID   uuid.UUID
+		expectName        string
+		expectDetail      string
+		expectEngineType  cmchatbot.EngineType
+		epxectEngineModel cmchatbot.EngineModel
+		expectEngineData  map[string]any
+		expectInitPrompt  string
+		expectRes         string
 	}{
 		{
 			name: "normal",
@@ -385,7 +383,7 @@ func Test_chatbotsIDPUT(t *testing.T) {
 			},
 
 			reqQuery: "/chatbots/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"test credential project id"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"init_prompt":"test init prompt"}`),
 
 			responseChatbot: &cmchatbot.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -393,15 +391,16 @@ func Test_chatbotsIDPUT(t *testing.T) {
 				},
 			},
 
-			expectChatbotID:           uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-			expectName:                "test name",
-			expectDetail:              "test detail",
-			expectEngineType:          cmchatbot.EngineTypeNone,
-			epxectEngineModel:         cmchatbot.EngineModelOpenaiGPT4,
-			expectInitPrompt:          "test init prompt",
-			expectCredentialBase64:    "test credential base64",
-			expectCredentialProjectID: "test credential project id",
-			expectRes:                 `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectChatbotID:   uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			expectName:        "test name",
+			expectDetail:      "test detail",
+			expectEngineType:  cmchatbot.EngineTypeNone,
+			epxectEngineModel: cmchatbot.EngineModelOpenaiGPT4,
+			expectEngineData: map[string]any{
+				"key1": "val1",
+			},
+			expectInitPrompt: "test init prompt",
+			expectRes:        `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -434,9 +433,8 @@ func Test_chatbotsIDPUT(t *testing.T) {
 				tt.expectDetail,
 				tt.expectEngineType,
 				tt.epxectEngineModel,
+				tt.expectEngineData,
 				tt.expectInitPrompt,
-				tt.expectCredentialBase64,
-				tt.expectCredentialProjectID,
 			).Return(tt.responseChatbot, nil)
 
 			r.ServeHTTP(w, req)

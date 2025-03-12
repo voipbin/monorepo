@@ -12,12 +12,14 @@ type WebhookMessage struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	EngineType  EngineType  `json:"engine_type,omitempty"`
-	EngineModel EngineModel `json:"engine_model,omitempty"`
-	InitPrompt  string      `json:"init_prompt,omitempty"`
+	EngineType  EngineType     `json:"engine_type,omitempty"`
+	EngineModel EngineModel    `json:"engine_model,omitempty"`
+	EngineData  map[string]any `json:"engine_data,omitempty"`
 
-	CredentialBase64    string `json:"credential_base64,omitempty"`
-	CredentialProjectID string `json:"credential_project_id,omitempty"`
+	InitPrompt string `json:"init_prompt,omitempty"`
+
+	// CredentialBase64    string `json:"credential_base64,omitempty"`
+	// CredentialProjectID string `json:"credential_project_id,omitempty"`
 
 	// timestamp
 	TMCreate string `json:"tm_create,omitempty"`
@@ -35,10 +37,12 @@ func (h *Chatbot) ConvertWebhookMessage() *WebhookMessage {
 
 		EngineType:  h.EngineType,
 		EngineModel: h.EngineModel,
-		InitPrompt:  h.InitPrompt,
+		EngineData:  h.EngineData,
 
-		CredentialBase64:    h.CredentialBase64,
-		CredentialProjectID: h.CredentialProjectID,
+		InitPrompt: h.InitPrompt,
+
+		// CredentialBase64:    h.CredentialBase64,
+		// CredentialProjectID: h.CredentialProjectID,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

@@ -23,14 +23,13 @@ func Test_ChatbotCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent               *amagent.Agent
-		chatbotName         string
-		detail              string
-		engineType          chatbotchatbot.EngineType
-		engineModel         chatbotchatbot.EngineModel
-		initPrompt          string
-		credentialBase64    string
-		credentialProjectID string
+		agent       *amagent.Agent
+		chatbotName string
+		detail      string
+		engineType  chatbotchatbot.EngineType
+		engineModel chatbotchatbot.EngineModel
+		engineData  map[string]any
+		initPrompt  string
 
 		response  *chatbotchatbot.Chatbot
 		expectRes *chatbotchatbot.WebhookMessage
@@ -45,13 +44,14 @@ func Test_ChatbotCreate(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			chatbotName:         "test name",
-			detail:              "test detail",
-			engineType:          chatbotchatbot.EngineTypeNone,
-			engineModel:         chatbotchatbot.EngineModelOpenaiGPT4,
-			initPrompt:          "test init prompt",
-			credentialBase64:    "test credential base64",
-			credentialProjectID: "test credential project id",
+			chatbotName: "test name",
+			detail:      "test detail",
+			engineType:  chatbotchatbot.EngineTypeNone,
+			engineModel: chatbotchatbot.EngineModelOpenaiGPT4,
+			engineData: map[string]any{
+				"key1": "val1",
+			},
+			initPrompt: "test init prompt",
 
 			response: &chatbotchatbot.Chatbot{
 				Identity: commonidentity.Identity{
@@ -80,9 +80,9 @@ func Test_ChatbotCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatbotV1ChatbotCreate(ctx, tt.agent.CustomerID, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID).Return(tt.response, nil)
+			mockReq.EXPECT().ChatbotV1ChatbotCreate(ctx, tt.agent.CustomerID, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt).Return(tt.response, nil)
 
-			res, err := h.ChatbotCreate(ctx, tt.agent, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID)
+			res, err := h.ChatbotCreate(ctx, tt.agent, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

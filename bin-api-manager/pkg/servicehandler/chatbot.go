@@ -37,9 +37,8 @@ func (h *serviceHandler) ChatbotCreate(
 	detail string,
 	engineType chatbotchatbot.EngineType,
 	engineModel chatbotchatbot.EngineModel,
+	engineData map[string]any,
 	initPrompt string,
-	credentialBase64 string,
-	credentialProjectID string,
 ) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ChatbotCreate",
@@ -48,6 +47,7 @@ func (h *serviceHandler) ChatbotCreate(
 		"detail":       detail,
 		"engine_type":  engineType,
 		"engine_model": engineModel,
+		"engine_data":  engineData,
 		"init_prompt":  initPrompt,
 	})
 
@@ -63,9 +63,8 @@ func (h *serviceHandler) ChatbotCreate(
 		detail,
 		engineType,
 		engineModel,
+		engineData,
 		initPrompt,
-		credentialBase64,
-		credentialProjectID,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new chatbot. err: %v", err)
@@ -186,9 +185,8 @@ func (h *serviceHandler) ChatbotUpdate(
 	detail string,
 	engineType chatbotchatbot.EngineType,
 	engineModel chatbotchatbot.EngineModel,
+	engineData map[string]any,
 	initPrompt string,
-	credentialBase64 string,
-	credentialProjectID string,
 ) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ChatbotUpdate",
@@ -220,9 +218,8 @@ func (h *serviceHandler) ChatbotUpdate(
 		detail,
 		engineType,
 		engineModel,
+		engineData,
 		initPrompt,
-		credentialBase64,
-		credentialProjectID,
 	)
 	if err != nil {
 		log.Errorf("Could not update the chatbot. err: %v", err)

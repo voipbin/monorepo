@@ -165,14 +165,13 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID          uuid.UUID
-		chatbotName         string
-		detail              string
-		engineType          cbchatbot.EngineType
-		engineModel         cbchatbot.EngineModel
-		initPrompt          string
-		credentialBase64    string
-		credentialProjectID string
+		customerID  uuid.UUID
+		chatbotName string
+		detail      string
+		engineType  cbchatbot.EngineType
+		engineModel cbchatbot.EngineModel
+		engineData  map[string]any
+		initPrompt  string
 
 		response *sock.Response
 
@@ -183,14 +182,16 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID:          uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
-			chatbotName:         "test name",
-			detail:              "test detail",
-			engineType:          cbchatbot.EngineTypeNone,
-			engineModel:         cbchatbot.EngineModelOpenaiGPT4,
-			initPrompt:          "test init prompt",
-			credentialBase64:    "test credential base64",
-			credentialProjectID: "c9855e34-ed26-11ef-985d-9fd0d08ceee0",
+			customerID:  uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
+			chatbotName: "test name",
+			detail:      "test detail",
+			engineType:  cbchatbot.EngineTypeNone,
+			engineModel: cbchatbot.EngineModelOpenaiGPT4,
+			engineData: map[string]any{
+				"key1": "value1",
+				"key2": 2,
+			},
+			initPrompt: "test init prompt",
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -203,7 +204,7 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 				URI:      "/v1/chatbots",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"c9855e34-ed26-11ef-985d-9fd0d08ceee0"}`),
+				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"value1","key2":2},"init_prompt":"test init prompt"}`),
 			},
 			expectRes: &cbchatbot.Chatbot{
 				Identity: identity.Identity{
@@ -226,7 +227,7 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1ChatbotCreate(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID)
+			cf, err := reqHandler.ChatbotV1ChatbotCreate(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -305,14 +306,13 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id                  uuid.UUID
-		chatbotName         string
-		detail              string
-		engineType          cbchatbot.EngineType
-		engineModel         cbchatbot.EngineModel
-		initPrompt          string
-		credentialBase64    string
-		credentialProjectID string
+		id          uuid.UUID
+		chatbotName string
+		detail      string
+		engineType  cbchatbot.EngineType
+		engineModel cbchatbot.EngineModel
+		engineData  map[string]any
+		initPrompt  string
 
 		response *sock.Response
 
@@ -323,14 +323,16 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			id:                  uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
-			chatbotName:         "test name",
-			detail:              "test detail",
-			engineType:          cbchatbot.EngineTypeNone,
-			engineModel:         cbchatbot.EngineModelOpenaiGPT4,
-			initPrompt:          "test init prompt",
-			credentialBase64:    "test credential base64",
-			credentialProjectID: "991f68a2-ed26-11ef-999d-a7383cc28fbf",
+			id:          uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
+			chatbotName: "test name",
+			detail:      "test detail",
+			engineType:  cbchatbot.EngineTypeNone,
+			engineModel: cbchatbot.EngineModelOpenaiGPT4,
+			engineData: map[string]any{
+				"key1": "value1",
+				"key2": 2,
+			},
+			initPrompt: "test init prompt",
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -343,7 +345,7 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 				URI:      "/v1/chatbots/76380ede-f84a-11ed-a288-2bf54d8b92e6",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","init_prompt":"test init prompt","credential_base64":"test credential base64","credential_project_id":"991f68a2-ed26-11ef-999d-a7383cc28fbf"}`),
+				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"value1","key2":2},"init_prompt":"test init prompt"}`),
 			},
 			expectRes: &cbchatbot.Chatbot{
 				Identity: identity.Identity{
@@ -366,7 +368,7 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1ChatbotUpdate(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.initPrompt, tt.credentialBase64, tt.credentialProjectID)
+			cf, err := reqHandler.ChatbotV1ChatbotUpdate(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

@@ -6,6 +6,7 @@ create table chatbot_chatbotcalls(
   chatbot_id            binary(16),   -- chatbot id
   chatbot_engine_type   varchar(255), -- chatbot engine type
   chatbot_engine_model  varchar(255),
+  chatbot_engine_data   json,
 
   activeflow_id     binary(16),
   reference_type    varchar(255),

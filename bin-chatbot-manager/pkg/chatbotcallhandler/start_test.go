@@ -8,7 +8,7 @@ import (
 	"monorepo/bin-chatbot-manager/models/message"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
-	"monorepo/bin-chatbot-manager/pkg/openai_handler"
+	"monorepo/bin-chatbot-manager/pkg/engine_openai_handler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -116,7 +116,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
+			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -220,7 +220,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
+			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,

@@ -9,10 +9,12 @@ create table chatbot_chatbots(
 
   engine_type   varchar(255),   --
   engine_model  varchar(255),
+  engine_data   json,
+
   init_prompt   text,           -- initial prompt
 
-  credential_base64       text,           -- credential base64
-  credential_project_id   varchar(255),   -- credential project id
+  -- credential_base64       text,           -- credential base64
+  -- credential_project_id   varchar(255),   -- credential project id
 
   -- timestamps
   tm_create datetime(6),  --

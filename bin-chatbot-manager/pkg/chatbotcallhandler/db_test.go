@@ -17,7 +17,7 @@ import (
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
 	"monorepo/bin-chatbot-manager/pkg/dbhandler"
-	"monorepo/bin-chatbot-manager/pkg/openai_handler"
+	"monorepo/bin-chatbot-manager/pkg/engine_openai_handler"
 )
 
 func Test_Create(t *testing.T) {
@@ -92,7 +92,7 @@ func Test_Create(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
+			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -154,7 +154,7 @@ func Test_Get(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
+			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -213,7 +213,7 @@ func Test_GetByReferenceID(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
+			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -272,7 +272,7 @@ func Test_GetByTranscribeID(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
+			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -333,7 +333,7 @@ func Test_UpdateStatusStart(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
+			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,
@@ -394,7 +394,7 @@ func Test_UpdateStatusEnd(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
-			mockChatgpt := openai_handler.NewMockOpenaiHandler(mc)
+			mockChatgpt := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &chatbotcallHandler{
 				utilHandler:    mockUtil,

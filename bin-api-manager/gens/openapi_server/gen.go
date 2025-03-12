@@ -1290,17 +1290,14 @@ type ChatManagerMessagechatroomType string
 
 // ChatbotManagerChatbot defines model for ChatbotManagerChatbot.
 type ChatbotManagerChatbot struct {
-	// CredentialBase64 Base64-encoded credential information.
-	CredentialBase64 *string `json:"credential_base64,omitempty"`
-
-	// CredentialProjectId Project ID associated with the credential.
-	CredentialProjectId *string `json:"credential_project_id,omitempty"`
-
 	// CustomerId Unique identifier of the associated customer.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail Detailed information about the chatbot.
 	Detail *string `json:"detail,omitempty"`
+
+	// EngineData Data associated with the chatbot's engine, can be dynamic and vary based on the engine type.
+	EngineData *map[string]interface{} `json:"engine_data,omitempty"`
 
 	// EngineModel Model of the chatbot engine.
 	EngineModel *ChatbotManagerChatbotEngineModel `json:"engine_model,omitempty"`
@@ -2865,9 +2862,10 @@ type GetChatbotsParams struct {
 
 // PostChatbotsJSONBody defines parameters for PostChatbots.
 type PostChatbotsJSONBody struct {
-	CredentialBase64    string `json:"credential_base64"`
-	CredentialProjectId string `json:"credential_project_id"`
-	Detail              string `json:"detail"`
+	Detail string `json:"detail"`
+
+	// EngineData Data associated with the chatbot's engine, can be dynamic and vary based on the engine type.
+	EngineData map[string]interface{} `json:"engine_data"`
 
 	// EngineModel Model of the chatbot engine.
 	EngineModel ChatbotManagerChatbotEngineModel `json:"engine_model"`
@@ -2880,9 +2878,10 @@ type PostChatbotsJSONBody struct {
 
 // PutChatbotsIdJSONBody defines parameters for PutChatbotsId.
 type PutChatbotsIdJSONBody struct {
-	CredentialBase64    string `json:"credential_base64"`
-	CredentialProjectId string `json:"credential_project_id"`
-	Detail              string `json:"detail"`
+	Detail string `json:"detail"`
+
+	// EngineData Data associated with the chatbot's engine, can be dynamic and vary based on the engine type.
+	EngineData map[string]interface{} `json:"engine_data"`
 
 	// EngineModel Model of the chatbot engine.
 	EngineModel ChatbotManagerChatbotEngineModel `json:"engine_model"`
