@@ -54,10 +54,13 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *chatbotca
 	}
 
 	req := h.getRequest(&data, cc, m)
+	log.Debugf("Checking value. request: %v", req)
+
 	resp, err := h.send(ctx, client, req)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}
+	log.Debugf("Received response. response: %v", resp)
 
 	content := ""
 	if resp.GetQueryResult() == nil {
