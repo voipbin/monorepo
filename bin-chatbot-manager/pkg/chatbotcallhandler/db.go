@@ -38,6 +38,7 @@ func (h *chatbotcallHandler) Create(
 		ChatbotID:          c.ID,
 		ChatbotEngineType:  c.EngineType,
 		ChatbotEngineModel: c.EngineModel,
+		ChatbotEngineData:  c.EngineData,
 
 		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
