@@ -11,9 +11,18 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role message.Role, content string) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Send",
+		"chatbotcall_id": chatbotcallID,
+		"role":           role,
+		"content":        content,
+	})
+	log.Debugf("Sending chatbot message.")
+
 	cc, err := h.chatbotcallHandler.Get(ctx, chatbotcallID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the chatbotcall correctly")
@@ -24,7 +33,7 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 	}
 
 	// create a message for outgoing(request)
-	m, err := h.Create(ctx, cc.CustomerID, chatbotcallID, message.DirectionOutgoing, role, content)
+	res, err := h.Create(ctx, cc.CustomerID, chatbotcallID, message.DirectionOutgoing, role, content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the sending message correctly")
 	}
@@ -38,7 +47,7 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 		tmpMessage, err = h.sendOpenai(ctx, cc)
 
 	case chatbot.EngineModelTargetDialogflow:
-		tmpMessage, err = h.sendDialogflow(ctx, cc, m)
+		tmpMessage, err = h.sendDialogflow(ctx, cc, res)
 
 	default:
 		err = fmt.Errorf("unsupported chatbot engine model: %s", cc.ChatbotEngineModel)
@@ -47,6 +56,7 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message correctly")
 	}
+	log.Debugf("Received response message from the chatbot engine. message: %v", tmpMessage)
 
 	t2 := time.Since(t1)
 	promMessageProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(t2.Milliseconds()))
@@ -57,7 +67,7 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 	}
 
 	// create a message for incoming(response)
-	res, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
+	_, err = h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the recevied message correctly")
 	}

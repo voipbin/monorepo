@@ -1,8 +1,6 @@
 package engine_dialogflow
 
 type EngineDialogflow struct {
-	Type Type `json:"type,omitempty"`
-
 	// common
 	CredentialBase64 string `json:"credential_base64,omitempty"`
 	ProjectID        string `json:"project_id,omitempty"`
@@ -11,13 +9,6 @@ type EngineDialogflow struct {
 	// CX only
 	AgentID string `json:"agent_id,omitempty"`
 }
-
-type Type string
-
-const (
-	TypeES Type = "es"
-	TypeCX Type = "cx"
-)
 
 type Region string
 

@@ -18,9 +18,6 @@ type Chatbot struct {
 
 	InitPrompt string `json:"init_prompt,omitempty"`
 
-	// CredentialBase64    string `json:"credential_base64,omitempty"`
-	// CredentialProjectID string `json:"credential_project_id,omitempty"`
-
 	// timestamp
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
