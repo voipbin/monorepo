@@ -13,9 +13,6 @@ create table chatbot_chatbots(
 
   init_prompt   text,           -- initial prompt
 
-  -- credential_base64       text,           -- credential base64
-  -- credential_project_id   varchar(255),   -- credential project id
-
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --
