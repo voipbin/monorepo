@@ -28,8 +28,8 @@ func (h *emailHandler) Send(ctx context.Context, e *email.Email) {
 			// we could not update the provider reference id
 			// but just log it and return
 			log.Errorf("could not update provider reference id. err: %v", errUpdate)
-			return
 		}
+		return
 	}
 
 	log.Errorf("all email providers failed")

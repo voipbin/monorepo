@@ -46,9 +46,11 @@ func (h *emailHandler) hookSendgrid(ctx context.Context, data []byte) error {
 	}
 
 	// sort events up to down
+	log.WithField("events", events).Debugf("Before sort")
 	sort.Slice(events, func(i, j int) bool {
 		return i < j
 	})
+	log.WithField("events", events).Debugf("After sort.")
 
 	for _, e := range events {
 		id := uuid.FromStringOrNil(e.VoipbinMessageID)
