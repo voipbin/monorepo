@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"monorepo/bin-email-manager/models/email"
 	"monorepo/bin-email-manager/models/sendgrid"
-	"sort"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -45,14 +44,9 @@ func (h *emailHandler) hookSendgrid(ctx context.Context, data []byte) error {
 		return errors.Wrapf(errUnmarshal, "could not unmarshal the sendgrid events. data: %s", string(data))
 	}
 
-	// sort events up to down
-	log.WithField("events", events).Debugf("Before sort")
-	sort.Slice(events, func(i, j int) bool {
-		return i < j
-	})
-	log.WithField("events", events).Debugf("After sort.")
-
-	for _, e := range events {
+	for i := range events {
+		// note: because of the sendtrid sends the events in reverse order, we need to process the events in reverse order
+		e := events[len(events)-1-i]
 		id := uuid.FromStringOrNil(e.VoipbinMessageID)
 		if id == uuid.Nil {
 			log.WithField("event", e).Errorf("could not get the email id.")
