@@ -38,6 +38,7 @@ import (
 	message0 "monorepo/bin-conversation-manager/models/message"
 	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
+	email "monorepo/bin-email-manager/models/email"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
 	flow "monorepo/bin-flow-manager/models/flow"
@@ -1983,6 +1984,66 @@ func (m *MockServiceHandler) CustomerUpdateBillingAccountID(ctx context.Context,
 func (mr *MockServiceHandlerMockRecorder) CustomerUpdateBillingAccountID(ctx, a, customerID, billingAccountID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateBillingAccountID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdateBillingAccountID), ctx, a, customerID, billingAccountID)
+}
+
+// EmailDelete mocks base method.
+func (m *MockServiceHandler) EmailDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*email.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailDelete", ctx, a, id)
+	ret0, _ := ret[0].(*email.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailDelete indicates an expected call of EmailDelete.
+func (mr *MockServiceHandlerMockRecorder) EmailDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailDelete", reflect.TypeOf((*MockServiceHandler)(nil).EmailDelete), ctx, a, id)
+}
+
+// EmailGet mocks base method.
+func (m *MockServiceHandler) EmailGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*email.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailGet", ctx, a, id)
+	ret0, _ := ret[0].(*email.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailGet indicates an expected call of EmailGet.
+func (mr *MockServiceHandlerMockRecorder) EmailGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailGet", reflect.TypeOf((*MockServiceHandler)(nil).EmailGet), ctx, a, id)
+}
+
+// EmailGets mocks base method.
+func (m *MockServiceHandler) EmailGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*email.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailGets", ctx, a, size, token)
+	ret0, _ := ret[0].([]*email.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailGets indicates an expected call of EmailGets.
+func (mr *MockServiceHandlerMockRecorder) EmailGets(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailGets", reflect.TypeOf((*MockServiceHandler)(nil).EmailGets), ctx, a, size, token)
+}
+
+// EmailSend mocks base method.
+func (m *MockServiceHandler) EmailSend(ctx context.Context, a *agent.Agent, destinations []address.Address, subject, content string, attachments []email.Attachment) (*email.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailSend", ctx, a, destinations, subject, content, attachments)
+	ret0, _ := ret[0].(*email.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailSend indicates an expected call of EmailSend.
+func (mr *MockServiceHandlerMockRecorder) EmailSend(ctx, a, destinations, subject, content, attachments any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailSend", reflect.TypeOf((*MockServiceHandler)(nil).EmailSend), ctx, a, destinations, subject, content, attachments)
 }
 
 // ExtensionCreate mocks base method.

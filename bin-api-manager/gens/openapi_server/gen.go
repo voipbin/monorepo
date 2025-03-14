@@ -304,6 +304,7 @@ const (
 const (
 	CommonAddressTypeAgent      CommonAddressType = "agent"
 	CommonAddressTypeConference CommonAddressType = "conference"
+	CommonAddressTypeEmail      CommonAddressType = "email"
 	CommonAddressTypeExtension  CommonAddressType = "extension"
 	CommonAddressTypeLine       CommonAddressType = "line"
 	CommonAddressTypeNone       CommonAddressType = ""
@@ -394,6 +395,27 @@ const (
 	CustomerManagerCustomerWebhookMethodNone   CustomerManagerCustomerWebhookMethod = ""
 	CustomerManagerCustomerWebhookMethodPost   CustomerManagerCustomerWebhookMethod = "POST"
 	CustomerManagerCustomerWebhookMethodPut    CustomerManagerCustomerWebhookMethod = "PUT"
+)
+
+// Defines values for EmailManagerEmailAttachmentReferenceType.
+const (
+	EmailManagerEmailAttachmentReferenceTypeNone      EmailManagerEmailAttachmentReferenceType = ""
+	EmailManagerEmailAttachmentReferenceTypeRecording EmailManagerEmailAttachmentReferenceType = "recording"
+)
+
+// Defines values for EmailManagerEmailStatus.
+const (
+	EmailManagerEmailStatusBounce      EmailManagerEmailStatus = "bounce"
+	EmailManagerEmailStatusClick       EmailManagerEmailStatus = "click"
+	EmailManagerEmailStatusDeferred    EmailManagerEmailStatus = "deferred"
+	EmailManagerEmailStatusDelivered   EmailManagerEmailStatus = "delivered"
+	EmailManagerEmailStatusDropped     EmailManagerEmailStatus = "dropped"
+	EmailManagerEmailStatusInitiated   EmailManagerEmailStatus = "initiated"
+	EmailManagerEmailStatusNone        EmailManagerEmailStatus = ""
+	EmailManagerEmailStatusOpen        EmailManagerEmailStatus = "open"
+	EmailManagerEmailStatusProcessed   EmailManagerEmailStatus = "processed"
+	EmailManagerEmailStatusSpamreport  EmailManagerEmailStatus = "spamreport"
+	EmailManagerEmailStatusUnsubscribe EmailManagerEmailStatus = "unsubscribe"
 )
 
 // Defines values for FlowManagerActionType.
@@ -1762,6 +1784,60 @@ type CustomerManagerCustomer struct {
 
 // CustomerManagerCustomerWebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
 type CustomerManagerCustomerWebhookMethod string
+
+// EmailManagerEmail defines model for EmailManagerEmail.
+type EmailManagerEmail struct {
+	// ActiveflowId ID of the associated activeflow.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// Attachments List of attachments
+	Attachments []EmailManagerEmailAttachment `json:"attachments"`
+
+	// Content The content of the email.
+	Content string `json:"content"`
+
+	// CustomerId ID of the customer.
+	CustomerId string `json:"customer_id"`
+
+	// Destinations List of destination addresses
+	Destinations []CommonAddress `json:"destinations"`
+
+	// Id Unique identifier for the email.
+	Id string `json:"id"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+
+	// Status Email status.
+	Status EmailManagerEmailStatus `json:"status"`
+
+	// Subject The subject of the email.
+	Subject string `json:"subject"`
+
+	// TmCreate Timestamp when the flow was created.
+	TmCreate string `json:"tm_create"`
+
+	// TmDelete Timestamp when the flow was deleted.
+	TmDelete string `json:"tm_delete"`
+
+	// TmUpdate Timestamp when the flow was last updated.
+	TmUpdate string `json:"tm_update"`
+}
+
+// EmailManagerEmailAttachment defines model for EmailManagerEmailAttachment.
+type EmailManagerEmailAttachment struct {
+	// ReferenceId The identifier of the next item
+	ReferenceId string `json:"reference_id"`
+
+	// ReferenceType Type of the action.
+	ReferenceType EmailManagerEmailAttachmentReferenceType `json:"reference_type"`
+}
+
+// EmailManagerEmailAttachmentReferenceType Type of the action.
+type EmailManagerEmailAttachmentReferenceType string
+
+// EmailManagerEmailStatus Email status.
+type EmailManagerEmailStatus string
 
 // FlowManagerAction defines model for FlowManagerAction.
 type FlowManagerAction struct {
@@ -3192,6 +3268,30 @@ type PutCustomersIdBillingAccountIdJSONBody struct {
 	BillingAccountId string `json:"billing_account_id"`
 }
 
+// GetEmailsParams defines parameters for GetEmails.
+type GetEmailsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostEmailsJSONBody defines parameters for PostEmails.
+type PostEmailsJSONBody struct {
+	// Attachments List of attachments to include in the email.
+	Attachments []EmailManagerEmailAttachment `json:"attachments"`
+
+	// Content The content of the email.
+	Content string `json:"content"`
+
+	// Destinations The email addresses to send the email to.
+	Destinations []CommonAddress `json:"destinations"`
+
+	// Subject The subject of the email.
+	Subject string `json:"subject"`
+}
+
 // GetExtensionsParams defines parameters for GetExtensions.
 type GetExtensionsParams struct {
 	// PageSize The size of results.
@@ -4071,6 +4171,9 @@ type PutCustomersIdJSONRequestBody PutCustomersIdJSONBody
 // PutCustomersIdBillingAccountIdJSONRequestBody defines body for PutCustomersIdBillingAccountId for application/json ContentType.
 type PutCustomersIdBillingAccountIdJSONRequestBody PutCustomersIdBillingAccountIdJSONBody
 
+// PostEmailsJSONRequestBody defines body for PostEmails for application/json ContentType.
+type PostEmailsJSONRequestBody PostEmailsJSONBody
+
 // PostExtensionsJSONRequestBody defines body for PostExtensions for application/json ContentType.
 type PostExtensionsJSONRequestBody PostExtensionsJSONBody
 
@@ -4583,6 +4686,18 @@ type ServerInterface interface {
 	// Update a customer's billing account ID.
 	// (PUT /customers/{id}/billing_account_id)
 	PutCustomersIdBillingAccountId(c *gin.Context, id string)
+	// Retrieve a list of emails
+	// (GET /emails)
+	GetEmails(c *gin.Context, params GetEmailsParams)
+	// Send an email
+	// (POST /emails)
+	PostEmails(c *gin.Context)
+	// Delete a email
+	// (DELETE /emails/{id})
+	DeleteEmailsId(c *gin.Context, id string)
+	// Retrieve email details
+	// (GET /emails/{id})
+	GetEmailsId(c *gin.Context, id string)
 	// Get a list of extensions
 	// (GET /extensions)
 	GetExtensions(c *gin.Context, params GetExtensionsParams)
@@ -8143,6 +8258,101 @@ func (siw *ServerInterfaceWrapper) PutCustomersIdBillingAccountId(c *gin.Context
 	siw.Handler.PutCustomersIdBillingAccountId(c, id)
 }
 
+// GetEmails operation middleware
+func (siw *ServerInterfaceWrapper) GetEmails(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetEmailsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetEmails(c, params)
+}
+
+// PostEmails operation middleware
+func (siw *ServerInterfaceWrapper) PostEmails(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostEmails(c)
+}
+
+// DeleteEmailsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteEmailsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteEmailsId(c, id)
+}
+
+// GetEmailsId operation middleware
+func (siw *ServerInterfaceWrapper) GetEmailsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetEmailsId(c, id)
+}
+
 // GetExtensions operation middleware
 func (siw *ServerInterfaceWrapper) GetExtensions(c *gin.Context) {
 
@@ -11476,6 +11686,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/customers/:id", wrapper.GetCustomersId)
 	router.PUT(options.BaseURL+"/customers/:id", wrapper.PutCustomersId)
 	router.PUT(options.BaseURL+"/customers/:id/billing_account_id", wrapper.PutCustomersIdBillingAccountId)
+	router.GET(options.BaseURL+"/emails", wrapper.GetEmails)
+	router.POST(options.BaseURL+"/emails", wrapper.PostEmails)
+	router.DELETE(options.BaseURL+"/emails/:id", wrapper.DeleteEmailsId)
+	router.GET(options.BaseURL+"/emails/:id", wrapper.GetEmailsId)
 	router.GET(options.BaseURL+"/extensions", wrapper.GetExtensions)
 	router.POST(options.BaseURL+"/extensions", wrapper.PostExtensions)
 	router.DELETE(options.BaseURL+"/extensions/:id", wrapper.DeleteExtensionsId)
@@ -13921,6 +14135,78 @@ type PutCustomersIdBillingAccountIdResponseObject interface {
 type PutCustomersIdBillingAccountId200JSONResponse CustomerManagerCustomer
 
 func (response PutCustomersIdBillingAccountId200JSONResponse) VisitPutCustomersIdBillingAccountIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetEmailsRequestObject struct {
+	Params GetEmailsParams
+}
+
+type GetEmailsResponseObject interface {
+	VisitGetEmailsResponse(w http.ResponseWriter) error
+}
+
+type GetEmails200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string              `json:"next_page_token,omitempty"`
+	Result        *[]EmailManagerEmail `json:"result,omitempty"`
+}
+
+func (response GetEmails200JSONResponse) VisitGetEmailsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostEmailsRequestObject struct {
+	Body *PostEmailsJSONRequestBody
+}
+
+type PostEmailsResponseObject interface {
+	VisitPostEmailsResponse(w http.ResponseWriter) error
+}
+
+type PostEmails200JSONResponse EmailManagerEmail
+
+func (response PostEmails200JSONResponse) VisitPostEmailsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteEmailsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteEmailsIdResponseObject interface {
+	VisitDeleteEmailsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteEmailsId200JSONResponse EmailManagerEmail
+
+func (response DeleteEmailsId200JSONResponse) VisitDeleteEmailsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetEmailsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetEmailsIdResponseObject interface {
+	VisitGetEmailsIdResponse(w http.ResponseWriter) error
+}
+
+type GetEmailsId200JSONResponse EmailManagerEmail
+
+func (response GetEmailsId200JSONResponse) VisitGetEmailsIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -16706,6 +16992,18 @@ type StrictServerInterface interface {
 	// Update a customer's billing account ID.
 	// (PUT /customers/{id}/billing_account_id)
 	PutCustomersIdBillingAccountId(ctx context.Context, request PutCustomersIdBillingAccountIdRequestObject) (PutCustomersIdBillingAccountIdResponseObject, error)
+	// Retrieve a list of emails
+	// (GET /emails)
+	GetEmails(ctx context.Context, request GetEmailsRequestObject) (GetEmailsResponseObject, error)
+	// Send an email
+	// (POST /emails)
+	PostEmails(ctx context.Context, request PostEmailsRequestObject) (PostEmailsResponseObject, error)
+	// Delete a email
+	// (DELETE /emails/{id})
+	DeleteEmailsId(ctx context.Context, request DeleteEmailsIdRequestObject) (DeleteEmailsIdResponseObject, error)
+	// Retrieve email details
+	// (GET /emails/{id})
+	GetEmailsId(ctx context.Context, request GetEmailsIdRequestObject) (GetEmailsIdResponseObject, error)
 	// Get a list of extensions
 	// (GET /extensions)
 	GetExtensions(ctx context.Context, request GetExtensionsRequestObject) (GetExtensionsResponseObject, error)
@@ -20851,6 +21149,120 @@ func (sh *strictHandler) PutCustomersIdBillingAccountId(ctx *gin.Context, id str
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutCustomersIdBillingAccountIdResponseObject); ok {
 		if err := validResponse.VisitPutCustomersIdBillingAccountIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetEmails operation middleware
+func (sh *strictHandler) GetEmails(ctx *gin.Context, params GetEmailsParams) {
+	var request GetEmailsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetEmails(ctx, request.(GetEmailsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetEmails")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetEmailsResponseObject); ok {
+		if err := validResponse.VisitGetEmailsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostEmails operation middleware
+func (sh *strictHandler) PostEmails(ctx *gin.Context) {
+	var request PostEmailsRequestObject
+
+	var body PostEmailsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostEmails(ctx, request.(PostEmailsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostEmails")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostEmailsResponseObject); ok {
+		if err := validResponse.VisitPostEmailsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteEmailsId operation middleware
+func (sh *strictHandler) DeleteEmailsId(ctx *gin.Context, id string) {
+	var request DeleteEmailsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteEmailsId(ctx, request.(DeleteEmailsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteEmailsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteEmailsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteEmailsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetEmailsId operation middleware
+func (sh *strictHandler) GetEmailsId(ctx *gin.Context, id string) {
+	var request GetEmailsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetEmailsId(ctx, request.(GetEmailsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetEmailsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetEmailsIdResponseObject); ok {
+		if err := validResponse.VisitGetEmailsIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

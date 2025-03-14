@@ -29,23 +29,23 @@ func Test_Message(t *testing.T) {
 		expectReq *hmhook.Hook
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			"hook.voipbin.net/v1.0/messages",
-			[]byte(`{"key1":"val1"}`),
+			uri:     "hook.voipbin.net/v1.0/messages",
+			message: []byte(`{"key1":"val1"}`),
 
-			&hmhook.Hook{
+			expectReq: &hmhook.Hook{
 				ReceviedURI:  "hook.voipbin.net/v1.0/messages",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 		},
 		{
-			"message telnyx",
+			name: "message telnyx",
 
-			"hook.voipbin.net/v1.0/messages/telnyx",
-			[]byte(`{"key1":"val1"}`),
+			uri:     "hook.voipbin.net/v1.0/messages/telnyx",
+			message: []byte(`{"key1":"val1"}`),
 
-			&hmhook.Hook{
+			expectReq: &hmhook.Hook{
 				ReceviedURI:  "hook.voipbin.net/v1.0/messages/telnyx",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},

@@ -17,7 +17,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_flowsPOST(t *testing.T) {
+func Test_PostFlows(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -102,7 +102,7 @@ func Test_flowsPOST(t *testing.T) {
 	}
 }
 
-func Test_FlowsGET(t *testing.T) {
+func Test_GetFlows(t *testing.T) {
 
 	type test struct {
 		name  string
@@ -174,7 +174,7 @@ func Test_FlowsGET(t *testing.T) {
 	}
 }
 
-func Test_flowsIDGET(t *testing.T) {
+func Test_GetFlowsId(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -247,7 +247,7 @@ func Test_flowsIDGET(t *testing.T) {
 	}
 }
 
-func Test_flowsIDPUT(t *testing.T) {
+func Test_PutFlowsId(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -327,7 +327,7 @@ func Test_flowsIDPUT(t *testing.T) {
 	}
 }
 
-func Test_flowsIDDELETE(t *testing.T) {
+func Test_DeleteFlowsId(t *testing.T) {
 
 	tests := []struct {
 		name  string

@@ -10,6 +10,7 @@ import (
 
 // ServiceHandler is interface for service handle
 type ServiceHandler interface {
+	Email(ctx context.Context, uri string, m []byte) error
 	Message(ctx context.Context, uri string, m []byte) error
 	Conversation(ctx context.Context, uri string, m []byte) error
 }

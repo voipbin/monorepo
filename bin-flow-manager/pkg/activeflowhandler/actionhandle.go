@@ -998,3 +998,28 @@ func (h *activeflowHandler) actionHandleStop(ctx context.Context, af *activeflow
 
 	return nil
 }
+
+// actionHandleEmailSend handles action email_send with activeflow.
+func (h *activeflowHandler) actionHandleEmailSend(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "actionHandleEmailSend",
+		"activeflow": af,
+	})
+	act := &af.CurrentAction
+
+	var opt action.OptionEmailSend
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", err)
+		return err
+	}
+
+	// send message
+	tmp, err := h.reqHandler.EmailV1EmailSend(ctx, af.CustomerID, af.ID, opt.Destinations, opt.Subject, opt.Content, opt.Attachments)
+	if err != nil {
+		log.Errorf("Could not send an email correctly. err: %v", err)
+		return err
+	}
+	log.Debugf("Send an email correctly. email_id: %s", tmp.ID)
+
+	return nil
+}

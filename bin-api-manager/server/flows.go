@@ -42,7 +42,7 @@ func (h *server) PostFlows(c *gin.Context) {
 
 	res, err := h.serviceHandler.FlowCreate(c.Request.Context(), &a, req.Name, req.Detail, actions, true)
 	if err != nil {
-		log.Errorf("Could not create a flow. err: %v", err)
+		log.Errorf("Could not create data. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -83,7 +83,7 @@ func (h *server) GetFlows(c *gin.Context, params openapi_server.GetFlowsParams) 
 
 	tmps, err := h.serviceHandler.FlowGets(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
-		log.Errorf("Could not get a flow list. err: %v", err)
+		log.Errorf("Could not get data list. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -101,7 +101,7 @@ func (h *server) GetFlowsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetFlowsId",
 		"request_address": c.ClientIP,
-		"flow_id":         id,
+		"target_id":       id,
 	})
 
 	tmp, exists := c.Get("agent")
@@ -124,7 +124,7 @@ func (h *server) GetFlowsId(c *gin.Context, id string) {
 
 	res, err := h.serviceHandler.FlowGet(c.Request.Context(), &a, target)
 	if err != nil {
-		log.Errorf("Could not get a flow. err: %v", err)
+		log.Errorf("Could not get data. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -134,8 +134,9 @@ func (h *server) GetFlowsId(c *gin.Context, id string) {
 
 func (h *server) PutFlowsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "flowsIDPUT",
+		"func":            "PutFlowsId",
 		"request_address": c.ClientIP,
+		"target_id":       id,
 	})
 
 	tmp, exists := c.Get("agent")
@@ -177,7 +178,7 @@ func (h *server) PutFlowsId(c *gin.Context, id string) {
 
 	res, err := h.serviceHandler.FlowUpdate(c.Request.Context(), &a, f)
 	if err != nil {
-		log.Errorf("Could not update the flow. err: %v", err)
+		log.Errorf("Could not update data. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -189,7 +190,7 @@ func (h *server) DeleteFlowsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteFlowsId",
 		"request_address": c.ClientIP,
-		"flow_id":         id,
+		"target_id":       id,
 	})
 
 	tmp, exists := c.Get("agent")
@@ -212,7 +213,7 @@ func (h *server) DeleteFlowsId(c *gin.Context, id string) {
 
 	res, err := h.serviceHandler.FlowDelete(c.Request.Context(), &a, target)
 	if err != nil {
-		log.Errorf("Could not delete the flow. err: %v", err)
+		log.Errorf("Could not delete data. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

@@ -14,6 +14,7 @@ import (
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
+	ememail "monorepo/bin-email-manager/models/email"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
@@ -31,6 +32,7 @@ import (
 	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 	cbmessage "monorepo/bin-chatbot-manager/models/message"
+	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/service"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
@@ -625,6 +627,23 @@ type RequestHandler interface {
 
 	// conversation-manager hook
 	ConversationV1Hook(ctx context.Context, hm *hmhook.Hook) error
+
+	// email-manager email
+	EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]ememail.Email, error)
+	EmailV1EmailSend(
+		ctx context.Context,
+		customerID uuid.UUID,
+		activeflowID uuid.UUID,
+		destinations []address.Address,
+		subject string,
+		content string,
+		attachments []ememail.Attachment,
+	) (*ememail.Email, error)
+	EmailV1EmailGet(ctx context.Context, emailID uuid.UUID) (*ememail.Email, error)
+	EmailV1EmailDelete(ctx context.Context, id uuid.UUID) (*ememail.Email, error)
+
+	// email-manager hooks
+	EmailV1Hooks(ctx context.Context, hm *hmhook.Hook) error
 
 	// flow-manager action
 	FlowV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*fmaction.Action, error)
