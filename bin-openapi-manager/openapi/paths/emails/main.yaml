@@ -1,0 +1,63 @@
+get:
+  summary: Retrieve a list of emails
+  description: Retrieves a paginated list of emails accessible to the authenticated agent.
+  tags:
+    - Email
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of emails.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmailManagerEmail'
+
+post:
+  summary: Send an email
+  description: Send an email with the provided details and returns the created email's information.
+  tags:
+    - Email
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            destinations:
+              description: The email addresses to send the email to.
+              type: array
+              items:
+                $ref: '#/components/schemas/CommonAddress'
+            subject:
+              description: The subject of the email.
+              type: string
+            content:
+              description: The content of the email.
+              type: string
+            attachments:
+              description: List of attachments to include in the email.
+              type: array
+              items:
+                $ref: '#/components/schemas/EmailManagerEmailAttachment'
+          required:
+            - destinations
+            - subject
+            - content
+            - attachments
+  responses:
+    '200':
+      description: The created email details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmailManagerEmail'

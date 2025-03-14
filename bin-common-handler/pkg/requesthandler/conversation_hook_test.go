@@ -19,28 +19,30 @@ func Test_ConversationV1Hook(t *testing.T) {
 
 		hookMessage *hmhook.Hook
 
+		response *sock.Response
+
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *sock.Response
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&hmhook.Hook{
+			hookMessage: &hmhook.Hook{
 				ReceviedURI:  "hook.voipbin.net/v1.0/conversation/customers/7a008138-ea75-11ec-a1ab-83428342ec10/line",
 				ReceivedData: []byte(`{"destination": "U11298214116e3afbad432b5794a6d3a0"}`),
 			},
 
-			"bin-manager.conversation-manager.request",
-			&sock.Request{
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+
+			expectTarget: "bin-manager.conversation-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/hooks",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/conversation/customers/7a008138-ea75-11ec-a1ab-83428342ec10/line","received_data":"eyJkZXN0aW5hdGlvbiI6ICJVMTEyOTgyMTQxMTZlM2FmYmFkNDMyYjU3OTRhNmQzYTAifQ=="}`),
-			},
-			&sock.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
 			},
 		},
 	}

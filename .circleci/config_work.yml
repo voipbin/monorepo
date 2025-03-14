@@ -58,6 +58,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-email-manager:
+    type: boolean
+    default: false
+
   run-bin-flow-manager:
     type: boolean
     default: false
@@ -346,6 +350,25 @@ workflows:
   #         requires:
   #           - bin-dbscheme-manager-build
   #           - release-approval
+
+  bin-email-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-email-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-email-manager-test
+      - bin-email-manager-build:
+          <<: *context_production
+          requires:
+            - bin-email-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-email-manager-build
+      - bin-email-manager-release:
+          <<: *context_production
+          requires:
+            - bin-email-manager-build
+            - release-approval
 
   bin-flow-manager:
     when: 
@@ -928,6 +951,32 @@ jobs:
   #     - go-release:
   #         source-directory: bin-dbscheme-manager
   #         image-name: dbscheme-manager
+
+  # bin-email-manager
+  bin-email-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-email-manager
+
+  bin-email-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-email-manager
+          image-name: email-manager
+
+  bin-email-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-email-manager
+          image-name: email-manager
 
   # bin-flow-manager
   bin-flow-manager-test:

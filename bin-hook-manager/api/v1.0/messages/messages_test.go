@@ -25,16 +25,16 @@ func Test_MessagesPOST(t *testing.T) {
 	tests := []struct {
 		name string
 
-		target string
-		req    []byte
+		reqQuery string
+		reqBody  []byte
 
 		expectRes string
 	}{
 		{
 			name: "normal",
 
-			target: "/v1.0/messages/telnyx",
-			req:    []byte(`{"key1":"val1"}`),
+			reqQuery: "/v1.0/messages/telnyx",
+			reqBody:  []byte(`{"key1":"val1"}`),
 
 			expectRes: ``,
 		},
@@ -55,15 +55,15 @@ func Test_MessagesPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			body, err := json.Marshal(tt.req)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Wong match. expect: ok, got: %v", err)
 			}
 
-			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Message(gomock.Any(), tt.target, body).Return(nil)
+			mockSvc.EXPECT().Message(gomock.Any(), tt.reqQuery, body).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -82,8 +82,8 @@ func Test_MessagesPOST_Error(t *testing.T) {
 	tests := []struct {
 		name string
 
-		target string
-		req    []byte
+		reqQuery string
+		reqBody  []byte
 
 		expectRes  string
 		expectCode int
@@ -91,8 +91,8 @@ func Test_MessagesPOST_Error(t *testing.T) {
 		{
 			name: "service handler error",
 
-			target: "/v1.0/messages/telnyx",
-			req:    []byte(`{"key1":"val1"}`),
+			reqQuery: "/v1.0/messages/telnyx",
+			reqBody:  []byte(`{"key1":"val1"}`),
 
 			expectRes:  ``,
 			expectCode: http.StatusInternalServerError,
@@ -114,15 +114,15 @@ func Test_MessagesPOST_Error(t *testing.T) {
 			})
 			setupServer(r)
 
-			body, err := json.Marshal(tt.req)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Message(gomock.Any(), tt.target, body).Return(fmt.Errorf("service handler error"))
+			mockSvc.EXPECT().Message(gomock.Any(), tt.reqQuery, body).Return(fmt.Errorf("service handler error"))
 
 			r.ServeHTTP(w, req)
 			if w.Code != tt.expectCode {

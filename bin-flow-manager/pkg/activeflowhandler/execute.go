@@ -163,6 +163,12 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 		}
 		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)
 
+	case action.TypeEmailSend:
+		if errHandle := h.actionHandleEmailSend(ctx, af); errHandle != nil {
+			log.Errorf("Could not send the email correctly. err: %v", errHandle)
+		}
+		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)
+
 	case action.TypeGoto:
 		if errHandle := h.actionHandleGoto(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the goto action correctly. err: %v", errHandle)

@@ -195,6 +195,14 @@ func (r *requestHandler) sendRequestCustomer(ctx context.Context, uri string, me
 	return r.sendRequest(ctx, commonoutline.QueueNameCustomerRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
 
+// sendRequestEmail send a request to the email-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestEmail(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout, delayed int, dataType string, data json.RawMessage) (*sock.Response, error) {
+
+	return r.sendRequest(ctx, commonoutline.QueueNameEmailRequest, uri, method, resource, timeout, delayed, dataType, data)
+}
+
 // sendRequestMessage send a request to the message-manager and return the response
 // timeout millisecond
 // delayed millisecond

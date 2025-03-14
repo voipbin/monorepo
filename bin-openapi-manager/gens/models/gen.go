@@ -295,6 +295,7 @@ const (
 const (
 	CommonAddressTypeAgent      CommonAddressType = "agent"
 	CommonAddressTypeConference CommonAddressType = "conference"
+	CommonAddressTypeEmail      CommonAddressType = "email"
 	CommonAddressTypeExtension  CommonAddressType = "extension"
 	CommonAddressTypeLine       CommonAddressType = "line"
 	CommonAddressTypeNone       CommonAddressType = ""
@@ -385,6 +386,27 @@ const (
 	CustomerManagerCustomerWebhookMethodNone   CustomerManagerCustomerWebhookMethod = ""
 	CustomerManagerCustomerWebhookMethodPost   CustomerManagerCustomerWebhookMethod = "POST"
 	CustomerManagerCustomerWebhookMethodPut    CustomerManagerCustomerWebhookMethod = "PUT"
+)
+
+// Defines values for EmailManagerEmailAttachmentReferenceType.
+const (
+	EmailManagerEmailAttachmentReferenceTypeNone      EmailManagerEmailAttachmentReferenceType = ""
+	EmailManagerEmailAttachmentReferenceTypeRecording EmailManagerEmailAttachmentReferenceType = "recording"
+)
+
+// Defines values for EmailManagerEmailStatus.
+const (
+	EmailManagerEmailStatusBounce      EmailManagerEmailStatus = "bounce"
+	EmailManagerEmailStatusClick       EmailManagerEmailStatus = "click"
+	EmailManagerEmailStatusDeferred    EmailManagerEmailStatus = "deferred"
+	EmailManagerEmailStatusDelivered   EmailManagerEmailStatus = "delivered"
+	EmailManagerEmailStatusDropped     EmailManagerEmailStatus = "dropped"
+	EmailManagerEmailStatusInitiated   EmailManagerEmailStatus = "initiated"
+	EmailManagerEmailStatusNone        EmailManagerEmailStatus = ""
+	EmailManagerEmailStatusOpen        EmailManagerEmailStatus = "open"
+	EmailManagerEmailStatusProcessed   EmailManagerEmailStatus = "processed"
+	EmailManagerEmailStatusSpamreport  EmailManagerEmailStatus = "spamreport"
+	EmailManagerEmailStatusUnsubscribe EmailManagerEmailStatus = "unsubscribe"
 )
 
 // Defines values for FlowManagerActionType.
@@ -1753,6 +1775,60 @@ type CustomerManagerCustomer struct {
 
 // CustomerManagerCustomerWebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
 type CustomerManagerCustomerWebhookMethod string
+
+// EmailManagerEmail defines model for EmailManagerEmail.
+type EmailManagerEmail struct {
+	// ActiveflowId ID of the associated activeflow.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// Attachments List of attachments
+	Attachments []EmailManagerEmailAttachment `json:"attachments"`
+
+	// Content The content of the email.
+	Content string `json:"content"`
+
+	// CustomerId ID of the customer.
+	CustomerId string `json:"customer_id"`
+
+	// Destinations List of destination addresses
+	Destinations []CommonAddress `json:"destinations"`
+
+	// Id Unique identifier for the email.
+	Id string `json:"id"`
+
+	// Source Contains source or destination detail info.
+	Source CommonAddress `json:"source"`
+
+	// Status Email status.
+	Status EmailManagerEmailStatus `json:"status"`
+
+	// Subject The subject of the email.
+	Subject string `json:"subject"`
+
+	// TmCreate Timestamp when the flow was created.
+	TmCreate string `json:"tm_create"`
+
+	// TmDelete Timestamp when the flow was deleted.
+	TmDelete string `json:"tm_delete"`
+
+	// TmUpdate Timestamp when the flow was last updated.
+	TmUpdate string `json:"tm_update"`
+}
+
+// EmailManagerEmailAttachment defines model for EmailManagerEmailAttachment.
+type EmailManagerEmailAttachment struct {
+	// ReferenceId The identifier of the next item
+	ReferenceId string `json:"reference_id"`
+
+	// ReferenceType Type of the action.
+	ReferenceType EmailManagerEmailAttachmentReferenceType `json:"reference_type"`
+}
+
+// EmailManagerEmailAttachmentReferenceType Type of the action.
+type EmailManagerEmailAttachmentReferenceType string
+
+// EmailManagerEmailStatus Email status.
+type EmailManagerEmailStatus string
 
 // FlowManagerAction defines model for FlowManagerAction.
 type FlowManagerAction struct {
@@ -3183,6 +3259,30 @@ type PutCustomersIdBillingAccountIdJSONBody struct {
 	BillingAccountId string `json:"billing_account_id"`
 }
 
+// GetEmailsParams defines parameters for GetEmails.
+type GetEmailsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostEmailsJSONBody defines parameters for PostEmails.
+type PostEmailsJSONBody struct {
+	// Attachments List of attachments to include in the email.
+	Attachments []EmailManagerEmailAttachment `json:"attachments"`
+
+	// Content The content of the email.
+	Content string `json:"content"`
+
+	// Destinations The email addresses to send the email to.
+	Destinations []CommonAddress `json:"destinations"`
+
+	// Subject The subject of the email.
+	Subject string `json:"subject"`
+}
+
 // GetExtensionsParams defines parameters for GetExtensions.
 type GetExtensionsParams struct {
 	// PageSize The size of results.
@@ -4061,6 +4161,9 @@ type PutCustomersIdJSONRequestBody PutCustomersIdJSONBody
 
 // PutCustomersIdBillingAccountIdJSONRequestBody defines body for PutCustomersIdBillingAccountId for application/json ContentType.
 type PutCustomersIdBillingAccountIdJSONRequestBody PutCustomersIdBillingAccountIdJSONBody
+
+// PostEmailsJSONRequestBody defines body for PostEmails for application/json ContentType.
+type PostEmailsJSONRequestBody PostEmailsJSONBody
 
 // PostExtensionsJSONRequestBody defines body for PostExtensions for application/json ContentType.
 type PostExtensionsJSONRequestBody PostExtensionsJSONBody

@@ -34,8 +34,8 @@ func Test_FlowCreate(t *testing.T) {
 		expectRes *fmflow.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -43,20 +43,20 @@ func Test_FlowCreate(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
-			"test name",
-			"test detail",
-			[]fmaction.Action{
+			flowName: "test name",
+			detail:   "test detail",
+			actions: []fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			true,
+			persist: true,
 
-			&fmflow.Flow{
+			response: &fmflow.Flow{
 				ID:         uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
-			&fmflow.WebhookMessage{
+			expectRes: &fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
@@ -101,17 +101,17 @@ func Test_FlowDelete(t *testing.T) {
 		expectRes    *fmflow.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
+			flowID: uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
 
-			&fmflow.Flow{
+			responseFlow: &fmflow.Flow{
 				ID:         uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
@@ -119,7 +119,7 @@ func Test_FlowDelete(t *testing.T) {
 				Actions:    []fmaction.Action{},
 				TMDelete:   defaultTimestamp,
 			},
-			&fmflow.WebhookMessage{
+			expectRes: &fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
@@ -170,17 +170,17 @@ func Test_FlowGet(t *testing.T) {
 		expectRes *fmflow.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
+			flowID: uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
 
-			&fmflow.Flow{
+			response: &fmflow.Flow{
 				ID:         uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
@@ -188,7 +188,7 @@ func Test_FlowGet(t *testing.T) {
 				Actions:    []fmaction.Action{},
 				TMDelete:   defaultTimestamp,
 			},
-			&fmflow.WebhookMessage{
+			expectRes: &fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
@@ -198,17 +198,17 @@ func Test_FlowGet(t *testing.T) {
 			},
 		},
 		{
-			"action answer",
-			&amagent.Agent{
+			name: "action answer",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
+			flowID: uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
 
-			&fmflow.Flow{
+			response: &fmflow.Flow{
 				ID:         uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
@@ -221,7 +221,7 @@ func Test_FlowGet(t *testing.T) {
 				},
 				TMDelete: defaultTimestamp,
 			},
-			&fmflow.WebhookMessage{
+			expectRes: &fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
@@ -278,18 +278,18 @@ func Test_FlowGets(t *testing.T) {
 		expectRes     []*fmflow.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			"2020-10-20T01:00:00.995000",
-			10,
+			pageToken: "2020-10-20T01:00:00.995000",
+			pageSize:  10,
 
-			[]fmflow.Flow{
+			responseFlows: []fmflow.Flow{
 				{
 					ID:         uuid.FromStringOrNil("ccda6eb2-0c5c-11eb-ae7e-a3ae4bcd3975"),
 					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
@@ -307,12 +307,12 @@ func Test_FlowGets(t *testing.T) {
 					TMDelete:   defaultTimestamp,
 				},
 			},
-			map[string]string{
+			expectFilters: map[string]string{
 				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
 				"deleted":     "false",
 				"type":        string(fmflow.TypeFlow),
 			},
-			[]*fmflow.WebhookMessage{
+			expectRes: []*fmflow.WebhookMessage{
 				{
 					ID:         uuid.FromStringOrNil("ccda6eb2-0c5c-11eb-ae7e-a3ae4bcd3975"),
 					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
@@ -332,18 +332,18 @@ func Test_FlowGets(t *testing.T) {
 			},
 		},
 		{
-			"1 action",
-			&amagent.Agent{
+			name: "1 action",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			"2020-10-20T01:00:00.995000",
-			10,
+			pageToken: "2020-10-20T01:00:00.995000",
+			pageSize:  10,
 
-			[]fmflow.Flow{
+			responseFlows: []fmflow.Flow{
 				{
 					ID:         uuid.FromStringOrNil("5a109d00-66ae-11eb-ad00-bbcf73569888"),
 					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
@@ -358,12 +358,12 @@ func Test_FlowGets(t *testing.T) {
 					TMDelete: defaultTimestamp,
 				},
 			},
-			map[string]string{
+			expectFilters: map[string]string{
 				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
 				"deleted":     "false",
 				"type":        string(fmflow.TypeFlow),
 			},
-			[]*fmflow.WebhookMessage{
+			expectRes: []*fmflow.WebhookMessage{
 				{
 					ID:         uuid.FromStringOrNil("5a109d00-66ae-11eb-ad00-bbcf73569888"),
 					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
@@ -424,8 +424,8 @@ func Test_FlowUpdate(t *testing.T) {
 		expectRes    *fmflow.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -433,21 +433,21 @@ func Test_FlowUpdate(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
-			uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
-			"test name",
-			"test detail",
-			[]fmaction.Action{
+			flowID:   uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
+			flowName: "test name",
+			detail:   "test detail",
+			actions: []fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
 				},
 			},
 
-			&fmflow.Flow{
+			responseFlow: &fmflow.Flow{
 				ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
-			&fmflow.WebhookMessage{
+			expectRes: &fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
@@ -502,28 +502,28 @@ func Test_FlowUpdateActions(t *testing.T) {
 		expectRes *fmflow.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("1058806a-45c1-4bc0-9605-1148e20008c1"),
-			[]fmaction.Action{
+			flowID: uuid.FromStringOrNil("1058806a-45c1-4bc0-9605-1148e20008c1"),
+			actions: []fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
 				},
 			},
 
-			&fmflow.Flow{
+			response: &fmflow.Flow{
 				ID:         uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 
-			&fmflow.WebhookMessage{
+			expectRes: &fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,

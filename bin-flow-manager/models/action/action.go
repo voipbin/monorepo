@@ -134,6 +134,11 @@ const (
 	// required media: call
 	TypeEcho Type = "echo"
 
+	// TypeEmailSend sends the email.
+	// email-manager
+	// required media: none
+	TypeEmailSend Type = "email_send"
+
 	// TypeExternalMediaStart starts the external media.
 	// call-manager
 	// required media: call
@@ -259,6 +264,7 @@ var TypeListAll []Type = []Type{
 	TypeDigitsReceive,
 	TypeDigitsSend,
 	TypeEcho,
+	TypeEmailSend,
 	TypeExternalMediaStart,
 	TypeExternalMediaStop,
 	TypeFetch,

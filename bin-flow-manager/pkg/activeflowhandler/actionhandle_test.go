@@ -22,6 +22,8 @@ import (
 	conversationmedia "monorepo/bin-conversation-manager/models/media"
 	conversationmessage "monorepo/bin-conversation-manager/models/message"
 
+	ememail "monorepo/bin-email-manager/models/email"
+
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	commonservice "monorepo/bin-common-handler/models/service"
@@ -3349,9 +3351,9 @@ func Test_actionHandleConversationSend(t *testing.T) {
 		expectText           string
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&activeflow.Activeflow{
+			af: &activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("5c82ef66-f474-11ec-b5da-07a1796b759d"),
 				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
 				CurrentAction: action.Action{
@@ -3373,14 +3375,14 @@ func Test_actionHandleConversationSend(t *testing.T) {
 					},
 				},
 			},
-			"test message.",
+			optionText: "test message.",
 
-			true,
-			"test.com",
-			wmwebhook.MethodTypePOST,
-			wmwebhook.DataTypeJSON,
-			uuid.FromStringOrNil("7e5116e2-f477-11ec-9c08-b343a05abaee"),
-			"test message.",
+			expectSync:           true,
+			expectURI:            "test.com",
+			expectMethod:         wmwebhook.MethodTypePOST,
+			expectDataType:       wmwebhook.DataTypeJSON,
+			expectConversationID: uuid.FromStringOrNil("7e5116e2-f477-11ec-9c08-b343a05abaee"),
+			expectText:           "test message.",
 		},
 	}
 
@@ -3520,6 +3522,87 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 			}
 
 			time.Sleep(500 * time.Millisecond)
+		})
+	}
+}
+
+func Test_actionHandleEmailSend(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflow *activeflow.Activeflow
+
+		responseEmail *ememail.Email
+
+		expectDestinations []commonaddress.Address
+		expectSubject      string
+		expectContent      string
+		expectAttachments  []ememail.Attachment
+	}{
+		{
+			name: "normal",
+
+			activeflow: &activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("e480deea-00f2-11f0-ba53-93fa896cde1f"),
+				CustomerID: uuid.FromStringOrNil("e4b325e4-00f2-11f0-8cc2-c36f5776f5b2"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("e4dc3eca-00f2-11f0-8a64-2b73140e49f0"),
+					Type:   action.TypeChatbotTalk,
+					Option: []byte(`{"destinations":[{"type":"email","target":"test@voipbin.net","target_name":"test name"}],"subject":"test subject","content":"test content","attachments":[{"reference_type":"recording","reference_id":"e50a99e6-00f2-11f0-957d-d36fc32d6b0d"}]}`),
+				},
+			},
+
+			responseEmail: &ememail.Email{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e5380818-00f2-11f0-bb6f-cfdafff6be53"),
+				},
+			},
+
+			expectDestinations: []commonaddress.Address{
+				{
+					Type:       commonaddress.TypeEmail,
+					Target:     "test@voipbin.net",
+					TargetName: "test name",
+				},
+			},
+			expectSubject: "test subject",
+			expectContent: "test content",
+			expectAttachments: []ememail.Attachment{
+				{
+					ReferenceType: ememail.AttachmentReferenceTypeRecording,
+					ReferenceID:   uuid.FromStringOrNil("e50a99e6-00f2-11f0-957d-d36fc32d6b0d"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockVariable := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler:   mockAction,
+				variableHandler: mockVariable,
+				stackmapHandler: mockStack,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().EmailV1EmailSend(ctx, tt.activeflow.CustomerID, tt.activeflow.ID, tt.expectDestinations, tt.expectSubject, tt.expectContent, tt.expectAttachments).Return(tt.responseEmail, nil)
+
+			if errCall := h.actionHandleEmailSend(ctx, tt.activeflow); errCall != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
+			}
 		})
 	}
 }

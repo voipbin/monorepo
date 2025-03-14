@@ -1,0 +1,39 @@
+get:
+  summary: Retrieve email details
+  description: Retrieves the details of a specific email by its ID.
+  tags:
+    - Email
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the email.
+  responses:
+    '200':
+      description: The email details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmailManagerEmail'
+
+delete:
+  summary: Delete a email
+  description: Deletes an existing email by its ID.
+  tags:
+    - Email
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the email.
+  responses:
+    '200':
+      description: The email was successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmailManagerEmail'

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-manager
+  labels:
+    app: email-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: email-manager
+  template:
+    metadata:
+      labels:
+        app: email-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      containers:
+        - name: email-manager
+          image: email-manager-image
+          command:
+            - './email-manager'
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
+            - name: REDIS_DATABASE
+              value: "1"
+            - name: SERVICEKEY_SENDGRID
+              value: ${SERVICEKEY_SENDGRID}
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+            - name: grpc
+              protocol: "TCP"
+              containerPort: 80
+          resources:
+            limits:
+              cpu: "20m"
+              memory: "30M"

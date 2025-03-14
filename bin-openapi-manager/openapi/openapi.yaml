@@ -1465,6 +1465,7 @@ components:
             - ""
             - agent
             - conference
+            - email
             - extension
             - line
             - sip
@@ -1473,6 +1474,7 @@ components:
             - CommonAddressTypeNone
             - CommonAddressTypeAgent
             - CommonAddressTypeConference
+            - CommonAddressTypeEmail
             - CommonAddressTypeExtension
             - CommonAddressTypeLine
             - CommonAddressTypeSIP
@@ -1947,6 +1949,116 @@ components:
           type: string
           description: Timestamp when the customer was deleted.
 
+#########################################
+# Email Manager
+#########################################
+    EmailManagerEmailAttachmentReferenceType:
+      type: string
+      description: Type of the action.
+      enum:
+        - ""
+        - recording
+      x-enum-varnames:
+        - EmailManagerEmailAttachmentReferenceTypeNone
+        - EmailManagerEmailAttachmentReferenceTypeRecording
+
+    EmailManagerEmailStatus:
+      type: string
+      description: Email status.
+      enum:
+        - ""
+        - initiated
+        - processed
+        - delivered
+        - open
+        - click
+        - bounce
+        - dropped
+        - deferred
+        - unsubscribe
+        - spamreport
+      x-enum-varnames:
+        - EmailManagerEmailStatusNone
+        - EmailManagerEmailStatusInitiated
+        - EmailManagerEmailStatusProcessed
+        - EmailManagerEmailStatusDelivered
+        - EmailManagerEmailStatusOpen
+        - EmailManagerEmailStatusClick
+        - EmailManagerEmailStatusBounce
+        - EmailManagerEmailStatusDropped
+        - EmailManagerEmailStatusDeferred
+        - EmailManagerEmailStatusUnsubscribe
+        - EmailManagerEmailStatusSpamreport
+
+
+    EmailManagerEmailAttachment:
+      type: object
+      properties:
+        reference_type:
+          description: Type of the reference.
+          $ref: '#/components/schemas/EmailManagerEmailAttachmentReferenceType'
+        reference_id:
+          type: string
+          description: The identifier of the next item
+      required:
+        - reference_type
+        - reference_id
+
+    EmailManagerEmail:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the email.
+        customer_id:
+          type: string
+          description: ID of the customer.
+        activeflow_id:
+          type: string
+          description: ID of the associated activeflow.
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+          description: The source address of the message.
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+          description: List of destination addresses
+        status:
+          $ref: '#/components/schemas/EmailManagerEmailStatus'
+          description: The source address of the message.
+        subject:
+          type: string
+          description: The subject of the email.
+        content:
+          type: string
+          description: The content of the email.
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailManagerEmailAttachment'
+          description: List of attachments
+        tm_create:
+          type: string
+          description: Timestamp when the flow was created.
+        tm_update:
+          type: string
+          description: Timestamp when the flow was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the flow was deleted.
+      required:
+        - id
+        - customer_id
+        - source
+        - destinations
+        - status
+        - subject
+        - content
+        - attachments
+        - tm_create
+        - tm_update
+        - tm_delete
 
 #########################################
 # Flow Manager
@@ -3204,6 +3316,11 @@ paths:
     $ref: './paths/customers/id.yaml'
   /customers:
     $ref: './paths/customers/main.yaml'
+
+  /emails/{id}:
+    $ref: './paths/emails/id.yaml'
+  /emails:
+    $ref: './paths/emails/main.yaml'
 
   /extensions/{id}:
     $ref: './paths/extensions/id.yaml'

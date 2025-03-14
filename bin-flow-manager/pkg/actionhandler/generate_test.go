@@ -20,14 +20,14 @@ func Test_generateFlowActions(t *testing.T) {
 		expectRes []action.Action
 	}{
 		{
-			"normal",
-			[]action.Action{
+			name: "normal",
+			actions: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("1a17219e-984c-11ec-8ae0-8fa990fecf22"),
 					Type: action.TypeAnswer,
 				},
 			},
-			[]action.Action{
+			expectRes: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("1a17219e-984c-11ec-8ae0-8fa990fecf22"),
 					Type: action.TypeAnswer,
@@ -35,21 +35,21 @@ func Test_generateFlowActions(t *testing.T) {
 			},
 		},
 		{
-			"has no action id",
-			[]action.Action{
+			name: "has no action id",
+			actions: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
 			},
-			[]action.Action{
+			expectRes: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
 			},
 		},
 		{
-			"action has goto",
-			[]action.Action{
+			name: "action has goto",
+			actions: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
@@ -62,7 +62,7 @@ func Test_generateFlowActions(t *testing.T) {
 					Option: []byte(`{"target_id":"4dfdd5e0-984a-11ec-ae86-efa09978823e"}`),
 				},
 			},
-			[]action.Action{
+			expectRes: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
@@ -77,8 +77,8 @@ func Test_generateFlowActions(t *testing.T) {
 			},
 		},
 		{
-			"action has branch",
-			[]action.Action{
+			name: "action has branch",
+			actions: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
@@ -91,7 +91,7 @@ func Test_generateFlowActions(t *testing.T) {
 					Option: []byte(`{"default_target_id": "962de9f4-984a-11ec-a6b5-bba220315f29", "target_ids":{"1": "85f8a600-984a-11ec-b59a-dbe5b0c51dec"}}`),
 				},
 			},
-			[]action.Action{
+			expectRes: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
@@ -106,8 +106,8 @@ func Test_generateFlowActions(t *testing.T) {
 			},
 		},
 		{
-			"branch has many ids",
-			[]action.Action{
+			name: "branch has many ids",
+			actions: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
@@ -116,7 +116,7 @@ func Test_generateFlowActions(t *testing.T) {
 					Option: []byte(`{"default_target_id":"ea4f362c-984b-11ec-9bf3-976297bf44b8","target_ids":{"1": "f12edd8a-984b-11ec-8d44-0fadbb919954", "2": "f151020c-984b-11ec-ac5d-238f01404820", "3": "f17129b0-984b-11ec-9174-3b062faf6b35"}}`),
 				},
 			},
-			[]action.Action{
+			expectRes: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
