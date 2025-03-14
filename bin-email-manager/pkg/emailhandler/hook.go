@@ -17,7 +17,7 @@ func (h *emailHandler) Hook(ctx context.Context, uri string, data []byte) error 
 	var err error
 
 	suffix := ""
-	if idx := strings.LastIndex(uri, "."); idx != -1 {
+	if idx := strings.LastIndex(uri, "/"); idx != -1 {
 		suffix = uri[idx+1:]
 	}
 
