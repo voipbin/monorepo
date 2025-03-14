@@ -47,6 +47,7 @@ func (h *engineSendgrid) Send(ctx context.Context, m *email.Email) (string, erro
 		"func":     "Send",
 		"email_id": m.ID,
 	})
+	log.Debugf("Sending an email. email_id: %v", m.ID)
 
 	// Create a V3 mail object
 	message := mail.NewV3Mail()
