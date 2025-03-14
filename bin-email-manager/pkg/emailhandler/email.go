@@ -40,6 +40,12 @@ func (h *emailHandler) Create(
 		}
 	}
 
+	for _, destination := range destinations {
+		if destination.Type != commonaddress.TypeEmail {
+			return nil, errors.New("destination type is not email")
+		}
+	}
+
 	res, err := h.create(ctx, customerID, activeflowID, email.ProviderTypeSendgrid, defaultSource, destinations, tmpSubject, tmpContent, attachments)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create email")

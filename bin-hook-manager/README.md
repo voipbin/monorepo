@@ -20,3 +20,9 @@ To generate base64 encoded certificates, you need to run this command.
 ```
 $ cat <your cert file> | base64 -w 0
 ```
+
+# List of endpoints
+
+* https://hook.voipbin.net/v1.0/emails : email-manager
+* https://hook.voipbin.net/v1.0/messages : message-manager
+* https://hook.voipbin.net/v1.0/conversation : conversation-manager

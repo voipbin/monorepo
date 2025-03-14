@@ -20,6 +20,7 @@ func (h *emailHandler) Send(ctx context.Context, e *email.Email) {
 	for _, handler := range handlers {
 		providerReferenceID, err := handler(ctx, e)
 		if err != nil {
+			log.Errorf("Could not send email. Trying with next provider. err: %v", err)
 			continue
 		}
 
@@ -27,8 +28,8 @@ func (h *emailHandler) Send(ctx context.Context, e *email.Email) {
 			// we could not update the provider reference id
 			// but just log it and return
 			log.Errorf("could not update provider reference id. err: %v", errUpdate)
-			return
 		}
+		return
 	}
 
 	log.Errorf("all email providers failed")
