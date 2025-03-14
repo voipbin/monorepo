@@ -1,4 +1,4 @@
-CREATE TABLE email_emails (
+create table email_emails (
   -- identity
   id          binary(16),
   customer_id binary(16),
