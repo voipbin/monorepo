@@ -37,7 +37,6 @@ type listenHandler struct {
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-	regAny  = ".*"
 
 	// emails
 	regV1EmailsGet = regexp.MustCompile(`/v1/emails\?`)

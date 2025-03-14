@@ -346,7 +346,7 @@ func (h *handler) EmailDelete(ctx context.Context, id uuid.UUID) error {
 		return errors.Wrapf(err, "could not execute the query.")
 	}
 
-	h.emailUpdateToCache(ctx, id)
+	_ = h.emailUpdateToCache(ctx, id)
 
 	return nil
 }
