@@ -20,6 +20,7 @@ func (h *emailHandler) Send(ctx context.Context, e *email.Email) {
 	for _, handler := range handlers {
 		providerReferenceID, err := handler(ctx, e)
 		if err != nil {
+			log.Errorf("could not send email. Trying with next provider. err: %v", err)
 			continue
 		}
 
