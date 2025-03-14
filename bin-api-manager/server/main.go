@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	chmedia "monorepo/bin-chat-manager/models/media"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	ememail "monorepo/bin-email-manager/models/email"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -166,6 +167,15 @@ func ConvertChatManagerMedia(input openapi_server.ChatManagerMedia) chmedia.Medi
 		FileID:  fileID,
 		LinkURL: derefString(input.LinkUrl),
 	}
+}
+
+func ConvertEmailMamagerEmailAttachment(input openapi_server.EmailManagerEmailAttachment) ememail.Attachment {
+	res := ememail.Attachment{
+		ReferenceType: ememail.AttachmentReferenceType(input.ReferenceType),
+		ReferenceID:   uuid.FromStringOrNil(input.ReferenceId),
+	}
+
+	return res
 }
 
 func stringPtr(s string) *string {

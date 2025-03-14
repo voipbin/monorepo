@@ -12,7 +12,10 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/models/stack"
+	"monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-flow-manager/pkg/actionhandler"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
 	"monorepo/bin-flow-manager/pkg/stackmaphandler"
@@ -32,12 +35,12 @@ func Test_getActionsFromFlow(t *testing.T) {
 		expectRes []action.Action
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("860bef82-f47d-11ec-9eed-6345e27af38c"),
-			uuid.FromStringOrNil("864ec0f0-f47d-11ec-83d6-0f1b5f8a9507"),
+			flowID:     uuid.FromStringOrNil("860bef82-f47d-11ec-9eed-6345e27af38c"),
+			customerID: uuid.FromStringOrNil("864ec0f0-f47d-11ec-83d6-0f1b5f8a9507"),
 
-			&flow.Flow{
+			responseFlow: &flow.Flow{
 				ID:         uuid.FromStringOrNil("860bef82-f47d-11ec-9eed-6345e27af38c"),
 				CustomerID: uuid.FromStringOrNil("864ec0f0-f47d-11ec-83d6-0f1b5f8a9507"),
 				Actions: []action.Action{
@@ -48,7 +51,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 				},
 			},
 
-			[]action.Action{
+			expectRes: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("16bb5d9c-f47e-11ec-8feb-23613c5e54da"),
 					Type: action.TypeAnswer,
@@ -94,88 +97,101 @@ func Test_getActionsFromFlow(t *testing.T) {
 	}
 }
 
-// func Test_getNextAction(t *testing.T) {
+func Test_updateNextAction(t *testing.T) {
 
-// 	tests := []struct {
-// 		name string
+	tests := []struct {
+		name string
 
-// 		activeflowID    uuid.UUID
-// 		currentActionID uuid.UUID
+		activeflowID    uuid.UUID
+		currentActionID uuid.UUID
 
-// 		responseActiveflow *activeflow.Activeflow
-// 		responseStackID    uuid.UUID
-// 		responseAction     *action.Action
-// 		responseVariable   *variable.Variable
+		responseActiveflow *activeflow.Activeflow
+		responseStackID    uuid.UUID
+		responseAction     *action.Action
+		responseVariable   *variable.Variable
 
-// 		expectResStackID uuid.UUID
-// 		expectResAction  *action.Action
-// 	}{
-// 		{
-// 			"normal",
+		expectResStackID uuid.UUID
+		expectRes        *activeflow.Activeflow
+	}{
+		{
+			name: "normal",
 
-// 			uuid.FromStringOrNil("4f49a95c-f48d-11ec-8058-bbbde0a6c271"),
-// 			uuid.FromStringOrNil("4f98aed0-f48d-11ec-aa16-1b034ad50819"),
+			activeflowID:    uuid.FromStringOrNil("bfb07efc-0081-11f0-b869-8fbf4d9c8583"),
+			currentActionID: uuid.FromStringOrNil("bfcb3c4c-0081-11f0-a3b1-0b82da5f5632"),
 
-// 			&activeflow.Activeflow{
-// 				ID: uuid.FromStringOrNil("4f49a95c-f48d-11ec-8058-bbbde0a6c271"),
+			responseActiveflow: &activeflow.Activeflow{
+				ID: uuid.FromStringOrNil("bfb07efc-0081-11f0-b869-8fbf4d9c8583"),
 
-// 				CurrentAction: action.Action{
-// 					ID: uuid.FromStringOrNil("4f98aed0-f48d-11ec-aa16-1b034ad50819"),
-// 				},
-// 			},
-// 			uuid.FromStringOrNil("37dbe260-f48f-11ec-95e9-43542c39a464"),
-// 			&action.Action{
-// 				ID:   uuid.FromStringOrNil("9454e1c2-f48f-11ec-b9e5-8ff2c45b0cbc"),
-// 				Type: action.TypeAnswer,
-// 			},
-// 			&variable.Variable{},
+				CurrentAction: action.Action{
+					ID: uuid.FromStringOrNil("bfcb3c4c-0081-11f0-a3b1-0b82da5f5632"),
+				},
+			},
+			responseStackID: uuid.FromStringOrNil("e5cc26ee-0082-11f0-b97e-97f72d5c046a"),
+			responseAction: &action.Action{
+				ID: uuid.FromStringOrNil("c018d588-0081-11f0-80f4-5386b507569a"),
+			},
+			responseVariable: &variable.Variable{},
 
-// 			uuid.FromStringOrNil("37dbe260-f48f-11ec-95e9-43542c39a464"),
-// 			&action.Action{
-// 				ID:   uuid.FromStringOrNil("9454e1c2-f48f-11ec-b9e5-8ff2c45b0cbc"),
-// 				Type: action.TypeAnswer,
-// 			},
-// 		},
-// 	}
+			expectResStackID: stack.IDMain,
+			expectRes: &activeflow.Activeflow{
+				ID:             uuid.FromStringOrNil("bfb07efc-0081-11f0-b869-8fbf4d9c8583"),
+				CurrentStackID: uuid.FromStringOrNil("e5cc26ee-0082-11f0-b97e-97f72d5c046a"),
+				CurrentAction: action.Action{
+					ID: uuid.FromStringOrNil("c018d588-0081-11f0-80f4-5386b507569a"),
+				},
+				ExecuteCount: 1,
+				ExecutedActions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("bfcb3c4c-0081-11f0-a3b1-0b82da5f5632"),
+					},
+				},
+			},
+		},
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockAction := actionhandler.NewMockActionHandler(mc)
-// 			mockStack := stackhandler.NewMockStackmapHandler(mc)
-// 			mockVar := variablehandler.NewMockVariableHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
 
-// 			h := &activeflowHandler{
-// 				db:              mockDB,
-// 				reqHandler:      mockReq,
-// 				notifyHandler:   mockNotify,
-// 				actionHandler:   mockAction,
-// 				stackHandler:    mockStack,
-// 				variableHandler: mockVar,
-// 			}
+			h := &activeflowHandler{
+				db:              mockDB,
+				reqHandler:      mockReq,
+				notifyHandler:   mockNotify,
+				actionHandler:   mockAction,
+				stackmapHandler: mockStack,
+				variableHandler: mockVar,
+			}
+			ctx := context.Background()
 
-// 			ctx := context.Background()
+			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.activeflowID).Return(nil)
 
-// 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
-// 			mockStack.EXPECT().GetNextAction(ctx, tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, &tt.responseActiveflow.CurrentAction, true).Return(tt.responseStackID, tt.responseAction)
+			mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, &tt.responseActiveflow.CurrentAction, true).Return(tt.responseStackID, tt.responseAction)
 
-// 			resStackID, resAction, err := h.getNextAction(ctx, tt.activeflowID, tt.currentActionID)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
+			mockVar.EXPECT().Get(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
+			mockVar.EXPECT().SubstituteByte(ctx, tt.responseAction.Option, tt.responseVariable).Return(tt.responseAction.Option)
 
-// 			if resStackID != tt.expectResStackID {
-// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectResStackID, resStackID)
-// 			}
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
-// 			if reflect.DeepEqual(resAction, tt.expectResAction) != true {
-// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectResAction, resAction)
-// 			}
-// 		})
-// 	}
-// }
+			res, err := h.updateNextAction(ctx, tt.activeflowID, tt.currentActionID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

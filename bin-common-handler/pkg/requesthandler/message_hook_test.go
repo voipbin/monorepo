@@ -19,28 +19,30 @@ func Test_MessageV1Hook(t *testing.T) {
 
 		hookMessage *hmhook.Hook
 
+		response *sock.Response
+
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *sock.Response
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&hmhook.Hook{
+			hookMessage: &hmhook.Hook{
 				ReceviedURI:  "hook.voipbin.net/v1.0/messages/telnyx",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 
-			"bin-manager.message-manager.request",
-			&sock.Request{
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+
+			expectTarget: "bin-manager.message-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/hooks",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/messages/telnyx","received_data":"eyJrZXkxIjoidmFsMSJ9"}`),
-			},
-			&sock.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
 			},
 		},
 	}

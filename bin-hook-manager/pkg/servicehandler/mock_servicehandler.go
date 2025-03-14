@@ -54,6 +54,20 @@ func (mr *MockServiceHandlerMockRecorder) Conversation(ctx, uri, m any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Conversation", reflect.TypeOf((*MockServiceHandler)(nil).Conversation), ctx, uri, m)
 }
 
+// Email mocks base method.
+func (m_2 *MockServiceHandler) Email(ctx context.Context, uri string, m []byte) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "Email", ctx, uri, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Email indicates an expected call of Email.
+func (mr *MockServiceHandlerMockRecorder) Email(ctx, uri, m any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Email", reflect.TypeOf((*MockServiceHandler)(nil).Email), ctx, uri, m)
+}
+
 // Message mocks base method.
 func (m_2 *MockServiceHandler) Message(ctx context.Context, uri string, m []byte) error {
 	m_2.ctrl.T.Helper()

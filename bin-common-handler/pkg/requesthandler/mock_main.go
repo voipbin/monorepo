@@ -46,6 +46,7 @@ import (
 	message0 "monorepo/bin-conversation-manager/models/message"
 	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
+	email "monorepo/bin-email-manager/models/email"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
 	flow "monorepo/bin-flow-manager/models/flow"
@@ -3256,6 +3257,80 @@ func (m *MockRequestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx contex
 func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerUpdateBillingAccountID(ctx, customerID, biillingAccountID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerUpdateBillingAccountID", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerUpdateBillingAccountID), ctx, customerID, biillingAccountID)
+}
+
+// EmailV1EmailDelete mocks base method.
+func (m *MockRequestHandler) EmailV1EmailDelete(ctx context.Context, id uuid.UUID) (*email.Email, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailV1EmailDelete", ctx, id)
+	ret0, _ := ret[0].(*email.Email)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailV1EmailDelete indicates an expected call of EmailV1EmailDelete.
+func (mr *MockRequestHandlerMockRecorder) EmailV1EmailDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailV1EmailDelete", reflect.TypeOf((*MockRequestHandler)(nil).EmailV1EmailDelete), ctx, id)
+}
+
+// EmailV1EmailGet mocks base method.
+func (m *MockRequestHandler) EmailV1EmailGet(ctx context.Context, emailID uuid.UUID) (*email.Email, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailV1EmailGet", ctx, emailID)
+	ret0, _ := ret[0].(*email.Email)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailV1EmailGet indicates an expected call of EmailV1EmailGet.
+func (mr *MockRequestHandlerMockRecorder) EmailV1EmailGet(ctx, emailID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailV1EmailGet", reflect.TypeOf((*MockRequestHandler)(nil).EmailV1EmailGet), ctx, emailID)
+}
+
+// EmailV1EmailGets mocks base method.
+func (m *MockRequestHandler) EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]email.Email, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailV1EmailGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]email.Email)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailV1EmailGets indicates an expected call of EmailV1EmailGets.
+func (mr *MockRequestHandlerMockRecorder) EmailV1EmailGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailV1EmailGets", reflect.TypeOf((*MockRequestHandler)(nil).EmailV1EmailGets), ctx, pageToken, pageSize, filters)
+}
+
+// EmailV1EmailSend mocks base method.
+func (m *MockRequestHandler) EmailV1EmailSend(ctx context.Context, customerID, activeflowID uuid.UUID, destinations []address.Address, subject, content string, attachments []email.Attachment) (*email.Email, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailV1EmailSend", ctx, customerID, activeflowID, destinations, subject, content, attachments)
+	ret0, _ := ret[0].(*email.Email)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailV1EmailSend indicates an expected call of EmailV1EmailSend.
+func (mr *MockRequestHandlerMockRecorder) EmailV1EmailSend(ctx, customerID, activeflowID, destinations, subject, content, attachments any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailV1EmailSend", reflect.TypeOf((*MockRequestHandler)(nil).EmailV1EmailSend), ctx, customerID, activeflowID, destinations, subject, content, attachments)
+}
+
+// EmailV1Hooks mocks base method.
+func (m *MockRequestHandler) EmailV1Hooks(ctx context.Context, hm *hook.Hook) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailV1Hooks", ctx, hm)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmailV1Hooks indicates an expected call of EmailV1Hooks.
+func (mr *MockRequestHandlerMockRecorder) EmailV1Hooks(ctx, hm any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailV1Hooks", reflect.TypeOf((*MockRequestHandler)(nil).EmailV1Hooks), ctx, hm)
 }
 
 // FlowV1ActionGet mocks base method.

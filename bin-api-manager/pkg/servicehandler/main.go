@@ -12,6 +12,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
+	ememail "monorepo/bin-email-manager/models/email"
 	smaccount "monorepo/bin-storage-manager/models/account"
 	smfile "monorepo/bin-storage-manager/models/file"
 
@@ -419,6 +420,19 @@ type ServiceHandler interface {
 	ExtensionGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error)
 	ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
+
+	// email handlers
+	EmailSend(
+		ctx context.Context,
+		a *amagent.Agent,
+		destinations []commonaddress.Address,
+		subject string,
+		content string,
+		attachments []ememail.Attachment,
+	) (*ememail.WebhookMessage, error)
+	EmailGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*ememail.WebhookMessage, error)
+	EmailGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ememail.WebhookMessage, error)
+	EmailDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ememail.WebhookMessage, error)
 
 	// flow handlers
 	FlowCreate(ctx context.Context, a *amagent.Agent, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)

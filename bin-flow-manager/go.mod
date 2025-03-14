@@ -1,8 +1,6 @@
 module monorepo/bin-flow-manager
 
-go 1.23.0
-
-toolchain go1.23.2
+go 1.23.2
 
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
@@ -23,6 +21,8 @@ replace monorepo/bin-conference-manager => ../bin-conference-manager
 replace monorepo/bin-conversation-manager => ../bin-conversation-manager
 
 replace monorepo/bin-customer-manager => ../bin-customer-manager
+
+replace monorepo/bin-email-manager => ../bin-email-manager
 
 replace monorepo/bin-flow-manager => ../bin-flow-manager
 
@@ -72,6 +72,7 @@ require (
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
+	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700
@@ -94,7 +95,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.62.0 // indirect
+	github.com/prometheus/common v0.63.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
@@ -108,7 +109,7 @@ require (
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
-	google.golang.org/genproto v0.0.0-20250311190419-81fb87f6b8bf // indirect
+	google.golang.org/genproto v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

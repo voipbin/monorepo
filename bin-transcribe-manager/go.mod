@@ -1,8 +1,6 @@
 module monorepo/bin-transcribe-manager
 
-go 1.23.0
-
-toolchain go1.23.2
+go 1.23.2
 
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
@@ -23,6 +21,8 @@ replace monorepo/bin-conference-manager => ../bin-conference-manager
 replace monorepo/bin-conversation-manager => ../bin-conversation-manager
 
 replace monorepo/bin-customer-manager => ../bin-customer-manager
+
+replace monorepo/bin-email-manager => ../bin-email-manager
 
 replace monorepo/bin-flow-manager => ../bin-flow-manager
 
@@ -54,7 +54,7 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
 	cloud.google.com/go v0.119.0 // indirect
-	cloud.google.com/go/speech v1.26.0
+	cloud.google.com/go/speech v1.26.1
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.9.0
@@ -62,7 +62,7 @@ require (
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/prometheus/client_golang v1.21.1
-	github.com/prometheus/common v0.62.0 // indirect
+	github.com/prometheus/common v0.63.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
@@ -71,8 +71,8 @@ require (
 	golang.org/x/oauth2 v0.28.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0
-	google.golang.org/api v0.225.0
-	google.golang.org/genproto v0.0.0-20250311190419-81fb87f6b8bf // indirect
+	google.golang.org/api v0.226.0
+	google.golang.org/genproto v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
@@ -98,7 +98,7 @@ require (
 	cloud.google.com/go/auth v0.15.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.7 // indirect
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
-	cloud.google.com/go/longrunning v0.6.5 // indirect
+	cloud.google.com/go/longrunning v0.6.6 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.10 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.30 // indirect
@@ -119,7 +119,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.5 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -147,8 +147,8 @@ require (
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250311190419-81fb87f6b8bf // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250311190419-81fb87f6b8bf // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/grpc v1.71.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
@@ -159,6 +159,7 @@ require (
 	monorepo/bin-chatbot-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76 // indirect
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
+	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268 // indirect

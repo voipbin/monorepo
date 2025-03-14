@@ -58,6 +58,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-email-manager:
+    type: boolean
+    default: false
+
   run-bin-flow-manager:
     type: boolean
     default: false
@@ -346,6 +350,25 @@ workflows:
   #         requires:
   #           - bin-dbscheme-manager-build
   #           - release-approval
+
+  bin-email-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-email-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-email-manager-test
+      - bin-email-manager-build:
+          <<: *context_production
+          requires:
+            - bin-email-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-email-manager-build
+      - bin-email-manager-release:
+          <<: *context_production
+          requires:
+            - bin-email-manager-build
+            - release-approval
 
   bin-flow-manager:
     when: 
@@ -929,6 +952,32 @@ jobs:
   #         source-directory: bin-dbscheme-manager
   #         image-name: dbscheme-manager
 
+  # bin-email-manager
+  bin-email-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-email-manager
+
+  bin-email-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-email-manager
+          image-name: email-manager
+
+  bin-email-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-email-manager
+          image-name: email-manager
+
   # bin-flow-manager
   bin-flow-manager-test:
     docker:
@@ -1495,6 +1544,7 @@ commands:
             sed -i -e "s|\${TWILIO_TOKEN}|$CC_TWILIO_TOKEN|g" ./*
             sed -i -e "s|\${AWS_ACCESS_KEY}|$CC_AWS_ACCESS_KEY|g" ./*
             sed -i -e "s|\${AWS_SECRET_KEY}|$CC_AWS_SECRET_KEY|g" ./*
+            sed -i -e "s|\${SENDGRID_API_KEY}|$CC_SENDGRID_API_KEY|g" ./*
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 

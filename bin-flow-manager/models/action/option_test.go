@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	ememail "monorepo/bin-email-manager/models/email"
 
 	"github.com/gofrs/uuid"
 )
@@ -766,6 +767,65 @@ func Test_marshal_OptionChatbotTalk(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			res := OptionChatbotTalk{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_marshal_OptionEmailSend(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectRes OptionEmailSend
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			[]byte(`{
+				"destinations": [
+					{"type": "email", "target": "test@voipbin.net", "target_name": "test name"}
+				],
+				"subject": "test subject",
+				"content": "test content",
+				"attachments": [
+					{"reference_type": "recording", "reference_id": "74ae44d2-00f1-11f0-b658-07d12a1ba40c"}
+				]
+			}`),
+
+			OptionEmailSend{
+				Destinations: []commonaddress.Address{
+					{
+						Type:       commonaddress.TypeEmail,
+						Target:     "test@voipbin.net",
+						TargetName: "test name",
+					},
+				},
+				Subject: "test subject",
+				Content: "test content",
+				Attachments: []ememail.Attachment{
+					{
+						ReferenceType: ememail.AttachmentReferenceTypeRecording,
+						ReferenceID:   uuid.FromStringOrNil("74ae44d2-00f1-11f0-b658-07d12a1ba40c"),
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionEmailSend{}
 			if err := json.Unmarshal(tt.option, &res); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

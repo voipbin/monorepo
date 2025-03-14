@@ -4,6 +4,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	ememail "monorepo/bin-email-manager/models/email"
 
 	"github.com/gofrs/uuid"
 )
@@ -145,6 +146,14 @@ type OptionDigitsSend struct {
 // OptionEcho struct
 type OptionEcho struct {
 	Duration int `json:"duration"`
+}
+
+// OptionEmailSend defines action email_send's option.
+type OptionEmailSend struct {
+	Destinations []commonaddress.Address `json:"destinations"`
+	Subject      string                  `json:"subject"`
+	Content      string                  `json:"content"`
+	Attachments  []ememail.Attachment    `json:"attachments,omitempty"`
 }
 
 // OptionExternalMediaStart defines action OptionExternalMediaStart's option.
