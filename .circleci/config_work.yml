@@ -1544,6 +1544,7 @@ commands:
             sed -i -e "s|\${TWILIO_TOKEN}|$CC_TWILIO_TOKEN|g" ./*
             sed -i -e "s|\${AWS_ACCESS_KEY}|$CC_AWS_ACCESS_KEY|g" ./*
             sed -i -e "s|\${AWS_SECRET_KEY}|$CC_AWS_SECRET_KEY|g" ./*
+            sed -i -e "s|\${SENDGRID_API_KEY}|$CC_SENDGRID_API_KEY|g" ./*
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 
