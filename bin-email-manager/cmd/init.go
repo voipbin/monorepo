@@ -21,7 +21,7 @@ const (
 	defaultRedisAddress            = "127.0.0.1:6379"
 	defaultRedisDatabase           = 1
 	defaultRedisPassword           = ""
-	defaultServicekeySendgrid      = ""
+	defaultSendgridAPIkey          = ""
 )
 
 func init() {
@@ -50,7 +50,7 @@ func initVariable() {
 	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
 	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
-	pflag.String("servicekey_sendgrid", defaultServicekeySendgrid, "Service key for Sendgrid")
+	pflag.String("sendgrid_api_key", defaultSendgridAPIkey, "API key for Sendgrid")
 	pflag.Parse()
 
 	// rabbitmq_address
@@ -130,16 +130,16 @@ func initVariable() {
 	}
 	redisDatabase = viper.GetInt("redis_database")
 
-	// sevicekey_sendgrid
-	if errFlag := viper.BindPFlag("sevicekey_sendgrid", pflag.Lookup("sevicekey_sendgrid")); errFlag != nil {
+	// sendgrid_api_key
+	if errFlag := viper.BindPFlag("sendgrid_api_key", pflag.Lookup("sendgrid_api_key")); errFlag != nil {
 		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
-	if errEnv := viper.BindEnv("sevicekey_sendgrid", "SERVICEKEY_SENDGRID"); errEnv != nil {
+	if errEnv := viper.BindEnv("sendgrid_api_key", "SENDGRID_API_KEY"); errEnv != nil {
 		log.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
-	servicekeySendgrid = viper.GetString("sevicekey_sendgrid")
+	sendgridAPIKey = viper.GetString("sendgrid_api_key")
 
 }
 

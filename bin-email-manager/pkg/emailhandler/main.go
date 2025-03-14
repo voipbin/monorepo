@@ -57,10 +57,10 @@ func NewEmailHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 
-	sevicekeySendgrid string,
+	sendgridAPIKey string,
 ) EmailHandler {
 
-	engineSendgrid := NewEngineSendgrid(reqHandler, sevicekeySendgrid)
+	engineSendgrid := NewEngineSendgrid(reqHandler, sendgridAPIKey)
 
 	h := &emailHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),

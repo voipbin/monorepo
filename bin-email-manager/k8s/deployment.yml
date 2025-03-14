@@ -46,8 +46,8 @@ spec:
               value: ${REDIS_PASSWORD}
             - name: REDIS_DATABASE
               value: "1"
-            - name: SERVICEKEY_SENDGRID
-              value: ${SERVICEKEY_SENDGRID}
+            - name: SENDGRID_API_KEY
+              value: ${SENDGRID_API_KEY}
           ports:
             - name: metrics
               protocol: "TCP"

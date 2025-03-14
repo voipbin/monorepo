@@ -30,8 +30,8 @@ type EngineSendgrid interface {
 	Send(ctx context.Context, m *email.Email) (string, error)
 }
 
-func NewEngineSendgrid(reqHandler requesthandler.RequestHandler, servicekey string) EngineSendgrid {
-	client := sendgrid.NewSendClient(servicekey)
+func NewEngineSendgrid(reqHandler requesthandler.RequestHandler, apikey string) EngineSendgrid {
+	client := sendgrid.NewSendClient(apikey)
 
 	return &engineSendgrid{
 		utilHandler: utilhandler.NewUtilHandler(),
