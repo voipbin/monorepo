@@ -40,9 +40,10 @@ func (h *emailHandler) Create(
 		}
 	}
 
+	// validate destinations
 	for _, destination := range destinations {
-		if destination.Type != commonaddress.TypeEmail {
-			return nil, errors.New("destination type is not email")
+		if !h.validateEmailAddress(destination) {
+			return nil, errors.New("destination is not valid")
 		}
 	}
 
