@@ -106,6 +106,9 @@ func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment)
 		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)
 		fileType = "audio/wav"
 		filename = fmt.Sprintf("%s.wav", f.ReferenceID)
+
+	default:
+		return nil, errors.Errorf("unknown attachment reference type: %v", e.ReferenceType)
 	}
 
 	if err != nil {

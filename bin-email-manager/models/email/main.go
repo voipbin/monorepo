@@ -51,7 +51,7 @@ type Status string
 const (
 	StatusNone        Status = ""            // The email has no status.
 	StatusInitiated   Status = "initiated"   // The email has been initiated.
-	StatusProcessed   Status = "processed"   // The email has been received by SendGrid and is being processed.
+	StatusProcessed   Status = "processed"   // The email has been received is being processed.
 	StatusDelivered   Status = "delivered"   // The email has been successfully delivered to the recipient's inbox (or spam folder).
 	StatusOpen        Status = "open"        // The recipient opened the email.
 	StatusClick       Status = "click"       // The recipient clicked on a link in the email.

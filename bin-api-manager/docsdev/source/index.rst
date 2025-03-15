@@ -20,6 +20,7 @@ Welcome to voipbin's documentation!
    activeflow
    call
    message
+   email
    agent
    conference
    mediastream
