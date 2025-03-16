@@ -17,7 +17,7 @@ func Test_Create(t *testing.T) {
 
 		actions []action.Action
 
-		expectRes map[uuid.UUID]*stack.Stack
+		expectedRes map[uuid.UUID]*stack.Stack
 	}{
 		{
 			name: "normal",
@@ -29,7 +29,7 @@ func Test_Create(t *testing.T) {
 				},
 			},
 
-			expectRes: map[uuid.UUID]*stack.Stack{
+			expectedRes: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -51,8 +51,8 @@ func Test_Create(t *testing.T) {
 			h := &stackHandler{}
 
 			res := h.Create(tt.actions)
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -26,11 +27,11 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 
 		responseActiveflow *activeflow.Activeflow
 
-		expectID           uuid.UUID
-		expectRefereceType activeflow.ReferenceType
-		expectRefereceID   uuid.UUID
-		expectFlowID       uuid.UUID
-		expectRes          *sock.Response
+		expectedID           uuid.UUID
+		expectedRefereceType activeflow.ReferenceType
+		expectedRefereceID   uuid.UUID
+		expectedFlowID       uuid.UUID
+		expectedRes          *sock.Response
 	}{
 		{
 			name: "normal",
@@ -42,10 +43,12 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 			},
 
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
+					CustomerID: uuid.FromStringOrNil("cd607242-7f4b-11ec-a34f-bb861637ee36"),
+				},
 
-				FlowID:     uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
-				CustomerID: uuid.FromStringOrNil("cd607242-7f4b-11ec-a34f-bb861637ee36"),
+				FlowID: uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
 
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
@@ -57,11 +60,11 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				ForwardActionID: action.IDEmpty,
 			},
 
-			expectID:           uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
-			expectRefereceType: activeflow.ReferenceTypeCall,
-			expectRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
-			expectFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
-			expectRes: &sock.Response{
+			expectedID:           uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
+			expectedRefereceType: activeflow.ReferenceTypeCall,
+			expectedRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
+			expectedFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a508739b-d98d-40fb-8a47-61e9a70958cd","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","status":"","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -77,10 +80,12 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 			},
 
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("7a18e7e0-7d67-44f2-9591-58cc7d8f5610"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7a18e7e0-7d67-44f2-9591-58cc7d8f5610"),
+					CustomerID: uuid.FromStringOrNil("cd607242-7f4b-11ec-a34f-bb861637ee36"),
+				},
 
-				FlowID:     uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
-				CustomerID: uuid.FromStringOrNil("cd607242-7f4b-11ec-a34f-bb861637ee36"),
+				FlowID: uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
 
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
@@ -92,11 +97,11 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				ForwardActionID: action.IDEmpty,
 			},
 
-			expectID:           uuid.Nil,
-			expectRefereceType: activeflow.ReferenceTypeCall,
-			expectRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
-			expectFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
-			expectRes: &sock.Response{
+			expectedID:           uuid.Nil,
+			expectedRefereceType: activeflow.ReferenceTypeCall,
+			expectedRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
+			expectedFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"7a18e7e0-7d67-44f2-9591-58cc7d8f5610","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","status":"","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -119,14 +124,14 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Create(gomock.Any(), tt.expectID, tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Create(gomock.Any(), tt.expectedID, tt.expectedRefereceType, tt.expectedRefereceID, tt.expectedFlowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -138,13 +143,12 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		pageToken string
-		pageSize  uint64
-
 		responseFilters     map[string]string
 		responseActiveflows []*activeflow.Activeflow
 
-		expectRes *sock.Response
+		expectedToken string
+		expectedSize  uint64
+		expectedRes   *sock.Response
 	}{
 		{
 			name: "1 item",
@@ -153,20 +157,22 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 
-			pageToken: "2020-10-10 03:30:17.000000",
-			pageSize:  10,
-
 			responseFilters: map[string]string{
 				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
 				"deleted":     "false",
 			},
 			responseActiveflows: []*activeflow.Activeflow{
 				{
-					ID:         uuid.FromStringOrNil("ae07a96a-cbda-11ed-bbc9-5324a1a8b94b"),
-					CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("ae07a96a-cbda-11ed-bbc9-5324a1a8b94b"),
+						CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+					},
 				},
 			},
-			expectRes: &sock.Response{
+
+			expectedToken: "2020-10-10 03:30:17.000000",
+			expectedSize:  10,
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"ae07a96a-cbda-11ed-bbc9-5324a1a8b94b","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -179,22 +185,26 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 
-			pageToken: "2020-10-10 03:30:17.000000",
-			pageSize:  10,
-
 			responseFilters: map[string]string{
 				"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63",
 				"deleted":     "false",
 			},
 			responseActiveflows: []*activeflow.Activeflow{
 				{
-					ID: uuid.FromStringOrNil("ae3724b0-cbda-11ed-a44c-1be0474024bd"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ae3724b0-cbda-11ed-a44c-1be0474024bd"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("ae66a7bc-cbda-11ed-81b3-17eb5a6f42b2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ae66a7bc-cbda-11ed-81b3-17eb5a6f42b2"),
+					},
 				},
 			},
-			expectRes: &sock.Response{
+
+			expectedToken: "2020-10-10 03:30:17.000000",
+			expectedSize:  10,
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"ae3724b0-cbda-11ed-a44c-1be0474024bd","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"ae66a7bc-cbda-11ed-81b3-17eb5a6f42b2","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -208,15 +218,15 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				DataType: "application/json",
 			},
 
-			pageToken: "2020-10-10 03:30:17.000000",
-			pageSize:  10,
-
 			responseFilters: map[string]string{
 				"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
 				"deleted":     "false",
 			},
 			responseActiveflows: []*activeflow.Activeflow{},
-			expectRes: &sock.Response{
+
+			expectedToken: "2020-10-10 03:30:17.000000",
+			expectedSize:  10,
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -242,15 +252,15 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockActiveflowHandler.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseActiveflows, nil)
+			mockActiveflowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, tt.responseFilters).Return(tt.responseActiveflows, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -261,10 +271,11 @@ func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		callID          uuid.UUID
-		currentActionID uuid.UUID
-
 		responseAction action.Action
+
+		expectedCallID          uuid.UUID
+		expectedCurrentActionID uuid.UUID
+		expectedRes             *sock.Response
 	}{
 		{
 			name: "normal",
@@ -274,11 +285,18 @@ func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"current_action_id": "6a1ce642-06a8-11eb-a632-978be835f982"}`),
 			},
-			callID:          uuid.FromStringOrNil("cec5b926-06a7-11eb-967e-fb463343f0a5"),
-			currentActionID: uuid.FromStringOrNil("6a1ce642-06a8-11eb-a632-978be835f982"),
+
 			responseAction: action.Action{
 				ID:   uuid.FromStringOrNil("63698276-06ab-11eb-9cbf-c771a09c1619"),
 				Type: action.TypeEcho,
+			},
+
+			expectedCallID:          uuid.FromStringOrNil("cec5b926-06a7-11eb-967e-fb463343f0a5"),
+			expectedCurrentActionID: uuid.FromStringOrNil("6a1ce642-06a8-11eb-a632-978be835f982"),
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"63698276-06ab-11eb-9cbf-c771a09c1619","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}`),
 			},
 		},
 	}
@@ -298,14 +316,14 @@ func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().ExecuteNextAction(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.responseAction, nil)
+			mockActive.EXPECT().ExecuteNextAction(gomock.Any(), tt.expectedCallID, tt.expectedCurrentActionID).Return(&tt.responseAction, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.StatusCode != 200 {
-				t.Errorf("Wrong match. expect: 200, got: %d", res.StatusCode)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -317,14 +335,15 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		callID          uuid.UUID
-		forwardActionID uuid.UUID
-		forwardNow      bool
+		expectedCallID          uuid.UUID
+		expectedForwardActionID uuid.UUID
+		expectedForwardNow      bool
 
-		expectRes *sock.Response
+		expectedRes *sock.Response
 	}{
 		{
 			name: "normal",
+
 			request: &sock.Request{
 				URI:      "/v1/activeflows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
 				Method:   sock.RequestMethodPut,
@@ -332,17 +351,17 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": true}`),
 			},
 
-			callID:          uuid.FromStringOrNil("6f14f3b8-5758-11ec-a413-772c32e3e51f"),
-			forwardActionID: uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
-			forwardNow:      true,
-
-			expectRes: &sock.Response{
+			expectedCallID:          uuid.FromStringOrNil("6f14f3b8-5758-11ec-a413-772c32e3e51f"),
+			expectedForwardActionID: uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
+			expectedForwardNow:      true,
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
 		},
 		{
 			name: "forward now false",
+
 			request: &sock.Request{
 				URI:      "/v1/activeflows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
 				Method:   sock.RequestMethodPut,
@@ -350,11 +369,10 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": false}`),
 			},
 
-			callID:          uuid.FromStringOrNil("6f14f3b8-5758-11ec-a413-772c32e3e51f"),
-			forwardActionID: uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
-			forwardNow:      false,
-
-			expectRes: &sock.Response{
+			expectedCallID:          uuid.FromStringOrNil("6f14f3b8-5758-11ec-a413-772c32e3e51f"),
+			expectedForwardActionID: uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
+			expectedForwardNow:      false,
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -376,14 +394,14 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().SetForwardActionID(gomock.Any(), tt.callID, tt.forwardActionID, tt.forwardNow).Return(nil)
+			mockActive.EXPECT().SetForwardActionID(gomock.Any(), tt.expectedCallID, tt.expectedForwardActionID, tt.expectedForwardNow).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -396,7 +414,7 @@ func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 
 		activeflowID uuid.UUID
 
-		expectRes *sock.Response
+		expectedRes *sock.Response
 	}{
 		{
 			name: "normal",
@@ -408,7 +426,7 @@ func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 
 			activeflowID: uuid.FromStringOrNil("07c60d7c-a7ae-11ec-ad69-c3e765668a2b"),
 
-			expectRes: &sock.Response{
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -438,8 +456,8 @@ func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 
 			time.Sleep(100 * time.Millisecond)
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -453,8 +471,8 @@ func Test_v1ActiveflowsIDGet(t *testing.T) {
 
 		responseActiveflow *activeflow.Activeflow
 
-		expectActiveflowID uuid.UUID
-		expectRes          *sock.Response
+		expectedActiveflowID uuid.UUID
+		expectedRes          *sock.Response
 	}{
 		{
 			name: "normal",
@@ -464,11 +482,13 @@ func Test_v1ActiveflowsIDGet(t *testing.T) {
 			},
 
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("343b6e40-cbdb-11ed-b13d-9f730017f25a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("343b6e40-cbdb-11ed-b13d-9f730017f25a"),
+				},
 			},
 
-			expectActiveflowID: uuid.FromStringOrNil("343b6e40-cbdb-11ed-b13d-9f730017f25a"),
-			expectRes: &sock.Response{
+			expectedActiveflowID: uuid.FromStringOrNil("343b6e40-cbdb-11ed-b13d-9f730017f25a"),
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"343b6e40-cbdb-11ed-b13d-9f730017f25a","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -491,14 +511,14 @@ func Test_v1ActiveflowsIDGet(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Get(gomock.Any(), tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Get(gomock.Any(), tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -512,8 +532,8 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 
 		responseActiveflow *activeflow.Activeflow
 
-		expectActiveflowID uuid.UUID
-		expectRes          *sock.Response
+		expectedActiveflowID uuid.UUID
+		expectedRes          *sock.Response
 	}{
 		{
 			name: "normal",
@@ -524,11 +544,13 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 			},
 
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("4356d70a-adde-11ec-bff4-9fc5420b5bcb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4356d70a-adde-11ec-bff4-9fc5420b5bcb"),
+				},
 			},
 
-			expectActiveflowID: uuid.FromStringOrNil("4356d70a-adde-11ec-bff4-9fc5420b5bcb"),
-			expectRes: &sock.Response{
+			expectedActiveflowID: uuid.FromStringOrNil("4356d70a-adde-11ec-bff4-9fc5420b5bcb"),
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"4356d70a-adde-11ec-bff4-9fc5420b5bcb","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -551,14 +573,14 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Delete(gomock.Any(), tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Delete(gomock.Any(), tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -571,8 +593,8 @@ func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 
 		responseActiveflow *activeflow.Activeflow
 
-		expectActiveflowID uuid.UUID
-		expectRes          *sock.Response
+		expectedActiveflowID uuid.UUID
+		expectedRes          *sock.Response
 	}{
 		{
 			name: "normal",
@@ -582,11 +604,13 @@ func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 			},
 
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("1ee42c4c-c8db-11ed-91cd-d30ce2e5c4b3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1ee42c4c-c8db-11ed-91cd-d30ce2e5c4b3"),
+				},
 			},
 
-			expectActiveflowID: uuid.FromStringOrNil("1ee42c4c-c8db-11ed-91cd-d30ce2e5c4b3"),
-			expectRes: &sock.Response{
+			expectedActiveflowID: uuid.FromStringOrNil("1ee42c4c-c8db-11ed-91cd-d30ce2e5c4b3"),
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1ee42c4c-c8db-11ed-91cd-d30ce2e5c4b3","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -609,14 +633,14 @@ func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Stop(gomock.Any(), tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Stop(gomock.Any(), tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -629,9 +653,9 @@ func Test_v1ActiveflowsIDPushActionsPost(t *testing.T) {
 
 		responseActiveflow *activeflow.Activeflow
 
-		expectActiveflowID uuid.UUID
-		expectActions      []action.Action
-		expectRes          *sock.Response
+		expectedActiveflowID uuid.UUID
+		expectedActions      []action.Action
+		expectedRes          *sock.Response
 	}{
 		{
 			name: "normal",
@@ -643,16 +667,18 @@ func Test_v1ActiveflowsIDPushActionsPost(t *testing.T) {
 			},
 
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("636c6116-fb00-11ed-8c06-330f0ae26e9b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("636c6116-fb00-11ed-8c06-330f0ae26e9b"),
+				},
 			},
 
-			expectActiveflowID: uuid.FromStringOrNil("636c6116-fb00-11ed-8c06-330f0ae26e9b"),
-			expectActions: []action.Action{
+			expectedActiveflowID: uuid.FromStringOrNil("636c6116-fb00-11ed-8c06-330f0ae26e9b"),
+			expectedActions: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
 			},
-			expectRes: &sock.Response{
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"636c6116-fb00-11ed-8c06-330f0ae26e9b","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -675,14 +701,14 @@ func Test_v1ActiveflowsIDPushActionsPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().PushActions(gomock.Any(), tt.expectActiveflowID, tt.expectActions).Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().PushActions(gomock.Any(), tt.expectedActiveflowID, tt.expectedActions).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -693,9 +719,9 @@ func Test_v1ActiveflowsIDServiceStop(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		expectActiveflowID uuid.UUID
-		expectServiceID    uuid.UUID
-		expectRes          *sock.Response
+		expectedActiveflowID uuid.UUID
+		expectedServiceID    uuid.UUID
+		expectedRes          *sock.Response
 	}{
 		{
 			name: "normal",
@@ -706,9 +732,9 @@ func Test_v1ActiveflowsIDServiceStop(t *testing.T) {
 				Data:     []byte(`{"service_id":"b2bc0b7e-f9e9-11ef-81d3-430e6fb7f082"}`),
 			},
 
-			expectActiveflowID: uuid.FromStringOrNil("b25c4a40-f9e9-11ef-93bd-cf01bb7d261a"),
-			expectServiceID:    uuid.FromStringOrNil("b2bc0b7e-f9e9-11ef-81d3-430e6fb7f082"),
-			expectRes: &sock.Response{
+			expectedActiveflowID: uuid.FromStringOrNil("b25c4a40-f9e9-11ef-93bd-cf01bb7d261a"),
+			expectedServiceID:    uuid.FromStringOrNil("b2bc0b7e-f9e9-11ef-81d3-430e6fb7f082"),
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -730,14 +756,14 @@ func Test_v1ActiveflowsIDServiceStop(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().ServiceStop(gomock.Any(), tt.expectActiveflowID, tt.expectServiceID).Return(nil)
+			mockActive.EXPECT().ServiceStop(gomock.Any(), tt.expectedActiveflowID, tt.expectedServiceID).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

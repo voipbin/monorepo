@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -14,7 +15,6 @@ import (
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/flow"
-	"monorepo/bin-flow-manager/models/stack"
 	"monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-flow-manager/pkg/actionhandler"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
@@ -32,7 +32,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 
 		responseFlow *flow.Flow
 
-		expectRes []action.Action
+		expectedRes []action.Action
 	}{
 		{
 			name: "normal",
@@ -41,8 +41,10 @@ func Test_getActionsFromFlow(t *testing.T) {
 			customerID: uuid.FromStringOrNil("864ec0f0-f47d-11ec-83d6-0f1b5f8a9507"),
 
 			responseFlow: &flow.Flow{
-				ID:         uuid.FromStringOrNil("860bef82-f47d-11ec-9eed-6345e27af38c"),
-				CustomerID: uuid.FromStringOrNil("864ec0f0-f47d-11ec-83d6-0f1b5f8a9507"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("860bef82-f47d-11ec-9eed-6345e27af38c"),
+					CustomerID: uuid.FromStringOrNil("864ec0f0-f47d-11ec-83d6-0f1b5f8a9507"),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("16bb5d9c-f47e-11ec-8feb-23613c5e54da"),
@@ -51,7 +53,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 				},
 			},
 
-			expectRes: []action.Action{
+			expectedRes: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("16bb5d9c-f47e-11ec-8feb-23613c5e54da"),
 					Type: action.TypeAnswer,
@@ -90,8 +92,8 @@ func Test_getActionsFromFlow(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -110,8 +112,7 @@ func Test_updateNextAction(t *testing.T) {
 		responseAction     *action.Action
 		responseVariable   *variable.Variable
 
-		expectResStackID uuid.UUID
-		expectRes        *activeflow.Activeflow
+		expectedRes *activeflow.Activeflow
 	}{
 		{
 			name: "normal",
@@ -120,7 +121,9 @@ func Test_updateNextAction(t *testing.T) {
 			currentActionID: uuid.FromStringOrNil("bfcb3c4c-0081-11f0-a3b1-0b82da5f5632"),
 
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("bfb07efc-0081-11f0-b869-8fbf4d9c8583"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bfb07efc-0081-11f0-b869-8fbf4d9c8583"),
+				},
 
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("bfcb3c4c-0081-11f0-a3b1-0b82da5f5632"),
@@ -132,9 +135,10 @@ func Test_updateNextAction(t *testing.T) {
 			},
 			responseVariable: &variable.Variable{},
 
-			expectResStackID: stack.IDMain,
-			expectRes: &activeflow.Activeflow{
-				ID:             uuid.FromStringOrNil("bfb07efc-0081-11f0-b869-8fbf4d9c8583"),
+			expectedRes: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bfb07efc-0081-11f0-b869-8fbf4d9c8583"),
+				},
 				CurrentStackID: uuid.FromStringOrNil("e5cc26ee-0082-11f0-b97e-97f72d5c046a"),
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("c018d588-0081-11f0-80f4-5386b507569a"),
@@ -182,15 +186,15 @@ func Test_updateNextAction(t *testing.T) {
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.Identity.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
 			res, err := h.updateNextAction(ctx, tt.activeflowID, tt.currentActionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

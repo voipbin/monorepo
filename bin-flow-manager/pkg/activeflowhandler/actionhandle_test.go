@@ -76,7 +76,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			name: "single destination",
 
 			af: &activeflow.Activeflow{
-				CustomerID:  uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				},
 				ReferenceID: uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
@@ -101,7 +103,9 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID: uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
 			},
 			responseFlow: &flow.Flow{
-				ID: uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
+				},
 			},
 			responseCalls: []*cmcall.Call{
 				{
@@ -153,7 +157,9 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 			expectUpdateActiveflow: &activeflow.Activeflow{
-				CustomerID:      uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				},
 				ReferenceID:     uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
 				ForwardStackID:  uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
 				ForwardActionID: uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
@@ -181,7 +187,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			name: "multiple destinations",
 
 			af: &activeflow.Activeflow{
-				CustomerID:     uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				},
 				ReferenceID:    uuid.FromStringOrNil("cb4accf8-2710-11eb-8e49-e73409394bef"),
 				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
@@ -209,8 +217,10 @@ func Test_actionHandleConnect(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
 			responseFlow: &flow.Flow{
-				ID:         uuid.FromStringOrNil("cc480ff8-2710-11eb-8869-0fcf3d58fd6a"),
-				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cc480ff8-2710-11eb-8869-0fcf3d58fd6a"),
+					CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				},
 			},
 			responseCalls: []*cmcall.Call{
 				{
@@ -263,7 +273,9 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 			expectUpdateActiveflow: &activeflow.Activeflow{
-				CustomerID:      uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				},
 				ReferenceID:     uuid.FromStringOrNil("cb4accf8-2710-11eb-8e49-e73409394bef"),
 				ForwardStackID:  uuid.FromStringOrNil("73af2dfc-d4c2-11ec-a692-9b1eafe93075"),
 				ForwardActionID: uuid.FromStringOrNil("845b566c-d4c2-11ec-ba4e-f739bb357410"),
@@ -292,7 +304,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			name: "multiple destinations with early media",
 
 			af: &activeflow.Activeflow{
-				CustomerID:  uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				},
 				ReferenceID: uuid.FromStringOrNil("211a68fe-2712-11eb-ad71-97e2b1546a91"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
@@ -319,8 +333,10 @@ func Test_actionHandleConnect(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
 			responseFlow: &flow.Flow{
-				ID:         uuid.FromStringOrNil("229ef410-2712-11eb-9dea-a737f7b6ef2b"),
-				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("229ef410-2712-11eb-9dea-a737f7b6ef2b"),
+					CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				},
 			},
 			responseCalls: []*cmcall.Call{
 				{
@@ -375,7 +391,9 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 			expectUpdateActiveflow: &activeflow.Activeflow{
-				CustomerID:      uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				},
 				ReferenceID:     uuid.FromStringOrNil("211a68fe-2712-11eb-ad71-97e2b1546a91"),
 				ForwardStackID:  uuid.FromStringOrNil("d913dcf6-d4c2-11ec-902b-37f50ff7b4b4"),
 				ForwardActionID: uuid.FromStringOrNil("d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"),
@@ -403,7 +421,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			name: "single destination with relay reason",
 
 			af: &activeflow.Activeflow{
-				CustomerID:  uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				},
 				ReferenceID: uuid.FromStringOrNil("0bd920ac-a253-11ed-b372-371e3ba29e82"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
@@ -429,8 +449,10 @@ func Test_actionHandleConnect(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 			},
 			responseFlow: &flow.Flow{
-				ID:         uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
-				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
+					CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				},
 			},
 			responseCalls: []*cmcall.Call{
 				{
@@ -486,7 +508,9 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 			expectUpdateActiveflow: &activeflow.Activeflow{
-				CustomerID:      uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				},
 				ReferenceID:     uuid.FromStringOrNil("0bd920ac-a253-11ed-b372-371e3ba29e82"),
 				ForwardStackID:  uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
 				ForwardActionID: uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
@@ -534,8 +558,8 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.Identity.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.Identity.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
 			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDConfbridgeJoin)
@@ -840,7 +864,7 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1ServiceTypeQueuecallStart(ctx, tt.expectQueueID, tt.activeflow.ID, qmqueuecall.ReferenceType(qmqueuecall.ReferenceTypeCall), tt.activeflow.ReferenceID).Return(tt.responseService, nil)
+			mockReq.EXPECT().QueueV1ServiceTypeQueuecallStart(ctx, tt.expectQueueID, tt.activeflow.Identity.ID, qmqueuecall.ReferenceType(qmqueuecall.ReferenceTypeCall), tt.activeflow.ReferenceID).Return(tt.responseService, nil)
 
 			// PushStack
 			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
@@ -860,7 +884,7 @@ func Test_actionHandleFetch(t *testing.T) {
 	tests := []struct {
 		name string
 
-		activeFlow *activeflow.Activeflow
+		activeflow *activeflow.Activeflow
 
 		responseFetch []action.Action
 		responseStack *stack.Stack
@@ -870,8 +894,10 @@ func Test_actionHandleFetch(t *testing.T) {
 		{
 			name: "normal",
 
-			activeFlow: &activeflow.Activeflow{
-				ID:          uuid.FromStringOrNil("de10062c-d4df-11ec-bd42-a76fe4d96b2f"),
+			activeflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("de10062c-d4df-11ec-bd42-a76fe4d96b2f"),
+				},
 				ReferenceID: uuid.FromStringOrNil("d79ad434-d4df-11ec-8edf-0f15868a6578"),
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("c1c76320-d4df-11ec-acdf-8304c3ca8c1f"),
@@ -915,7 +941,9 @@ func Test_actionHandleFetch(t *testing.T) {
 			},
 
 			expectUpdateActiveflow: &activeflow.Activeflow{
-				ID:              uuid.FromStringOrNil("de10062c-d4df-11ec-bd42-a76fe4d96b2f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("de10062c-d4df-11ec-bd42-a76fe4d96b2f"),
+				},
 				ForwardStackID:  uuid.FromStringOrNil("5d18b072-d4e0-11ec-a4ab-1fcd7ec4f258"),
 				ForwardActionID: uuid.FromStringOrNil("0dc5e10c-d4e0-11ec-8dd0-a326b2d87c71"),
 				ReferenceID:     uuid.FromStringOrNil("d79ad434-d4df-11ec-8edf-0f15868a6578"),
@@ -965,11 +993,11 @@ func Test_actionHandleFetch(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockAction.EXPECT().ActionFetchGet(&tt.activeFlow.CurrentAction, tt.activeFlow.ID, tt.activeFlow.ReferenceID).Return(tt.responseFetch, nil)
-			mockStack.EXPECT().PushStackByActions(tt.activeFlow.StackMap, uuid.Nil, tt.responseFetch, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockAction.EXPECT().ActionFetchGet(&tt.activeflow.CurrentAction, tt.activeflow.Identity.ID, tt.activeflow.ReferenceID).Return(tt.responseFetch, nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, uuid.Nil, tt.responseFetch, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
-			if err := h.actionHandleFetch(ctx, tt.activeFlow); err != nil {
+			if err := h.actionHandleFetch(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -1021,7 +1049,9 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 			},
 
 			responseflow: &flow.Flow{
-				ID: uuid.FromStringOrNil("a1d247b4-3cbf-11ec-8d08-970ce7001aaa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1d247b4-3cbf-11ec-8d08-970ce7001aaa"),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
@@ -1100,7 +1130,9 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 			},
 
 			responseflow: &flow.Flow{
-				ID: uuid.FromStringOrNil("36e14dae-648f-11ec-b947-6f91a363d29e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("36e14dae-648f-11ec-b947-6f91a363d29e"),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
@@ -1302,7 +1334,7 @@ func Test_actionHandleBranch(t *testing.T) {
 	tests := []struct {
 		name string
 
-		activeFlow     *activeflow.Activeflow
+		activeflow     *activeflow.Activeflow
 		targetActionID uuid.UUID
 
 		expectVariables map[string]string
@@ -1316,7 +1348,7 @@ func Test_actionHandleBranch(t *testing.T) {
 		{
 			name: "normal",
 
-			activeFlow: &activeflow.Activeflow{
+			activeflow: &activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
@@ -1395,7 +1427,7 @@ func Test_actionHandleBranch(t *testing.T) {
 		{
 			name: "use default",
 
-			activeFlow: &activeflow.Activeflow{
+			activeflow: &activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
@@ -1492,13 +1524,13 @@ func Test_actionHandleBranch(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockVar.EXPECT().Get(ctx, tt.activeFlow.ID).Return(tt.responseVariable, nil)
-			mockVar.EXPECT().SetVariable(ctx, tt.activeFlow.ID, tt.expectVariables).Return(nil)
-			mockStack.EXPECT().GetAction(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.targetActionID, false).Return(tt.responseStackID, tt.responseAction, nil)
+			mockVar.EXPECT().Get(ctx, tt.activeflow.Identity.ID).Return(tt.responseVariable, nil)
+			mockVar.EXPECT().SetVariable(ctx, tt.activeflow.Identity.ID, tt.expectVariables).Return(nil)
+			mockStack.EXPECT().GetAction(tt.activeflow.StackMap, tt.activeflow.CurrentStackID, tt.targetActionID, false).Return(tt.responseStackID, tt.responseAction, nil)
 
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveFlow).Return(nil)
 
-			if err := h.actionHandleBranch(ctx, tt.activeFlow); err != nil {
+			if err := h.actionHandleBranch(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. exepct: ok, got: %v", err)
 			}
 
@@ -2552,8 +2584,10 @@ func Test_actionHandleMessageSend(t *testing.T) {
 			name: "normal",
 
 			activeFlow: &activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("9332ed50-dc86-11ec-ba14-8b96908d546b"),
-				CustomerID: uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9332ed50-dc86-11ec-ba14-8b96908d546b"),
+					CustomerID: uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
+				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
 					Type:   action.TypeMessageSend,
@@ -2680,7 +2714,9 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 			"normal",
 
 			&activeflow.Activeflow{
-				CustomerID:    uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
+				},
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
 				CurrentAction: action.Action{
@@ -2720,7 +2756,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.activeflow.ReferenceID).Return(tt.responseCall, nil)
 			for _, recordingID := range tt.responseCall.RecordingIDs {
-				mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.activeflow.CustomerID, tmtranscribe.ReferenceTypeRecording, recordingID, tt.language, tmtranscribe.DirectionBoth).Return(&tmtranscribe.Transcribe{}, nil)
+				mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.activeflow.Identity.CustomerID, tmtranscribe.ReferenceTypeRecording, recordingID, tt.language, tmtranscribe.DirectionBoth).Return(&tmtranscribe.Transcribe{}, nil)
 			}
 
 			if err := h.actionHandleTranscribeRecording(ctx, tt.activeflow); err != nil {
@@ -2748,7 +2784,9 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 		{
 			"normal",
 			&activeflow.Activeflow{
-				CustomerID:    uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
+				},
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				CurrentAction: action.Action{
@@ -2815,8 +2853,10 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"have all",
 			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("7fb0af78-a942-11ec-8c60-67384864d90a"),
-				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7fb0af78-a942-11ec-8c60-67384864d90a"),
+					CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4edb5840-a941-11ec-b674-93c2ef347891"),
 					Type:   action.TypeCall,
@@ -2865,8 +2905,10 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"2 destinations with flow id",
 			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("fe7b3838-a941-11ec-b3d6-5337e9635d88"),
-				CustomerID: uuid.FromStringOrNil("fea0d30e-a941-11ec-a38a-478b19a5dfd2"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fe7b3838-a941-11ec-b3d6-5337e9635d88"),
+					CustomerID: uuid.FromStringOrNil("fea0d30e-a941-11ec-a38a-478b19a5dfd2"),
+				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("fec56ebc-a941-11ec-8e4c-9fafab93ddcc"),
 					Type:   action.TypeCall,
@@ -2924,8 +2966,10 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"single destination with actions",
 			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("38a78fec-a943-11ec-b279-c7b264a9d36a"),
-				CustomerID: uuid.FromStringOrNil("38d87102-a943-11ec-99aa-5fc910add207"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("38a78fec-a943-11ec-b279-c7b264a9d36a"),
+					CustomerID: uuid.FromStringOrNil("38d87102-a943-11ec-99aa-5fc910add207"),
+				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("39063286-a943-11ec-b54c-d3be23fdf738"),
 					Type:   action.TypeCall,
@@ -2970,7 +3014,9 @@ func Test_actionHandleCall(t *testing.T) {
 			false,
 
 			&flow.Flow{
-				ID: uuid.FromStringOrNil("3936013c-a943-11ec-bdf1-af72361eecf4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3936013c-a943-11ec-bdf1-af72361eecf4"),
+				},
 			},
 			[]*cmcall.Call{
 				{
@@ -2984,8 +3030,10 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"2 destinations with actions",
 			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("f3ddb5ca-a943-11ec-be88-ebdd9b1c7f1b"),
-				CustomerID: uuid.FromStringOrNil("f40e389e-a943-11ec-83a7-7f90e0c22e96"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f3ddb5ca-a943-11ec-be88-ebdd9b1c7f1b"),
+					CustomerID: uuid.FromStringOrNil("f40e389e-a943-11ec-83a7-7f90e0c22e96"),
+				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("f43f85de-a943-11ec-9ba5-b3f019b002e7"),
 					Type:   action.TypeCall,
@@ -3030,7 +3078,9 @@ func Test_actionHandleCall(t *testing.T) {
 			false,
 
 			&flow.Flow{
-				ID: uuid.FromStringOrNil("f46f3e96-a943-11ec-b4e1-2bfce6b84c2b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f46f3e96-a943-11ec-b4e1-2bfce6b84c2b"),
+				},
 			},
 			[]*cmcall.Call{
 				{
@@ -3049,8 +3099,10 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"single destination with flow id and chained",
 			&activeflow.Activeflow{
-				ID:            uuid.FromStringOrNil("ec55367a-a993-11ec-9eaf-3bd79ecebfdb"),
-				CustomerID:    uuid.FromStringOrNil("ec7e7e4a-a993-11ec-85a1-2f8c41cac00e"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ec55367a-a993-11ec-9eaf-3bd79ecebfdb"),
+					CustomerID: uuid.FromStringOrNil("ec7e7e4a-a993-11ec-85a1-2f8c41cac00e"),
+				},
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("3f0cd396-a994-11ec-95db-e73c30df842c"),
 				CurrentAction: action.Action{
@@ -3101,8 +3153,10 @@ func Test_actionHandleCall(t *testing.T) {
 		{
 			"single destination with flow id and chained but reference type is message",
 			&activeflow.Activeflow{
-				ID:            uuid.FromStringOrNil("87a4f032-a996-11ec-b260-4b6f3f52e1c9"),
-				CustomerID:    uuid.FromStringOrNil("87ede80a-a996-11ec-9086-d77d045a5f03"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("87a4f032-a996-11ec-b260-4b6f3f52e1c9"),
+					CustomerID: uuid.FromStringOrNil("87ede80a-a996-11ec-9086-d77d045a5f03"),
+				},
 				ReferenceType: activeflow.ReferenceTypeMessage,
 				ReferenceID:   uuid.FromStringOrNil("8819cf88-a996-11ec-bd8b-f3a7053103f1"),
 				CurrentAction: action.Action{
@@ -3174,11 +3228,11 @@ func Test_actionHandleCall(t *testing.T) {
 
 			flowID := tt.flowID
 			if flowID == uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.actions, false).Return(tt.responseFlow, nil)
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.Identity.CustomerID, flow.TypeFlow, "", "", tt.actions, false).Return(tt.responseFlow, nil)
 				flowID = tt.responseFlow.ID
 			}
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false).Return(tt.responseCall, tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.Identity.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false).Return(tt.responseCall, tt.responseGroupcall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)
@@ -3200,8 +3254,10 @@ func Test_actionHandleVariableSet(t *testing.T) {
 			"single destination with flow id",
 			uuid.FromStringOrNil("a65dd1f8-ce47-11ec-bc53-ff630bb4b69b"),
 			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("a65dd1f8-ce47-11ec-bc53-ff630bb4b69b"),
-				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a65dd1f8-ce47-11ec-bc53-ff630bb4b69b"),
+					CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("a6896cc8-ce47-11ec-8fff-1f2ab0d61b07"),
 					Type:   action.TypeVariableSet,
@@ -3248,7 +3304,7 @@ func Test_actionHandleVariableSet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockVariable.EXPECT().SetVariable(ctx, tt.af.ID, tt.expectVariables).Return(nil)
+			mockVariable.EXPECT().SetVariable(ctx, tt.af.Identity.ID, tt.expectVariables).Return(nil)
 
 			if errCall := h.actionHandleVariableSet(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)
@@ -3274,8 +3330,10 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 			"normal",
 
 			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("284a82d4-d9eb-11ec-aa89-3fb4df202ec8"),
-				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("284a82d4-d9eb-11ec-aa89-3fb4df202ec8"),
+					CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
 					Type:   action.TypeWebhookSend,
@@ -3324,7 +3382,7 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().WebhookV1WebhookSendToDestination(ctx, tt.af.CustomerID, tt.expectURI, tt.expectMethod, tt.expectDataType, tt.expectData).Return(nil)
+			mockReq.EXPECT().WebhookV1WebhookSendToDestination(ctx, tt.af.Identity.CustomerID, tt.expectURI, tt.expectMethod, tt.expectDataType, tt.expectData).Return(nil)
 
 			if errCall := h.actionHandleWebhookSend(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
@@ -3354,8 +3412,10 @@ func Test_actionHandleConversationSend(t *testing.T) {
 			name: "normal",
 
 			af: &activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("5c82ef66-f474-11ec-b5da-07a1796b759d"),
-				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5c82ef66-f474-11ec-b5da-07a1796b759d"),
+					CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("5ce765cc-f474-11ec-b2e9-eb0259d7bacf"),
 					Type:   action.TypeConversationSend,
@@ -3438,8 +3498,10 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 			name: "normal",
 
 			activeflow: &activeflow.Activeflow{
-				ID:            uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
-				CustomerID:    uuid.FromStringOrNil("baba6a92-a8f5-11ed-926f-fb93cea60103"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
+					CustomerID: uuid.FromStringOrNil("baba6a92-a8f5-11ed-926f-fb93cea60103"),
+				},
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
 				CurrentAction: action.Action{
@@ -3544,8 +3606,10 @@ func Test_actionHandleEmailSend(t *testing.T) {
 			name: "normal",
 
 			activeflow: &activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("e480deea-00f2-11f0-ba53-93fa896cde1f"),
-				CustomerID: uuid.FromStringOrNil("e4b325e4-00f2-11f0-8cc2-c36f5776f5b2"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e480deea-00f2-11f0-ba53-93fa896cde1f"),
+					CustomerID: uuid.FromStringOrNil("e4b325e4-00f2-11f0-8cc2-c36f5776f5b2"),
+				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("e4dc3eca-00f2-11f0-8a64-2b73140e49f0"),
 					Type:   action.TypeChatbotTalk,
@@ -3598,7 +3662,7 @@ func Test_actionHandleEmailSend(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1EmailSend(ctx, tt.activeflow.CustomerID, tt.activeflow.ID, tt.expectDestinations, tt.expectSubject, tt.expectContent, tt.expectAttachments).Return(tt.responseEmail, nil)
+			mockReq.EXPECT().EmailV1EmailSend(ctx, tt.activeflow.Identity.CustomerID, tt.activeflow.Identity.ID, tt.expectDestinations, tt.expectSubject, tt.expectContent, tt.expectAttachments).Return(tt.responseEmail, nil)
 
 			if errCall := h.actionHandleEmailSend(ctx, tt.activeflow); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)

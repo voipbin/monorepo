@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/gofrs/uuid"
-
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 )
 
 // Flow struct
 type Flow struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	Type       Type      `json:"type"`
+	commonidentity.Identity
+
+	Type Type `json:"type"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`

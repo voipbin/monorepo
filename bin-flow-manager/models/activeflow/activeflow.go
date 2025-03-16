@@ -6,14 +6,14 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/stack"
 )
 
 // Activeflow struct
 type Activeflow struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	FlowID uuid.UUID `json:"flow_id"`
 	Status Status    `json:"status"`

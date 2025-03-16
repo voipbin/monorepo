@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -34,10 +35,14 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			},
 			responseFlows: []*flow.Flow{
 				{
-					ID: uuid.FromStringOrNil("26c93460-ecd5-11ee-b1ff-d7a1c55584d6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("26c93460-ecd5-11ee-b1ff-d7a1c55584d6"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("26fe9f7e-ecd5-11ee-828f-b362008cff0c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("26fe9f7e-ecd5-11ee-828f-b362008cff0c"),
+					},
 				},
 			},
 
