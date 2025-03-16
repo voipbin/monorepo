@@ -24,7 +24,7 @@ func Test_CreateStack(t *testing.T) {
 
 		responseUUID uuid.UUID
 
-		expectRes *stack.Stack
+		expectedRes *stack.Stack
 	}{
 		{
 			name: "normal",
@@ -41,7 +41,7 @@ func Test_CreateStack(t *testing.T) {
 			returnStackID:  uuid.FromStringOrNil("e34ab358-fd6d-11ef-9742-177d3a238163"),
 			returnActionID: uuid.FromStringOrNil("e3736794-fd6d-11ef-a9b0-3701760a71d6"),
 
-			expectRes: &stack.Stack{
+			expectedRes: &stack.Stack{
 				ID: uuid.FromStringOrNil("e2d7bba0-fd6d-11ef-983e-9fec845d9958"),
 				Actions: []action.Action{
 					{
@@ -71,7 +71,7 @@ func Test_CreateStack(t *testing.T) {
 			returnActionID: uuid.FromStringOrNil("ca2d6bf8-fd6e-11ef-9add-4fe642b56405"),
 
 			responseUUID: uuid.FromStringOrNil("ca521ab6-fd6e-11ef-aa1f-47246bdfa4e8"),
-			expectRes: &stack.Stack{
+			expectedRes: &stack.Stack{
 				ID: uuid.FromStringOrNil("ca521ab6-fd6e-11ef-aa1f-47246bdfa4e8"),
 				Actions: []action.Action{
 					{
@@ -102,8 +102,8 @@ func Test_CreateStack(t *testing.T) {
 			}
 
 			res := h.CreateStack(tt.stackID, tt.actions, tt.returnStackID, tt.returnActionID)
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -117,7 +117,7 @@ func Test_deleteStack(t *testing.T) {
 		stackmap map[uuid.UUID]*stack.Stack
 		stackID  uuid.UUID
 
-		expectRes map[uuid.UUID]*stack.Stack
+		expectedRes map[uuid.UUID]*stack.Stack
 	}{
 		{
 			name: "normal",
@@ -132,7 +132,7 @@ func Test_deleteStack(t *testing.T) {
 			},
 			stackID: uuid.FromStringOrNil("e2d7bba0-fd6d-11ef-983e-9fec845d9958"),
 
-			expectRes: map[uuid.UUID]*stack.Stack{
+			expectedRes: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 				},
@@ -148,7 +148,7 @@ func Test_deleteStack(t *testing.T) {
 			},
 			stackID: stack.IDMain,
 
-			expectRes: map[uuid.UUID]*stack.Stack{
+			expectedRes: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 				},
@@ -167,8 +167,8 @@ func Test_deleteStack(t *testing.T) {
 			}
 
 			h.DeleteStack(tt.stackmap, tt.stackID)
-			if reflect.DeepEqual(tt.stackmap, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, tt.stackmap)
+			if reflect.DeepEqual(tt.stackmap, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, tt.stackmap)
 			}
 		})
 	}
@@ -182,12 +182,12 @@ func Test_GetStack(t *testing.T) {
 		stackMap map[uuid.UUID]*stack.Stack
 		stackID  uuid.UUID
 
-		expectRes *stack.Stack
+		expectedRes *stack.Stack
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			map[uuid.UUID]*stack.Stack{
+			stackMap: map[uuid.UUID]*stack.Stack{
 				uuid.FromStringOrNil("3d983a34-d3b3-11ec-bf41-17fd979cd40f"): {
 					ID: uuid.FromStringOrNil("3d983a34-d3b3-11ec-bf41-17fd979cd40f"),
 					Actions: []action.Action{
@@ -200,9 +200,9 @@ func Test_GetStack(t *testing.T) {
 					ReturnActionID: uuid.FromStringOrNil("6050d6e0-d3b2-11ec-baa1-ebbde6270e56"),
 				},
 			},
-			uuid.FromStringOrNil("3d983a34-d3b3-11ec-bf41-17fd979cd40f"),
+			stackID: uuid.FromStringOrNil("3d983a34-d3b3-11ec-bf41-17fd979cd40f"),
 
-			&stack.Stack{
+			expectedRes: &stack.Stack{
 				ID: uuid.FromStringOrNil("3d983a34-d3b3-11ec-bf41-17fd979cd40f"),
 				Actions: []action.Action{
 					{
@@ -226,8 +226,8 @@ func Test_GetStack(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

@@ -26,28 +26,30 @@ func TestGenerateFlowForAgentCall(t *testing.T) {
 		customerID   uuid.UUID
 		confbridgeID uuid.UUID
 
+		responseFlow *flow.Flow
+
 		expectReqActions []action.Action
-		responseFlow     *flow.Flow
 		expectRes        *flow.Flow
 	}{
 		{
-			"test normal",
+			name: "test normal",
 
-			uuid.FromStringOrNil("e8d81018-8ca5-11ec-99e0-6ff2cca2a2d9"),
-			uuid.FromStringOrNil("e926b54c-8ca5-11ec-84bf-036e13d83721"),
+			customerID:   uuid.FromStringOrNil("e8d81018-8ca5-11ec-99e0-6ff2cca2a2d9"),
+			confbridgeID: uuid.FromStringOrNil("e926b54c-8ca5-11ec-84bf-036e13d83721"),
 
-			[]action.Action{
+			responseFlow: &flow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4abf1d80-8ca6-11ec-b130-7b0a22a773f8"),
+				},
+			},
+
+			expectReqActions: []action.Action{
 				{
 					Type:   action.TypeConfbridgeJoin,
 					Option: []byte(`{"confbridge_id":"e926b54c-8ca5-11ec-84bf-036e13d83721"}`),
 				},
 			},
-			&flow.Flow{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("4abf1d80-8ca6-11ec-b130-7b0a22a773f8"),
-				},
-			},
-			&flow.Flow{
+			expectRes: &flow.Flow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("4abf1d80-8ca6-11ec-b130-7b0a22a773f8"),
 				},

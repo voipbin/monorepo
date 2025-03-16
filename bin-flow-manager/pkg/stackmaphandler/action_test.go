@@ -20,9 +20,9 @@ func Test_GetAction(t *testing.T) {
 		startStackID   uuid.UUID
 		targetActionID uuid.UUID
 
-		expectResStackID  uuid.UUID
-		epxectResAction   *action.Action
-		expectResStackMap map[uuid.UUID]*stack.Stack
+		expectedResStackID  uuid.UUID
+		epxectedResAction   *action.Action
+		expectedResStackMap map[uuid.UUID]*stack.Stack
 	}{
 		{
 			name: "action exist in the given stack",
@@ -55,12 +55,12 @@ func Test_GetAction(t *testing.T) {
 			startStackID:   stack.IDMain,
 			targetActionID: uuid.FromStringOrNil("b1afd956-a8ae-11ed-a7fb-fba3920318fd"),
 
-			expectResStackID: stack.IDMain,
-			epxectResAction: &action.Action{
+			expectedResStackID: stack.IDMain,
+			epxectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("b1afd956-a8ae-11ed-a7fb-fba3920318fd"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -116,12 +116,12 @@ func Test_GetAction(t *testing.T) {
 			startStackID:   uuid.FromStringOrNil("93def85e-d3b5-11ec-b6e5-6751b01de122"),
 			targetActionID: uuid.FromStringOrNil("9453b73e-d3b5-11ec-b636-0fcf55d52956"),
 
-			expectResStackID: stack.IDMain,
-			epxectResAction: &action.Action{
+			expectedResStackID: stack.IDMain,
+			epxectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("9453b73e-d3b5-11ec-b636-0fcf55d52956"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -195,12 +195,12 @@ func Test_GetAction(t *testing.T) {
 			startStackID:   uuid.FromStringOrNil("79d1a532-f446-470f-bdc6-45542750d9cd"),
 			targetActionID: uuid.FromStringOrNil("127eb93f-3d03-4583-83c0-bd4a23c66f03"),
 
-			expectResStackID: uuid.FromStringOrNil("93def85e-d3b5-11ec-b6e5-6751b01de122"),
-			epxectResAction: &action.Action{
+			expectedResStackID: uuid.FromStringOrNil("93def85e-d3b5-11ec-b6e5-6751b01de122"),
+			epxectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("127eb93f-3d03-4583-83c0-bd4a23c66f03"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -245,16 +245,16 @@ func Test_GetAction(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(resStackID, tt.expectResStackID) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStackID, resStackID)
+			if !reflect.DeepEqual(resStackID, tt.expectedResStackID) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResStackID, resStackID)
 			}
 
-			if !reflect.DeepEqual(resAction, tt.epxectResAction) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.epxectResAction, resAction)
+			if !reflect.DeepEqual(resAction, tt.epxectedResAction) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.epxectedResAction, resAction)
 			}
 
-			if !reflect.DeepEqual(tt.stackMap, tt.expectResStackMap) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.epxectResAction, resAction)
+			if !reflect.DeepEqual(tt.stackMap, tt.expectedResStackMap) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.epxectedResAction, resAction)
 			}
 		})
 	}
@@ -339,7 +339,7 @@ func Test_GetActionReference(t *testing.T) {
 
 		updateOption json.RawMessage
 
-		expectResStackMap map[uuid.UUID]*stack.Stack
+		expectedResStackMap map[uuid.UUID]*stack.Stack
 	}{
 		{
 			name: "goto action update loop",
@@ -363,7 +363,7 @@ func Test_GetActionReference(t *testing.T) {
 
 			updateOption: []byte(`{"target_id":"6b4ecab6-d57e-11ec-9593-1b54970a3f8c","loop_count":2}`),
 
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -392,8 +392,8 @@ func Test_GetActionReference(t *testing.T) {
 
 			resAction.Option = tt.updateOption
 
-			if !reflect.DeepEqual(tt.stackMap, tt.expectResStackMap) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStackMap[stack.IDMain], tt.stackMap[stack.IDMain])
+			if !reflect.DeepEqual(tt.stackMap, tt.expectedResStackMap) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResStackMap[stack.IDMain], tt.stackMap[stack.IDMain])
 			}
 		})
 	}
@@ -757,8 +757,8 @@ func Test_findAction(t *testing.T) {
 		actions  []action.Action
 		actionID uuid.UUID
 
-		expectResIdx    int
-		expectResAction *action.Action
+		expectedResIdx    int
+		expectedResAction *action.Action
 	}{
 		{
 			name: "goto action update loop",
@@ -776,8 +776,8 @@ func Test_findAction(t *testing.T) {
 			},
 			actionID: uuid.FromStringOrNil("48b6b536-f81f-11ec-8b52-7b901ad4635d"),
 
-			expectResIdx: 1,
-			expectResAction: &action.Action{
+			expectedResIdx: 1,
+			expectedResAction: &action.Action{
 				ID: uuid.FromStringOrNil("48b6b536-f81f-11ec-8b52-7b901ad4635d"),
 			},
 		},
@@ -790,11 +790,11 @@ func Test_findAction(t *testing.T) {
 
 			idx, res := h.findAction(tt.actions, tt.actionID)
 
-			if idx != tt.expectResIdx {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectResIdx, idx)
+			if idx != tt.expectedResIdx {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedResIdx, idx)
 			}
-			if !reflect.DeepEqual(tt.expectResAction, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResAction, res)
+			if !reflect.DeepEqual(tt.expectedResAction, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResAction, res)
 			}
 		})
 	}

@@ -22,7 +22,7 @@ func Test_Substitute(t *testing.T) {
 
 		responseVariable *variable.Variable
 
-		expectRes string
+		expectedRes string
 	}{
 		{
 			name: "normal",
@@ -38,7 +38,7 @@ func Test_Substitute(t *testing.T) {
 				},
 			},
 
-			expectRes: `{"conversation_id":"7e5116e2-f477-11ec-9c08-b343a05abaee","text":"test message. test name.","sync":true}`,
+			expectedRes: `{"conversation_id":"7e5116e2-f477-11ec-9c08-b343a05abaee","text":"test message. test name.","sync":true}`,
 		},
 	}
 
@@ -60,8 +60,8 @@ func Test_Substitute(t *testing.T) {
 				t.Errorf("Wrong match. expect:ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}
 
 		})
@@ -76,7 +76,7 @@ func Test_SubstituteString(t *testing.T) {
 		data string
 		v    *variable.Variable
 
-		expectRes string
+		expectedRes string
 	}{
 		{
 			name: "normal",
@@ -89,7 +89,7 @@ func Test_SubstituteString(t *testing.T) {
 				},
 			},
 
-			expectRes: "test data test name",
+			expectedRes: "test data test name",
 		},
 		{
 			name: "data has same variable",
@@ -102,7 +102,7 @@ func Test_SubstituteString(t *testing.T) {
 				},
 			},
 
-			expectRes: "test data test name and test name",
+			expectedRes: "test data test name and test name",
 		},
 		{
 			name: "data has same empty variable",
@@ -115,7 +115,7 @@ func Test_SubstituteString(t *testing.T) {
 				},
 			},
 
-			expectRes: "test data test name and test name and ",
+			expectedRes: "test data test name and test name and ",
 		},
 	}
 
@@ -132,8 +132,8 @@ func Test_SubstituteString(t *testing.T) {
 			ctx := context.Background()
 
 			res := h.SubstituteString(ctx, tt.data, tt.v)
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}
 
 		})
@@ -148,7 +148,7 @@ func Test_SubstituteByte(t *testing.T) {
 		data []byte
 		v    *variable.Variable
 
-		expectRes []byte
+		expectedRes []byte
 	}{
 		{
 			name: "normal",
@@ -162,7 +162,7 @@ func Test_SubstituteByte(t *testing.T) {
 				},
 			},
 
-			expectRes: []byte(`{"conversation_id":"7e5116e2-f477-11ec-9c08-b343a05abaee","text":"test message. test name.","sync":true}`),
+			expectedRes: []byte(`{"conversation_id":"7e5116e2-f477-11ec-9c08-b343a05abaee","text":"test message. test name.","sync":true}`),
 		},
 		{
 			name: "data has same variable",
@@ -175,7 +175,7 @@ func Test_SubstituteByte(t *testing.T) {
 				},
 			},
 
-			expectRes: []byte(`test data test name and test name`),
+			expectedRes: []byte(`test data test name and test name`),
 		},
 		{
 			name: "data has same empty variable",
@@ -188,7 +188,7 @@ func Test_SubstituteByte(t *testing.T) {
 				},
 			},
 
-			expectRes: []byte(`test data test name and test name and `),
+			expectedRes: []byte(`test data test name and test name and `),
 		},
 	}
 
@@ -205,8 +205,8 @@ func Test_SubstituteByte(t *testing.T) {
 			ctx := context.Background()
 
 			res := h.SubstituteByte(ctx, tt.data, tt.v)
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}
 
 		})

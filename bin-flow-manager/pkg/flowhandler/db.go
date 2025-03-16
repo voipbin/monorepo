@@ -56,7 +56,7 @@ func (h *flowHandler) Create(
 		return nil, err
 	}
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.util.UUIDCreate()
 	f := &flow.Flow{
 		Identity: commonidentity.Identity{
 			ID:         id,

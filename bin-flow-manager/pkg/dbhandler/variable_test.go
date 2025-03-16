@@ -18,7 +18,7 @@ func Test_VariableCreate(t *testing.T) {
 		name     string
 		variable *variable.Variable
 
-		expectRes *variable.Variable
+		expectedRes *variable.Variable
 	}{
 		{
 			"have no actions",
@@ -49,15 +49,15 @@ func Test_VariableCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().VariableGet(ctx, tt.variable.ID).Return(tt.expectRes, nil)
+			mockCache.EXPECT().VariableGet(ctx, tt.variable.ID).Return(tt.expectedRes, nil)
 			res, err := h.VariableGet(ctx, tt.variable.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 			t.Logf("Created flow. flow: %v", res)
 
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			if reflect.DeepEqual(tt.expectedRes, res) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -105,7 +105,6 @@ func Test_VariableUpdate(t *testing.T) {
 			if err := h.VariableUpdate(context.Background(), tt.updateVariable); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
 		})
 	}
 }

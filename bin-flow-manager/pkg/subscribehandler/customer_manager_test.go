@@ -20,7 +20,7 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 		name  string
 		event *sock.Event
 
-		expectCustomer *cmcustomer.Customer
+		expectedCustomer *cmcustomer.Customer
 	}{
 		{
 			name: "normal",
@@ -32,7 +32,7 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 				Data:      []byte(`{"id":"4f8fbc3c-ccca-11ee-8104-9f5b184cb220"}`),
 			},
 
-			expectCustomer: &cmcustomer.Customer{
+			expectedCustomer: &cmcustomer.Customer{
 				ID: uuid.FromStringOrNil("4f8fbc3c-ccca-11ee-8104-9f5b184cb220"),
 			},
 		},
@@ -53,8 +53,8 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockFlow.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
-			mockActive.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
+			mockFlow.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectedCustomer).Return(nil)
+			mockActive.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectedCustomer).Return(nil)
 
 			h.processEvent(tt.event)
 		})

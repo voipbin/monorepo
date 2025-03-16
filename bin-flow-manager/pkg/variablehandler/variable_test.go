@@ -20,17 +20,17 @@ func Test_Create(t *testing.T) {
 		activeflowID uuid.UUID
 		variables    map[string]string
 
-		expectRes *variable.Variable
+		expectedRes *variable.Variable
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("58c48f6a-cce2-11ec-9826-af5811eeea09"),
-			map[string]string{
+			activeflowID: uuid.FromStringOrNil("58c48f6a-cce2-11ec-9826-af5811eeea09"),
+			variables: map[string]string{
 				"key1": "val1",
 			},
 
-			&variable.Variable{
+			expectedRes: &variable.Variable{
 				ID: uuid.FromStringOrNil("58c48f6a-cce2-11ec-9826-af5811eeea09"),
 				Variables: map[string]string{
 					"key1": "val1",
@@ -51,16 +51,16 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().VariableCreate(ctx, tt.expectRes).Return(nil)
-			mockDB.EXPECT().VariableGet(ctx, tt.activeflowID).Return(tt.expectRes, nil)
+			mockDB.EXPECT().VariableCreate(ctx, tt.expectedRes).Return(nil)
+			mockDB.EXPECT().VariableGet(ctx, tt.activeflowID).Return(tt.expectedRes, nil)
 
 			res, err := h.Create(ctx, tt.activeflowID, tt.variables)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(tt.expectedRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 
 		})
@@ -74,19 +74,19 @@ func Test_Set(t *testing.T) {
 
 		variable *variable.Variable
 
-		expectRes *variable.Variable
+		expectedRes *variable.Variable
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&variable.Variable{
+			variable: &variable.Variable{
 				ID: uuid.FromStringOrNil("2204f07c-cce3-11ec-9ea6-6ba29dbf88ff"),
 				Variables: map[string]string{
 					"key1": "val1",
 				},
 			},
 
-			&variable.Variable{
+			expectedRes: &variable.Variable{
 				ID: uuid.FromStringOrNil("2204f07c-cce3-11ec-9ea6-6ba29dbf88ff"),
 				Variables: map[string]string{
 					"key1": "val1",
@@ -127,23 +127,23 @@ func Test_SetVariable(t *testing.T) {
 
 		responseVariable *variable.Variable
 
-		updateVariable *variable.Variable
+		expectedUpdateVariable *variable.Variable
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("57bbaa4e-cce3-11ec-a843-63d14c3175c9"),
-			map[string]string{
+			id: uuid.FromStringOrNil("57bbaa4e-cce3-11ec-a843-63d14c3175c9"),
+			variables: map[string]string{
 				"key 1": "value 1",
 				"key 2": "value 2",
 			},
 
-			&variable.Variable{
+			responseVariable: &variable.Variable{
 				ID:        uuid.FromStringOrNil("57bbaa4e-cce3-11ec-a843-63d14c3175c9"),
 				Variables: map[string]string{},
 			},
 
-			&variable.Variable{
+			expectedUpdateVariable: &variable.Variable{
 				ID: uuid.FromStringOrNil("57bbaa4e-cce3-11ec-a843-63d14c3175c9"),
 				Variables: map[string]string{
 					"key 1": "value 1",
@@ -152,21 +152,21 @@ func Test_SetVariable(t *testing.T) {
 			},
 		},
 		{
-			"variable reference a variable",
+			name: "variable reference a variable",
 
-			uuid.FromStringOrNil("ea7d3a8c-dd55-11ec-81be-6b4cb5e0f3a8"),
-			map[string]string{
+			id: uuid.FromStringOrNil("ea7d3a8c-dd55-11ec-81be-6b4cb5e0f3a8"),
+			variables: map[string]string{
 				"key 1": "${test.variable}",
 			},
 
-			&variable.Variable{
+			responseVariable: &variable.Variable{
 				ID: uuid.FromStringOrNil("ea7d3a8c-dd55-11ec-81be-6b4cb5e0f3a8"),
 				Variables: map[string]string{
 					"test.variable": "variable 2",
 				},
 			},
 
-			&variable.Variable{
+			expectedUpdateVariable: &variable.Variable{
 				ID: uuid.FromStringOrNil("ea7d3a8c-dd55-11ec-81be-6b4cb5e0f3a8"),
 				Variables: map[string]string{
 					"test.variable": "variable 2",
@@ -189,7 +189,7 @@ func Test_SetVariable(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().VariableGet(ctx, tt.id).Return(tt.responseVariable, nil)
-			mockDB.EXPECT().VariableUpdate(ctx, tt.updateVariable).Return(nil)
+			mockDB.EXPECT().VariableUpdate(ctx, tt.expectedUpdateVariable).Return(nil)
 
 			if err := h.SetVariable(ctx, tt.id, tt.variables); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -209,15 +209,15 @@ func Test_DeleteVariable(t *testing.T) {
 
 		responseVariable *variable.Variable
 
-		expectupdateVariable *variable.Variable
+		expectedUpdateVariable *variable.Variable
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("588f8bc6-db2e-11ec-a327-5374999e8287"),
-			"key 1",
+			id:  uuid.FromStringOrNil("588f8bc6-db2e-11ec-a327-5374999e8287"),
+			key: "key 1",
 
-			&variable.Variable{
+			responseVariable: &variable.Variable{
 				ID: uuid.FromStringOrNil("588f8bc6-db2e-11ec-a327-5374999e8287"),
 				Variables: map[string]string{
 					"key 1": "value 1",
@@ -225,7 +225,7 @@ func Test_DeleteVariable(t *testing.T) {
 				},
 			},
 
-			&variable.Variable{
+			expectedUpdateVariable: &variable.Variable{
 				ID: uuid.FromStringOrNil("588f8bc6-db2e-11ec-a327-5374999e8287"),
 				Variables: map[string]string{
 					"key 2": "value 2",
@@ -247,7 +247,7 @@ func Test_DeleteVariable(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().VariableGet(ctx, tt.id).Return(tt.responseVariable, nil)
-			mockDB.EXPECT().VariableUpdate(ctx, tt.expectupdateVariable).Return(nil)
+			mockDB.EXPECT().VariableUpdate(ctx, tt.expectedUpdateVariable).Return(nil)
 
 			if err := h.DeleteVariable(ctx, tt.id, tt.key); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
