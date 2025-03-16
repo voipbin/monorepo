@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/flow"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
@@ -22,7 +23,9 @@ func TestActionGet(t *testing.T) {
 		{
 			"test normal",
 			&flow.Flow{
-				ID: uuid.Must(uuid.NewV4()),
+				Identity: commonidentity.Identity{
+					ID: uuid.Must(uuid.NewV4()),
+				},
 				Actions: []action.Action{
 					{
 						ID:   uuid.Must(uuid.NewV4()),

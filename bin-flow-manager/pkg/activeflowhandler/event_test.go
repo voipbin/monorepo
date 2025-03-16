@@ -37,7 +37,9 @@ func Test_EventCallHangup(t *testing.T) {
 				ActiveFlowID: uuid.FromStringOrNil("442965e0-ecd8-11ee-b7dd-0bad460f1c42"),
 			},
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("442965e0-ecd8-11ee-b7dd-0bad460f1c42"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("442965e0-ecd8-11ee-b7dd-0bad460f1c42"),
+				},
 			},
 		},
 	}
@@ -101,12 +103,16 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			},
 			responseActiveflows: []*activeflow.Activeflow{
 				{
-					ID:       uuid.FromStringOrNil("83faabd2-ecdf-11ee-bed3-3f83c1ac3dbd"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("83faabd2-ecdf-11ee-bed3-3f83c1ac3dbd"),
+					},
 					Status:   activeflow.StatusEnded,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("8454d30a-ecdf-11ee-939e-c7eac852f244"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("8454d30a-ecdf-11ee-939e-c7eac852f244"),
+					},
 					Status:   activeflow.StatusEnded,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},

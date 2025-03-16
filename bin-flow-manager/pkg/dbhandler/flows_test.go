@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	uuid "github.com/gofrs/uuid"
@@ -27,12 +28,16 @@ func Test_FlowCreate(t *testing.T) {
 		{
 			"have no actions",
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
+				},
 				Name:   "test flow name",
 				Detail: "test flow detail",
 			},
 			&flow.Flow{
-				ID:       uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
+				},
 				Name:     "test flow name",
 				Detail:   "test flow detail",
 				Persist:  true,
@@ -43,7 +48,9 @@ func Test_FlowCreate(t *testing.T) {
 		{
 			"have 1 action echo without option",
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
+				},
 				Name:   "test flow name",
 				Detail: "test flow detail",
 				Actions: []action.Action{
@@ -54,7 +61,9 @@ func Test_FlowCreate(t *testing.T) {
 				},
 			},
 			&flow.Flow{
-				ID:      uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
+				},
 				Name:    "test flow name",
 				Detail:  "test flow detail",
 				Persist: true,
@@ -71,7 +80,9 @@ func Test_FlowCreate(t *testing.T) {
 		{
 			"have 1 action echo with option",
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
+				},
 				Name:   "test flow name",
 				Detail: "test flow detail",
 				Actions: []action.Action{
@@ -83,7 +94,9 @@ func Test_FlowCreate(t *testing.T) {
 				},
 			},
 			&flow.Flow{
-				ID:      uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
+				},
 				Name:    "test flow name",
 				Detail:  "test flow detail",
 				Persist: true,
@@ -152,16 +165,20 @@ func Test_FlowGets(t *testing.T) {
 			"normal",
 			[]flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("3449b114-eccb-11ee-bac0-9b1dbae9fdf2"),
-					CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
-					Name:       "test1",
-					Persist:    true,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("3449b114-eccb-11ee-bac0-9b1dbae9fdf2"),
+						CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
+					},
+					Name:    "test1",
+					Persist: true,
 				},
 				{
-					ID:         uuid.FromStringOrNil("349c7cfa-eccb-11ee-87cc-6b61ba525e13"),
-					CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
-					Name:       "test2",
-					Persist:    true,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("349c7cfa-eccb-11ee-87cc-6b61ba525e13"),
+						CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
+					},
+					Name:    "test2",
+					Persist: true,
 				},
 			},
 
@@ -173,20 +190,24 @@ func Test_FlowGets(t *testing.T) {
 
 			[]*flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("349c7cfa-eccb-11ee-87cc-6b61ba525e13"),
-					CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
-					Name:       "test2",
-					Persist:    true,
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("349c7cfa-eccb-11ee-87cc-6b61ba525e13"),
+						CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
+					},
+					Name:     "test2",
+					Persist:  true,
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("3449b114-eccb-11ee-bac0-9b1dbae9fdf2"),
-					CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
-					Name:       "test1",
-					Persist:    true,
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("3449b114-eccb-11ee-bac0-9b1dbae9fdf2"),
+						CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
+					},
+					Name:     "test1",
+					Persist:  true,
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -194,11 +215,13 @@ func Test_FlowGets(t *testing.T) {
 			"has filter type",
 			[]flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("54bee342-eccb-11ee-acb8-1358b69975c0"),
-					CustomerID: uuid.FromStringOrNil("54e61d5e-eccb-11ee-8af8-639740efc157"),
-					Type:       flow.TypeFlow,
-					Name:       "test filter type",
-					Persist:    true,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("54bee342-eccb-11ee-acb8-1358b69975c0"),
+						CustomerID: uuid.FromStringOrNil("54e61d5e-eccb-11ee-8af8-639740efc157"),
+					},
+					Type:    flow.TypeFlow,
+					Name:    "test filter type",
+					Persist: true,
 				},
 			},
 
@@ -211,13 +234,15 @@ func Test_FlowGets(t *testing.T) {
 
 			[]*flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("54bee342-eccb-11ee-acb8-1358b69975c0"),
-					CustomerID: uuid.FromStringOrNil("54e61d5e-eccb-11ee-8af8-639740efc157"),
-					Type:       flow.TypeFlow,
-					Name:       "test filter type",
-					Persist:    true,
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("54bee342-eccb-11ee-acb8-1358b69975c0"),
+						CustomerID: uuid.FromStringOrNil("54e61d5e-eccb-11ee-8af8-639740efc157"),
+					},
+					Type:     flow.TypeFlow,
+					Name:     "test filter type",
+					Persist:  true,
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -277,7 +302,9 @@ func Test_FlowUpdate(t *testing.T) {
 		{
 			"test normal",
 			&flow.Flow{
-				ID: uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
+				},
 			},
 
 			"test name",
@@ -290,7 +317,9 @@ func Test_FlowUpdate(t *testing.T) {
 			},
 
 			&flow.Flow{
-				ID:      uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8d2abdc6-6760-11eb-b328-f76a25eb9e38"),
+				},
 				Name:    "test name",
 				Detail:  "test detail",
 				Persist: true,
@@ -305,7 +334,9 @@ func Test_FlowUpdate(t *testing.T) {
 		{
 			"2 actions",
 			&flow.Flow{
-				ID: uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
+				},
 			},
 
 			"test name",
@@ -322,7 +353,9 @@ func Test_FlowUpdate(t *testing.T) {
 			},
 
 			&flow.Flow{
-				ID:      uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c19618de-6761-11eb-90f0-eb3bb8690b31"),
+				},
 				Name:    "test name",
 				Detail:  "test detail",
 				Persist: true,
@@ -393,12 +426,14 @@ func Test_FlowDelete(t *testing.T) {
 		{
 			"normal",
 			&flow.Flow{
-				ID:         uuid.FromStringOrNil("9f59d11a-67c1-11eb-9cf4-1b8a94365c22"),
-				CustomerID: uuid.FromStringOrNil("cf304d36-7f46-11ec-9455-93fccf7c0fdf"),
-				Name:       "test flow name",
-				Detail:     "test flow detail",
-				TMCreate:   "2020-04-18T03:22:17.995000",
-				TMDelete:   DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9f59d11a-67c1-11eb-9cf4-1b8a94365c22"),
+					CustomerID: uuid.FromStringOrNil("cf304d36-7f46-11ec-9455-93fccf7c0fdf"),
+				},
+				Name:     "test flow name",
+				Detail:   "test flow detail",
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -450,7 +485,9 @@ func Test_FlowUpdateActions(t *testing.T) {
 		{
 			"test normal",
 			&flow.Flow{
-				ID:      uuid.FromStringOrNil("585b7a74-18a0-48ac-b4c5-1ba5ddea87ae"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("585b7a74-18a0-48ac-b4c5-1ba5ddea87ae"),
+				},
 				Name:    "test name",
 				Detail:  "test detail",
 				Persist: true,
@@ -464,7 +501,9 @@ func Test_FlowUpdateActions(t *testing.T) {
 			},
 
 			&flow.Flow{
-				ID:      uuid.FromStringOrNil("585b7a74-18a0-48ac-b4c5-1ba5ddea87ae"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("585b7a74-18a0-48ac-b4c5-1ba5ddea87ae"),
+				},
 				Name:    "test name",
 				Detail:  "test detail",
 				Persist: true,

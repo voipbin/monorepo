@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -39,7 +40,9 @@ func Test_Execute(t *testing.T) {
 			uuid.FromStringOrNil("bef23280-a7ab-11ec-8e79-1b236556e34d"),
 
 			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("bef23280-a7ab-11ec-8e79-1b236556e34d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bef23280-a7ab-11ec-8e79-1b236556e34d"),
+				},
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -125,7 +128,9 @@ func Test_ExecuteNextAction(t *testing.T) {
 			uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
 			uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
 			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
+				},
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
 					Type: action.TypeAnswer,
@@ -161,7 +166,9 @@ func Test_ExecuteNextAction(t *testing.T) {
 			uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
 			action.IDStart,
 			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
+				},
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -197,7 +204,9 @@ func Test_ExecuteNextAction(t *testing.T) {
 			uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
 			uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
 			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
+				},
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
 				},
@@ -364,7 +373,9 @@ func Test_executeAction(t *testing.T) {
 			"normal",
 
 			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("f01970ee-f49f-11ec-a545-8bd387ee59d4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f01970ee-f49f-11ec-a545-8bd387ee59d4"),
+				},
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("00b40040-f4a0-11ec-844f-bf9b5ac7bc7a"),
 					Type: action.TypeAnswer,

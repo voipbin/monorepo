@@ -3,16 +3,14 @@ package flow
 import (
 	"encoding/json"
 
-	"github.com/gofrs/uuid"
-
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 )
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	Type       Type      `json:"type"`
+	commonidentity.Identity
+	Type Type `json:"type"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
@@ -27,9 +25,8 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Flow) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
-		Type:       h.Type,
+		Identity: h.Identity,
+		Type:     h.Type,
 
 		Name:   h.Name,
 		Detail: h.Detail,

@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/stack"
 )
@@ -24,8 +25,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 			name: "string equal match",
 
 			activeflow: &Activeflow{
-				ID:            uuid.FromStringOrNil("3e6879cc-bc6b-11ee-8ba5-1fd7ab9b740f"),
-				CustomerID:    uuid.FromStringOrNil("7a112bae-bc6b-11ee-912a-bb8b9a34d084"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3e6879cc-bc6b-11ee-8ba5-1fd7ab9b740f"),
+					CustomerID: uuid.FromStringOrNil("7a112bae-bc6b-11ee-912a-bb8b9a34d084"),
+				},
 				FlowID:        uuid.FromStringOrNil("7a717810-bc6b-11ee-ba93-17ff10a17809"),
 				Status:        StatusRunning,
 				ReferenceType: ReferenceTypeCall,
@@ -60,8 +63,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 			},
 
 			expectRes: &WebhookMessage{
-				ID:            uuid.FromStringOrNil("3e6879cc-bc6b-11ee-8ba5-1fd7ab9b740f"),
-				CustomerID:    uuid.FromStringOrNil("7a112bae-bc6b-11ee-912a-bb8b9a34d084"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3e6879cc-bc6b-11ee-8ba5-1fd7ab9b740f"),
+					CustomerID: uuid.FromStringOrNil("7a112bae-bc6b-11ee-912a-bb8b9a34d084"),
+				},
 				FlowID:        uuid.FromStringOrNil("7a717810-bc6b-11ee-ba93-17ff10a17809"),
 				Status:        StatusRunning,
 				ReferenceType: ReferenceTypeCall,

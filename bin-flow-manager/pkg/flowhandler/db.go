@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/flow"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
@@ -57,9 +58,11 @@ func (h *flowHandler) Create(
 
 	id := uuid.Must(uuid.NewV4())
 	f := &flow.Flow{
-		ID:         id,
-		CustomerID: customerID,
-		Type:       flowType,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Type: flowType,
 
 		Name:   name,
 		Detail: detail,

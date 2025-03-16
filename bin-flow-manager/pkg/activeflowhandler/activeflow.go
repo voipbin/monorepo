@@ -31,13 +31,13 @@ func (h *activeflowHandler) Delete(ctx context.Context, id uuid.UUID) (*activefl
 	}
 
 	if a.Status != activeflow.StatusEnded {
-		log.Debugf("The activeflow is not ended. Stopping the activeflow. activeflow_id: %s, status: %s", a.ID, a.Status)
+		log.Debugf("The activeflow is not ended. Stopping the activeflow. activeflow_id: %s, status: %s", a.Identity.ID, a.Status)
 		tmp, err := h.Stop(ctx, id)
 		if err != nil {
 			log.Errorf("Could not stop the activeflow. err: %v", err)
 			return nil, err
 		}
-		log.Debugf("Stopped activeflow. activeflow_id: %s", tmp.ID)
+		log.Debugf("Stopped activeflow. activeflow_id: %s", tmp.Identity.ID)
 	}
 
 	res, err := h.dbDelete(ctx, id)

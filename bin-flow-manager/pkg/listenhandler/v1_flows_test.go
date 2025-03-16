@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -187,9 +188,11 @@ func Test_v1FlowsGet(t *testing.T) {
 
 			[]*flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
-					CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
-					Type:       flow.TypeFlow,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
+						CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+					},
+					Type: flow.TypeFlow,
 					Actions: []action.Action{
 						{
 							Type: action.TypeAnswer,
@@ -222,9 +225,11 @@ func Test_v1FlowsGet(t *testing.T) {
 
 			[]*flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("e1acb018-b099-11ee-b942-ebca8278ad69"),
-					CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
-					Type:       flow.TypeFlow,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("e1acb018-b099-11ee-b942-ebca8278ad69"),
+						CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+					},
+					Type: flow.TypeFlow,
 					Actions: []action.Action{
 						{
 							Type: action.TypeAnswer,
@@ -255,9 +260,11 @@ func Test_v1FlowsGet(t *testing.T) {
 
 			[]*flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("13a7aeaa-0c4d-11eb-8210-073d8779e386"),
-					CustomerID: uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
-					Type:       flow.TypeFlow,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("13a7aeaa-0c4d-11eb-8210-073d8779e386"),
+						CustomerID: uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
+					},
+					Type: flow.TypeFlow,
 					Actions: []action.Action{
 						{
 							Type: action.TypeAnswer,
@@ -265,9 +272,11 @@ func Test_v1FlowsGet(t *testing.T) {
 					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("3645134e-0c4d-11eb-a2da-4bb8abe75c48"),
-					CustomerID: uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
-					Type:       flow.TypeFlow,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("3645134e-0c4d-11eb-a2da-4bb8abe75c48"),
+						CustomerID: uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
+					},
+					Type: flow.TypeFlow,
 					Actions: []action.Action{
 						{
 							Type: action.TypeEcho,
@@ -321,9 +330,11 @@ func Test_v1FlowsGet(t *testing.T) {
 
 			[]*flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
-					CustomerID: uuid.FromStringOrNil("49e66560-7f4c-11ec-9d15-2396902a0309"),
-					Type:       flow.TypeFlow,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
+						CustomerID: uuid.FromStringOrNil("49e66560-7f4c-11ec-9d15-2396902a0309"),
+					},
+					Type: flow.TypeFlow,
 					Actions: []action.Action{
 						{
 							Type: action.TypeAnswer,
@@ -435,7 +446,9 @@ func Test_v1FlowsIDGet(t *testing.T) {
 			},
 
 			&flow.Flow{
-				ID:   uuid.FromStringOrNil("01677a56-0c2d-11eb-96cb-eb2cd309ca81"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("01677a56-0c2d-11eb-96cb-eb2cd309ca81"),
+				},
 				Type: flow.TypeFlow,
 				Actions: []action.Action{
 					{
@@ -459,7 +472,9 @@ func Test_v1FlowsIDGet(t *testing.T) {
 			},
 
 			&flow.Flow{
-				ID:      uuid.FromStringOrNil("53b8aeb4-822b-11eb-82fe-a3c14b4e38de"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("53b8aeb4-822b-11eb-82fe-a3c14b4e38de"),
+				},
 				Type:    flow.TypeFlow,
 				Persist: true,
 				Actions: []action.Action{
@@ -539,7 +554,9 @@ func Test_v1FlowsIDPut(t *testing.T) {
 			},
 
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
+				},
 				Name:   "update name",
 				Detail: "update detail",
 				Actions: []action.Action{
@@ -609,7 +626,9 @@ func Test_v1FlowsIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
 
 			&flow.Flow{
-				ID: uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -678,7 +697,9 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 			},
 
 			&flow.Flow{
-				ID:     uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
+				},
 				Name:   "update name",
 				Detail: "update detail",
 				Actions: []action.Action{

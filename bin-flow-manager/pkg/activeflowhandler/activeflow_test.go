@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -31,7 +32,9 @@ func Test_Delete(t *testing.T) {
 			id: uuid.FromStringOrNil("57214714-f168-11ee-9706-6f34dc976036"),
 
 			responseActiveflow: &activeflow.Activeflow{
-				ID:       uuid.FromStringOrNil("57214714-f168-11ee-9706-6f34dc976036"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("57214714-f168-11ee-9706-6f34dc976036"),
+				},
 				Status:   activeflow.StatusEnded,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
@@ -58,9 +61,9 @@ func Test_Delete(t *testing.T) {
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
 
-			mockDB.EXPECT().ActiveflowDelete(ctx, tt.responseActiveflow.ID).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.responseActiveflow.ID).Return(tt.responseActiveflow, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowDeleted, tt.responseActiveflow)
+			mockDB.EXPECT().ActiveflowDelete(ctx, tt.responseActiveflow.Identity.ID).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.responseActiveflow.Identity.ID).Return(tt.responseActiveflow, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.Identity.CustomerID, activeflow.EventTypeActiveflowDeleted, tt.responseActiveflow)
 
 			res, err := h.Delete(ctx, tt.id)
 			if err != nil {
