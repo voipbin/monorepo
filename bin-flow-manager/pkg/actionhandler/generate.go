@@ -24,7 +24,7 @@ func (h *actionHandler) GenerateFlowActions(ctx context.Context, actions []actio
 	for _, a := range actions {
 		tmpAction := a
 		if tmpAction.ID == uuid.Nil {
-			tmpAction.ID = uuid.Must(uuid.NewV4())
+			tmpAction.ID = h.utilHandler.UUIDCreate()
 		}
 		res = append(res, tmpAction)
 	}

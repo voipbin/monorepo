@@ -7,11 +7,14 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-flow-manager/models/action"
 )
 
 // actionHandler defines
-type actionHandler struct{}
+type actionHandler struct {
+	utilHandler utilhandler.UtilHandler
+}
 
 // ActionHandler fefines
 type ActionHandler interface {
@@ -22,5 +25,7 @@ type ActionHandler interface {
 
 // NewActionHandler returns ActionHandler
 func NewActionHandler() ActionHandler {
-	return &actionHandler{}
+	return &actionHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+	}
 }

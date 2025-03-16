@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -25,27 +26,33 @@ func TestGenerateFlowForAgentCall(t *testing.T) {
 		customerID   uuid.UUID
 		confbridgeID uuid.UUID
 
-		expectReqActions []action.Action
-		responseFlow     *flow.Flow
-		expectRes        *flow.Flow
+		responseFlow *flow.Flow
+
+		expectedReqActions []action.Action
+		expectedRes        *flow.Flow
 	}{
 		{
-			"test normal",
+			name: "test normal",
 
-			uuid.FromStringOrNil("e8d81018-8ca5-11ec-99e0-6ff2cca2a2d9"),
-			uuid.FromStringOrNil("e926b54c-8ca5-11ec-84bf-036e13d83721"),
+			customerID:   uuid.FromStringOrNil("e8d81018-8ca5-11ec-99e0-6ff2cca2a2d9"),
+			confbridgeID: uuid.FromStringOrNil("e926b54c-8ca5-11ec-84bf-036e13d83721"),
 
-			[]action.Action{
+			responseFlow: &flow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4abf1d80-8ca6-11ec-b130-7b0a22a773f8"),
+				},
+			},
+
+			expectedReqActions: []action.Action{
 				{
 					Type:   action.TypeConfbridgeJoin,
 					Option: []byte(`{"confbridge_id":"e926b54c-8ca5-11ec-84bf-036e13d83721"}`),
 				},
 			},
-			&flow.Flow{
-				ID: uuid.FromStringOrNil("4abf1d80-8ca6-11ec-b130-7b0a22a773f8"),
-			},
-			&flow.Flow{
-				ID: uuid.FromStringOrNil("4abf1d80-8ca6-11ec-b130-7b0a22a773f8"),
+			expectedRes: &flow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4abf1d80-8ca6-11ec-b130-7b0a22a773f8"),
+				},
 			},
 		},
 	}
@@ -68,14 +75,14 @@ func TestGenerateFlowForAgentCall(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectReqActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectedReqActions, false).Return(tt.responseFlow, nil)
 			res, err := h.generateFlowForAgentCall(ctx, tt.customerID, tt.confbridgeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			if !reflect.DeepEqual(res, tt.expectedRes) {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectedRes, res)
 			}
 		})
 	}

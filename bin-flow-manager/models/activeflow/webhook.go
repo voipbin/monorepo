@@ -5,13 +5,13 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 )
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	FlowID uuid.UUID `json:"flow_id"`
 	Status Status    `json:"status"`
@@ -33,8 +33,7 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Activeflow) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
+		Identity: h.Identity,
 
 		FlowID: h.FlowID,
 		Status: h.Status,

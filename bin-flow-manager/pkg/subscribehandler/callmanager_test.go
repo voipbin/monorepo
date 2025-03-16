@@ -20,7 +20,7 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 		name  string
 		event *sock.Event
 
-		expectCall *cmcall.Call
+		expectedCall *cmcall.Call
 	}{
 		{
 			name: "normal",
@@ -32,7 +32,7 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 				Data:      []byte(`{"id":"561df120-ecd9-11ee-9355-b7deef352acc"}`),
 			},
 
-			expectCall: &cmcall.Call{
+			expectedCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("561df120-ecd9-11ee-9355-b7deef352acc"),
 				},
@@ -53,7 +53,7 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().EventCallHangup(gomock.Any(), tt.expectCall).Return(nil)
+			mockActive.EXPECT().EventCallHangup(gomock.Any(), tt.expectedCall).Return(nil)
 
 			h.processEvent(tt.event)
 		})

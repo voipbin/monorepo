@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/stack"
@@ -41,8 +42,10 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 
 	// create activeflow
 	tmp := &activeflow.Activeflow{
-		ID:         activeflowID,
-		CustomerID: f.CustomerID,
+		Identity: commonidentity.Identity{
+			ID:         activeflowID,
+			CustomerID: f.CustomerID,
+		},
 
 		Status: activeflow.StatusRunning,
 		FlowID: flowID,

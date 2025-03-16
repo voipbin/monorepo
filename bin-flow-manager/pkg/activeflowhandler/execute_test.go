@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -34,12 +35,14 @@ func Test_Execute(t *testing.T) {
 		responseAction     *action.Action
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("bef23280-a7ab-11ec-8e79-1b236556e34d"),
+			id: uuid.FromStringOrNil("bef23280-a7ab-11ec-8e79-1b236556e34d"),
 
-			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("bef23280-a7ab-11ec-8e79-1b236556e34d"),
+			responseActiveflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bef23280-a7ab-11ec-8e79-1b236556e34d"),
+				},
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -56,8 +59,8 @@ func Test_Execute(t *testing.T) {
 					},
 				},
 			},
-			stack.IDMain,
-			&action.Action{
+			responseStackID: stack.IDMain,
+			responseAction: &action.Action{
 				ID:   uuid.FromStringOrNil("13c4e65e-a7ac-11ec-971e-0374e19101d3"),
 				Type: action.TypeAnswer,
 			},
@@ -112,20 +115,23 @@ func Test_ExecuteNextAction(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id                 uuid.UUID
-		actionID           uuid.UUID
-		responseActiveflow *activeflow.Activeflow
+		id       uuid.UUID
+		actionID uuid.UUID
 
-		responseStackID uuid.UUID
-		responseAction  *action.Action
+		responseActiveflow *activeflow.Activeflow
+		responseStackID    uuid.UUID
+		responseAction     *action.Action
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
-			uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
-			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
+			id:       uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
+			actionID: uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
+
+			responseActiveflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
+				},
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
 					Type: action.TypeAnswer,
@@ -148,20 +154,22 @@ func Test_ExecuteNextAction(t *testing.T) {
 					},
 				},
 			},
-
-			stack.IDMain,
-			&action.Action{
+			responseStackID: stack.IDMain,
+			responseAction: &action.Action{
 				ID:   uuid.FromStringOrNil("04bda23e-d4c7-11ec-a8a4-9ffff59826c6"),
 				Type: action.TypeAnswer,
 			},
 		},
 		{
-			"current id start",
+			name: "current id start",
 
-			uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
-			action.IDStart,
-			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
+			id:       uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
+			actionID: action.IDStart,
+
+			responseActiveflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
+				},
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -184,20 +192,22 @@ func Test_ExecuteNextAction(t *testing.T) {
 					},
 				},
 			},
-
-			stack.IDMain,
-			&action.Action{
+			responseStackID: stack.IDMain,
+			responseAction: &action.Action{
 				ID:   uuid.FromStringOrNil("97f96f9c-08a4-11eb-8ea0-57d38a96eca3"),
 				Type: action.TypeAnswer,
 			},
 		},
 		{
-			"forward action id has set",
+			name: "forward action id has set",
 
-			uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
-			uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
-			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
+			id:       uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
+			actionID: uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
+
+			responseActiveflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
+				},
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
 				},
@@ -229,9 +239,8 @@ func Test_ExecuteNextAction(t *testing.T) {
 					},
 				},
 			},
-
-			stack.IDMain,
-			&action.Action{
+			responseStackID: stack.IDMain,
+			responseAction: &action.Action{
 				ID:   uuid.FromStringOrNil("ab88bd9a-5733-11ec-9fa5-df017a802cfc"),
 				Type: action.TypeAnswer,
 			},
@@ -297,18 +306,20 @@ func Test_ExecuteNextAction(t *testing.T) {
 func Test_ExecuteNextActionError(t *testing.T) {
 
 	tests := []struct {
-		name     string
+		name string
+
 		id       uuid.UUID
 		actionID uuid.UUID
 
 		responseActiveflow *activeflow.Activeflow
 	}{
 		{
-			"stackhandler's GetNextAction returns error",
-			uuid.FromStringOrNil("085f48fc-08a4-11eb-8ef3-675e25cbc25c"),
-			action.IDStart,
+			name: "stackhandler's GetNextAction returns error",
 
-			&activeflow.Activeflow{
+			id:       uuid.FromStringOrNil("085f48fc-08a4-11eb-8ef3-675e25cbc25c"),
+			actionID: action.IDStart,
+
+			responseActiveflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -358,13 +369,15 @@ func Test_executeAction(t *testing.T) {
 
 		activeflow *activeflow.Activeflow
 
-		expectRes *action.Action
+		expectedRes *action.Action
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("f01970ee-f49f-11ec-a545-8bd387ee59d4"),
+			activeflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f01970ee-f49f-11ec-a545-8bd387ee59d4"),
+				},
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("00b40040-f4a0-11ec-844f-bf9b5ac7bc7a"),
 					Type: action.TypeAnswer,
@@ -372,7 +385,7 @@ func Test_executeAction(t *testing.T) {
 				ReferenceType: activeflow.ReferenceTypeCall,
 			},
 
-			&action.Action{
+			expectedRes: &action.Action{
 				ID:   uuid.FromStringOrNil("00b40040-f4a0-11ec-844f-bf9b5ac7bc7a"),
 				Type: action.TypeAnswer,
 			},
@@ -404,8 +417,8 @@ func Test_executeAction(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
