@@ -29,8 +29,6 @@ func Test_Create(t *testing.T) {
 		content      string
 		attachments  []email.Attachment
 
-		responseSubject             string
-		responseContent             string
 		responseUUID                uuid.UUID
 		responseProviderReferenceID string
 
@@ -58,8 +56,6 @@ func Test_Create(t *testing.T) {
 				},
 			},
 
-			responseSubject:             "updated subject",
-			responseContent:             "updated content",
 			responseUUID:                uuid.FromStringOrNil("8756a2dc-0083-11f0-a7bd-bf369e143079"),
 			responseProviderReferenceID: "877ba028-0083-11f0-9831-3b71bd00b552",
 
@@ -79,8 +75,8 @@ func Test_Create(t *testing.T) {
 					},
 				},
 				Status:  email.StatusInitiated,
-				Subject: "updated subject",
-				Content: "updated content",
+				Subject: "test subject",
+				Content: "test content",
 				Attachments: []email.Attachment{
 					{
 						ReferenceType: email.AttachmentReferenceTypeRecording,
@@ -104,8 +100,8 @@ func Test_Create(t *testing.T) {
 					},
 				},
 				Status:  email.StatusInitiated,
-				Subject: "updated subject",
-				Content: "updated content",
+				Subject: "test subject",
+				Content: "test content",
 				Attachments: []email.Attachment{
 					{
 						ReferenceType: email.AttachmentReferenceTypeRecording,
@@ -137,11 +133,6 @@ func Test_Create(t *testing.T) {
 			}
 
 			ctx := context.Background()
-
-			if tt.activeflowID != uuid.Nil {
-				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.subject).Return(tt.responseSubject, nil)
-				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.content).Return(tt.responseContent, nil)
-			}
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().EmailCreate(ctx, tt.expectEmail).Return(nil)
