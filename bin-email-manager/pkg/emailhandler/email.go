@@ -20,26 +20,6 @@ func (h *emailHandler) Create(
 	content string,
 	attachments []email.Attachment,
 ) (*email.Email, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "Create",
-		"activeflow_id": activeflowID,
-	})
-
-	var err error
-	tmpSubject := subject
-	tmpContent := content
-	if activeflowID != uuid.Nil {
-		tmpSubject, err = h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, subject)
-		if err != nil {
-			log.Errorf("Could not substitute subject. err: %v", err)
-		}
-
-		tmpContent, err = h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, content)
-		if err != nil {
-			log.Errorf("Could not substitute content. err: %v", err)
-		}
-	}
-
 	// validate destinations
 	for _, destination := range destinations {
 		if !h.validateEmailAddress(destination) {
@@ -47,7 +27,7 @@ func (h *emailHandler) Create(
 		}
 	}
 
-	res, err := h.create(ctx, customerID, activeflowID, email.ProviderTypeSendgrid, defaultSource, destinations, tmpSubject, tmpContent, attachments)
+	res, err := h.create(ctx, customerID, activeflowID, email.ProviderTypeSendgrid, defaultSource, destinations, subject, content, attachments)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create email")
 	}
