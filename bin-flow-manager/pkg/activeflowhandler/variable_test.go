@@ -27,7 +27,7 @@ func Test_variableSubstitueAddress(t *testing.T) {
 		responseSubTarget     string
 		responseSubTargetName string
 
-		expectRes *commonaddress.Address
+		expectedRes *commonaddress.Address
 	}{
 		{
 			name: "normal",
@@ -46,7 +46,7 @@ func Test_variableSubstitueAddress(t *testing.T) {
 			responseSubName:       "variable name",
 			responseSubDetail:     "variable detail",
 
-			expectRes: &commonaddress.Address{
+			expectedRes: &commonaddress.Address{
 				Type:       commonaddress.TypeTel,
 				Target:     "+821100000001",
 				TargetName: "variable target name",
@@ -76,8 +76,8 @@ func Test_variableSubstitueAddress(t *testing.T) {
 			mockVar.EXPECT().SubstituteString(ctx, tt.address.TargetName, tt.v).Return(tt.responseSubTargetName)
 
 			h.variableSubstitueAddress(ctx, tt.address, tt.v)
-			if reflect.DeepEqual(tt.address, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, tt.address)
+			if reflect.DeepEqual(tt.address, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectedRes, tt.address)
 			}
 
 		})

@@ -369,7 +369,7 @@ func Test_executeAction(t *testing.T) {
 
 		activeflow *activeflow.Activeflow
 
-		expectRes *action.Action
+		expectedRes *action.Action
 	}{
 		{
 			name: "normal",
@@ -385,7 +385,7 @@ func Test_executeAction(t *testing.T) {
 				ReferenceType: activeflow.ReferenceTypeCall,
 			},
 
-			expectRes: &action.Action{
+			expectedRes: &action.Action{
 				ID:   uuid.FromStringOrNil("00b40040-f4a0-11ec-844f-bf9b5ac7bc7a"),
 				Type: action.TypeAnswer,
 			},
@@ -417,8 +417,8 @@ func Test_executeAction(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

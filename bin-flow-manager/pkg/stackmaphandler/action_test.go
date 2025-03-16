@@ -408,9 +408,9 @@ func Test_GetNextAction(t *testing.T) {
 		currentStackID uuid.UUID
 		currentAction  *action.Action
 
-		expectResStackID  uuid.UUID
-		expectResAction   *action.Action
-		expectResStackMap map[uuid.UUID]*stack.Stack
+		expectedResStackID  uuid.UUID
+		expectedResAction   *action.Action
+		expectedResStackMap map[uuid.UUID]*stack.Stack
 	}{
 		{
 			name: "next action exist in the same stack",
@@ -438,12 +438,12 @@ func Test_GetNextAction(t *testing.T) {
 				Type: action.TypeAnswer,
 			},
 
-			expectResStackID: stack.IDMain,
-			expectResAction: &action.Action{
+			expectedResStackID: stack.IDMain,
+			expectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -493,12 +493,12 @@ func Test_GetNextAction(t *testing.T) {
 				NextID: uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 			},
 
-			expectResStackID: stack.IDMain,
-			expectResAction: &action.Action{
+			expectedResStackID: stack.IDMain,
+			expectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -570,12 +570,12 @@ func Test_GetNextAction(t *testing.T) {
 				Type: action.TypeAnswer,
 			},
 
-			expectResStackID: stack.IDMain,
-			expectResAction: &action.Action{
+			expectedResStackID: stack.IDMain,
+			expectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -647,12 +647,12 @@ func Test_GetNextAction(t *testing.T) {
 				Type: action.TypeAnswer,
 			},
 
-			expectResStackID: stack.IDMain,
-			expectResAction: &action.Action{
+			expectedResStackID: stack.IDMain,
+			expectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -701,11 +701,11 @@ func Test_GetNextAction(t *testing.T) {
 				ID: action.IDStart,
 			},
 
-			expectResStackID: stack.IDMain,
-			expectResAction: &action.Action{
+			expectedResStackID: stack.IDMain,
+			expectedResAction: &action.Action{
 				ID: uuid.FromStringOrNil("502a96ba-fda4-11ef-85b7-e7df9e7f94c2"),
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -733,16 +733,16 @@ func Test_GetNextAction(t *testing.T) {
 
 			resStackID, resAction := h.GetNextAction(tt.stackMap, tt.currentStackID, tt.currentAction, true)
 
-			if !reflect.DeepEqual(resStackID, tt.expectResStackID) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStackID, resStackID)
+			if !reflect.DeepEqual(resStackID, tt.expectedResStackID) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResStackID, resStackID)
 			}
 
-			if !reflect.DeepEqual(resAction, tt.expectResAction) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResAction, resAction)
+			if !reflect.DeepEqual(resAction, tt.expectedResAction) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResAction, resAction)
 			}
 
-			if !reflect.DeepEqual(tt.stackMap, tt.expectResStackMap) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResAction, resAction)
+			if !reflect.DeepEqual(tt.stackMap, tt.expectedResStackMap) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResAction, resAction)
 			}
 
 		})

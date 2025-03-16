@@ -597,7 +597,7 @@ func Test_dbDelete(t *testing.T) {
 
 		responseGet *activeflow.Activeflow
 
-		expectRes *activeflow.Activeflow
+		expectedRes *activeflow.Activeflow
 	}{
 		{
 			name: "normal",
@@ -610,7 +610,7 @@ func Test_dbDelete(t *testing.T) {
 				},
 			},
 
-			expectRes: &activeflow.Activeflow{
+			expectedRes: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e25d0800-f81c-11ec-8bd9-2b2aa60686f5"),
 				},
@@ -644,8 +644,8 @@ func Test_dbDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

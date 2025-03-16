@@ -243,9 +243,9 @@ func Test_PushStackByActions(t *testing.T) {
 		currentStackID  uuid.UUID
 		currentActionID uuid.UUID
 
-		expectResAction   *action.Action
-		expectResStackMap map[uuid.UUID]*stack.Stack
-		expectRes         *stack.Stack
+		expectedResAction   *action.Action
+		expectedResStackMap map[uuid.UUID]*stack.Stack
+		expectedRes         *stack.Stack
 	}{
 		{
 			name: "empty stack",
@@ -261,11 +261,11 @@ func Test_PushStackByActions(t *testing.T) {
 			currentStackID:  stack.IDEmpty,
 			currentActionID: action.IDEmpty,
 
-			expectResAction: &action.Action{
+			expectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -278,7 +278,7 @@ func Test_PushStackByActions(t *testing.T) {
 					ReturnActionID: action.IDEmpty,
 				},
 			},
-			expectRes: &stack.Stack{
+			expectedRes: &stack.Stack{
 				ID: stack.IDMain,
 				Actions: []action.Action{
 					{
@@ -313,11 +313,11 @@ func Test_PushStackByActions(t *testing.T) {
 			currentStackID:  stack.IDMain,
 			currentActionID: uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 
-			expectResAction: &action.Action{
+			expectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878df"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
@@ -341,7 +341,7 @@ func Test_PushStackByActions(t *testing.T) {
 					ReturnActionID: uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878de"),
 				},
 			},
-			expectRes: &stack.Stack{
+			expectedRes: &stack.Stack{
 				ID: uuid.FromStringOrNil("2976187e-f9cf-11ef-a24b-0379d7b40894"),
 				Actions: []action.Action{
 					{
@@ -375,11 +375,11 @@ func Test_PushStackByActions(t *testing.T) {
 			currentStackID:  stack.IDMain,
 			currentActionID: action.IDEmpty,
 
-			expectResAction: &action.Action{
+			expectedResAction: &action.Action{
 				ID:   uuid.FromStringOrNil("98207410-f928-11ef-aaab-3bd53b1878e0"),
 				Type: action.TypeAnswer,
 			},
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID:             stack.IDMain,
 					Actions:        []action.Action{},
@@ -402,7 +402,7 @@ func Test_PushStackByActions(t *testing.T) {
 					ReturnActionID: action.IDEmpty,
 				},
 			},
-			expectRes: &stack.Stack{
+			expectedRes: &stack.Stack{
 				ID: uuid.FromStringOrNil("074264c2-f9d1-11ef-9150-cbe1e547761d"),
 				Actions: []action.Action{
 					{
@@ -437,15 +437,15 @@ func Test_PushStackByActions(t *testing.T) {
 			}
 			sort.Strings(tmpSort)
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResAction, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResAction, res)
 			}
 
 			i := 0
 			for _, key := range tmpSort {
 				s := tt.stackMap[uuid.FromStringOrNil(key)]
 
-				tmp := getItemByIndex(tt.expectResStackMap, i)
+				tmp := getItemByIndex(tt.expectedResStackMap, i)
 				if tmp == nil {
 					t.Errorf("Wrong match. expect: not nil, got: nil")
 					continue
@@ -470,8 +470,8 @@ func Test_PopStack(t *testing.T) {
 		stackMap map[uuid.UUID]*stack.Stack
 		stackID  uuid.UUID
 
-		expectResStackMap map[uuid.UUID]*stack.Stack
-		expectResStack    *stack.Stack
+		expectedResStackMap map[uuid.UUID]*stack.Stack
+		expectedResStack    *stack.Stack
 	}{
 		{
 			name: "normal",
@@ -501,7 +501,7 @@ func Test_PopStack(t *testing.T) {
 			},
 			stackID: uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"),
 
-			expectResStackMap: map[uuid.UUID]*stack.Stack{
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					Actions: []action.Action{
 						{
@@ -513,7 +513,7 @@ func Test_PopStack(t *testing.T) {
 					ReturnActionID: action.IDEmpty,
 				},
 			},
-			expectResStack: &stack.Stack{
+			expectedResStack: &stack.Stack{
 				ID: uuid.FromStringOrNil("694418b6-f9d9-11ef-9b48-fb6368584463"),
 				Actions: []action.Action{
 					{
@@ -537,12 +537,12 @@ func Test_PopStack(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.stackMap, tt.expectResStackMap) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStackMap, tt.stackMap)
+			if !reflect.DeepEqual(tt.stackMap, tt.expectedResStackMap) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResStackMap, tt.stackMap)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectResStack) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectResStack, res)
+			if !reflect.DeepEqual(res, tt.expectedResStack) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResStack, res)
 			}
 		})
 	}

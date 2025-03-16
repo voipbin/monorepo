@@ -15,7 +15,6 @@ import (
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/flow"
-	"monorepo/bin-flow-manager/models/stack"
 	"monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-flow-manager/pkg/actionhandler"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
@@ -33,7 +32,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 
 		responseFlow *flow.Flow
 
-		expectRes []action.Action
+		expectedRes []action.Action
 	}{
 		{
 			name: "normal",
@@ -54,7 +53,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 				},
 			},
 
-			expectRes: []action.Action{
+			expectedRes: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("16bb5d9c-f47e-11ec-8feb-23613c5e54da"),
 					Type: action.TypeAnswer,
@@ -93,8 +92,8 @@ func Test_getActionsFromFlow(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -113,8 +112,7 @@ func Test_updateNextAction(t *testing.T) {
 		responseAction     *action.Action
 		responseVariable   *variable.Variable
 
-		expectResStackID uuid.UUID
-		expectRes        *activeflow.Activeflow
+		expectedRes *activeflow.Activeflow
 	}{
 		{
 			name: "normal",
@@ -137,8 +135,7 @@ func Test_updateNextAction(t *testing.T) {
 			},
 			responseVariable: &variable.Variable{},
 
-			expectResStackID: stack.IDMain,
-			expectRes: &activeflow.Activeflow{
+			expectedRes: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bfb07efc-0081-11f0-b869-8fbf4d9c8583"),
 				},
@@ -196,8 +193,8 @@ func Test_updateNextAction(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

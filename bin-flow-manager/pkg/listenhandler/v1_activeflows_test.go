@@ -27,11 +27,11 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 
 		responseActiveflow *activeflow.Activeflow
 
-		expectID           uuid.UUID
-		expectRefereceType activeflow.ReferenceType
-		expectRefereceID   uuid.UUID
-		expectFlowID       uuid.UUID
-		expectedRes        *sock.Response
+		expectedID           uuid.UUID
+		expectedRefereceType activeflow.ReferenceType
+		expectedRefereceID   uuid.UUID
+		expectedFlowID       uuid.UUID
+		expectedRes          *sock.Response
 	}{
 		{
 			name: "normal",
@@ -60,10 +60,10 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				ForwardActionID: action.IDEmpty,
 			},
 
-			expectID:           uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
-			expectRefereceType: activeflow.ReferenceTypeCall,
-			expectRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
-			expectFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+			expectedID:           uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
+			expectedRefereceType: activeflow.ReferenceTypeCall,
+			expectedRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
+			expectedFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -97,10 +97,10 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				ForwardActionID: action.IDEmpty,
 			},
 
-			expectID:           uuid.Nil,
-			expectRefereceType: activeflow.ReferenceTypeCall,
-			expectRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
-			expectFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+			expectedID:           uuid.Nil,
+			expectedRefereceType: activeflow.ReferenceTypeCall,
+			expectedRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
+			expectedFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -124,7 +124,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Create(gomock.Any(), tt.expectID, tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Create(gomock.Any(), tt.expectedID, tt.expectedRefereceType, tt.expectedRefereceID, tt.expectedFlowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -143,13 +143,12 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		pageToken string
-		pageSize  uint64
-
 		responseFilters     map[string]string
 		responseActiveflows []*activeflow.Activeflow
 
-		expectedRes *sock.Response
+		expectedToken string
+		expectedSize  uint64
+		expectedRes   *sock.Response
 	}{
 		{
 			name: "1 item",
@@ -157,9 +156,6 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
-
-			pageToken: "2020-10-10 03:30:17.000000",
-			pageSize:  10,
 
 			responseFilters: map[string]string{
 				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
@@ -173,6 +169,9 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 					},
 				},
 			},
+
+			expectedToken: "2020-10-10 03:30:17.000000",
+			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -185,9 +184,6 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
-
-			pageToken: "2020-10-10 03:30:17.000000",
-			pageSize:  10,
 
 			responseFilters: map[string]string{
 				"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63",
@@ -205,6 +201,9 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 					},
 				},
 			},
+
+			expectedToken: "2020-10-10 03:30:17.000000",
+			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -219,14 +218,14 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				DataType: "application/json",
 			},
 
-			pageToken: "2020-10-10 03:30:17.000000",
-			pageSize:  10,
-
 			responseFilters: map[string]string{
 				"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
 				"deleted":     "false",
 			},
 			responseActiveflows: []*activeflow.Activeflow{},
+
+			expectedToken: "2020-10-10 03:30:17.000000",
+			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -253,7 +252,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockActiveflowHandler.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseActiveflows, nil)
+			mockActiveflowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, tt.responseFilters).Return(tt.responseActiveflows, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -17,7 +17,7 @@ func Test_compareCondition_string(t *testing.T) {
 		a         string
 		b         string
 
-		expectRes bool
+		expectedRes bool
 	}{
 		{
 			name: "string equal match",
@@ -27,7 +27,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "hello",
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "string not equal match",
@@ -37,7 +37,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "world",
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "string greater match",
@@ -47,7 +47,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "zello",
 			b: "world",
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "string greater equal match",
@@ -57,7 +57,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "hello",
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "string less match",
@@ -67,7 +67,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "world",
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "string less equal match",
@@ -77,7 +77,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "hello",
 
-			expectRes: true,
+			expectedRes: true,
 		},
 
 		{
@@ -88,7 +88,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "world",
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "string not equal unmatch",
@@ -98,7 +98,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "hello",
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "string greater unmatch",
@@ -108,7 +108,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "hello",
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "string greater equal unmatch",
@@ -118,7 +118,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "world",
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "string less unmatch",
@@ -128,7 +128,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "hello",
 			b: "hello",
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "string less equal unmatch",
@@ -138,7 +138,7 @@ func Test_compareCondition_string(t *testing.T) {
 			a: "world",
 			b: "hello",
 
-			expectRes: false,
+			expectedRes: false,
 		},
 	}
 
@@ -148,8 +148,8 @@ func Test_compareCondition_string(t *testing.T) {
 			defer mc.Finish()
 
 			res := compareCondition(tt.condition, tt.a, tt.b)
-			if res != tt.expectRes {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			if res != tt.expectedRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -164,7 +164,7 @@ func Test_compareCondition_float(t *testing.T) {
 		a         float32
 		b         float32
 
-		expectRes bool
+		expectedRes bool
 	}{
 		{
 			name: "equal match",
@@ -174,7 +174,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 123.1,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "not equal match",
@@ -184,7 +184,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 456.1,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "greater match",
@@ -194,7 +194,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 456.1,
 			b: 123.1,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "greater equal(greater) match",
@@ -204,7 +204,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 457.1,
 			b: 456.1,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "greater equal(equal) match",
@@ -214,7 +214,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 456.1,
 			b: 456.1,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "less match",
@@ -224,7 +224,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 456.1,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "less equal(less) match",
@@ -234,7 +234,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 456.1,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "less equal(equal) match",
@@ -244,7 +244,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 123.1,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "equal unmatch",
@@ -254,7 +254,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 456.1,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "not equal unmatch",
@@ -264,7 +264,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 123.1,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "greater unmatch",
@@ -274,7 +274,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 456.1,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "greater unmatch",
@@ -284,7 +284,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 123.1,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "greater equal(greater) unmatch",
@@ -294,7 +294,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 456.1,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "greater equal unmatch",
@@ -304,7 +304,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 456.1,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "less unmatch",
@@ -314,7 +314,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 123.1,
 			b: 123.1,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "less unmatch",
@@ -324,7 +324,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 456.1,
 			b: 123.1,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "less equal unmatch",
@@ -334,7 +334,7 @@ func Test_compareCondition_float(t *testing.T) {
 			a: 456.1,
 			b: 123.1,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 	}
 
@@ -344,8 +344,8 @@ func Test_compareCondition_float(t *testing.T) {
 			defer mc.Finish()
 
 			res := compareCondition(tt.condition, tt.a, tt.b)
-			if res != tt.expectRes {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			if res != tt.expectedRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -360,7 +360,7 @@ func Test_compareCondition_int(t *testing.T) {
 		a         int
 		b         int
 
-		expectRes bool
+		expectedRes bool
 	}{
 		{
 			name: "equal match",
@@ -370,7 +370,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 123,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "not equal match",
@@ -380,7 +380,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 456,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "greater match",
@@ -390,7 +390,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 456,
 			b: 123,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "greater equal(greater) match",
@@ -400,7 +400,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 457,
 			b: 456,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "greater equal(equal) match",
@@ -410,7 +410,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 456,
 			b: 456,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "less match",
@@ -420,7 +420,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 456,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "less equal(less) match",
@@ -430,7 +430,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 456,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "less equal(equal) match",
@@ -440,7 +440,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 123,
 
-			expectRes: true,
+			expectedRes: true,
 		},
 		{
 			name: "equal unmatch",
@@ -450,7 +450,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 456,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "not equal unmatch",
@@ -460,7 +460,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 123,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "greater unmatch",
@@ -470,7 +470,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 456,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "greater unmatch",
@@ -480,7 +480,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 123,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "greater equal(greater) unmatch",
@@ -490,7 +490,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 456,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "greater equal unmatch",
@@ -500,7 +500,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 456,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "less unmatch",
@@ -510,7 +510,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 123,
 			b: 123,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "less unmatch",
@@ -520,7 +520,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 456,
 			b: 123,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 		{
 			name: "less equal unmatch",
@@ -530,7 +530,7 @@ func Test_compareCondition_int(t *testing.T) {
 			a: 456,
 			b: 123,
 
-			expectRes: false,
+			expectedRes: false,
 		},
 	}
 
@@ -540,8 +540,8 @@ func Test_compareCondition_int(t *testing.T) {
 			defer mc.Finish()
 
 			res := compareCondition(tt.condition, tt.a, tt.b)
-			if res != tt.expectRes {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			if res != tt.expectedRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}
 		})
 	}

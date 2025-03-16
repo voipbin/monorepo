@@ -19,7 +19,7 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 
 		activeflow *Activeflow
 
-		expectRes *WebhookMessage
+		expectedRes *WebhookMessage
 	}{
 		{
 			name: "string equal match",
@@ -62,7 +62,7 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				TMDelete: "9999-01-01 00:00:000",
 			},
 
-			expectRes: &WebhookMessage{
+			expectedRes: &WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3e6879cc-bc6b-11ee-8ba5-1fd7ab9b740f"),
 					CustomerID: uuid.FromStringOrNil("7a112bae-bc6b-11ee-912a-bb8b9a34d084"),
@@ -95,8 +95,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 			defer mc.Finish()
 
 			res := tt.activeflow.ConvertWebhookMessage()
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(res, tt.expectedRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

@@ -17,7 +17,7 @@ func Test_marshalOptionAgentCall(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionAgentCall
+		expectedRes OptionAgentCall
 	}
 
 	tests := []test{
@@ -40,8 +40,8 @@ func Test_marshalOptionAgentCall(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -53,7 +53,7 @@ func Test_marshalOptionAMD(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionAMD
+		expectedRes OptionAMD
 	}
 
 	tests := []test{
@@ -95,8 +95,8 @@ func Test_marshalOptionAMD(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -108,7 +108,7 @@ func Test_marshalOptionAnswer(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionAnswer
+		expectedRes OptionAnswer
 	}
 
 	tests := []test{
@@ -129,8 +129,8 @@ func Test_marshalOptionAnswer(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -142,7 +142,7 @@ func Test_marshalOptionBeep(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionBeep
+		expectedRes OptionBeep
 	}
 
 	tests := []test{
@@ -163,8 +163,8 @@ func Test_marshalOptionBeep(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -176,7 +176,7 @@ func Test_marshalOptionBranch(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionBranch
+		expectedRes OptionBranch
 	}
 
 	tests := []test{
@@ -218,8 +218,8 @@ func Test_marshalOptionBranch(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -231,7 +231,7 @@ func Test_marshalOptionCall(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionCall
+		expectedRes OptionCall
 	}
 
 	tests := []test{
@@ -300,8 +300,8 @@ func Test_marshalOptionCall(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -313,7 +313,7 @@ func Test_marshalOptionConfbridgeJoin(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionConfbridgeJoin
+		expectedRes OptionConfbridgeJoin
 	}
 
 	tests := []test{
@@ -336,8 +336,8 @@ func Test_marshalOptionConfbridgeJoin(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -349,7 +349,7 @@ func Test_marshalOptionConditionCallDigits(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionConditionCallDigits
+		expectedRes OptionConditionCallDigits
 	}
 
 	tests := []test{
@@ -374,8 +374,8 @@ func Test_marshalOptionConditionCallDigits(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -387,7 +387,7 @@ func Test_marshalOptionConditionCallStatus(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionConditionCallStatus
+		expectedRes OptionConditionCallStatus
 	}
 
 	tests := []test{
@@ -411,8 +411,8 @@ func Test_marshalOptionConditionCallStatus(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -424,7 +424,7 @@ func Test_marshalOptionConversationSend(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionConversationSend
+		expectedRes OptionConversationSend
 	}
 
 	tests := []test{
@@ -449,8 +449,8 @@ func Test_marshalOptionConversationSend(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -462,7 +462,7 @@ func Test_marshalOptionVariableSet(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionVariableSet
+		expectedRes OptionVariableSet
 	}
 
 	tests := []test{
@@ -486,8 +486,8 @@ func Test_marshalOptionVariableSet(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -499,7 +499,7 @@ func Test_OptionWebhookSend(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionWebhookSend
+		expectedRes OptionWebhookSend
 	}
 
 	tests := []test{
@@ -526,8 +526,8 @@ func Test_OptionWebhookSend(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -539,7 +539,7 @@ func Test_marshalOptionConditionDatetime(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionConditionDatetime
+		expectedRes OptionConditionDatetime
 	}
 
 	tests := []test{
@@ -568,8 +568,8 @@ func Test_marshalOptionConditionDatetime(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -581,7 +581,7 @@ func Test_marshalOptionConditionVariable(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionConditionVariable
+		expectedRes OptionConditionVariable
 	}
 
 	tests := []test{
@@ -634,8 +634,8 @@ func Test_marshalOptionConditionVariable(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -647,7 +647,7 @@ func Test_marshalOptionHangup(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionHangup
+		expectedRes OptionHangup
 	}
 
 	tests := []test{
@@ -671,8 +671,8 @@ func Test_marshalOptionHangup(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -684,7 +684,7 @@ func Test_marshal_OptionConnect(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionConnect
+		expectedRes OptionConnect
 	}
 
 	tests := []test{
@@ -727,8 +727,8 @@ func Test_marshal_OptionConnect(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -740,7 +740,7 @@ func Test_marshal_OptionChatbotTalk(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionChatbotTalk
+		expectedRes OptionChatbotTalk
 	}
 
 	tests := []test{
@@ -771,8 +771,8 @@ func Test_marshal_OptionChatbotTalk(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -784,7 +784,7 @@ func Test_marshal_OptionEmailSend(t *testing.T) {
 
 		option []byte
 
-		expectRes OptionEmailSend
+		expectedRes OptionEmailSend
 	}
 
 	tests := []test{
@@ -830,8 +830,8 @@ func Test_marshal_OptionEmailSend(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

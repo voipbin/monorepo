@@ -28,8 +28,8 @@ func TestGenerateFlowForAgentCall(t *testing.T) {
 
 		responseFlow *flow.Flow
 
-		expectReqActions []action.Action
-		expectRes        *flow.Flow
+		expectedReqActions []action.Action
+		expectedRes        *flow.Flow
 	}{
 		{
 			name: "test normal",
@@ -43,13 +43,13 @@ func TestGenerateFlowForAgentCall(t *testing.T) {
 				},
 			},
 
-			expectReqActions: []action.Action{
+			expectedReqActions: []action.Action{
 				{
 					Type:   action.TypeConfbridgeJoin,
 					Option: []byte(`{"confbridge_id":"e926b54c-8ca5-11ec-84bf-036e13d83721"}`),
 				},
 			},
-			expectRes: &flow.Flow{
+			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("4abf1d80-8ca6-11ec-b130-7b0a22a773f8"),
 				},
@@ -75,14 +75,14 @@ func TestGenerateFlowForAgentCall(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectReqActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectedReqActions, false).Return(tt.responseFlow, nil)
 			res, err := h.generateFlowForAgentCall(ctx, tt.customerID, tt.confbridgeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			if !reflect.DeepEqual(res, tt.expectedRes) {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectedRes, res)
 			}
 		})
 	}
