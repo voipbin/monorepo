@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
+	cbchatbot "monorepo/bin-ai-manager/models/chatbot"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/url"
 
-	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
-	cbrequest "monorepo/bin-chatbot-manager/pkg/listenhandler/models/request"
+	cbchatbot "monorepo/bin-ai-manager/models/chatbot"
+	cbrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	cbmessage "monorepo/bin-chatbot-manager/models/message"
+	cbmessage "monorepo/bin-ai-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"

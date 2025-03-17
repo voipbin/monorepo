@@ -14,7 +14,7 @@ replace monorepo/bin-campaign-manager => ../bin-campaign-manager
 
 replace monorepo/bin-chat-manager => ../bin-chat-manager
 
-replace monorepo/bin-chatbot-manager => ../bin-chatbot-manager
+replace monorepo/bin-ai-manager => ../bin-ai-manager
 
 replace monorepo/bin-conference-manager => ../bin-conference-manager
 
@@ -78,7 +78,7 @@ require (
 require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/pflag v1.0.6
-	github.com/spf13/viper v1.19.0
+	github.com/spf13/viper v1.20.0
 )
 
 require (
@@ -93,15 +93,13 @@ require (
 	github.com/gin-contrib/sse v1.0.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/magiconair/properties v1.8.9 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -110,27 +108,24 @@ require (
 	github.com/prometheus/common v0.63.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
-	github.com/sagikazarmark/locafero v0.7.0 // indirect
-	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
+	github.com/sagikazarmark/locafero v0.8.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
-	github.com/spf13/afero v1.12.0 // indirect
+	github.com/spf13/afero v1.14.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.15.0 // indirect
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/net v0.37.0 // indirect
 	google.golang.org/genproto v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
-	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
+	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
 	monorepo/bin-chat-manager v0.0.0-20240313050741-a2ced5030a06 // indirect
-	monorepo/bin-chatbot-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76 // indirect
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984 // indirect

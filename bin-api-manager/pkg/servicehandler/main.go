@@ -33,9 +33,9 @@ import (
 	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 
-	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
-	cbmessage "monorepo/bin-chatbot-manager/models/message"
+	cbchatbot "monorepo/bin-ai-manager/models/chatbot"
+	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	cbmessage "monorepo/bin-ai-manager/models/message"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"

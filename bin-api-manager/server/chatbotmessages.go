@@ -2,8 +2,8 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
+	cbmessage "monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-api-manager/gens/openapi_server"
-	cbmessage "monorepo/bin-chatbot-manager/models/message"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"

@@ -77,7 +77,9 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 				},
 			},
 			responseFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("1d82f6c0-e6a6-4718-8f23-720f845a8fbe"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1d82f6c0-e6a6-4718-8f23-720f845a8fbe"),
+				},
 			},
 
 			expectCustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
@@ -188,7 +190,9 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeConference(t *testing.
 				FlowID:     uuid.FromStringOrNil("90f05e61-408b-429b-85fb-0ee3d2d77c21"),
 			},
 			responseFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("531912e6-8a0d-4d9b-a03b-6760275bb0dd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("531912e6-8a0d-4d9b-a03b-6760275bb0dd"),
+				},
 			},
 
 			expectCustomerID:   uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
@@ -294,7 +298,9 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 				Target: "+821100000001",
 			},
 			responseFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("531912e6-8a0d-4d9b-a03b-6760275bb0dd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("531912e6-8a0d-4d9b-a03b-6760275bb0dd"),
+				},
 			},
 
 			expectCustomerID:   uuid.FromStringOrNil("b709f75e-57e2-11ee-9e0e-eb6422fe6fd2"),
@@ -401,7 +407,9 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 				},
 			},
 			responseFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("531912e6-8a0d-4d9b-a03b-6760275bb0dd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("531912e6-8a0d-4d9b-a03b-6760275bb0dd"),
+				},
 			},
 
 			expectCustomerID: uuid.FromStringOrNil("49c42d3c-57eb-11ee-95a1-2778bda73d76"),

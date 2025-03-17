@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	chatbotchatbot "monorepo/bin-chatbot-manager/models/chatbot"
+	chatbotchatbot "monorepo/bin-ai-manager/models/chatbot"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 

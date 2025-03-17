@@ -56,7 +56,9 @@ func Test_blindExecute(t *testing.T) {
 				MasterCallID: uuid.FromStringOrNil("89447e1c-dbb3-11ed-be21-6fc0d5041f86"),
 			},
 			flow: &fmflow.Flow{
-				ID:      uuid.FromStringOrNil("88990fc8-dbb3-11ed-ba6d-b7d235536fac"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("88990fc8-dbb3-11ed-ba6d-b7d235536fac"),
+				},
 				Actions: []fmaction.Action{},
 			},
 			transfereeAddresses: []commonaddress.Address{

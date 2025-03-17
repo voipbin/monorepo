@@ -2,7 +2,7 @@ package requesthandler
 
 import (
 	"context"
-	cbmessage "monorepo/bin-chatbot-manager/models/message"
+	cbmessage "monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"

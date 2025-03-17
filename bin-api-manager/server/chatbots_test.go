@@ -3,9 +3,9 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	cmchatbot "monorepo/bin-ai-manager/models/chatbot"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
-	cmchatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"net/http"

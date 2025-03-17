@@ -8,7 +8,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	chatbotchatbot "monorepo/bin-chatbot-manager/models/chatbot"
+	chatbotchatbot "monorepo/bin-ai-manager/models/chatbot"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 

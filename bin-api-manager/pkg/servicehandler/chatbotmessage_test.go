@@ -3,9 +3,9 @@ package servicehandler
 import (
 	"context"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	cbmessage "monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-api-manager/pkg/dbhandler"
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
-	cbmessage "monorepo/bin-chatbot-manager/models/message"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"reflect"

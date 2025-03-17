@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	cbmessage "monorepo/bin-chatbot-manager/models/message"
-	cbrequest "monorepo/bin-chatbot-manager/pkg/listenhandler/models/request"
+	cbmessage "monorepo/bin-ai-manager/models/message"
+	cbrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 
 	"monorepo/bin-common-handler/models/sock"
 	"net/url"

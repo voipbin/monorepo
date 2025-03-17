@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"

@@ -24,14 +24,14 @@ import (
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
+	cbchatbot "monorepo/bin-ai-manager/models/chatbot"
+	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	cbmessage "monorepo/bin-ai-manager/models/message"
 	chatchat "monorepo/bin-chat-manager/models/chat"
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
 	chatmedia "monorepo/bin-chat-manager/models/media"
 	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
-	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
-	cbmessage "monorepo/bin-chatbot-manager/models/message"
 	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/service"
 

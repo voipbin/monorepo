@@ -10,7 +10,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
 
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 

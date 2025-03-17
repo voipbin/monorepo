@@ -15,7 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
 
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 

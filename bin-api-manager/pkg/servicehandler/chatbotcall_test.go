@@ -9,8 +9,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbchatbot "monorepo/bin-ai-manager/models/chatbot"
+	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
