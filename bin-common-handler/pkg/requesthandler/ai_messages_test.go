@@ -4,6 +4,7 @@ import (
 	"context"
 	cbmessage "monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -48,7 +49,7 @@ func Test_ChatbotV1MessageGetsByChatbotcallID(t *testing.T) {
 			},
 
 			expectURL:    "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&chatbotcall_id=d43e25a6-f2ce-11ef-bd10-3b19aa3747d8",
-			expectTarget: "bin-manager.chatbot-manager.request",
+			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
 				URI:    "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&chatbotcall_id=d43e25a6-f2ce-11ef-bd10-3b19aa3747d8&filter_deleted=false",
 				Method: sock.RequestMethodGet,
@@ -84,7 +85,7 @@ func Test_ChatbotV1MessageGetsByChatbotcallID(t *testing.T) {
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.ChatbotV1MessageGetsByChatbotcallID(ctx, tt.chatbotcallID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.AIV1MessageGetsByAIcallID(ctx, tt.chatbotcallID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -126,7 +127,7 @@ func Test_ChatbotV1MessageSend(t *testing.T) {
 				Data:       []byte(`{"id":"53f4f37e-f2cf-11ef-8f9a-77d75650dfd8"}`),
 			},
 
-			expectTarget: "bin-manager.chatbot-manager.request",
+			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
@@ -154,7 +155,7 @@ func Test_ChatbotV1MessageSend(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1MessageSend(ctx, tt.chatbotcallID, tt.role, tt.content, tt.timeout)
+			cf, err := reqHandler.AIV1MessageSend(ctx, tt.chatbotcallID, tt.role, tt.content, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -185,7 +186,7 @@ func Test_ChatbotV1MessageGet(t *testing.T) {
 			name:      "normal",
 			messageID: uuid.FromStringOrNil("cf449b2e-f2cf-11ef-a7e4-7b75fad55f68"),
 
-			expectQueue: "bin-manager.chatbot-manager.request",
+			expectQueue: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
 				URI:    "/v1/messages/cf449b2e-f2cf-11ef-a7e4-7b75fad55f68",
 				Method: sock.RequestMethodGet,
@@ -217,7 +218,7 @@ func Test_ChatbotV1MessageGet(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatbotV1MessageGet(ctx, tt.messageID)
+			res, err := reqHandler.AIV1MessageGet(ctx, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -253,7 +254,7 @@ func Test_ChatbotV1MessageDelete(t *testing.T) {
 				Data:       []byte(`{"id":"1780bb8e-f2d0-11ef-82fc-bf7a5e0a585d"}`),
 			},
 
-			expectTarget: "bin-manager.chatbot-manager.request",
+			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
 				URI:    "/v1/messages/1780bb8e-f2d0-11ef-82fc-bf7a5e0a585d",
 				Method: sock.RequestMethodDelete,
@@ -279,7 +280,7 @@ func Test_ChatbotV1MessageDelete(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatbotV1MessageDelete(ctx, tt.messageID)
+			res, err := reqHandler.AIV1MessageDelete(ctx, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

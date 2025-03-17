@@ -13,6 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -50,7 +51,7 @@ func Test_ChatbotV1ChatbotcallStart(t *testing.T) {
 				Data:       []byte(`{"id":"e8ec8062-ef52-11ef-8fe9-27921b0be03c"}`),
 			},
 
-			expectTarget: "bin-manager.chatbot-manager.request",
+			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
 				URI:      "/v1/chatbotcalls",
 				Method:   sock.RequestMethodPost,
@@ -78,7 +79,7 @@ func Test_ChatbotV1ChatbotcallStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1ChatbotcallStart(ctx, tt.chatbotID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			cf, err := reqHandler.AIV1AIcallStart(ctx, tt.chatbotID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -124,7 +125,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 			},
 
 			"/v1/chatbotcalls?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a",
-			"bin-manager.chatbot-manager.request",
+			string(outline.QueueNameAIRequest),
 			&sock.Request{
 				URI:    fmt.Sprintf("/v1/chatbotcalls?page_token=%s&page_size=10&customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method: sock.RequestMethodGet,
@@ -160,7 +161,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 			h.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatbotV1ChatbotcallGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.AIV1AIcallGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -191,7 +192,7 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("d3937170-ee3b-40d0-8b81-4261e5bb5ba4"),
 
-			"bin-manager.chatbot-manager.request",
+			string(outline.QueueNameAIRequest),
 			&sock.Request{
 				URI:    "/v1/chatbotcalls/d3937170-ee3b-40d0-8b81-4261e5bb5ba4",
 				Method: sock.RequestMethodGet,
@@ -223,7 +224,7 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatbotV1ChatbotcallGet(ctx, tt.chatbotcallID)
+			res, err := reqHandler.AIV1AIcallGet(ctx, tt.chatbotcallID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -259,7 +260,7 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 				Data:       []byte(`{"id":"6078c492-25e6-4f31-baa0-2fef98379db7"}`),
 			},
 
-			"bin-manager.chatbot-manager.request",
+			string(outline.QueueNameAIRequest),
 			&sock.Request{
 				URI:    "/v1/chatbotcalls/6078c492-25e6-4f31-baa0-2fef98379db7",
 				Method: sock.RequestMethodDelete,
@@ -285,7 +286,7 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatbotV1ChatbotcallDelete(ctx, tt.chatbotcallID)
+			res, err := reqHandler.AIV1AIcallDelete(ctx, tt.chatbotcallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

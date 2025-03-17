@@ -13,16 +13,16 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// ChatbotV1ChatbotGetsByCustomerID sends a request to chatbot-manager
+// AIV1AIGetsByCustomerID sends a request to ai-manager
 // to getting a list of chatbots info of the given customer id.
 // it returns detail list of chatbots info if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbot.Chatbot, error) {
+func (r *requestHandler) AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbot.Chatbot, error) {
 	uri := fmt.Sprintf("/v1/chatbots?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodGet, "chatbot/chatbots", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "chatbot/chatbots", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -41,12 +41,12 @@ func (r *requestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, c
 	return res, nil
 }
 
-// ChatbotV1ChatbotGet returns the chatbot.
-func (r *requestHandler) ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
+// AIV1AIGet returns the chatbot.
+func (r *requestHandler) AIV1AIGet(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
 
 	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID.String())
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodGet, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -63,10 +63,10 @@ func (r *requestHandler) ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid
 	return &res, nil
 }
 
-// ChatbotV1ChatbotCreate sends a request to chatbot-manager
+// AIV1AICreate sends a request to ai-manager
 // to creating a chatbot.
 // it returns created chatbot if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotCreate(
+func (r *requestHandler) AIV1AICreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	name string,
@@ -95,7 +95,7 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPost, "chatbot/chatbots", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "chatbot/chatbots", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -114,13 +114,13 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 	return &res, nil
 }
 
-// ChatbotV1ChatbotDelete sends a request to chatbot-manager
+// AIV1AIDelete sends a request to ai-manager
 // to deleting a chatbot.
 // it returns deleted chatbot if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
+func (r *requestHandler) AIV1AIDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
 	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodDelete, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -139,10 +139,10 @@ func (r *requestHandler) ChatbotV1ChatbotDelete(ctx context.Context, chatbotID u
 	return &res, nil
 }
 
-// ChatbotV1ChatbotUpdate sends a request to chatbot-manager
+// AIV1AIUpdate sends a request to ai-manager
 // to updating a chatbot.
 // it returns updated chatbot if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotUpdate(
+func (r *requestHandler) AIV1AIUpdate(
 	ctx context.Context,
 	chatbotID uuid.UUID,
 	name string,
@@ -170,7 +170,7 @@ func (r *requestHandler) ChatbotV1ChatbotUpdate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPut, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPut, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

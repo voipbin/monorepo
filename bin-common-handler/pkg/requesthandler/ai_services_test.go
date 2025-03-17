@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/service"
 
 	"github.com/gofrs/uuid"
@@ -51,7 +52,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 				Data:       []byte(`{"id":"134c25c9-c9f9-4800-83bb-b5eaa84bb4ab"}`),
 			},
 
-			expectTarget: "bin-manager.chatbot-manager.request",
+			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
 				URI:      "/v1/services/type/chatbotcall",
 				Method:   sock.RequestMethodPost,
@@ -77,7 +78,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, tt.chatbotID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.requestTimeout)
+			cf, err := reqHandler.AIV1ServiceTypeAIcallStart(ctx, tt.chatbotID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.requestTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

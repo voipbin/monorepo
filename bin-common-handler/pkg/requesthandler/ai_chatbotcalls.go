@@ -13,7 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func (r *requestHandler) ChatbotV1ChatbotcallStart(ctx context.Context, chatbotID uuid.UUID, referenceType cbchatbotcall.ReferenceType, referenceID uuid.UUID, gender cbchatbotcall.Gender, language string) (*cbchatbotcall.Chatbotcall, error) {
+func (r *requestHandler) AIV1AIcallStart(ctx context.Context, chatbotID uuid.UUID, referenceType cbchatbotcall.ReferenceType, referenceID uuid.UUID, gender cbchatbotcall.Gender, language string) (*cbchatbotcall.Chatbotcall, error) {
 	uri := "/v1/chatbotcalls"
 
 	data := &cbrequest.V1DataChatbotcallsPost{
@@ -31,7 +31,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallStart(ctx context.Context, chatbotI
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPost, "chatbot/chatbotcalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "chatbot/chatbotcalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -50,16 +50,16 @@ func (r *requestHandler) ChatbotV1ChatbotcallStart(ctx context.Context, chatbotI
 	return &res, nil
 }
 
-// ChatbotV1ChatbotcallGetsByCustomerID sends a request to chatbot-manager
+// AIV1AIcallGetsByCustomerID sends a request to ai-manager
 // to getting a list of chatbotcall info of the given customer id.
 // it returns detail list of chatbotcall info if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbotcall.Chatbotcall, error) {
+func (r *requestHandler) AIV1AIcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbotcall.Chatbotcall, error) {
 	uri := fmt.Sprintf("/v1/chatbotcalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodGet, "chatbot/chatbotcalls", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "chatbot/chatbotcalls", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -78,12 +78,12 @@ func (r *requestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Contex
 	return res, nil
 }
 
-// ChatbotV1ChatbotcallGet returns the chatbot.
-func (r *requestHandler) ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error) {
+// AIV1AIcallGet returns the chatbot.
+func (r *requestHandler) AIV1AIcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error) {
 
 	uri := fmt.Sprintf("/v1/chatbotcalls/%s", chatbotcallID)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodGet, "chatbot/chatbotcalls/<chatbotcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "chatbot/chatbotcalls/<chatbotcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -100,13 +100,13 @@ func (r *requestHandler) ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcal
 	return &res, nil
 }
 
-// ChatbotV1ChatbotcallDelete sends a request to chatbot-manager
+// AIV1AIcallDelete sends a request to ai-manager
 // to deleting a chatbotcall.
 // it returns deleted conference if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error) {
+func (r *requestHandler) AIV1AIcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error) {
 	uri := fmt.Sprintf("/v1/chatbotcalls/%s", chatbotcallID)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodDelete, "chatbot/chatbotcalls/<chatbotcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "chatbot/chatbotcalls/<chatbotcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

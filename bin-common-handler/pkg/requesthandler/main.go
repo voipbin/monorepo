@@ -493,10 +493,10 @@ type RequestHandler interface {
 	ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatmessagechat.Messagechat, error)
 	ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error)
 
-	// chatbot-manager chatbot
-	ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error)
-	ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbot.Chatbot, error)
-	ChatbotV1ChatbotCreate(
+	// ai-manager ai
+	AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*cbchatbot.Chatbot, error)
+	AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbot.Chatbot, error)
+	AIV1AICreate(
 		ctx context.Context,
 		customerID uuid.UUID,
 		name string,
@@ -506,10 +506,10 @@ type RequestHandler interface {
 		engineData map[string]any,
 		initPrompt string,
 	) (*cbchatbot.Chatbot, error)
-	ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error)
-	ChatbotV1ChatbotUpdate(
+	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*cbchatbot.Chatbot, error)
+	AIV1AIUpdate(
 		ctx context.Context,
-		chatbotID uuid.UUID,
+		aiID uuid.UUID,
 		name string,
 		detail string,
 		engineType cbchatbot.EngineType,
@@ -518,22 +518,22 @@ type RequestHandler interface {
 		initPrompt string,
 	) (*cbchatbot.Chatbot, error)
 
-	// chatbot-manager chatbotcall
-	ChatbotV1ChatbotcallStart(ctx context.Context, chatbotID uuid.UUID, referenceType cbchatbotcall.ReferenceType, referenceID uuid.UUID, gender cbchatbotcall.Gender, language string) (*cbchatbotcall.Chatbotcall, error)
-	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbotcall.Chatbotcall, error)
-	ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
-	ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
+	// ai-manager chatbotcall
+	AIV1AIcallStart(ctx context.Context, aiID uuid.UUID, referenceType cbchatbotcall.ReferenceType, referenceID uuid.UUID, gender cbchatbotcall.Gender, language string) (*cbchatbotcall.Chatbotcall, error)
+	AIV1AIcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbotcall.Chatbotcall, error)
+	AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
+	AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
 
-	// chatbot-manager message
-	ChatbotV1MessageGetsByChatbotcallID(ctx context.Context, chatbotcallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbmessage.Message, error)
-	ChatbotV1MessageSend(ctx context.Context, chatbotcallID uuid.UUID, role cbmessage.Role, content string, timeout int) (*cbmessage.Message, error)
-	ChatbotV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
-	ChatbotV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
+	// ai-manager message
+	AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbmessage.Message, error)
+	AIV1MessageSend(ctx context.Context, aicallID uuid.UUID, role cbmessage.Role, content string, timeout int) (*cbmessage.Message, error)
+	AIV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
+	AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
 
-	// chatbot-manager service
-	ChatbotV1ServiceTypeChabotcallStart(
+	// ai-manager service
+	AIV1ServiceTypeAIcallStart(
 		ctx context.Context,
-		chatbotID uuid.UUID,
+		aiID uuid.UUID,
 		activeflowID uuid.UUID,
 		referenceType cbchatbotcall.ReferenceType,
 		referenceID uuid.UUID,

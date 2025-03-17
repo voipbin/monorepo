@@ -12,6 +12,11 @@ const (
 	// common use
 	QueueNameDelay QueueName = "bin-manager.delay" // queue name for delayed requests
 
+	// ai-manager
+	QueueNameAIEvent     QueueName = "bin-manager.ai-manager.event"
+	QueueNameAIRequest   QueueName = "bin-manager.ai-manager.request"
+	QueueNameAISubscribe QueueName = "bin-manager.ai-manager.subscribe"
+
 	// asterisk
 	QueueNameAsteriskEventAll QueueName = "asterisk.all.event"
 
@@ -44,11 +49,6 @@ const (
 	QueueNameChatEvent     QueueName = "bin-manager.chat-manager.event"
 	QueueNameChatRequest   QueueName = "bin-manager.chat-manager.request"
 	QueueNameChatSubscribe QueueName = "bin-manager.chat-manager.subscribe"
-
-	// chatbot-manager
-	QueueNameChatbotEvent     QueueName = "bin-manager.chatbot-manager.event"
-	QueueNameChatbotRequest   QueueName = "bin-manager.chatbot-manager.request"
-	QueueNameChatbotSubscribe QueueName = "bin-manager.chatbot-manager.subscribe"
 
 	// conference-manager
 	QueueNameConferenceEvent     QueueName = "bin-manager.conference-manager.event"

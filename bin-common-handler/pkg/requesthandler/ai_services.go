@@ -13,10 +13,10 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// ChatbotV1ServiceTypeChabotcallStart sends a request to chat-manager
+// AIV1ServiceTypeAIcallStart sends a request to chat-manager
 // to starts a chatbotcall service.
 // it returns created service if it succeed.
-func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
+func (r *requestHandler) AIV1ServiceTypeAIcallStart(
 	ctx context.Context,
 	chatbotID uuid.UUID,
 	activeflowID uuid.UUID,
@@ -42,7 +42,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPost, "chatbot/services/type/chatbotcall", requestTimeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "chatbot/services/type/chatbotcall", requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
