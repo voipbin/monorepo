@@ -1,1 +1,1 @@
-# chatbot-manager
+# ai-manager

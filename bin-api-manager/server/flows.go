@@ -3,6 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
@@ -170,7 +171,9 @@ func (h *server) PutFlowsId(c *gin.Context, id string) {
 	}
 
 	f := &fmflow.Flow{
-		ID:      target,
+		Identity: commonidentity.Identity{
+			ID: target,
+		},
 		Name:    req.Name,
 		Detail:  req.Detail,
 		Actions: actions,

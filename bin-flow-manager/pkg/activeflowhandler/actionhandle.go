@@ -10,7 +10,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
-	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
@@ -939,18 +939,18 @@ func (h *activeflowHandler) actionHandleConversationSend(ctx context.Context, af
 	return nil
 }
 
-// actionHandleChatbotTalk handles action chatbot_talk with activeflow.
-// it starts chatbot talk service.
-func (h *activeflowHandler) actionHandleChatbotTalk(ctx context.Context, af *activeflow.Activeflow) error {
+// actionHandleAITalk handles action ai_talk with activeflow.
+// it starts ai talk service.
+func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleChatbotTalk",
+		"func":       "actionHandleAITalk",
 		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
 	log.Debugf("Action detail. action: %v", act)
 
-	var opt action.OptionChatbotTalk
+	var opt action.OptionAITalk
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
 		return err
@@ -962,7 +962,7 @@ func (h *activeflowHandler) actionHandleChatbotTalk(ctx context.Context, af *act
 	}
 
 	// start service
-	sv, err := h.reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, opt.ChatbotID, af.Identity.ID, cbchatbotcall.ReferenceTypeCall, af.ReferenceID, opt.Gender, opt.Language, 3000)
+	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.Identity.ID, amaicall.ReferenceTypeCall, af.ReferenceID, opt.Gender, opt.Language, 3000)
 	if err != nil {
 		log.Errorf("Could not start the service. err: %v", err)
 		return errors.Wrap(err, "Could not start the service.")

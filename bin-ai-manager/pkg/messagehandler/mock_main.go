@@ -58,31 +58,31 @@ func (mr *MockMessageHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockMessageHandler) Gets(ctx context.Context, chatbotcallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
+func (m *MockMessageHandler) Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, chatbotcallID, size, token, filters)
+	ret := m.ctrl.Call(m, "Gets", ctx, aicallID, size, token, filters)
 	ret0, _ := ret[0].([]*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockMessageHandlerMockRecorder) Gets(ctx, chatbotcallID, size, token, filters any) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Gets(ctx, aicallID, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, chatbotcallID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, aicallID, size, token, filters)
 }
 
 // Send mocks base method.
-func (m *MockMessageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role message.Role, content string) (*message.Message, error) {
+func (m *MockMessageHandler) Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", ctx, chatbotcallID, role, content)
+	ret := m.ctrl.Call(m, "Send", ctx, aicallID, role, content)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockMessageHandlerMockRecorder) Send(ctx, chatbotcallID, role, content any) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Send(ctx, aicallID, role, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMessageHandler)(nil).Send), ctx, chatbotcallID, role, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMessageHandler)(nil).Send), ctx, aicallID, role, content)
 }

@@ -13,8 +13,8 @@ import (
 	context "context"
 	json "encoding/json"
 	agent "monorepo/bin-agent-manager/models/agent"
-	chatbot "monorepo/bin-ai-manager/models/chatbot"
-	chatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	ai "monorepo/bin-ai-manager/models/ai"
+	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
@@ -106,10 +106,10 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // AIV1AICreate mocks base method.
-func (m *MockRequestHandler) AIV1AICreate(ctx context.Context, customerID uuid.UUID, name, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, engineData map[string]any, initPrompt string) (*chatbot.Chatbot, error) {
+func (m *MockRequestHandler) AIV1AICreate(ctx context.Context, customerID uuid.UUID, name, detail string, engineType ai.EngineType, engineModel ai.EngineModel, engineData map[string]any, initPrompt string) (*ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AICreate", ctx, customerID, name, detail, engineType, engineModel, engineData, initPrompt)
-	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -121,10 +121,10 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AICreate(ctx, customerID, name, de
 }
 
 // AIV1AIDelete mocks base method.
-func (m *MockRequestHandler) AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*chatbot.Chatbot, error) {
+func (m *MockRequestHandler) AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIDelete", ctx, aiID)
-	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -136,10 +136,10 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIDelete(ctx, aiID any) *gomock.Ca
 }
 
 // AIV1AIGet mocks base method.
-func (m *MockRequestHandler) AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*chatbot.Chatbot, error) {
+func (m *MockRequestHandler) AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIGet", ctx, aiID)
-	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -151,10 +151,10 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIGet(ctx, aiID any) *gomock.Call 
 }
 
 // AIV1AIGetsByCustomerID mocks base method.
-func (m *MockRequestHandler) AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]chatbot.Chatbot, error) {
+func (m *MockRequestHandler) AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIGetsByCustomerID", ctx, customerID, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]chatbot.Chatbot)
+	ret0, _ := ret[0].([]ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -166,10 +166,10 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIGetsByCustomerID(ctx, customerID
 }
 
 // AIV1AIUpdate mocks base method.
-func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, engineData map[string]any, initPrompt string) (*chatbot.Chatbot, error) {
+func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, engineType ai.EngineType, engineModel ai.EngineModel, engineData map[string]any, initPrompt string) (*ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIUpdate", ctx, aiID, name, detail, engineType, engineModel, engineData, initPrompt)
-	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -181,10 +181,10 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIUpdate(ctx, aiID, name, detail, 
 }
 
 // AIV1AIcallDelete mocks base method.
-func (m *MockRequestHandler) AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+func (m *MockRequestHandler) AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIcallDelete", ctx, aicallID)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -196,10 +196,10 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallDelete(ctx, aicallID any) *g
 }
 
 // AIV1AIcallGet mocks base method.
-func (m *MockRequestHandler) AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+func (m *MockRequestHandler) AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIcallGet", ctx, aicallID)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -211,10 +211,10 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGet(ctx, aicallID any) *gomo
 }
 
 // AIV1AIcallGetsByCustomerID mocks base method.
-func (m *MockRequestHandler) AIV1AIcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]chatbotcall.Chatbotcall, error) {
+func (m *MockRequestHandler) AIV1AIcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]aicall.AIcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIcallGetsByCustomerID", ctx, customerID, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]chatbotcall.Chatbotcall)
+	ret0, _ := ret[0].([]aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -226,10 +226,10 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGetsByCustomerID(ctx, custom
 }
 
 // AIV1AIcallStart mocks base method.
-func (m *MockRequestHandler) AIV1AIcallStart(ctx context.Context, aiID uuid.UUID, referenceType chatbotcall.ReferenceType, referenceID uuid.UUID, gender chatbotcall.Gender, language string) (*chatbotcall.Chatbotcall, error) {
+func (m *MockRequestHandler) AIV1AIcallStart(ctx context.Context, aiID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIcallStart", ctx, aiID, referenceType, referenceID, gender, language)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -301,7 +301,7 @@ func (mr *MockRequestHandlerMockRecorder) AIV1MessageSend(ctx, aicallID, role, c
 }
 
 // AIV1ServiceTypeAIcallStart mocks base method.
-func (m *MockRequestHandler) AIV1ServiceTypeAIcallStart(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType chatbotcall.ReferenceType, referenceID uuid.UUID, gender chatbotcall.Gender, language string, requestTimeout int) (*service.Service, error) {
+func (m *MockRequestHandler) AIV1ServiceTypeAIcallStart(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string, requestTimeout int) (*service.Service, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1ServiceTypeAIcallStart", ctx, aiID, activeflowID, referenceType, referenceID, gender, language, requestTimeout)
 	ret0, _ := ret[0].(*service.Service)

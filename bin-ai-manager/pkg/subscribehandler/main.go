@@ -18,7 +18,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-ai-manager/pkg/chatbotcallhandler"
+	"monorepo/bin-ai-manager/pkg/aicallhandler"
 )
 
 // list of publishers
@@ -40,11 +40,11 @@ type subscribeHandler struct {
 	subscribeQueue   string
 	subscribeTargets []string
 
-	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler
+	aicallHandler aicallhandler.AIcallHandler
 }
 
 var (
-	metricsNamespace = "chatbot_manager"
+	metricsNamespace = "ai_manager"
 
 	promSubscribeProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -71,14 +71,14 @@ func NewSubscribeHandler(
 	sock sockhandler.SockHandler,
 	subscribeQueue string,
 	subscribeTargets []string,
-	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler,
+	aicallHandler aicallhandler.AIcallHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		serviceName:        serviceName,
-		sockHandler:        sock,
-		subscribeQueue:     subscribeQueue,
-		subscribeTargets:   subscribeTargets,
-		chatbotcallHandler: chatbotcallHandler,
+		serviceName:      serviceName,
+		sockHandler:      sock,
+		subscribeQueue:   subscribeQueue,
+		subscribeTargets: subscribeTargets,
+		aicallHandler:    aicallHandler,
 	}
 
 	return h
@@ -105,7 +105,7 @@ func (h *subscribeHandler) Run() error {
 
 	// receive subscribe events
 	go func() {
-		if errConsume := h.sockHandler.ConsumeMessage(context.Background(), h.subscribeQueue, string(commonoutline.ServiceNameChatbotManager), false, false, false, 10, h.processEventRun); errConsume != nil {
+		if errConsume := h.sockHandler.ConsumeMessage(context.Background(), h.subscribeQueue, string(commonoutline.ServiceNameAIManager), false, false, false, 10, h.processEventRun); errConsume != nil {
 			log.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
 		}
 	}()

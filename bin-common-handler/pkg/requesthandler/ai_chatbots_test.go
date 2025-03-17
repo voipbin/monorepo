@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	cbchatbot "monorepo/bin-ai-manager/models/chatbot"
+	amai "monorepo/bin-ai-manager/models/ai"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -17,7 +17,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
-func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
+func Test_AIV1AIGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -32,7 +32,7 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		expectRes     []cbchatbot.Chatbot
+		expectRes     []amai.AI
 	}{
 		{
 			name: "normal",
@@ -50,13 +50,13 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 				Data:       []byte(`[{"id":"db662396-4449-456c-a6ee-39aa2ec30b55"},{"id":"0ea936d3-c74f-4744-8ca6-44e47178d88a"}]`),
 			},
 
-			expectURL:    "/v1/chatbots?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df",
+			expectURL:    "/v1/ais?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df",
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:    "/v1/chatbots?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df&filter_deleted=false",
+				URI:    "/v1/ais?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
-			expectRes: []cbchatbot.Chatbot{
+			expectRes: []amai.AI{
 				{
 					Identity: identity.Identity{
 						ID: uuid.FromStringOrNil("db662396-4449-456c-a6ee-39aa2ec30b55"),
@@ -99,27 +99,27 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_ChatbotV1ChatbotGet(t *testing.T) {
+func Test_AIV1AIGet(t *testing.T) {
 
 	type test struct {
-		name      string
-		chatbotID uuid.UUID
+		name string
+		aiID uuid.UUID
 
 		expectTarget  string
 		expectRequest *sock.Request
 
 		response  *sock.Response
-		expectRes *cbchatbot.Chatbot
+		expectRes *amai.AI
 	}
 
 	tests := []test{
 		{
-			name:      "normal",
-			chatbotID: uuid.FromStringOrNil("d628f462-cf28-47d9-ae37-c604c0ea2863"),
+			name: "normal",
+			aiID: uuid.FromStringOrNil("d628f462-cf28-47d9-ae37-c604c0ea2863"),
 
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:    "/v1/chatbots/d628f462-cf28-47d9-ae37-c604c0ea2863",
+				URI:    "/v1/ais/d628f462-cf28-47d9-ae37-c604c0ea2863",
 				Method: sock.RequestMethodGet,
 			},
 
@@ -128,7 +128,7 @@ func Test_ChatbotV1ChatbotGet(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"d628f462-cf28-47d9-ae37-c604c0ea2863"}`),
 			},
-			expectRes: &cbchatbot.Chatbot{
+			expectRes: &amai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("d628f462-cf28-47d9-ae37-c604c0ea2863"),
 				},
@@ -149,7 +149,7 @@ func Test_ChatbotV1ChatbotGet(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AIV1AIGet(ctx, tt.chatbotID)
+			res, err := reqHandler.AIV1AIGet(ctx, tt.aiID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -161,16 +161,16 @@ func Test_ChatbotV1ChatbotGet(t *testing.T) {
 	}
 }
 
-func Test_ChatbotV1ChatbotCreate(t *testing.T) {
+func Test_AIV1AICreate(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		customerID  uuid.UUID
-		chatbotName string
+		aiName      string
 		detail      string
-		engineType  cbchatbot.EngineType
-		engineModel cbchatbot.EngineModel
+		engineType  amai.EngineType
+		engineModel amai.EngineModel
 		engineData  map[string]any
 		initPrompt  string
 
@@ -178,16 +178,16 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		expectRes     *cbchatbot.Chatbot
+		expectRes     *amai.AI
 	}{
 		{
 			name: "normal",
 
 			customerID:  uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
-			chatbotName: "test name",
+			aiName:      "test name",
 			detail:      "test detail",
-			engineType:  cbchatbot.EngineTypeNone,
-			engineModel: cbchatbot.EngineModelOpenaiGPT4,
+			engineType:  amai.EngineTypeNone,
+			engineModel: amai.EngineModelOpenaiGPT4,
 			engineData: map[string]any{
 				"key1": "value1",
 				"key2": 2,
@@ -202,12 +202,12 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:      "/v1/chatbots",
+				URI:      "/v1/ais",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"value1","key2":2},"init_prompt":"test init prompt"}`),
 			},
-			expectRes: &cbchatbot.Chatbot{
+			expectRes: &amai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("e6248322-de4f-4313-bd89-f9de1c6466a8"),
 				},
@@ -228,7 +228,7 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AICreate(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
+			cf, err := reqHandler.AIV1AICreate(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -240,23 +240,23 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 	}
 }
 
-func Test_ConferenceV1ChatbotDelete(t *testing.T) {
+func Test_AIV1AIDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		chatbotID uuid.UUID
+		aiID uuid.UUID
 
 		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
-		expectRes     *cbchatbot.Chatbot
+		expectRes     *amai.AI
 	}{
 		{
 			name: "normal",
 
-			chatbotID: uuid.FromStringOrNil("5d4c38bf-6cd5-4255-950a-9abf52704472"),
+			aiID: uuid.FromStringOrNil("5d4c38bf-6cd5-4255-950a-9abf52704472"),
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -266,10 +266,10 @@ func Test_ConferenceV1ChatbotDelete(t *testing.T) {
 
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:    "/v1/chatbots/5d4c38bf-6cd5-4255-950a-9abf52704472",
+				URI:    "/v1/ais/5d4c38bf-6cd5-4255-950a-9abf52704472",
 				Method: sock.RequestMethodDelete,
 			},
-			expectRes: &cbchatbot.Chatbot{
+			expectRes: &amai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("5d4c38bf-6cd5-4255-950a-9abf52704472"),
 				},
@@ -290,7 +290,7 @@ func Test_ConferenceV1ChatbotDelete(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AIV1AIDelete(ctx, tt.chatbotID)
+			res, err := reqHandler.AIV1AIDelete(ctx, tt.aiID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -302,16 +302,16 @@ func Test_ConferenceV1ChatbotDelete(t *testing.T) {
 	}
 }
 
-func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
+func Test_AIV1AIUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		id          uuid.UUID
-		chatbotName string
+		aiName      string
 		detail      string
-		engineType  cbchatbot.EngineType
-		engineModel cbchatbot.EngineModel
+		engineType  amai.EngineType
+		engineModel amai.EngineModel
 		engineData  map[string]any
 		initPrompt  string
 
@@ -319,16 +319,16 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		expectRes     *cbchatbot.Chatbot
+		expectRes     *amai.AI
 	}{
 		{
 			name: "normal",
 
 			id:          uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
-			chatbotName: "test name",
+			aiName:      "test name",
 			detail:      "test detail",
-			engineType:  cbchatbot.EngineTypeNone,
-			engineModel: cbchatbot.EngineModelOpenaiGPT4,
+			engineType:  amai.EngineTypeNone,
+			engineModel: amai.EngineModelOpenaiGPT4,
 			engineData: map[string]any{
 				"key1": "value1",
 				"key2": 2,
@@ -343,12 +343,12 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:      "/v1/chatbots/76380ede-f84a-11ed-a288-2bf54d8b92e6",
+				URI:      "/v1/ais/76380ede-f84a-11ed-a288-2bf54d8b92e6",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"value1","key2":2},"init_prompt":"test init prompt"}`),
 			},
-			expectRes: &cbchatbot.Chatbot{
+			expectRes: &amai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
 				},
@@ -369,7 +369,7 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AIUpdate(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
+			cf, err := reqHandler.AIV1AIUpdate(ctx, tt.id, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

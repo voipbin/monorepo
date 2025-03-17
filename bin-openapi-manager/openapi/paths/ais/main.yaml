@@ -1,0 +1,64 @@
+get:
+  summary: Gets a list of ais.
+  description: Retrieves a paginated list of ais.
+  tags:
+    - AI
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of ais.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIManagerAI'
+
+post:
+  summary: Create a new ai.
+  description: Creates a new ai and returns the created ai's details.
+  tags:
+    - AI
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            engine_type:
+              $ref: '#/components/schemas/AIManagerAIEngineType'
+            engine_model:
+              $ref: '#/components/schemas/AIManagerAIEngineModel'
+            engine_data:
+              type: object
+              additionalProperties: true
+              description: Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+            init_prompt:
+              type: string
+          required:
+            - name
+            - detail
+            - engine_type
+            - engine_model
+            - engine_data
+            - init_prompt
+            - credential_project_id
+  responses:
+    '200':
+      description: Details of the created ai.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAI'

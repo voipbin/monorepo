@@ -33,9 +33,9 @@ import (
 	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 
-	cbchatbot "monorepo/bin-ai-manager/models/chatbot"
-	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
-	cbmessage "monorepo/bin-ai-manager/models/message"
+	amai "monorepo/bin-ai-manager/models/ai"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
+	ammessage "monorepo/bin-ai-manager/models/message"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
@@ -228,58 +228,57 @@ type ServiceHandler interface {
 	ChatAddParticipantID(ctx context.Context, a *amagent.Agent, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
 	ChatRemoveParticipantID(ctx context.Context, a *amagent.Agent, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
 
-	// chatbot handlers
-	ChatbotCreate(
+	// ai handlers
+	AICreate(
 		ctx context.Context,
 		a *amagent.Agent,
 		name string,
 		detail string,
-		engineType cbchatbot.EngineType,
-		engineModel cbchatbot.EngineModel,
+		engineType amai.EngineType,
+		engineModel amai.EngineModel,
 		engineData map[string]any,
 		initPrompt string,
-	) (*cbchatbot.WebhookMessage, error)
-	ChatbotGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cbchatbot.WebhookMessage, error)
-	ChatbotGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbot.WebhookMessage, error)
-	ChatbotDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbot.WebhookMessage, error)
-	ChatbotUpdate(
+	) (*amai.WebhookMessage, error)
+	AIGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amai.WebhookMessage, error)
+	AIGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amai.WebhookMessage, error)
+	AIDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amai.WebhookMessage, error)
+	AIUpdate(
 		ctx context.Context,
 		a *amagent.Agent,
 		id uuid.UUID,
 		name string,
 		detail string,
-		engineType cbchatbot.EngineType,
-		engineModel cbchatbot.EngineModel,
+		engineType amai.EngineType,
+		engineModel amai.EngineModel,
 		engineData map[string]any,
 		initPrompt string,
-	) (*cbchatbot.WebhookMessage, error)
+	) (*amai.WebhookMessage, error)
 
-	// chatbotcall handlers
-	ChatbotcallCreate(
+	// aicall handlers
+	AIcallCreate(
 		ctx context.Context,
 		a *amagent.Agent,
-		chatbotID uuid.UUID,
-		referenceType cbchatbotcall.ReferenceType,
+		aiID uuid.UUID,
+		referenceType amaicall.ReferenceType,
 		referenceID uuid.UUID,
-		gender cbchatbotcall.Gender,
+		gender amaicall.Gender,
 		language string,
-	) (*cbchatbotcall.WebhookMessage, error)
-	ChatbotcallGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cbchatbotcall.WebhookMessage, error)
-	ChatbotcallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbotcall.WebhookMessage, error)
-	ChatbotcallDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbchatbotcall.WebhookMessage, error)
+	) (*amaicall.WebhookMessage, error)
+	AIcallGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amaicall.WebhookMessage, error)
+	AIcallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amaicall.WebhookMessage, error)
+	AIcallDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amaicall.WebhookMessage, error)
 
-	// chatbotmessage handlers
-	chatbotmessageGet(ctx context.Context, id uuid.UUID) (*cbmessage.Message, error)
-	ChatbotmessageCreate(
+	// aimessage handlers
+	AImessageCreate(
 		ctx context.Context,
 		a *amagent.Agent,
-		chatbotcallID uuid.UUID,
-		role cbmessage.Role,
+		aicallID uuid.UUID,
+		role ammessage.Role,
 		content string,
-	) (*cbmessage.WebhookMessage, error)
-	ChatbotmessageGetsByChatbotcallID(ctx context.Context, a *amagent.Agent, chatbotcallID uuid.UUID, size uint64, token string) ([]*cbmessage.WebhookMessage, error)
-	ChatbotmessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbmessage.WebhookMessage, error)
-	ChatbotmessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cbmessage.WebhookMessage, error)
+	) (*ammessage.WebhookMessage, error)
+	AImessageGetsByAIcallID(ctx context.Context, a *amagent.Agent, aicallID uuid.UUID, size uint64, token string) ([]*ammessage.WebhookMessage, error)
+	AImessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ammessage.WebhookMessage, error)
+	AImessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ammessage.WebhookMessage, error)
 
 	// chatmessage handlers
 	ChatmessageCreate(

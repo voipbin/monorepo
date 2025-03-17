@@ -8,8 +8,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 
-	"monorepo/bin-ai-manager/models/chatbot"
-	"monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 )
 
@@ -39,11 +39,11 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 	return nil
 }
 
-// ChatbotGet returns cached chatbot info
-func (h *handler) ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error) {
-	key := fmt.Sprintf("chatbot:chatbot:%s", id)
+// AIGet returns cached ai info
+func (h *handler) AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
+	key := fmt.Sprintf("ai:ai:%s", id)
 
-	var res chatbot.Chatbot
+	var res ai.AI
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -51,9 +51,9 @@ func (h *handler) ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbo
 	return &res, nil
 }
 
-// ChatbotSet sets the chatbot info into the cache.
-func (h *handler) ChatbotSet(ctx context.Context, data *chatbot.Chatbot) error {
-	key := fmt.Sprintf("chatbot:chatbot:%s", data.ID)
+// AISet sets the ai info into the cache.
+func (h *handler) AISet(ctx context.Context, data *ai.AI) error {
+	key := fmt.Sprintf("ai:ai:%s", data.ID)
 
 	if err := h.setSerialize(ctx, key, data); err != nil {
 		return err
@@ -62,11 +62,11 @@ func (h *handler) ChatbotSet(ctx context.Context, data *chatbot.Chatbot) error {
 	return nil
 }
 
-// ChatbotcallGet returns cached chatbotcall info
-func (h *handler) ChatbotcallGet(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error) {
-	key := fmt.Sprintf("chatbot:chatbotcall:%s", id)
+// AIcallGet returns cached aicall info
+func (h *handler) AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	key := fmt.Sprintf("ai:aicall:%s", id)
 
-	var res chatbotcall.Chatbotcall
+	var res aicall.AIcall
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -74,20 +74,20 @@ func (h *handler) ChatbotcallGet(ctx context.Context, id uuid.UUID) (*chatbotcal
 	return &res, nil
 }
 
-// ChatbotcallSet sets the chatbotcall info into the cache.
-func (h *handler) ChatbotcallSet(ctx context.Context, data *chatbotcall.Chatbotcall) error {
+// AIcallSet sets the aicall info into the cache.
+func (h *handler) AIcallSet(ctx context.Context, data *aicall.AIcall) error {
 
-	key := fmt.Sprintf("chatbot:chatbotcall:%s", data.ID)
+	key := fmt.Sprintf("ai:aicall:%s", data.ID)
 	if err := h.setSerialize(ctx, key, data); err != nil {
 		return err
 	}
 
-	keyWithTranscribeID := fmt.Sprintf("chatbot:chatbotcall:transcribe_id:%s", data.TranscribeID)
+	keyWithTranscribeID := fmt.Sprintf("ai:aicall:transcribe_id:%s", data.TranscribeID)
 	if err := h.setSerialize(ctx, keyWithTranscribeID, data); err != nil {
 		return err
 	}
 
-	keyWithReferenceID := fmt.Sprintf("chatbot:chatbotcall:transcribe_id:%s", data.TranscribeID)
+	keyWithReferenceID := fmt.Sprintf("ai:aicall:transcribe_id:%s", data.TranscribeID)
 	if err := h.setSerialize(ctx, keyWithReferenceID, data); err != nil {
 		return err
 	}
@@ -95,11 +95,11 @@ func (h *handler) ChatbotcallSet(ctx context.Context, data *chatbotcall.Chatbotc
 	return nil
 }
 
-// ChatbotcallGetByTranscribeID returns cached chatbotcall info of the given transcribe id.
-func (h *handler) ChatbotcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
-	key := fmt.Sprintf("chatbot:chatbotcall:transcribe_id:%s", transcribeID)
+// AIcallGetByTranscribeID returns cached aicall info of the given transcribe id.
+func (h *handler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
+	key := fmt.Sprintf("ai:aicall:transcribe_id:%s", transcribeID)
 
-	var res chatbotcall.Chatbotcall
+	var res aicall.AIcall
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -107,11 +107,11 @@ func (h *handler) ChatbotcallGetByTranscribeID(ctx context.Context, transcribeID
 	return &res, nil
 }
 
-// ChatbotcallGetByReferenceID returns cached chatbotcall info of the given reference id.
-func (h *handler) ChatbotcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
-	key := fmt.Sprintf("chatbot:chatbotcall:reference_id:%s", referenceID)
+// AIcallGetByReferenceID returns cached aicall info of the given reference id.
+func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error) {
+	key := fmt.Sprintf("ai:aicall:reference_id:%s", referenceID)
 
-	var res chatbotcall.Chatbotcall
+	var res aicall.AIcall
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (h *handler) ChatbotcallGetByReferenceID(ctx context.Context, referenceID u
 
 // MessageGet returns cached message info
 func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
-	key := fmt.Sprintf("chatbot:message:%s", id)
+	key := fmt.Sprintf("ai:message:%s", id)
 
 	var res message.Message
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -131,9 +131,9 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 	return &res, nil
 }
 
-// MessageSet sets the chatbot info into the cache.
+// MessageSet sets the ai info into the cache.
 func (h *handler) MessageSet(ctx context.Context, data *message.Message) error {
-	key := fmt.Sprintf("chatbot:message:%s", data.ID)
+	key := fmt.Sprintf("ai:message:%s", data.ID)
 
 	if err := h.setSerialize(ctx, key, data); err != nil {
 		return err

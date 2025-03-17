@@ -14,15 +14,15 @@ import (
 )
 
 // AIV1MessageGetsByAIcallID sends a request to ai-manager
-// to getting a list of messages info of the given chatbotcall id.
+// to getting a list of messages info of the given aicall id.
 // it returns detail list of message info if it succeed.
-func (r *requestHandler) AIV1MessageGetsByAIcallID(ctx context.Context, chatbotcallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbmessage.Message, error) {
-	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d&chatbotcall_id=%s", url.QueryEscape(pageToken), pageSize, chatbotcallID)
+func (r *requestHandler) AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbmessage.Message, error) {
+	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d&aicall_id=%s", url.QueryEscape(pageToken), pageSize, aicallID)
 
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "chatbot/messages", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/messages", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -44,13 +44,13 @@ func (r *requestHandler) AIV1MessageGetsByAIcallID(ctx context.Context, chatbotc
 // AIV1MessageSend sends a request to ai-manager
 // to send a message.
 // it returns created message if it succeed.
-func (r *requestHandler) AIV1MessageSend(ctx context.Context, chatbotcallID uuid.UUID, role cbmessage.Role, content string, timeout int) (*cbmessage.Message, error) {
+func (r *requestHandler) AIV1MessageSend(ctx context.Context, aicallID uuid.UUID, role cbmessage.Role, content string, timeout int) (*cbmessage.Message, error) {
 	uri := "/v1/messages"
 
 	data := &cbrequest.V1DataMessagesPost{
-		ChatbotcallID: chatbotcallID,
-		Role:          role,
-		Content:       content,
+		AIcallID: aicallID,
+		Role:     role,
+		Content:  content,
 	}
 
 	m, err := json.Marshal(data)
@@ -58,7 +58,7 @@ func (r *requestHandler) AIV1MessageSend(ctx context.Context, chatbotcallID uuid
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "chatbot/messages", timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/messages", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -82,7 +82,7 @@ func (r *requestHandler) AIV1MessageGet(ctx context.Context, messageID uuid.UUID
 
 	uri := fmt.Sprintf("/v1/messages/%s", messageID.String())
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "chatbot/messages/<message-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/messages/<message-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (r *requestHandler) AIV1MessageGet(ctx context.Context, messageID uuid.UUID
 func (r *requestHandler) AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/messages/%s", messageID)
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "chatbot/messages/<message-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "ai/messages/<message-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

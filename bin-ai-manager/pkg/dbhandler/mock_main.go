@@ -11,8 +11,8 @@ package dbhandler
 
 import (
 	context "context"
-	chatbot "monorepo/bin-ai-manager/models/chatbot"
-	chatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	ai "monorepo/bin-ai-manager/models/ai"
+	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
 	reflect "reflect"
 
@@ -44,192 +44,192 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
-// ChatbotCreate mocks base method.
-func (m *MockDBHandler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
+// AICreate mocks base method.
+func (m *MockDBHandler) AICreate(ctx context.Context, c *ai.AI) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotCreate", ctx, c)
+	ret := m.ctrl.Call(m, "AICreate", ctx, c)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChatbotCreate indicates an expected call of ChatbotCreate.
-func (mr *MockDBHandlerMockRecorder) ChatbotCreate(ctx, c any) *gomock.Call {
+// AICreate indicates an expected call of AICreate.
+func (mr *MockDBHandlerMockRecorder) AICreate(ctx, c any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotCreate", reflect.TypeOf((*MockDBHandler)(nil).ChatbotCreate), ctx, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AICreate", reflect.TypeOf((*MockDBHandler)(nil).AICreate), ctx, c)
 }
 
-// ChatbotDelete mocks base method.
-func (m *MockDBHandler) ChatbotDelete(ctx context.Context, id uuid.UUID) error {
+// AIDelete mocks base method.
+func (m *MockDBHandler) AIDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotDelete", ctx, id)
+	ret := m.ctrl.Call(m, "AIDelete", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChatbotDelete indicates an expected call of ChatbotDelete.
-func (mr *MockDBHandlerMockRecorder) ChatbotDelete(ctx, id any) *gomock.Call {
+// AIDelete indicates an expected call of AIDelete.
+func (mr *MockDBHandlerMockRecorder) AIDelete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotDelete", reflect.TypeOf((*MockDBHandler)(nil).ChatbotDelete), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIDelete", reflect.TypeOf((*MockDBHandler)(nil).AIDelete), ctx, id)
 }
 
-// ChatbotGet mocks base method.
-func (m *MockDBHandler) ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error) {
+// AIGet mocks base method.
+func (m *MockDBHandler) AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotGet", ctx, id)
-	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret := m.ctrl.Call(m, "AIGet", ctx, id)
+	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotGet indicates an expected call of ChatbotGet.
-func (mr *MockDBHandlerMockRecorder) ChatbotGet(ctx, id any) *gomock.Call {
+// AIGet indicates an expected call of AIGet.
+func (mr *MockDBHandlerMockRecorder) AIGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotGet", reflect.TypeOf((*MockDBHandler)(nil).ChatbotGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGet", reflect.TypeOf((*MockDBHandler)(nil).AIGet), ctx, id)
 }
 
-// ChatbotGets mocks base method.
-func (m *MockDBHandler) ChatbotGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbot.Chatbot, error) {
+// AIGets mocks base method.
+func (m *MockDBHandler) AIGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotGets", ctx, customerID, size, token, filters)
-	ret0, _ := ret[0].([]*chatbot.Chatbot)
+	ret := m.ctrl.Call(m, "AIGets", ctx, customerID, size, token, filters)
+	ret0, _ := ret[0].([]*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotGets indicates an expected call of ChatbotGets.
-func (mr *MockDBHandlerMockRecorder) ChatbotGets(ctx, customerID, size, token, filters any) *gomock.Call {
+// AIGets indicates an expected call of AIGets.
+func (mr *MockDBHandlerMockRecorder) AIGets(ctx, customerID, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotGets", reflect.TypeOf((*MockDBHandler)(nil).ChatbotGets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGets", reflect.TypeOf((*MockDBHandler)(nil).AIGets), ctx, customerID, size, token, filters)
 }
 
-// ChatbotSetInfo mocks base method.
-func (m *MockDBHandler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name, detail string, engineType chatbot.EngineType, engineModel chatbot.EngineModel, engineData map[string]any, initPrompt string) error {
+// AISetInfo mocks base method.
+func (m *MockDBHandler) AISetInfo(ctx context.Context, id uuid.UUID, name, detail string, engineType ai.EngineType, engineModel ai.EngineModel, engineData map[string]any, initPrompt string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotSetInfo", ctx, id, name, detail, engineType, engineModel, engineData, initPrompt)
+	ret := m.ctrl.Call(m, "AISetInfo", ctx, id, name, detail, engineType, engineModel, engineData, initPrompt)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChatbotSetInfo indicates an expected call of ChatbotSetInfo.
-func (mr *MockDBHandlerMockRecorder) ChatbotSetInfo(ctx, id, name, detail, engineType, engineModel, engineData, initPrompt any) *gomock.Call {
+// AISetInfo indicates an expected call of AISetInfo.
+func (mr *MockDBHandlerMockRecorder) AISetInfo(ctx, id, name, detail, engineType, engineModel, engineData, initPrompt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotSetInfo", reflect.TypeOf((*MockDBHandler)(nil).ChatbotSetInfo), ctx, id, name, detail, engineType, engineModel, engineData, initPrompt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISetInfo", reflect.TypeOf((*MockDBHandler)(nil).AISetInfo), ctx, id, name, detail, engineType, engineModel, engineData, initPrompt)
 }
 
-// ChatbotcallCreate mocks base method.
-func (m *MockDBHandler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbotcall) error {
+// AIcallCreate mocks base method.
+func (m *MockDBHandler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallCreate", ctx, cb)
+	ret := m.ctrl.Call(m, "AIcallCreate", ctx, cb)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChatbotcallCreate indicates an expected call of ChatbotcallCreate.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallCreate(ctx, cb any) *gomock.Call {
+// AIcallCreate indicates an expected call of AIcallCreate.
+func (mr *MockDBHandlerMockRecorder) AIcallCreate(ctx, cb any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallCreate", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallCreate), ctx, cb)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallCreate", reflect.TypeOf((*MockDBHandler)(nil).AIcallCreate), ctx, cb)
 }
 
-// ChatbotcallDelete mocks base method.
-func (m *MockDBHandler) ChatbotcallDelete(ctx context.Context, id uuid.UUID) error {
+// AIcallDelete mocks base method.
+func (m *MockDBHandler) AIcallDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallDelete", ctx, id)
+	ret := m.ctrl.Call(m, "AIcallDelete", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChatbotcallDelete indicates an expected call of ChatbotcallDelete.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallDelete(ctx, id any) *gomock.Call {
+// AIcallDelete indicates an expected call of AIcallDelete.
+func (mr *MockDBHandlerMockRecorder) AIcallDelete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallDelete", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallDelete), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallDelete", reflect.TypeOf((*MockDBHandler)(nil).AIcallDelete), ctx, id)
 }
 
-// ChatbotcallGet mocks base method.
-func (m *MockDBHandler) ChatbotcallGet(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+// AIcallGet mocks base method.
+func (m *MockDBHandler) AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallGet", ctx, id)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret := m.ctrl.Call(m, "AIcallGet", ctx, id)
+	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotcallGet indicates an expected call of ChatbotcallGet.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallGet(ctx, id any) *gomock.Call {
+// AIcallGet indicates an expected call of AIcallGet.
+func (mr *MockDBHandlerMockRecorder) AIcallGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGet", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGet", reflect.TypeOf((*MockDBHandler)(nil).AIcallGet), ctx, id)
 }
 
-// ChatbotcallGetByReferenceID mocks base method.
-func (m *MockDBHandler) ChatbotcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+// AIcallGetByReferenceID mocks base method.
+func (m *MockDBHandler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallGetByReferenceID", ctx, referenceID)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret := m.ctrl.Call(m, "AIcallGetByReferenceID", ctx, referenceID)
+	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotcallGetByReferenceID indicates an expected call of ChatbotcallGetByReferenceID.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallGetByReferenceID(ctx, referenceID any) *gomock.Call {
+// AIcallGetByReferenceID indicates an expected call of AIcallGetByReferenceID.
+func (mr *MockDBHandlerMockRecorder) AIcallGetByReferenceID(ctx, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallGetByReferenceID), ctx, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).AIcallGetByReferenceID), ctx, referenceID)
 }
 
-// ChatbotcallGetByTranscribeID mocks base method.
-func (m *MockDBHandler) ChatbotcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+// AIcallGetByTranscribeID mocks base method.
+func (m *MockDBHandler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallGetByTranscribeID", ctx, transcribeID)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret := m.ctrl.Call(m, "AIcallGetByTranscribeID", ctx, transcribeID)
+	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotcallGetByTranscribeID indicates an expected call of ChatbotcallGetByTranscribeID.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallGetByTranscribeID(ctx, transcribeID any) *gomock.Call {
+// AIcallGetByTranscribeID indicates an expected call of AIcallGetByTranscribeID.
+func (mr *MockDBHandlerMockRecorder) AIcallGetByTranscribeID(ctx, transcribeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGetByTranscribeID", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallGetByTranscribeID), ctx, transcribeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByTranscribeID", reflect.TypeOf((*MockDBHandler)(nil).AIcallGetByTranscribeID), ctx, transcribeID)
 }
 
-// ChatbotcallGets mocks base method.
-func (m *MockDBHandler) ChatbotcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbotcall.Chatbotcall, error) {
+// AIcallGets mocks base method.
+func (m *MockDBHandler) AIcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallGets", ctx, customerID, size, token, filters)
-	ret0, _ := ret[0].([]*chatbotcall.Chatbotcall)
+	ret := m.ctrl.Call(m, "AIcallGets", ctx, customerID, size, token, filters)
+	ret0, _ := ret[0].([]*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotcallGets indicates an expected call of ChatbotcallGets.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallGets(ctx, customerID, size, token, filters any) *gomock.Call {
+// AIcallGets indicates an expected call of AIcallGets.
+func (mr *MockDBHandlerMockRecorder) AIcallGets(ctx, customerID, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGets", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallGets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGets", reflect.TypeOf((*MockDBHandler)(nil).AIcallGets), ctx, customerID, size, token, filters)
 }
 
-// ChatbotcallUpdateStatusEnd mocks base method.
-func (m *MockDBHandler) ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error {
+// AIcallUpdateStatusEnd mocks base method.
+func (m *MockDBHandler) AIcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallUpdateStatusEnd", ctx, id)
+	ret := m.ctrl.Call(m, "AIcallUpdateStatusEnd", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChatbotcallUpdateStatusEnd indicates an expected call of ChatbotcallUpdateStatusEnd.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallUpdateStatusEnd(ctx, id any) *gomock.Call {
+// AIcallUpdateStatusEnd indicates an expected call of AIcallUpdateStatusEnd.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusEnd(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallUpdateStatusEnd", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallUpdateStatusEnd), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusEnd", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusEnd), ctx, id)
 }
 
-// ChatbotcallUpdateStatusProgressing mocks base method.
-func (m *MockDBHandler) ChatbotcallUpdateStatusProgressing(ctx context.Context, id, transcribeID uuid.UUID) error {
+// AIcallUpdateStatusProgressing mocks base method.
+func (m *MockDBHandler) AIcallUpdateStatusProgressing(ctx context.Context, id, transcribeID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallUpdateStatusProgressing", ctx, id, transcribeID)
+	ret := m.ctrl.Call(m, "AIcallUpdateStatusProgressing", ctx, id, transcribeID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChatbotcallUpdateStatusProgressing indicates an expected call of ChatbotcallUpdateStatusProgressing.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallUpdateStatusProgressing(ctx, id, transcribeID any) *gomock.Call {
+// AIcallUpdateStatusProgressing indicates an expected call of AIcallUpdateStatusProgressing.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusProgressing(ctx, id, transcribeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallUpdateStatusProgressing", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallUpdateStatusProgressing), ctx, id, transcribeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusProgressing", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusProgressing), ctx, id, transcribeID)
 }
 
 // MessageCreate mocks base method.
@@ -276,16 +276,16 @@ func (mr *MockDBHandlerMockRecorder) MessageGet(ctx, id any) *gomock.Call {
 }
 
 // MessageGets mocks base method.
-func (m *MockDBHandler) MessageGets(ctx context.Context, chatbotcallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
+func (m *MockDBHandler) MessageGets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageGets", ctx, chatbotcallID, size, token, filters)
+	ret := m.ctrl.Call(m, "MessageGets", ctx, aicallID, size, token, filters)
 	ret0, _ := ret[0].([]*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MessageGets indicates an expected call of MessageGets.
-func (mr *MockDBHandlerMockRecorder) MessageGets(ctx, chatbotcallID, size, token, filters any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) MessageGets(ctx, aicallID, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockDBHandler)(nil).MessageGets), ctx, chatbotcallID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockDBHandler)(nil).MessageGets), ctx, aicallID, size, token, filters)
 }

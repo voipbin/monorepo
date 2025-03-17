@@ -15,15 +15,15 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_ChatbotV1MessageGetsByChatbotcallID(t *testing.T) {
+func Test_AIV1MessageGetsByAIcallID(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		chatbotcallID uuid.UUID
-		pageToken     string
-		pageSize      uint64
-		filters       map[string]string
+		aicallID  uuid.UUID
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		response *sock.Response
 
@@ -35,9 +35,9 @@ func Test_ChatbotV1MessageGetsByChatbotcallID(t *testing.T) {
 		{
 			name: "normal",
 
-			chatbotcallID: uuid.FromStringOrNil("d43e25a6-f2ce-11ef-bd10-3b19aa3747d8"),
-			pageToken:     "2020-09-20 03:23:20.995000",
-			pageSize:      10,
+			aicallID:  uuid.FromStringOrNil("d43e25a6-f2ce-11ef-bd10-3b19aa3747d8"),
+			pageToken: "2020-09-20 03:23:20.995000",
+			pageSize:  10,
 			filters: map[string]string{
 				"deleted": "false",
 			},
@@ -48,10 +48,10 @@ func Test_ChatbotV1MessageGetsByChatbotcallID(t *testing.T) {
 				Data:       []byte(`[{"id":"d49161bc-f2ce-11ef-8263-17e36f2d0922"},{"id":"d4c481d2-f2ce-11ef-b59d-e3cfadb6b877"}]`),
 			},
 
-			expectURL:    "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&chatbotcall_id=d43e25a6-f2ce-11ef-bd10-3b19aa3747d8",
+			expectURL:    "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&aicall_id=d43e25a6-f2ce-11ef-bd10-3b19aa3747d8",
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:    "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&chatbotcall_id=d43e25a6-f2ce-11ef-bd10-3b19aa3747d8&filter_deleted=false",
+				URI:    "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&aicall_id=d43e25a6-f2ce-11ef-bd10-3b19aa3747d8&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
 			expectRes: []cbmessage.Message{
@@ -85,7 +85,7 @@ func Test_ChatbotV1MessageGetsByChatbotcallID(t *testing.T) {
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.AIV1MessageGetsByAIcallID(ctx, tt.chatbotcallID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.AIV1MessageGetsByAIcallID(ctx, tt.aicallID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -97,15 +97,15 @@ func Test_ChatbotV1MessageGetsByChatbotcallID(t *testing.T) {
 	}
 }
 
-func Test_ChatbotV1MessageSend(t *testing.T) {
+func Test_AIV1MessageSend(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		chatbotcallID uuid.UUID
-		role          cbmessage.Role
-		content       string
-		timeout       int
+		aicallID uuid.UUID
+		role     cbmessage.Role
+		content  string
+		timeout  int
 
 		response *sock.Response
 
@@ -116,10 +116,10 @@ func Test_ChatbotV1MessageSend(t *testing.T) {
 		{
 			name: "normal",
 
-			chatbotcallID: uuid.FromStringOrNil("5398cd60-f2cf-11ef-ac07-2b477cb8a829"),
-			role:          cbmessage.RoleUser,
-			content:       "test content",
-			timeout:       30000,
+			aicallID: uuid.FromStringOrNil("5398cd60-f2cf-11ef-ac07-2b477cb8a829"),
+			role:     cbmessage.RoleUser,
+			content:  "test content",
+			timeout:  30000,
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -132,7 +132,7 @@ func Test_ChatbotV1MessageSend(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"chatbotcall_id":"5398cd60-f2cf-11ef-ac07-2b477cb8a829","role":"user","content":"test content"}`),
+				Data:     []byte(`{"aicall_id":"5398cd60-f2cf-11ef-ac07-2b477cb8a829","role":"user","content":"test content"}`),
 			},
 			expectRes: &cbmessage.Message{
 				Identity: identity.Identity{
@@ -155,7 +155,7 @@ func Test_ChatbotV1MessageSend(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1MessageSend(ctx, tt.chatbotcallID, tt.role, tt.content, tt.timeout)
+			cf, err := reqHandler.AIV1MessageSend(ctx, tt.aicallID, tt.role, tt.content, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -167,7 +167,7 @@ func Test_ChatbotV1MessageSend(t *testing.T) {
 	}
 }
 
-func Test_ChatbotV1MessageGet(t *testing.T) {
+func Test_AIV1MessageGet(t *testing.T) {
 
 	type test struct {
 		name string
@@ -230,7 +230,7 @@ func Test_ChatbotV1MessageGet(t *testing.T) {
 	}
 }
 
-func Test_ChatbotV1MessageDelete(t *testing.T) {
+func Test_AIV1MessageDelete(t *testing.T) {
 
 	tests := []struct {
 		name string

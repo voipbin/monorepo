@@ -5,7 +5,7 @@ package messagehandler
 import (
 	"context"
 	"monorepo/bin-ai-manager/models/message"
-	"monorepo/bin-ai-manager/pkg/chatbotcallhandler"
+	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
@@ -18,9 +18,9 @@ import (
 
 type MessageHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
-	Gets(ctx context.Context, chatbotcallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error)
+	Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error)
 
-	Send(ctx context.Context, chatbotcallID uuid.UUID, role message.Role, content string) (*message.Message, error)
+	Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error)
 }
 
 type messageHandler struct {
@@ -28,14 +28,14 @@ type messageHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
 
-	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler
+	aicallHandler aicallhandler.AIcallHandler
 
 	engineOpenaiHandler     engine_openai_handler.EngineOpenaiHandler
 	engineDialogflowHandler engine_dialogflow_handler.EngineDialogflowHandler
 }
 
 var (
-	metricsNamespace = "chatbot_manager"
+	metricsNamespace = "ai_manager"
 
 	promMessageCreateTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -68,7 +68,7 @@ func init() {
 func NewMessageHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
-	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler,
+	aicallHandler aicallhandler.AIcallHandler,
 
 	engineKeyChatgpt string,
 ) MessageHandler {
@@ -81,7 +81,7 @@ func NewMessageHandler(
 		notifyHandler: notifyHandler,
 		db:            db,
 
-		chatbotcallHandler: chatbotcallHandler,
+		aicallHandler: aicallHandler,
 
 		engineOpenaiHandler:     engineOpenaiHandler,
 		engineDialogflowHandler: engineDialogflowHandler,

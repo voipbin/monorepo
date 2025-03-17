@@ -1,8 +1,8 @@
 package engine_dialogflow_handler
 
 import (
-	"monorepo/bin-ai-manager/models/chatbot"
-	"monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/engine_dialogflow"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-common-handler/models/identity"
@@ -17,9 +17,9 @@ func Test_getRequest(t *testing.T) {
 	tests := []struct {
 		name string
 
-		engineData  *engine_dialogflow.EngineDialogflow
-		chatbotcall *chatbotcall.Chatbotcall
-		message     *message.Message
+		engineData *engine_dialogflow.EngineDialogflow
+		aicall     *aicall.AIcall
+		message    *message.Message
 
 		expectRes *dialogflowpb.DetectIntentRequest
 	}{
@@ -29,12 +29,12 @@ func Test_getRequest(t *testing.T) {
 			engineData: &engine_dialogflow.EngineDialogflow{
 				ProjectID: "test-project",
 			},
-			chatbotcall: &chatbotcall.Chatbotcall{
+			aicall: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("53ae45c0-ff1b-11ef-9018-7b56cb798145"),
 				},
-				ChatbotEngineModel: chatbot.EngineModelDialogflowES,
-				Language:           "en-US",
+				AIEngineModel: ai.EngineModelDialogflowES,
+				Language:      "en-US",
 			},
 			message: &message.Message{
 				Content: "test message",
@@ -60,12 +60,12 @@ func Test_getRequest(t *testing.T) {
 				Region:    "us-central1",
 				AgentID:   "test-agent",
 			},
-			chatbotcall: &chatbotcall.Chatbotcall{
+			aicall: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("53fa04ba-ff1b-11ef-a65c-cf8e61d0c4ae"),
 				},
-				ChatbotEngineModel: chatbot.EngineModelDialogflowCX,
-				Language:           "en-US",
+				AIEngineModel: ai.EngineModelDialogflowCX,
+				Language:      "en-US",
 			},
 			message: &message.Message{
 				Content: "test message CX",
@@ -89,7 +89,7 @@ func Test_getRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &engineDialogflowHandler{} // Create an instance of the handler
 
-			res := h.getRequest(tt.engineData, tt.chatbotcall, tt.message)
+			res := h.getRequest(tt.engineData, tt.aicall, tt.message)
 
 			if !proto.Equal(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %#v\ngot: %#v", tt.expectRes, res)

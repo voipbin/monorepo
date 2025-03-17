@@ -11,7 +11,7 @@ package engine_dialogflow_handler
 
 import (
 	context "context"
-	chatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
 	reflect "reflect"
 
@@ -43,7 +43,7 @@ func (m *MockEngineDialogflowHandler) EXPECT() *MockEngineDialogflowHandlerMockR
 }
 
 // MessageSend mocks base method.
-func (m_2 *MockEngineDialogflowHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, m *message.Message) (*message.Message, error) {
+func (m_2 *MockEngineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AIcall, m *message.Message) (*message.Message, error) {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "MessageSend", ctx, cc, m)
 	ret0, _ := ret[0].(*message.Message)

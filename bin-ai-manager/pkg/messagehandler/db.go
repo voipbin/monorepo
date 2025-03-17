@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (h *messageHandler) Create(ctx context.Context, customerID uuid.UUID, chatbotcallID uuid.UUID, direction message.Direction, role message.Role, content string) (*message.Message, error) {
+func (h *messageHandler) Create(ctx context.Context, customerID uuid.UUID, aicallID uuid.UUID, direction message.Direction, role message.Role, content string) (*message.Message, error) {
 	id := h.utilHandler.UUIDCreate()
 
 	m := &message.Message{
@@ -17,7 +17,7 @@ func (h *messageHandler) Create(ctx context.Context, customerID uuid.UUID, chatb
 			ID:         id,
 			CustomerID: customerID,
 		},
-		ChatbotcallID: chatbotcallID,
+		AIcallID: aicallID,
 
 		Direction: direction,
 		Role:      role,
@@ -38,7 +38,7 @@ func (h *messageHandler) Create(ctx context.Context, customerID uuid.UUID, chatb
 	return res, nil
 }
 
-// Get returns chatbot.
+// Get returns ai.
 func (h *messageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	res, err := h.db.MessageGet(ctx, id)
 	if err != nil {
@@ -48,8 +48,8 @@ func (h *messageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Messag
 	return res, nil
 }
 
-func (h *messageHandler) Gets(ctx context.Context, chatbotcallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
-	res, err := h.db.MessageGets(ctx, chatbotcallID, size, token, filters)
+func (h *messageHandler) Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
+	res, err := h.db.MessageGets(ctx, aicallID, size, token, filters)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 WORKDIR /app
 COPY ./ .
 RUN mkdir -p /app/bin
-RUN cd bin-chatbot-manager && go build -o /app/bin/ ./cmd/...
+RUN cd bin-ai-manager && go build -o /app/bin/ ./cmd/...
 
 # run
 FROM alpine

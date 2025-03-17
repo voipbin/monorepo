@@ -11,8 +11,8 @@ package cachehandler
 
 import (
 	context "context"
-	chatbot "monorepo/bin-ai-manager/models/chatbot"
-	chatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	ai "monorepo/bin-ai-manager/models/ai"
+	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
 	reflect "reflect"
 
@@ -44,92 +44,92 @@ func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
 }
 
-// ChatbotGet mocks base method.
-func (m *MockCacheHandler) ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error) {
+// AIGet mocks base method.
+func (m *MockCacheHandler) AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotGet", ctx, id)
-	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret := m.ctrl.Call(m, "AIGet", ctx, id)
+	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotGet indicates an expected call of ChatbotGet.
-func (mr *MockCacheHandlerMockRecorder) ChatbotGet(ctx, id any) *gomock.Call {
+// AIGet indicates an expected call of AIGet.
+func (mr *MockCacheHandlerMockRecorder) AIGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotGet", reflect.TypeOf((*MockCacheHandler)(nil).ChatbotGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGet", reflect.TypeOf((*MockCacheHandler)(nil).AIGet), ctx, id)
 }
 
-// ChatbotSet mocks base method.
-func (m *MockCacheHandler) ChatbotSet(ctx context.Context, data *chatbot.Chatbot) error {
+// AISet mocks base method.
+func (m *MockCacheHandler) AISet(ctx context.Context, data *ai.AI) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotSet", ctx, data)
+	ret := m.ctrl.Call(m, "AISet", ctx, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChatbotSet indicates an expected call of ChatbotSet.
-func (mr *MockCacheHandlerMockRecorder) ChatbotSet(ctx, data any) *gomock.Call {
+// AISet indicates an expected call of AISet.
+func (mr *MockCacheHandlerMockRecorder) AISet(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotSet", reflect.TypeOf((*MockCacheHandler)(nil).ChatbotSet), ctx, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISet", reflect.TypeOf((*MockCacheHandler)(nil).AISet), ctx, data)
 }
 
-// ChatbotcallGet mocks base method.
-func (m *MockCacheHandler) ChatbotcallGet(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+// AIcallGet mocks base method.
+func (m *MockCacheHandler) AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallGet", ctx, id)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret := m.ctrl.Call(m, "AIcallGet", ctx, id)
+	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotcallGet indicates an expected call of ChatbotcallGet.
-func (mr *MockCacheHandlerMockRecorder) ChatbotcallGet(ctx, id any) *gomock.Call {
+// AIcallGet indicates an expected call of AIcallGet.
+func (mr *MockCacheHandlerMockRecorder) AIcallGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGet", reflect.TypeOf((*MockCacheHandler)(nil).ChatbotcallGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGet", reflect.TypeOf((*MockCacheHandler)(nil).AIcallGet), ctx, id)
 }
 
-// ChatbotcallGetByReferenceID mocks base method.
-func (m *MockCacheHandler) ChatbotcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+// AIcallGetByReferenceID mocks base method.
+func (m *MockCacheHandler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallGetByReferenceID", ctx, referenceID)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret := m.ctrl.Call(m, "AIcallGetByReferenceID", ctx, referenceID)
+	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotcallGetByReferenceID indicates an expected call of ChatbotcallGetByReferenceID.
-func (mr *MockCacheHandlerMockRecorder) ChatbotcallGetByReferenceID(ctx, referenceID any) *gomock.Call {
+// AIcallGetByReferenceID indicates an expected call of AIcallGetByReferenceID.
+func (mr *MockCacheHandlerMockRecorder) AIcallGetByReferenceID(ctx, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGetByReferenceID", reflect.TypeOf((*MockCacheHandler)(nil).ChatbotcallGetByReferenceID), ctx, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByReferenceID", reflect.TypeOf((*MockCacheHandler)(nil).AIcallGetByReferenceID), ctx, referenceID)
 }
 
-// ChatbotcallGetByTranscribeID mocks base method.
-func (m *MockCacheHandler) ChatbotcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+// AIcallGetByTranscribeID mocks base method.
+func (m *MockCacheHandler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallGetByTranscribeID", ctx, transcribeID)
-	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret := m.ctrl.Call(m, "AIcallGetByTranscribeID", ctx, transcribeID)
+	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatbotcallGetByTranscribeID indicates an expected call of ChatbotcallGetByTranscribeID.
-func (mr *MockCacheHandlerMockRecorder) ChatbotcallGetByTranscribeID(ctx, transcribeID any) *gomock.Call {
+// AIcallGetByTranscribeID indicates an expected call of AIcallGetByTranscribeID.
+func (mr *MockCacheHandlerMockRecorder) AIcallGetByTranscribeID(ctx, transcribeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGetByTranscribeID", reflect.TypeOf((*MockCacheHandler)(nil).ChatbotcallGetByTranscribeID), ctx, transcribeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByTranscribeID", reflect.TypeOf((*MockCacheHandler)(nil).AIcallGetByTranscribeID), ctx, transcribeID)
 }
 
-// ChatbotcallSet mocks base method.
-func (m *MockCacheHandler) ChatbotcallSet(ctx context.Context, data *chatbotcall.Chatbotcall) error {
+// AIcallSet mocks base method.
+func (m *MockCacheHandler) AIcallSet(ctx context.Context, data *aicall.AIcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallSet", ctx, data)
+	ret := m.ctrl.Call(m, "AIcallSet", ctx, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChatbotcallSet indicates an expected call of ChatbotcallSet.
-func (mr *MockCacheHandlerMockRecorder) ChatbotcallSet(ctx, data any) *gomock.Call {
+// AIcallSet indicates an expected call of AIcallSet.
+func (mr *MockCacheHandlerMockRecorder) AIcallSet(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallSet", reflect.TypeOf((*MockCacheHandler)(nil).ChatbotcallSet), ctx, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallSet", reflect.TypeOf((*MockCacheHandler)(nil).AIcallSet), ctx, data)
 }
 
 // Connect mocks base method.

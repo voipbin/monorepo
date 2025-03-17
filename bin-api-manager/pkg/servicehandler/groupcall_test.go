@@ -133,7 +133,9 @@ func Test_GroupcallCreate(t *testing.T) {
 			answerMethod: cmgroupcall.AnswerMethodHangupOthers,
 
 			responseFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("afce8664-bf01-11ed-b58c-dbe9035888fa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("afce8664-bf01-11ed-b58c-dbe9035888fa"),
+				},
 			},
 			responseGroupcall: &cmgroupcall.Groupcall{
 				Identity: commonidentity.Identity{

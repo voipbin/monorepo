@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: chatbot-manager
+  name: ai-manager
   labels:
-    app: chatbot-manager
+    app: ai-manager
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: chatbot-manager
+      app: ai-manager
   template:
     metadata:
       labels:
-        app: chatbot-manager
+        app: ai-manager
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/metrics"
         prometheus.io/port: "2112"
     spec:
       containers:
-        - name: chatbot-manager
-          image: chatbot-manager-image
+        - name: ai-manager
+          image: ai-manager-image
           command:
-            - './chatbot-manager'
+            - './ai-manager'
           env:
             - name: DATABASE_DSN
               value: ${DATABASE_DSN}

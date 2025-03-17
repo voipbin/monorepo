@@ -9,7 +9,8 @@ import (
 
 type WebhookMessage struct {
 	identity.Identity
-	ChatbotcallID uuid.UUID `json:"chatbotcall_id,omitempty"`
+
+	AIcallID uuid.UUID `json:"aicall_id,omitempty"`
 
 	Role      Role      `json:"role"`
 	Content   string    `json:"content"`
@@ -20,8 +21,9 @@ type WebhookMessage struct {
 
 func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		Identity:      h.Identity,
-		ChatbotcallID: h.ChatbotcallID,
+		Identity: h.Identity,
+
+		AIcallID: h.AIcallID,
 
 		Role:      h.Role,
 		Content:   h.Content,

@@ -112,9 +112,9 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 		}
 		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)
 
-	case action.TypeChatbotTalk:
-		if errHandle := h.actionHandleChatbotTalk(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the chatbot talk action correctly. err: %v", errHandle)
+	case action.TypeAITalk:
+		if errHandle := h.actionHandleAITalk(ctx, af); errHandle != nil {
+			log.Errorf("Could not handle the ai talk action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)

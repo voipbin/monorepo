@@ -2,8 +2,8 @@ package listenhandler
 
 import (
 	"monorepo/bin-ai-manager/models/message"
-	"monorepo/bin-ai-manager/pkg/chatbotcallhandler"
-	"monorepo/bin-ai-manager/pkg/chatbothandler"
+	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
@@ -23,16 +23,16 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 		responseMessages []*message.Message
 
-		expectChatbotcallID uuid.UUID
-		expectPageSize      uint64
-		expectPageToken     string
-		expectFilters       map[string]string
-		expectRes           *sock.Response
+		expectAIcallID  uuid.UUID
+		expectPageSize  uint64
+		expectPageToken string
+		expectFilters   map[string]string
+		expectRes       *sock.Response
 	}{
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/messages?page_size=10&page_token=2020-05-03%2021:35:02.809&chatbotcall_id=445110a0-f25d-11ef-9ff1-2f4ea94a72ac&filter_deleted=false",
+				URI:    "/v1/messages?page_size=10&page_token=2020-05-03%2021:35:02.809&aicall_id=445110a0-f25d-11ef-9ff1-2f4ea94a72ac&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
 
@@ -49,16 +49,16 @@ func Test_processV1MessagesGet(t *testing.T) {
 				},
 			},
 
-			expectChatbotcallID: uuid.FromStringOrNil("445110a0-f25d-11ef-9ff1-2f4ea94a72ac"),
-			expectPageSize:      10,
-			expectPageToken:     "2020-05-03 21:35:02.809",
+			expectAIcallID:  uuid.FromStringOrNil("445110a0-f25d-11ef-9ff1-2f4ea94a72ac"),
+			expectPageSize:  10,
+			expectPageToken: "2020-05-03 21:35:02.809",
 			expectFilters: map[string]string{
 				"deleted": "false",
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"829d8866-f25d-11ef-9b3a-dbb10220cf40","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000"},{"id":"82d92b5a-f25d-11ef-8ee2-db3e98ba4d00","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000"}]`),
+				Data:       []byte(`[{"id":"829d8866-f25d-11ef-9b3a-dbb10220cf40","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000"},{"id":"82d92b5a-f25d-11ef-8ee2-db3e98ba4d00","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 	}
@@ -69,16 +69,16 @@ func Test_processV1MessagesGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:    mockSock,
-				chatbotHandler: mockChatbot,
+				aiHandler:      mockAI,
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Gets(gomock.Any(), tt.expectChatbotcallID, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(gomock.Any(), tt.expectAIcallID, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseMessages, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -99,10 +99,10 @@ func Test_processV1MessagesPost(t *testing.T) {
 
 		responseMessage *message.Message
 
-		expectChatbotcallID uuid.UUID
-		expectRole          message.Role
-		expectContent       string
-		expectRes           *sock.Response
+		expectAIcallID uuid.UUID
+		expectRole     message.Role
+		expectContent  string
+		expectRes      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -110,7 +110,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"chatbotcall_id": "0615dec8-f25e-11ef-b878-0fb5e7ac2aee", "role": "user", "content": "hello world!"}`),
+				Data:     []byte(`{"aicall_id": "0615dec8-f25e-11ef-b878-0fb5e7ac2aee", "role": "user", "content": "hello world!"}`),
 			},
 
 			responseMessage: &message.Message{
@@ -119,13 +119,13 @@ func Test_processV1MessagesPost(t *testing.T) {
 				},
 			},
 
-			expectChatbotcallID: uuid.FromStringOrNil("0615dec8-f25e-11ef-b878-0fb5e7ac2aee"),
-			expectRole:          message.RoleUser,
-			expectContent:       "hello world!",
+			expectAIcallID: uuid.FromStringOrNil("0615dec8-f25e-11ef-b878-0fb5e7ac2aee"),
+			expectRole:     message.RoleUser,
+			expectContent:  "hello world!",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"532777f8-f25e-11ef-8618-1f7ef1d18d75","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"532777f8-f25e-11ef-8618-1f7ef1d18d75","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -136,16 +136,16 @@ func Test_processV1MessagesPost(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:    mockSock,
-				chatbotHandler: mockChatbot,
+				aiHandler:      mockAI,
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Send(gomock.Any(), tt.expectChatbotcallID, tt.expectRole, tt.expectContent).Return(tt.responseMessage, nil)
+			mockMessage.EXPECT().Send(gomock.Any(), tt.expectAIcallID, tt.expectRole, tt.expectContent).Return(tt.responseMessage, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -186,7 +186,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e56b73fa-f2c0-11ef-a99b-fb5e1f39d249","customer_id":"00000000-0000-0000-0000-000000000000","chatbotcall_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"e56b73fa-f2c0-11ef-a99b-fb5e1f39d249","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -197,13 +197,13 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
-				sockHandler:        mockSock,
-				chatbotcallHandler: mockChatbotcall,
-				messageHandler:     mockMessage,
+				sockHandler:    mockSock,
+				aicallHandler:  mockAIcall,
+				messageHandler: mockMessage,
 			}
 
 			mockMessage.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseMessage, nil)

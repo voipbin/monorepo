@@ -30,20 +30,20 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer id
-	chatbotcallID := uuid.FromStringOrNil(u.Query().Get("chatbotcall_id"))
+	// get aicall id
+	aicallID := uuid.FromStringOrNil(u.Query().Get("aicall_id"))
 
 	// get filters
 	filters := getFilters(u)
 
 	log = log.WithFields(logrus.Fields{
-		"customer_id": chatbotcallID,
+		"customer_id": aicallID,
 		"size":        pageSize,
 		"token":       pageToken,
 		"filters":     filters,
 	})
 
-	tmp, err := h.messageHandler.Gets(ctx, chatbotcallID, pageSize, pageToken, filters)
+	tmp, err := h.messageHandler.Gets(ctx, aicallID, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get messages. err: %v", err)
 		return simpleResponse(500), nil
@@ -77,9 +77,9 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 		return nil, err
 	}
 
-	tmp, err := h.messageHandler.Send(ctx, req.ChatbotcallID, req.Role, req.Content)
+	tmp, err := h.messageHandler.Send(ctx, req.AIcallID, req.Role, req.Content)
 	if err != nil {
-		log.Errorf("Could not create chatbot. err: %v", err)
+		log.Errorf("Could not create ai. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -114,7 +114,7 @@ func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Requ
 
 	tmp, err := h.messageHandler.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not create chatbot. err: %v", err)
+		log.Errorf("Could not create ai. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

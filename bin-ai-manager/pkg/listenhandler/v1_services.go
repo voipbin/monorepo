@@ -11,22 +11,22 @@ import (
 	"monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 )
 
-// processV1ServicesTypeChatbotcallPost handles POST /v1/services/type/chatbotcall request
-func (h *listenHandler) processV1ServicesTypeChatbotcallPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+// processV1ServicesTypeAIcallPost handles POST /v1/services/type/aicall request
+func (h *listenHandler) processV1ServicesTypeAIcallPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1ServicesTypeChatbotcallPost",
+		"handler": "processV1ServicesTypeAIcallPost",
 		"request": m,
 	})
 
-	var req request.V1DataServicesTypeChatbotcallPost
+	var req request.V1DataServicesTypeAIcallPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
 		return nil, err
 	}
 
-	tmp, err := h.chatbotcallHandler.ServiceStart(ctx, req.ChatbotID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Gender, req.Language)
+	tmp, err := h.aicallHandler.ServiceStart(ctx, req.AIID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Gender, req.Language)
 	if err != nil {
-		log.Errorf("Could not start chatbot service. err: %v", err)
+		log.Errorf("Could not start ai service. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

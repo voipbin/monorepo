@@ -10,14 +10,15 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-ai-manager/pkg/chatbotcallhandler"
-	"monorepo/bin-ai-manager/pkg/chatbothandler"
+	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 )
 
@@ -38,9 +39,9 @@ type listenHandler struct {
 	queueListen   string
 	exchangeDelay string
 
-	chatbotHandler     chatbothandler.ChatbotHandler
-	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler
-	messageHandler     messagehandler.MessageHandler
+	aiHandler      aihandler.AIHandler
+	aicallHandler  aicallhandler.AIcallHandler
+	messageHandler messagehandler.MessageHandler
 }
 
 var (
@@ -48,15 +49,15 @@ var (
 
 	//// v1
 
-	// chatbots
-	regV1ChatbotsGet = regexp.MustCompile(`/v1/chatbots\?`)
-	regV1Chatbots    = regexp.MustCompile("/v1/chatbots$")
-	regV1ChatbotsID  = regexp.MustCompile("/v1/chatbots/" + regUUID + "$")
+	// ais
+	regV1AIsGet = regexp.MustCompile(`/v1/ais\?`)
+	regV1AIs    = regexp.MustCompile("/v1/ais$")
+	regV1AIsID  = regexp.MustCompile("/v1/ais/" + regUUID + "$")
 
-	// chatbotcalls
-	regV1ChatbotcallsGet = regexp.MustCompile(`/v1/chatbotcalls\?`)
-	regV1Chatbotcalls    = regexp.MustCompile(`/v1/chatbotcalls$`)
-	regV1ChatbotcallsID  = regexp.MustCompile("/v1/chatbotcalls/" + regUUID + "$")
+	// aicalls
+	regV1AIcallsGet = regexp.MustCompile(`/v1/aicalls\?`)
+	regV1AIcalls    = regexp.MustCompile(`/v1/aicalls$`)
+	regV1AIcallsID  = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
 
 	// messages
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
@@ -64,11 +65,11 @@ var (
 	regV1MessagesID  = regexp.MustCompile("/v1/messages/" + regUUID + "$")
 
 	// service
-	regV1ServicesTypeChatbotcall = regexp.MustCompile("/v1/services/type/chatbotcall$")
+	regV1ServicesTypeAIcall = regexp.MustCompile("/v1/services/type/aicall$")
 )
 
 var (
-	metricsNamespace = "chatbot_manager"
+	metricsNamespace = "ai_manager"
 
 	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -120,17 +121,17 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	queueListen string,
 	exchangeDelay string,
-	chatbotHandler chatbothandler.ChatbotHandler,
-	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler,
+	aiHandler aihandler.AIHandler,
+	aicallHandler aicallhandler.AIcallHandler,
 	messageHandler messagehandler.MessageHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		sockHandler:        sockHandler,
-		queueListen:        queueListen,
-		exchangeDelay:      exchangeDelay,
-		chatbotHandler:     chatbotHandler,
-		chatbotcallHandler: chatbotcallHandler,
-		messageHandler:     messageHandler,
+		sockHandler:    sockHandler,
+		queueListen:    queueListen,
+		exchangeDelay:  exchangeDelay,
+		aiHandler:      aiHandler,
+		aicallHandler:  aicallHandler,
+		messageHandler: messageHandler,
 	}
 
 	return h
@@ -149,7 +150,7 @@ func (h *listenHandler) Run() error {
 
 	// process requests
 	go func() {
-		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), h.queueListen, "chatbot-manager", false, false, false, 10, h.processRequest); errConsume != nil {
+		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), h.queueListen, string(outline.ServiceNameAIManager), false, false, false, 10, h.processRequest); errConsume != nil {
 			log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 		}
 	}()
@@ -175,55 +176,55 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
 	////////////
-	// chatbots
+	// ais
 	////////////
-	// GET /chatbots
-	case regV1ChatbotsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1ChatbotsGet(ctx, m)
-		requestType = "/v1/chatbotcalls"
+	// GET /ais
+	case regV1AIsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIsGet(ctx, m)
+		requestType = "/v1/ais"
 
-	// POST /chatbots
-	case regV1Chatbots.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1ChatbotsPost(ctx, m)
-		requestType = "/v1/chatbotcalls"
+	// POST /ais
+	case regV1AIs.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIsPost(ctx, m)
+		requestType = "/v1/ais"
 
-	// GET /chatbots/<chatbot-id>
-	case regV1ChatbotsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1ChatbotsIDGet(ctx, m)
-		requestType = "/v1/chatbots/<chatbot-id>"
+	// GET /ais/<ai-id>
+	case regV1AIsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIsIDGet(ctx, m)
+		requestType = "/v1/ais/<ai-id>"
 
-	// DELETE /chatbots/<chatbot-id>
-	case regV1ChatbotsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
-		response, err = h.processV1ChatbotsIDDelete(ctx, m)
-		requestType = "/v1/chatbots/<chatbot-id>"
+	// DELETE /ais/<ai-id>
+	case regV1AIsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1AIsIDDelete(ctx, m)
+		requestType = "/v1/ais/<ai-id>"
 
-	// PUT /chatbots/<chatbot-id>
-	case regV1ChatbotsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
-		response, err = h.processV1ChatbotsIDPut(ctx, m)
-		requestType = "/v1/chatbots/<chatbot-id>"
+	// PUT /ais/<ai-id>
+	case regV1AIsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1AIsIDPut(ctx, m)
+		requestType = "/v1/ais/<ai-id>"
 
 	///////////////
-	// chatbotcalls
+	// aicalls
 	///////////////
-	// GET /chatbotcalls
-	case regV1ChatbotcallsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1ChatbotcallsGet(ctx, m)
-		requestType = "/v1/chatbotcalls"
+	// GET /aicalls
+	case regV1AIcallsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIcallsGet(ctx, m)
+		requestType = "/v1/aicalls"
 
-	// POST /chatbots
-	case regV1Chatbotcalls.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1ChatbotcallsPost(ctx, m)
-		requestType = "/v1/chatbotcalls"
+	// POST /aicalls
+	case regV1AIcalls.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIcallsPost(ctx, m)
+		requestType = "/v1/aicalls"
 
-	// GET /chatbotcalls/<chatbotcall-id>
-	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1ChatbotcallsIDGet(ctx, m)
-		requestType = "/v1/chatbotcalls/<chatbotcall-id>"
+	// GET /aicalls/<aicall-id>
+	case regV1AIcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIcallsIDGet(ctx, m)
+		requestType = "/v1/aicalls/<aicall-id>"
 
-	// DELETE /chatbotcalls/<chatbotcall-id>
-	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
-		response, err = h.processV1ChatbotcallsIDDelete(ctx, m)
-		requestType = "/v1/chatbotcalls/<chatbotcall-id>"
+	// DELETE /aicalls/<aicall-id>
+	case regV1AIcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1AIcallsIDDelete(ctx, m)
+		requestType = "/v1/aicalls/<aicall-id>"
 
 	///////////////
 	// messages
@@ -247,9 +248,9 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// services
 	////////////////
 	// POST
-	case regV1ServicesTypeChatbotcall.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1ServicesTypeChatbotcallPost(ctx, m)
-		requestType = "/v1/services/type/chatbotcall"
+	case regV1ServicesTypeAIcall.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ServicesTypeAIcallPost(ctx, m)
+		requestType = "/v1/services/type/aicall"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

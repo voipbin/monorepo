@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"monorepo/bin-ai-manager/models/chatbot"
-	"monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/engine_dialogflow"
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2"
@@ -19,21 +19,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, m *message.Message) (*message.Message, error) {
+func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AIcall, m *message.Message) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "MessageSend",
-		"chatbotcall": cc,
-		"message":     m,
+		"func":    "MessageSend",
+		"aicall":  cc,
+		"message": m,
 	})
 
 	var data engine_dialogflow.EngineDialogflow
-	tmpData, err := json.Marshal(cc.ChatbotEngineData)
+	tmpData, err := json.Marshal(cc.AIEngineData)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not marshal the chatbot engine data")
+		return nil, errors.Wrapf(err, "could not marshal the ai engine data")
 	}
 
 	if errUnmarshal := json.Unmarshal(tmpData, &data); errUnmarshal != nil {
-		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the chatbot engine data")
+		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the ai engine data")
 	}
 
 	decodedCred, err := DecodeBase64(data.CredentialBase64)
@@ -84,9 +84,9 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *chatbotca
 	return res, nil
 }
 
-func (h *engineDialogflowHandler) getRequest(engineData *engine_dialogflow.EngineDialogflow, cc *chatbotcall.Chatbotcall, message *message.Message) *dialogflowpb.DetectIntentRequest {
+func (h *engineDialogflowHandler) getRequest(engineData *engine_dialogflow.EngineDialogflow, cc *aicall.AIcall, message *message.Message) *dialogflowpb.DetectIntentRequest {
 	sessionPath := fmt.Sprintf("projects/%s/agent/sessions/%s", engineData.ProjectID, cc.ID)
-	if cc.ChatbotEngineModel == chatbot.EngineModelDialogflowCX {
+	if cc.AIEngineModel == ai.EngineModelDialogflowCX {
 		sessionPath = fmt.Sprintf("projects/%s/locations/%s/agents/%s/sessions/%s", engineData.ProjectID, engineData.Region, engineData.AgentID, cc.ID)
 	}
 

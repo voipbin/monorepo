@@ -27,7 +27,7 @@ func (h *listenHandler) processV1TransfersPost(ctx context.Context, m *sock.Requ
 	// start the transfer
 	tmp, err := h.transferHandler.ServiceStart(ctx, req.Type, req.TransfererCallID, req.TransfereeAddresses)
 	if err != nil {
-		log.Errorf("Could not create chatbotcall. err: %v", err)
+		log.Errorf("Could not start the transfer service. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

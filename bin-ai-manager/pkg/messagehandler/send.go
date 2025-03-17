@@ -3,8 +3,8 @@ package messagehandler
 import (
 	"context"
 	"fmt"
-	"monorepo/bin-ai-manager/models/chatbot"
-	"monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"slices"
 	"time"
@@ -14,26 +14,26 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role message.Role, content string) (*message.Message, error) {
+func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Send",
-		"chatbotcall_id": chatbotcallID,
-		"role":           role,
-		"content":        content,
+		"func":      "Send",
+		"aicall_id": aicallID,
+		"role":      role,
+		"content":   content,
 	})
-	log.Debugf("Sending chatbot message.")
+	log.Debugf("Sending ai message.")
 
-	cc, err := h.chatbotcallHandler.Get(ctx, chatbotcallID)
+	cc, err := h.aicallHandler.Get(ctx, aicallID)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not get the chatbotcall correctly")
+		return nil, errors.Wrapf(err, "could not get the aicall correctly")
 	}
 
-	if cc.Status == chatbotcall.StatusEnd {
-		return nil, errors.New("chatbotcall is already ended")
+	if cc.Status == aicall.StatusEnd {
+		return nil, errors.New("aicall is already ended")
 	}
 
 	// create a message for outgoing(request)
-	res, err := h.Create(ctx, cc.CustomerID, chatbotcallID, message.DirectionOutgoing, role, content)
+	res, err := h.Create(ctx, cc.CustomerID, aicallID, message.DirectionOutgoing, role, content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the sending message correctly")
 	}
@@ -41,25 +41,25 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 	t1 := time.Now()
 	var tmpMessage *message.Message
 
-	modelTarget := chatbot.GetEngineModelTarget(cc.ChatbotEngineModel)
+	modelTarget := ai.GetEngineModelTarget(cc.AIEngineModel)
 	switch modelTarget {
-	case chatbot.EngineModelTargetOpenai:
+	case ai.EngineModelTargetOpenai:
 		tmpMessage, err = h.sendOpenai(ctx, cc)
 
-	case chatbot.EngineModelTargetDialogflow:
+	case ai.EngineModelTargetDialogflow:
 		tmpMessage, err = h.sendDialogflow(ctx, cc, res)
 
 	default:
-		err = fmt.Errorf("unsupported chatbot engine model: %s", cc.ChatbotEngineModel)
+		err = fmt.Errorf("unsupported ai engine model: %s", cc.AIEngineModel)
 
 	}
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message correctly")
 	}
-	log.Debugf("Received response message from the chatbot engine. message: %v", tmpMessage)
+	log.Debugf("Received response message from the ai engine. message: %v", tmpMessage)
 
 	t2 := time.Since(t1)
-	promMessageProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(t2.Milliseconds()))
+	promMessageProcessTime.WithLabelValues(string(cc.AIEngineType)).Observe(float64(t2.Milliseconds()))
 
 	if len(tmpMessage.Content) == 0 {
 		// if the messsage is empty, return the message as it is
@@ -75,7 +75,7 @@ func (h *messageHandler) Send(ctx context.Context, chatbotcallID uuid.UUID, role
 	return res, nil
 }
 
-func (h *messageHandler) sendOpenai(ctx context.Context, cc *chatbotcall.Chatbotcall) (*message.Message, error) {
+func (h *messageHandler) sendOpenai(ctx context.Context, cc *aicall.AIcall) (*message.Message, error) {
 	filters := map[string]string{
 		"deleted": "false",
 	}
@@ -95,7 +95,7 @@ func (h *messageHandler) sendOpenai(ctx context.Context, cc *chatbotcall.Chatbot
 	return res, nil
 }
 
-func (h *messageHandler) sendDialogflow(ctx context.Context, cc *chatbotcall.Chatbotcall, m *message.Message) (*message.Message, error) {
+func (h *messageHandler) sendDialogflow(ctx context.Context, cc *aicall.AIcall, m *message.Message) (*message.Message, error) {
 	res, err := h.engineDialogflowHandler.MessageSend(ctx, cc, m)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message correctly")

@@ -17,7 +17,7 @@ const (
 	select
 		id,
 		customer_id,
-		chatbotcall_id,
+		aicall_id,
 		
 		direction,
 		role,
@@ -26,7 +26,7 @@ const (
 		tm_create,
 		tm_delete
 	from
-		chatbot_messages
+		ai_messages
 	`
 )
 
@@ -36,7 +36,7 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
-		&res.ChatbotcallID,
+		&res.AIcallID,
 
 		&res.Direction,
 		&res.Role,
@@ -53,10 +53,10 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 
 // MessageCreate creates a new message record.
 func (h *handler) MessageCreate(ctx context.Context, c *message.Message) error {
-	q := `insert into chatbot_messages(
+	q := `insert into ai_messages(
 		id,
 		customer_id,
-		chatbotcall_id,
+		aicall_id,
 
 		direction,
 		role,
@@ -74,7 +74,7 @@ func (h *handler) MessageCreate(ctx context.Context, c *message.Message) error {
 	_, err := h.db.Exec(q,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
-		c.ChatbotcallID.Bytes(),
+		c.AIcallID.Bytes(),
 
 		c.Direction,
 		c.Role,
@@ -176,7 +176,7 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
-	update chatbot_messages set
+	update ai_messages set
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -196,7 +196,7 @@ func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // MessageGets returns a list of messages.
-func (h *handler) MessageGets(ctx context.Context, chatbotcallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
+func (h *handler) MessageGets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -204,12 +204,12 @@ func (h *handler) MessageGets(ctx context.Context, chatbotcallID uuid.UUID, size
 	// prepare the query
 	q := fmt.Sprintf(`%s
 	where
-		chatbotcall_id = ?
+		aicall_id = ?
 		and tm_create < ?
 	`, messageSelect)
 
 	values := []interface{}{
-		chatbotcallID.Bytes(),
+		aicallID.Bytes(),
 		token,
 	}
 

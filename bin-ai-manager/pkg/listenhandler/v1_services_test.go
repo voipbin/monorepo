@@ -11,11 +11,11 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
-	"monorepo/bin-ai-manager/models/chatbotcall"
-	"monorepo/bin-ai-manager/pkg/chatbotcallhandler"
+	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/pkg/aicallhandler"
 )
 
-func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
+func Test_processV1ServicesTypeAIcallPost(t *testing.T) {
 
 	type test struct {
 		name string
@@ -24,11 +24,11 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 
 		responseService *commonservice.Service
 
-		expectChatbotID     uuid.UUID
+		expectAIID          uuid.UUID
 		expectActiveflowID  uuid.UUID
-		expectReferenceType chatbotcall.ReferenceType
+		expectReferenceType aicall.ReferenceType
 		expectReferenceID   uuid.UUID
-		expectGender        chatbotcall.Gender
+		expectGender        aicall.Gender
 		expectLanguage      string
 
 		expectRes *sock.Response
@@ -38,21 +38,21 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/services/type/chatbotcall",
+				URI:      "/v1/services/type/aicall",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"71db8f9c-abde-475e-a060-dc95e63281c3","chatbot_id":"e7f085d0-c7d9-4da4-9992-eda14282cb86","activeflow_id":"80a5199e-fba5-11ed-90aa-6b9821d2ad5b","reference_type":"call","reference_id":"10662882-5ff8-4788-a605-55614dc8d330","gender":"female","language":"en-US"}`),
+				Data:     []byte(`{"customer_id":"71db8f9c-abde-475e-a060-dc95e63281c3","ai_id":"e7f085d0-c7d9-4da4-9992-eda14282cb86","activeflow_id":"80a5199e-fba5-11ed-90aa-6b9821d2ad5b","reference_type":"call","reference_id":"10662882-5ff8-4788-a605-55614dc8d330","gender":"female","language":"en-US"}`),
 			},
 
 			responseService: &commonservice.Service{
 				ID: uuid.FromStringOrNil("9d5b7e72-2cc9-4868-bfab-c8e758cd5045"),
 			},
 
-			expectChatbotID:     uuid.FromStringOrNil("e7f085d0-c7d9-4da4-9992-eda14282cb86"),
+			expectAIID:          uuid.FromStringOrNil("e7f085d0-c7d9-4da4-9992-eda14282cb86"),
 			expectActiveflowID:  uuid.FromStringOrNil("80a5199e-fba5-11ed-90aa-6b9821d2ad5b"),
-			expectReferenceType: chatbotcall.ReferenceTypeCall,
+			expectReferenceType: aicall.ReferenceTypeCall,
 			expectReferenceID:   uuid.FromStringOrNil("10662882-5ff8-4788-a605-55614dc8d330"),
-			expectGender:        chatbotcall.GenderFemale,
+			expectGender:        aicall.GenderFemale,
 			expectLanguage:      "en-US",
 
 			expectRes: &sock.Response{
@@ -69,14 +69,14 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
 
 			h := &listenHandler{
-				sockHandler:        mockSock,
-				chatbotcallHandler: mockChatbotcall,
+				sockHandler:   mockSock,
+				aicallHandler: mockAIcall,
 			}
 
-			mockChatbotcall.EXPECT().ServiceStart(gomock.Any(), tt.expectChatbotID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage).Return(tt.responseService, nil)
+			mockAIcall.EXPECT().ServiceStart(gomock.Any(), tt.expectAIID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage).Return(tt.responseService, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -23,16 +23,16 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 		return err
 	}
 
-	// get chatbotcall
-	cc, err := h.chatbotcallHandler.GetByReferenceID(ctx, evt.JoinedCallID)
+	// get aicall
+	cc, err := h.aicallHandler.GetByReferenceID(ctx, evt.JoinedCallID)
 	if err != nil {
-		// chatbotcall not found. Not a chatbotcall.
+		// aicall not found. Not a aicall.
 		return nil
 	}
 
-	_, err = h.chatbotcallHandler.ProcessStart(ctx, cc)
+	_, err = h.aicallHandler.ProcessStart(ctx, cc)
 	if err != nil {
-		log.Errorf("Could not start the chatbotcall. chatbotcall_id: %s", err)
+		log.Errorf("Could not start the aicall. aicall_id: %s", err)
 		return err
 	}
 
@@ -52,16 +52,16 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 		return err
 	}
 
-	// get chatbotcall
-	cc, err := h.chatbotcallHandler.GetByReferenceID(ctx, evt.LeavedCallID)
+	// get aicall
+	cc, err := h.aicallHandler.GetByReferenceID(ctx, evt.LeavedCallID)
 	if err != nil {
-		// chatbotcall not found.
+		// aicall not found.
 		return nil
 	}
 
-	_, err = h.chatbotcallHandler.ProcessEnd(ctx, cc)
+	_, err = h.aicallHandler.ProcessEnd(ctx, cc)
 	if err != nil {
-		log.Errorf("Could not terminated the chatbotcall call. err: %v", err)
+		log.Errorf("Could not terminated the aicall call. err: %v", err)
 		return err
 	}
 

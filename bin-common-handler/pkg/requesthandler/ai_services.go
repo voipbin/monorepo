@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
-	cbrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
+	airequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/models/sock"
 
@@ -14,22 +14,22 @@ import (
 )
 
 // AIV1ServiceTypeAIcallStart sends a request to chat-manager
-// to starts a chatbotcall service.
+// to starts a aicall service.
 // it returns created service if it succeed.
 func (r *requestHandler) AIV1ServiceTypeAIcallStart(
 	ctx context.Context,
-	chatbotID uuid.UUID,
+	aiID uuid.UUID,
 	activeflowID uuid.UUID,
-	referenceType cbchatbotcall.ReferenceType,
+	referenceType amaicall.ReferenceType,
 	referenceID uuid.UUID,
-	gender cbchatbotcall.Gender,
+	gender amaicall.Gender,
 	language string,
 	requestTimeout int,
 ) (*service.Service, error) {
-	uri := "/v1/services/type/chatbotcall"
+	uri := "/v1/services/type/aicall"
 
-	data := &cbrequest.V1DataServicesTypeChatbotcallPost{
-		ChatbotID:     chatbotID,
+	data := &airequest.V1DataServicesTypeAIcallPost{
+		AIID:          aiID,
 		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
@@ -42,7 +42,7 @@ func (r *requestHandler) AIV1ServiceTypeAIcallStart(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "chatbot/services/type/chatbotcall", requestTimeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/services/type/aicall", requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

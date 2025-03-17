@@ -6,23 +6,23 @@ import (
 	"fmt"
 	"net/url"
 
-	cbchatbot "monorepo/bin-ai-manager/models/chatbot"
-	cbrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
+	amai "monorepo/bin-ai-manager/models/ai"
+	amrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 )
 
 // AIV1AIGetsByCustomerID sends a request to ai-manager
-// to getting a list of chatbots info of the given customer id.
-// it returns detail list of chatbots info if it succeed.
-func (r *requestHandler) AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbot.Chatbot, error) {
-	uri := fmt.Sprintf("/v1/chatbots?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+// to getting a list of ais info of the given customer id.
+// it returns detail list of ais info if it succeed.
+func (r *requestHandler) AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]amai.AI, error) {
+	uri := fmt.Sprintf("/v1/ais?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "chatbot/chatbots", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/ais", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -33,7 +33,7 @@ func (r *requestHandler) AIV1AIGetsByCustomerID(ctx context.Context, customerID 
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res []cbchatbot.Chatbot
+	var res []amai.AI
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
@@ -41,12 +41,12 @@ func (r *requestHandler) AIV1AIGetsByCustomerID(ctx context.Context, customerID 
 	return res, nil
 }
 
-// AIV1AIGet returns the chatbot.
-func (r *requestHandler) AIV1AIGet(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
+// AIV1AIGet returns the ai.
+func (r *requestHandler) AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*amai.AI, error) {
 
-	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID.String())
+	uri := fmt.Sprintf("/v1/ais/%s", aiID.String())
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/ais/<ai-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (r *requestHandler) AIV1AIGet(ctx context.Context, chatbotID uuid.UUID) (*c
 		return nil, fmt.Errorf("could not get conference. status: %d", tmp.StatusCode)
 	}
 
-	var res cbchatbot.Chatbot
+	var res amai.AI
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
@@ -64,21 +64,21 @@ func (r *requestHandler) AIV1AIGet(ctx context.Context, chatbotID uuid.UUID) (*c
 }
 
 // AIV1AICreate sends a request to ai-manager
-// to creating a chatbot.
-// it returns created chatbot if it succeed.
+// to creating a ai.
+// it returns created ai if it succeed.
 func (r *requestHandler) AIV1AICreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	engineType cbchatbot.EngineType,
-	engineModel cbchatbot.EngineModel,
+	engineType amai.EngineType,
+	engineModel amai.EngineModel,
 	engineData map[string]any,
 	initPrompt string,
-) (*cbchatbot.Chatbot, error) {
-	uri := "/v1/chatbots"
+) (*amai.AI, error) {
+	uri := "/v1/ais"
 
-	data := &cbrequest.V1DataChatbotsPost{
+	data := &amrequest.V1DataAIsPost{
 		CustomerID: customerID,
 		Name:       name,
 		Detail:     detail,
@@ -95,7 +95,7 @@ func (r *requestHandler) AIV1AICreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "chatbot/chatbots", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/ais", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -106,7 +106,7 @@ func (r *requestHandler) AIV1AICreate(
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res cbchatbot.Chatbot
+	var res amai.AI
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
@@ -115,12 +115,12 @@ func (r *requestHandler) AIV1AICreate(
 }
 
 // AIV1AIDelete sends a request to ai-manager
-// to deleting a chatbot.
-// it returns deleted chatbot if it succeed.
-func (r *requestHandler) AIV1AIDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
-	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID)
+// to deleting a ai.
+// it returns deleted ai if it succeed.
+func (r *requestHandler) AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error) {
+	uri := fmt.Sprintf("/v1/ais/%s", aiID)
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "ai/ais/<ai-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -131,7 +131,7 @@ func (r *requestHandler) AIV1AIDelete(ctx context.Context, chatbotID uuid.UUID) 
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res cbchatbot.Chatbot
+	var res amai.AI
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
@@ -140,21 +140,21 @@ func (r *requestHandler) AIV1AIDelete(ctx context.Context, chatbotID uuid.UUID) 
 }
 
 // AIV1AIUpdate sends a request to ai-manager
-// to updating a chatbot.
-// it returns updated chatbot if it succeed.
+// to updating an AI.
+// it returns updated AI if it succeed.
 func (r *requestHandler) AIV1AIUpdate(
 	ctx context.Context,
-	chatbotID uuid.UUID,
+	aiID uuid.UUID,
 	name string,
 	detail string,
-	engineType cbchatbot.EngineType,
-	engineModel cbchatbot.EngineModel,
+	engineType amai.EngineType,
+	engineModel amai.EngineModel,
 	engineData map[string]any,
 	initPrompt string,
-) (*cbchatbot.Chatbot, error) {
-	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID)
+) (*amai.AI, error) {
+	uri := fmt.Sprintf("/v1/ais/%s", aiID)
 
-	data := &cbrequest.V1DataChatbotsIDPut{
+	data := &amrequest.V1DataAIsIDPut{
 		Name:   name,
 		Detail: detail,
 
@@ -170,7 +170,7 @@ func (r *requestHandler) AIV1AIUpdate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPut, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPut, "ai/ais/<ai-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -181,7 +181,7 @@ func (r *requestHandler) AIV1AIUpdate(
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res cbchatbot.Chatbot
+	var res amai.AI
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

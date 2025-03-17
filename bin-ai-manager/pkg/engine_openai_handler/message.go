@@ -7,15 +7,15 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-ai-manager/models/chatbot"
-	"monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 )
 
-func (h *engineOpenaiHandler) MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error) {
+func (h *engineOpenaiHandler) MessageSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "messageSend",
-		"chatbotcall_id": cc.ID,
+		"func":      "messageSend",
+		"aicall_id": cc.ID,
 	})
 
 	tmpMessages := []openai.ChatCompletionMessage{}
@@ -28,7 +28,7 @@ func (h *engineOpenaiHandler) MessageSend(ctx context.Context, cc *chatbotcall.C
 	}
 
 	// create request
-	model := chatbot.GetEngineModelName(cc.ChatbotEngineModel)
+	model := ai.GetEngineModelName(cc.AIEngineModel)
 	if model == "" {
 		model = defaultModel
 	}

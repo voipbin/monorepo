@@ -1,0 +1,37 @@
+get:
+  summary: Retrieve details of a aicall message
+  description: Fetches detailed information about a specific aicall message by ID.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the aicall message
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerMessage'
+
+delete:
+  summary: Delete a aicall message
+  description: Deletes a specific aicall message by ID and returns its details.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the aicall message
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerMessage'

@@ -19,11 +19,11 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID    uuid.UUID
-		chatbotcallID uuid.UUID
-		direction     message.Direction
-		role          message.Role
-		content       string
+		customerID uuid.UUID
+		aicallID   uuid.UUID
+		direction  message.Direction
+		role       message.Role
+		content    string
 
 		responseUUID uuid.UUID
 
@@ -32,11 +32,11 @@ func Test_Create(t *testing.T) {
 		{
 			name: "have all",
 
-			customerID:    uuid.FromStringOrNil("f227397c-f260-11ef-b217-4f6ff6930cf2"),
-			chatbotcallID: uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
-			direction:     message.DirectionIncoming,
-			role:          message.RoleUser,
-			content:       "Hello, world!",
+			customerID: uuid.FromStringOrNil("f227397c-f260-11ef-b217-4f6ff6930cf2"),
+			aicallID:   uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
+			direction:  message.DirectionIncoming,
+			role:       message.RoleUser,
+			content:    "Hello, world!",
 
 			responseUUID: uuid.FromStringOrNil("f2a827da-f260-11ef-9766-8b270f0b8d97"),
 
@@ -45,7 +45,7 @@ func Test_Create(t *testing.T) {
 					ID:         uuid.FromStringOrNil("f2a827da-f260-11ef-9766-8b270f0b8d97"),
 					CustomerID: uuid.FromStringOrNil("f227397c-f260-11ef-b217-4f6ff6930cf2"),
 				},
-				ChatbotcallID: uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
+				AIcallID: uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
 
 				Direction: message.DirectionIncoming,
 				Role:      message.RoleUser,
@@ -87,7 +87,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
-			res, err := h.Create(ctx, tt.customerID, tt.chatbotcallID, tt.direction, tt.role, tt.content)
+			res, err := h.Create(ctx, tt.customerID, tt.aicallID, tt.direction, tt.role, tt.content)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -104,19 +104,19 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		chatbotcallID uuid.UUID
-		size          uint64
-		token         string
-		filters       map[string]string
+		aicallID uuid.UUID
+		size     uint64
+		token    string
+		filters  map[string]string
 
 		responseMessages []*message.Message
 	}{
 		{
 			name: "normal",
 
-			chatbotcallID: uuid.FromStringOrNil("5774f2dc-f262-11ef-b704-bb967f775316"),
-			size:          10,
-			token:         "2023-01-03 21:35:02.809",
+			aicallID: uuid.FromStringOrNil("5774f2dc-f262-11ef-b704-bb967f775316"),
+			size:     10,
+			token:    "2023-01-03 21:35:02.809",
 			filters: map[string]string{
 				"deleted": "false",
 			},
@@ -148,9 +148,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGets(ctx, tt.chatbotcallID, tt.size, tt.token, tt.filters).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().MessageGets(ctx, tt.aicallID, tt.size, tt.token, tt.filters).Return(tt.responseMessages, nil)
 
-			res, err := h.Gets(ctx, tt.chatbotcallID, tt.size, tt.token, tt.filters)
+			res, err := h.Gets(ctx, tt.aicallID, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

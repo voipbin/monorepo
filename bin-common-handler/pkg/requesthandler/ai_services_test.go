@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	cbchatbotcall "monorepo/bin-ai-manager/models/chatbotcall"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/service"
 
@@ -16,16 +16,16 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
+func Test_AIV1ServiceTypeChabotcallStart(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		chatbotID      uuid.UUID
+		aiID           uuid.UUID
 		activeflowID   uuid.UUID
-		referenceType  cbchatbotcall.ReferenceType
+		referenceType  amaicall.ReferenceType
 		referenceID    uuid.UUID
-		gender         cbchatbotcall.Gender
+		gender         amaicall.Gender
 		language       string
 		requestTimeout int
 
@@ -38,9 +38,9 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 		{
 			name: "normal",
 
-			chatbotID:      uuid.FromStringOrNil("9469e101-d269-4895-9679-fe49531f7c12"),
+			aiID:           uuid.FromStringOrNil("9469e101-d269-4895-9679-fe49531f7c12"),
 			activeflowID:   uuid.FromStringOrNil("db21d8b6-fbab-11ed-8d21-332400f26ee4"),
-			referenceType:  cbchatbotcall.ReferenceTypeCall,
+			referenceType:  amaicall.ReferenceTypeCall,
 			referenceID:    uuid.FromStringOrNil("865089bd-dc1b-45d5-89af-4a09c1d90cea"),
 			gender:         "female",
 			language:       "en-US",
@@ -54,10 +54,10 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:      "/v1/services/type/chatbotcall",
+				URI:      "/v1/services/type/aicall",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"chatbot_id":"9469e101-d269-4895-9679-fe49531f7c12","activeflow_id":"db21d8b6-fbab-11ed-8d21-332400f26ee4","reference_type":"call","reference_id":"865089bd-dc1b-45d5-89af-4a09c1d90cea","gender":"female","language":"en-US"}`),
+				Data:     []byte(`{"ai_id":"9469e101-d269-4895-9679-fe49531f7c12","activeflow_id":"db21d8b6-fbab-11ed-8d21-332400f26ee4","reference_type":"call","reference_id":"865089bd-dc1b-45d5-89af-4a09c1d90cea","gender":"female","language":"en-US"}`),
 			},
 			expectRes: &service.Service{
 				ID: uuid.FromStringOrNil("134c25c9-c9f9-4800-83bb-b5eaa84bb4ab"),
@@ -78,7 +78,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1ServiceTypeAIcallStart(ctx, tt.chatbotID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.requestTimeout)
+			cf, err := reqHandler.AIV1ServiceTypeAIcallStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.requestTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

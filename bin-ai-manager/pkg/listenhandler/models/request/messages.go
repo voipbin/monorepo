@@ -10,7 +10,7 @@ import (
 // v1 data type request struct for
 // /v1/messages POST
 type V1DataMessagesPost struct {
-	ChatbotcallID uuid.UUID    `json:"chatbotcall_id,omitempty"`
-	Role          message.Role `json:"role,omitempty"`
-	Content       string       `json:"content,omitempty"`
+	AIcallID uuid.UUID    `json:"aicall_id,omitempty"`
+	Role     message.Role `json:"role,omitempty"`
+	Content  string       `json:"content,omitempty"`
 }

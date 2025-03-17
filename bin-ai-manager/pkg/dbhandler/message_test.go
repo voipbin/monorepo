@@ -32,7 +32,7 @@ func Test_MessageCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d5df8eac-f22b-11ef-b88e-7f62eefdf1ca"),
 					CustomerID: uuid.FromStringOrNil("2093691e-f22c-11ef-bf60-a717f01b92a4"),
 				},
-				ChatbotcallID: uuid.FromStringOrNil("d6555614-f22b-11ef-96c2-e7d5f61b54dd"),
+				AIcallID: uuid.FromStringOrNil("d6555614-f22b-11ef-96c2-e7d5f61b54dd"),
 
 				Role:    message.RoleUser,
 				Content: "Hello",
@@ -44,7 +44,7 @@ func Test_MessageCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d5df8eac-f22b-11ef-b88e-7f62eefdf1ca"),
 					CustomerID: uuid.FromStringOrNil("2093691e-f22c-11ef-bf60-a717f01b92a4"),
 				},
-				ChatbotcallID: uuid.FromStringOrNil("d6555614-f22b-11ef-96c2-e7d5f61b54dd"),
+				AIcallID: uuid.FromStringOrNil("d6555614-f22b-11ef-96c2-e7d5f61b54dd"),
 
 				Role:     message.RoleUser,
 				Content:  "Hello",
@@ -59,7 +59,7 @@ func Test_MessageCreate(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("d62e7a58-f22b-11ef-8edc-9b57d94ff8fc"),
 				},
-				ChatbotcallID: uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
+				AIcallID: uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -67,9 +67,9 @@ func Test_MessageCreate(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("d62e7a58-f22b-11ef-8edc-9b57d94ff8fc"),
 				},
-				ChatbotcallID: uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
-				TMCreate:      "2023-01-03 21:35:02.809",
-				TMDelete:      DefaultTimeStamp,
+				AIcallID: uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
+				TMCreate: "2023-01-03 21:35:02.809",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -109,7 +109,7 @@ func Test_MessageCreate(t *testing.T) {
 			}
 
 			expectRes := []*message.Message{tt.expectRes}
-			resGets, err := h.MessageGets(ctx, tt.message.ChatbotcallID, 100, DefaultTimeStamp, map[string]string{})
+			resGets, err := h.MessageGets(ctx, tt.message.AIcallID, 100, DefaultTimeStamp, map[string]string{})
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

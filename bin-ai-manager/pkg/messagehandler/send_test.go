@@ -2,10 +2,10 @@ package messagehandler
 
 import (
 	"context"
-	"monorepo/bin-ai-manager/models/chatbot"
-	"monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
-	"monorepo/bin-ai-manager/pkg/chatbotcallhandler"
+	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
@@ -24,7 +24,7 @@ func Test_sendChatGPT(t *testing.T) {
 	tests := []struct {
 		name string
 
-		cc *chatbotcall.Chatbotcall
+		cc *aicall.AIcall
 
 		responseMessages []*message.Message
 		responseMessage  *message.Message
@@ -36,7 +36,7 @@ func Test_sendChatGPT(t *testing.T) {
 		{
 			name: "normal",
 
-			cc: &chatbotcall.Chatbotcall{
+			cc: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("595c0038-f2ba-11ef-8a26-4b552ba64340"),
 				},
@@ -119,13 +119,13 @@ func Test_Send_sendChatGPT(t *testing.T) {
 	tests := []struct {
 		name string
 
-		chatbotcallID uuid.UUID
-		role          message.Role
-		content       string
+		aicallID uuid.UUID
+		role     message.Role
+		content  string
 
-		responseChatbotcall *chatbotcall.Chatbotcall
-		responseUUID1       uuid.UUID
-		responseUUID2       uuid.UUID
+		responseAIcall *aicall.AIcall
+		responseUUID1  uuid.UUID
+		responseUUID2  uuid.UUID
 
 		responseMessages []*message.Message
 		responseMessage  *message.Message
@@ -140,17 +140,17 @@ func Test_Send_sendChatGPT(t *testing.T) {
 		{
 			name: "normal",
 
-			chatbotcallID: uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
-			role:          message.RoleUser,
-			content:       "hello world!",
+			aicallID: uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
+			role:     message.RoleUser,
+			content:  "hello world!",
 
-			responseChatbotcall: &chatbotcall.Chatbotcall{
+			responseAIcall: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
 				},
-				Status:             chatbotcall.StatusProgressing,
-				ChatbotEngineModel: chatbot.EngineModelOpenaiGPT3Dot5Turbo,
+				Status:        aicall.StatusProgressing,
+				AIEngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
 			},
 			responseUUID1: uuid.FromStringOrNil("7734c35e-f2bc-11ef-a0ec-afc67dff1ffc"),
 			responseUUID2: uuid.FromStringOrNil("7786dba8-f2bc-11ef-b9de-4b764cfeef4d"),
@@ -180,7 +180,7 @@ func Test_Send_sendChatGPT(t *testing.T) {
 					ID:         uuid.FromStringOrNil("7734c35e-f2bc-11ef-a0ec-afc67dff1ffc"),
 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
 				},
-				ChatbotcallID: uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
+				AIcallID: uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
 
 				Direction: message.DirectionOutgoing,
 				Role:      message.RoleUser,
@@ -191,7 +191,7 @@ func Test_Send_sendChatGPT(t *testing.T) {
 					ID:         uuid.FromStringOrNil("7786dba8-f2bc-11ef-b9de-4b764cfeef4d"),
 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
 				},
-				ChatbotcallID: uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
+				AIcallID: uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
 
 				Direction: message.DirectionIncoming,
 				Role:      message.RoleAssistant,
@@ -225,7 +225,7 @@ func Test_Send_sendChatGPT(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
 			mockGPT := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &messageHandler{
@@ -233,28 +233,28 @@ func Test_Send_sendChatGPT(t *testing.T) {
 				notifyHandler: mockNotify,
 				db:            mockDB,
 
-				chatbotcallHandler:  mockChatbotcall,
+				aicallHandler:       mockAIcall,
 				engineOpenaiHandler: mockGPT,
 			}
 
 			ctx := context.Background()
 
-			mockChatbotcall.EXPECT().Get(ctx, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
+			mockAIcall.EXPECT().Get(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID1)
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage1).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID1).Return(tt.expectMessage1, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage1.CustomerID, message.EventTypeMessageCreated, tt.expectMessage1)
 
-			mockDB.EXPECT().MessageGets(ctx, tt.responseChatbotcall.ID, tt.expectSize, "", tt.expectFilters).Return(tt.responseMessages, nil)
-			mockGPT.EXPECT().MessageSend(ctx, tt.responseChatbotcall, tt.expectMessages).Return(tt.responseMessage, nil)
+			mockDB.EXPECT().MessageGets(ctx, tt.responseAIcall.ID, tt.expectSize, "", tt.expectFilters).Return(tt.responseMessages, nil)
+			mockGPT.EXPECT().MessageSend(ctx, tt.responseAIcall, tt.expectMessages).Return(tt.responseMessage, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID2)
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage2).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID2).Return(tt.expectMessage2, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage2.CustomerID, message.EventTypeMessageCreated, tt.expectMessage2)
 
-			res, err := h.Send(ctx, tt.chatbotcallID, tt.role, tt.content)
+			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -271,13 +271,13 @@ func Test_Send_sendDialogflow(t *testing.T) {
 	tests := []struct {
 		name string
 
-		chatbotcallID uuid.UUID
-		role          message.Role
-		content       string
+		aicallID uuid.UUID
+		role     message.Role
+		content  string
 
-		responseChatbotcall *chatbotcall.Chatbotcall
-		responseUUID1       uuid.UUID
-		responseUUID2       uuid.UUID
+		responseAIcall *aicall.AIcall
+		responseUUID1  uuid.UUID
+		responseUUID2  uuid.UUID
 
 		responseMessage1 *message.Message
 		responseMessage2 *message.Message
@@ -288,17 +288,17 @@ func Test_Send_sendDialogflow(t *testing.T) {
 		{
 			name: "normal",
 
-			chatbotcallID: uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
-			role:          message.RoleUser,
-			content:       "hello world!",
+			aicallID: uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
+			role:     message.RoleUser,
+			content:  "hello world!",
 
-			responseChatbotcall: &chatbotcall.Chatbotcall{
+			responseAIcall: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
 					CustomerID: uuid.FromStringOrNil("7e03ad6c-ff50-11ef-a910-efdcf54f7d9b"),
 				},
-				Status:             chatbotcall.StatusProgressing,
-				ChatbotEngineModel: chatbot.EngineModelDialogflowES,
+				Status:        aicall.StatusProgressing,
+				AIEngineModel: ai.EngineModelDialogflowES,
 			},
 			responseUUID1: uuid.FromStringOrNil("7e431876-ff50-11ef-a5ba-a7251571b293"),
 			responseUUID2: uuid.FromStringOrNil("7e7594c2-ff50-11ef-93cf-9f3f35e9f012"),
@@ -308,7 +308,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 					ID:         uuid.FromStringOrNil("7e431876-ff50-11ef-a5ba-a7251571b293"),
 					CustomerID: uuid.FromStringOrNil("7e03ad6c-ff50-11ef-a910-efdcf54f7d9b"),
 				},
-				ChatbotcallID: uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
+				AIcallID: uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
 
 				Direction: message.DirectionOutgoing,
 				Role:      message.RoleUser,
@@ -319,7 +319,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 					ID:         uuid.FromStringOrNil("7e7594c2-ff50-11ef-93cf-9f3f35e9f012"),
 					CustomerID: uuid.FromStringOrNil("7e03ad6c-ff50-11ef-a910-efdcf54f7d9b"),
 				},
-				ChatbotcallID: uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
+				AIcallID: uuid.FromStringOrNil("7dba479e-ff50-11ef-af5a-0b8ff2378435"),
 
 				Direction: message.DirectionIncoming,
 				Role:      message.RoleAssistant,
@@ -336,7 +336,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
 			mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 			mockDialogflow := engine_dialogflow_handler.NewMockEngineDialogflowHandler(mc)
 
@@ -345,7 +345,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 				notifyHandler: mockNotify,
 				db:            mockDB,
 
-				chatbotcallHandler: mockChatbotcall,
+				aicallHandler: mockAIcall,
 
 				engineOpenaiHandler:     mockOpenai,
 				engineDialogflowHandler: mockDialogflow,
@@ -353,21 +353,21 @@ func Test_Send_sendDialogflow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChatbotcall.EXPECT().Get(ctx, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
+			mockAIcall.EXPECT().Get(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID1)
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage1).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID1).Return(tt.expectMessage1, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage1.CustomerID, message.EventTypeMessageCreated, tt.expectMessage1)
 
-			mockDialogflow.EXPECT().MessageSend(ctx, tt.responseChatbotcall, tt.expectMessage1).Return(tt.expectMessage2, nil)
+			mockDialogflow.EXPECT().MessageSend(ctx, tt.responseAIcall, tt.expectMessage1).Return(tt.expectMessage2, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID2)
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage2).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID2).Return(tt.expectMessage2, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage2.CustomerID, message.EventTypeMessageCreated, tt.expectMessage2)
 
-			res, err := h.Send(ctx, tt.chatbotcallID, tt.role, tt.content)
+			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

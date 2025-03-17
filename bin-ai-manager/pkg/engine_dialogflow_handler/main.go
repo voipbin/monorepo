@@ -4,12 +4,12 @@ package engine_dialogflow_handler
 
 import (
 	"context"
-	"monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 )
 
 type EngineDialogflowHandler interface {
-	MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, m *message.Message) (*message.Message, error)
+	MessageSend(ctx context.Context, cc *aicall.AIcall, m *message.Message) (*message.Message, error)
 }
 
 type engineDialogflowHandler struct {

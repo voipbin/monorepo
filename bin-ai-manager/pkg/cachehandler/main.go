@@ -8,8 +8,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/gofrs/uuid"
 
-	"monorepo/bin-ai-manager/models/chatbot"
-	"monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 )
 
@@ -25,13 +25,13 @@ type handler struct {
 type CacheHandler interface {
 	Connect() error
 
-	ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
-	ChatbotSet(ctx context.Context, data *chatbot.Chatbot) error
+	AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error)
+	AISet(ctx context.Context, data *ai.AI) error
 
-	ChatbotcallGet(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
-	ChatbotcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error)
-	ChatbotcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error)
-	ChatbotcallSet(ctx context.Context, data *chatbotcall.Chatbotcall) error
+	AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
+	AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error)
+	AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
+	AIcallSet(ctx context.Context, data *aicall.AIcall) error
 
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageSet(ctx context.Context, data *message.Message) error

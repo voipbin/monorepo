@@ -36,7 +36,7 @@ Welcome to voipbin's documentation!
    webhook
    customer
    chat
-   chatbot
+   ai
    provider
    route
    variable

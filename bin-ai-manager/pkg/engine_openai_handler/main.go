@@ -7,7 +7,7 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 
-	"monorepo/bin-ai-manager/models/chatbotcall"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 )
 
@@ -17,7 +17,7 @@ const (
 
 // EngineOpenaiHandler define
 type EngineOpenaiHandler interface {
-	MessageSend(ctx context.Context, cc *chatbotcall.Chatbotcall, messages []*message.Message) (*message.Message, error)
+	MessageSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (*message.Message, error)
 }
 
 // engineOpenaiHandler define

@@ -9,7 +9,8 @@ import (
 // Message defines
 type Message struct {
 	identity.Identity
-	ChatbotcallID uuid.UUID `json:"chatbotcall_id,omitempty"`
+
+	AIcallID uuid.UUID `json:"aicall_id,omitempty"`
 
 	Direction Direction `json:"direction,omitempty"`
 	Role      Role      `json:"role,omitempty"`
