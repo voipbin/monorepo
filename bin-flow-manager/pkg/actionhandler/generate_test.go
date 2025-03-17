@@ -21,7 +21,7 @@ func Test_generateFlowActions(t *testing.T) {
 
 		responseUUIDs []uuid.UUID
 
-		expectRes []action.Action
+		expectedRes []action.Action
 	}{
 		{
 			name: "normal",
@@ -32,7 +32,7 @@ func Test_generateFlowActions(t *testing.T) {
 				},
 			},
 
-			expectRes: []action.Action{
+			expectedRes: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("1a17219e-984c-11ec-8ae0-8fa990fecf22"),
 					Type: action.TypeAnswer,
@@ -50,7 +50,7 @@ func Test_generateFlowActions(t *testing.T) {
 			responseUUIDs: []uuid.UUID{
 				uuid.FromStringOrNil("db154082-0294-11f0-ba22-5f46fb5d102b"),
 			},
-			expectRes: []action.Action{
+			expectedRes: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("db154082-0294-11f0-ba22-5f46fb5d102b"),
 					Type: action.TypeAnswer,
@@ -78,7 +78,7 @@ func Test_generateFlowActions(t *testing.T) {
 				uuid.FromStringOrNil("db7edc04-0294-11f0-b5b6-6ffa57e31a38"),
 				uuid.FromStringOrNil("db9f162c-0294-11f0-863c-a312ed2977ed"),
 			},
-			expectRes: []action.Action{
+			expectedRes: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("db55c184-0294-11f0-be55-73428bb2aa7a"),
 					Type: action.TypeAnswer,
@@ -116,7 +116,7 @@ func Test_generateFlowActions(t *testing.T) {
 				uuid.FromStringOrNil("dbf1a126-0294-11f0-92d9-a725d6d1f4e3"),
 				uuid.FromStringOrNil("dc1f8320-0294-11f0-a64d-bbae5d48f057"),
 			},
-			expectRes: []action.Action{
+			expectedRes: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("dbc8ac4e-0294-11f0-b559-3f80a8ea5c17"),
 					Type: action.TypeAnswer,
@@ -149,7 +149,7 @@ func Test_generateFlowActions(t *testing.T) {
 				uuid.FromStringOrNil("dc4830ea-0294-11f0-909d-e3e67beab8a5"),
 				uuid.FromStringOrNil("dc712c02-0294-11f0-8adc-733b154c6b73"),
 			},
-			expectRes: []action.Action{
+			expectedRes: []action.Action{
 				{
 					ID:   uuid.FromStringOrNil("dc4830ea-0294-11f0-909d-e3e67beab8a5"),
 					Type: action.TypeAnswer,
@@ -185,8 +185,8 @@ func Test_generateFlowActions(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectedRes, res)
 			}
 		})
 	}
