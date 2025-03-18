@@ -646,6 +646,74 @@ func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 	}
 }
 
+func Test_v1ActiveflowsIDAddActionsPost(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		responseActiveflow *activeflow.Activeflow
+
+		expectedActiveflowID uuid.UUID
+		expectedActions      []action.Action
+		expectedRes          *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/activeflows/28c9a8b8-03f8-11f0-89f4-cbeb7b84f217/add_actions",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"actions":[{"type":"answer"}]}`),
+			},
+
+			responseActiveflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("28c9a8b8-03f8-11f0-89f4-cbeb7b84f217"),
+				},
+			},
+
+			expectedActiveflowID: uuid.FromStringOrNil("28c9a8b8-03f8-11f0-89f4-cbeb7b84f217"),
+			expectedActions: []action.Action{
+				{
+					Type: action.TypeAnswer,
+				},
+			},
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"28c9a8b8-03f8-11f0-89f4-cbeb7b84f217","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:       mockSock,
+				flowHandler:       mockFlowHandler,
+				activeflowHandler: mockActive,
+			}
+
+			mockActive.EXPECT().AddActions(gomock.Any(), tt.expectedActiveflowID, tt.expectedActions).Return(tt.responseActiveflow, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
+
 func Test_v1ActiveflowsIDPushActionsPost(t *testing.T) {
 	tests := []struct {
 		name    string

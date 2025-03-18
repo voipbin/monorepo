@@ -799,3 +799,104 @@ func Test_findAction(t *testing.T) {
 		})
 	}
 }
+
+func Test_AddActions(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		stackMap       map[uuid.UUID]*stack.Stack
+		targetStackID  uuid.UUID
+		targetActionID uuid.UUID
+		actions        []action.Action
+
+		expectedResStackMap map[uuid.UUID]*stack.Stack
+	}{
+		{
+			name: "action exist in the given stack",
+
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("7de28568-03c1-11f0-92f2-dbc4d50c50de"),
+							Type: action.TypeAnswer,
+						},
+						{
+							ID:   uuid.FromStringOrNil("7e0b0a88-03c1-11f0-a460-7b0310e6a2ee"),
+							Type: action.TypeAnswer,
+						},
+						{
+							ID:   uuid.FromStringOrNil("7e304d66-03c1-11f0-8dac-9b553553d9e4"),
+							Type: action.TypeAnswer,
+						},
+						{
+							ID:   uuid.FromStringOrNil("7e542222-03c1-11f0-a56f-fb2137931aea"),
+							Type: action.TypeAnswer,
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+			},
+			targetStackID:  stack.IDMain,
+			targetActionID: uuid.FromStringOrNil("7e304d66-03c1-11f0-8dac-9b553553d9e4"),
+			actions: []action.Action{
+				{
+					ID: uuid.FromStringOrNil("7e7dbbd2-03c1-11f0-9667-9b698f87d968"),
+				},
+				{
+					ID: uuid.FromStringOrNil("7ea69822-03c1-11f0-8035-13433ac577a9"),
+				},
+			},
+
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("7de28568-03c1-11f0-92f2-dbc4d50c50de"),
+							Type: action.TypeAnswer,
+						},
+						{
+							ID:   uuid.FromStringOrNil("7e0b0a88-03c1-11f0-a460-7b0310e6a2ee"),
+							Type: action.TypeAnswer,
+						},
+						{
+							ID:   uuid.FromStringOrNil("7e304d66-03c1-11f0-8dac-9b553553d9e4"),
+							Type: action.TypeAnswer,
+						},
+						{
+							ID: uuid.FromStringOrNil("7e7dbbd2-03c1-11f0-9667-9b698f87d968"),
+						},
+						{
+							ID: uuid.FromStringOrNil("7ea69822-03c1-11f0-8035-13433ac577a9"),
+						},
+						{
+							ID:   uuid.FromStringOrNil("7e542222-03c1-11f0-a56f-fb2137931aea"),
+							Type: action.TypeAnswer,
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			h := &stackHandler{}
+
+			if errAdd := h.AddActions(tt.stackMap, tt.targetStackID, tt.targetActionID, tt.actions); errAdd != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errAdd)
+			}
+
+			if !reflect.DeepEqual(tt.expectedResStackMap, tt.stackMap) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResStackMap, tt.stackMap)
+			}
+		})
+	}
+}

@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/stack"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
 
 // Create creates a new activeflow
@@ -90,6 +91,13 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 	return res, nil
 }
 
+func (h *activeflowHandler) update(ctx context.Context, af *activeflow.Activeflow) error {
+	if errUpdate := h.db.ActiveflowUpdate(ctx, af); errUpdate != nil {
+		return errors.Wrapf(errUpdate, "could not update the active flow. activeflow_id: %s", af.ID)
+	}
+	return nil
+}
+
 // SetForwardActionID sets the forward action id of the call.
 func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID, actionID uuid.UUID, forwardNow bool) error {
 	log := logrus.WithFields(logrus.Fields{
@@ -120,7 +128,7 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	log.Debugf("Updating activeflow's foward action. forward_stack_id: %s, forward_action_id: %s", targetStackID, targetAction.ID)
-	if errUpdate := h.db.ActiveflowUpdate(ctx, af); errUpdate != nil {
+	if errUpdate := h.update(ctx, af); errUpdate != nil {
 		log.Errorf("Could not update the active flow. err :%v", errUpdate)
 		return errUpdate
 	}
@@ -146,18 +154,11 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 // updateCurrentAction updates the current action in active-flow.
 // returns updated active flow
 func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUID, stackID uuid.UUID, act *action.Action) (*activeflow.Activeflow, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":      "updateCurrentAction",
-		"id":        id,
-		"stack_id":  stackID,
-		"action_id": act,
-	})
 
 	// get af
 	af, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get active-flow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get activeflow. activeflow_id: %s", id)
 	}
 
 	// update active flow
@@ -168,39 +169,67 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 	af.ForwardActionID = action.IDEmpty
 	af.ExecuteCount++
 
-	if errUpdate := h.db.ActiveflowUpdate(ctx, af); errUpdate != nil {
-		log.Errorf("Could not update the active-flow's current action. err: %v", errUpdate)
-		return nil, errUpdate
+	if errUpdate := h.update(ctx, af); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the active flow. activeflow_id: %s", id)
 	}
 
 	// get updated activeflow
-	res, err := h.db.ActiveflowGet(ctx, id)
+	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated active flow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get updated activeflow. activeflow_id: %s", id)
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowUpdated, res)
 
 	return res, err
 }
 
-// dbDelete deletes activeflow
-func (h *activeflowHandler) dbDelete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+// Delete deletes activeflow
+func (h *activeflowHandler) Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "dbDelete",
+		"func":          "Delete",
 		"activeflow_id": id,
 	})
 
+	// get activeflow
+	a, err := h.Get(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get activeflow. activeflow_id: %s", id)
+	}
+
+	// check the activeflow has been
+	if a.TMDelete != dbhandler.DefaultTimeStamp {
+		// already deleted
+		return a, nil
+	}
+
+	if a.Status != activeflow.StatusEnded {
+		log.Debugf("The activeflow is not ended. Stopping the activeflow. activeflow_id: %s, status: %s", a.Identity.ID, a.Status)
+		tmp, err := h.Stop(ctx, id)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not stop the activeflow. activeflow_id: %s", id)
+		}
+		log.Debugf("Stopped activeflow. activeflow_id: %s", tmp.Identity.ID)
+	}
+
+	res, err := h.delete(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not delete the activeflow. activeflow_id: %s", id)
+	}
+
+	return res, nil
+}
+
+// delete deletes activeflow
+func (h *activeflowHandler) delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+
 	if errDelete := h.db.ActiveflowDelete(ctx, id); errDelete != nil {
-		log.Errorf("Could not delete activeflow. err: %v", errDelete)
-		return nil, errDelete
+		return nil, errors.Wrapf(errDelete, "could not delete activeflow. activeflow_id: %s", id)
 	}
 
 	// get deleted activeflow
 	res, err := h.db.ActiveflowGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get activeflow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get deleted activeflow. activeflow_id: %s", id)
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowDeleted, res)
 
@@ -209,15 +238,10 @@ func (h *activeflowHandler) dbDelete(ctx context.Context, id uuid.UUID) (*active
 
 // Get returns activeflow
 func (h *activeflowHandler) Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "Get",
-		"activeflow_id": id,
-	})
 
 	res, err := h.db.ActiveflowGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get activeflow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get activeflow. activeflow_id: %s", id)
 	}
 
 	return res, nil
@@ -225,15 +249,10 @@ func (h *activeflowHandler) Get(ctx context.Context, id uuid.UUID) (*activeflow.
 
 // GetWithLock returns activeflow
 func (h *activeflowHandler) GetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "GetWithLock",
-		"activeflow_id": id,
-	})
 
 	res, err := h.db.ActiveflowGetWithLock(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get activeflow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get activeflow. activeflow_id: %s", id)
 	}
 
 	return res, nil
@@ -246,125 +265,11 @@ func (h *activeflowHandler) ReleaseLock(ctx context.Context, id uuid.UUID) error
 
 // Gets returns list of activeflows
 func (h *activeflowHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
-		"token":   token,
-		"limit":   size,
-		"filters": filters,
-	})
-	log.Debug("Getting activeflows.")
 
 	res, err := h.db.ActiveflowGets(ctx, token, size, filters)
 	if err != nil {
-		log.Errorf("Could not get activeflows. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get activeflows. token: %s, size: %d, filters: %v", token, size, filters)
 	}
 
 	return res, nil
-}
-
-// PushStack pushes the given action to the stack with a new stack
-func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Activeflow, stackID uuid.UUID, actions []action.Action) error {
-	if len(actions) == 0 {
-		return fmt.Errorf("no actions to push")
-	}
-
-	tmp, err := h.stackmapHandler.PushStackByActions(af.StackMap, stackID, actions, af.CurrentStackID, af.CurrentAction.ID)
-	if err != nil {
-		return errors.Wrapf(err, "could not push the actions. stack_id: %s", stackID)
-	}
-
-	// update forward actions
-	af.ForwardStackID = tmp.ID
-	af.ForwardActionID = tmp.Actions[0].ID
-
-	// update activeflow
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		return errors.Wrapf(err, "could not update the active flow after pushed the actions. stack_id: %s", stackID)
-	}
-
-	return nil
-}
-
-// PopStack pop the given activeflow's current stack
-func (h *activeflowHandler) PopStack(ctx context.Context, af *activeflow.Activeflow) error {
-
-	if errPop := h.PopStackWithStackID(ctx, af, af.CurrentStackID); errPop != nil {
-		return errors.Wrapf(errPop, "could not pop the stack. stack_id: %s", af.CurrentStackID)
-	}
-
-	return nil
-}
-
-// PopStackWithStackID pop the given activeflow's current stack
-func (h *activeflowHandler) PopStackWithStackID(ctx context.Context, af *activeflow.Activeflow, stackID uuid.UUID) error {
-	if stackID != af.CurrentStackID {
-		return fmt.Errorf("stack id is not matched. stack_id: %s, current_stack_id: %s", stackID, af.CurrentStackID)
-	}
-
-	tmp, err := h.stackmapHandler.PopStack(af.StackMap, af.CurrentStackID)
-	if err != nil {
-		return errors.Wrapf(err, "could not pop the stack. stack_id: %s", af.CurrentStackID)
-	}
-
-	// update forward actions
-	af.ForwardStackID = tmp.ReturnStackID
-	af.ForwardActionID = tmp.ReturnActionID
-
-	// update activeflow
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		return errors.Wrapf(err, "could not update the active flow after popped the stack. stack_id: %s", af.CurrentStackID)
-	}
-
-	return nil
-}
-
-// PushActions pushes the given actions in a new stack.
-// pushed new stack will be executed in a next action request.
-func (h *activeflowHandler) PushActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "PushActions",
-		"activeflow_id": id,
-		"actions":       actions,
-	})
-
-	af, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get activeflow info. err: %v", err)
-		return nil, err
-	}
-
-	flowActions, err := h.actionHandler.GenerateFlowActions(ctx, actions)
-	if err != nil {
-		log.Errorf("Could not generate the flow actions. err: %v", err)
-		return nil, errors.Wrap(err, "could not generate the flow actions")
-	}
-
-	if errPush := h.PushStack(ctx, af, uuid.Nil, flowActions); errPush != nil {
-		log.Errorf("Could not push the new stack for flow actions. err: %v", errPush)
-		return nil, errors.Wrap(err, "could not push the new stack for flow actions")
-	}
-
-	res, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated activeflow info. err: %v", err)
-		return nil, errors.Wrap(err, "could not get updated activeflow info")
-	}
-
-	return res, nil
-}
-
-// ServiceStop stops the service in the activeflow.
-// the service should run in the current stack.
-func (h *activeflowHandler) ServiceStop(ctx context.Context, id uuid.UUID, serviceID uuid.UUID) error {
-	af, err := h.Get(ctx, id)
-	if err != nil {
-		return errors.Wrapf(err, "could not get activeflow info. activeflow_id: %s", id)
-	}
-
-	if errPop := h.PopStackWithStackID(ctx, af, serviceID); errPop != nil {
-		return errors.Wrapf(errPop, "could not pop the stack. stack_id: %s", serviceID)
-	}
-
-	return nil
 }

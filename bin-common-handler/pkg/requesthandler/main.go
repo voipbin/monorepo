@@ -657,6 +657,7 @@ type RequestHandler interface {
 	FlowV1ActiveflowUpdateForwardActionID(ctx context.Context, activeflowID, forwardActionID uuid.UUID, forwardNow bool) error
 	FlowV1ActiveflowExecute(ctx context.Context, activeflowID uuid.UUID) error
 	FlowV1ActiveflowStop(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
+	FlowV1ActiveflowAddActions(ctx context.Context, activeflowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowPushActions(ctx context.Context, activeflowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowServiceStop(ctx context.Context, activeflowID uuid.UUID, serviceID uuid.UUID) error
 

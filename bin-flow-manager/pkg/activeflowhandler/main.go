@@ -49,6 +49,7 @@ type ActiveflowHandler interface {
 
 	PopStackWithStackID(ctx context.Context, af *activeflow.Activeflow, stackID uuid.UUID) error
 	PushActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error)
+	AddActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error)
 
 	SetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
 	Stop(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)

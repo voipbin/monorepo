@@ -41,7 +41,6 @@ func (h *aicallHandler) chatMessageActionsHandle(ctx context.Context, cc *aicall
 	// push the actions
 	af, err := h.reqHandler.FlowV1ActiveflowPushActions(ctx, cc.ActiveflowID, actions)
 	if err != nil {
-		log.Errorf("Could not push the actions to the activeflow. err: %v", err)
 		return errors.Wrap(err, "could not push the actions to the activeflow")
 	}
 	log.WithField("activeflow", af).Debugf("Pushed actions to the activeflow. activeflow_id: %s", af.ID)
@@ -49,7 +48,6 @@ func (h *aicallHandler) chatMessageActionsHandle(ctx context.Context, cc *aicall
 	// destroy the confbridge
 	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, cc.ConfbridgeID)
 	if err != nil {
-		log.Errorf("Could not terminate the aicall confbridge. err: %v", err)
 		return errors.Wrap(err, "could not terminate the aicall confbridge")
 	}
 	log.WithField("confbridge", tmp).Debugf("Terminated confbridge. confbridge_id: %s", tmp.ID)
@@ -173,13 +171,11 @@ func (h *aicallHandler) chatMessageHandleReferenceTypeCall(ctx context.Context, 
 	if errUnmarshal == nil {
 		log.WithField("actions", tmpActions).Debugf("Got a action arrays. len_actions: %d", len(tmpActions))
 		if errHandle := h.chatMessageActionsHandle(ctx, cc, tmpActions); errHandle != nil {
-			log.Errorf("Could not handle the response actions correctly. err: %v", errHandle)
 			return errors.Wrap(errHandle, "could not handle the response actions correctly")
 		}
 	} else {
 		log.WithField("text", m.Content).Debugf("Got an message text. text: %s", m.Content)
 		if errHandle := h.chatMessageTextHandle(ctx, cc, m.Content); errHandle != nil {
-			log.Errorf("Could not handle the response message text correctly. err: %v", errHandle)
 			return errors.Wrap(errHandle, "could not handle the response message text correctly")
 		}
 	}

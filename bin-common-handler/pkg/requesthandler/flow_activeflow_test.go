@@ -647,6 +647,79 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 	}
 }
 
+func Test_FlowV1ActiveflowAddActions(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflowID uuid.UUID
+		actions      []fmaction.Action
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *fmactiveflow.Activeflow
+	}{
+		{
+			name: "normal",
+
+			activeflowID: uuid.FromStringOrNil("6a5bb518-03f9-11f0-b284-bb23d250808c"),
+			actions: []fmaction.Action{
+				{
+					ID: uuid.FromStringOrNil("6ac3888c-03f9-11f0-9cbc-0f40d578c119"),
+				},
+				{
+					ID: uuid.FromStringOrNil("6b03b7c2-03f9-11f0-af7d-dbc31d2927cc"),
+				},
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"6a5bb518-03f9-11f0-b284-bb23d250808c"}`),
+			},
+
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/activeflows/6a5bb518-03f9-11f0-b284-bb23d250808c/add_actions",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actions":[{"id":"6ac3888c-03f9-11f0-9cbc-0f40d578c119","next_id":"00000000-0000-0000-0000-000000000000","type":""},{"id":"6b03b7c2-03f9-11f0-af7d-dbc31d2927cc","next_id":"00000000-0000-0000-0000-000000000000","type":""}]}`),
+			},
+			expectRes: &fmactiveflow.Activeflow{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("6a5bb518-03f9-11f0-b284-bb23d250808c"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.FlowV1ActiveflowAddActions(ctx, tt.activeflowID, tt.actions)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_FlowV1ActiveflowPushActions(t *testing.T) {
 
 	tests := []struct {

@@ -45,6 +45,21 @@ func (m *MockActiveflowHandler) EXPECT() *MockActiveflowHandlerMockRecorder {
 	return m.recorder
 }
 
+// AddActions mocks base method.
+func (m *MockActiveflowHandler) AddActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddActions", ctx, id, actions)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddActions indicates an expected call of AddActions.
+func (mr *MockActiveflowHandlerMockRecorder) AddActions(ctx, id, actions any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddActions", reflect.TypeOf((*MockActiveflowHandler)(nil).AddActions), ctx, id, actions)
+}
+
 // Create mocks base method.
 func (m *MockActiveflowHandler) Create(ctx context.Context, id uuid.UUID, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()

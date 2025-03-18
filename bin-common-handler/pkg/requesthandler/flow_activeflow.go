@@ -12,6 +12,7 @@ import (
 	fmrequest "monorepo/bin-flow-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // FlowV1ActiveflowCreate creates a new activeflow.
@@ -26,21 +27,21 @@ func (r *requestHandler) FlowV1ActiveflowCreate(ctx context.Context, activeflowI
 		ReferenceID:   referenceID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not marshal the request")
 	}
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not send the request")
 	}
 
 	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get next action")
+		return nil, fmt.Errorf("could not create the activeflow. status_code: %d", tmp.StatusCode)
 	}
 
 	var res fmactiveflow.Activeflow
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not unmarshal the response")
 	}
 
 	return &res, nil
@@ -200,7 +201,7 @@ func (r *requestHandler) FlowV1ActiveflowStop(ctx context.Context, activeflowID 
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/actions", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not send the request")
 	}
 
 	if tmp.StatusCode >= 299 {
@@ -209,7 +210,36 @@ func (r *requestHandler) FlowV1ActiveflowStop(ctx context.Context, activeflowID 
 
 	var res fmactiveflow.Activeflow
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not unmarshal the response")
+	}
+
+	return &res, nil
+}
+
+// FlowV1ActiveflowAddActions adds actions to next to the current action and current stack of the given activeflow.
+func (r *requestHandler) FlowV1ActiveflowAddActions(ctx context.Context, activeflowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.Activeflow, error) {
+
+	uri := fmt.Sprintf("/v1/activeflows/%s/add_actions", activeflowID)
+
+	m, err := json.Marshal(fmrequest.V1DataActiveFlowsIDAddActionPost{
+		Actions: actions,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal the request")
+	}
+
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/add_actions", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not add the activeflow")
+	}
+
+	if tmp.StatusCode >= 299 {
+		return nil, fmt.Errorf("could not add the activeflow")
+	}
+
+	var res fmactiveflow.Activeflow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, errors.Wrapf(err, "could not unmarshal the response")
 	}
 
 	return &res, nil
@@ -224,21 +254,21 @@ func (r *requestHandler) FlowV1ActiveflowPushActions(ctx context.Context, active
 		Actions: actions,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not marshal the request")
 	}
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/push_actions", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not send the request")
 	}
 
 	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not stop the activeflow")
+		return nil, fmt.Errorf("could not push the actions")
 	}
 
 	var res fmactiveflow.Activeflow
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not unmarshal the response")
 	}
 
 	return &res, nil
@@ -253,12 +283,12 @@ func (r *requestHandler) FlowV1ActiveflowServiceStop(ctx context.Context, active
 		ServiceID: serviceID,
 	})
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "could not marshal the request")
 	}
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/service_stop", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "could not send the request")
 	}
 
 	if tmp.StatusCode >= 299 {
