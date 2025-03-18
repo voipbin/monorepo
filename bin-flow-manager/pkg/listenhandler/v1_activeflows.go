@@ -326,6 +326,45 @@ func (h *listenHandler) v1ActiveflowsIDPushActionsPost(ctx context.Context, m *s
 	return res, nil
 }
 
+// v1ActiveflowsIDAddActionsPost handles
+// /v1/activeflows/<activeflow-id>/add_actions Post
+func (h *listenHandler) v1ActiveflowsIDAddActionsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1ActiveflowsIDAddActionsPost",
+		"request": m,
+	})
+
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/add_actions"
+	tmpVals := strings.Split(m.URI, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	var req request.V1DataActiveFlowsIDAddActionPost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.activeflowHandler.AddActions(ctx, id, req.Actions)
+	if err != nil {
+		log.Errorf("Could not stop the activeflow correctly. err: %v", err)
+		return nil, errors.Wrap(err, "Could not stop the activeflow.")
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the result. err: %v", err)
+		return nil, err
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // v1ActiveflowsIDServiceStopPost handles
 // /v1/activeflows/<activeflow-id>/service_stop Post
 func (h *listenHandler) v1ActiveflowsIDServiceStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {

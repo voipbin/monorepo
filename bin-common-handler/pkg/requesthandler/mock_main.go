@@ -3348,6 +3348,21 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1ActionGet(ctx, flowID, actionID 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActionGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActionGet), ctx, flowID, actionID)
 }
 
+// FlowV1ActiveflowAddActions mocks base method.
+func (m *MockRequestHandler) FlowV1ActiveflowAddActions(ctx context.Context, activeflowID uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowV1ActiveflowAddActions", ctx, activeflowID, actions)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowV1ActiveflowAddActions indicates an expected call of FlowV1ActiveflowAddActions.
+func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowAddActions(ctx, activeflowID, actions any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowAddActions", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowAddActions), ctx, activeflowID, actions)
+}
+
 // FlowV1ActiveflowCreate mocks base method.
 func (m *MockRequestHandler) FlowV1ActiveflowCreate(ctx context.Context, activeflowID, flowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()

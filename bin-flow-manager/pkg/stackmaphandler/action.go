@@ -153,3 +153,29 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 	// exceed max stack count
 	return stack.IDMain, &action.ActionFinish
 }
+
+// AddActions adds actions to the stack.
+func (h *stackHandler) AddActions(stackMap map[uuid.UUID]*stack.Stack, targetStackID uuid.UUID, targetActionID uuid.UUID, actions []action.Action) error {
+	if targetStackID == stack.IDEmpty {
+		return fmt.Errorf("invalid stack id")
+	}
+	if targetActionID == action.IDEmpty {
+		return fmt.Errorf("invalid target action id")
+	}
+
+	s, err := h.GetStack(stackMap, targetStackID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get stack. stack_id: %s", targetStackID)
+	}
+
+	idx, act := h.findAction(s.Actions, targetActionID)
+	if act == nil {
+		return fmt.Errorf("could not find action. action_id: %s", targetActionID)
+	}
+
+	// inject actions
+	tmp := append(s.Actions[:idx+1], actions...)
+	s.Actions = append(tmp, s.Actions[idx+1:]...)
+
+	return nil
+}

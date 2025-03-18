@@ -65,7 +65,7 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 	orgAction.Option = raw
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+	if err := h.update(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
 	}
@@ -102,29 +102,23 @@ func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflo
 // actionHandleFetchFlow handles action patch_flow with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
 func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activeflow.Activeflow) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleFetchFlow",
-		"activeflow": af,
-	})
+
 	act := &af.CurrentAction
 
 	var option action.OptionFetchFlow
 	if err := json.Unmarshal(act.Option, &option); err != nil {
-		log.Errorf("Could not unmarshal the option. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not unmarshal the option. err: %v", err)
 	}
 
-	// patch the actions from the remote
+	// patch the actions from the flow
 	fetchedActions, err := h.getActionsFromFlow(ctx, option.FlowID, af.Identity.CustomerID)
 	if err != nil {
-		log.Errorf("Could not patch the actions from the remote. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not get actions from the flow. flow_id: %s", option.FlowID)
 	}
 
 	// push the actions
 	if errPush := h.PushStack(ctx, af, uuid.Nil, fetchedActions); errPush != nil {
-		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
-		return errPush
+		return errors.Wrapf(errPush, "could not push the actions to the stack")
 	}
 
 	return nil
@@ -173,7 +167,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+	if err := h.update(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
 	}
@@ -221,7 +215,7 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 	// failed
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+	if err := h.update(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
 	}
@@ -342,7 +336,7 @@ func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, a
 	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+	if err := h.update(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
 	}
@@ -399,7 +393,7 @@ func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, a
 	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+	if err := h.update(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
 	}
@@ -765,7 +759,7 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if errSet := h.db.ActiveflowUpdate(ctx, af); errSet != nil {
+	if errSet := h.update(ctx, af); errSet != nil {
 		log.Errorf("Could not update the active flow. err: %v", errSet)
 		return err
 	}
@@ -948,8 +942,6 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 	})
 	act := &af.CurrentAction
 
-	log.Debugf("Action detail. action: %v", act)
-
 	var opt action.OptionAITalk
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
@@ -957,14 +949,12 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 	}
 
 	if af.ReferenceType != activeflow.ReferenceTypeCall {
-		log.Errorf("Wrong type of reference. Only reference type call is supported. reference_type: %s", af.ReferenceType)
-		return fmt.Errorf("wrong reference type. reference_type: %s", af.ReferenceType)
+		return fmt.Errorf("wrong reference type. Only reference type call is supported. reference_type: %s", af.ReferenceType)
 	}
 
 	// start service
 	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.Identity.ID, amaicall.ReferenceTypeCall, af.ReferenceID, opt.Gender, opt.Language, 3000)
 	if err != nil {
-		log.Errorf("Could not start the service. err: %v", err)
 		return errors.Wrap(err, "Could not start the service.")
 	}
 	log.WithField("service", sv).Debugf("Started service. service_type: %s, service_id: %s", sv.Type, sv.ID)
@@ -972,7 +962,7 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 	// push the actions
 	if errPush := h.PushStack(ctx, af, sv.ID, sv.PushActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
-		return errPush
+		return errors.Wrapf(errPush, "Could not push the actions to the stack.")
 	}
 
 	return nil
