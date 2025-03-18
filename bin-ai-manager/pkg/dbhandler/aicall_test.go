@@ -369,6 +369,86 @@ func Test_AIcallUpdateStatusProgressing(t *testing.T) {
 	}
 }
 
+func Test_AIcallUpdateStatusPausing(t *testing.T) {
+
+	tests := []struct {
+		name string
+		ai   *aicall.AIcall
+
+		id uuid.UUID
+
+		responseCurTime string
+
+		expectRes *aicall.AIcall
+	}{
+		{
+			name: "normal",
+			ai: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("7664a584-0414-11f0-9866-0ff182c4e5cd"),
+				},
+			},
+
+			id: uuid.FromStringOrNil("7664a584-0414-11f0-9866-0ff182c4e5cd"),
+
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("7664a584-0414-11f0-9866-0ff182c4e5cd"),
+				},
+				AIEngineData: map[string]any{},
+				TranscribeID: uuid.Nil,
+				Status:       aicall.StatusPausing,
+				TMEnd:        DefaultTimeStamp,
+				TMCreate:     "2023-01-03 21:35:02.809",
+				TMUpdate:     "2023-01-03 21:35:02.809",
+				TMDelete:     DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+			if err := h.AIcallCreate(ctx, tt.ai); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+			if err := h.AIcallUpdateStatusPausing(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AIcallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+			res, err := h.AIcallGet(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_AIcallUpdateStatusEnd(t *testing.T) {
 
 	tests := []struct {

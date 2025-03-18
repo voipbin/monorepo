@@ -279,7 +279,7 @@ func Test_chatMessageActionsHandle(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowPushActions(ctx, tt.aicall.ActiveflowID, tt.actions).Return(&fmactiveflow.Activeflow{}, nil)
+			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, tt.actions).Return(&fmactiveflow.Activeflow{}, nil)
 			mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 
 			if errHandle := h.chatMessageActionsHandle(ctx, tt.aicall, tt.actions); errHandle != nil {
@@ -389,7 +389,7 @@ func Test_chatMessageHandle_actions(t *testing.T) {
 			errUnmarshal := json.Unmarshal([]byte(tt.message.Content), &tmpActions)
 
 			if errUnmarshal == nil {
-				mockReq.EXPECT().FlowV1ActiveflowPushActions(ctx, tt.aicall.ActiveflowID, gomock.Any()).Return(&fmactiveflow.Activeflow{}, nil)
+				mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, gomock.Any()).Return(&fmactiveflow.Activeflow{}, nil)
 				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 			}
 

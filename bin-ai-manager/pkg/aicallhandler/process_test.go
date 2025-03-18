@@ -74,7 +74,7 @@ func Test_ProcessStart(t *testing.T) {
 			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.aicall.CustomerID, tmtranscribe.ReferenceTypeCall, tt.aicall.ReferenceID, tt.aicall.Language, tmtranscribe.DirectionIn).Return(tt.responseTranscribe, nil)
 			mockDB.EXPECT().AIcallUpdateStatusProgressing(ctx, tt.aicall.ID, tt.responseTranscribe.ID).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeProgressing, tt.aicall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusProgressing, tt.aicall)
 
 			res, err := h.ProcessStart(ctx, tt.aicall)
 			if err != nil {
@@ -139,7 +139,7 @@ func Test_ProcessEnd(t *testing.T) {
 			mockDB.EXPECT().AIcallUpdateStatusEnd(ctx, tt.aicall.ID).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
 			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeEnd, tt.aicall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusEnd, tt.aicall)
 
 			res, err := h.ProcessEnd(ctx, tt.aicall)
 			if err != nil {

@@ -35,3 +35,11 @@ const (
 	WebhookMethodPut    = "PUT"
 	WebhookMethodDelete = "DELETE"
 )
+
+var (
+	IDEmpty = uuid.FromStringOrNil("00000000-0000-0000-0000-00000000000") //
+
+	// voipbin internal service's customer id
+	IDCallManager = uuid.FromStringOrNil("00000000-0000-0000-0001-00000000001")
+	IDAIManager   = uuid.FromStringOrNil("00000000-0000-0000-0001-00000000002")
+)

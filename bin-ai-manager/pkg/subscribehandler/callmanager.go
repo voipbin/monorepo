@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
+	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
@@ -54,6 +56,35 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 
 	// get aicall
 	cc, err := h.aicallHandler.GetByReferenceID(ctx, evt.LeavedCallID)
+	if err != nil {
+		// aicall not found.
+		return nil
+	}
+
+	_, err = h.aicallHandler.ProcessPause(ctx, cc)
+	if err != nil {
+		log.Errorf("Could not terminated the aicall call. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// processEventCMCallHangup handles the call-manager's call hangup event
+func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *sock.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventCMCallHangup",
+		"event": m,
+	})
+
+	evt := cmcall.Call{}
+	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return err
+	}
+
+	// get aicall
+	cc, err := h.aicallHandler.GetByReferenceID(ctx, evt.ID)
 	if err != nil {
 		// aicall not found.
 		return nil

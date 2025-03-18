@@ -50,6 +50,8 @@ type Status string
 const (
 	StatusInitiating  Status = "initiating"
 	StatusProgressing Status = "progressing"
+	StatusPausing     Status = "pausing"
+	StatusResuming    Status = "resuming"
 	StatusEnd         Status = "end"
 )
 

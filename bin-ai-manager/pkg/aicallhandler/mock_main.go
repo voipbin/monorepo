@@ -163,6 +163,21 @@ func (mr *MockAIcallHandlerMockRecorder) ProcessEnd(ctx, cb any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessEnd", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessEnd), ctx, cb)
 }
 
+// ProcessPause mocks base method.
+func (m *MockAIcallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProcessPause", ctx, ac)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProcessPause indicates an expected call of ProcessPause.
+func (mr *MockAIcallHandlerMockRecorder) ProcessPause(ctx, ac any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessPause", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessPause), ctx, ac)
+}
+
 // ProcessStart mocks base method.
 func (m *MockAIcallHandler) ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -179,31 +194,31 @@ func (mr *MockAIcallHandlerMockRecorder) ProcessStart(ctx, cb any) *gomock.Call 
 }
 
 // ServiceStart mocks base method.
-func (m *MockAIcallHandler) ServiceStart(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*service.Service, error) {
+func (m *MockAIcallHandler) ServiceStart(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string, resuming bool) (*service.Service, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceStart", ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
+	ret := m.ctrl.Call(m, "ServiceStart", ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resuming)
 	ret0, _ := ret[0].(*service.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceStart indicates an expected call of ServiceStart.
-func (mr *MockAIcallHandlerMockRecorder) ServiceStart(ctx, aiID, activeflowID, referenceType, referenceID, gender, language any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) ServiceStart(ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resuming any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockAIcallHandler)(nil).ServiceStart), ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockAIcallHandler)(nil).ServiceStart), ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resuming)
 }
 
 // Start mocks base method.
-func (m *MockAIcallHandler) Start(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
+func (m *MockAIcallHandler) Start(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string, resume bool) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
+	ret := m.ctrl.Call(m, "Start", ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resume)
 	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockAIcallHandlerMockRecorder) Start(ctx, aiID, activeflowID, referenceType, referenceID, gender, language any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) Start(ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockAIcallHandler)(nil).Start), ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockAIcallHandler)(nil).Start), ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resume)
 }

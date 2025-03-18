@@ -23,16 +23,37 @@ func (h *aicallHandler) ProcessStart(ctx context.Context, cb *aicall.AIcall) (*a
 	// create transcribe
 	tr, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, cb.CustomerID, referenceType, cb.ReferenceID, cb.Language, tmtranscribe.DirectionIn)
 	if err != nil {
-		log.Errorf("Could not create start the transcribe. err: %v", err)
 		return nil, errors.Wrap(err, "could not start the transcribe")
 	}
 	log.WithField("transcribe", tr).Debugf("Started transcribe. transcribe_id: %s", tr.ID)
 
 	// update status
-	res, err := h.UpdateStatusStart(ctx, cb.ID, tr.ID)
+	res, err := h.UpdateStatusStartProgressing(ctx, cb.ID, tr.ID)
 	if err != nil {
 		log.Errorf("Could not update the status to start. err: %v", err)
 		return nil, err
+	}
+
+	return res, nil
+}
+
+// ProcessPause pauses the aicall process
+func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "ProcessPause",
+		"aicall_id": ac.ID,
+	})
+
+	// stop the transcribe
+	_, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, ac.TranscribeID)
+	if err != nil {
+		// failed to stop the transcribe but we keep move
+		log.Errorf("Could not stops the transcribe. err: %v", err)
+	}
+
+	res, err := h.UpdateStatusPausing(ctx, ac.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not end the aicall")
 	}
 
 	return res, nil
@@ -54,7 +75,6 @@ func (h *aicallHandler) ProcessEnd(ctx context.Context, cb *aicall.AIcall) (*aic
 
 	res, err := h.UpdateStatusEnd(ctx, cb.ID)
 	if err != nil {
-		log.Errorf("Could not end the aicall. err: %v", err)
 		return nil, errors.Wrap(err, "could not end the aicall")
 	}
 

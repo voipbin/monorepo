@@ -25,6 +25,7 @@ func (h *aicallHandler) ServiceStart(
 	referenceID uuid.UUID,
 	gender aicall.Gender,
 	language string,
+	resume bool,
 ) (*commonservice.Service, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ServiceStart",
@@ -40,7 +41,7 @@ func (h *aicallHandler) ServiceStart(
 		return nil, errors.New("unsupported reference type")
 	}
 
-	cc, err := h.Start(ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
+	cc, err := h.Start(ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resume)
 	if err != nil {
 		log.Errorf("Could not start aicall. err: %v", err)
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)
