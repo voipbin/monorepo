@@ -3,7 +3,7 @@ package action
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ememail "monorepo/bin-email-manager/models/email"
 
 	"github.com/gofrs/uuid"
@@ -12,6 +12,14 @@ import (
 // OptionAgentCall defines action agent_call's option.
 type OptionAgentCall struct {
 	AgentID uuid.UUID `json:"agent_id"` // target agent id.
+}
+
+// OptionAITalk defines action ai_talk's option.
+type OptionAITalk struct {
+	AIID     uuid.UUID       `json:"ai_id"`
+	Gender   amaicall.Gender `json:"gender"`
+	Language string          `json:"language"` // BCP47 format. en-US
+	Duration int             `json:"duration"` // ai talk duration. seconds
 }
 
 // OptionAMD defines action amd's option.
@@ -45,14 +53,6 @@ type OptionCall struct {
 	Actions        []Action                `json:"actions"`
 	Chained        bool                    `json:"chained"`         // If it sets to true, the created calls will be hungup when the master call is hangup. Default false.
 	EarlyExecution bool                    `json:"early_execution"` // if it sets to true, the created call executes the flow(activeflow) before call answer.
-}
-
-// OptionChatbotTalk defines action chatbot_talk's option.
-type OptionChatbotTalk struct {
-	ChatbotID uuid.UUID            `json:"chatbot_id"`
-	Gender    cbchatbotcall.Gender `json:"gender"`
-	Language  string               `json:"language"` // BCP47 format. en-US
-	Duration  int                  `json:"duration"` // chatbot talk duration. seconds
 }
 
 // OptionConfbridgeJoin defines action confbridge_join's option.

@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -35,7 +36,9 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 			},
 
 			exectActiveflow: &fmactiveflow.Activeflow{
-				ID: uuid.FromStringOrNil("e739a280-f161-11ee-8444-2385d7cef78a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e739a280-f161-11ee-8444-2385d7cef78a"),
+				},
 			},
 		},
 	}

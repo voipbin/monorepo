@@ -46,7 +46,9 @@ func Test_GetActiveflows(t *testing.T) {
 
 			resActiveflows: []*fmactiveflow.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("c9f6c460-d3aa-11ef-9062-db42ef820bc8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c9f6c460-d3aa-11ef-9062-db42ef820bc8"),
+					},
 				},
 			},
 
@@ -67,7 +69,9 @@ func Test_GetActiveflows(t *testing.T) {
 
 			resActiveflows: []*fmactiveflow.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("ca5324bc-d3aa-11ef-b3a2-5f9b2297d0b5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ca5324bc-d3aa-11ef-b3a2-5f9b2297d0b5"),
+					},
 				},
 			},
 
@@ -88,13 +92,19 @@ func Test_GetActiveflows(t *testing.T) {
 
 			resActiveflows: []*fmactiveflow.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("ca814ff4-d3aa-11ef-b654-4356ff1e24b8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ca814ff4-d3aa-11ef-b654-4356ff1e24b8"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("caaf28de-d3aa-11ef-acab-8364561636de"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("caaf28de-d3aa-11ef-acab-8364561636de"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("d80bf73c-d3aa-11ef-9e3b-5327fa6fb18b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d80bf73c-d3aa-11ef-9e3b-5327fa6fb18b"),
+					},
 				},
 			},
 
@@ -165,7 +175,9 @@ func Test_PostActiveflows(t *testing.T) {
 			reqBody:  []byte(`{"actions":[{"id":"692de0d6-d3ab-11ef-a2cd-07af60d8bb91"}],"flow_id":"8917167e-d3ab-11ef-b322-b36809068d12","id":"88eaacce-d3ab-11ef-ac99-23f970b154a2"}`),
 
 			response: &fmactiveflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("893ebb34-d3ab-11ef-90e4-f31b0ef8762a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("893ebb34-d3ab-11ef-90e4-f31b0ef8762a"),
+				},
 			},
 
 			expectedActions: []fmaction.Action{
@@ -189,7 +201,9 @@ func Test_PostActiveflows(t *testing.T) {
 			reqBody:  []byte(`{}`),
 
 			response: &fmactiveflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("8969817a-d3ab-11ef-b01b-c358a80962d3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8969817a-d3ab-11ef-b01b-c358a80962d3"),
+				},
 			},
 
 			expectedActions: []fmaction.Action{},
@@ -265,7 +279,9 @@ func Test_GetActiveflowsId(t *testing.T) {
 			reqQuery: "/activeflows/31c3088a-cb2c-11ed-b323-2b5e8c1da422",
 
 			responseActiveflow: &fmactiveflow.WebhookMessage{
-				ID:       uuid.FromStringOrNil("31c3088a-cb2c-11ed-b323-2b5e8c1da422"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("31c3088a-cb2c-11ed-b323-2b5e8c1da422"),
+				},
 				TMCreate: "2020-09-20 03:23:21.995000",
 			},
 
@@ -330,7 +346,9 @@ func Test_DeleteActiveflowsId(t *testing.T) {
 			reqQuery: "/activeflows/8abf67b2-cb2c-11ed-997d-4ff8509599f7",
 
 			responseActiveflow: &fmactiveflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("8abf67b2-cb2c-11ed-997d-4ff8509599f7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8abf67b2-cb2c-11ed-997d-4ff8509599f7"),
+				},
 			},
 
 			expectActiveflowID: uuid.FromStringOrNil("8abf67b2-cb2c-11ed-997d-4ff8509599f7"),
@@ -395,7 +413,9 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 			reqQuery: "/activeflows/da10d24c-cb2c-11ed-be08-1fca5d4747f4/stop",
 
 			responseActiveflow: &fmactiveflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("da10d24c-cb2c-11ed-be08-1fca5d4747f4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("da10d24c-cb2c-11ed-be08-1fca5d4747f4"),
+				},
 			},
 
 			expectActiveflowID: uuid.FromStringOrNil("da10d24c-cb2c-11ed-be08-1fca5d4747f4"),

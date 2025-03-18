@@ -7,6 +7,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -61,7 +62,9 @@ func Test_Create(t *testing.T) {
 				ID: uuid.FromStringOrNil("a5aab3aa-5b8a-11ec-bf89-432b7557fb8b"),
 			},
 			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("a5d4bad8-5b8a-11ec-a510-57d74c7f1270"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a5d4bad8-5b8a-11ec-a510-57d74c7f1270"),
+				},
 			},
 
 			&conference.Conference{
@@ -148,7 +151,9 @@ func Test_createConferenceFlow(t *testing.T) {
 			"conference-28d88218-5b89-11ec-afc1-f38e08436159",
 
 			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("65038316-5b87-11ec-b9ce-875d97997cbb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("65038316-5b87-11ec-b9ce-875d97997cbb"),
+				},
 			},
 		},
 	}

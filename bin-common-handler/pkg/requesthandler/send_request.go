@@ -249,12 +249,12 @@ func (r *requestHandler) sendRequestRoute(ctx context.Context, uri string, metho
 	return r.sendRequest(ctx, commonoutline.QueueNameRouteRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestChatbot send a request to the chatbot-manager and return the response
+// sendRequestAI send a request to the ai-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestChatbot(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout, delayed int, dataType string, data json.RawMessage) (*sock.Response, error) {
+func (r *requestHandler) sendRequestAI(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout, delayed int, dataType string, data json.RawMessage) (*sock.Response, error) {
 
-	return r.sendRequest(ctx, commonoutline.QueueNameChatbotRequest, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, commonoutline.QueueNameAIRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestTransfer send a request to the transfer-manager and return the response

@@ -1,0 +1,39 @@
+get:
+  summary: Get details of a specific ai call
+  description: Retrieves detailed information about a ai call identified by its ID.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the ai call.
+  responses:
+    '200':
+      description: Details of the specified ai call.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIcall'
+
+delete:
+  summary: Delete a specific ai call
+  description: Deletes a ai call identified by its ID.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the ai call.
+  responses:
+    '200':
+      description: The aicall was successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIcall'

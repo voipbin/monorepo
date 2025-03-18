@@ -76,10 +76,10 @@ const (
 	// required media: none
 	TypeCall Type = "call"
 
-	// TypeChatbotTalk starts a talk with chatbot.
-	// chatbot-manager
+	// TypeAITalk starts a talk with ai.
+	// ai-manager
 	// required media: call
-	TypeChatbotTalk Type = "chatbot_talk"
+	TypeAITalk Type = "ai_talk"
 
 	// TypeConditionCallDigits deprecated. use the TypeConditionVariable instead.
 	// required media: call
@@ -252,7 +252,7 @@ var TypeListAll []Type = []Type{
 	TypeBeep,
 	TypeBranch,
 	TypeCall,
-	TypeChatbotTalk,
+	TypeAITalk,
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
 	TypeConditionDatetime,
@@ -293,7 +293,7 @@ var TypeListMediaRequired []Type = []Type{
 	TypeAMD,
 	TypeAnswer,
 	TypeBeep,
-	TypeChatbotTalk,
+	TypeAITalk,
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
 	TypeConfbridgeJoin,

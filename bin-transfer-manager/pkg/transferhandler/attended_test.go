@@ -182,7 +182,9 @@ func Test_attendedExecute(t *testing.T) {
 				MasterCallID: uuid.FromStringOrNil("64bc53aa-dc6f-11ed-9704-03ecd7a766fd"),
 			},
 			flow: &fmflow.Flow{
-				ID:      uuid.FromStringOrNil("64e33d80-dc6f-11ed-a108-0b5c52dbe645"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("64e33d80-dc6f-11ed-a108-0b5c52dbe645"),
+				},
 				Actions: []fmaction.Action{},
 			},
 			transfereeAddresses: []commonaddress.Address{

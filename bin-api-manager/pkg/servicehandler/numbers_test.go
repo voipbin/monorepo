@@ -407,14 +407,18 @@ func Test_NumberUpdate(t *testing.T) {
 				TMDelete:            defaultTimestamp,
 			},
 			&fmflow.Flow{
-				ID:         uuid.FromStringOrNil("72001c3a-2ca2-11ee-96c3-4730286893af"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("72001c3a-2ca2-11ee-96c3-4730286893af"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			&fmflow.Flow{
-				ID:         uuid.FromStringOrNil("7240534a-2ca2-11ee-bb9a-8f1c5dafa508"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7240534a-2ca2-11ee-bb9a-8f1c5dafa508"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
@@ -631,9 +635,11 @@ func Test_numberVerifyFlow(t *testing.T) {
 			flowID: uuid.FromStringOrNil("3abc48b4-d57d-11ee-bbca-a713327af69d"),
 
 			responseFlow: &fmflow.Flow{
-				ID:         uuid.FromStringOrNil("3abc48b4-d57d-11ee-bbca-a713327af69d"),
-				CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3abc48b4-d57d-11ee-bbca-a713327af69d"),
+					CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			expectRes: true,
 		},

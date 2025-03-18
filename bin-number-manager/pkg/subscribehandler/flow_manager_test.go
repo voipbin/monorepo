@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -33,7 +34,9 @@ func Test_processEvent_processEventFMFlowDeleted(t *testing.T) {
 			},
 
 			expectFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("7d08051c-2d64-11ee-92d1-bf5dc689d1d5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d08051c-2d64-11ee-92d1-bf5dc689d1d5"),
+				},
 			},
 		},
 	}

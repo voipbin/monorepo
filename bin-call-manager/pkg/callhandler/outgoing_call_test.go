@@ -257,7 +257,9 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			connect:        true,
 
 			responseActiveflow: &fmactiveflow.Activeflow{
-				ID: uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+				},
 				CurrentAction: fmaction.Action{
 					ID: fmaction.IDStart,
 				},

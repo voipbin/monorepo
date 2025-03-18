@@ -24,14 +24,14 @@ import (
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
+	amai "monorepo/bin-ai-manager/models/ai"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
+	cbmessage "monorepo/bin-ai-manager/models/message"
 	chatchat "monorepo/bin-chat-manager/models/chat"
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
 	chatmedia "monorepo/bin-chat-manager/models/media"
 	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
-	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
-	cbmessage "monorepo/bin-chatbot-manager/models/message"
 	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/service"
 
@@ -162,6 +162,55 @@ type RequestHandler interface {
 
 	// send
 	SendRequest(ctx context.Context, queue commonoutline.QueueName, uri string, method sock.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*sock.Response, error)
+
+	// ai-manager ai
+	AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
+	AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]amai.AI, error)
+	AIV1AICreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		engineType amai.EngineType,
+		engineModel amai.EngineModel,
+		engineData map[string]any,
+		initPrompt string,
+	) (*amai.AI, error)
+	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
+	AIV1AIUpdate(
+		ctx context.Context,
+		aiID uuid.UUID,
+		name string,
+		detail string,
+		engineType amai.EngineType,
+		engineModel amai.EngineModel,
+		engineData map[string]any,
+		initPrompt string,
+	) (*amai.AI, error)
+
+	// ai-manager aicall
+	AIV1AIcallStart(ctx context.Context, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error)
+	AIV1AIcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]amaicall.AIcall, error)
+	AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
+	AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
+
+	// ai-manager message
+	AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbmessage.Message, error)
+	AIV1MessageSend(ctx context.Context, aicallID uuid.UUID, role cbmessage.Role, content string, timeout int) (*cbmessage.Message, error)
+	AIV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
+	AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
+
+	// ai-manager service
+	AIV1ServiceTypeAIcallStart(
+		ctx context.Context,
+		aiID uuid.UUID,
+		activeflowID uuid.UUID,
+		referenceType amaicall.ReferenceType,
+		referenceID uuid.UUID,
+		gender amaicall.Gender,
+		language string,
+		requestTimeout int,
+	) (*service.Service, error)
 
 	// asterisk AMI
 	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error
@@ -492,55 +541,6 @@ type RequestHandler interface {
 	ChatV1MessagechatGet(ctx context.Context, messagechatID uuid.UUID) (*chatmessagechat.Messagechat, error)
 	ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatmessagechat.Messagechat, error)
 	ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error)
-
-	// chatbot-manager chatbot
-	ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error)
-	ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbot.Chatbot, error)
-	ChatbotV1ChatbotCreate(
-		ctx context.Context,
-		customerID uuid.UUID,
-		name string,
-		detail string,
-		engineType cbchatbot.EngineType,
-		engineModel cbchatbot.EngineModel,
-		engineData map[string]any,
-		initPrompt string,
-	) (*cbchatbot.Chatbot, error)
-	ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error)
-	ChatbotV1ChatbotUpdate(
-		ctx context.Context,
-		chatbotID uuid.UUID,
-		name string,
-		detail string,
-		engineType cbchatbot.EngineType,
-		engineModel cbchatbot.EngineModel,
-		engineData map[string]any,
-		initPrompt string,
-	) (*cbchatbot.Chatbot, error)
-
-	// chatbot-manager chatbotcall
-	ChatbotV1ChatbotcallStart(ctx context.Context, chatbotID uuid.UUID, referenceType cbchatbotcall.ReferenceType, referenceID uuid.UUID, gender cbchatbotcall.Gender, language string) (*cbchatbotcall.Chatbotcall, error)
-	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbotcall.Chatbotcall, error)
-	ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
-	ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
-
-	// chatbot-manager message
-	ChatbotV1MessageGetsByChatbotcallID(ctx context.Context, chatbotcallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbmessage.Message, error)
-	ChatbotV1MessageSend(ctx context.Context, chatbotcallID uuid.UUID, role cbmessage.Role, content string, timeout int) (*cbmessage.Message, error)
-	ChatbotV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
-	ChatbotV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
-
-	// chatbot-manager service
-	ChatbotV1ServiceTypeChabotcallStart(
-		ctx context.Context,
-		chatbotID uuid.UUID,
-		activeflowID uuid.UUID,
-		referenceType cbchatbotcall.ReferenceType,
-		referenceID uuid.UUID,
-		gender cbchatbotcall.Gender,
-		language string,
-		requestTimeout int,
-	) (*service.Service, error)
 
 	// customer-manager accesskeys
 	CustomerV1AccesskeyCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, expire int32) (*csaccesskey.Accesskey, error)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -118,7 +119,9 @@ func Test_EventFlowDeleted(t *testing.T) {
 			"normal call flow id",
 
 			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("dd92f3fa-7d22-11eb-be53-47ee94a9bce3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dd92f3fa-7d22-11eb-be53-47ee94a9bce3"),
+				},
 			},
 			[]*number.Number{
 				{
@@ -141,7 +144,9 @@ func Test_EventFlowDeleted(t *testing.T) {
 			"3 items call flow id",
 
 			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("01647c7a-ecb7-11ee-9273-7b59a4ee0467"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("01647c7a-ecb7-11ee-9273-7b59a4ee0467"),
+				},
 			},
 
 			[]*number.Number{

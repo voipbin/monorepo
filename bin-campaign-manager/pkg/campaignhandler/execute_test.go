@@ -80,7 +80,9 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("6bab615a-c402-11ec-931f-df3080b6bcef"),
 			},
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("6bab615a-c402-11ec-931f-df3080b6bcef"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6bab615a-c402-11ec-931f-df3080b6bcef"),
+				},
 			},
 
 			expectDestination: &commonaddress.Address{

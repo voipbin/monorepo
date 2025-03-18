@@ -137,7 +137,9 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
 			},
 			&fmactiveflow.Activeflow{
-				ID:            uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
+				},
 				ReferenceType: fmactiveflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
 				FlowID:        uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
@@ -305,7 +307,9 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				},
 			},
 			&fmactiveflow.Activeflow{
-				ID:            uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
+				},
 				ReferenceType: fmactiveflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
 				FlowID:        uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),

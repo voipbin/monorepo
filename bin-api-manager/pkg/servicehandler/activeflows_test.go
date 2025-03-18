@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/identity"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -44,9 +45,11 @@ func Test_activeflowGet(t *testing.T) {
 			activeflowID: uuid.FromStringOrNil("306d40a4-cb22-11ed-a796-4776eeb9578e"),
 
 			responseActiveflow: &fmactiveflow.Activeflow{
-				ID:         uuid.FromStringOrNil("306d40a4-cb22-11ed-a796-4776eeb9578e"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				TMDelete:   defaultTimestamp,
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("306d40a4-cb22-11ed-a796-4776eeb9578e"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -110,16 +113,22 @@ func Test_ActiveflowCreate(t *testing.T) {
 			actions:      []fmaction.Action{},
 
 			responseFlow: &fmflow.Flow{
-				ID:         uuid.FromStringOrNil("24e16bd4-c824-11ee-8e8f-ef99de05a30a"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("24e16bd4-c824-11ee-8e8f-ef99de05a30a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			responseActiveflow: &fmactiveflow.Activeflow{
-				ID: uuid.FromStringOrNil("2498ab92-c824-11ee-8470-b77066a63403"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2498ab92-c824-11ee-8470-b77066a63403"),
+				},
 			},
 
 			expectRes: &fmactiveflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("2498ab92-c824-11ee-8470-b77066a63403"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2498ab92-c824-11ee-8470-b77066a63403"),
+				},
 			},
 		},
 		{
@@ -138,16 +147,22 @@ func Test_ActiveflowCreate(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("c9de6aa8-c827-11ee-afc6-9fa0a350a342"),
 			responseFlow: &fmflow.Flow{
-				ID:         uuid.FromStringOrNil("de52be1c-c827-11ee-b844-2bf5469a5b7f"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("de52be1c-c827-11ee-b844-2bf5469a5b7f"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			responseActiveflow: &fmactiveflow.Activeflow{
-				ID: uuid.FromStringOrNil("c9de6aa8-c827-11ee-afc6-9fa0a350a342"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c9de6aa8-c827-11ee-afc6-9fa0a350a342"),
+				},
 			},
 
 			expectRes: &fmactiveflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("c9de6aa8-c827-11ee-afc6-9fa0a350a342"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c9de6aa8-c827-11ee-afc6-9fa0a350a342"),
+				},
 			},
 		},
 		{
@@ -168,16 +183,22 @@ func Test_ActiveflowCreate(t *testing.T) {
 			},
 
 			responseFlow: &fmflow.Flow{
-				ID:         uuid.FromStringOrNil("949fc9a6-c82a-11ee-99f7-5be67e385f05"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("949fc9a6-c82a-11ee-99f7-5be67e385f05"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			responseActiveflow: &fmactiveflow.Activeflow{
-				ID: uuid.FromStringOrNil("94795dac-c82a-11ee-82c3-2b67b1791a1b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("94795dac-c82a-11ee-82c3-2b67b1791a1b"),
+				},
 			},
 
 			expectRes: &fmactiveflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("94795dac-c82a-11ee-82c3-2b67b1791a1b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("94795dac-c82a-11ee-82c3-2b67b1791a1b"),
+				},
 			},
 		},
 	}
@@ -250,14 +271,18 @@ func Test_ActiveflowGet(t *testing.T) {
 			activeflowID: uuid.FromStringOrNil("f236da96-8dec-11ee-a3c2-d786fe7eaaae"),
 
 			responseActiveflow: &fmactiveflow.Activeflow{
-				ID:         uuid.FromStringOrNil("f236da96-8dec-11ee-a3c2-d786fe7eaaae"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f236da96-8dec-11ee-a3c2-d786fe7eaaae"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			expectRes: &fmactiveflow.WebhookMessage{
-				ID:         uuid.FromStringOrNil("f236da96-8dec-11ee-a3c2-d786fe7eaaae"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f236da96-8dec-11ee-a3c2-d786fe7eaaae"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -317,7 +342,9 @@ func Test_ActiveflowGets(t *testing.T) {
 
 			[]fmactiveflow.Activeflow{
 				{
-					ID: uuid.FromStringOrNil("23dc5a36-cb23-11ed-8a25-8f48bd8c19bf"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("23dc5a36-cb23-11ed-8a25-8f48bd8c19bf"),
+					},
 				},
 			},
 			map[string]string{
@@ -326,7 +353,9 @@ func Test_ActiveflowGets(t *testing.T) {
 			},
 			[]*fmactiveflow.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("23dc5a36-cb23-11ed-8a25-8f48bd8c19bf"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("23dc5a36-cb23-11ed-8a25-8f48bd8c19bf"),
+					},
 				},
 			},
 		},
@@ -381,15 +410,19 @@ func Test_ActiveflowStop(t *testing.T) {
 			},
 			uuid.FromStringOrNil("2b4b10f4-cb24-11ed-ad87-0fe018a49bcd"),
 			&fmactiveflow.Activeflow{
-				ID:         uuid.FromStringOrNil("2b4b10f4-cb24-11ed-ad87-0fe018a49bcd"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2b4b10f4-cb24-11ed-ad87-0fe018a49bcd"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 
 			&fmactiveflow.WebhookMessage{
-				ID:         uuid.FromStringOrNil("2b4b10f4-cb24-11ed-ad87-0fe018a49bcd"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2b4b10f4-cb24-11ed-ad87-0fe018a49bcd"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -444,15 +477,19 @@ func Test_ActiveflowDelete(t *testing.T) {
 			},
 			uuid.FromStringOrNil("73161b68-cb24-11ed-8253-2f25bfb9d81b"),
 			&fmactiveflow.Activeflow{
-				ID:         uuid.FromStringOrNil("73161b68-cb24-11ed-8253-2f25bfb9d81b"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("73161b68-cb24-11ed-8253-2f25bfb9d81b"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 
 			&fmactiveflow.WebhookMessage{
-				ID:         uuid.FromStringOrNil("73161b68-cb24-11ed-8253-2f25bfb9d81b"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("73161b68-cb24-11ed-8253-2f25bfb9d81b"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}

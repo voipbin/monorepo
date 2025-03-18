@@ -30,7 +30,7 @@ parameters:
     type: boolean
     default: false
 
-  run-bin-chatbot-manager:
+  run-bin-ai-manager:
     type: boolean
     default: false
 
@@ -252,23 +252,23 @@ workflows:
             - bin-chat-manager-build
             - release-approval
 
-  bin-chatbot-manager:
+  bin-ai-manager:
     when: 
-      or: [<< pipeline.parameters.run-bin-chatbot-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+      or: [<< pipeline.parameters.run-bin-ai-manager >>, << pipeline.parameters.run-bin-common-handler >>]
     jobs:
-      - bin-chatbot-manager-test
-      - bin-chatbot-manager-build:
+      - bin-ai-manager-test
+      - bin-ai-manager-build:
           <<: *context_production
           requires:
-            - bin-chatbot-manager-test
+            - bin-ai-manager-test
       - release-approval:
           type: approval
           requires:
-            - bin-chatbot-manager-build
-      - bin-chatbot-manager-release:
+            - bin-ai-manager-build
+      - bin-ai-manager-release:
           <<: *context_production
           requires:
-            - bin-chatbot-manager-build
+            - bin-ai-manager-build
             - release-approval
 
   bin-common-handler:
@@ -816,31 +816,31 @@ jobs:
           source-directory: bin-chat-manager
           image-name: chat-manager
 
-  # bin-chatbot-manager
-  bin-chatbot-manager-test:
+  # bin-ai-manager
+  bin-ai-manager-test:
     docker:
       - image: cimg/go:1.22
     steps:
       - go-test:
-          source-directory: bin-chatbot-manager
+          source-directory: bin-ai-manager
 
-  bin-chatbot-manager-build:
+  bin-ai-manager-build:
     docker:
       - image: cimg/gcp:2024.03
     steps:
       - go-build:
           namespace: bin-manager
-          source-directory: bin-chatbot-manager
-          image-name: chatbot-manager
+          source-directory: bin-ai-manager
+          image-name: ai-manager
 
-  bin-chatbot-manager-release:
+  bin-ai-manager-release:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
       - go-release:
           namespace: bin-manager
-          source-directory: bin-chatbot-manager
-          image-name: chatbot-manager
+          source-directory: bin-ai-manager
+          image-name: ai-manager
 
   # bin-common-handler
   bin-common-handler-test:

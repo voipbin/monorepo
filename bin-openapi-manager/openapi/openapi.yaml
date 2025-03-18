@@ -47,11 +47,11 @@ tags:
       description: Find more about campaign
       url: https://api.voipbin.net/docs/campaign.html
 
-  - name: Chatbot
-    description: Operations related to chatbot
+  - name: AI
+    description: Operations related to ai
     externalDocs:
-      description: Find more about chatbot
-      url: https://api.voipbin.net/docs/chatbot.html
+      description: Find more about ai
+      url: https://api.voipbin.net/docs/ai.html
 
   - name: Chat
     description: Operations related to chat
@@ -1239,23 +1239,23 @@ components:
 
 
 #########################################
-# Chatbot Manager
+# AI Manager
 #########################################
-    ChatbotManagerChatbotEngineType:
+    AIManagerAIEngineType:
       type: string
-      description: Type of engine used by the chatbot.
+      description: Type of engine used by the ai.
       enum:
         - chatGPT
         - dialogflow
         - clova
       x-enum-varnames:
-        - ChatbotManagerChatbotEngineTypeChatGPT
-        - ChatbotManagerChatbotEngineTypeDialogFlow
-        - ChatbotManagerChatbotEngineTypeClova
+        - AIManagerAIEngineTypeChatGPT
+        - AIManagerAIEngineTypeDialogFlow
+        - AIManagerAIEngineTypeClova
 
-    ChatbotManagerChatbotEngineModel:
+    AIManagerAIEngineModel:
       type: string
-      description: Model of the chatbot engine.
+      description: Model of the ai engine.
       enum:
         - o1-mini
         - o1-preview
@@ -1268,108 +1268,108 @@ components:
         - gpt-4
         - gpt-3.5-turbo
       x-enum-varnames:
-        - ChatbotManagerChatbotEngineModelChatGPTO1Mini
-        - ChatbotManagerChatbotEngineModelChatGPTO1Preview
-        - ChatbotManagerChatbotEngineModelChatGPTO1
-        - ChatbotManagerChatbotEngineModelChatGPTO3Mini
-        - ChatbotManagerChatbotEngineModelChatGPT4O
-        - ChatbotManagerChatbotEngineModelChatGPT4OMini
-        - ChatbotManagerChatbotEngineModelChatGPT4Turbo
-        - ChatbotManagerChatbotEngineModelChatGPT4VisionPreview
-        - ChatbotManagerChatbotEngineModelChatGPT4
-        - ChatbotManagerChatbotEngineModelChatGPT3Dot5Turbo
+        - AIManagerAIEngineModelChatGPTO1Mini
+        - AIManagerAIEngineModelChatGPTO1Preview
+        - AIManagerAIEngineModelChatGPTO1
+        - AIManagerAIEngineModelChatGPTO3Mini
+        - AIManagerAIEngineModelChatGPT4O
+        - AIManagerAIEngineModelChatGPT4OMini
+        - AIManagerAIEngineModelChatGPT4Turbo
+        - AIManagerAIEngineModelChatGPT4VisionPreview
+        - AIManagerAIEngineModelChatGPT4
+        - AIManagerAIEngineModelChatGPT3Dot5Turbo
 
-    ChatbotManagerChatbot:
+    AIManagerAI:
       type: object
       properties:
         id:
           type: string
-          description: Unique identifier of the chatbot.
+          description: Unique identifier of the ai.
         customer_id:
           type: string
           description: Unique identifier of the associated customer.
         name:
           type: string
-          description: Name of the chatbot.
+          description: Name of the ai.
         detail:
           type: string
-          description: Detailed information about the chatbot.
+          description: Detailed information about the ai.
         engine_type:
-          $ref: '#/components/schemas/ChatbotManagerChatbotEngineType'
+          $ref: '#/components/schemas/AIManagerAIEngineType'
         engine_model:
-          $ref: '#/components/schemas/ChatbotManagerChatbotEngineModel'
+          $ref: '#/components/schemas/AIManagerAIEngineModel'
         engine_data:
           type: object
           additionalProperties: true
-          description: Data associated with the chatbot's engine, can be dynamic and vary based on the engine type.
+          description: Data associated with the ai's engine, can be dynamic and vary based on the engine type.
         init_prompt:
           type: string
-          description: Initial prompt to configure the chatbot's behavior.
+          description: Initial prompt to configure the ai's behavior.
         tm_create:
           type: string
-          description: Timestamp when the chatbot was created.
+          description: Timestamp when the ai was created.
         tm_update:
           type: string
-          description: Timestamp when the chatbot was last updated.
+          description: Timestamp when the ai was last updated.
         tm_delete:
           type: string
-          description: Timestamp when the chatbot was deleted.
+          description: Timestamp when the ai was deleted.
 
-    ChatbotManagerChatbotcallGender:
+    AIManagerAIcallGender:
       type: string
-      description: Gender associated with the chatbot call.
+      description: Gender associated with the ai call.
       enum:
         - male
         - female
         - neutral
       x-enum-varnames:
-        - ChatbotManagerChatbotcallGenderMale
-        - ChatbotManagerChatbotcallGenderFemale
-        - ChatbotManagerChatbotcallGenderNeutral
+        - AIManagerAIcallGenderMale
+        - AIManagerAIcallGenderFemale
+        - AIManagerAIcallGenderNeutral
 
-    ChatbotManagerChatbotcallReferenceType:
+    AIManagerAIcallReferenceType:
       type: string
-      description: Type of reference associated with the chatbot call.
+      description: Type of reference associated with the ai call.
       enum:
         - ""
         - call
       x-enum-varnames:
-        - ChatbotManagerChatbotcallReferenceTypeNone
-        - ChatbotManagerChatbotcallReferenceTypeCall
+        - AIManagerAIcallReferenceTypeNone
+        - AIManagerAIcallReferenceTypeCall
 
-    ChatbotManagerChatbotcallStatus:
+    AIManagerAIcallStatus:
       type: string
-      description: Status of the chatbot call.
+      description: Status of the ai call.
       enum:
         - initiating
         - progressing
         - end
       x-enum-varnames:
-        - ChatbotManagerChatbotcallStatusInitiating
-        - ChatbotManagerChatbotcallStatusProgressing
-        - ChatbotManagerChatbotcallStatusEnd
+        - AIManagerAIcallStatusInitiating
+        - AIManagerAIcallStatusProgressing
+        - AIManagerAIcallStatusEnd
 
-    ChatbotManagerChatbotcall:
+    AIManagerAIcall:
       type: object
       properties:
         id:
           type: string
-          description: Unique identifier for the chatbot call.
+          description: Unique identifier for the ai call.
         customer_id:
           type: string
           description: Unique identifier of the associated customer.
-        chatbot_id:
+        ai_id:
           type: string
-          description: Unique identifier of the associated chatbot.
+          description: Unique identifier of the associated ai.
         engine_type:
-          $ref: '#/components/schemas/ChatbotManagerChatbotEngineType'
+          $ref: '#/components/schemas/AIManagerAIEngineType'
         engine_model:
-          $ref: '#/components/schemas/ChatbotManagerChatbotEngineModel'
+          $ref: '#/components/schemas/AIManagerAIEngineModel'
         activeflow_id:
           type: string
           description: Unique identifier for the activeflow.
         reference_type:
-          $ref: '#/components/schemas/ChatbotManagerChatbotcallReferenceType'
+          $ref: '#/components/schemas/AIManagerAIcallReferenceType'
         reference_id:
           type: string
           description: Unique identifier for the reference.
@@ -1380,36 +1380,36 @@ components:
           type: string
           description: Unique identifier for the transcription service.
         status:
-          $ref: '#/components/schemas/ChatbotManagerChatbotcallStatus'
+          $ref: '#/components/schemas/AIManagerAIcallStatus'
         gender:
-          $ref: '#/components/schemas/ChatbotManagerChatbotcallGender'
+          $ref: '#/components/schemas/AIManagerAIcallGender'
         language:
           type: string
-          description: Language used during the chatbot call.
+          description: Language used during the ai call.
         tm_end:
           type: string
-          description: Timestamp when the chatbot call ended.
+          description: Timestamp when the ai call ended.
         tm_create:
           type: string
-          description: Timestamp when the chatbot call was created.
+          description: Timestamp when the ai call was created.
         tm_update:
           type: string
-          description: Timestamp when the chatbot call was last updated.
+          description: Timestamp when the ai call was last updated.
         tm_delete:
           type: string
-          description: Timestamp when the chatbot call was deleted.
+          description: Timestamp when the ai call was deleted.
 
-    ChatbotManagerMessageDirection:
+    AIManagerMessageDirection:
       type: string
       description: Direction of the message.
       enum:
         - incoming
         - outgoing
       x-enum-varnames:
-        - ChatbotManagerMessageDirectionIncoming
-        - ChatbotManagerMessageDirectionOutgoing
+        - AIManagerMessageDirectionIncoming
+        - AIManagerMessageDirectionOutgoing
 
-    ChatbotManagerMessageRole:
+    AIManagerMessageRole:
       type: string
       description: Role of the entity in the conversation.
       enum:
@@ -1419,26 +1419,26 @@ components:
         - function
         - tool
       x-enum-varnames:
-        - ChatbotManagerMessageRoleSystem
-        - ChatbotManagerMessageRoleUser
-        - ChatbotManagerMessageRoleAssistant
-        - ChatbotManagerMessageRoleFunction
-        - ChatbotManagerMessageRoleTool
+        - AIManagerMessageRoleSystem
+        - AIManagerMessageRoleUser
+        - AIManagerMessageRoleAssistant
+        - AIManagerMessageRoleFunction
+        - AIManagerMessageRoleTool
 
-    ChatbotManagerMessage:
+    AIManagerMessage:
       type: object
       properties:
         id:
           type: string
           description: Unique identifier for the message.
-        chatbotcall_id:
+        aicall_id:
           type: string
-          description: Unique identifier for the associated chatbot call.
+          description: Unique identifier for the associated ai call.
         direction:
-          $ref: '#/components/schemas/ChatbotManagerMessageDirection'
+          $ref: '#/components/schemas/AIManagerMessageDirection'
           description: Direction of the message.
         role:
-          $ref: '#/components/schemas/ChatbotManagerMessageRole'
+          $ref: '#/components/schemas/AIManagerMessageRole'
           description: Role of the entity in the conversation.
         content:
           type: string
@@ -2072,7 +2072,7 @@ components:
         - beep
         - branch
         - call
-        - chatbot_talk
+        - ai_talk
         - condition_call_digits
         - condition_call_status
         - condition_datetime
@@ -2106,12 +2106,12 @@ components:
         - variable_set
         - webhook_send
       x-enum-varnames:
+        - FlowManagerActionTypeAITalk
         - FlowManagerActionTypeAMD
         - FlowManagerActionTypeAnswer
         - FlowManagerActionTypeBeep
         - FlowManagerActionTypeBranch
         - FlowManagerActionTypeCall
-        - FlowManagerActionTypeChatbotTalk
         - FlowManagerActionTypeConditionCallDigits
         - FlowManagerActionTypeConditionCallStatus
         - FlowManagerActionTypeConditionDatetime
@@ -3174,6 +3174,21 @@ paths:
   /agents/{id}/password:
     $ref: './paths/agents/id_password.yaml'
 
+  /aimessages/{id}:
+    $ref: './paths/aimessages/id.yaml'
+  /aimessages:
+    $ref: './paths/aimessages/main.yaml'
+
+  /aicalls/{id}:
+    $ref: './paths/aicalls/id.yaml'
+  /aicalls:
+    $ref: './paths/aicalls/main.yaml'
+
+  /ais/{id}:
+    $ref: './paths/ais/id.yaml'
+  /ais:
+    $ref: './paths/ais/main.yaml'
+
   /available_numbers:
     $ref: './paths/available_numbers/main.yaml'
 
@@ -3231,21 +3246,6 @@ paths:
     $ref: './paths/campaigns/id.yaml'
   /campaigns:
     $ref: './paths/campaigns/main.yaml'
-
-  /chatbotmessages/{id}:
-    $ref: './paths/chatbotmessages/id.yaml'
-  /chatbotmessages:
-    $ref: './paths/chatbotmessages/main.yaml'
-
-  /chatbotcalls/{id}:
-    $ref: './paths/chatbotcalls/id.yaml'
-  /chatbotcalls:
-    $ref: './paths/chatbotcalls/main.yaml'
-
-  /chatbots/{id}:
-    $ref: './paths/chatbots/id.yaml'
-  /chatbots:
-    $ref: './paths/chatbots/main.yaml'
 
   /chatmessages/{id}:
     $ref: './paths/chatmessages/id.yaml'

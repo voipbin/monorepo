@@ -43,7 +43,9 @@ func Test_serviceInit(t *testing.T) {
 				ConfbridgeID: uuid.FromStringOrNil("4acf5788-dc6c-11ed-b296-b72b7e4a360b"),
 			},
 			responseFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("9828256e-dc6c-11ed-84fa-d322b58ab276"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9828256e-dc6c-11ed-84fa-d322b58ab276"),
+				},
 			},
 			expectActions: []fmaction.Action{
 				{
@@ -111,7 +113,9 @@ func Test_createFlow(t *testing.T) {
 			},
 
 			responseFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("4072e930-dbb3-11ed-be74-33a5b14c4d0e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4072e930-dbb3-11ed-be74-33a5b14c4d0e"),
+				},
 			},
 			expectActions: []fmaction.Action{
 				{
