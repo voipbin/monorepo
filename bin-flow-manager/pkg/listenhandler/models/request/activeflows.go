@@ -47,6 +47,13 @@ type V1DataActiveFlowsIDPushActionPost struct {
 	Actions []action.Action `json:"actions"` // actions
 }
 
+// V1DataActiveFlowsIDAddActionPost is
+// data type request struct for
+// /v1/activeflows/{id}/add_action POST
+type V1DataActiveFlowsIDAddActionPost struct {
+	Actions []action.Action `json:"actions"` // actions
+}
+
 // V1DataActiveFlowsIDServiceStopPost is
 // data type request struct for
 // /v1/activeflows/{id}/service_stop POST

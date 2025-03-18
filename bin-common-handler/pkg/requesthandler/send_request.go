@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -25,17 +25,6 @@ func (r *requestHandler) SendRequest(ctx context.Context, queue commonoutline.Qu
 // timeout: timeout(ms)
 // delayed: delay request(ms)
 func (r *requestHandler) sendRequest(ctx context.Context, queue commonoutline.QueueName, uri string, method sock.RequestMethod, resource string, timeout int, delay int, dataType string, data json.RawMessage) (*sock.Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"queue":     queue,
-		"uri":       uri,
-		"method":    method,
-		"resource":  resource,
-		"timeout":   timeout,
-		"delay":     delay,
-		"data_type": dataType,
-		"data":      data,
-	})
-
 	// creat a request message
 	req := &sock.Request{
 		URI:       uri,
@@ -44,7 +33,6 @@ func (r *requestHandler) sendRequest(ctx context.Context, queue commonoutline.Qu
 		DataType:  dataType,
 		Data:      data,
 	}
-	log.WithField("request", req).Debugf("Sending a request. queue: %s, method: %s, uri: %s", queue, method, uri)
 
 	cctx, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(timeout))
 	defer cancel()
@@ -54,19 +42,16 @@ func (r *requestHandler) sendRequest(ctx context.Context, queue commonoutline.Qu
 		// send scheduled message.
 		// we don't expect the response message here.
 		if err := r.sendDelayedRequest(string(queue), resource, delay, req); err != nil {
-			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
+			return nil, errors.Wrapf(err, "could not send the delayed request. queue: %s, method: %s, uri: %s", queue, method, uri)
 		}
 		return nil, nil
 
 	default:
 		res, err := r.sendDirectRequest(cctx, string(queue), resource, req)
 		if err != nil {
-			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
+			return nil, errors.Wrapf(err, "could not send the request. queue: %s, method: %s, uri: %s", queue, method, uri)
 		}
 
-		log.WithFields(logrus.Fields{
-			"response": res,
-		}).Debugf("Received result. queue: %s, method: %s, uri: %s, status_code: %d", queue, method, uri, res.StatusCode)
 		return res, nil
 	}
 }

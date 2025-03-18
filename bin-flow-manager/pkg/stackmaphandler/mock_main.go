@@ -42,6 +42,20 @@ func (m *MockStackmapHandler) EXPECT() *MockStackmapHandlerMockRecorder {
 	return m.recorder
 }
 
+// AddActions mocks base method.
+func (m *MockStackmapHandler) AddActions(stackMap map[uuid.UUID]*stack.Stack, targetStackID, targetActionID uuid.UUID, actions []action.Action) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddActions", stackMap, targetStackID, targetActionID, actions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddActions indicates an expected call of AddActions.
+func (mr *MockStackmapHandlerMockRecorder) AddActions(stackMap, targetStackID, targetActionID, actions any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddActions", reflect.TypeOf((*MockStackmapHandler)(nil).AddActions), stackMap, targetStackID, targetActionID, actions)
+}
+
 // Create mocks base method.
 func (m *MockStackmapHandler) Create(actions []action.Action) map[uuid.UUID]*stack.Stack {
 	m.ctrl.T.Helper()

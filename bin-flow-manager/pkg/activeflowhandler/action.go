@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-flow-manager/models/action"
@@ -14,22 +15,14 @@ import (
 
 // getActionsFromFlow gets the actions from the flow.
 func (h *activeflowHandler) getActionsFromFlow(ctx context.Context, flowID uuid.UUID, customerID uuid.UUID) ([]action.Action, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "getActionsFromFlow",
-		"flow_id":     flowID,
-		"customer_id": customerID,
-	})
 
-	// get flow
 	f, err := h.reqHandler.FlowV1FlowGet(ctx, flowID)
 	if err != nil {
-		log.Errorf("Could not get flow info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get flow. flow_id: %s", flowID)
 	}
 
 	if f.CustomerID != customerID {
-		log.Errorf("The customer has no permission. customer_id: %d", customerID)
-		return nil, fmt.Errorf("no flow found")
+		return nil, errors.Wrapf(err, "the customer has no permission. customer_id: %s", customerID)
 	}
 
 	return f.Actions, nil
