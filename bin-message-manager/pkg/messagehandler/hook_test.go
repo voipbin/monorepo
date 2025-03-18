@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -174,7 +175,9 @@ func Test_executeMessageFlow(t *testing.T) {
 			},
 
 			&fmactiveflow.Activeflow{
-				ID: uuid.FromStringOrNil("64447c9a-a8b8-11ec-a544-0b44fb74dc28"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("64447c9a-a8b8-11ec-a544-0b44fb74dc28"),
+				},
 			},
 		},
 	}

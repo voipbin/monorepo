@@ -1,0 +1,58 @@
+get:
+  summary: Gets a list of ai calls
+  description: Retrieves a paginated list of ai calls based on the provided query parameters.
+  tags:
+    - AI
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of ai calls.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIManagerAIcall'
+
+post:
+  summary: Create a new aicall.
+  description: Creates a new aicall and returns the created aicall's details.
+  tags:
+    - AI
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            ai_id:
+              type: string
+            reference_type:
+              $ref: '#/components/schemas/AIManagerAIcallReferenceType'
+            reference_id:
+              type: string
+            gender:
+              $ref: '#/components/schemas/AIManagerAIcallGender'
+            language:
+              type: string
+          required:
+            - ai_id
+            - reference_type
+            - reference_id
+            - gender
+            - language
+  responses:
+    '200':
+      description: Details of the created chatboaicall.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIcall'

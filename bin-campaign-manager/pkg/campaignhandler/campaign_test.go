@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -557,7 +558,9 @@ func Test_UpdateActions(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("8840b1c4-c3f5-11ec-8961-bbf3aed170d6"),
 			},
 			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("8840b1c4-c3f5-11ec-8961-bbf3aed170d6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8840b1c4-c3f5-11ec-8961-bbf3aed170d6"),
+				},
 			},
 
 			[]fmaction.Action{
@@ -583,7 +586,9 @@ func Test_UpdateActions(t *testing.T) {
 				QueueID:    uuid.FromStringOrNil("0054fcf0-cbd1-11ec-978d-9b83e6ca7ad6"),
 			},
 			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("0027a886-cbd1-11ec-8440-137d167ffeb1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0027a886-cbd1-11ec-8440-137d167ffeb1"),
+				},
 			},
 
 			[]fmaction.Action{

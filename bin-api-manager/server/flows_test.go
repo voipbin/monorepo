@@ -45,7 +45,9 @@ func Test_PostFlows(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","actions":[{"type":"answer"}]}`),
 
 			responseFlow: &fmflow.WebhookMessage{
-				ID:     uuid.FromStringOrNil("264b18d4-82fa-11eb-919b-9f55a7f6ace1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("264b18d4-82fa-11eb-919b-9f55a7f6ace1"),
+				},
 				Name:   "test name",
 				Detail: "test detail",
 				Actions: []fmaction.Action{
@@ -130,7 +132,9 @@ func Test_GetFlows(t *testing.T) {
 
 			responseFlows: []*fmflow.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("5af5346a-d92d-11ef-8c33-67a5ecb7e5e5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5af5346a-d92d-11ef-8c33-67a5ecb7e5e5"),
+					},
 				},
 			},
 
@@ -198,7 +202,9 @@ func Test_GetFlowsId(t *testing.T) {
 			reqQuery: "/flows/2375219e-0b87-11eb-90f9-036ec16f126b",
 
 			responseFlow: &fmflow.WebhookMessage{
-				ID:     uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
+				},
 				Name:   "test name",
 				Detail: "test detail",
 				Actions: []fmaction.Action{
@@ -274,12 +280,16 @@ func Test_PutFlowsId(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","actions":[{"type":"answer"}]}`),
 
 			responseFlow: &fmflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
+				},
 			},
 
 			expectFlowID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
 			expectFlow: &fmflow.Flow{
-				ID:     uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
+				},
 				Name:   "test name",
 				Detail: "test detail",
 				Actions: []fmaction.Action{
@@ -351,7 +361,9 @@ func Test_DeleteFlowsId(t *testing.T) {
 			reqQuery: "/flows/d466f900-67cb-11eb-b2ff-1f9adc48f842",
 
 			responseFlow: &fmflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("d466f900-67cb-11eb-b2ff-1f9adc48f842"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d466f900-67cb-11eb-b2ff-1f9adc48f842"),
+				},
 			},
 
 			expectFlowID: uuid.FromStringOrNil("d466f900-67cb-11eb-b2ff-1f9adc48f842"),

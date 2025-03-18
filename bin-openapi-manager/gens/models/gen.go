@@ -7,6 +7,62 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AIManagerAIEngineModel.
+const (
+	AIManagerAIEngineModelChatGPT3Dot5Turbo     AIManagerAIEngineModel = "gpt-3.5-turbo"
+	AIManagerAIEngineModelChatGPT4              AIManagerAIEngineModel = "gpt-4"
+	AIManagerAIEngineModelChatGPT4O             AIManagerAIEngineModel = "gpt-4o"
+	AIManagerAIEngineModelChatGPT4OMini         AIManagerAIEngineModel = "gpt-4o-mini"
+	AIManagerAIEngineModelChatGPT4Turbo         AIManagerAIEngineModel = "gpt-4-turbo"
+	AIManagerAIEngineModelChatGPT4VisionPreview AIManagerAIEngineModel = "gpt-4-vision-preview"
+	AIManagerAIEngineModelChatGPTO1             AIManagerAIEngineModel = "o1"
+	AIManagerAIEngineModelChatGPTO1Mini         AIManagerAIEngineModel = "o1-mini"
+	AIManagerAIEngineModelChatGPTO1Preview      AIManagerAIEngineModel = "o1-preview"
+	AIManagerAIEngineModelChatGPTO3Mini         AIManagerAIEngineModel = "o3-mini"
+)
+
+// Defines values for AIManagerAIEngineType.
+const (
+	AIManagerAIEngineTypeChatGPT    AIManagerAIEngineType = "chatGPT"
+	AIManagerAIEngineTypeClova      AIManagerAIEngineType = "clova"
+	AIManagerAIEngineTypeDialogFlow AIManagerAIEngineType = "dialogflow"
+)
+
+// Defines values for AIManagerAIcallGender.
+const (
+	AIManagerAIcallGenderFemale  AIManagerAIcallGender = "female"
+	AIManagerAIcallGenderMale    AIManagerAIcallGender = "male"
+	AIManagerAIcallGenderNeutral AIManagerAIcallGender = "neutral"
+)
+
+// Defines values for AIManagerAIcallReferenceType.
+const (
+	AIManagerAIcallReferenceTypeCall AIManagerAIcallReferenceType = "call"
+	AIManagerAIcallReferenceTypeNone AIManagerAIcallReferenceType = ""
+)
+
+// Defines values for AIManagerAIcallStatus.
+const (
+	AIManagerAIcallStatusEnd         AIManagerAIcallStatus = "end"
+	AIManagerAIcallStatusInitiating  AIManagerAIcallStatus = "initiating"
+	AIManagerAIcallStatusProgressing AIManagerAIcallStatus = "progressing"
+)
+
+// Defines values for AIManagerMessageDirection.
+const (
+	AIManagerMessageDirectionIncoming AIManagerMessageDirection = "incoming"
+	AIManagerMessageDirectionOutgoing AIManagerMessageDirection = "outgoing"
+)
+
+// Defines values for AIManagerMessageRole.
+const (
+	AIManagerMessageRoleAssistant AIManagerMessageRole = "assistant"
+	AIManagerMessageRoleFunction  AIManagerMessageRole = "function"
+	AIManagerMessageRoleSystem    AIManagerMessageRole = "system"
+	AIManagerMessageRoleTool      AIManagerMessageRole = "tool"
+	AIManagerMessageRoleUser      AIManagerMessageRole = "user"
+)
+
 // Defines values for AgentManagerAgentPermission.
 const (
 	AgentManagerPermissionAll               AgentManagerAgentPermission = 65535
@@ -235,62 +291,6 @@ const (
 	ChatManagerMessagechatroomTypeUnknown ChatManagerMessagechatroomType = ""
 )
 
-// Defines values for ChatbotManagerChatbotEngineModel.
-const (
-	ChatbotManagerChatbotEngineModelChatGPT3Dot5Turbo     ChatbotManagerChatbotEngineModel = "gpt-3.5-turbo"
-	ChatbotManagerChatbotEngineModelChatGPT4              ChatbotManagerChatbotEngineModel = "gpt-4"
-	ChatbotManagerChatbotEngineModelChatGPT4O             ChatbotManagerChatbotEngineModel = "gpt-4o"
-	ChatbotManagerChatbotEngineModelChatGPT4OMini         ChatbotManagerChatbotEngineModel = "gpt-4o-mini"
-	ChatbotManagerChatbotEngineModelChatGPT4Turbo         ChatbotManagerChatbotEngineModel = "gpt-4-turbo"
-	ChatbotManagerChatbotEngineModelChatGPT4VisionPreview ChatbotManagerChatbotEngineModel = "gpt-4-vision-preview"
-	ChatbotManagerChatbotEngineModelChatGPTO1             ChatbotManagerChatbotEngineModel = "o1"
-	ChatbotManagerChatbotEngineModelChatGPTO1Mini         ChatbotManagerChatbotEngineModel = "o1-mini"
-	ChatbotManagerChatbotEngineModelChatGPTO1Preview      ChatbotManagerChatbotEngineModel = "o1-preview"
-	ChatbotManagerChatbotEngineModelChatGPTO3Mini         ChatbotManagerChatbotEngineModel = "o3-mini"
-)
-
-// Defines values for ChatbotManagerChatbotEngineType.
-const (
-	ChatbotManagerChatbotEngineTypeChatGPT    ChatbotManagerChatbotEngineType = "chatGPT"
-	ChatbotManagerChatbotEngineTypeClova      ChatbotManagerChatbotEngineType = "clova"
-	ChatbotManagerChatbotEngineTypeDialogFlow ChatbotManagerChatbotEngineType = "dialogflow"
-)
-
-// Defines values for ChatbotManagerChatbotcallGender.
-const (
-	ChatbotManagerChatbotcallGenderFemale  ChatbotManagerChatbotcallGender = "female"
-	ChatbotManagerChatbotcallGenderMale    ChatbotManagerChatbotcallGender = "male"
-	ChatbotManagerChatbotcallGenderNeutral ChatbotManagerChatbotcallGender = "neutral"
-)
-
-// Defines values for ChatbotManagerChatbotcallReferenceType.
-const (
-	ChatbotManagerChatbotcallReferenceTypeCall ChatbotManagerChatbotcallReferenceType = "call"
-	ChatbotManagerChatbotcallReferenceTypeNone ChatbotManagerChatbotcallReferenceType = ""
-)
-
-// Defines values for ChatbotManagerChatbotcallStatus.
-const (
-	ChatbotManagerChatbotcallStatusEnd         ChatbotManagerChatbotcallStatus = "end"
-	ChatbotManagerChatbotcallStatusInitiating  ChatbotManagerChatbotcallStatus = "initiating"
-	ChatbotManagerChatbotcallStatusProgressing ChatbotManagerChatbotcallStatus = "progressing"
-)
-
-// Defines values for ChatbotManagerMessageDirection.
-const (
-	ChatbotManagerMessageDirectionIncoming ChatbotManagerMessageDirection = "incoming"
-	ChatbotManagerMessageDirectionOutgoing ChatbotManagerMessageDirection = "outgoing"
-)
-
-// Defines values for ChatbotManagerMessageRole.
-const (
-	ChatbotManagerMessageRoleAssistant ChatbotManagerMessageRole = "assistant"
-	ChatbotManagerMessageRoleFunction  ChatbotManagerMessageRole = "function"
-	ChatbotManagerMessageRoleSystem    ChatbotManagerMessageRole = "system"
-	ChatbotManagerMessageRoleTool      ChatbotManagerMessageRole = "tool"
-	ChatbotManagerMessageRoleUser      ChatbotManagerMessageRole = "user"
-)
-
 // Defines values for CommonAddressType.
 const (
 	CommonAddressTypeAgent      CommonAddressType = "agent"
@@ -411,12 +411,12 @@ const (
 
 // Defines values for FlowManagerActionType.
 const (
-	FlowManagerActionTypeAMD                 FlowManagerActionType = "amd"
-	FlowManagerActionTypeAnswer              FlowManagerActionType = "answer"
-	FlowManagerActionTypeBeep                FlowManagerActionType = "beep"
-	FlowManagerActionTypeBranch              FlowManagerActionType = "branch"
-	FlowManagerActionTypeCall                FlowManagerActionType = "call"
-	FlowManagerActionTypeChatbotTalk         FlowManagerActionType = "chatbot_talk"
+	FlowManagerActionTypeAITalk              FlowManagerActionType = "amd"
+	FlowManagerActionTypeAMD                 FlowManagerActionType = "answer"
+	FlowManagerActionTypeAnswer              FlowManagerActionType = "beep"
+	FlowManagerActionTypeBeep                FlowManagerActionType = "branch"
+	FlowManagerActionTypeBranch              FlowManagerActionType = "call"
+	FlowManagerActionTypeCall                FlowManagerActionType = "ai_talk"
 	FlowManagerActionTypeConditionCallDigits FlowManagerActionType = "condition_call_digits"
 	FlowManagerActionTypeConditionCallStatus FlowManagerActionType = "condition_call_status"
 	FlowManagerActionTypeConditionDatetime   FlowManagerActionType = "condition_datetime"
@@ -606,6 +606,141 @@ const (
 	TransferManagerTransferTypeAttended TransferManagerTransferType = "attended"
 	TransferManagerTransferTypeBlind    TransferManagerTransferType = "blind"
 )
+
+// AIManagerAI defines model for AIManagerAI.
+type AIManagerAI struct {
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed information about the ai.
+	Detail *string `json:"detail,omitempty"`
+
+	// EngineData Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+	EngineData *map[string]interface{} `json:"engine_data,omitempty"`
+
+	// EngineModel Model of the ai engine.
+	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
+
+	// EngineType Type of engine used by the ai.
+	EngineType *AIManagerAIEngineType `json:"engine_type,omitempty"`
+
+	// Id Unique identifier of the ai.
+	Id *string `json:"id,omitempty"`
+
+	// InitPrompt Initial prompt to configure the ai's behavior.
+	InitPrompt *string `json:"init_prompt,omitempty"`
+
+	// Name Name of the ai.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the ai was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the ai was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the ai was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// AIManagerAIEngineModel Model of the ai engine.
+type AIManagerAIEngineModel string
+
+// AIManagerAIEngineType Type of engine used by the ai.
+type AIManagerAIEngineType string
+
+// AIManagerAIcall defines model for AIManagerAIcall.
+type AIManagerAIcall struct {
+	// ActiveflowId Unique identifier for the activeflow.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// AiId Unique identifier of the associated ai.
+	AiId *string `json:"ai_id,omitempty"`
+
+	// ConfbridgeId Unique identifier for the conference bridge.
+	ConfbridgeId *string `json:"confbridge_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// EngineModel Model of the ai engine.
+	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
+
+	// EngineType Type of engine used by the ai.
+	EngineType *AIManagerAIEngineType `json:"engine_type,omitempty"`
+
+	// Gender Gender associated with the ai call.
+	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
+
+	// Id Unique identifier for the ai call.
+	Id *string `json:"id,omitempty"`
+
+	// Language Language used during the ai call.
+	Language *string `json:"language,omitempty"`
+
+	// ReferenceId Unique identifier for the reference.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of reference associated with the ai call.
+	ReferenceType *AIManagerAIcallReferenceType `json:"reference_type,omitempty"`
+
+	// Status Status of the ai call.
+	Status *AIManagerAIcallStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the ai call was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the ai call was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmEnd Timestamp when the ai call ended.
+	TmEnd *string `json:"tm_end,omitempty"`
+
+	// TmUpdate Timestamp when the ai call was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// TranscribeId Unique identifier for the transcription service.
+	TranscribeId *string `json:"transcribe_id,omitempty"`
+}
+
+// AIManagerAIcallGender Gender associated with the ai call.
+type AIManagerAIcallGender string
+
+// AIManagerAIcallReferenceType Type of reference associated with the ai call.
+type AIManagerAIcallReferenceType string
+
+// AIManagerAIcallStatus Status of the ai call.
+type AIManagerAIcallStatus string
+
+// AIManagerMessage defines model for AIManagerMessage.
+type AIManagerMessage struct {
+	// AicallId Unique identifier for the associated ai call.
+	AicallId *string `json:"aicall_id,omitempty"`
+
+	// Content Content of the message.
+	Content *string `json:"content,omitempty"`
+
+	// Direction Direction of the message.
+	Direction *AIManagerMessageDirection `json:"direction,omitempty"`
+
+	// Id Unique identifier for the message.
+	Id *string `json:"id,omitempty"`
+
+	// Role Role of the entity in the conversation.
+	Role *AIManagerMessageRole `json:"role,omitempty"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+}
+
+// AIManagerMessageDirection Direction of the message.
+type AIManagerMessageDirection string
+
+// AIManagerMessageRole Role of the entity in the conversation.
+type AIManagerMessageRole string
 
 // AgentManagerAgent Represents an agent resource.
 type AgentManagerAgent struct {
@@ -1300,141 +1435,6 @@ type ChatManagerMessagechatroom struct {
 
 // ChatManagerMessagechatroomType Type of the message in the chat room.
 type ChatManagerMessagechatroomType string
-
-// ChatbotManagerChatbot defines model for ChatbotManagerChatbot.
-type ChatbotManagerChatbot struct {
-	// CustomerId Unique identifier of the associated customer.
-	CustomerId *string `json:"customer_id,omitempty"`
-
-	// Detail Detailed information about the chatbot.
-	Detail *string `json:"detail,omitempty"`
-
-	// EngineData Data associated with the chatbot's engine, can be dynamic and vary based on the engine type.
-	EngineData *map[string]interface{} `json:"engine_data,omitempty"`
-
-	// EngineModel Model of the chatbot engine.
-	EngineModel *ChatbotManagerChatbotEngineModel `json:"engine_model,omitempty"`
-
-	// EngineType Type of engine used by the chatbot.
-	EngineType *ChatbotManagerChatbotEngineType `json:"engine_type,omitempty"`
-
-	// Id Unique identifier of the chatbot.
-	Id *string `json:"id,omitempty"`
-
-	// InitPrompt Initial prompt to configure the chatbot's behavior.
-	InitPrompt *string `json:"init_prompt,omitempty"`
-
-	// Name Name of the chatbot.
-	Name *string `json:"name,omitempty"`
-
-	// TmCreate Timestamp when the chatbot was created.
-	TmCreate *string `json:"tm_create,omitempty"`
-
-	// TmDelete Timestamp when the chatbot was deleted.
-	TmDelete *string `json:"tm_delete,omitempty"`
-
-	// TmUpdate Timestamp when the chatbot was last updated.
-	TmUpdate *string `json:"tm_update,omitempty"`
-}
-
-// ChatbotManagerChatbotEngineModel Model of the chatbot engine.
-type ChatbotManagerChatbotEngineModel string
-
-// ChatbotManagerChatbotEngineType Type of engine used by the chatbot.
-type ChatbotManagerChatbotEngineType string
-
-// ChatbotManagerChatbotcall defines model for ChatbotManagerChatbotcall.
-type ChatbotManagerChatbotcall struct {
-	// ActiveflowId Unique identifier for the activeflow.
-	ActiveflowId *string `json:"activeflow_id,omitempty"`
-
-	// ChatbotId Unique identifier of the associated chatbot.
-	ChatbotId *string `json:"chatbot_id,omitempty"`
-
-	// ConfbridgeId Unique identifier for the conference bridge.
-	ConfbridgeId *string `json:"confbridge_id,omitempty"`
-
-	// CustomerId Unique identifier of the associated customer.
-	CustomerId *string `json:"customer_id,omitempty"`
-
-	// EngineModel Model of the chatbot engine.
-	EngineModel *ChatbotManagerChatbotEngineModel `json:"engine_model,omitempty"`
-
-	// EngineType Type of engine used by the chatbot.
-	EngineType *ChatbotManagerChatbotEngineType `json:"engine_type,omitempty"`
-
-	// Gender Gender associated with the chatbot call.
-	Gender *ChatbotManagerChatbotcallGender `json:"gender,omitempty"`
-
-	// Id Unique identifier for the chatbot call.
-	Id *string `json:"id,omitempty"`
-
-	// Language Language used during the chatbot call.
-	Language *string `json:"language,omitempty"`
-
-	// ReferenceId Unique identifier for the reference.
-	ReferenceId *string `json:"reference_id,omitempty"`
-
-	// ReferenceType Type of reference associated with the chatbot call.
-	ReferenceType *ChatbotManagerChatbotcallReferenceType `json:"reference_type,omitempty"`
-
-	// Status Status of the chatbot call.
-	Status *ChatbotManagerChatbotcallStatus `json:"status,omitempty"`
-
-	// TmCreate Timestamp when the chatbot call was created.
-	TmCreate *string `json:"tm_create,omitempty"`
-
-	// TmDelete Timestamp when the chatbot call was deleted.
-	TmDelete *string `json:"tm_delete,omitempty"`
-
-	// TmEnd Timestamp when the chatbot call ended.
-	TmEnd *string `json:"tm_end,omitempty"`
-
-	// TmUpdate Timestamp when the chatbot call was last updated.
-	TmUpdate *string `json:"tm_update,omitempty"`
-
-	// TranscribeId Unique identifier for the transcription service.
-	TranscribeId *string `json:"transcribe_id,omitempty"`
-}
-
-// ChatbotManagerChatbotcallGender Gender associated with the chatbot call.
-type ChatbotManagerChatbotcallGender string
-
-// ChatbotManagerChatbotcallReferenceType Type of reference associated with the chatbot call.
-type ChatbotManagerChatbotcallReferenceType string
-
-// ChatbotManagerChatbotcallStatus Status of the chatbot call.
-type ChatbotManagerChatbotcallStatus string
-
-// ChatbotManagerMessage defines model for ChatbotManagerMessage.
-type ChatbotManagerMessage struct {
-	// ChatbotcallId Unique identifier for the associated chatbot call.
-	ChatbotcallId *string `json:"chatbotcall_id,omitempty"`
-
-	// Content Content of the message.
-	Content *string `json:"content,omitempty"`
-
-	// Direction Direction of the message.
-	Direction *ChatbotManagerMessageDirection `json:"direction,omitempty"`
-
-	// Id Unique identifier for the message.
-	Id *string `json:"id,omitempty"`
-
-	// Role Role of the entity in the conversation.
-	Role *ChatbotManagerMessageRole `json:"role,omitempty"`
-
-	// TmCreate Timestamp when the message was created.
-	TmCreate *string `json:"tm_create,omitempty"`
-
-	// TmDelete Timestamp when the message was deleted.
-	TmDelete *string `json:"tm_delete,omitempty"`
-}
-
-// ChatbotManagerMessageDirection Direction of the message.
-type ChatbotManagerMessageDirection string
-
-// ChatbotManagerMessageRole Role of the entity in the conversation.
-type ChatbotManagerMessageRole string
 
 // CommonAddress Contains source or destination detail info.
 type CommonAddress struct {
@@ -2652,6 +2652,90 @@ type PutAgentsIdTagIdsJSONBody struct {
 	TagIds *[]string `json:"tag_ids,omitempty"`
 }
 
+// GetAicallsParams defines parameters for GetAicalls.
+type GetAicallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostAicallsJSONBody defines parameters for PostAicalls.
+type PostAicallsJSONBody struct {
+	AiId string `json:"ai_id"`
+
+	// Gender Gender associated with the ai call.
+	Gender      AIManagerAIcallGender `json:"gender"`
+	Language    string                `json:"language"`
+	ReferenceId string                `json:"reference_id"`
+
+	// ReferenceType Type of reference associated with the ai call.
+	ReferenceType AIManagerAIcallReferenceType `json:"reference_type"`
+}
+
+// GetAimessagesParams defines parameters for GetAimessages.
+type GetAimessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// AicallId The aicall id.
+	AicallId string `form:"aicall_id" json:"aicall_id"`
+}
+
+// PostAimessagesJSONBody defines parameters for PostAimessages.
+type PostAimessagesJSONBody struct {
+	AicallId string `json:"aicall_id"`
+	Content  string `json:"content"`
+
+	// Role Role of the entity in the conversation.
+	Role AIManagerMessageRole `json:"role"`
+}
+
+// GetAisParams defines parameters for GetAis.
+type GetAisParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostAisJSONBody defines parameters for PostAis.
+type PostAisJSONBody struct {
+	Detail string `json:"detail"`
+
+	// EngineData Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+	EngineData map[string]interface{} `json:"engine_data"`
+
+	// EngineModel Model of the ai engine.
+	EngineModel AIManagerAIEngineModel `json:"engine_model"`
+
+	// EngineType Type of engine used by the ai.
+	EngineType AIManagerAIEngineType `json:"engine_type"`
+	InitPrompt string                `json:"init_prompt"`
+	Name       string                `json:"name"`
+}
+
+// PutAisIdJSONBody defines parameters for PutAisId.
+type PutAisIdJSONBody struct {
+	Detail string `json:"detail"`
+
+	// EngineData Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+	EngineData map[string]interface{} `json:"engine_data"`
+
+	// EngineModel Model of the ai engine.
+	EngineModel AIManagerAIEngineModel `json:"engine_model"`
+
+	// EngineType Type of engine used by the ai.
+	EngineType AIManagerAIEngineType `json:"engine_type"`
+	InitPrompt string                `json:"init_prompt"`
+	Name       string                `json:"name"`
+}
+
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
 	// PageSize The size of results.
@@ -2873,90 +2957,6 @@ type PutCampaignsIdServiceLevelJSONBody struct {
 type PutCampaignsIdStatusJSONBody struct {
 	// Status Status of the campaign.
 	Status CampaignManagerCampaignStatus `json:"status"`
-}
-
-// GetChatbotcallsParams defines parameters for GetChatbotcalls.
-type GetChatbotcallsParams struct {
-	// PageSize The size of results.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken The token. tm_create
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostChatbotcallsJSONBody defines parameters for PostChatbotcalls.
-type PostChatbotcallsJSONBody struct {
-	ChatbotId string `json:"chatbot_id"`
-
-	// Gender Gender associated with the chatbot call.
-	Gender      ChatbotManagerChatbotcallGender `json:"gender"`
-	Language    string                          `json:"language"`
-	ReferenceId string                          `json:"reference_id"`
-
-	// ReferenceType Type of reference associated with the chatbot call.
-	ReferenceType ChatbotManagerChatbotcallReferenceType `json:"reference_type"`
-}
-
-// GetChatbotmessagesParams defines parameters for GetChatbotmessages.
-type GetChatbotmessagesParams struct {
-	// PageSize The size of results.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken The token. tm_create
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-
-	// ChatbotcallId The chatbotcall id.
-	ChatbotcallId string `form:"chatbotcall_id" json:"chatbotcall_id"`
-}
-
-// PostChatbotmessagesJSONBody defines parameters for PostChatbotmessages.
-type PostChatbotmessagesJSONBody struct {
-	ChatbotcallId string `json:"chatbotcall_id"`
-	Content       string `json:"content"`
-
-	// Role Role of the entity in the conversation.
-	Role ChatbotManagerMessageRole `json:"role"`
-}
-
-// GetChatbotsParams defines parameters for GetChatbots.
-type GetChatbotsParams struct {
-	// PageSize The size of results.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken The token. tm_create
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostChatbotsJSONBody defines parameters for PostChatbots.
-type PostChatbotsJSONBody struct {
-	Detail string `json:"detail"`
-
-	// EngineData Data associated with the chatbot's engine, can be dynamic and vary based on the engine type.
-	EngineData map[string]interface{} `json:"engine_data"`
-
-	// EngineModel Model of the chatbot engine.
-	EngineModel ChatbotManagerChatbotEngineModel `json:"engine_model"`
-
-	// EngineType Type of engine used by the chatbot.
-	EngineType ChatbotManagerChatbotEngineType `json:"engine_type"`
-	InitPrompt string                          `json:"init_prompt"`
-	Name       string                          `json:"name"`
-}
-
-// PutChatbotsIdJSONBody defines parameters for PutChatbotsId.
-type PutChatbotsIdJSONBody struct {
-	Detail string `json:"detail"`
-
-	// EngineData Data associated with the chatbot's engine, can be dynamic and vary based on the engine type.
-	EngineData map[string]interface{} `json:"engine_data"`
-
-	// EngineModel Model of the chatbot engine.
-	EngineModel ChatbotManagerChatbotEngineModel `json:"engine_model"`
-
-	// EngineType Type of engine used by the chatbot.
-	EngineType ChatbotManagerChatbotEngineType `json:"engine_type"`
-	InitPrompt string                          `json:"init_prompt"`
-	Name       string                          `json:"name"`
 }
 
 // GetChatmessagesParams defines parameters for GetChatmessages.
@@ -4042,6 +4042,18 @@ type PutAgentsIdStatusJSONRequestBody PutAgentsIdStatusJSONBody
 // PutAgentsIdTagIdsJSONRequestBody defines body for PutAgentsIdTagIds for application/json ContentType.
 type PutAgentsIdTagIdsJSONRequestBody PutAgentsIdTagIdsJSONBody
 
+// PostAicallsJSONRequestBody defines body for PostAicalls for application/json ContentType.
+type PostAicallsJSONRequestBody PostAicallsJSONBody
+
+// PostAimessagesJSONRequestBody defines body for PostAimessages for application/json ContentType.
+type PostAimessagesJSONRequestBody PostAimessagesJSONBody
+
+// PostAisJSONRequestBody defines body for PostAis for application/json ContentType.
+type PostAisJSONRequestBody PostAisJSONBody
+
+// PutAisIdJSONRequestBody defines body for PutAisId for application/json ContentType.
+type PutAisIdJSONRequestBody PutAisIdJSONBody
+
 // PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
 type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody
 
@@ -4089,18 +4101,6 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
-
-// PostChatbotcallsJSONRequestBody defines body for PostChatbotcalls for application/json ContentType.
-type PostChatbotcallsJSONRequestBody PostChatbotcallsJSONBody
-
-// PostChatbotmessagesJSONRequestBody defines body for PostChatbotmessages for application/json ContentType.
-type PostChatbotmessagesJSONRequestBody PostChatbotmessagesJSONBody
-
-// PostChatbotsJSONRequestBody defines body for PostChatbots for application/json ContentType.
-type PostChatbotsJSONRequestBody PostChatbotsJSONBody
-
-// PutChatbotsIdJSONRequestBody defines body for PutChatbotsId for application/json ContentType.
-type PutChatbotsIdJSONRequestBody PutChatbotsIdJSONBody
 
 // PostChatmessagesJSONRequestBody defines body for PostChatmessages for application/json ContentType.
 type PostChatmessagesJSONRequestBody PostChatmessagesJSONBody

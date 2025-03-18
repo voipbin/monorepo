@@ -27,7 +27,7 @@ func (h *listenHandler) processV1ServicesTypeConferencecallPost(ctx context.Cont
 	// start the service
 	tmp, err := h.conferencecallHandler.ServiceStart(ctx, req.ConferenceID, req.ReferenceType, req.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not create chatbotcall. err: %v", err)
+		log.Errorf("Could not create aicall. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

@@ -11,12 +11,12 @@ const (
 	ServiceNameAsteriskProxy ServiceName = "asterisk-proxy"
 
 	ServiceNameAgentManager      ServiceName = "agent-manager"
+	ServiceNameAIManager         ServiceName = "ai-manager"
 	ServiceNameAPIManager        ServiceName = "api-manager"
 	ServiceNameBillingManager    ServiceName = "billing-manager"
 	ServiceNameCallManager       ServiceName = "call-manager"
 	ServiceNameCampaignManager   ServiceName = "campaign-manager"
 	ServiceNameChatManager       ServiceName = "chat-manager"
-	ServiceNameChatbotManager    ServiceName = "chatbot-manager"
 	ServiceNameConferenceManager ServiceName = "conference-manager"
 	ServiceNameCustomerManager   ServiceName = "customer-manager"
 	ServiceNameFlowManager       ServiceName = "flow-manager"

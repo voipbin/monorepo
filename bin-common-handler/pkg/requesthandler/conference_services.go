@@ -13,8 +13,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// ChatbotV1ServiceTypeChabotcallStart sends a request to chat-manager
-// to starts a chatbotcall service.
+// ConferenceV1ServiceTypeConferencecallStart sends a request to chat-manager
+// to starts a conferencecall service.
 // it returns created service if it succeed.
 func (r *requestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error) {
 	uri := "/v1/services/type/conferencecall"

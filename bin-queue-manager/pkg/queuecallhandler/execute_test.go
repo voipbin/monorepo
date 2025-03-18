@@ -9,6 +9,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -61,7 +62,9 @@ func Test_Execute(t *testing.T) {
 				Status: queuecall.StatusWaiting,
 			},
 			responseFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("af9486dc-d1b1-11ec-b34e-8fea9e29488f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("af9486dc-d1b1-11ec-b34e-8fea9e29488f"),
+				},
 			},
 
 			expcetFlowActions: []fmaction.Action{
@@ -145,7 +148,9 @@ func Test_generateFlowForAgentCall(t *testing.T) {
 			},
 
 			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("0420912c-d1b3-11ec-8366-c37da4c77e2a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0420912c-d1b3-11ec-8366-c37da4c77e2a"),
+				},
 			},
 		},
 	}

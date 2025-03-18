@@ -14,12 +14,12 @@ workflows:
           config-path: .circleci/config_work.yml
           mapping: |
             bin-agent-manager/.*        run-bin-agent-manager true
+            bin-ai-manager/.*           run-bin-ai-manager true
             bin-api-manager/.*          run-bin-api-manager true
             bin-billing-manager/.*      run-bin-billing-manager true
             bin-call-manager/.*         run-bin-call-manager true
             bin-campaign-manager/.*     run-bin-campaign-manager true
             bin-chat-manager/.*         run-bin-chat-manager true
-            bin-chatbot-manager/.*      run-bin-chatbot-manager true
             bin-common-handler/.*       run-bin-common-handler true
             bin-conference-manager/.*   run-bin-conference-manager true
             bin-conversation-manager/.* run-bin-conversation-manager true

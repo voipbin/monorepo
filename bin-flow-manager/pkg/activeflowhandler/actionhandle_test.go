@@ -15,7 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
@@ -3477,7 +3477,7 @@ func Test_actionHandleConversationSend(t *testing.T) {
 	}
 }
 
-func Test_actionHandleChatbotTalk(t *testing.T) {
+func Test_actionHandleAITalk(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -3487,12 +3487,12 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 		responseService *commonservice.Service
 		responseStack   *stack.Stack
 
-		expectChatbotID     uuid.UUID
-		expectActiveflowID  uuid.UUID
-		expectReferenceType cbchatbotcall.ReferenceType
-		expectReferenceID   uuid.UUID
-		expectGender        cbchatbotcall.Gender
-		expectLanguage      string
+		expectedAIID          uuid.UUID
+		expectedActiveflowID  uuid.UUID
+		expectedReferenceType amaicall.ReferenceType
+		expectedReferenceID   uuid.UUID
+		expectedGender        amaicall.Gender
+		expectedLanguage      string
 	}{
 		{
 			name: "normal",
@@ -3506,8 +3506,8 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
-					Type:   action.TypeChatbotTalk,
-					Option: []byte(`{"chatbot_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","gender":"female","language":"en-US"}`),
+					Type:   action.TypeAITalk,
+					Option: []byte(`{"ai_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","gender":"female","language":"en-US"}`),
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3516,8 +3516,8 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 						Actions: []action.Action{
 							{
 								ID:     uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
-								Type:   action.TypeChatbotTalk,
-								Option: []byte(`{"chatbot_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","gender":"female","language":"en-US"}`),
+								Type:   action.TypeAITalk,
+								Option: []byte(`{"ai_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","gender":"female","language":"en-US"}`),
 							},
 						},
 					},
@@ -3526,7 +3526,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 			responseService: &commonservice.Service{
 				ID:   uuid.FromStringOrNil("bb68f67a-a8f5-11ed-9a2f-63b973d60f8c"),
-				Type: commonservice.TypeChatbotcall,
+				Type: commonservice.TypeAIcall,
 				PushActions: []action.Action{
 					{
 						ID: uuid.FromStringOrNil("bb9239cc-a8f5-11ed-b21f-f7e43c6b6a60"),
@@ -3542,12 +3542,12 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 				},
 			},
 
-			expectChatbotID:     uuid.FromStringOrNil("bb17f504-a8f5-11ed-a974-2f810c03cbf8"),
-			expectActiveflowID:  uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
-			expectReferenceType: cbchatbotcall.ReferenceTypeCall,
-			expectReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
-			expectGender:        cbchatbotcall.GenderFemale,
-			expectLanguage:      "en-US",
+			expectedAIID:          uuid.FromStringOrNil("bb17f504-a8f5-11ed-a974-2f810c03cbf8"),
+			expectedActiveflowID:  uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
+			expectedReferenceType: amaicall.ReferenceTypeCall,
+			expectedReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
+			expectedGender:        amaicall.GenderFemale,
+			expectedLanguage:      "en-US",
 		},
 	}
 
@@ -3573,13 +3573,13 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectChatbotID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage, 3000).Return(tt.responseService, nil)
+			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage, 3000).Return(tt.responseService, nil)
 
 			// push stack
 			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 
-			if errCall := h.actionHandleChatbotTalk(ctx, tt.activeflow); errCall != nil {
+			if errCall := h.actionHandleAITalk(ctx, tt.activeflow); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
 			}
 
@@ -3612,7 +3612,7 @@ func Test_actionHandleEmailSend(t *testing.T) {
 				},
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("e4dc3eca-00f2-11f0-8a64-2b73140e49f0"),
-					Type:   action.TypeChatbotTalk,
+					Type:   action.TypeAITalk,
 					Option: []byte(`{"destinations":[{"type":"email","target":"test@voipbin.net","target_name":"test name"}],"subject":"test subject","content":"test content","attachments":[{"reference_type":"recording","reference_id":"e50a99e6-00f2-11f0-957d-d36fc32d6b0d"}]}`),
 				},
 			},

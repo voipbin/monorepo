@@ -18,7 +18,7 @@ type Type string
 
 // list of types
 const (
-	TypeChatbotcall    Type = "chatbotcall"
+	TypeAIcall         Type = "aicall"
 	TypeConferencecall Type = "conferencecall"
 	TypeQueuecall      Type = "queuecall"
 )

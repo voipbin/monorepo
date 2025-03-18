@@ -1,0 +1,4 @@
+vendor
+ai-manager
+.vscode
+!cmd/*
