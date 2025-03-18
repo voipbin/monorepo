@@ -3491,6 +3491,7 @@ func Test_actionHandleAITalk(t *testing.T) {
 		expectedActiveflowID  uuid.UUID
 		expectedReferenceType amaicall.ReferenceType
 		expectedReferenceID   uuid.UUID
+		expectedResume        bool
 		expectedGender        amaicall.Gender
 		expectedLanguage      string
 	}{
@@ -3507,7 +3508,7 @@ func Test_actionHandleAITalk(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
 					Type:   action.TypeAITalk,
-					Option: []byte(`{"ai_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","gender":"female","language":"en-US"}`),
+					Option: []byte(`{"ai_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","resume":true,"gender":"female","language":"en-US"}`),
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3546,6 +3547,7 @@ func Test_actionHandleAITalk(t *testing.T) {
 			expectedActiveflowID:  uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
 			expectedReferenceType: amaicall.ReferenceTypeCall,
 			expectedReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
+			expectedResume:        true,
 			expectedGender:        amaicall.GenderFemale,
 			expectedLanguage:      "en-US",
 		},
@@ -3573,7 +3575,7 @@ func Test_actionHandleAITalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage, 3000).Return(tt.responseService, nil)
+			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedResume, tt.expectedGender, tt.expectedLanguage, 3000).Return(tt.responseService, nil)
 
 			// push stack
 			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
