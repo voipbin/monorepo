@@ -38,12 +38,12 @@ func (h *aicallHandler) chatMessageActionsHandle(ctx context.Context, cc *aicall
 		"actions": actions,
 	})
 
-	// push the actions
-	af, err := h.reqHandler.FlowV1ActiveflowPushActions(ctx, cc.ActiveflowID, actions)
+	// add the actions
+	af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, cc.ActiveflowID, actions)
 	if err != nil {
 		return errors.Wrap(err, "could not push the actions to the activeflow")
 	}
-	log.WithField("activeflow", af).Debugf("Pushed actions to the activeflow. activeflow_id: %s", af.ID)
+	log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", af.ID)
 
 	// destroy the confbridge
 	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, cc.ConfbridgeID)

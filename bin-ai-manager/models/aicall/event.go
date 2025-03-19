@@ -2,7 +2,9 @@ package aicall
 
 // list of event types
 const (
-	EventTypeInitializing string = "aicall_initializing" // the aicall is initializing
-	EventTypeProgressing  string = "aicall_progressing"  // the aicall is progressing
-	EventTypeEnd          string = "aicall_end"          // the aicall is end
+	EventTypeStatusInitializing string = "aicall_status_initializing" // the aicall status is initializing
+	EventTypeStatusProgressing  string = "aicall_status_progressing"  // the aicall status is progressing
+	EventTypeStatusPausing      string = "aicall_status_pausing"      // the aicall status is pausing
+	EventTypeStatusResuming     string = "aicall_status_resuming"     // the aicall status is resuming
+	EventTypeStatusEnd          string = "aicall_status_end"          // the aicall status is end
 )

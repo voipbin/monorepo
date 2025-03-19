@@ -31,7 +31,9 @@ type DBHandler interface {
 	AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error)
 	AIcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error)
+	AIcallUpdateStatusPausing(ctx context.Context, id uuid.UUID) error
 	AIcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
+	AIcallUpdateStatusResuming(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) error
 	AIcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error
 
 	MessageCreate(ctx context.Context, c *message.Message) error

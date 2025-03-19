@@ -207,6 +207,7 @@ type RequestHandler interface {
 		activeflowID uuid.UUID,
 		referenceType amaicall.ReferenceType,
 		referenceID uuid.UUID,
+		resume bool,
 		gender amaicall.Gender,
 		language string,
 		requestTimeout int,

@@ -218,6 +218,20 @@ func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusEnd(ctx, id any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusEnd", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusEnd), ctx, id)
 }
 
+// AIcallUpdateStatusPausing mocks base method.
+func (m *MockDBHandler) AIcallUpdateStatusPausing(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallUpdateStatusPausing", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIcallUpdateStatusPausing indicates an expected call of AIcallUpdateStatusPausing.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusPausing(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusPausing", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusPausing), ctx, id)
+}
+
 // AIcallUpdateStatusProgressing mocks base method.
 func (m *MockDBHandler) AIcallUpdateStatusProgressing(ctx context.Context, id, transcribeID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -230,6 +244,20 @@ func (m *MockDBHandler) AIcallUpdateStatusProgressing(ctx context.Context, id, t
 func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusProgressing(ctx, id, transcribeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusProgressing", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusProgressing), ctx, id, transcribeID)
+}
+
+// AIcallUpdateStatusResuming mocks base method.
+func (m *MockDBHandler) AIcallUpdateStatusResuming(ctx context.Context, id, confbridgeID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallUpdateStatusResuming", ctx, id, confbridgeID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIcallUpdateStatusResuming indicates an expected call of AIcallUpdateStatusResuming.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusResuming(ctx, id, confbridgeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusResuming", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusResuming), ctx, id, confbridgeID)
 }
 
 // MessageCreate mocks base method.

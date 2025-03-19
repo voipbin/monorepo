@@ -111,7 +111,7 @@ func Test_Create(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUID).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeInitializing, tt.responseAIcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			res, err := h.Create(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language)
 			if err != nil {
@@ -343,9 +343,9 @@ func Test_UpdateStatusStart(t *testing.T) {
 
 			mockDB.EXPECT().AIcallUpdateStatusProgressing(ctx, tt.id, tt.transcribeID).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeProgressing, tt.responseAIcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
-			res, err := h.UpdateStatusStart(ctx, tt.id, tt.transcribeID)
+			res, err := h.UpdateStatusStartProgressing(ctx, tt.id, tt.transcribeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -402,7 +402,7 @@ func Test_UpdateStatusEnd(t *testing.T) {
 
 			mockDB.EXPECT().AIcallUpdateStatusEnd(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeEnd, tt.responseAIcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusEnd, tt.responseAIcall)
 
 			res, err := h.UpdateStatusEnd(ctx, tt.id)
 			if err != nil {
