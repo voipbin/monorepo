@@ -16,36 +16,34 @@ import (
 )
 
 // Create creates a new activeflow
-func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
+func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, customerID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
-		"id":             activeflowID,
+		"id":             id,
+		"customer_id":    customerID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"flow_id":        flowID,
 	})
 
-	// get flow
-	f, err := h.db.FlowGet(ctx, flowID)
-	if err != nil {
-		log.Errorf("Could not get the flow. err: %v", err)
-		return nil, err
-	}
-
 	// check id is valid
-	if activeflowID == uuid.Nil {
-		activeflowID = h.utilHandler.UUIDCreate()
-		log.Infof("The id is not given. Created a new id. id: %s", activeflowID)
-		log = log.WithField("id", activeflowID)
+	if id == uuid.Nil {
+		id = h.utilHandler.UUIDCreate()
+		log.Infof("The id is not given. Created a new id. id: %s", id)
+		log = log.WithField("id", id)
 	}
 
-	stackMap := h.stackmapHandler.Create(f.Actions)
+	actions, err := h.actionGetsFromFlow(ctx, flowID, customerID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get actions from the flow. flow_id: %s", flowID)
+	}
+	stackMap := h.stackmapHandler.Create(actions)
 
 	// create activeflow
 	tmp := &activeflow.Activeflow{
 		Identity: commonidentity.Identity{
-			ID:         activeflowID,
-			CustomerID: f.CustomerID,
+			ID:         id,
+			CustomerID: customerID,
 		},
 
 		Status: activeflow.StatusRunning,
@@ -68,23 +66,20 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 		ExecutedActions: []action.Action{},
 	}
 	if err := h.db.ActiveflowCreate(ctx, tmp); err != nil {
-		log.Errorf("Could not create the active flow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create the active flow. activeflow_id: %s", id)
 	}
 
 	// create a new activeflow
-	v, err := h.variableHandler.Create(ctx, activeflowID, map[string]string{})
+	v, err := h.variableHandler.Create(ctx, id, map[string]string{})
 	if err != nil {
-		log.Errorf("Could not create variable. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create variable. activeflow_id: %s", id)
 	}
 	log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
 
 	// get created activeflow
-	res, err := h.db.ActiveflowGet(ctx, activeflowID)
+	res, err := h.db.ActiveflowGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get created active flow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get created active flow. activeflow_id: %s", id)
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowCreated, res)
 
@@ -183,6 +178,70 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 	return res, err
 }
 
+// updateNextAction updates the next action to the current action.
+// It sets next action to current action.
+func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) (*activeflow.Activeflow, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":                      "updateNextAction",
+		"activeflow_id":             activeflowID,
+		"request_current_action_id": caID,
+	})
+	log.Debug("Getting next action.")
+
+	// get activeflow with lock
+	af, err := h.GetWithLock(ctx, activeflowID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get activeflow. activeflow_id: %s", activeflowID)
+	}
+	defer func() {
+		_ = h.ReleaseLock(ctx, activeflowID)
+	}()
+
+	// check execute count.
+	if af.ExecuteCount > maxActiveFlowExecuteCount {
+		return nil, fmt.Errorf("exceed maximum action execution count. execute_count: %d", af.ExecuteCount)
+	}
+
+	if af.Status == activeflow.StatusEnded {
+		return nil, fmt.Errorf("the activeflow ended. status: %s", af.Status)
+	}
+
+	if af.CurrentAction.ID != action.IDEmpty && af.CurrentAction.ID != caID {
+		return nil, fmt.Errorf("current action does not match. current_action_id: %s, target_current_action_id: %s", af.CurrentAction.ID, caID)
+	}
+
+	// get next action
+	var resStackID uuid.UUID
+	var resAct *action.Action
+	if af.ForwardStackID != stack.IDEmpty && af.ForwardActionID != action.IDEmpty {
+		log.Debugf("The forward action ID exist. forward_stack_id: %s, forward_action_id: %s", af.ForwardStackID, af.ForwardActionID)
+		resStackID, resAct, err = h.stackmapHandler.GetAction(af.StackMap, af.ForwardStackID, af.ForwardActionID, true)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get action. activeflow_id: %s, forward_stack_id: %s, forward_action_id: %s", activeflowID, af.ForwardStackID, af.ForwardActionID)
+		}
+	} else {
+		log.Debugf("The forward action ID does not exist. current_stack_id: %s, current_action_id: %s", af.CurrentStackID, &af.CurrentAction.ID)
+		resStackID, resAct = h.stackmapHandler.GetNextAction(af.StackMap, af.CurrentStackID, &af.CurrentAction, true)
+	}
+	log.Debugf("Found next action. stack_id: %s, action_id: %s, action_type: %s", resStackID, resAct.ID, resAct.Type)
+
+	// substitute the option variables.
+	v, err := h.variableHandler.Get(ctx, activeflowID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get variables. activeflow_id: %s", activeflowID)
+	}
+	resAct.Option = h.variableHandler.SubstituteByte(ctx, resAct.Option, v)
+
+	// update current action in activeflow
+	res, err := h.updateCurrentAction(ctx, activeflowID, resStackID, resAct)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not update the current action. activeflow_id: %s", activeflowID)
+	}
+	log.WithField("action", res.CurrentAction).Debugf("Updated current action. action_type: %s", res.CurrentAction.Type)
+
+	return res, nil
+}
+
 // Delete deletes activeflow
 func (h *activeflowHandler) Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -203,12 +262,12 @@ func (h *activeflowHandler) Delete(ctx context.Context, id uuid.UUID) (*activefl
 	}
 
 	if a.Status != activeflow.StatusEnded {
-		log.Debugf("The activeflow is not ended. Stopping the activeflow. activeflow_id: %s, status: %s", a.Identity.ID, a.Status)
+		log.Debugf("The activeflow is not ended. Stopping the activeflow. activeflow_id: %s, status: %s", a.ID, a.Status)
 		tmp, err := h.Stop(ctx, id)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not stop the activeflow. activeflow_id: %s", id)
 		}
-		log.Debugf("Stopped activeflow. activeflow_id: %s", tmp.Identity.ID)
+		log.Debugf("Stopped activeflow. activeflow_id: %s", tmp.ID)
 	}
 
 	res, err := h.delete(ctx, id)

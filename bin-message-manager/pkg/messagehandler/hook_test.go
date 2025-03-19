@@ -161,8 +161,9 @@ func Test_executeMessageFlow(t *testing.T) {
 			"normal",
 
 			&message.Message{
-				ID:     uuid.FromStringOrNil("1491e9e4-a8b8-11ec-bbe9-4b9389eaa6f7"),
-				Source: &commonaddress.Address{},
+				ID:         uuid.FromStringOrNil("1491e9e4-a8b8-11ec-bbe9-4b9389eaa6f7"),
+				CustomerID: uuid.FromStringOrNil("bcfd19f8-049c-11f0-a50b-875a0cb13468"),
+				Source:     &commonaddress.Address{},
 				Targets: []target.Target{
 					{
 						Destination: commonaddress.Address{},
@@ -203,7 +204,7 @@ func Test_executeMessageFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.message.ID).Return(tt.expectRes, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.message.CustomerID, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.message.ID).Return(tt.expectRes, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectRes.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.expectRes.ID).Return(nil)
 

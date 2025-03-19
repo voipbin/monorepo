@@ -42,7 +42,7 @@ type activeflowHandler struct {
 
 // ActiveflowHandler defines
 type ActiveflowHandler interface {
-	Create(ctx context.Context, id uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID, flowID uuid.UUID) (*activeflow.Activeflow, error)
+	Create(ctx context.Context, id uuid.UUID, customerID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID, flowID uuid.UUID) (*activeflow.Activeflow, error)
 	Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error)
