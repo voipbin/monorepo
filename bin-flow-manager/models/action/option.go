@@ -17,6 +17,7 @@ type OptionAgentCall struct {
 // OptionAITalk defines action ai_talk's option.
 type OptionAITalk struct {
 	AIID     uuid.UUID       `json:"ai_id"`
+	Resume   bool            `json:"resume"` // resume the previous ai talk.
 	Gender   amaicall.Gender `json:"gender"`
 	Language string          `json:"language"` // BCP47 format. en-US
 	Duration int             `json:"duration"` // ai talk duration. seconds

@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
 	"testing"
 	"time"
@@ -125,13 +126,13 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.ai.CustomerID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
 
 			// create
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeInitializing, tt.responseAIcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, 30000).Return(tt.responseMessage, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.responseAIcall.ReferenceID, tt.responseMessage.Content, string(tt.responseAIcall.Gender), tt.responseAIcall.Language, 10000).Return(nil)
@@ -232,13 +233,13 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeInitializing, tt.responseAIcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, 30000).Return(tt.responseMessage, nil)
 
 			mockDB.EXPECT().AIcallUpdateStatusProgressing(ctx, tt.responseAIcall.ID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeProgressing, tt.responseAIcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
 			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.gender, tt.language)
 			if err != nil {

@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
 	"testing"
@@ -32,6 +33,7 @@ func Test_ServiceStart(t *testing.T) {
 		referenceID   uuid.UUID
 		gender        aicall.Gender
 		language      string
+		resume        bool
 
 		responseAI         *ai.AI
 		responseConfbridge *cmconfbridge.Confbridge
@@ -51,6 +53,7 @@ func Test_ServiceStart(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
 			gender:        aicall.GenderFemale,
 			language:      "en-US",
+			resume:        false,
 
 			responseAI: &ai.AI{
 				Identity: identity.Identity{
@@ -129,18 +132,18 @@ func Test_ServiceStart(t *testing.T) {
 
 			ctx := context.Background()
 			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.responseAI.CustomerID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeInitializing, tt.responseAIcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt, 30000).Return(tt.responseMessage, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.responseAIcall.ReferenceID, tt.responseMessage.Content, string(tt.responseAIcall.Gender), tt.responseAIcall.Language, 10000).Return(nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
 
-			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.resume)
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}

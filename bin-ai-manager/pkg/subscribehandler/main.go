@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -140,6 +141,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	case m.Publisher == publisherCallManager && m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved):
 		err = h.processEventCMConfbridgeLeaved(ctx, m)
+
+	case m.Publisher == publisherCallManager && m.Type == string(cmcall.EventTypeCallHangup):
+		err = h.processEventCMCallHangup(ctx, m)
 
 	// transcribe-manager
 	case m.Publisher == publisherTranscribeManager && m.Type == string(tmtranscript.EventTypeTranscriptCreated):

@@ -149,7 +149,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().Start(gomock.Any(), tt.expectAIID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage).Return(tt.responseAIcall, nil)
+			mockAIcall.EXPECT().Start(gomock.Any(), tt.expectAIID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage, false).Return(tt.responseAIcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -22,6 +22,7 @@ func (r *requestHandler) AIV1ServiceTypeAIcallStart(
 	activeflowID uuid.UUID,
 	referenceType amaicall.ReferenceType,
 	referenceID uuid.UUID,
+	resume bool,
 	gender amaicall.Gender,
 	language string,
 	requestTimeout int,
@@ -33,6 +34,7 @@ func (r *requestHandler) AIV1ServiceTypeAIcallStart(
 		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
+		Resume:        resume,
 		Gender:        gender,
 		Language:      language,
 	}

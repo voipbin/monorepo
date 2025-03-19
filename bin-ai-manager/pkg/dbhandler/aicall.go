@@ -184,7 +184,7 @@ func (h *handler) aicallGetFromCache(ctx context.Context, id uuid.UUID) (*aicall
 }
 
 // aicallGetFromDB gets aicall from the database.
-func (h *handler) aicallGetFromDB(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+func (h *handler) aicallGetFromDB(id uuid.UUID) (*aicall.AIcall, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", aicallSelect)
@@ -210,7 +210,7 @@ func (h *handler) aicallGetFromDB(ctx context.Context, id uuid.UUID) (*aicall.AI
 // aicallUpdateToCache gets the aicall from the DB and update the cache.
 func (h *handler) aicallUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.aicallGetFromDB(ctx, id)
+	res, err := h.aicallGetFromDB(id)
 	if err != nil {
 		return err
 	}
@@ -239,7 +239,7 @@ func (h *handler) AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, 
 		return res, nil
 	}
 
-	res, err = h.aicallGetFromDB(ctx, id)
+	res, err = h.aicallGetFromDB(id)
 	if err != nil {
 		return nil, err
 	}
@@ -312,21 +312,55 @@ func (h *handler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid
 	return res, nil
 }
 
+func (h *handler) aicallUpdateStatus(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID, status aicall.Status) error {
+	//prepare
+	q := `
+		update ai_aicalls set
+			status = ?,
+			transcribe_id = ?,
+			 tm_update = ?
+		where
+			id = ?
+		`
+
+	_, err := h.db.Exec(q, status, transcribeID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	if err != nil {
+		return errors.Wrapf(err, "could not execute. AIcallUpdateStatusPausing")
+	}
+
+	// update the cache
+	_ = h.aicallUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // AIcallUpdateStatusProgressing updates the aicall's status to progressing
 func (h *handler) AIcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error {
+
+	return h.aicallUpdateStatus(ctx, id, transcribeID, aicall.StatusProgressing)
+}
+
+// AIcallUpdateStatusPausing updates the aicall's status to pausing
+func (h *handler) AIcallUpdateStatusPausing(ctx context.Context, id uuid.UUID) error {
+	return h.aicallUpdateStatus(ctx, id, uuid.Nil, aicall.StatusPausing)
+}
+
+// AIcallUpdateStatusResuming updates the aicall's status to resuming
+func (h *handler) AIcallUpdateStatusResuming(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) error {
 	//prepare
 	q := `
 	update ai_aicalls set
 		status = ?,
-		transcribe_id = ?,
-		tm_update = ?
+		confbridge_id = ?,
+ 		tm_update = ?
 	where
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, aicall.StatusProgressing, transcribeID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	ts := h.utilHandler.TimeGetCurTime()
+	_, err := h.db.Exec(q, aicall.StatusResuming, confbridgeID.Bytes(), ts, ts, id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. AIcallUpdateStatusProgressing. err: %v", err)
+		return fmt.Errorf("could not execute. AIcallUpdateStatusResuming. err: %v", err)
 	}
 
 	// update the cache

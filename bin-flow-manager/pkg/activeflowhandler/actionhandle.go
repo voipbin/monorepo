@@ -953,7 +953,7 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 	}
 
 	// start service
-	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.Identity.ID, amaicall.ReferenceTypeCall, af.ReferenceID, opt.Gender, opt.Language, 3000)
+	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.Identity.ID, amaicall.ReferenceTypeCall, af.ReferenceID, opt.Resume, opt.Gender, opt.Language, 3000)
 	if err != nil {
 		return errors.Wrap(err, "Could not start the service.")
 	}

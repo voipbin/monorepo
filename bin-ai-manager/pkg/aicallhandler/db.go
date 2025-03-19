@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/ai"
@@ -65,7 +66,7 @@ func (h *aicallHandler) Create(
 		log.Errorf("Could not get created aicall info. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeInitializing, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusInitializing, res)
 
 	// todo: start health check
 
@@ -133,48 +134,66 @@ func (h *aicallHandler) GetByTranscribeID(ctx context.Context, transcribeID uuid
 	return res, nil
 }
 
-// UpdateStatusStart updates the status to start
-func (h *aicallHandler) UpdateStatusStart(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) (*aicall.AIcall, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "UpdateStatusStart",
-		"ai_id": id,
-	})
+// UpdateStatusStartProgressing updates the status to start
+func (h *aicallHandler) UpdateStatusStartProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) (*aicall.AIcall, error) {
 
 	if errUpdate := h.db.AIcallUpdateStatusProgressing(ctx, id, transcribeID); errUpdate != nil {
-		log.Errorf("Could not get aicall info. err: %v", errUpdate)
-		return nil, errUpdate
+		return nil, errors.Wrapf(errUpdate, "could not update the status to start. aicall_id: %s", id)
 	}
 
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated aicall info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeProgressing, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusProgressing, res)
+
+	return res, nil
+}
+
+// UpdateStatusPausing updates the status to pausing
+func (h *aicallHandler) UpdateStatusPausing(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+
+	if errUpdate := h.db.AIcallUpdateStatusPausing(ctx, id); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the status to pausing. aicall_id: %s", id)
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusPausing, res)
+
+	return res, nil
+}
+
+// UpdateStatusResuming updates the status to resuming
+func (h *aicallHandler) UpdateStatusResuming(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) (*aicall.AIcall, error) {
+
+	if errUpdate := h.db.AIcallUpdateStatusResuming(ctx, id, confbridgeID); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the status to resuming. aicall_id: %s", id)
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusResuming, res)
 
 	return res, nil
 }
 
 // UpdateStatusEnd updates the status to end
 func (h *aicallHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":  "UpdateStatusEnd",
-			"ai_id": id,
-		},
-	)
 
 	if errUpdate := h.db.AIcallUpdateStatusEnd(ctx, id); errUpdate != nil {
-		log.Errorf("Could not get aicall info. err: %v", errUpdate)
-		return nil, errUpdate
+		return nil, errors.Wrapf(errUpdate, "could not update the status to end. aicall_id: %s", id)
 	}
 
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated aicall info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeEnd, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusEnd, res)
 
 	return res, nil
 }

@@ -38,6 +38,7 @@ type AIcallHandler interface {
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error)
 
 	ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
+	ProcessPause(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error)
 	ProcessEnd(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
 
 	Start(
@@ -48,6 +49,7 @@ type AIcallHandler interface {
 		referenceID uuid.UUID,
 		gender aicall.Gender,
 		language string,
+		resume bool,
 	) (*aicall.AIcall, error)
 
 	ServiceStart(
@@ -58,6 +60,7 @@ type AIcallHandler interface {
 		referenceID uuid.UUID,
 		gender aicall.Gender,
 		language string,
+		resuming bool,
 	) (*commonservice.Service, error)
 
 	ChatMessage(ctx context.Context, cb *aicall.AIcall, text string) error
