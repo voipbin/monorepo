@@ -232,7 +232,7 @@ func Test_ActiveflowCreate(t *testing.T) {
 			}
 			mockReq.EXPECT().FlowV1FlowGet(ctx, flowID).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, activeflowID, flowID, fmactiveflow.ReferenceTypeNone, uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, activeflowID, tt.agent.CustomerID, flowID, fmactiveflow.ReferenceTypeNone, uuid.Nil).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)
 
 			res, err := h.ActiveflowCreate(ctx, tt.agent, tt.activeflowID, tt.flowID, tt.actions)

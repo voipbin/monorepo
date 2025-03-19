@@ -61,18 +61,18 @@ func (mr *MockActiveflowHandlerMockRecorder) AddActions(ctx, id, actions any) *g
 }
 
 // Create mocks base method.
-func (m *MockActiveflowHandler) Create(ctx context.Context, id uuid.UUID, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
+func (m *MockActiveflowHandler) Create(ctx context.Context, id, customerID uuid.UUID, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, id, referenceType, referenceID, flowID)
+	ret := m.ctrl.Call(m, "Create", ctx, id, customerID, referenceType, referenceID, flowID)
 	ret0, _ := ret[0].(*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockActiveflowHandlerMockRecorder) Create(ctx, id, referenceType, referenceID, flowID any) *gomock.Call {
+func (mr *MockActiveflowHandlerMockRecorder) Create(ctx, id, customerID, referenceType, referenceID, flowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockActiveflowHandler)(nil).Create), ctx, id, referenceType, referenceID, flowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockActiveflowHandler)(nil).Create), ctx, id, customerID, referenceType, referenceID, flowID)
 }
 
 // Delete mocks base method.

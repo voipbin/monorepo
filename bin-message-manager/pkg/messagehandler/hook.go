@@ -121,23 +121,20 @@ func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Mess
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, m.ID)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, m.CustomerID, num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, m.ID)
 	if err != nil {
-		log.Errorf("Could not create an activeflow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Could not create an activeflow. message_id: %s, number_id: %s", m.ID, num.ID)
 	}
 	log.WithField("activeflow", af).Debugf("Created activeflow. activeflow_id: %s", af.ID)
 
 	// set variables
 	if errVariable := h.setVariables(ctx, af.ID, m); errVariable != nil {
-		log.Errorf("Could not set the variables. err: %v", errVariable)
-		return nil, errors.Wrap(errVariable, "Could not set the variables.")
+		return nil, errors.Wrapf(errVariable, "Could not set the variables. activeflow_id: %s", af.ID)
 	}
 
 	// execute the activeflow
 	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
-		log.Errorf("Could not execute the activeflow. err: %v", errExecute)
-		return nil, errExecute
+		return nil, errors.Wrapf(errExecute, "Could not execute the activeflow. activeflow_id: %s", af.ID)
 	}
 	log.Debugf("Executed activeflow. activeflow_id: %s", af.ID)
 

@@ -650,7 +650,14 @@ type RequestHandler interface {
 	FlowV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*fmaction.Action, error)
 
 	// flow-manager activeflow
-	FlowV1ActiveflowCreate(ctx context.Context, activeflowID, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error)
+	FlowV1ActiveflowCreate(
+		ctx context.Context,
+		activeflowID uuid.UUID,
+		customerID uuid.UUID,
+		flowID uuid.UUID,
+		referenceType fmactiveflow.ReferenceType,
+		referenceID uuid.UUID,
+	) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGet(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]fmactiveflow.Activeflow, error)
