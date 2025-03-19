@@ -83,7 +83,7 @@ func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *amagent.Agent,
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, f.ID, fmactiveflow.ReferenceTypeNone, uuid.Nil)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, a.CustomerID, f.ID, fmactiveflow.ReferenceTypeNone, uuid.Nil)
 	if err != nil {
 		log.Errorf("Could not create activeflow. erR: %v", err)
 		return nil, err

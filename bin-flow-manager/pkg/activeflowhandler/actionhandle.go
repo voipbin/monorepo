@@ -84,7 +84,7 @@ func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflo
 	act := &af.CurrentAction
 
 	// patch the actions from the remote
-	fetchedActions, err := h.actionHandler.ActionFetchGet(act, af.Identity.ID, af.ReferenceID)
+	fetchedActions, err := h.actionHandler.ActionFetchGet(act, af.ID, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not fetch the actions from the remote. err: %v", err)
 		return err
@@ -111,7 +111,7 @@ func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activ
 	}
 
 	// patch the actions from the flow
-	fetchedActions, err := h.getActionsFromFlow(ctx, option.FlowID, af.Identity.CustomerID)
+	fetchedActions, err := h.actionGetsFromFlow(ctx, option.FlowID, af.CustomerID)
 	if err != nil {
 		return errors.Wrapf(err, "could not get actions from the flow. flow_id: %s", option.FlowID)
 	}
@@ -454,7 +454,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a confbridge for connect
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, af.Identity.CustomerID, cmconfbridge.TypeConnect)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, af.CustomerID, cmconfbridge.TypeConnect)
 	if err != nil {
 		log.Errorf("Could not create a confbridge for connect. err: %v", err)
 		return errors.Wrap(err, "could not create a confbridge for connect")
@@ -484,7 +484,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a flow for connect call
-	f, err := h.reqHandler.FlowV1FlowCreate(ctx, af.Identity.CustomerID, flow.TypeFlow, "tmp", "tmp flow for action connect", tmpActions, false)
+	f, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "tmp", "tmp flow for action connect", tmpActions, false)
 	if err != nil {
 		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 		return fmt.Errorf("could not create a call flow. err: %v", err)
@@ -624,7 +624,7 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 
 	// transcribe the recordings
 	for _, recordingID := range c.RecordingIDs {
-		tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.Identity.CustomerID, tmtranscribe.ReferenceTypeRecording, recordingID, optRecordingToText.Language, tmtranscribe.DirectionBoth)
+		tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, tmtranscribe.ReferenceTypeRecording, recordingID, optRecordingToText.Language, tmtranscribe.DirectionBoth)
 		if err != nil {
 			log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 			return err
@@ -656,7 +656,7 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 	}
 
 	// transcribe start
-	trans, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.Identity.CustomerID, tmtranscribe.ReferenceTypeCall, af.ReferenceID, opt.Language, tmtranscribe.DirectionBoth)
+	trans, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, tmtranscribe.ReferenceTypeCall, af.ReferenceID, opt.Language, tmtranscribe.DirectionBoth)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
@@ -681,7 +681,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	}
 	log = log.WithField("queue_id", opt.QueueID)
 
-	sv, err := h.reqHandler.QueueV1ServiceTypeQueuecallStart(ctx, opt.QueueID, af.Identity.ID, qmqueuecall.ReferenceTypeCall, af.ReferenceID)
+	sv, err := h.reqHandler.QueueV1ServiceTypeQueuecallStart(ctx, opt.QueueID, af.ID, qmqueuecall.ReferenceTypeCall, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not start the service. err: %v", err)
 		return errors.Wrap(err, "Could not start the service.")
@@ -722,7 +722,7 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 	}
 
 	// get variable
-	v, err := h.variableHandler.Get(ctx, af.Identity.ID)
+	v, err := h.variableHandler.Get(ctx, af.ID)
 	if err != nil {
 		log.Errorf("Could not get variable. err: %v", err)
 		return err
@@ -741,7 +741,7 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 		tmpVar: "",
 	}
 	log.Debugf("Resetting a variable. variable: %s", tmpVar)
-	if errVar := h.variableHandler.SetVariable(ctx, af.Identity.ID, variables); errVar != nil {
+	if errVar := h.variableHandler.SetVariable(ctx, af.ID, variables); errVar != nil {
 		log.Errorf("Could not reset the variable. But Keep going the flow. err: %v", err)
 	}
 
@@ -782,7 +782,7 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 	}
 
 	// send message
-	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, af.Identity.CustomerID, opt.Source, opt.Destinations, opt.Text)
+	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
 		return err
@@ -811,7 +811,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 	flowID := opt.FlowID
 	if flowID == uuid.Nil {
 		// create a flow
-		tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, af.Identity.CustomerID, flow.TypeFlow, "", "", opt.Actions, false)
+		tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", opt.Actions, false)
 		if err != nil {
 			log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 			return fmt.Errorf("could not create a call flow. err: %v", err)
@@ -826,7 +826,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 		masterCallID = af.ReferenceID
 	}
 
-	resCalls, resGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.Identity.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations, opt.EarlyExecution, false)
+	resCalls, resGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations, opt.EarlyExecution, false)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
@@ -858,7 +858,7 @@ func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *act
 	variables := map[string]string{
 		opt.Key: opt.Value,
 	}
-	if errVariable := h.variableHandler.SetVariable(ctx, af.Identity.ID, variables); errVariable != nil {
+	if errVariable := h.variableHandler.SetVariable(ctx, af.ID, variables); errVariable != nil {
 		return fmt.Errorf("could not set varialbe. err: %v", errVariable)
 	}
 
@@ -883,12 +883,12 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 	log.Debugf("Sending webhook message. message: %s", opt.Data)
 
 	if opt.Sync {
-		if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.Identity.CustomerID, opt.URI, wmwebhook.MethodType(opt.Method), wmwebhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
+		if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, wmwebhook.MethodType(opt.Method), wmwebhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
 			log.Errorf("Could not send the webhook correctly on sync mode. err: %v", errSend)
 		}
 	} else {
 		go func() {
-			if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.Identity.CustomerID, opt.URI, wmwebhook.MethodType(opt.Method), wmwebhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
+			if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, wmwebhook.MethodType(opt.Method), wmwebhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
 				log.Errorf("Could not send the webhook correctlyon async mode. err: %v", errSend)
 			}
 		}()
@@ -953,7 +953,7 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 	}
 
 	// start service
-	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.Identity.ID, amaicall.ReferenceTypeCall, af.ReferenceID, opt.Resume, opt.Gender, opt.Language, 3000)
+	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.ID, amaicall.ReferenceTypeCall, af.ReferenceID, opt.Resume, opt.Gender, opt.Language, 3000)
 	if err != nil {
 		return errors.Wrap(err, "Could not start the service.")
 	}
@@ -1004,7 +1004,7 @@ func (h *activeflowHandler) actionHandleEmailSend(ctx context.Context, af *activ
 	}
 
 	// send message
-	tmp, err := h.reqHandler.EmailV1EmailSend(ctx, af.Identity.CustomerID, af.Identity.ID, opt.Destinations, opt.Subject, opt.Content, opt.Attachments)
+	tmp, err := h.reqHandler.EmailV1EmailSend(ctx, af.CustomerID, af.ID, opt.Destinations, opt.Subject, opt.Content, opt.Attachments)
 	if err != nil {
 		log.Errorf("Could not send an email correctly. err: %v", err)
 		return err

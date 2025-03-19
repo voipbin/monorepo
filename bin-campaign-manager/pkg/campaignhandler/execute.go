@@ -333,7 +333,7 @@ func (h *campaignHandler) executeFlow(
 	}
 
 	// create a activeflow
-	activeflow, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, cc.ActiveflowID, cc.FlowID, activeflow.ReferenceTypeNone, uuid.Nil)
+	activeflow, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, cc.ActiveflowID, c.CustomerID, cc.FlowID, activeflow.ReferenceTypeNone, uuid.Nil)
 	if err != nil {
 		log.Errorf("Could not create an activeflow. err: %v", err)
 		_, _ = h.campaigncallHandler.Done(ctx, cc.ID, campaigncall.ResultFail)

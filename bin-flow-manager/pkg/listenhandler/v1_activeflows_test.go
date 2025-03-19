@@ -28,6 +28,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 		responseActiveflow *activeflow.Activeflow
 
 		expectedID           uuid.UUID
+		expectedCustomerID   uuid.UUID
 		expectedRefereceType activeflow.ReferenceType
 		expectedRefereceID   uuid.UUID
 		expectedFlowID       uuid.UUID
@@ -39,7 +40,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				URI:      "/v1/activeflows",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"a508739b-d98d-40fb-8a47-61e9a70958cd","reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
+				Data:     []byte(`{"id":"a508739b-d98d-40fb-8a47-61e9a70958cd","customer_id":"23858d7a-049a-11f0-aa02-8f574d89004b","reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
 			},
 
 			responseActiveflow: &activeflow.Activeflow{
@@ -61,6 +62,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 			},
 
 			expectedID:           uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
+			expectedCustomerID:   uuid.FromStringOrNil("23858d7a-049a-11f0-aa02-8f574d89004b"),
 			expectedRefereceType: activeflow.ReferenceTypeCall,
 			expectedRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
 			expectedFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
@@ -76,7 +78,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				URI:      "/v1/activeflows",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
+				Data:     []byte(`{"customer_id":"2400ed44-049a-11f0-9b34-f37b0677df6b","reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
 			},
 
 			responseActiveflow: &activeflow.Activeflow{
@@ -98,6 +100,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 			},
 
 			expectedID:           uuid.Nil,
+			expectedCustomerID:   uuid.FromStringOrNil("2400ed44-049a-11f0-9b34-f37b0677df6b"),
 			expectedRefereceType: activeflow.ReferenceTypeCall,
 			expectedRefereceID:   uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
 			expectedFlowID:       uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
@@ -124,7 +127,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Create(gomock.Any(), tt.expectedID, tt.expectedRefereceType, tt.expectedRefereceID, tt.expectedFlowID).Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Create(gomock.Any(), tt.expectedID, tt.expectedCustomerID, tt.expectedRefereceType, tt.expectedRefereceID, tt.expectedFlowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
