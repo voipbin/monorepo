@@ -14,7 +14,13 @@ import (
 )
 
 // RecordingStart starts the conference recording
-func (h *conferenceHandler) RecordingStart(ctx context.Context, id uuid.UUID, onEndFlowID uuid.UUID) (*conference.Conference, error) {
+func (h *conferenceHandler) RecordingStart(
+	ctx context.Context,
+	id uuid.UUID,
+	format cmrecording.Format,
+	duration int,
+	onEndFlowID uuid.UUID,
+) (*conference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "RecordingStart",
 		"conference_id": id,
@@ -33,7 +39,10 @@ func (h *conferenceHandler) RecordingStart(ctx context.Context, id uuid.UUID, on
 	}
 
 	// send recording request
-	tmp, err := h.reqHandler.CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConfbridge, cf.ConfbridgeID, cmrecording.FormatWAV, 0, "", defaultRecordingTimeout, onEndFlowID)
+	if duration >= defaultRecordingTimeout {
+		duration = defaultRecordingTimeout
+	}
+	tmp, err := h.reqHandler.CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConfbridge, cf.ConfbridgeID, format, 0, "", duration, onEndFlowID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start the recording")
 	}

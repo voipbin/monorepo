@@ -334,7 +334,14 @@ type ServiceHandler interface {
 	ConferenceGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cfconference.WebhookMessage, error)
 	ConferenceMediaStreamStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error
-	ConferenceRecordingStart(ctx context.Context, a *amagent.Agent, confID uuid.UUID, onEndFlowID uuid.UUID) (*cfconference.WebhookMessage, error)
+	ConferenceRecordingStart(
+		ctx context.Context,
+		a *amagent.Agent,
+		conferenceID uuid.UUID,
+		format cmrecording.Format,
+		duration int,
+		onEndFlowID uuid.UUID,
+	) (*cfconference.WebhookMessage, error)
 	ConferenceRecordingStop(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceTranscribeStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, language string) (*cfconference.WebhookMessage, error)
 	ConferenceTranscribeStop(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error)

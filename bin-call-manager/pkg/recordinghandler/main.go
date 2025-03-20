@@ -49,14 +49,14 @@ const (
 
 // list of variables
 const (
-	variableRecordingID = "voipbin.recording.id"
+	variableRecordingID = "voipbin.call.recording.id"
 
-	variableRecordingReferenceType = "voipbin.recording.reference_type"
-	variableRecordingReferenceID   = "voipbin.recording.reference_id"
-	variableRecordingFormat        = "voipbin.recording.format"
+	variableRecordingReferenceType = "voipbin.call.recording.reference_type"
+	variableRecordingReferenceID   = "voipbin.call.recording.reference_id"
+	variableRecordingFormat        = "voipbin.call.recording.format"
 
-	variableRecordingRecordingName = "voipbin.recording.recording_name"
-	variableRecordingFilenames     = "voipbin.recording.filenames"
+	variableRecordingRecordingName = "voipbin.call.recording.recording_name"
+	variableRecordingFilenames     = "voipbin.call.recording.filenames"
 )
 
 // recordingHandler structure for service handle

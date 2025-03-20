@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	cmrecording "monorepo/bin-call-manager/models/recording"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -489,6 +490,8 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 		responseConference *conference.Conference
 
 		expectedID          uuid.UUID
+		expectedFormat      cmrecording.Format
+		expectedDuration    int
 		expectedOnEndFlowID uuid.UUID
 		expectedRes         *sock.Response
 	}{
@@ -498,7 +501,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 				URI:      "/v1/conferences/17ca9f6a-9102-11ed-9c97-1b1670cb9db9/recording_start",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"on_end_flow_id":"b2f2d696-055f-11f0-8b66-b75440b1ede2"}`),
+				Data:     []byte(`{"format":"wav","duration":600,"on_end_flow_id":"b2f2d696-055f-11f0-8b66-b75440b1ede2"}`),
 			},
 
 			responseConference: &conference.Conference{
@@ -506,6 +509,8 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 			},
 
 			expectedID:          uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
+			expectedFormat:      cmrecording.FormatWAV,
+			expectedDuration:    600,
 			expectedOnEndFlowID: uuid.FromStringOrNil("b2f2d696-055f-11f0-8b66-b75440b1ede2"),
 			expectedRes: &sock.Response{
 				StatusCode: 200,
@@ -528,7 +533,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectedID, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
+			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectedID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

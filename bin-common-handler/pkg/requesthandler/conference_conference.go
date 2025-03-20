@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	cmrecording "monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-common-handler/models/sock"
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfrequest "monorepo/bin-conference-manager/pkg/listenhandler/models/request"
@@ -263,10 +264,18 @@ func (r *requestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Con
 // ConferenceV1ConferenceRecordingStart sends a request to conference-manager
 // to start the conference recording.
 // it returns error if it failed.
-func (r *requestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID, onEndFlowID uuid.UUID) (*cfconference.Conference, error) {
+func (r *requestHandler) ConferenceV1ConferenceRecordingStart(
+	ctx context.Context,
+	conferenceID uuid.UUID,
+	format cmrecording.Format,
+	duration int,
+	onEndFlowID uuid.UUID,
+) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s/recording_start", conferenceID.String())
 
 	data := &cfrequest.V1DataConferencesIDRecordingStartPost{
+		Format:      format,
+		Duration:    duration,
 		OnEndFlowID: onEndFlowID,
 	}
 

@@ -17,10 +17,20 @@ post:
         schema:
           type: object
           properties:
+            format:
+              description: The format of the recording.
+              type: string
+              enum:
+                - wav
+            duration:
+              description: The maximum duration of the recording (in seconds).
+              type: integer
             on_end_flow_id:
               description: The ID of the flow to be executed when the recording ends.
               type: string
           required:
+            - format
+            - duration
             - on_end_flow_id
   responses:
     '200':

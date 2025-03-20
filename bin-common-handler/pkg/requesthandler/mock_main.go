@@ -2737,18 +2737,18 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceGets(ctx, pageTo
 }
 
 // ConferenceV1ConferenceRecordingStart mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID, onEndFlowID uuid.UUID) (*conference.Conference, error) {
+func (m *MockRequestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID, format recording.Format, duration int, onEndFlowID uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceV1ConferenceRecordingStart", ctx, conferenceID, onEndFlowID)
+	ret := m.ctrl.Call(m, "ConferenceV1ConferenceRecordingStart", ctx, conferenceID, format, duration, onEndFlowID)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConferenceV1ConferenceRecordingStart indicates an expected call of ConferenceV1ConferenceRecordingStart.
-func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceRecordingStart(ctx, conferenceID, onEndFlowID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceRecordingStart(ctx, conferenceID, format, duration, onEndFlowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceRecordingStart", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceRecordingStart), ctx, conferenceID, onEndFlowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceRecordingStart", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceRecordingStart), ctx, conferenceID, format, duration, onEndFlowID)
 }
 
 // ConferenceV1ConferenceRecordingStop mocks base method.

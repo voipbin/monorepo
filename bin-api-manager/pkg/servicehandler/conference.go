@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 
@@ -228,9 +229,16 @@ func (h *serviceHandler) ConferenceUpdate(
 }
 
 // ConferenceRecordingStart is a service handler for conference recording start.
-func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, a *amagent.Agent, confID uuid.UUID, onEndFlowID uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceRecordingStart(
+	ctx context.Context,
+	a *amagent.Agent,
+	conferenceID uuid.UUID,
+	format cmrecording.Format,
+	duration int,
+	onEndFlowID uuid.UUID,
+) (*cfconference.WebhookMessage, error) {
 	// get conference for ownership check
-	c, err := h.conferenceGet(ctx, confID)
+	c, err := h.conferenceGet(ctx, conferenceID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get conference info")
 	}
@@ -240,7 +248,7 @@ func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, a *amagen
 	}
 
 	// recording
-	tmp, err := h.reqHandler.ConferenceV1ConferenceRecordingStart(ctx, confID, onEndFlowID)
+	tmp, err := h.reqHandler.ConferenceV1ConferenceRecordingStart(ctx, conferenceID, format, duration, onEndFlowID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start the conference recording")
 	}

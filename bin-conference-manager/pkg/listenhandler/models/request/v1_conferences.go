@@ -1,6 +1,7 @@
 package request
 
 import (
+	cmrecording "monorepo/bin-call-manager/models/recording"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -37,7 +38,9 @@ type V1DataConferencesIDPut struct {
 // v1 data type request struct for
 // /v1/conferences/<conference-id>/recording_start POST
 type V1DataConferencesIDRecordingStartPost struct {
-	OnEndFlowID uuid.UUID `json:"on_end_flow_id"`
+	Format      cmrecording.Format `json:"format"`
+	Duration    int                `json:"duration"` // duration. second
+	OnEndFlowID uuid.UUID          `json:"on_end_flow_id"`
 }
 
 // V1DataConferencesIDRecordingIDPut is

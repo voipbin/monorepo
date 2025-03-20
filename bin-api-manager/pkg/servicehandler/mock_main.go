@@ -1657,18 +1657,18 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceMediaStreamStart(ctx, a, con
 }
 
 // ConferenceRecordingStart mocks base method.
-func (m *MockServiceHandler) ConferenceRecordingStart(ctx context.Context, a *agent.Agent, confID, onEndFlowID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceRecordingStart(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID, format recording.Format, duration int, onEndFlowID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceRecordingStart", ctx, a, confID, onEndFlowID)
+	ret := m.ctrl.Call(m, "ConferenceRecordingStart", ctx, a, conferenceID, format, duration, onEndFlowID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConferenceRecordingStart indicates an expected call of ConferenceRecordingStart.
-func (mr *MockServiceHandlerMockRecorder) ConferenceRecordingStart(ctx, a, confID, onEndFlowID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ConferenceRecordingStart(ctx, a, conferenceID, format, duration, onEndFlowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRecordingStart", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceRecordingStart), ctx, a, confID, onEndFlowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRecordingStart", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceRecordingStart), ctx, a, conferenceID, format, duration, onEndFlowID)
 }
 
 // ConferenceRecordingStop mocks base method.

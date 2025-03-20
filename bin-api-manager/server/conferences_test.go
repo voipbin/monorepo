@@ -5,6 +5,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -350,6 +351,8 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 
 		responseConference   *cfconference.WebhookMessage
 		expectedConferenceID uuid.UUID
+		expectedFormat       cmrecording.Format
+		expectedDuration     int
 		expectedOnEndFlowID  uuid.UUID
 	}{
 		{
@@ -361,12 +364,14 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 			},
 
 			reqQuery: "/conferences/d2f603ce-910c-11ed-a360-0356e6882c63/recording_start",
-			reqBody:  []byte(`{"on_end_flow_id": "523cf054-0567-11f0-82fe-1b103d8f043c"}`),
+			reqBody:  []byte(`{"format":"wav","duration":600,"on_end_flow_id": "523cf054-0567-11f0-82fe-1b103d8f043c"}`),
 
 			responseConference: &cfconference.WebhookMessage{
 				ID: uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
 			},
 			expectedConferenceID: uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
+			expectedFormat:       cmrecording.FormatWAV,
+			expectedDuration:     600,
 			expectedOnEndFlowID:  uuid.FromStringOrNil("523cf054-0567-11f0-82fe-1b103d8f043c"),
 		},
 	}
@@ -392,7 +397,7 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.agent, tt.expectedConferenceID, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.agent, tt.expectedConferenceID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

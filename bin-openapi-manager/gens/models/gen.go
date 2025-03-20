@@ -612,6 +612,11 @@ const (
 	PostCallsIdRecordingStartJSONBodyFormatWav PostCallsIdRecordingStartJSONBodyFormat = "wav"
 )
 
+// Defines values for PostConferencesIdRecordingStartJSONBodyFormat.
+const (
+	Wav PostConferencesIdRecordingStartJSONBodyFormat = "wav"
+)
+
 // AIManagerAI defines model for AIManagerAI.
 type AIManagerAI struct {
 	// CustomerId Unique identifier of the associated customer.
@@ -3151,9 +3156,18 @@ type GetConferencesIdMediaStreamParams struct {
 
 // PostConferencesIdRecordingStartJSONBody defines parameters for PostConferencesIdRecordingStart.
 type PostConferencesIdRecordingStartJSONBody struct {
+	// Duration The maximum duration of the recording (in seconds).
+	Duration int `json:"duration"`
+
+	// Format The format of the recording.
+	Format PostConferencesIdRecordingStartJSONBodyFormat `json:"format"`
+
 	// OnEndFlowId The ID of the flow to be executed when the recording ends.
 	OnEndFlowId string `json:"on_end_flow_id"`
 }
+
+// PostConferencesIdRecordingStartJSONBodyFormat defines parameters for PostConferencesIdRecordingStart.
+type PostConferencesIdRecordingStartJSONBodyFormat string
 
 // PostConferencesIdTranscribeStartJSONBody defines parameters for PostConferencesIdTranscribeStart.
 type PostConferencesIdTranscribeStartJSONBody struct {
