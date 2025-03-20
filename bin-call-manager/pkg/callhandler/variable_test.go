@@ -88,28 +88,6 @@ func Test_setVariables(t *testing.T) {
 
 			ctx := context.Background()
 
-			// variables := map[string]string{
-
-			// 	// source
-			// 	"voipbin.call.source.name":        tt.call.Source.Name,
-			// 	"voipbin.call.source.detail":      tt.call.Source.Detail,
-			// 	"voipbin.call.source.target":      tt.call.Source.Target,
-			// 	"voipbin.call.source.target_name": tt.call.Source.Target,
-			// 	"voipbin.call.source.type":        string(tt.call.Source.Type),
-
-			// 	// destination
-			// 	"voipbin.call.destination.name":        tt.call.Destination.Name,
-			// 	"voipbin.call.destination.detail":      tt.call.Destination.Detail,
-			// 	"voipbin.call.destination.target":      tt.call.Destination.Target,
-			// 	"voipbin.call.destination.target_name": tt.call.Destination.TargetName,
-			// 	"voipbin.call.destination.type":        string(tt.call.Destination.Type),
-
-			// 	// others
-			// 	"voipbin.call.direction":      string(tt.call.Direction),
-			// 	"voipbin.call.master_call_id": tt.call.MasterCallID.String(),
-			// 	variableCallDigits:            "",
-			// }
-
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.call.ActiveFlowID, tt.expectedVariables).Return(nil)
 
 			if err := h.setVariablesCall(ctx, tt.call); err != nil {
