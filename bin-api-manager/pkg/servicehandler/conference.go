@@ -14,6 +14,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -227,31 +228,21 @@ func (h *serviceHandler) ConferenceUpdate(
 }
 
 // ConferenceRecordingStart is a service handler for conference recording start.
-func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "ConferenceRecordingStart",
-		"customer_id":   a.CustomerID,
-		"username":      a.Username,
-		"conference_id": confID,
-	})
-
+func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, a *amagent.Agent, confID uuid.UUID, onEndFlowID uuid.UUID) (*cfconference.WebhookMessage, error) {
 	// get conference for ownership check
 	c, err := h.conferenceGet(ctx, confID)
 	if err != nil {
-		log.Errorf("Could not get conference info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get conference info")
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// recording
-	tmp, err := h.reqHandler.ConferenceV1ConferenceRecordingStart(ctx, confID)
+	tmp, err := h.reqHandler.ConferenceV1ConferenceRecordingStart(ctx, confID, onEndFlowID)
 	if err != nil {
-		log.Errorf("Could not start the conference recording. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not start the conference recording")
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -260,30 +251,21 @@ func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, a *amagen
 
 // ConferenceRecordingStop is a service handler for conference recording stop.
 func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "ConferenceRecordingStop",
-		"customer_id":   a.CustomerID,
-		"username":      a.Username,
-		"conference_id": confID,
-	})
 
 	// get conference for ownership check
 	c, err := h.conferenceGet(ctx, confID)
 	if err != nil {
-		log.Errorf("Could not get conference info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get conference info")
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// recording
 	tmp, err := h.reqHandler.ConferenceV1ConferenceRecordingStop(ctx, confID)
 	if err != nil {
-		log.Errorf("Could not stop the conference recording. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not stop the conference recording")
 	}
 
 	res := tmp.ConvertWebhookMessage()

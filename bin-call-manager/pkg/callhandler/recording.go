@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/call"
@@ -19,6 +20,7 @@ func (h *callHandler) RecordingStart(
 	endOfSilence int,
 	endOfKey string,
 	duration int,
+	onEndFlowID uuid.UUID,
 ) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "RecordingStart",
@@ -32,11 +34,9 @@ func (h *callHandler) RecordingStart(
 	}
 
 	if c.RecordingID != uuid.Nil {
-		log.Errorf("The call recording is already progressing. recording_id: %s", c.RecordingID)
-		return nil, fmt.Errorf("recording is already progressing")
+		return nil, fmt.Errorf("recording is already progressing. recording_id: %s", c.RecordingID)
 	} else if c.Status != call.StatusProgressing {
-		log.Errorf("The call is status is not progressing. status: %s", c.Status)
-		return nil, fmt.Errorf("invalid status")
+		return nil, fmt.Errorf("the call is not progressing. status: %s", c.Status)
 	}
 
 	// starts the recording
@@ -48,17 +48,16 @@ func (h *callHandler) RecordingStart(
 		endOfSilence,
 		endOfKey,
 		duration,
+		onEndFlowID,
 	)
 	if err != nil {
-		log.Errorf("Could not start the recording. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not start the recording")
 	}
 	log.WithField("recording", rec).Debugf("Started recording. recording_id: %s", rec.ID)
 
 	res, err := h.UpdateRecordingID(ctx, c.ID, rec.ID)
 	if err != nil {
-		log.Errorf("Could not update recording id. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not update recording id. recording_id: %s", rec.ID)
 	}
 
 	return res, nil
@@ -73,31 +72,26 @@ func (h *callHandler) RecordingStop(ctx context.Context, id uuid.UUID) (*call.Ca
 
 	c, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get conference info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get call info")
 	}
-	log.WithField("conference", c).Debugf("Found conference info. conference_id: %s", c.ID)
+	log.WithField("call", c).Debugf("Found call info. call_id: %s", c.ID)
 
 	if c.RecordingID == uuid.Nil {
-		log.Errorf("No Recording progressing. conference_id: %s, recording_id: %s", c.ID, c.RecordingID)
-		return nil, fmt.Errorf("no recording")
+		return nil, errors.Wrapf(err, "no recording is progressing. call_id: %s", c.ID)
 	} else if c.Status != call.StatusProgressing {
-		log.Errorf("Invalid status. call_id: %s, status: %s", c.ID, c.Status)
-		return nil, fmt.Errorf("invalid status")
+		return nil, fmt.Errorf("the call is not progressing. status: %s", c.Status)
 	}
 
 	// send recording stop request
 	tmp, err := h.recordingHandler.Stop(ctx, c.RecordingID)
 	if err != nil {
-		log.Errorf("Could not stop the recording. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not stop the recording")
 	}
 	log.WithField("recording", tmp).Debugf("Recording is stopping. conference_id: %s, recording_id: %s", c.ID, tmp.ID)
 
 	res, err := h.UpdateRecordingID(ctx, c.ID, uuid.Nil)
 	if err != nil {
-		log.Errorf("Could not update recording id. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not update recording id")
 	}
 
 	return res, nil

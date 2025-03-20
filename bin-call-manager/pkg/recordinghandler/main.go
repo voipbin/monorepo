@@ -1,5 +1,7 @@
 package recordinghandler
 
+//go:generate mockgen -package recordinghandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
 import (
 	"context"
 	"fmt"
@@ -16,8 +18,6 @@ import (
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
-//go:generate mockgen -package recordinghandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
-
 // RecordingHandler is interface for service handle
 type RecordingHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
@@ -32,6 +32,7 @@ type RecordingHandler interface {
 		endOfSilence int,
 		endOfKey string,
 		duration int,
+		onEndFlowID uuid.UUID,
 	) (*recording.Recording, error)
 	Started(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	Stop(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
@@ -44,6 +45,18 @@ const (
 
 	defaultDirectory  = "recording"
 	defaultBucketName = "voipbin-voip-media-bucket-europe-west4"
+)
+
+// list of variables
+const (
+	variableRecordingID = "voipbin.recording.id"
+
+	variableRecordingReferenceType = "voipbin.recording.reference_type"
+	variableRecordingReferenceID   = "voipbin.recording.reference_id"
+	variableRecordingFormat        = "voipbin.recording.format"
+
+	variableRecordingRecordingName = "voipbin.recording.recording_name"
+	variableRecordingFilenames     = "voipbin.recording.filenames"
 )
 
 // recordingHandler structure for service handle

@@ -392,10 +392,11 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 		expectEndOfSilence int
 		expectEndOfKey     string
 		expectDuration     int
+		expectOnEndFlowID  uuid.UUID
 	}{
 		{
-			"default",
-			&call.Call{
+			name: "default",
+			call: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
 				},
@@ -404,20 +405,21 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 				Action: fmaction.Action{
 					Type:   fmaction.TypeRecordingStart,
 					ID:     uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
-					Option: []byte(`{"format":"wav","end_of_silence":0,"end_of_key":"","duration":0}`),
+					Option: []byte(`{"format":"wav","end_of_silence":5,"end_of_key":"1","duration":600, "on_end_flow_id":"8af57a9a-0546-11f0-beb7-731fcb5a9acf"}`),
 				},
 			},
 
-			&recording.Recording{
+			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("dec99d2a-8fe8-11ed-b223-478f994dc5a0"),
 				},
 			},
 
-			recording.FormatWAV,
-			0,
-			"",
-			0,
+			expectFormat:       recording.FormatWAV,
+			expectEndOfSilence: 5,
+			expectEndOfKey:     "1",
+			expectDuration:     600,
+			expectOnEndFlowID:  uuid.FromStringOrNil("8af57a9a-0546-11f0-beb7-731fcb5a9acf"),
 		},
 	}
 
@@ -449,6 +451,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 				tt.expectEndOfSilence,
 				tt.expectEndOfKey,
 				tt.expectDuration,
+				tt.expectOnEndFlowID,
 			).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().CallSetRecordingID(ctx, tt.call.ID, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().CallAddRecordingIDs(ctx, tt.call.ID, tt.responseRecording.ID).Return(nil)

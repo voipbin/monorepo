@@ -203,7 +203,7 @@ const (
 
 // Defines values for CallManagerRecordingFormat.
 const (
-	Wav CallManagerRecordingFormat = "wav"
+	CallManagerRecordingFormatWav CallManagerRecordingFormat = "wav"
 )
 
 // Defines values for CallManagerRecordingReferenceType.
@@ -614,6 +614,11 @@ const (
 const (
 	TransferManagerTransferTypeAttended TransferManagerTransferType = "attended"
 	TransferManagerTransferTypeBlind    TransferManagerTransferType = "blind"
+)
+
+// Defines values for PostCallsIdRecordingStartJSONBodyFormat.
+const (
+	PostCallsIdRecordingStartJSONBodyFormatWav PostCallsIdRecordingStartJSONBodyFormat = "wav"
 )
 
 // AIManagerAI defines model for AIManagerAI.
@@ -2845,6 +2850,27 @@ type PostCallsIdMuteJSONBody struct {
 	Direction *CallManagerCallMuteDirection `json:"direction,omitempty"`
 }
 
+// PostCallsIdRecordingStartJSONBody defines parameters for PostCallsIdRecordingStart.
+type PostCallsIdRecordingStartJSONBody struct {
+	// Duration The maximum duration of the recording (in seconds).
+	Duration int `json:"duration"`
+
+	// EndOfKey The key that will stop the recording.
+	EndOfKey string `json:"end_of_key"`
+
+	// EndOfSilence The duration of silence (in seconds) after which the recording will be stopped.
+	EndOfSilence int `json:"end_of_silence"`
+
+	// Format The format of the recording.
+	Format PostCallsIdRecordingStartJSONBodyFormat `json:"format"`
+
+	// OnEndFlowId The ID of the flow to be executed when the recording ends.
+	OnEndFlowId string `json:"on_end_flow_id"`
+}
+
+// PostCallsIdRecordingStartJSONBodyFormat defines parameters for PostCallsIdRecordingStart.
+type PostCallsIdRecordingStartJSONBodyFormat string
+
 // PostCallsIdTalkJSONBody defines parameters for PostCallsIdTalk.
 type PostCallsIdTalkJSONBody struct {
 	Gender   *string `json:"gender,omitempty"`
@@ -3130,6 +3156,12 @@ type PutConferencesIdJSONBody struct {
 type GetConferencesIdMediaStreamParams struct {
 	// Encapsulation The encapsulation for media stream.
 	Encapsulation string `form:"encapsulation" json:"encapsulation"`
+}
+
+// PostConferencesIdRecordingStartJSONBody defines parameters for PostConferencesIdRecordingStart.
+type PostConferencesIdRecordingStartJSONBody struct {
+	// OnEndFlowId The ID of the flow to be executed when the recording ends.
+	OnEndFlowId string `json:"on_end_flow_id"`
 }
 
 // PostConferencesIdTranscribeStartJSONBody defines parameters for PostConferencesIdTranscribeStart.
@@ -4087,6 +4119,9 @@ type DeleteCallsIdMuteJSONRequestBody DeleteCallsIdMuteJSONBody
 // PostCallsIdMuteJSONRequestBody defines body for PostCallsIdMute for application/json ContentType.
 type PostCallsIdMuteJSONRequestBody PostCallsIdMuteJSONBody
 
+// PostCallsIdRecordingStartJSONRequestBody defines body for PostCallsIdRecordingStart for application/json ContentType.
+type PostCallsIdRecordingStartJSONRequestBody PostCallsIdRecordingStartJSONBody
+
 // PostCallsIdTalkJSONRequestBody defines body for PostCallsIdTalk for application/json ContentType.
 type PostCallsIdTalkJSONRequestBody PostCallsIdTalkJSONBody
 
@@ -4140,6 +4175,9 @@ type PostConferencesJSONRequestBody PostConferencesJSONBody
 
 // PutConferencesIdJSONRequestBody defines body for PutConferencesId for application/json ContentType.
 type PutConferencesIdJSONRequestBody PutConferencesIdJSONBody
+
+// PostConferencesIdRecordingStartJSONRequestBody defines body for PostConferencesIdRecordingStart for application/json ContentType.
+type PostConferencesIdRecordingStartJSONRequestBody PostConferencesIdRecordingStartJSONBody
 
 // PostConferencesIdTranscribeStartJSONRequestBody defines body for PostConferencesIdTranscribeStart for application/json ContentType.
 type PostConferencesIdTranscribeStartJSONRequestBody PostConferencesIdTranscribeStartJSONBody
@@ -4476,6 +4514,12 @@ type ServerInterface interface {
 	// Mute the call
 	// (POST /calls/{id}/mute)
 	PostCallsIdMute(c *gin.Context, id string)
+	// Start call recording
+	// (POST /calls/{id}/recording_start)
+	PostCallsIdRecordingStart(c *gin.Context, id string)
+	// Stop call recording
+	// (POST /calls/{id}/recording_stop)
+	PostCallsIdRecordingStop(c *gin.Context, id string)
 	// Un-silence a call
 	// (DELETE /calls/{id}/silence)
 	DeleteCallsIdSilence(c *gin.Context, id string)
@@ -6484,6 +6528,54 @@ func (siw *ServerInterfaceWrapper) PostCallsIdMute(c *gin.Context) {
 	}
 
 	siw.Handler.PostCallsIdMute(c, id)
+}
+
+// PostCallsIdRecordingStart operation middleware
+func (siw *ServerInterfaceWrapper) PostCallsIdRecordingStart(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCallsIdRecordingStart(c, id)
+}
+
+// PostCallsIdRecordingStop operation middleware
+func (siw *ServerInterfaceWrapper) PostCallsIdRecordingStop(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCallsIdRecordingStop(c, id)
 }
 
 // DeleteCallsIdSilence operation middleware
@@ -11616,6 +11708,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/calls/:id/moh", wrapper.PostCallsIdMoh)
 	router.DELETE(options.BaseURL+"/calls/:id/mute", wrapper.DeleteCallsIdMute)
 	router.POST(options.BaseURL+"/calls/:id/mute", wrapper.PostCallsIdMute)
+	router.POST(options.BaseURL+"/calls/:id/recording_start", wrapper.PostCallsIdRecordingStart)
+	router.POST(options.BaseURL+"/calls/:id/recording_stop", wrapper.PostCallsIdRecordingStop)
 	router.DELETE(options.BaseURL+"/calls/:id/silence", wrapper.DeleteCallsIdSilence)
 	router.POST(options.BaseURL+"/calls/:id/silence", wrapper.PostCallsIdSilence)
 	router.POST(options.BaseURL+"/calls/:id/talk", wrapper.PostCallsIdTalk)
@@ -12870,6 +12964,41 @@ func (response PostCallsIdMute200Response) VisitPostCallsIdMuteResponse(w http.R
 	return nil
 }
 
+type PostCallsIdRecordingStartRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostCallsIdRecordingStartJSONRequestBody
+}
+
+type PostCallsIdRecordingStartResponseObject interface {
+	VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error
+}
+
+type PostCallsIdRecordingStart200JSONResponse CallManagerCall
+
+func (response PostCallsIdRecordingStart200JSONResponse) VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStopRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostCallsIdRecordingStopResponseObject interface {
+	VisitPostCallsIdRecordingStopResponse(w http.ResponseWriter) error
+}
+
+type PostCallsIdRecordingStop200JSONResponse CallManagerCall
+
+func (response PostCallsIdRecordingStop200JSONResponse) VisitPostCallsIdRecordingStopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type DeleteCallsIdSilenceRequestObject struct {
 	Id string `json:"id"`
 }
@@ -13733,7 +13862,8 @@ func (response GetConferencesIdMediaStream200Response) VisitGetConferencesIdMedi
 }
 
 type PostConferencesIdRecordingStartRequestObject struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
+	Body *PostConferencesIdRecordingStartJSONRequestBody
 }
 
 type PostConferencesIdRecordingStartResponseObject interface {
@@ -16782,6 +16912,12 @@ type StrictServerInterface interface {
 	// Mute the call
 	// (POST /calls/{id}/mute)
 	PostCallsIdMute(ctx context.Context, request PostCallsIdMuteRequestObject) (PostCallsIdMuteResponseObject, error)
+	// Start call recording
+	// (POST /calls/{id}/recording_start)
+	PostCallsIdRecordingStart(ctx context.Context, request PostCallsIdRecordingStartRequestObject) (PostCallsIdRecordingStartResponseObject, error)
+	// Stop call recording
+	// (POST /calls/{id}/recording_stop)
+	PostCallsIdRecordingStop(ctx context.Context, request PostCallsIdRecordingStopRequestObject) (PostCallsIdRecordingStopResponseObject, error)
 	// Un-silence a call
 	// (DELETE /calls/{id}/silence)
 	DeleteCallsIdSilence(ctx context.Context, request DeleteCallsIdSilenceRequestObject) (DeleteCallsIdSilenceResponseObject, error)
@@ -19060,6 +19196,68 @@ func (sh *strictHandler) PostCallsIdMute(ctx *gin.Context, id string) {
 	}
 }
 
+// PostCallsIdRecordingStart operation middleware
+func (sh *strictHandler) PostCallsIdRecordingStart(ctx *gin.Context, id string) {
+	var request PostCallsIdRecordingStartRequestObject
+
+	request.Id = id
+
+	var body PostCallsIdRecordingStartJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCallsIdRecordingStart(ctx, request.(PostCallsIdRecordingStartRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCallsIdRecordingStart")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCallsIdRecordingStartResponseObject); ok {
+		if err := validResponse.VisitPostCallsIdRecordingStartResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCallsIdRecordingStop operation middleware
+func (sh *strictHandler) PostCallsIdRecordingStop(ctx *gin.Context, id string) {
+	var request PostCallsIdRecordingStopRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCallsIdRecordingStop(ctx, request.(PostCallsIdRecordingStopRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCallsIdRecordingStop")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCallsIdRecordingStopResponseObject); ok {
+		if err := validResponse.VisitPostCallsIdRecordingStopResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // DeleteCallsIdSilence operation middleware
 func (sh *strictHandler) DeleteCallsIdSilence(ctx *gin.Context, id string) {
 	var request DeleteCallsIdSilenceRequestObject
@@ -20469,6 +20667,14 @@ func (sh *strictHandler) PostConferencesIdRecordingStart(ctx *gin.Context, id st
 	var request PostConferencesIdRecordingStartRequestObject
 
 	request.Id = id
+
+	var body PostConferencesIdRecordingStartJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.PostConferencesIdRecordingStart(ctx, request.(PostConferencesIdRecordingStartRequestObject))

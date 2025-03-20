@@ -675,7 +675,7 @@ func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, 
 		return nil, err
 	}
 
-	tmp, err := h.callHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration)
+	tmp, err := h.callHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration, req.OnEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start call recording. err: %v", err)
 		return simpleResponse(500), nil

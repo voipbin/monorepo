@@ -29,26 +29,28 @@ func Test_RecordingStart(t *testing.T) {
 		endOfSilence int
 		endOfKey     string
 		duration     int
+		onEndFlowID  uuid.UUID
 
 		responseCall      *call.Call
 		responseRecording *recording.Recording
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
-			recording.FormatWAV,
-			10000,
-			"#",
-			86400,
+			id:           uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+			format:       recording.FormatWAV,
+			endOfSilence: 10000,
+			endOfKey:     "#",
+			duration:     86400,
+			onEndFlowID:  uuid.FromStringOrNil("2b26d3b2-0545-11f0-b4f2-9712e07952c5"),
 
-			&call.Call{
+			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 				},
 				Status: call.StatusProgressing,
 			},
-			&recording.Recording{
+			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5c2e0aa4-9317-11ed-83be-4bc8dcb3ae1d"),
 				},
@@ -77,12 +79,12 @@ func Test_RecordingStart(t *testing.T) {
 
 			ctx := context.Background()
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockRecording.EXPECT().Start(ctx, recording.ReferenceTypeCall, tt.responseCall.ID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration).Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Start(ctx, recording.ReferenceTypeCall, tt.responseCall.ID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().CallSetRecordingID(ctx, tt.responseCall.ID, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().CallAddRecordingIDs(ctx, tt.responseCall.ID, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 
-			res, err := h.RecordingStart(ctx, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration)
+			res, err := h.RecordingStart(ctx, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -48,7 +48,7 @@ type ConferenceHandler interface {
 
 	Terminating(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 
-	RecordingStart(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
+	RecordingStart(ctx context.Context, id uuid.UUID, onEndFlowID uuid.UUID) (*conference.Conference, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 
 	TranscribeStart(ctx context.Context, id uuid.UUID, lang string) (*conference.Conference, error)

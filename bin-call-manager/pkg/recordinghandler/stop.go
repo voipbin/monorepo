@@ -6,7 +6,9 @@ import (
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-flow-manager/models/activeflow"
 	smfile "monorepo/bin-storage-manager/models/file"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -33,9 +35,42 @@ func (h *recordingHandler) Stopped(ctx context.Context, id uuid.UUID) (*recordin
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, recording.EventTypeRecordingFinished, res)
 
 	// store the recording
-	go h.storeRecordingFiles(res)
+	go h.stopped(res)
 
 	return res, nil
+}
+
+// stopped handels stopped recording
+// store the recording files and execute the new activeflow if the on_end_flow_id is not empty
+func (h *recordingHandler) stopped(r *recording.Recording) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "stopped",
+		"recording_id": r.ID,
+	})
+	ctx := context.Background()
+
+	// store the recording files
+	h.storeRecordingFiles(r)
+
+	if r.OnEndFlowID == uuid.Nil {
+		return
+	}
+
+	time.Sleep(time.Minute * 3) // wait for until the storing the recording files
+
+	log.Debugf("The on_end_flow_id is not empty. Executing the new activeflow. on_end_flow_id: %s", r.OnEndFlowID)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, r.CustomerID, r.OnEndFlowID, activeflow.ReferenceTypeNone, uuid.Nil)
+	if err != nil {
+		log.Errorf("Could not create the activeflow. err: %v", err)
+		return
+	}
+	log = log.WithField("activeflow", af)
+	log.Debugf("Created a new activeflow. activeflow_id: %s", af.ID)
+
+	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
+		log.Errorf("Could not execute the activeflow. err: %v", errExecute)
+		return
+	}
 }
 
 // storeRecordingFiles send a request to the storage-manager to store the recording files

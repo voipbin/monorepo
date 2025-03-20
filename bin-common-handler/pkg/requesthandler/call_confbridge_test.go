@@ -307,6 +307,7 @@ func Test_CallV1ConfbridgeRecordingStart(t *testing.T) {
 		endOfSilence int
 		endOfKey     string
 		duration     int
+		onEndFlowID  uuid.UUID
 
 		response *sock.Response
 
@@ -314,27 +315,28 @@ func Test_CallV1ConfbridgeRecordingStart(t *testing.T) {
 		expectRes     *cmconfbridge.Confbridge
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("9ab869b4-9979-11ed-ae1a-1fd050fd5c80"),
-			cmrecording.FormatWAV,
-			1000,
-			"#",
-			86400,
+			confbridgeID: uuid.FromStringOrNil("9ab869b4-9979-11ed-ae1a-1fd050fd5c80"),
+			format:       cmrecording.FormatWAV,
+			endOfSilence: 1000,
+			endOfKey:     "#",
+			duration:     86400,
+			onEndFlowID:  uuid.FromStringOrNil("80bb2814-055e-11f0-91a3-a73fe7db2f29"),
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"9ab869b4-9979-11ed-ae1a-1fd050fd5c80"}`),
 			},
 
-			&sock.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/confbridges/9ab869b4-9979-11ed-ae1a-1fd050fd5c80/recording_start",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"format":"wav","end_of_silence":1000,"end_of_key":"#","duration":86400}`),
+				Data:     []byte(`{"format":"wav","end_of_silence":1000,"end_of_key":"#","duration":86400,"on_end_flow_id":"80bb2814-055e-11f0-91a3-a73fe7db2f29"}`),
 			},
-			&cmconfbridge.Confbridge{
+			expectRes: &cmconfbridge.Confbridge{
 				ID: uuid.FromStringOrNil("9ab869b4-9979-11ed-ae1a-1fd050fd5c80"),
 			},
 		},
@@ -354,7 +356,7 @@ func Test_CallV1ConfbridgeRecordingStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1ConfbridgeRecordingStart(ctx, tt.confbridgeID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration)
+			res, err := reqHandler.CallV1ConfbridgeRecordingStart(ctx, tt.confbridgeID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

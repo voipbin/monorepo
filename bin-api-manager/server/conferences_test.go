@@ -346,9 +346,11 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 		agent amagent.Agent
 
 		reqQuery string
+		reqBody  []byte
 
-		responseConference *cfconference.WebhookMessage
-		expectConferenceID uuid.UUID
+		responseConference   *cfconference.WebhookMessage
+		expectedConferenceID uuid.UUID
+		expectedOnEndFlowID  uuid.UUID
 	}{
 		{
 			name: "normal",
@@ -359,11 +361,13 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 			},
 
 			reqQuery: "/conferences/d2f603ce-910c-11ed-a360-0356e6882c63/recording_start",
+			reqBody:  []byte(`{"on_end_flow_id": "523cf054-0567-11f0-82fe-1b103d8f043c"}`),
 
 			responseConference: &cfconference.WebhookMessage{
 				ID: uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
 			},
-			expectConferenceID: uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
+			expectedConferenceID: uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
+			expectedOnEndFlowID:  uuid.FromStringOrNil("523cf054-0567-11f0-82fe-1b103d8f043c"),
 		},
 	}
 
@@ -386,9 +390,9 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 			})
 			openapi_server.RegisterHandlers(r, h)
 
-			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.agent, tt.expectedConferenceID, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

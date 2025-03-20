@@ -22,7 +22,8 @@ func Test_RecordingStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		id          uuid.UUID
+		onEndFlowID uuid.UUID
 
 		responseConference *conference.Conference
 		responseRecording  *cmrecording.Recording
@@ -30,7 +31,8 @@ func Test_RecordingStart(t *testing.T) {
 		{
 			name: "normal",
 
-			id: uuid.FromStringOrNil("5aee9cbe-90fe-11ed-86b9-f36325211a1b"),
+			id:          uuid.FromStringOrNil("5aee9cbe-90fe-11ed-86b9-f36325211a1b"),
+			onEndFlowID: uuid.FromStringOrNil("b2c5186e-055f-11f0-94cc-af3bd4410b74"),
 
 			responseConference: &conference.Conference{
 				ID:     uuid.FromStringOrNil("5aee9cbe-90fe-11ed-86b9-f36325211a1b"),
@@ -63,12 +65,12 @@ func Test_RecordingStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, cmrecording.FormatWAV, 0, "", defaultRecordingTimeout).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, cmrecording.FormatWAV, 0, "", defaultRecordingTimeout, tt.onEndFlowID).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().ConferenceSetRecordingID(ctx, tt.id, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().ConferenceAddRecordingIDs(ctx, tt.id, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 
-			res, err := h.RecordingStart(ctx, tt.id)
+			res, err := h.RecordingStart(ctx, tt.id, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

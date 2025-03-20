@@ -340,7 +340,15 @@ type RequestHandler interface {
 	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
 	CallV1CallMediaStop(ctx context.Context, callID uuid.UUID) error
 	CallV1CallPlay(ctx context.Context, callID uuid.UUID, mediaURLs []string) error
-	CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmcall.Call, error)
+	CallV1CallRecordingStart(
+		ctx context.Context,
+		callID uuid.UUID,
+		format cmrecording.Format,
+		endOfSilence int,
+		endOfKey string,
+		duration int,
+		onEndFlowID uuid.UUID,
+	) (*cmcall.Call, error)
 	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
 	CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, gender string, language string, rqeuestTimeout int) error
@@ -366,7 +374,15 @@ type RequestHandler interface {
 	CallV1ConfbridgeFlagAdd(ctx context.Context, confbridgeID uuid.UUID, flag cmconfbridge.Flag) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeFlagRemove(ctx context.Context, confbridgeID uuid.UUID, flag cmconfbridge.Flag) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
-	CallV1ConfbridgeRecordingStart(ctx context.Context, confbridgeID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeRecordingStart(
+		ctx context.Context,
+		confbridgeID uuid.UUID,
+		format cmrecording.Format,
+		endOfSilence int,
+		endOfKey string,
+		duration int,
+		onEndFlowID uuid.UUID,
+	) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeRecordingStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeTerminate(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeRing(ctx context.Context, confbridgeID uuid.UUID) error
@@ -424,6 +440,7 @@ type RequestHandler interface {
 		endOfSilence int,
 		endOfKey string,
 		duration int,
+		onEndFlowID uuid.UUID,
 	) (*cmrecording.Recording, error)
 	CallV1RecordingStop(ctx context.Context, recordingID uuid.UUID) (*cmrecording.Recording, error)
 
@@ -597,7 +614,7 @@ type RequestHandler interface {
 	ConferenceV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error
 	ConferenceV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
 	ConferenceV1ConferenceUpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*cfconference.Conference, error)
-	ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
+	ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID, onEndFlowID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceStop(ctx context.Context, conferenceID uuid.UUID, delay int) (*cfconference.Conference, error)
 	ConferenceV1ConferenceTranscribeStart(ctx context.Context, conferenceID uuid.UUID, language string) (*cfconference.Conference, error)

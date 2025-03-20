@@ -134,18 +134,18 @@ func (mr *MockConferenceHandlerMockRecorder) Gets(ctx, size, token, filters any)
 }
 
 // RecordingStart mocks base method.
-func (m *MockConferenceHandler) RecordingStart(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+func (m *MockConferenceHandler) RecordingStart(ctx context.Context, id, onEndFlowID uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingStart", ctx, id)
+	ret := m.ctrl.Call(m, "RecordingStart", ctx, id, onEndFlowID)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RecordingStart indicates an expected call of RecordingStart.
-func (mr *MockConferenceHandlerMockRecorder) RecordingStart(ctx, id any) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) RecordingStart(ctx, id, onEndFlowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStart", reflect.TypeOf((*MockConferenceHandler)(nil).RecordingStart), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStart", reflect.TypeOf((*MockConferenceHandler)(nil).RecordingStart), ctx, id, onEndFlowID)
 }
 
 // RecordingStop mocks base method.

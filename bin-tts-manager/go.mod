@@ -61,7 +61,7 @@ require (
 	go.uber.org/mock v0.5.0
 	golang.org/x/oauth2 v0.28.0
 	golang.org/x/sys v0.31.0 // indirect
-	google.golang.org/api v0.226.0
+	google.golang.org/api v0.227.0
 	google.golang.org/genproto v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/grpc v1.71.0
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334

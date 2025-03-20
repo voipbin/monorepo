@@ -3206,6 +3206,10 @@ paths:
   /billings:
     $ref: './paths/billings/main.yaml'
 
+  /calls/{id}/recording_start:
+    $ref: './paths/calls/id_recording_start.yaml'
+  /calls/{id}/recording_stop:
+    $ref: './paths/calls/id_recording_stop.yaml'
   /calls/{id}/hangup:
     $ref: './paths/calls/id_hangup.yaml'
   /calls/{id}/hold:

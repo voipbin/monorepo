@@ -1075,6 +1075,7 @@ func Test_CallV1CallRecordingStart(t *testing.T) {
 		endOfSilence int
 		endOfKey     string
 		duration     int
+		onEndFlowID  uuid.UUID
 
 		response *sock.Response
 
@@ -1082,27 +1083,28 @@ func Test_CallV1CallRecordingStart(t *testing.T) {
 		expectRes     *cmcall.Call
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("6533f61e-9348-11ed-83bc-ab5a0adfe5e5"),
-			cmrecording.FormatWAV,
-			1000,
-			"#",
-			86400,
+			callID:       uuid.FromStringOrNil("6533f61e-9348-11ed-83bc-ab5a0adfe5e5"),
+			format:       cmrecording.FormatWAV,
+			endOfSilence: 1000,
+			endOfKey:     "#",
+			duration:     86400,
+			onEndFlowID:  uuid.FromStringOrNil("01b2f7ea-055e-11f0-ab17-17b6978dbfdf"),
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"6533f61e-9348-11ed-83bc-ab5a0adfe5e5"}`),
 			},
 
-			&sock.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/calls/6533f61e-9348-11ed-83bc-ab5a0adfe5e5/recording_start",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"format":"wav","end_of_silence":1000,"end_of_key":"#","duration":86400}`),
+				Data:     []byte(`{"format":"wav","end_of_silence":1000,"end_of_key":"#","duration":86400,"on_end_flow_id":"01b2f7ea-055e-11f0-ab17-17b6978dbfdf"}`),
 			},
-			&cmcall.Call{
+			expectRes: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("6533f61e-9348-11ed-83bc-ab5a0adfe5e5"),
 				},
@@ -1124,7 +1126,7 @@ func Test_CallV1CallRecordingStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1CallRecordingStart(ctx, tt.callID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration)
+			res, err := reqHandler.CallV1CallRecordingStart(ctx, tt.callID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

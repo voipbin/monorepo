@@ -22,11 +22,11 @@ func Test_marshalOptionAgentCall(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"agent_id": "40fa82a8-951b-11ec-ace0-9fa349fe2070"}`),
+			option: []byte(`{"agent_id": "40fa82a8-951b-11ec-ace0-9fa349fe2070"}`),
 
-			OptionAgentCall{
+			expectedRes: OptionAgentCall{
 				AgentID: uuid.FromStringOrNil("40fa82a8-951b-11ec-ace0-9fa349fe2070"),
 			},
 		},
@@ -826,6 +826,47 @@ func Test_marshal_OptionEmailSend(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			res := OptionEmailSend{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
+
+func Test_marshalOptionRecordingStart(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectedRes OptionRecordingStart
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			option: []byte(`{"format": "wav", "end_of_silence": 3, "end_of_key": "1", "duration": 60, "beep_start": true, "on_end_flow_id":"c34194ca-0545-11f0-b0ee-2be0bbe6695e"}`),
+
+			expectedRes: OptionRecordingStart{
+				Format:       "wav",
+				EndOfSilence: 3,
+				EndOfKey:     "1",
+				Duration:     60,
+				BeepStart:    true,
+				OnEndFlowID:  uuid.FromStringOrNil("c34194ca-0545-11f0-b0ee-2be0bbe6695e"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionRecordingStart{}
 			if err := json.Unmarshal(tt.option, &res); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

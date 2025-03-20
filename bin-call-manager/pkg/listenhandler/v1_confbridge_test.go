@@ -438,31 +438,33 @@ func Test_processV1ConfbridgesIDRecordingStartPost(t *testing.T) {
 		expectEndOfSilence int
 		expectEndOfKey     string
 		expectDuration     int
+		expectOnEndFlowID  uuid.UUID
 
 		expectRes *sock.Response
 	}
 
 	tests := []test{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:      "/v1/confbridges/99cc7924-996e-11ed-bc44-6fda69332002/recording_start",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"format": "wav", "end_of_silence": 1000, "end_of_key": "#", "duration": 86400}`),
+				Data:     []byte(`{"format": "wav", "end_of_silence": 1000, "end_of_key": "#", "duration": 86400, "on_end_flow_id": "41d110f8-0547-11f0-b3e5-6f53c896c169"}`),
 			},
 
-			&confbridge.Confbridge{
+			responseConfbridge: &confbridge.Confbridge{
 				ID: uuid.FromStringOrNil("99cc7924-996e-11ed-bc44-6fda69332002"),
 			},
 
-			uuid.FromStringOrNil("99cc7924-996e-11ed-bc44-6fda69332002"),
-			recording.FormatWAV,
-			1000,
-			"#",
-			86400,
+			expectID:           uuid.FromStringOrNil("99cc7924-996e-11ed-bc44-6fda69332002"),
+			expectFormat:       recording.FormatWAV,
+			expectEndOfSilence: 1000,
+			expectEndOfKey:     "#",
+			expectDuration:     86400,
+			expectOnEndFlowID:  uuid.FromStringOrNil("41d110f8-0547-11f0-b3e5-6f53c896c169"),
 
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"99cc7924-996e-11ed-bc44-6fda69332002","customer_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -483,7 +485,7 @@ func Test_processV1ConfbridgesIDRecordingStartPost(t *testing.T) {
 				confbridgeHandler: mockConfbridge,
 			}
 
-			mockConfbridge.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration).Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID).Return(tt.responseConfbridge, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

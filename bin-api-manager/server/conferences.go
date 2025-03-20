@@ -259,7 +259,15 @@ func (h *server) PostConferencesIdRecordingStart(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConferenceRecordingStart(c.Request.Context(), &a, target)
+	var req openapi_server.PostConferencesIdRecordingStartJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	onEndFlowID := uuid.FromStringOrNil(req.OnEndFlowId)
+
+	res, err := h.serviceHandler.ConferenceRecordingStart(c.Request.Context(), &a, target, onEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start the conference recording. err: %v", err)
 		c.AbortWithStatus(400)

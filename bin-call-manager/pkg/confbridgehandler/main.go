@@ -52,7 +52,15 @@ type ConfbridgeHandler interface {
 	Ring(ctx context.Context, id uuid.UUID) error
 	Answer(ctx context.Context, id uuid.UUID) error
 
-	RecordingStart(ctx context.Context, id uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*confbridge.Confbridge, error)
+	RecordingStart(
+		ctx context.Context,
+		id uuid.UUID,
+		format recording.Format,
+		endOfSilence int,
+		endOfKey string,
+		duration int,
+		onEndFlowID uuid.UUID,
+	) (*confbridge.Confbridge, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 
 	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*confbridge.Confbridge, error)

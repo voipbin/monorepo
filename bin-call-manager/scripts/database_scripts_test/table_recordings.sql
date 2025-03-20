@@ -10,6 +10,8 @@ create table call_recordings(
   status            varchar(255),   -- current status of record.
   format            varchar(16),    -- recording's format. wav, ...
 
+  on_end_flow_id    binary(16),     -- on end flow id
+
   recording_name    varchar(255),   -- recording's basename
   filenames         json,           -- recording's filenames
 
@@ -33,3 +35,4 @@ create index idx_call_recordings_customer_id on call_recordings(customer_id);
 create index idx_call_recordings_owner_id on call_recordings(owner_id);
 create index idx_call_recordings_reference_id on call_recordings(reference_id);
 create index idx_call_recordings_recording_name on call_recordings(recording_name);
+create index idx_call_recordings_on_end_flow_id on call_recordings(on_end_flow_id);

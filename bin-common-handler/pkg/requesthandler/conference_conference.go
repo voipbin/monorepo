@@ -263,10 +263,19 @@ func (r *requestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Con
 // ConferenceV1ConferenceRecordingStart sends a request to conference-manager
 // to start the conference recording.
 // it returns error if it failed.
-func (r *requestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
+func (r *requestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID, onEndFlowID uuid.UUID) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s/recording_start", conferenceID.String())
 
-	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferences/<conference-id>/recording_start", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	data := &cfrequest.V1DataConferencesIDRecordingStartPost{
+		OnEndFlowID: onEndFlowID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferences/<conference-id>/recording_start", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

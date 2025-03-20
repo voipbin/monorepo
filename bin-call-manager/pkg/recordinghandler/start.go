@@ -19,23 +19,18 @@ func (h *recordingHandler) Start(
 	endOfSilence int,
 	endOfKey string,
 	duration int,
+	onEndFlowID uuid.UUID,
 ) (*recording.Recording, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "Start",
-		"reference_type": referenceType,
-		"reference_id":   referenceID,
-	})
 
 	switch referenceType {
 	case recording.ReferenceTypeCall:
-		return h.recordingReferenceTypeCall(ctx, referenceID, format, endOfSilence, endOfKey, duration)
+		return h.recordingReferenceTypeCall(ctx, referenceID, format, endOfSilence, endOfKey, duration, onEndFlowID)
 
 	case recording.ReferenceTypeConfbridge:
-		return h.recordingReferenceTypeConfbridge(ctx, referenceID, format, endOfSilence, endOfKey, duration)
+		return h.recordingReferenceTypeConfbridge(ctx, referenceID, format, endOfSilence, endOfKey, duration, onEndFlowID)
 
 	default:
-		log.Errorf("Unimplemented reference type. reference_type: %s, reference_id: %s", referenceType, referenceID)
-		return nil, fmt.Errorf("unsupported reference type")
+		return nil, fmt.Errorf("unsupported reference type. reference_type: %s, reference_id: %s", referenceType, referenceID)
 	}
 }
 

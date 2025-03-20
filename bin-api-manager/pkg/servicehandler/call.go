@@ -8,6 +8,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
@@ -16,6 +17,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -611,4 +613,71 @@ func (h *serviceHandler) CallMediaStreamStart(ctx context.Context, a *amagent.Ag
 	}
 
 	return nil
+}
+
+// CallRecordingStart sends a request to call-manager
+// to start the recording.
+// it returns error if it failed.
+func (h *serviceHandler) CallRecordingStart(
+	ctx context.Context,
+	a *amagent.Agent,
+	callID uuid.UUID,
+	format cmrecording.Format,
+	endOfSilence int,
+	endOfKey string,
+	duration int,
+	onEndFlowID uuid.UUID,
+) (*cmcall.WebhookMessage, error) {
+
+	c, err := h.callGet(ctx, callID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get call info")
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	// send request
+	tmp, err := h.reqHandler.CallV1CallRecordingStart(
+		ctx,
+		callID,
+		format,
+		endOfSilence,
+		endOfKey,
+		duration,
+		onEndFlowID,
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not start the recording")
+	}
+
+	// convert
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// CallRecordingStop sends a request to call-manager
+// to stop the recording.
+// it returns error if it failed.
+func (h *serviceHandler) CallRecordingStop(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+
+	c, err := h.callGet(ctx, callID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get call info")
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	// send request
+	tmp, err := h.reqHandler.CallV1CallRecordingStop(ctx, callID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not start the recording")
+	}
+
+	// convert
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }

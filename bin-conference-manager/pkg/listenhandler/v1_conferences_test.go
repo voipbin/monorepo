@@ -488,22 +488,26 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 
 		responseConference *conference.Conference
 
-		expectID  uuid.UUID
-		expectRes *sock.Response
+		expectedID          uuid.UUID
+		expectedOnEndFlowID uuid.UUID
+		expectedRes         *sock.Response
 	}{
 		{
-			"type conference",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:      "/v1/conferences/17ca9f6a-9102-11ed-9c97-1b1670cb9db9/recording_start",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
+				Data:     []byte(`{"on_end_flow_id":"b2f2d696-055f-11f0-8b66-b75440b1ede2"}`),
 			},
-			&conference.Conference{
+
+			responseConference: &conference.Conference{
 				ID: uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
 			},
 
-			uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
-			&sock.Response{
+			expectedID:          uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
+			expectedOnEndFlowID: uuid.FromStringOrNil("b2f2d696-055f-11f0-8b66-b75440b1ede2"),
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"17ca9f6a-9102-11ed-9c97-1b1670cb9db9","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -524,14 +528,14 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectID).Return(tt.responseConference, nil)
+			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectedID, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

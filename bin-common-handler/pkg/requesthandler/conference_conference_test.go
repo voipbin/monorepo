@@ -426,7 +426,8 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		id          uuid.UUID
+		onEndFlowID uuid.UUID
 
 		response      *sock.Response
 		expectTarget  string
@@ -434,21 +435,24 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 		expectRes     *cfconference.Conference
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
+			id:          uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
+			onEndFlowID: uuid.FromStringOrNil("01eac468-055e-11f0-b60a-2753cc705cdb"),
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"062311b6-9107-11ed-bd31-fb8ce20a3bd7"}`),
 			},
-			"bin-manager.conference-manager.request",
-			&sock.Request{
-				URI:    "/v1/conferences/062311b6-9107-11ed-bd31-fb8ce20a3bd7/recording_start",
-				Method: sock.RequestMethodPost,
+			expectTarget: "bin-manager.conference-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/conferences/062311b6-9107-11ed-bd31-fb8ce20a3bd7/recording_start",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"on_end_flow_id":"01eac468-055e-11f0-b60a-2753cc705cdb"}`),
 			},
-			&cfconference.Conference{
+			expectRes: &cfconference.Conference{
 				ID: uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
 			},
 		},
@@ -467,7 +471,7 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConferenceV1ConferenceRecordingStart(ctx, tt.id)
+			res, err := reqHandler.ConferenceV1ConferenceRecordingStart(ctx, tt.id, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

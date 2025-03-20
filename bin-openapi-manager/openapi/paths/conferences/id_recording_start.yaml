@@ -10,6 +10,18 @@ post:
       schema:
         type: string
       description: The ID of the conference
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            on_end_flow_id:
+              description: The ID of the flow to be executed when the recording ends.
+              type: string
+          required:
+            - on_end_flow_id
   responses:
     '200':
       description: Recording started successfully.

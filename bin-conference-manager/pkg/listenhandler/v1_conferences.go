@@ -258,7 +258,13 @@ func (h *listenHandler) processV1ConferencesIDRecordingStartPost(ctx context.Con
 	}
 	cfID := uuid.FromStringOrNil(uriItems[3])
 
-	tmp, err := h.conferenceHandler.RecordingStart(ctx, cfID)
+	var req request.V1DataConferencesIDRecordingStartPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.conferenceHandler.RecordingStart(ctx, cfID, req.OnEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start the conference recording id. err: %v", err)
 		return nil, err

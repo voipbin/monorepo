@@ -17,6 +17,8 @@ type WebhookMessage struct {
 	Status        Status        `json:"status"`
 	Format        Format        `json:"format"`
 
+	OnEndFlowID uuid.UUID `json:"on_end_flow_id"` // executed when recording ends
+
 	TMStart string `json:"tm_start"`
 	TMEnd   string `json:"tm_end"`
 
@@ -35,6 +37,8 @@ func (h *Recording) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceID:   h.ReferenceID,
 		Status:        h.Status,
 		Format:        h.Format,
+
+		OnEndFlowID: h.OnEndFlowID,
 
 		TMStart: h.TMStart,
 		TMEnd:   h.TMEnd,

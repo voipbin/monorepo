@@ -10,6 +10,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/identity"
@@ -964,6 +965,153 @@ func Test_CallMediaStreamStart(t *testing.T) {
 
 			if err := h.CallMediaStreamStart(ctx, tt.agent, tt.callID, tt.encapsulation, tt.writer, tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallRecordingStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent        *amagent.Agent
+		callID       uuid.UUID
+		format       cmrecording.Format
+		endOfSilence int
+		endOfKey     string
+		duration     int
+		onEndFlowID  uuid.UUID
+
+		responseCall *cmcall.Call
+		expectRes    *cmcall.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f71a3738-0564-11f0-bd3f-37e4bca1cda6"),
+					CustomerID: uuid.FromStringOrNil("f7440658-0564-11f0-911f-07ef11cbbf3f"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			callID:       uuid.FromStringOrNil("f71a3738-0564-11f0-bd3f-37e4bca1cda6"),
+			format:       cmrecording.FormatWAV,
+			endOfSilence: 10,
+			endOfKey:     "1",
+			duration:     600,
+			onEndFlowID:  uuid.FromStringOrNil("f767a414-0564-11f0-af0d-1f1003b2d7b5"),
+
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f71a3738-0564-11f0-bd3f-37e4bca1cda6"),
+					CustomerID: uuid.FromStringOrNil("f7440658-0564-11f0-911f-07ef11cbbf3f"),
+				},
+				TMDelete: defaultTimestamp,
+			},
+			expectRes: &cmcall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f71a3738-0564-11f0-bd3f-37e4bca1cda6"),
+					CustomerID: uuid.FromStringOrNil("f7440658-0564-11f0-911f-07ef11cbbf3f"),
+				},
+				TMDelete: defaultTimestamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallRecordingStart(ctx, tt.callID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseCall, nil)
+
+			res, err := h.CallRecordingStart(ctx, tt.agent, tt.callID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CallRecordingStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent  *amagent.Agent
+		callID uuid.UUID
+
+		responseCall *cmcall.Call
+		expectRes    *cmcall.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f78ca28c-0564-11f0-9fca-13cae175815c"),
+					CustomerID: uuid.FromStringOrNil("f7b152c6-0564-11f0-8e74-333547c026af"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			callID: uuid.FromStringOrNil("f78ca28c-0564-11f0-9fca-13cae175815c"),
+
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f78ca28c-0564-11f0-9fca-13cae175815c"),
+					CustomerID: uuid.FromStringOrNil("f7b152c6-0564-11f0-8e74-333547c026af"),
+				},
+				TMDelete: defaultTimestamp,
+			},
+			expectRes: &cmcall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f78ca28c-0564-11f0-9fca-13cae175815c"),
+					CustomerID: uuid.FromStringOrNil("f7b152c6-0564-11f0-8e74-333547c026af"),
+				},
+				TMDelete: defaultTimestamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallRecordingStop(ctx, tt.callID).Return(tt.responseCall, nil)
+			res, err := h.CallRecordingStop(ctx, tt.agent, tt.callID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

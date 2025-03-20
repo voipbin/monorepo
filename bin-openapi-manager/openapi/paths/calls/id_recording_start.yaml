@@ -1,0 +1,49 @@
+post:
+  summary: Start call recording
+  description: Initiate recording for the specified call.
+  tags:
+    - Call
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the call
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            format:
+              description: The format of the recording.
+              type: string
+              enum:
+                - wav
+            end_of_silence:
+              description: The duration of silence (in seconds) after which the recording will be stopped.
+              type: integer
+            end_of_key:
+              description: The key that will stop the recording.
+              type: string
+            duration:
+              description: The maximum duration of the recording (in seconds).
+              type: integer
+            on_end_flow_id:
+              description: The ID of the flow to be executed when the recording ends.
+              type: string
+          required:
+            - format
+            - end_of_silence
+            - end_of_key
+            - duration
+            - on_end_flow_id
+  responses:
+    '200':
+      description: Detailed call information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerCall'
