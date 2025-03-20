@@ -36,6 +36,7 @@ type V1DataConfbridgesIDRecordingStartPost struct {
 	EndOfSilence int              `json:"end_of_silence,omitempty"` // Maximum duration of silence, in seconds. 0 for no limit.
 	EndOfKey     string           `json:"end_of_key,omitempty"`     // DTMF input to terminate recording. none, any, *, #
 	Duration     int              `json:"duration,omitempty"`       // Maximum duration of the recording, in seconds. 0 for no limit.
+	OnEndFlowID  uuid.UUID        `json:"on_end_flow_id,omitempty"` // Flow ID to execute when the recording ends.
 }
 
 // V1DataConfbridgesIDFlagsPost is

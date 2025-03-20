@@ -102,6 +102,7 @@ func (r *requestHandler) CallV1RecordingStart(
 	endOfSilence int,
 	endOfKey string,
 	duration int,
+	onEndFlowID uuid.UUID,
 ) (*cmrecording.Recording, error) {
 	uri := "/v1/recordings"
 
@@ -112,6 +113,7 @@ func (r *requestHandler) CallV1RecordingStart(
 		EndOfSilence:  endOfSilence,
 		EndOfKey:      endOfKey,
 		Duration:      duration,
+		OnEndFlowID:   onEndFlowID,
 	}
 
 	m, err := json.Marshal(reqData)

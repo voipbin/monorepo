@@ -5,6 +5,7 @@ package conferencehandler
 import (
 	"context"
 
+	cmrecording "monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -48,7 +49,13 @@ type ConferenceHandler interface {
 
 	Terminating(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 
-	RecordingStart(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
+	RecordingStart(
+		ctx context.Context,
+		id uuid.UUID,
+		format cmrecording.Format,
+		duration int,
+		onEndFlowID uuid.UUID,
+	) (*conference.Conference, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 
 	TranscribeStart(ctx context.Context, id uuid.UUID, lang string) (*conference.Conference, error)

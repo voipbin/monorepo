@@ -63,7 +63,7 @@ require (
 	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/oauth2 v0.28.0
 	golang.org/x/text v0.23.0 // indirect
-	google.golang.org/api v0.226.0
+	google.golang.org/api v0.227.0
 	google.golang.org/genproto v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/grpc v1.71.0 // indirect
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
@@ -75,7 +75,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.7.1
+	github.com/redis/go-redis/v9 v9.7.2
 	github.com/smotes/purse v1.0.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.20.0

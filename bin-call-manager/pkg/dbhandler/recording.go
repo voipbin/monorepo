@@ -26,6 +26,8 @@ const (
 		status,
 		format,
 
+		on_end_flow_id,
+
 		recording_name,
 		filenames,
 
@@ -60,6 +62,8 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 		&res.ReferenceID,
 		&res.Status,
 		&res.Format,
+
+		&res.OnEndFlowID,
 
 		&res.RecordingName,
 		&filenames,
@@ -113,6 +117,8 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		status,
 		format,
 
+		on_end_flow_id,
+
 		recording_name,
         filenames,
 
@@ -129,6 +135,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 	) values(
 		?, ?, ?, ?,
 		?, ?, ?, ?,
+		?,
 		?, ?,
 		?, ?,
 		?, ?,
@@ -155,6 +162,8 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		c.ReferenceID.Bytes(),
 		c.Status,
 		c.Format,
+
+		c.OnEndFlowID.Bytes(),
 
 		c.RecordingName,
 		tmpFilenames,

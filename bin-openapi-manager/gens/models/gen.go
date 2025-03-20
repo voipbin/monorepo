@@ -194,7 +194,7 @@ const (
 
 // Defines values for CallManagerRecordingFormat.
 const (
-	Wav CallManagerRecordingFormat = "wav"
+	CallManagerRecordingFormatWav CallManagerRecordingFormat = "wav"
 )
 
 // Defines values for CallManagerRecordingReferenceType.
@@ -605,6 +605,16 @@ const (
 const (
 	TransferManagerTransferTypeAttended TransferManagerTransferType = "attended"
 	TransferManagerTransferTypeBlind    TransferManagerTransferType = "blind"
+)
+
+// Defines values for PostCallsIdRecordingStartJSONBodyFormat.
+const (
+	PostCallsIdRecordingStartJSONBodyFormatWav PostCallsIdRecordingStartJSONBodyFormat = "wav"
+)
+
+// Defines values for PostConferencesIdRecordingStartJSONBodyFormat.
+const (
+	Wav PostConferencesIdRecordingStartJSONBodyFormat = "wav"
 )
 
 // AIManagerAI defines model for AIManagerAI.
@@ -2836,6 +2846,27 @@ type PostCallsIdMuteJSONBody struct {
 	Direction *CallManagerCallMuteDirection `json:"direction,omitempty"`
 }
 
+// PostCallsIdRecordingStartJSONBody defines parameters for PostCallsIdRecordingStart.
+type PostCallsIdRecordingStartJSONBody struct {
+	// Duration The maximum duration of the recording (in seconds).
+	Duration int `json:"duration"`
+
+	// EndOfKey The key that will stop the recording.
+	EndOfKey string `json:"end_of_key"`
+
+	// EndOfSilence The duration of silence (in seconds) after which the recording will be stopped.
+	EndOfSilence int `json:"end_of_silence"`
+
+	// Format The format of the recording.
+	Format PostCallsIdRecordingStartJSONBodyFormat `json:"format"`
+
+	// OnEndFlowId The ID of the flow to be executed when the recording ends.
+	OnEndFlowId string `json:"on_end_flow_id"`
+}
+
+// PostCallsIdRecordingStartJSONBodyFormat defines parameters for PostCallsIdRecordingStart.
+type PostCallsIdRecordingStartJSONBodyFormat string
+
 // PostCallsIdTalkJSONBody defines parameters for PostCallsIdTalk.
 type PostCallsIdTalkJSONBody struct {
 	Gender   *string `json:"gender,omitempty"`
@@ -3122,6 +3153,21 @@ type GetConferencesIdMediaStreamParams struct {
 	// Encapsulation The encapsulation for media stream.
 	Encapsulation string `form:"encapsulation" json:"encapsulation"`
 }
+
+// PostConferencesIdRecordingStartJSONBody defines parameters for PostConferencesIdRecordingStart.
+type PostConferencesIdRecordingStartJSONBody struct {
+	// Duration The maximum duration of the recording (in seconds).
+	Duration int `json:"duration"`
+
+	// Format The format of the recording.
+	Format PostConferencesIdRecordingStartJSONBodyFormat `json:"format"`
+
+	// OnEndFlowId The ID of the flow to be executed when the recording ends.
+	OnEndFlowId string `json:"on_end_flow_id"`
+}
+
+// PostConferencesIdRecordingStartJSONBodyFormat defines parameters for PostConferencesIdRecordingStart.
+type PostConferencesIdRecordingStartJSONBodyFormat string
 
 // PostConferencesIdTranscribeStartJSONBody defines parameters for PostConferencesIdTranscribeStart.
 type PostConferencesIdTranscribeStartJSONBody struct {
@@ -4078,6 +4124,9 @@ type DeleteCallsIdMuteJSONRequestBody DeleteCallsIdMuteJSONBody
 // PostCallsIdMuteJSONRequestBody defines body for PostCallsIdMute for application/json ContentType.
 type PostCallsIdMuteJSONRequestBody PostCallsIdMuteJSONBody
 
+// PostCallsIdRecordingStartJSONRequestBody defines body for PostCallsIdRecordingStart for application/json ContentType.
+type PostCallsIdRecordingStartJSONRequestBody PostCallsIdRecordingStartJSONBody
+
 // PostCallsIdTalkJSONRequestBody defines body for PostCallsIdTalk for application/json ContentType.
 type PostCallsIdTalkJSONRequestBody PostCallsIdTalkJSONBody
 
@@ -4131,6 +4180,9 @@ type PostConferencesJSONRequestBody PostConferencesJSONBody
 
 // PutConferencesIdJSONRequestBody defines body for PutConferencesId for application/json ContentType.
 type PutConferencesIdJSONRequestBody PutConferencesIdJSONBody
+
+// PostConferencesIdRecordingStartJSONRequestBody defines body for PostConferencesIdRecordingStart for application/json ContentType.
+type PostConferencesIdRecordingStartJSONRequestBody PostConferencesIdRecordingStartJSONBody
 
 // PostConferencesIdTranscribeStartJSONRequestBody defines body for PostConferencesIdTranscribeStart for application/json ContentType.
 type PostConferencesIdTranscribeStartJSONRequestBody PostConferencesIdTranscribeStartJSONBody

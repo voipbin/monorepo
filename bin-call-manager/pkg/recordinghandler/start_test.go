@@ -32,6 +32,7 @@ func Test_Start_call(t *testing.T) {
 		endOfSilence  int
 		endOfKey      string
 		duration      int
+		onEndFlowID   uuid.UUID
 
 		responseCall            *call.Call
 		responseUUID            uuid.UUID
@@ -54,6 +55,7 @@ func Test_Start_call(t *testing.T) {
 			endOfSilence:  0,
 			endOfKey:      "",
 			duration:      0,
+			onEndFlowID:   uuid.FromStringOrNil("56451fc2-0540-11f0-8f09-8b6c356cada7"),
 
 			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
@@ -99,6 +101,9 @@ func Test_Start_call(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("d883a3f2-8fd4-11ed-baee-af9907e4df67"),
 				Status:        recording.StatusInitiating,
 				Format:        "wav",
+
+				OnEndFlowID: uuid.FromStringOrNil("56451fc2-0540-11f0-8f09-8b6c356cada7"),
+
 				RecordingName: "call_d883a3f2-8fd4-11ed-baee-af9907e4df67_2023-01-05T14:58:05Z",
 				Filenames: []string{
 					"call_d883a3f2-8fd4-11ed-baee-af9907e4df67_2023-01-05T14:58:05Z_in.wav",
@@ -155,6 +160,7 @@ func Test_Start_call(t *testing.T) {
 				tt.endOfSilence,
 				tt.endOfKey,
 				tt.duration,
+				tt.onEndFlowID,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -178,6 +184,7 @@ func Test_Start_confbridge(t *testing.T) {
 		endOfSilence  int
 		endOfKey      string
 		duration      int
+		onEndFlowID   uuid.UUID
 
 		responseConfbridge *confbridge.Confbridge
 		responseBridge     *bridge.Bridge
@@ -198,6 +205,7 @@ func Test_Start_confbridge(t *testing.T) {
 			endOfSilence:  0,
 			endOfKey:      "",
 			duration:      0,
+			onEndFlowID:   uuid.FromStringOrNil("76d50b1c-0540-11f0-aeef-37900c5fcfeb"),
 
 			responseConfbridge: &confbridge.Confbridge{
 				ID:         uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
@@ -227,11 +235,15 @@ func Test_Start_confbridge(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
 				Status:        recording.StatusInitiating,
 				Format:        "wav",
+
+				OnEndFlowID: uuid.FromStringOrNil("76d50b1c-0540-11f0-aeef-37900c5fcfeb"),
+
 				RecordingName: "confbridge_67f358e8-90a2-11ed-b315-2b63c5f83d10_2023-01-05T14:58:05Z",
 				Filenames: []string{
 					"confbridge_67f358e8-90a2-11ed-b315-2b63c5f83d10_2023-01-05T14:58:05Z_in.wav",
 				},
 				AsteriskID: "42:01:0a:a4:00:03",
+				ChannelIDs: []string{},
 				TMStart:    dbhandler.DefaultTimeStamp,
 				TMEnd:      dbhandler.DefaultTimeStamp,
 			},
@@ -286,6 +298,7 @@ func Test_Start_confbridge(t *testing.T) {
 				tt.endOfSilence,
 				tt.endOfKey,
 				tt.duration,
+				tt.onEndFlowID,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

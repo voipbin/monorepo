@@ -1316,33 +1316,35 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 		expectEndOfSilence int
 		expectEndOfKey     string
 		expectDuration     int
+		expectOnEndFlowID  uuid.UUID
 
 		expectRes *sock.Response
 	}
 
 	tests := []test{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:      "/v1/calls/1c3dc786-9344-11ed-96a2-17c902204823/recording_start",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"format": "wav", "end_of_silence": 1000, "end_of_key": "#", "duration": 86400}`),
+				Data:     []byte(`{"format": "wav", "end_of_silence": 1000, "end_of_key": "#", "duration": 86400, "on_end_flow_id":"41a3daca-0547-11f0-8be6-0390b1e5bfb9"}`),
 			},
 
-			&call.Call{
+			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
 				},
 			},
 
-			uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
-			recording.FormatWAV,
-			1000,
-			"#",
-			86400,
+			expectID:           uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
+			expectFormat:       recording.FormatWAV,
+			expectEndOfSilence: 1000,
+			expectEndOfKey:     "#",
+			expectDuration:     86400,
+			expectOnEndFlowID:  uuid.FromStringOrNil("41a3daca-0547-11f0-8be6-0390b1e5bfb9"),
 
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1c3dc786-9344-11ed-96a2-17c902204823","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1363,7 +1365,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration).Return(tt.responseCall, nil)
+			mockCall.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID).Return(tt.responseCall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

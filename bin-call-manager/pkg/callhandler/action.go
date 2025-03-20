@@ -556,6 +556,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		option.EndOfSilence,
 		option.EndOfKey,
 		option.Duration,
+		option.OnEndFlowID,
 	)
 	if err != nil {
 		log.Errorf("Could not start the recording. err: %v", err)

@@ -215,11 +215,12 @@ type OptionQueueJoin struct {
 
 // OptionRecordingStart defines action record's option.
 type OptionRecordingStart struct {
-	Format       string `json:"format"`         // Format to encode audio in. wav, mp3, ogg
-	EndOfSilence int    `json:"end_of_silence"` // Maximum duration of silence, in seconds. 0 for no limit.
-	EndOfKey     string `json:"end_of_key"`     // DTMF input to terminate recording. none, any, *, #
-	Duration     int    `json:"duration"`       // Maximum duration of the recording, in seconds. 0 for no limit.
-	BeepStart    bool   `json:"beep_start"`     // Play beep when recording begins.
+	Format       string    `json:"format"`         // Format to encode audio in. wav, mp3, ogg
+	EndOfSilence int       `json:"end_of_silence"` // Maximum duration of silence, in seconds. 0 for no limit.
+	EndOfKey     string    `json:"end_of_key"`     // DTMF input to terminate recording. none, any, *, #
+	Duration     int       `json:"duration"`       // Maximum duration of the recording, in seconds. 0 for no limit.
+	BeepStart    bool      `json:"beep_start"`     // Play beep when recording begins.
+	OnEndFlowID  uuid.UUID `json:"on_end_flow_id"` // flow id for the end of recording.
 }
 
 // OptionRecordingStop defines action record's option.

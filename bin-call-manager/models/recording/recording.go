@@ -16,6 +16,8 @@ type Recording struct {
 	Status        Status        `json:"status"`
 	Format        Format        `json:"format"`
 
+	OnEndFlowID uuid.UUID `json:"on_end_flow_id"` // executed when recording ends
+
 	RecordingName string   `json:"recording_name"`
 	Filenames     []string `json:"filenames"`
 

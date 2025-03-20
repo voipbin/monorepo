@@ -45,6 +45,9 @@ func Test_RecordingCreate(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:        recording.StatusRecording,
 				Format:        "wav",
+
+				OnEndFlowID: uuid.FromStringOrNil("bf507a98-053b-11f0-8d47-5f7eaa3ba62c"),
+
 				RecordingName: "call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000",
 				Filenames: []string{
 					"call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000_in.wav",
@@ -77,6 +80,9 @@ func Test_RecordingCreate(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:        recording.StatusRecording,
 				Format:        "wav",
+
+				OnEndFlowID: uuid.FromStringOrNil("bf507a98-053b-11f0-8d47-5f7eaa3ba62c"),
+
 				RecordingName: "call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000",
 				Filenames: []string{
 					"call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000_in.wav",

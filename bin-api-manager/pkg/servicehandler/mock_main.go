@@ -985,6 +985,36 @@ func (mr *MockServiceHandlerMockRecorder) CallMuteOn(ctx, a, callID, direction a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallMuteOn", reflect.TypeOf((*MockServiceHandler)(nil).CallMuteOn), ctx, a, callID, direction)
 }
 
+// CallRecordingStart mocks base method.
+func (m *MockServiceHandler) CallRecordingStart(ctx context.Context, a *agent.Agent, callID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int, onEndFlowID uuid.UUID) (*call.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallRecordingStart", ctx, a, callID, format, endOfSilence, endOfKey, duration, onEndFlowID)
+	ret0, _ := ret[0].(*call.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallRecordingStart indicates an expected call of CallRecordingStart.
+func (mr *MockServiceHandlerMockRecorder) CallRecordingStart(ctx, a, callID, format, endOfSilence, endOfKey, duration, onEndFlowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallRecordingStart", reflect.TypeOf((*MockServiceHandler)(nil).CallRecordingStart), ctx, a, callID, format, endOfSilence, endOfKey, duration, onEndFlowID)
+}
+
+// CallRecordingStop mocks base method.
+func (m *MockServiceHandler) CallRecordingStop(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*call.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallRecordingStop", ctx, a, callID)
+	ret0, _ := ret[0].(*call.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallRecordingStop indicates an expected call of CallRecordingStop.
+func (mr *MockServiceHandlerMockRecorder) CallRecordingStop(ctx, a, callID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallRecordingStop", reflect.TypeOf((*MockServiceHandler)(nil).CallRecordingStop), ctx, a, callID)
+}
+
 // CallSilenceOff mocks base method.
 func (m *MockServiceHandler) CallSilenceOff(ctx context.Context, a *agent.Agent, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -1627,18 +1657,18 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceMediaStreamStart(ctx, a, con
 }
 
 // ConferenceRecordingStart mocks base method.
-func (m *MockServiceHandler) ConferenceRecordingStart(ctx context.Context, a *agent.Agent, confID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceRecordingStart(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID, format recording.Format, duration int, onEndFlowID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceRecordingStart", ctx, a, confID)
+	ret := m.ctrl.Call(m, "ConferenceRecordingStart", ctx, a, conferenceID, format, duration, onEndFlowID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConferenceRecordingStart indicates an expected call of ConferenceRecordingStart.
-func (mr *MockServiceHandlerMockRecorder) ConferenceRecordingStart(ctx, a, confID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ConferenceRecordingStart(ctx, a, conferenceID, format, duration, onEndFlowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRecordingStart", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceRecordingStart), ctx, a, confID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRecordingStart", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceRecordingStart), ctx, a, conferenceID, format, duration, onEndFlowID)
 }
 
 // ConferenceRecordingStop mocks base method.

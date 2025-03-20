@@ -4,11 +4,66 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/recording"
+	"monorepo/bin-call-manager/pkg/dbhandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	smfile "monorepo/bin-storage-manager/models/file"
 )
+
+func (h *recordingHandler) Create(
+	ctx context.Context,
+	id uuid.UUID,
+	customerID uuid.UUID,
+	referenceType recording.ReferenceType,
+	referenceID uuid.UUID,
+	format recording.Format,
+	OnEndFlowID uuid.UUID,
+	recordingName string,
+	filenames []string,
+	asteriskID string,
+	channelIDs []string,
+) (*recording.Recording, error) {
+
+	tmp := &recording.Recording{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeNone,
+			OwnerID:   uuid.Nil,
+		},
+
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+		Status:        recording.StatusInitiating,
+		Format:        format,
+		RecordingName: recordingName,
+		Filenames:     filenames,
+
+		OnEndFlowID: OnEndFlowID,
+
+		AsteriskID: asteriskID,
+		ChannelIDs: channelIDs,
+
+		TMStart: dbhandler.DefaultTimeStamp,
+		TMEnd:   dbhandler.DefaultTimeStamp,
+	}
+
+	if errCreate := h.db.RecordingCreate(ctx, tmp); errCreate != nil {
+		return nil, errors.Wrapf(errCreate, "could not create the record")
+	}
+
+	res, err := h.db.RecordingGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get created reocording")
+	}
+
+	return res, nil
+}
 
 // Gets returns list of recordings of the given filters
 func (h *recordingHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error) {

@@ -1,0 +1,19 @@
+post:
+  summary: Stop call recording
+  description: Stop the ongoing recording for the specified call.
+  tags:
+    - Call
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the call
+  responses:
+    '200':
+      description: Detailed call information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerCall'

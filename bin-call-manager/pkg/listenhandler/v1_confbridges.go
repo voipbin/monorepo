@@ -297,7 +297,7 @@ func (h *listenHandler) processV1ConfbridgesIDRecordingStartPost(ctx context.Con
 		return nil, err
 	}
 
-	tmp, err := h.confbridgeHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration)
+	tmp, err := h.confbridgeHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration, req.OnEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start call recording. err: %v", err)
 		return simpleResponse(500), nil

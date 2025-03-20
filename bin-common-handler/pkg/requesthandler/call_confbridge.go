@@ -202,7 +202,15 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStop(ctx context.Context, 
 // CallV1ConfbridgeRecordingStart sends a request to call-manager
 // to starts the given confbridge's recording.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1ConfbridgeRecordingStart(ctx context.Context, confbridgeID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmconfbridge.Confbridge, error) {
+func (r *requestHandler) CallV1ConfbridgeRecordingStart(
+	ctx context.Context,
+	confbridgeID uuid.UUID,
+	format cmrecording.Format,
+	endOfSilence int,
+	endOfKey string,
+	duration int,
+	onEndFlowID uuid.UUID,
+) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s/recording_start", confbridgeID)
 
 	reqData := &cmrequest.V1DataConfbridgesIDRecordingStartPost{
@@ -210,6 +218,7 @@ func (r *requestHandler) CallV1ConfbridgeRecordingStart(ctx context.Context, con
 		EndOfSilence: endOfSilence,
 		EndOfKey:     endOfKey,
 		Duration:     duration,
+		OnEndFlowID:  onEndFlowID,
 	}
 
 	m, err := json.Marshal(reqData)
