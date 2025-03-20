@@ -484,7 +484,15 @@ func (r *requestHandler) CallV1CallSendDigits(ctx context.Context, callID uuid.U
 // CallV1CallRecordingStart sends a request to call-manager
 // to starts the given call's recording.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmcall.Call, error) {
+func (r *requestHandler) CallV1CallRecordingStart(
+	ctx context.Context,
+	callID uuid.UUID,
+	format cmrecording.Format,
+	endOfSilence int,
+	endOfKey string,
+	duration int,
+	onEndFlowID uuid.UUID,
+) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/recording_start", callID)
 
 	m, err := json.Marshal(cmrequest.V1DataCallsIDRecordingStartPost{
@@ -492,6 +500,7 @@ func (r *requestHandler) CallV1CallRecordingStart(ctx context.Context, callID uu
 		EndOfSilence: endOfSilence,
 		EndOfKey:     endOfKey,
 		Duration:     duration,
+		OnEndFlowID:  onEndFlowID,
 	})
 	if err != nil {
 		return nil, err

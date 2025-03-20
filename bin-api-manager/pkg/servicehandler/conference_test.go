@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -463,27 +464,33 @@ func Test_ConferenceRecordingStart(t *testing.T) {
 
 		agent        *amagent.Agent
 		conferenceID uuid.UUID
+		format       cmrecording.Format
+		duration     int
+		onEndFlowID  uuid.UUID
 
 		responseconference *cfconference.Conference
 		expectRes          *cfconference.WebhookMessage
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&amagent.Agent{
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
+			conferenceID: uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
+			format:       cmrecording.FormatWAV,
+			duration:     3600,
+			onEndFlowID:  uuid.FromStringOrNil("9c050072-0563-11f0-ac0d-3b5ae35ace28"),
 
-			&cfconference.Conference{
+			responseconference: &cfconference.Conference{
 				ID:         uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
-			&cfconference.WebhookMessage{
+			expectRes: &cfconference.WebhookMessage{
 				ID:         uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
@@ -505,8 +512,8 @@ func Test_ConferenceRecordingStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceRecordingStart(ctx, tt.conferenceID).Return(tt.responseconference, nil)
-			res, err := h.ConferenceRecordingStart(ctx, tt.agent, tt.conferenceID)
+			mockReq.EXPECT().ConferenceV1ConferenceRecordingStart(ctx, tt.conferenceID, tt.format, tt.duration, tt.onEndFlowID).Return(tt.responseconference, nil)
+			res, err := h.ConferenceRecordingStart(ctx, tt.agent, tt.conferenceID, tt.format, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

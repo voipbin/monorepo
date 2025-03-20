@@ -8,9 +8,9 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/dbhandler"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,25 +22,25 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 	endOfSilence int,
 	endOfKey string,
 	duration int,
+	onEndFlowID uuid.UUID,
 ) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "recordingReferenceTypeCall",
-		"reference_id": referenceID,
-		"format":       format,
-		"endOfSilence": endOfSilence,
-		"endOfKey":     endOfKey,
-		"duration":     duration,
+		"func":           "recordingReferenceTypeCall",
+		"reference_id":   referenceID,
+		"format":         format,
+		"endOfSilence":   endOfSilence,
+		"endOfKey":       endOfKey,
+		"duration":       duration,
+		"on_end_flow_iD": onEndFlowID,
 	})
 
 	c, err := h.reqHandler.CallV1CallGet(ctx, referenceID)
 	if err != nil {
-		log.Errorf("Could not get reference info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get call info")
 	}
 
 	if c.Status != call.StatusProgressing {
-		log.Errorf("Invalid status. call_id: %s, status: %s", c.ID, c.Status)
-		return nil, fmt.Errorf("invalid status")
+		return nil, fmt.Errorf("invalid status. call_id: %s, status: %s", c.ID, c.Status)
 	}
 
 	id := h.utilHandler.UUIDCreate()
@@ -76,47 +76,27 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 		// create a snoop channel
 		tmpChannel, err := h.channelHandler.StartSnoop(ctx, c.ChannelID, channelID, appArgs, direction, channel.SnoopDirectionNone)
 		if err != nil {
-			log.Errorf("Could not create a snoop channel for recroding. err: %v", err)
-			return nil, fmt.Errorf("could not create snoop chanel for recrod. err: %v", err)
+			return nil, errors.Wrapf(err, "could not create a snoop channel for recording")
 		}
-
 		log.WithField("channel", tmpChannel).Debugf("Created a snoop channel for recording. channel_id: %s", tmpChannel.ID)
 		asteriskID = tmpChannel.AsteriskID
 	}
 
-	tmp := &recording.Recording{
-		Identity: commonidentity.Identity{
-			ID:         id,
-			CustomerID: c.CustomerID,
-		},
-		Owner: commonidentity.Owner{
-			OwnerType: commonidentity.OwnerTypeNone,
-			OwnerID:   uuid.Nil,
-		},
-
-		ReferenceType: recording.ReferenceTypeCall,
-		ReferenceID:   c.ID,
-		Status:        recording.StatusInitiating,
-		Format:        format,
-		RecordingName: recordingName,
-		Filenames:     filenames,
-
-		AsteriskID: asteriskID,
-		ChannelIDs: channelIDs,
-
-		TMStart: dbhandler.DefaultTimeStamp,
-		TMEnd:   dbhandler.DefaultTimeStamp,
-	}
-
-	if errCreate := h.db.RecordingCreate(ctx, tmp); errCreate != nil {
-		log.Errorf("Could not create the record. err: %v", errCreate)
-		return nil, fmt.Errorf("could not create the record. err: %v", errCreate)
-	}
-
-	res, err := h.db.RecordingGet(ctx, id)
+	res, err := h.Create(
+		ctx,
+		id,
+		c.CustomerID,
+		recording.ReferenceTypeCall,
+		c.ID,
+		format,
+		onEndFlowID,
+		recordingName,
+		filenames,
+		asteriskID,
+		channelIDs,
+	)
 	if err != nil {
-		log.Errorf("Could not get created reocording. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create the record")
 	}
 
 	return res, nil
@@ -130,6 +110,7 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 	endOfSilence int,
 	endOfKey string,
 	duration int,
+	onEndFlowID uuid.UUID,
 ) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "recordingReferenceTypeConfbridge",
@@ -138,26 +119,24 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 		"end_of_silence": endOfSilence,
 		"end_of_key":     endOfKey,
 		"duration":       duration,
+		"on_end_flow_iD": onEndFlowID,
 	})
 	log.Debugf("Start recording the confbridge. confbridge_id: %s", confbridgeID)
 
 	// get confbridge info
 	cb, err := h.reqHandler.CallV1ConfbridgeGet(ctx, confbridgeID)
 	if err != nil {
-		log.Errorf("Could not get confbridge info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get confbridge info")
 	}
 
 	if cb.TMDelete < dbhandler.DefaultTimeStamp {
-		log.Errorf("Invalid confbridge. confbridge_id: %s", confbridgeID)
-		return nil, fmt.Errorf("invalid confbridge")
+		return nil, fmt.Errorf("invalid confbridge. confbridge_id: %s", confbridgeID)
 	}
 
 	// get bridge info
 	br, err := h.bridgeHandler.Get(ctx, cb.BridgeID)
 	if err != nil {
-		log.Errorf("Could not get bridge info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get bridge info")
 	}
 
 	// recreate recording name and filename
@@ -169,38 +148,22 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 	filenames := []string{
 		recordingFilename,
 	}
-	tmp := &recording.Recording{
-		Identity: commonidentity.Identity{
-			ID:         id,
-			CustomerID: cb.CustomerID,
-		},
-		Owner: commonidentity.Owner{
-			OwnerType: commonidentity.OwnerTypeNone,
-			OwnerID:   uuid.Nil,
-		},
 
-		ReferenceType: recording.ReferenceTypeConfbridge,
-		ReferenceID:   cb.ID,
-		Status:        recording.StatusInitiating,
-		Format:        format,
-		RecordingName: recordingName,
-		Filenames:     filenames,
-
-		AsteriskID: br.AsteriskID,
-
-		TMStart: dbhandler.DefaultTimeStamp,
-		TMEnd:   dbhandler.DefaultTimeStamp,
-	}
-
-	if errCreate := h.db.RecordingCreate(ctx, tmp); errCreate != nil {
-		log.Errorf("Could not create recording. err: %v", errCreate)
-		return nil, errCreate
-	}
-
-	res, err := h.db.RecordingGet(ctx, tmp.ID)
+	res, err := h.Create(
+		ctx,
+		id,
+		cb.CustomerID,
+		recording.ReferenceTypeConfbridge,
+		cb.ID,
+		format,
+		onEndFlowID,
+		recordingName,
+		filenames,
+		br.AsteriskID,
+		[]string{},
+	)
 	if err != nil {
-		log.Errorf("Could not get created recording. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create the record")
 	}
 
 	// send recording request
@@ -216,8 +179,7 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 		endOfKey,
 		"fail",
 	); errRecord != nil {
-		log.Errorf("Could not record the bridge. err: %v", errRecord)
-		return nil, errRecord
+		return nil, errors.Wrapf(errRecord, "could not send the recording request")
 	}
 
 	return res, nil

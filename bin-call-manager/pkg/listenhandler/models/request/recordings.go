@@ -25,4 +25,5 @@ type V1DataRecordingsPost struct {
 	EndOfSilence  int                      `json:"end_of_silence,omitempty"` // milliseconds
 	EndOfKey      string                   `json:"end_of_key,omitempty"`
 	Duration      int                      `json:"duration,omitempty"` // milliseconds
+	OnEndFlowID   uuid.UUID                `json:"on_end_flow_id,omitempty"`
 }

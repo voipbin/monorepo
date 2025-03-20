@@ -20,6 +20,7 @@ func (h *confbridgeHandler) RecordingStart(
 	endOfSilence int,
 	endOfKey string,
 	duration int,
+	onEndFlowID uuid.UUID,
 ) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "RecordingStart",
@@ -49,6 +50,7 @@ func (h *confbridgeHandler) RecordingStart(
 		endOfSilence,
 		endOfKey,
 		duration,
+		onEndFlowID,
 	)
 	if err != nil {
 		log.Errorf("Could not start the recording. err: %v", err)

@@ -5,6 +5,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -608,4 +609,89 @@ func (h *server) GetCallsIdMediaStream(c *gin.Context, id string, params openapi
 	}
 
 	c.AbortWithStatus(200)
+}
+
+func (h *server) PostCallsIdRecordingStart(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostCallsIdSilence",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PostCallsIdRecordingStartJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	onEndFlowID := uuid.FromStringOrNil(req.OnEndFlowId)
+
+	res, err := h.serviceHandler.CallRecordingStart(
+		c.Request.Context(),
+		&a,
+		target,
+		cmrecording.Format(req.Format),
+		req.EndOfSilence,
+		req.EndOfKey,
+		req.Duration,
+		onEndFlowID,
+	)
+	if err != nil {
+		log.Errorf("Could not start the recording on the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PostCallsIdRecordingStop(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostCallsIdRecordingStop",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.CallRecordingStop(c.Request.Context(), &a, target)
+	if err != nil {
+		log.Errorf("Could not stop the recording the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
 }

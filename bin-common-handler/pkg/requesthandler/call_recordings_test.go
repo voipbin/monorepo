@@ -259,37 +259,39 @@ func Test_CallV1RecordingStart(t *testing.T) {
 		endOfSilence  int
 		endOfKey      string
 		duration      int
+		onEndFlowID   uuid.UUID
 
 		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
-		expectResult  *cmrecording.Recording
+		expectRe      *cmrecording.Recording
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			cmrecording.ReferenceTypeCall,
-			uuid.FromStringOrNil("a49bea54-90ce-11ed-9bfb-67a5f5309240"),
-			cmrecording.FormatWAV,
-			10000,
-			"#",
-			100000,
+			referenceType: cmrecording.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("a49bea54-90ce-11ed-9bfb-67a5f5309240"),
+			format:        cmrecording.FormatWAV,
+			endOfSilence:  10000,
+			endOfKey:      "#",
+			duration:      100000,
+			onEndFlowID:   uuid.FromStringOrNil("0198bf9c-055e-11f0-a389-d7d10200060e"),
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a4d5b57c-90ce-11ed-a125-b38f2f6766f4"}`),
 			},
 
-			"bin-manager.call-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.call-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/recordings",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"a49bea54-90ce-11ed-9bfb-67a5f5309240","format":"wav","end_of_silence":10000,"end_of_key":"#","duration":100000}`),
+				Data:     []byte(`{"owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"a49bea54-90ce-11ed-9bfb-67a5f5309240","format":"wav","end_of_silence":10000,"end_of_key":"#","duration":100000,"on_end_flow_id":"0198bf9c-055e-11f0-a389-d7d10200060e"}`),
 			},
-			&cmrecording.Recording{
+			expectRe: &cmrecording.Recording{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a4d5b57c-90ce-11ed-a125-b38f2f6766f4"),
 				},
@@ -310,13 +312,13 @@ func Test_CallV1RecordingStart(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1RecordingStart(ctx, tt.referenceType, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration)
+			res, err := reqHandler.CallV1RecordingStart(ctx, tt.referenceType, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(*tt.expectResult, *res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			if reflect.DeepEqual(*tt.expectRe, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectRe, *res)
 			}
 		})
 	}

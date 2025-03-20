@@ -9,6 +9,7 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"net/http"
@@ -1026,6 +1027,160 @@ func Test_callsIDMediaStreamGET(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().CallMediaStreamStart(req.Context(), &tt.agent, tt.expectCallID, tt.expectEncapsulation, c.Writer, req).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_PostCallsIdRecordingStart(t *testing.T) {
+
+	type test struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+		reqBody  []byte
+
+		responseCall *cmcall.WebhookMessage
+
+		expectedCallID      uuid.UUID
+		expectedFormat      cmrecording.Format
+		epxectEndOfSilence  int
+		expectedEndOfKey    string
+		expectedDuration    int
+		expectedOnEndFlowID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d30e7702-0567-11f0-89b1-1ff587d35570"),
+					CustomerID: uuid.FromStringOrNil("d33296b4-0567-11f0-8801-3f3e7d9612e6"),
+				},
+			},
+
+			reqQuery: "/calls/d30e7702-0567-11f0-89b1-1ff587d35570/recording_start",
+			reqBody:  []byte(`{"format":"wav","end_of_silence":10,"end_of_key":"1","duration":600,"on_end_flow_id":"d3578cb2-0567-11f0-82cf-5362e575afc8"}`),
+
+			responseCall: &cmcall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d30e7702-0567-11f0-89b1-1ff587d35570"),
+				},
+			},
+
+			expectedCallID:      uuid.FromStringOrNil("d30e7702-0567-11f0-89b1-1ff587d35570"),
+			expectedFormat:      cmrecording.FormatWAV,
+			epxectEndOfSilence:  10,
+			expectedEndOfKey:    "1",
+			expectedDuration:    600,
+			expectedOnEndFlowID: uuid.FromStringOrNil("d3578cb2-0567-11f0-82cf-5362e575afc8"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallRecordingStart(
+				req.Context(),
+				&tt.agent,
+				tt.expectedCallID,
+				tt.expectedFormat,
+				tt.epxectEndOfSilence,
+				tt.expectedEndOfKey,
+				tt.expectedDuration,
+				tt.expectedOnEndFlowID,
+			).Return(tt.responseCall, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_PostCallsIdRecordingStop(t *testing.T) {
+
+	type test struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+
+		responseCall *cmcall.WebhookMessage
+
+		expectedCallID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ee49e0c2-0569-11f0-83fc-b32453293d26"),
+				},
+			},
+
+			reqQuery: "/calls/ee49e0c2-0569-11f0-83fc-b32453293d26/recording_stop",
+
+			responseCall: &cmcall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ee49e0c2-0569-11f0-83fc-b32453293d26"),
+				},
+			},
+
+			expectedCallID: uuid.FromStringOrNil("ee49e0c2-0569-11f0-83fc-b32453293d26"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallRecordingStop(req.Context(), &tt.agent, tt.expectedCallID).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

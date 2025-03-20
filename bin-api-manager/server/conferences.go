@@ -3,6 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -259,7 +260,15 @@ func (h *server) PostConferencesIdRecordingStart(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConferenceRecordingStart(c.Request.Context(), &a, target)
+	var req openapi_server.PostConferencesIdRecordingStartJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	onEndFlowID := uuid.FromStringOrNil(req.OnEndFlowId)
+
+	res, err := h.serviceHandler.ConferenceRecordingStart(c.Request.Context(), &a, target, cmrecording.Format(req.Format), req.Duration, onEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start the conference recording. err: %v", err)
 		c.AbortWithStatus(400)

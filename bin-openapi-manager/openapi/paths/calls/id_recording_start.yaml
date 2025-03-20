@@ -1,15 +1,15 @@
 post:
-  summary: Start conference recording
-  description: Initiate recording for the specified conference.
+  summary: Start call recording
+  description: Initiate recording for the specified call.
   tags:
-    - Conference
+    - Call
   parameters:
     - name: id
       in: path
       required: true
       schema:
         type: string
-      description: The ID of the conference
+      description: The ID of the call
   requestBody:
     required: true
     content:
@@ -22,6 +22,12 @@ post:
               type: string
               enum:
                 - wav
+            end_of_silence:
+              description: The duration of silence (in seconds) after which the recording will be stopped.
+              type: integer
+            end_of_key:
+              description: The key that will stop the recording.
+              type: string
             duration:
               description: The maximum duration of the recording (in seconds).
               type: integer
@@ -30,8 +36,14 @@ post:
               type: string
           required:
             - format
+            - end_of_silence
+            - end_of_key
             - duration
             - on_end_flow_id
   responses:
     '200':
-      description: Recording started successfully.
+      description: Detailed call information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerCall'

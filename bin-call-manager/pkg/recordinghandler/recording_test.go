@@ -34,6 +34,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 		endOfSilence int
 		endOfKey     string
 		duration     int
+		onEndFlowID  uuid.UUID
 
 		responseCall            *call.Call
 		responseUUID            uuid.UUID
@@ -55,6 +56,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 			endOfSilence: 0,
 			endOfKey:     "",
 			duration:     0,
+			onEndFlowID:  uuid.FromStringOrNil("770275b6-0540-11f0-bfce-430bc2d612b5"),
 
 			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
@@ -100,6 +102,9 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("852def0e-f24a-11ed-845f-e32a849e7338"),
 				Status:        recording.StatusInitiating,
 				Format:        "wav",
+
+				OnEndFlowID: uuid.FromStringOrNil("770275b6-0540-11f0-bfce-430bc2d612b5"),
+
 				RecordingName: "call_852def0e-f24a-11ed-845f-e32a849e7338_2023-01-05T14:58:05Z",
 				Filenames: []string{
 					"call_852def0e-f24a-11ed-845f-e32a849e7338_2023-01-05T14:58:05Z_in.wav",
@@ -147,7 +152,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.expectRecording, nil)
 
-			res, err := h.recordingReferenceTypeCall(ctx, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration)
+			res, err := h.recordingReferenceTypeCall(ctx, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -169,6 +174,7 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 		endOfSilence int
 		endOfKey     string
 		duration     int
+		onEndflowID  uuid.UUID
 
 		responseConfbridge *confbridge.Confbridge
 		responseBridge     *bridge.Bridge
@@ -188,6 +194,7 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 			endOfSilence: 0,
 			endOfKey:     "",
 			duration:     0,
+			onEndflowID:  uuid.FromStringOrNil("773066c4-0540-11f0-ac8f-6f1699fafec8"),
 
 			responseConfbridge: &confbridge.Confbridge{
 				ID:         uuid.FromStringOrNil("4eb0b00a-f24b-11ed-8ceb-9f5eb3969704"),
@@ -217,11 +224,14 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("4eb0b00a-f24b-11ed-8ceb-9f5eb3969704"),
 				Status:        recording.StatusInitiating,
 				Format:        "wav",
+
+				OnEndFlowID:   uuid.FromStringOrNil("773066c4-0540-11f0-ac8f-6f1699fafec8"),
 				RecordingName: "confbridge_4eb0b00a-f24b-11ed-8ceb-9f5eb3969704_2023-01-05T14:58:05Z",
 				Filenames: []string{
 					"confbridge_4eb0b00a-f24b-11ed-8ceb-9f5eb3969704_2023-01-05T14:58:05Z_in.wav",
 				},
 				AsteriskID: "42:01:0a:a4:00:03",
+				ChannelIDs: []string{},
 				TMStart:    dbhandler.DefaultTimeStamp,
 				TMEnd:      dbhandler.DefaultTimeStamp,
 			},
@@ -268,7 +278,7 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 				"fail",
 			)
 
-			res, err := h.recordingReferenceTypeConfbridge(ctx, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration)
+			res, err := h.recordingReferenceTypeConfbridge(ctx, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndflowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
