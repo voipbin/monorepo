@@ -37,7 +37,7 @@ func (h *fileHandler) bucketfileMove(ctx context.Context, sourceBucketName strin
 	// copy to the destination
 	res, err := dst.CopierFrom(src).Run(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not copy the file to the destination")
+		return nil, errors.Wrap(err, "could not copy the file to the destination. source_bucket_name: %s, source_filepath: %s, dest_bucket_name: %s, dest_filepath: %s")
 	}
 
 	// delete source

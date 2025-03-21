@@ -141,9 +141,7 @@ func Test_variablesGet(t *testing.T) {
 				db:            mockDB,
 			}
 
-			ctx := context.Background()
-
-			res := h.variablesGet(ctx, tt.recording)
+			res := h.variablesGet(tt.recording)
 			if !reflect.DeepEqual(tt.expectedRes, res) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}

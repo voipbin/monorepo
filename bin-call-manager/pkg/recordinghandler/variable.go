@@ -11,18 +11,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (h *recordingHandler) variablesGet(ctx context.Context, c *recording.Recording) map[string]string {
-	filenames := strings.Join(c.Filenames, ",")
+func (h *recordingHandler) variablesGet(r *recording.Recording) map[string]string {
+	filenames := strings.Join(r.Filenames, ",")
 
 	return map[string]string{
 
-		variableRecordingID: c.ID.String(),
+		variableRecordingID: r.ID.String(),
 
-		variableRecordingReferenceType: string(c.ReferenceType),
-		variableRecordingReferenceID:   c.ReferenceID.String(),
-		variableRecordingFormat:        string(c.Format),
+		variableRecordingReferenceType: string(r.ReferenceType),
+		variableRecordingReferenceID:   r.ReferenceID.String(),
+		variableRecordingFormat:        string(r.Format),
 
-		variableRecordingRecordingName: c.RecordingName,
+		variableRecordingRecordingName: r.RecordingName,
 		variableRecordingFilenames:     filenames,
 	}
 }
@@ -30,7 +30,7 @@ func (h *recordingHandler) variablesGet(ctx context.Context, c *recording.Record
 // variablesSet sets the variables
 func (h *recordingHandler) variablesSet(ctx context.Context, activeflowID uuid.UUID, r *recording.Recording) error {
 
-	variables := h.variablesGet(ctx, r)
+	variables := h.variablesGet(r)
 
 	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
 		return fmt.Errorf("could not set the variable. variables: %s, err: %v", variables, errSet)
@@ -65,7 +65,7 @@ func (h *recordingHandler) variableUpdateFromReference(ctx context.Context, r *r
 	maps.Copy(variables, curVariables.Variables)
 
 	// get and overwrite variables for the recording
-	recVariables := h.variablesGet(ctx, r)
+	recVariables := h.variablesGet(r)
 	maps.Copy(variables, recVariables)
 
 	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
