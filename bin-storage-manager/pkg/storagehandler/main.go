@@ -48,11 +48,6 @@ type storageHandler struct {
 	bucketNameMedia string
 }
 
-// fixed bucket directories
-const (
-	directoryRecording = "recording"
-)
-
 // NewStorageHandler creates StorageHandler
 func NewStorageHandler(reqHandler requesthandler.RequestHandler, fileHandler filehandler.FileHandler, bucketNameMedia string) StorageHandler {
 
