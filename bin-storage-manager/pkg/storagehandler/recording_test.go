@@ -2,12 +2,10 @@ package storagehandler
 
 import (
 	"context"
-	"fmt"
 	reflect "reflect"
 	"testing"
 	"time"
 
-	cmrecording "monorepo/bin-call-manager/models/recording"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -16,6 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-storage-manager/models/bucketfile"
+	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/filehandler"
 )
 
@@ -26,7 +25,7 @@ func Test_RecordingGet(t *testing.T) {
 
 		recordingID uuid.UUID
 
-		responseRecording *cmrecording.Recording
+		responseFiles []*file.File
 
 		filepath            string
 		responseBucketName  string
@@ -34,41 +33,49 @@ func Test_RecordingGet(t *testing.T) {
 		responseBucketURI   string
 		responseDownloadURI string
 
+		expectFilters map[string]string
 		expectTargets []string
 		expectRes     *bucketfile.BucketFile
 	}
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
+			recordingID: uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
 
-			&cmrecording.Recording{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
-					CustomerID: uuid.FromStringOrNil("e46238ef-c246-4024-9926-417246acdcba"),
+			responseFiles: []*file.File{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1dc8ab1e-05f4-11f0-bfba-0784b300b355"),
+					},
+					ReferenceType: file.ReferenceTypeRecording,
+					Filepath:      "recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_in.wav",
 				},
-				ReferenceType: cmrecording.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
-				Status:        cmrecording.StatusEnded,
-				Filenames: []string{
-					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_in.wav",
-					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_out.wav",
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1dfb051e-05f4-11f0-bee7-9f67fb14fdf4"),
+					},
+					ReferenceType: file.ReferenceTypeRecording,
+					Filepath:      "recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_out.wav",
 				},
 			},
 
-			"recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
-			"bucketTmp",
-			"tmp/bdd24974-8ce0-11ed-aca5-1b4a5f897d9f",
-			"gs://voipbin-production/tmp/bdd24974-8ce0-11ed-aca5-1b4a5f897d9f",
-			"https://download.uri/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
+			filepath:            "recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
+			responseBucketName:  "bucketTmp",
+			responseFilepath:    "tmp/bdd24974-8ce0-11ed-aca5-1b4a5f897d9f",
+			responseBucketURI:   "gs://voipbin-production/tmp/bdd24974-8ce0-11ed-aca5-1b4a5f897d9f",
+			responseDownloadURI: "https://download.uri/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 
-			[]string{
+			expectFilters: map[string]string{
+				"deleted":      "false",
+				"reference_id": "5d946b94-9969-11eb-8bb3-07ff2b1cff3d",
+			},
+			expectTargets: []string{
 				"recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_in.wav",
 				"recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_out.wav",
 			},
-			&bucketfile.BucketFile{
+			expectRes: &bucketfile.BucketFile{
 				ReferenceType:    bucketfile.ReferenceTypeRecording,
 				ReferenceID:      uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
 				BucketURI:        "gs://voipbin-production/tmp/bdd24974-8ce0-11ed-aca5-1b4a5f897d9f",
@@ -96,7 +103,8 @@ func Test_RecordingGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
+			mockFile.EXPECT().Gets(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseFiles, nil)
+
 			mockFile.EXPECT().CompressCreate(ctx, h.bucketNameMedia, tt.expectTargets).Return(tt.responseBucketName, tt.responseFilepath, nil)
 			mockFile.EXPECT().DownloadURIGet(ctx, tt.responseBucketName, tt.responseFilepath, time.Hour*24).Return(tt.responseBucketURI, tt.responseDownloadURI, nil)
 			mockUtil.EXPECT().TimeGetCurTimeAdd(gomock.Any()).Return("")
@@ -121,27 +129,33 @@ func Test_RecordingDelete(t *testing.T) {
 
 		recordingID uuid.UUID
 
-		responseRecording *cmrecording.Recording
+		responseFiles []*file.File
+
+		expectFilters map[string]string
 	}
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("a18fbd98-8eaa-11ed-8d35-6b10d649e16f"),
+			recordingID: uuid.FromStringOrNil("a18fbd98-8eaa-11ed-8d35-6b10d649e16f"),
 
-			&cmrecording.Recording{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("a18fbd98-8eaa-11ed-8d35-6b10d649e16f"),
-					CustomerID: uuid.FromStringOrNil("e46238ef-c246-4024-9926-417246acdcba"),
+			responseFiles: []*file.File{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1e1a782c-05f4-11f0-ac5e-cb8994e2e2dc"),
+					},
 				},
-				ReferenceType: cmrecording.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
-				Status:        cmrecording.StatusEnded,
-				Filenames: []string{
-					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_in.wav",
-					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_out.wav",
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1e3a9b34-05f4-11f0-b628-37e63e1558d0"),
+					},
 				},
+			},
+
+			expectFilters: map[string]string{
+				"deleted":      "false",
+				"reference_id": "a18fbd98-8eaa-11ed-8d35-6b10d649e16f",
 			},
 		},
 	}
@@ -152,28 +166,23 @@ func Test_RecordingDelete(t *testing.T) {
 			defer mc.Finish()
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockBucket := filehandler.NewMockFileHandler(mc)
+			mockFile := filehandler.NewMockFileHandler(mc)
 
 			h := storageHandler{
 				reqHandler:  mockReq,
-				fileHandler: mockBucket,
+				fileHandler: mockFile,
 
 				bucketNameMedia: "media",
 			}
-
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
-
-			for _, filename := range tt.responseRecording.Filenames {
-				filepath := fmt.Sprintf("recording/%s", filename)
-				mockBucket.EXPECT().IsExist(ctx, h.bucketNameMedia, filepath).Return(true)
-				mockBucket.EXPECT().DeleteBucketfile(ctx, h.bucketNameMedia, filepath).Return(nil)
+			mockFile.EXPECT().Gets(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseFiles, nil)
+			for _, f := range tt.responseFiles {
+				mockFile.EXPECT().Delete(ctx, f.ID).Return(&file.File{}, nil)
 			}
 
-			err := h.RecordingDelete(ctx, tt.recordingID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			if errDel := h.RecordingDelete(ctx, tt.recordingID); errDel != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 
 		})
