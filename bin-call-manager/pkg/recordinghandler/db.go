@@ -26,6 +26,14 @@ func (h *recordingHandler) Create(
 	asteriskID string,
 	channelIDs []string,
 ) (*recording.Recording, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Create",
+		"id":             id,
+		"customer_id":    customerID,
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+		"format":         format,
+	})
 
 	tmp := &recording.Recording{
 		Identity: commonidentity.Identity{
@@ -60,6 +68,11 @@ func (h *recordingHandler) Create(
 	res, err := h.db.RecordingGet(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get created reocording")
+	}
+
+	if errUpdate := h.variableUpdateToReferenceInfo(ctx, res); errUpdate != nil {
+		// if the variable update is failed, but just log the error and continue the flow
+		log.Warnf("Could not update the variable to the reference info. err: %v", errUpdate)
 	}
 
 	return res, nil

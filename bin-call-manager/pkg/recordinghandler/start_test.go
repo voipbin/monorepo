@@ -62,8 +62,9 @@ func Test_Start_call(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d883a3f2-8fd4-11ed-baee-af9907e4df67"),
 					CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
 				},
-				ChannelID: "4f577092-8fd7-11ed-83c6-2fc653ad0b7c",
-				Status:    call.StatusProgressing,
+				ActiveFlowID: uuid.FromStringOrNil("885fe05e-0663-11f0-b231-fb801f78c0c3"),
+				ChannelID:    "4f577092-8fd7-11ed-83c6-2fc653ad0b7c",
+				Status:       call.StatusProgressing,
 			},
 			responseUUID:       uuid.FromStringOrNil("e141bb2c-8fd5-11ed-a0f9-9735e31b8411"),
 			responseCurTimeRFC: "2023-01-05T14:58:05Z",
@@ -151,6 +152,10 @@ func Test_Start_call(t *testing.T) {
 
 			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.expectRecording, nil)
+
+			// variableUpdateToReferenceInfo
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseCall.ActiveFlowID, gomock.Any()).Return(nil)
 
 			res, err := h.Start(
 				ctx,
