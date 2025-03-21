@@ -96,6 +96,11 @@ func (h *engineSendgrid) Send(ctx context.Context, m *email.Email) (string, erro
 
 // getAttachment returns the sendgrid attachment from the given email attachment
 func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment) (*mail.Attachment, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "getAttachment",
+		"attachment": e,
+	})
+
 	var f *smbucketfile.BucketFile
 	var err error
 
@@ -104,6 +109,11 @@ func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment)
 	switch e.ReferenceType {
 	case email.AttachmentReferenceTypeRecording:
 		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get attachment. reference_type: %s, reference_id: %s", e.ReferenceType, e.ReferenceID)
+		}
+		log.WithField("recording", f).Debugf("Got recording attachment. recording_id: %s", f.ReferenceID)
+
 		fileType = "application/zip"
 		filename = fmt.Sprintf("%s.zip", f.ReferenceID)
 
