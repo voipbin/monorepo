@@ -182,6 +182,7 @@ func Test_variableUpdateFromReference_call(t *testing.T) {
 					"call_de0c31b0-059b-11f0-97a4-8b6a41a01458_2020-04-18T03:22:17.995000_out.wav",
 				},
 			},
+			activeflowID: uuid.FromStringOrNil("6ab40124-0664-11f0-96a2-9fd56e9b99c1"),
 
 			responseCall: &call.Call{
 				ActiveFlowID: uuid.FromStringOrNil("de355f04-059b-11f0-84fe-ab31a7b9b554"),
@@ -234,7 +235,7 @@ func Test_variableUpdateFromReference_call(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariablesCurrent, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 
-			if errUpdate := h.variableUpdateFromReference(ctx, tt.recording, tt.activeflowID); errUpdate != nil {
+			if errUpdate := h.variableUpdateFromReferenceInfo(ctx, tt.recording, tt.activeflowID); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 		})

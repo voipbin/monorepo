@@ -67,7 +67,7 @@ func (h *recordingHandler) stopped(r *recording.Recording) {
 	log = log.WithField("activeflow", af)
 	log.Debugf("Created a new activeflow. activeflow_id: %s", af.ID)
 
-	if errUpdate := h.variableUpdateFromReference(ctx, r, af.ID); errUpdate != nil {
+	if errUpdate := h.variableUpdateFromReferenceInfo(ctx, r, af.ID); errUpdate != nil {
 		// if the variable update is failed, but just log the error and continue the flow
 		log.Errorf("Could not update the variable from the reference. err: %v", errUpdate)
 	}
