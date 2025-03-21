@@ -24,7 +24,6 @@ func (h *fileHandler) bucketfileMove(ctx context.Context, sourceBucketName strin
 	// check source
 	src := h.client.Bucket(sourceBucketName).Object(sourceFilepath)
 	if _, err := src.Attrs(ctx); err != nil {
-		log.Errorf("The source does not exist. err: %v", err)
 		return nil, errors.Wrap(err, "source does not exist")
 	}
 
@@ -32,15 +31,13 @@ func (h *fileHandler) bucketfileMove(ctx context.Context, sourceBucketName strin
 	dst := h.client.Bucket(destBucketName).Object(destFilepath)
 	_, err := dst.Attrs(ctx)
 	if err == nil {
-		log.Errorf("The destination already exists. err: %v", err)
 		return nil, errors.Wrap(err, "destination already exists")
 	}
 
 	// copy to the destination
 	res, err := dst.CopierFrom(src).Run(ctx)
 	if err != nil {
-		log.Errorf("Could not copy the file to the destination. err: %v", err)
-		return nil, errors.Wrap(err, "could not copy the file to the destination")
+		return nil, errors.Wrap(err, "could not copy the file to the destination. source_bucket_name: %s, source_filepath: %s, dest_bucket_name: %s, dest_filepath: %s")
 	}
 
 	// delete source
@@ -54,16 +51,10 @@ func (h *fileHandler) bucketfileMove(ctx context.Context, sourceBucketName strin
 
 // bucketfileDelete deletes the given bucketfile from the bucket
 func (h *fileHandler) bucketfileDelete(ctx context.Context, bucketName string, filepath string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "bucketfileDelete",
-		"bucket_name": bucketName,
-		"filepath":    filepath,
-	})
 
 	fo := h.client.Bucket(bucketName).Object(filepath)
 	if errDelete := fo.Delete(ctx); errDelete != nil {
-		log.Errorf("Could not delete the file. err: %v", errDelete)
-		return errDelete
+		return errors.Wrapf(errDelete, "could not delete the file. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
 
 	return nil
@@ -115,15 +106,13 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 		filename := getFilename(target)
 		fp, err := zw.Create(filename)
 		if err != nil {
-			log.Errorf("Could not add the file to the res file. err: %v", err)
-			return err
+			return errors.Wrapf(err, "could not add the file to the res file. err: %v", err)
 		}
 
 		// copy
 		_, err = io.Copy(fp, reader)
 		if err != nil {
-			log.Errorf("Could not copy the file. err: %v", err)
-			return err
+			return errors.Wrapf(err, "could not copy the file. err: %v", err)
 		}
 	}
 
@@ -132,16 +121,10 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 
 // bucketfileGetAttrs returns the given bucket file's attrs
 func (h *fileHandler) bucketfileGetAttrs(ctx context.Context, bucketName string, filepath string) (*storage.ObjectAttrs, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "bucketfileGetAttrs",
-		"bucket_name": bucketName,
-		"filepath":    filepath,
-	})
 
 	res, err := h.client.Bucket(bucketName).Object(filepath).Attrs(ctx)
 	if err != nil {
-		log.Errorf("Could not get attrs. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the file attrs. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
 
 	return res, nil
@@ -149,12 +132,6 @@ func (h *fileHandler) bucketfileGetAttrs(ctx context.Context, bucketName string,
 
 // bucketfileGenerateDownloadURI returns google cloud storage signed url for file download
 func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath string, expire time.Time) (string, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "generateDownloadURI",
-		"bucket_name": bucketName,
-		"filepath":    filepath,
-		"expire":      expire,
-	})
 
 	// create opt
 	opts := &storage.SignedURLOptions{
@@ -168,8 +145,7 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 	// get downloadable url
 	u, err := storage.SignedURL(bucketName, filepath, opts)
 	if err != nil {
-		log.Errorf("Could not get signed url. err: %v", err)
-		return "", err
+		return "", errors.Wrapf(err, "could not get the signed url. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
 
 	return u, nil

@@ -63,8 +63,9 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("852def0e-f24a-11ed-845f-e32a849e7338"),
 					CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
 				},
-				ChannelID: "8e5c2a28-f24a-11ed-97f4-5f82e61f6239",
-				Status:    call.StatusProgressing,
+				ActiveFlowID: uuid.FromStringOrNil("5e7f87da-0663-11f0-a195-03f01494aa3c"),
+				ChannelID:    "8e5c2a28-f24a-11ed-97f4-5f82e61f6239",
+				Status:       call.StatusProgressing,
 			},
 			responseUUID:       uuid.FromStringOrNil("8e914000-f24a-11ed-b09f-879b31d16030"),
 			responseCurTimeRFC: "2023-01-05T14:58:05Z",
@@ -151,6 +152,10 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 
 			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.expectRecording, nil)
+
+			// variableUpdateToReferenceInfo
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseCall.ActiveFlowID, gomock.Any()).Return(nil)
 
 			res, err := h.recordingReferenceTypeCall(ctx, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {

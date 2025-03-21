@@ -62,8 +62,7 @@ func (h *fileHandler) Create(
 	// move the file from the tmp bucket to the new location
 	dstAttrs, err := h.bucketfileMove(ctx, bucketName, filepath, h.bucketMedia, dstFilepath)
 	if err != nil {
-		log.Errorf("Could not move the file. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not move the file. reference_type: %s, reference_id: %s, name: %s", referenceType, referenceID, name)
 	}
 	log.WithField("dst_attrs", dstAttrs).Debugf("Moved file. bucket_link: %s", dstAttrs.MediaLink)
 

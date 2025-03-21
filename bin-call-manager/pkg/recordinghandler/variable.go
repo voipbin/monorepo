@@ -11,18 +11,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (h *recordingHandler) variablesGet(ctx context.Context, c *recording.Recording) map[string]string {
-	filenames := strings.Join(c.Filenames, ",")
+func (h *recordingHandler) variablesGet(r *recording.Recording) map[string]string {
+	filenames := strings.Join(r.Filenames, ",")
 
 	return map[string]string{
 
-		variableRecordingID: c.ID.String(),
+		variableRecordingID: r.ID.String(),
 
-		variableRecordingReferenceType: string(c.ReferenceType),
-		variableRecordingReferenceID:   c.ReferenceID.String(),
-		variableRecordingFormat:        string(c.Format),
+		variableRecordingReferenceType: string(r.ReferenceType),
+		variableRecordingReferenceID:   r.ReferenceID.String(),
+		variableRecordingFormat:        string(r.Format),
 
-		variableRecordingRecordingName: c.RecordingName,
+		variableRecordingRecordingName: r.RecordingName,
 		variableRecordingFilenames:     filenames,
 	}
 }
@@ -30,7 +30,7 @@ func (h *recordingHandler) variablesGet(ctx context.Context, c *recording.Record
 // variablesSet sets the variables
 func (h *recordingHandler) variablesSet(ctx context.Context, activeflowID uuid.UUID, r *recording.Recording) error {
 
-	variables := h.variablesGet(ctx, r)
+	variables := h.variablesGet(r)
 
 	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
 		return fmt.Errorf("could not set the variable. variables: %s, err: %v", variables, errSet)
@@ -39,23 +39,18 @@ func (h *recordingHandler) variablesSet(ctx context.Context, activeflowID uuid.U
 	return nil
 }
 
-func (h *recordingHandler) variableUpdateFromReference(ctx context.Context, r *recording.Recording, activeflowID uuid.UUID) error {
+func (h *recordingHandler) variableUpdateFromReferenceInfo(ctx context.Context, r *recording.Recording, activeflowID uuid.UUID) error {
 
-	var variables map[string]string
-	var err error
-	switch r.ReferenceType {
-	case recording.ReferenceTypeCall:
-		variables, err = h.variableGetReferenceTypeCall(ctx, r)
-
-	case recording.ReferenceTypeConfbridge:
-		variables, err = h.variableGetReferenceTypeConfbridge(ctx, r)
-
-	default:
-		return fmt.Errorf("unsupported reference type. reference_type: %s", r.ReferenceType)
+	referenceActiveflowID := h.variableGetActiveflowID(ctx, r)
+	if referenceActiveflowID == uuid.Nil {
+		return fmt.Errorf("could not get activeflow id")
 	}
+
+	tmp, err := h.reqHandler.FlowV1VariableGet(ctx, referenceActiveflowID)
 	if err != nil {
-		return errors.Wrapf(err, "could not get variables for reference info")
+		return errors.Wrapf(err, "could not get variables")
 	}
+	variables := tmp.Variables
 
 	// get and overwrite variables for current activeflow
 	curVariables, err := h.reqHandler.FlowV1VariableGet(ctx, activeflowID)
@@ -65,7 +60,7 @@ func (h *recordingHandler) variableUpdateFromReference(ctx context.Context, r *r
 	maps.Copy(variables, curVariables.Variables)
 
 	// get and overwrite variables for the recording
-	recVariables := h.variablesGet(ctx, r)
+	recVariables := h.variablesGet(r)
 	maps.Copy(variables, recVariables)
 
 	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
@@ -75,22 +70,32 @@ func (h *recordingHandler) variableUpdateFromReference(ctx context.Context, r *r
 	return nil
 }
 
-func (h *recordingHandler) variableGetReferenceTypeCall(ctx context.Context, r *recording.Recording) (map[string]string, error) {
-	c, err := h.reqHandler.CallV1CallGet(ctx, r.ReferenceID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get call info")
-	}
+func (h *recordingHandler) variableGetActiveflowID(ctx context.Context, r *recording.Recording) uuid.UUID {
+	switch r.ReferenceType {
+	case recording.ReferenceTypeCall:
+		c, err := h.reqHandler.CallV1CallGet(ctx, r.ReferenceID)
+		if err != nil {
+			return uuid.Nil
+		}
+		return c.ActiveFlowID
 
-	res, err := h.reqHandler.FlowV1VariableGet(ctx, c.ActiveFlowID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get variables")
-	}
+	case recording.ReferenceTypeConfbridge:
+		return uuid.Nil
 
-	return res.Variables, nil
+	default:
+		return uuid.Nil
+	}
 }
 
-func (h *recordingHandler) variableGetReferenceTypeConfbridge(ctx context.Context, r *recording.Recording) (map[string]string, error) {
-	// todo: need to be implemented
+func (h *recordingHandler) variableUpdateToReferenceInfo(ctx context.Context, r *recording.Recording) error {
+	activeflowID := h.variableGetActiveflowID(ctx, r)
+	if activeflowID == uuid.Nil {
+		return fmt.Errorf("could not get activeflow id")
+	}
 
-	return map[string]string{}, nil
+	if errSet := h.variablesSet(ctx, activeflowID, r); errSet != nil {
+		return errors.Wrapf(errSet, "could not set the variable")
+	}
+
+	return nil
 }

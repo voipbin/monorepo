@@ -127,11 +127,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 
 	ctx := context.Background()
 
-	logrus.WithFields(
-		logrus.Fields{
-			"request": m,
-		}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
-
 	start := time.Now()
 	switch {
 
@@ -188,23 +183,16 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.v1RecordingsIDDelete(ctx, m)
 
 	default:
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-			}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		logrus.WithFields(logrus.Fields{
+			"uri":    m.URI,
+			"method": m.Method,
+		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
 	}
 	elapsed := time.Since(start)
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
-
-	logrus.WithFields(
-		logrus.Fields{
-			"request":  m,
-			"response": response,
-		}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }

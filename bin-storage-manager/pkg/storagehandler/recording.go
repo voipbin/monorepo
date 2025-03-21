@@ -2,10 +2,10 @@ package storagehandler
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-storage-manager/models/bucketfile"
@@ -13,37 +13,33 @@ import (
 
 // RecordingGet returns given recording's bucketfile info.
 func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "RecordingGet",
-		"recoding_id": id,
-	})
 
-	// get recording
-	r, err := h.reqHandler.CallV1RecordingGet(ctx, id)
+	filters := map[string]string{
+		"deleted":      "false",
+		"reference_id": id.String(),
+	}
+
+	files, err := h.FileGets(ctx, "", 100, filters)
 	if err != nil {
-		log.Errorf("Could not get recording info from the call-manager. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get files. reference_id: %s", id)
 	}
 
 	// compose files
 	targetpaths := []string{}
-	for _, filename := range r.Filenames {
-		tmp := directoryRecording + "/" + filename
-		targetpaths = append(targetpaths, tmp)
+	for _, f := range files {
+		targetpaths = append(targetpaths, f.Filepath)
 	}
 
 	// create compress file
 	bucketName, filepath, err := h.fileHandler.CompressCreate(ctx, h.bucketNameMedia, targetpaths)
 	if err != nil {
-		log.Errorf("Could not compress the files. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not compress the files. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
 
 	// get download uri
 	bucketURI, downloadURI, err := h.fileHandler.DownloadURIGet(ctx, bucketName, filepath, time.Hour*24)
 	if err != nil {
-		log.Errorf("Could not get download link. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get download link. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
 
 	// create recording.Recording
@@ -61,33 +57,27 @@ func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucke
 
 // RecordingDelete deletes the given recording file
 func (h *storageHandler) RecordingDelete(ctx context.Context, id uuid.UUID) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "RecordingDelete",
-			"recoding_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RecordingDelete",
+		"recoding_id": id,
+	})
 
-	// get recording
-	r, err := h.reqHandler.CallV1RecordingGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get recording info from the call-manager. err: %v", err)
-		return err
+	filters := map[string]string{
+		"deleted":      "false",
+		"reference_id": id.String(),
 	}
 
-	for _, filename := range r.Filenames {
-		filepath := fmt.Sprintf("recording/%s", filename)
-		log.Debugf("Deleting recording file. bucket_name: %s, filepath: %s", h.bucketNameMedia, filepath)
-		if !h.fileHandler.IsExist(ctx, h.bucketNameMedia, filepath) {
-			log.Debugf("The file is already deleted. bucket: %s, filepath: %s", h.bucketNameMedia, filepath)
-			continue
-		}
+	files, err := h.FileGets(ctx, "", 100, filters)
+	if err != nil {
+		return errors.Wrapf(err, "could not get files. reference_id: %s", id)
+	}
 
-		// delete
-		if errDelete := h.fileHandler.DeleteBucketfile(ctx, h.bucketNameMedia, filepath); errDelete != nil {
-			log.Errorf("Could not delete recording file. filepath: %s, err: %v", filepath, errDelete)
-			return errDelete
+	for _, f := range files {
+		tmp, err := h.fileHandler.Delete(ctx, f.ID)
+		if err != nil {
+			return errors.Wrapf(err, "could not delete the file. file_id: %s", f.ID)
 		}
+		log.WithField("file", tmp).Debugf("Deleted file. file_id: %s", f.ID)
 	}
 
 	return nil

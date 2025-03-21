@@ -6,7 +6,7 @@ import (
 	"monorepo/bin-call-manager/models/recording"
 
 	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 )
 
 // Start start the recording of the given reference info
@@ -36,19 +36,13 @@ func (h *recordingHandler) Start(
 
 // Started updates recording's status to the recording and notify the event
 func (h *recordingHandler) Started(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "Started",
-		"recording_id": id,
-	})
 	if errStatus := h.db.RecordingSetStatus(ctx, id, recording.StatusRecording); errStatus != nil {
-		log.Errorf("Could not update the recording status. err: %v", errStatus)
-		return nil, errStatus
+		return nil, errors.Wrapf(errStatus, "could not update the recording status. recording_id: %s", id)
 	}
 
 	res, err := h.db.RecordingGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get the updated recording info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the updated recording info. recording_id: %s", id)
 	}
 
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, recording.EventTypeRecordingStarted, res)

@@ -177,7 +177,7 @@ func initVariable() {
 		log.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
-	gcpBucketNameTmp = viper.GetString("gcp_bucket_name_media")
+	gcpBucketNameMedia = viper.GetString("gcp_bucket_name_media")
 
 }
 
