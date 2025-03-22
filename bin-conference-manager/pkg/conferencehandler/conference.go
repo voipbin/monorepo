@@ -37,7 +37,7 @@ func (h *conferenceHandler) Create(
 		"conference_type": conferenceType,
 	})
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.utilHandler.UUIDCreate()
 	log = log.WithField("conference_id", id.String())
 
 	// send confbridge create request
@@ -46,7 +46,7 @@ func (h *conferenceHandler) Create(
 		confbridgeType = cmconfbridge.TypeConference
 	}
 
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, customerID, confbridgeType)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, customerID, uuid.Nil, cmconfbridge.ReferenceTypeConference, id, confbridgeType)
 	if err != nil {
 		log.Errorf("Could not crate confbridge. err: %v", err)
 		return nil, err

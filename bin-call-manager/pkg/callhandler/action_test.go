@@ -400,8 +400,9 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
 				},
-				ChannelID: "bfd0e668-2a77-11eb-9993-e72b323b1801",
-				Status:    call.StatusProgressing,
+				ActiveflowID: uuid.FromStringOrNil("6853663a-0728-11f0-857c-ab4a6094268b"),
+				ChannelID:    "bfd0e668-2a77-11eb-9993-e72b323b1801",
+				Status:       call.StatusProgressing,
 				Action: fmaction.Action{
 					Type:   fmaction.TypeRecordingStart,
 					ID:     uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
@@ -445,6 +446,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockRecording.EXPECT().Start(
 				ctx,
+				tt.call.ActiveflowID,
 				recording.ReferenceTypeCall,
 				tt.call.ID,
 				tt.expectFormat,
@@ -590,7 +592,7 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.call.ActiveFlowID).Return(tt.responseVariable, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.call.ActiveflowID).Return(tt.responseVariable, nil)
 			mockReq.EXPECT().CallV1CallActionTimeout(ctx, tt.call.ID, tt.duration, &tt.call.Action).Return(nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
@@ -615,7 +617,7 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
 				},
-				ActiveFlowID: uuid.FromStringOrNil("8ab35caa-df01-11ec-a567-abb76662ef08"),
+				ActiveflowID: uuid.FromStringOrNil("8ab35caa-df01-11ec-a567-abb76662ef08"),
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -637,7 +639,7 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
 				},
-				ActiveFlowID: uuid.FromStringOrNil("bc06ef06-df01-11ec-ad88-074454252454"),
+				ActiveflowID: uuid.FromStringOrNil("bc06ef06-df01-11ec-ad88-074454252454"),
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -659,7 +661,7 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
 				},
-				ActiveFlowID: uuid.FromStringOrNil("e28f7a44-df01-11ec-8eaf-47af6e21909e"),
+				ActiveflowID: uuid.FromStringOrNil("e28f7a44-df01-11ec-8eaf-47af6e21909e"),
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -693,7 +695,7 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveFlowID).Return(tt.responseVariable, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveflowID).Return(tt.responseVariable, nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.responseCall.ID, false).Return(nil)
 
 			if err := h.actionExecute(ctx, tt.responseCall); err != nil {
@@ -1109,7 +1111,7 @@ func Test_ActionNext(t *testing.T) {
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Status:       call.StatusProgressing,
 				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
-				ActiveFlowID: uuid.FromStringOrNil("01603928-a7bb-11ec-86d6-57ce9c598437"),
+				ActiveflowID: uuid.FromStringOrNil("01603928-a7bb-11ec-86d6-57ce9c598437"),
 				Action: fmaction.Action{
 					ID:   uuid.FromStringOrNil("c9bc39a0-583b-11ec-b0c4-2373b012eba7"),
 					Type: fmaction.TypeTalk,
@@ -1130,7 +1132,7 @@ func Test_ActionNext(t *testing.T) {
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Status:       call.StatusProgressing,
 				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
-				ActiveFlowID: uuid.FromStringOrNil("01603928-a7bb-11ec-86d6-57ce9c598437"),
+				ActiveflowID: uuid.FromStringOrNil("01603928-a7bb-11ec-86d6-57ce9c598437"),
 				Action: fmaction.Action{
 					ID: uuid.FromStringOrNil("fe96418e-583b-11ec-93d8-738261aee2c9"),
 				},
@@ -1158,7 +1160,7 @@ func Test_ActionNext(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(nil)
-			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.responseAction, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, tt.call.ActiveflowID, tt.call.Action.ID).Return(tt.responseAction, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().CallSetActionAndActionNextHold(ctx, tt.call.ID, tt.responseAction, false).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)

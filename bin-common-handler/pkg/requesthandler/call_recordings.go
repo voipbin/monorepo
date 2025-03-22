@@ -96,6 +96,7 @@ func (r *requestHandler) CallV1RecordingDelete(ctx context.Context, id uuid.UUID
 // it returns recording if it succeed.
 func (r *requestHandler) CallV1RecordingStart(
 	ctx context.Context,
+	activeflowID uuid.UUID,
 	referenceType cmrecording.ReferenceType,
 	referenceID uuid.UUID,
 	format cmrecording.Format,
@@ -107,6 +108,7 @@ func (r *requestHandler) CallV1RecordingStart(
 	uri := "/v1/recordings"
 
 	reqData := &cmrequest.V1DataRecordingsPost{
+		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 		Format:        format,

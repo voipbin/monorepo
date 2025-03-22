@@ -125,7 +125,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				Type:         call.TypeConference,
 				Direction:    call.DirectionIncoming,
 				FlowID:       uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
-				ActiveFlowID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
+				ActiveflowID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
 				Action: fmaction.Action{
 					ID: fmaction.IDStart,
 				},
@@ -160,7 +160,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				BridgeID:  "56b24806-5e56-11ed-9b77-cf2a442594d7",
 
 				FlowID:       uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
-				ActiveFlowID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
+				ActiveflowID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
 				Type:         call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
@@ -323,7 +323,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				},
 				ChannelID:    "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
 				FlowID:       uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
-				ActiveFlowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
+				ActiveflowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
 				Type:         call.TypeSipService,
 				Direction:    call.DirectionIncoming,
 				Destination: commonaddress.Address{
@@ -349,7 +349,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				BridgeID:  "ab5d36ce-5e5e-11ed-917e-a70e0240c226",
 
 				FlowID:       uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
-				ActiveFlowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
+				ActiveflowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
 				Type:         call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},

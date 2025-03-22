@@ -22,10 +22,11 @@ func Test_RecordingStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id          uuid.UUID
-		format      cmrecording.Format
-		duration    int
-		onEndFlowID uuid.UUID
+		id           uuid.UUID
+		activeflowID uuid.UUID
+		format       cmrecording.Format
+		duration     int
+		onEndFlowID  uuid.UUID
 
 		responseConference *conference.Conference
 		responseRecording  *cmrecording.Recording
@@ -33,10 +34,11 @@ func Test_RecordingStart(t *testing.T) {
 		{
 			name: "normal",
 
-			id:          uuid.FromStringOrNil("5aee9cbe-90fe-11ed-86b9-f36325211a1b"),
-			format:      cmrecording.FormatWAV,
-			duration:    6000,
-			onEndFlowID: uuid.FromStringOrNil("b2c5186e-055f-11f0-94cc-af3bd4410b74"),
+			id:           uuid.FromStringOrNil("5aee9cbe-90fe-11ed-86b9-f36325211a1b"),
+			activeflowID: uuid.FromStringOrNil("16df430e-075b-11f0-877c-0b76a7001c07"),
+			format:       cmrecording.FormatWAV,
+			duration:     6000,
+			onEndFlowID:  uuid.FromStringOrNil("b2c5186e-055f-11f0-94cc-af3bd4410b74"),
 
 			responseConference: &conference.Conference{
 				ID:     uuid.FromStringOrNil("5aee9cbe-90fe-11ed-86b9-f36325211a1b"),
@@ -69,12 +71,12 @@ func Test_RecordingStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, tt.format, 0, "", tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingStart(ctx, tt.activeflowID, cmrecording.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, tt.format, 0, "", tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().ConferenceSetRecordingID(ctx, tt.id, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().ConferenceAddRecordingIDs(ctx, tt.id, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 
-			res, err := h.RecordingStart(ctx, tt.id, tt.format, tt.duration, tt.onEndFlowID)
+			res, err := h.RecordingStart(ctx, tt.id, tt.activeflowID, tt.format, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

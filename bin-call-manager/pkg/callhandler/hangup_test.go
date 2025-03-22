@@ -150,7 +150,7 @@ func Test_Hangup(t *testing.T) {
 			if tt.responseCall.GroupcallID != uuid.Nil {
 				mockReq.EXPECT().CallV1GroupcallHangupCall(ctx, tt.responseCall.GroupcallID).Return(nil)
 			}
-			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
+			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveflowID).Return(&fmactiveflow.Activeflow{}, nil)
 
 			for _, chainedCallID := range tt.responseCall.ChainedCallIDs {
 				tmpCall := &call.Call{

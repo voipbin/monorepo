@@ -14,12 +14,22 @@ import (
 )
 
 // CallV1ConfbridgeCreate sends the request for confbridge create.
-func (r *requestHandler) CallV1ConfbridgeCreate(ctx context.Context, customerID uuid.UUID, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error) {
+func (r *requestHandler) CallV1ConfbridgeCreate(
+	ctx context.Context,
+	customerID uuid.UUID,
+	activeflowID uuid.UUID,
+	referenceType cmconfbridge.ReferenceType,
+	referenceID uuid.UUID,
+	confbridgeType cmconfbridge.Type,
+) (*cmconfbridge.Confbridge, error) {
 	uri := "/v1/confbridges"
 
 	m, err := json.Marshal(cmrequest.V1DataConfbridgesPost{
-		CustomerID: customerID,
-		Type:       confbridgeType,
+		CustomerID:    customerID,
+		ActiveflowID:  activeflowID,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+		Type:          confbridgeType,
 	})
 	if err != nil {
 		return nil, err

@@ -26,6 +26,7 @@ type RecordingHandler interface {
 	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error)
 	Start(
 		ctx context.Context,
+		activeflowID uuid.UUID,
 		referenceType recording.ReferenceType,
 		referenceID uuid.UUID,
 		format recording.Format,

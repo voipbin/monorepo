@@ -19,6 +19,7 @@ type V1DataRecordingsGET struct {
 type V1DataRecordingsPost struct {
 	OwnerType     commonidentity.OwnerType `json:"owner_type,omitempty"`
 	OwnerID       uuid.UUID                `json:"owner_id,omitempty"`
+	ActiveflowID  uuid.UUID                `json:"activeflow_id,omitempty"`
 	ReferenceType recording.ReferenceType  `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID                `json:"reference_id,omitempty"`
 	Format        recording.Format         `json:"format,omitempty"`         // default wav

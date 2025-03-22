@@ -189,7 +189,9 @@ func Test_EventCMConfbridgeTerminated(t *testing.T) {
 			name: "normal",
 
 			confbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("a722a706-f2f0-11ee-9467-abd69c44e65f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a722a706-f2f0-11ee-9467-abd69c44e65f"),
+				},
 			},
 			responseTranscribes: []*transcribe.Transcribe{
 				{

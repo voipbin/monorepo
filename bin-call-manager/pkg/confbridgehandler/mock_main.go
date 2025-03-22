@@ -118,18 +118,18 @@ func (mr *MockConfbridgeHandlerMockRecorder) Answer(ctx, id any) *gomock.Call {
 }
 
 // Create mocks base method.
-func (m *MockConfbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
+func (m *MockConfbridgeHandler) Create(ctx context.Context, customerID, activeflowID uuid.UUID, referenceType confbridge.ReferenceType, referenceID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, confbridgeType)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, activeflowID, referenceType, referenceID, confbridgeType)
 	ret0, _ := ret[0].(*confbridge.Confbridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockConfbridgeHandlerMockRecorder) Create(ctx, customerID, confbridgeType any) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) Create(ctx, customerID, activeflowID, referenceType, referenceID, confbridgeType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfbridgeHandler)(nil).Create), ctx, customerID, confbridgeType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfbridgeHandler)(nil).Create), ctx, customerID, activeflowID, referenceType, referenceID, confbridgeType)
 }
 
 // Delete mocks base method.

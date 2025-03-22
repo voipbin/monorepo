@@ -44,7 +44,7 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 		variables := map[string]string{
 			variableCallDigits: digits,
 		}
-		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
+		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, variables); errSet != nil {
 			log.Errorf("Could not set DTMF. err: %v", err)
 			return nil
 		}
@@ -55,7 +55,7 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 			return fmt.Errorf("could not parse option. action: %v, err: %v", c.Action, err)
 		}
 
-		condition, err := h.checkDigitsCondition(ctx, c.ActiveFlowID, &option)
+		condition, err := h.checkDigitsCondition(ctx, c.ActiveflowID, &option)
 		if err != nil {
 			log.Errorf("Could not validate the digits. err: %v", err)
 			return nil
@@ -81,7 +81,7 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 		variables := map[string]string{
 			variableCallDigits: digit,
 		}
-		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
+		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, variables); errSet != nil {
 			log.Errorf("Could not set DTMF. err: %v", err)
 		}
 
@@ -112,7 +112,7 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 		variables := map[string]string{
 			variableCallDigits: digit,
 		}
-		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
+		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, variables); errSet != nil {
 			log.Errorf("Could not set DTMF. err: %v", err)
 		}
 
@@ -134,7 +134,7 @@ func (h *callHandler) DigitsGet(ctx context.Context, id uuid.UUID) (string, erro
 		return "", err
 	}
 
-	vars, err := h.reqHandler.FlowV1VariableGet(ctx, c.ActiveFlowID)
+	vars, err := h.reqHandler.FlowV1VariableGet(ctx, c.ActiveflowID)
 	if err != nil {
 		log.Errorf("Could not get variables. err: %v", err)
 		return "", err
@@ -163,7 +163,7 @@ func (h *callHandler) DigitsSet(ctx context.Context, id uuid.UUID, digits string
 	variables := map[string]string{
 		variableCallDigits: digits,
 	}
-	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, variables); errSet != nil {
 		log.Errorf("Could not set DTMF. err: %v", err)
 		return errSet
 	}

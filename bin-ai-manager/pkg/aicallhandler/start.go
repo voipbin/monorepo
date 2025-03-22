@@ -48,7 +48,7 @@ func (h *aicallHandler) StartResume(ctx context.Context, activeflowID uuid.UUID)
 		return nil, errors.New("could not get the aicall id from the activeflow variables")
 	}
 
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, cmconfbridge.TypeConference)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, aicallID, cmconfbridge.TypeConference)
 	if err != nil {
 		log.Errorf("Could not create confbridge. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create confbridge")
@@ -101,7 +101,7 @@ func (h *aicallHandler) startReferenceTypeCall(ctx context.Context, c *ai.AI, ac
 		"func": "startReferenceTypeCall",
 	})
 
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, cmconfbridge.TypeConference)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, c.ID, cmconfbridge.TypeConference)
 	if err != nil {
 		log.Errorf("Could not create confbridge. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create confbridge")

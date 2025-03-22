@@ -68,7 +68,7 @@ func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *sock.Req
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.recordingHandler.Start(ctx, req.ReferenceType, req.ReferenceID, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration, req.OnEndFlowID)
+	tmp, err := h.recordingHandler.Start(ctx, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration, req.OnEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start the recording. err: %v", err)
 		return simpleResponse(500), nil

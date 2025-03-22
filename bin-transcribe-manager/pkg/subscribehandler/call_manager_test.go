@@ -84,7 +84,9 @@ func Test_processEvent_processEventCMConfbridgeTerminated(t *testing.T) {
 			},
 
 			expectConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("d0f35cb4-f2f1-11ee-891e-376de80e03da"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d0f35cb4-f2f1-11ee-891e-376de80e03da"),
+				},
 			},
 		},
 	}

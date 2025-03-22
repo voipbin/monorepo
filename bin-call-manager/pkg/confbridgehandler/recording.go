@@ -44,6 +44,7 @@ func (h *confbridgeHandler) RecordingStart(
 	// starts the recording
 	rec, err := h.recordingHandler.Start(
 		ctx,
+		c.ActiveflowID,
 		recording.ReferenceTypeConfbridge,
 		c.ID,
 		format,

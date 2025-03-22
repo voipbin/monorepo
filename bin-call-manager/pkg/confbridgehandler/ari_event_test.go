@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -30,8 +31,8 @@ func Test_ARIStasisStartTypeConference(t *testing.T) {
 		confbridge *confbridge.Confbridge
 	}{
 		{
-			"normal",
-			&channel.Channel{
+			name: "normal",
+			channel: &channel.Channel{
 				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
 				AsteriskID:        "80:fa:5b:5e:da:81",
 				Name:              "PJSIP/in-voipbin-00000948",
@@ -42,8 +43,10 @@ func Test_ARIStasisStartTypeConference(t *testing.T) {
 					channel.StasisDataTypeCallID:       "22df7716-34f3-11ec-a0d1-1faed65f6fd4",
 				},
 			},
-			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("69e97312-3748-11ec-a94b-2357c957d67e"),
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("69e97312-3748-11ec-a94b-2357c957d67e"),
+				},
 				Type:           confbridge.TypeConference,
 				BridgeID:       "80c2e1ae-3748-11ec-b52c-c7e704ec1140",
 				ChannelCallIDs: map[string]uuid.UUID{},
@@ -156,8 +159,8 @@ func Test_ARIChannelLeftBridge(t *testing.T) {
 		expectCallID       uuid.UUID
 	}{
 		{
-			"confbridge left",
-			&channel.Channel{
+			name: "confbridge left",
+			channel: &channel.Channel{
 				ID:         "e03dc034-9566-11ea-ad83-1f7a1993587b",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Data:       map[string]interface{}{},
@@ -167,18 +170,20 @@ func Test_ARIChannelLeftBridge(t *testing.T) {
 				},
 				Type: channel.TypeConfbridge,
 			},
-			&bridge.Bridge{
+			bridge: &bridge.Bridge{
 				ID:            "e41948fe-9566-11ea-a4fe-db788b6b6d7b",
 				ReferenceID:   uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 			},
 
-			&confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
+				},
 				Type: confbridge.TypeConference,
 			},
-			uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
-			uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
+			expectConfbridgeID: uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
+			expectCallID:       uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
 		},
 	}
 

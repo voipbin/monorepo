@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -26,14 +27,18 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 		expectRes       *confbridge.Confbridge
 	}{
 		{
-			"empty",
-			&confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
+			name: "empty",
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
+				},
 			},
 
-			"2023-01-18 03:22:18.995000",
-			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
+			responseCurTime: "2023-01-18 03:22:18.995000",
+			expectRes: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
+				},
 				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -43,12 +48,17 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 			},
 		},
 		{
-			"have all",
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
-				Type:     confbridge.TypeConnect,
-				Status:   confbridge.StatusProgressing,
-				BridgeID: "f4959208-972c-11ed-be90-6b3eb4bef16d",
+			name: "have all",
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("e45c06be-06ac-11f0-824f-f7ccba9579aa"),
+				ReferenceType: confbridge.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("f3f3b7f4-972c-11ed-8b3b-0b7b0c5441ac"),
+				Type:          confbridge.TypeConnect,
+				Status:        confbridge.StatusProgressing,
+				BridgeID:      "f4959208-972c-11ed-be90-6b3eb4bef16d",
 				Flags: []confbridge.Flag{
 					confbridge.FlagNoAutoLeave,
 				},
@@ -63,12 +73,17 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 				ExternalMediaID: uuid.FromStringOrNil("f4deecf0-972c-11ed-8ad1-1b7b0c5441ac"),
 			},
 
-			"2023-01-18 03:22:18.995000",
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
-				Type:     confbridge.TypeConnect,
-				Status:   confbridge.StatusProgressing,
-				BridgeID: "f4959208-972c-11ed-be90-6b3eb4bef16d",
+			responseCurTime: "2023-01-18 03:22:18.995000",
+			expectRes: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("e45c06be-06ac-11f0-824f-f7ccba9579aa"),
+				ReferenceType: confbridge.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("f3f3b7f4-972c-11ed-8b3b-0b7b0c5441ac"),
+				Type:          confbridge.TypeConnect,
+				Status:        confbridge.StatusProgressing,
+				BridgeID:      "f4959208-972c-11ed-be90-6b3eb4bef16d",
 				Flags: []confbridge.Flag{
 					confbridge.FlagNoAutoLeave,
 				},
@@ -137,17 +152,21 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 
 	tests := []test{
 		{
-			"type conference",
-			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("bf738558-34ef-11ec-a927-6ba7cd3ff490"),
+			name: "type conference",
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bf738558-34ef-11ec-a927-6ba7cd3ff490"),
+				},
 				BridgeID:       "bfc5a1e4-34ef-11ec-ad12-870a5704955c",
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 			},
 
-			"2023-01-18 03:22:18.995000",
-			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("bf738558-34ef-11ec-a927-6ba7cd3ff490"),
+			responseCurTime: "2023-01-18 03:22:18.995000",
+			expectRes: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bf738558-34ef-11ec-a927-6ba7cd3ff490"),
+				},
 				BridgeID:       "bfc5a1e4-34ef-11ec-ad12-870a5704955c",
 				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},
@@ -208,29 +227,35 @@ func Test_ConfbridgeGets(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			[]*confbridge.Confbridge{
+			name: "normal",
+			confbridges: []*confbridge.Confbridge{
 				{
-					ID:         uuid.FromStringOrNil("e0b62376-f0ca-11ee-b6e5-ab3d7196a40e"),
-					CustomerID: uuid.FromStringOrNil("e14965b4-f0ca-11ee-9715-3bb35c382030"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("e0b62376-f0ca-11ee-b6e5-ab3d7196a40e"),
+						CustomerID: uuid.FromStringOrNil("e14965b4-f0ca-11ee-9715-3bb35c382030"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("e11f5a26-f0ca-11ee-a8ac-eba0c97a0aa7"),
-					CustomerID: uuid.FromStringOrNil("e14965b4-f0ca-11ee-9715-3bb35c382030"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("e11f5a26-f0ca-11ee-a8ac-eba0c97a0aa7"),
+						CustomerID: uuid.FromStringOrNil("e14965b4-f0ca-11ee-9715-3bb35c382030"),
+					},
 				},
 			},
 
-			map[string]string{
+			filters: map[string]string{
 				"customer_id": "e14965b4-f0ca-11ee-9715-3bb35c382030",
 				"deleted":     "false",
 			},
 
-			"2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18 03:22:17.995000",
 
-			[]*confbridge.Confbridge{
+			expectRes: []*confbridge.Confbridge{
 				{
-					ID:         uuid.FromStringOrNil("e0b62376-f0ca-11ee-b6e5-ab3d7196a40e"),
-					CustomerID: uuid.FromStringOrNil("e14965b4-f0ca-11ee-9715-3bb35c382030"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("e0b62376-f0ca-11ee-b6e5-ab3d7196a40e"),
+						CustomerID: uuid.FromStringOrNil("e14965b4-f0ca-11ee-9715-3bb35c382030"),
+					},
 
 					Flags:          []confbridge.Flag{},
 					ChannelCallIDs: map[string]uuid.UUID{},
@@ -241,8 +266,10 @@ func Test_ConfbridgeGets(t *testing.T) {
 					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("e11f5a26-f0ca-11ee-a8ac-eba0c97a0aa7"),
-					CustomerID: uuid.FromStringOrNil("e14965b4-f0ca-11ee-9715-3bb35c382030"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("e11f5a26-f0ca-11ee-a8ac-eba0c97a0aa7"),
+						CustomerID: uuid.FromStringOrNil("e14965b4-f0ca-11ee-9715-3bb35c382030"),
+					},
 
 					Flags:          []confbridge.Flag{},
 					ChannelCallIDs: map[string]uuid.UUID{},
@@ -315,15 +342,19 @@ func Test_ConfbridgeSetRecordingID(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			&confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("75b1275e-3305-11ec-8dba-8bf525336b2b"),
+			name: "normal",
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("75b1275e-3305-11ec-8dba-8bf525336b2b"),
+				},
 			},
-			uuid.FromStringOrNil("760b193a-3305-11ec-a9af-0fbbe717a04f"),
+			recordID: uuid.FromStringOrNil("760b193a-3305-11ec-a9af-0fbbe717a04f"),
 
-			"2023-01-18 03:22:18.995000",
-			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("75b1275e-3305-11ec-8dba-8bf525336b2b"),
+			responseCurTime: "2023-01-18 03:22:18.995000",
+			expectRes: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("75b1275e-3305-11ec-8dba-8bf525336b2b"),
+				},
 				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingID:    uuid.FromStringOrNil("760b193a-3305-11ec-a9af-0fbbe717a04f"),
@@ -390,15 +421,19 @@ func Test_ConfbridgeSetExternalMediaID(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			&confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("a587afdc-972e-11ed-9c8a-c71ab8ef38bd"),
+			name: "normal",
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a587afdc-972e-11ed-9c8a-c71ab8ef38bd"),
+				},
 			},
-			uuid.FromStringOrNil("a5b2cc80-972e-11ed-86cc-a31ac34ae6bc"),
+			externalMediaID: uuid.FromStringOrNil("a5b2cc80-972e-11ed-86cc-a31ac34ae6bc"),
 
-			"2023-01-18 03:22:18.995000",
-			&confbridge.Confbridge{
-				ID:              uuid.FromStringOrNil("a587afdc-972e-11ed-9c8a-c71ab8ef38bd"),
+			responseCurTime: "2023-01-18 03:22:18.995000",
+			expectRes: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a587afdc-972e-11ed-9c8a-c71ab8ef38bd"),
+				},
 				Flags:           []confbridge.Flag{},
 				ChannelCallIDs:  map[string]uuid.UUID{},
 				RecordingIDs:    []uuid.UUID{},
@@ -465,17 +500,21 @@ func Test_ConfbridgeSetFlags(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			&confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("64a9668e-d709-11ed-a3f4-d75381c89660"),
+			name: "normal",
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("64a9668e-d709-11ed-a3f4-d75381c89660"),
+				},
 			},
-			[]confbridge.Flag{
+			flags: []confbridge.Flag{
 				confbridge.FlagNoAutoLeave,
 			},
 
-			"2023-01-18 03:22:18.995000",
-			&confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("64a9668e-d709-11ed-a3f4-d75381c89660"),
+			responseCurTime: "2023-01-18 03:22:18.995000",
+			expectRes: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("64a9668e-d709-11ed-a3f4-d75381c89660"),
+				},
 				Flags: []confbridge.Flag{
 					confbridge.FlagNoAutoLeave,
 				},
@@ -543,16 +582,20 @@ func Test_ConfbridgeSetStatus(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			&confbridge.Confbridge{
-				ID:     uuid.FromStringOrNil("623042b0-6193-42dc-9b80-299f12b3df24"),
+			name: "normal",
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("623042b0-6193-42dc-9b80-299f12b3df24"),
+				},
 				Status: confbridge.StatusProgressing,
 			},
-			confbridge.StatusTerminating,
+			status: confbridge.StatusTerminating,
 
-			"2023-01-18 03:22:18.995000",
-			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("623042b0-6193-42dc-9b80-299f12b3df24"),
+			responseCurTime: "2023-01-18 03:22:18.995000",
+			expectRes: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("623042b0-6193-42dc-9b80-299f12b3df24"),
+				},
 				Status:         confbridge.StatusTerminating,
 				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},

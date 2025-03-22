@@ -58,7 +58,7 @@ func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 		Owner:    h.Owner,
 
 		FlowID:       h.FlowID,
-		ActiveflowID: h.ActiveFlowID,
+		ActiveflowID: h.ActiveflowID,
 		Type:         h.Type,
 
 		MasterCallID:   h.MasterCallID,

@@ -51,7 +51,9 @@ func Test_Joined_type_connect(t *testing.T) {
 			},
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+				},
 				BridgeID: "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
 				Type:     confbridge.TypeConnect,
 				ChannelCallIDs: map[string]uuid.UUID{
@@ -68,7 +70,9 @@ func Test_Joined_type_connect(t *testing.T) {
 			expectConfbridgeID: uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
 			expectEvent: &confbridge.EventConfbridgeJoined{
 				Confbridge: confbridge.Confbridge{
-					ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+					},
 					BridgeID: "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
 					Type:     confbridge.TypeConnect,
 					ChannelCallIDs: map[string]uuid.UUID{
@@ -147,7 +151,9 @@ func Test_Joined_type_conference(t *testing.T) {
 			},
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("282882b4-a3bd-11ed-9f93-3b874a128ea2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("282882b4-a3bd-11ed-9f93-3b874a128ea2"),
+				},
 				BridgeID: "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
 				Type:     confbridge.TypeConference,
 			},
@@ -161,7 +167,9 @@ func Test_Joined_type_conference(t *testing.T) {
 			expectConfbridgeID: uuid.FromStringOrNil("282882b4-a3bd-11ed-9f93-3b874a128ea2"),
 			expectEvent: &confbridge.EventConfbridgeJoined{
 				Confbridge: confbridge.Confbridge{
-					ID:       uuid.FromStringOrNil("282882b4-a3bd-11ed-9f93-3b874a128ea2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("282882b4-a3bd-11ed-9f93-3b874a128ea2"),
+					},
 					BridgeID: "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
 					Type:     confbridge.TypeConference,
 				},
@@ -229,7 +237,9 @@ func Test_joinedTypeConnect(t *testing.T) {
 				},
 			},
 			confbridge: &confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("aff70e90-a3bd-11ed-8099-7b4446aef7ad"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("aff70e90-a3bd-11ed-8099-7b4446aef7ad"),
+				},
 				ChannelCallIDs: map[string]uuid.UUID{
 					"9a6c08b2-ae91-11ed-b460-a377b7040b7c": uuid.FromStringOrNil("9a99bbae-ae91-11ed-971f-9b7ae6d5063d"),
 				},
@@ -254,7 +264,9 @@ func Test_joinedTypeConnect(t *testing.T) {
 				Status: call.StatusRinging,
 			},
 			confbridge: &confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("07666a04-a3be-11ed-8367-bf3360333c86"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("07666a04-a3be-11ed-8367-bf3360333c86"),
+				},
 				Type: confbridge.TypeConnect,
 				ChannelCallIDs: map[string]uuid.UUID{
 					"070da3b0-a3be-11ed-aec8-27faeea66ece": uuid.FromStringOrNil("07360832-a3be-11ed-80e9-6f824b36d382"),
@@ -292,7 +304,9 @@ func Test_joinedTypeConnect(t *testing.T) {
 				Status: call.StatusRinging,
 			},
 			confbridge: &confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("07666a04-a3be-11ed-8367-bf3360333c86"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("07666a04-a3be-11ed-8367-bf3360333c86"),
+				},
 				Type: confbridge.TypeConnect,
 				ChannelCallIDs: map[string]uuid.UUID{
 					"16b1f518-a3bf-11ed-a015-ebe29a318ec0": uuid.FromStringOrNil("16dc7a40-a3bf-11ed-b0f3-1b2254e87579"),
@@ -386,7 +400,9 @@ func Test_joinedTypeConference(t *testing.T) {
 				},
 			},
 			confbridge: &confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("7bea77e8-a3bf-11ed-b44a-0f9d205baa32"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7bea77e8-a3bf-11ed-b44a-0f9d205baa32"),
+				},
 			},
 		},
 	}

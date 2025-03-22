@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -29,9 +30,9 @@ func Test_StartContextIncoming(t *testing.T) {
 		expectConfbridgeID uuid.UUID
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&channel.Channel{
+			channel: &channel.Channel{
 				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
 				AsteriskID:        "80:fa:5b:5e:da:81",
 				Name:              "PJSIP/in-voipbin-00000948",
@@ -42,11 +43,13 @@ func Test_StartContextIncoming(t *testing.T) {
 				},
 			},
 
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("a6c4e9c8-a3c7-11ed-8961-7390b2c3f45c"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a6c4e9c8-a3c7-11ed-8961-7390b2c3f45c"),
+				},
 				BridgeID: "a6e2e860-a3c7-11ed-9d27-8b42b68dfd08",
 			},
-			uuid.FromStringOrNil("a6c4e9c8-a3c7-11ed-8961-7390b2c3f45c"),
+			expectConfbridgeID: uuid.FromStringOrNil("a6c4e9c8-a3c7-11ed-8961-7390b2c3f45c"),
 		},
 	}
 

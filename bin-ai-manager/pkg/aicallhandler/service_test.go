@@ -8,7 +8,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-	"monorepo/bin-common-handler/models/identity"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -56,7 +56,7 @@ func Test_ServiceStart(t *testing.T) {
 			resume:        false,
 
 			responseAI: &ai.AI{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
@@ -64,11 +64,13 @@ func Test_ServiceStart(t *testing.T) {
 				InitPrompt: "hello, this is init prompt message.",
 			},
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				},
 			},
 			responseUUIDAIcall: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 			responseAIcall: &aicall.AIcall{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 				},
 				ReferenceType: aicall.ReferenceTypeCall,
@@ -81,7 +83,7 @@ func Test_ServiceStart(t *testing.T) {
 			responseUUIDAction: uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
 
 			expectAIcall: &aicall.AIcall{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
@@ -132,7 +134,7 @@ func Test_ServiceStart(t *testing.T) {
 
 			ctx := context.Background()
 			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.responseAI.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)

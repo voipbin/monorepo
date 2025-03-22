@@ -74,8 +74,8 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) (*call.Ca
 	}
 
 	// send activeflow stop
-	log.Debugf("Stopping the activeflow. activeflow_id: %s", c.ActiveFlowID)
-	_, err = h.reqHandler.FlowV1ActiveflowStop(ctx, c.ActiveFlowID)
+	log.Debugf("Stopping the activeflow. activeflow_id: %s", c.ActiveflowID)
+	_, err = h.reqHandler.FlowV1ActiveflowStop(ctx, c.ActiveflowID)
 	if err != nil {
 		// we don't do anything here. just write the log
 		log.Errorf("Could not stop the activeflow correctly. err: %v", err)

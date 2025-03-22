@@ -30,7 +30,7 @@ func Test_setVariables(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5c08dbec-ce3e-11ec-92a8-03d5ad313332"),
 				},
-				ActiveFlowID: uuid.FromStringOrNil("5c08dbec-ce3e-11ec-92a8-03d5ad313332"),
+				ActiveflowID: uuid.FromStringOrNil("5c08dbec-ce3e-11ec-92a8-03d5ad313332"),
 				Source: commonaddress.Address{
 					Type:       commonaddress.TypeTel,
 					Target:     "+821100000001",
@@ -88,7 +88,7 @@ func Test_setVariables(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.call.ActiveFlowID, tt.expectedVariables).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.call.ActiveflowID, tt.expectedVariables).Return(nil)
 
 			if err := h.setVariablesCall(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

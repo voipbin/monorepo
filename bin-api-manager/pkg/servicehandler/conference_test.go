@@ -512,7 +512,7 @@ func Test_ConferenceRecordingStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceRecordingStart(ctx, tt.conferenceID, tt.format, tt.duration, tt.onEndFlowID).Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceRecordingStart(ctx, tt.conferenceID, uuid.Nil, tt.format, tt.duration, tt.onEndFlowID).Return(tt.responseconference, nil)
 			res, err := h.ConferenceRecordingStart(ctx, tt.agent, tt.conferenceID, tt.format, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

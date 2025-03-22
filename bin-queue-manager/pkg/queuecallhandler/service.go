@@ -64,8 +64,11 @@ func (h *queuecallHandler) ServiceStart(
 	}
 	log.WithField("call", c).Debugf("Found call info.")
 
+	// generate queucall id
+	queuecallID := h.utilHandler.UUIDCreate()
+
 	// create confbridge
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, q.CustomerID, cmconfbridge.TypeConnect)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, q.CustomerID, activeflowID, cmconfbridge.ReferenceTypeQueue, queuecallID, cmconfbridge.TypeConnect)
 	if err != nil {
 		log.Errorf("Could not create the confbridge for queuecall join. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create the confbridge for queuecall join.")
@@ -87,6 +90,7 @@ func (h *queuecallHandler) ServiceStart(
 	qc, err := h.Create(
 		ctx,
 		q,
+		queuecallID,
 		referenceType,
 		referenceID,
 		activeflowID,

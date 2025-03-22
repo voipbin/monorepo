@@ -100,7 +100,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
+				},
 			},
 			responseFlow: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -213,8 +215,10 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID:         uuid.FromStringOrNil("cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"),
-				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"),
+					CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				},
 			},
 			responseFlow: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -329,8 +333,10 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID:         uuid.FromStringOrNil("2266e688-2712-11eb-aab4-eb00b0a3efbe"),
-				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2266e688-2712-11eb-aab4-eb00b0a3efbe"),
+					CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+				},
 			},
 			responseFlow: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -445,8 +451,10 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID:         uuid.FromStringOrNil("0c3bd774-a253-11ed-b6f4-2b405333577e"),
-				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0c3bd774-a253-11ed-b6f4-2b405333577e"),
+					CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				},
 			},
 			responseFlow: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -558,7 +566,7 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, tt.af.ID, cmconfbridge.ReferenceTypeCall, tt.af.ReferenceID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
 			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 

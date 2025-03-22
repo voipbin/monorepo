@@ -5,6 +5,7 @@ create table call_recordings(
   owner_type        varchar(255),   -- owner type
   owner_id          binary(16),     -- owner id
 
+  activeflow_id     binary(16),     -- active flow id
   reference_type    varchar(16),    -- reference type. call, conference, ...
   reference_id      binary(16),     -- referenced id. call-id, conference-id
   status            varchar(255),   -- current status of record.
@@ -36,3 +37,4 @@ create index idx_call_recordings_owner_id on call_recordings(owner_id);
 create index idx_call_recordings_reference_id on call_recordings(reference_id);
 create index idx_call_recordings_recording_name on call_recordings(recording_name);
 create index idx_call_recordings_on_end_flow_id on call_recordings(on_end_flow_id);
+create index idx_call_recordings_activeflow_id on call_recordings(activeflow_id);

@@ -74,7 +74,7 @@ func (h *callHandler) Create(
 		ChannelID:    channelID,
 		BridgeID:     bridgeID,
 		FlowID:       flowID,
-		ActiveFlowID: activeflowID,
+		ActiveflowID: activeflowID,
 		ConfbridgeID: confbridgeID,
 		Type:         callType,
 

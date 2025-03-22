@@ -248,7 +248,7 @@ func (h *serviceHandler) ConferenceRecordingStart(
 	}
 
 	// recording
-	tmp, err := h.reqHandler.ConferenceV1ConferenceRecordingStart(ctx, conferenceID, format, duration, onEndFlowID)
+	tmp, err := h.reqHandler.ConferenceV1ConferenceRecordingStart(ctx, conferenceID, uuid.Nil, format, duration, onEndFlowID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start the conference recording")
 	}

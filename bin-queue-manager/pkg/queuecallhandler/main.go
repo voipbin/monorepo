@@ -34,6 +34,7 @@ type QueuecallHandler interface {
 	Create(
 		ctx context.Context,
 		q *queue.Queue,
+		id uuid.UUID,
 		referenceType queuecall.ReferenceType,
 		referenceID uuid.UUID,
 		referenceActiveflowID uuid.UUID,

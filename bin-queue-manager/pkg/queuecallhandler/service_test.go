@@ -75,11 +75,13 @@ func Test_ServiceStart(t *testing.T) {
 					ID: uuid.FromStringOrNil("e82487ee-acef-11ed-b6a0-d375ffdc940c"),
 				},
 			},
-			responseConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("b0c77a26-acf0-11ed-8fd7-37de63b3d029"),
-			},
-			responseUUIDActionID:  uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
 			responseUUIDQueuecall: uuid.FromStringOrNil("b0fd8d1e-acf0-11ed-9430-6f880d5c9104"),
+			responseConfbridge: &cmconfbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b0c77a26-acf0-11ed-8fd7-37de63b3d029"),
+				},
+			},
+			responseUUIDActionID: uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
 			responseQueuecall: &queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("b0fd8d1e-acf0-11ed-9430-6f880d5c9104"),
 			},
@@ -150,9 +152,9 @@ func Test_ServiceStart(t *testing.T) {
 
 			mockQueue.EXPECT().Get(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.responseQueue.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDQueuecall)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.responseQueue.CustomerID, tt.activeflowID, cmconfbridge.ReferenceTypeQueue, tt.responseUUIDQueuecall, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
 			mockDB.EXPECT().QueuecallCreate(ctx, tt.expectQueuecall).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseUUIDQueuecall).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.responseQueuecall)

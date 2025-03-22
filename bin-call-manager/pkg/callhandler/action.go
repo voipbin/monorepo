@@ -162,7 +162,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 		return nil
 	}
 
-	if c.ActiveFlowID == uuid.Nil {
+	if c.ActiveflowID == uuid.Nil {
 		log.Info("No activeflow id found. Hangup the call.")
 		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 		return nil
@@ -181,7 +181,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	}
 
 	// get next action
-	nextAction, err := h.reqHandler.FlowV1ActiveflowGetNextAction(ctx, c.ActiveFlowID, c.Action.ID)
+	nextAction, err := h.reqHandler.FlowV1ActiveflowGetNextAction(ctx, c.ActiveflowID, c.Action.ID)
 	if err != nil {
 		// could not get the next action from the flow-manager.
 		// we don't hangup the call here. because it is possible to fetching the action with wrong current action id.
@@ -623,7 +623,7 @@ func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Ca
 		}
 	}
 
-	condition, err := h.checkDigitsCondition(ctx, c.ActiveFlowID, &option)
+	condition, err := h.checkDigitsCondition(ctx, c.ActiveflowID, &option)
 	if err != nil {
 		log.Errorf("Could not validate digits condition. err: %v", err)
 		return err
