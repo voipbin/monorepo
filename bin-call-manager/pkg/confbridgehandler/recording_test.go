@@ -45,7 +45,9 @@ func Test_RecordingStart(t *testing.T) {
 			onEndFlowID:  uuid.FromStringOrNil("2c5dcd04-0544-11f0-9d09-e3e0a5a79726"),
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("2c14e1a2-0544-11f0-9e4a-130f7b7aedd4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2c14e1a2-0544-11f0-9e4a-130f7b7aedd4"),
+				},
 				Status:   confbridge.StatusProgressing,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},

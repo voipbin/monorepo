@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-call-manager/models/confbridge"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -35,12 +36,16 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			},
 			responseConfbridges: []*confbridge.Confbridge{
 				{
-					ID:       uuid.FromStringOrNil("42e3a4e8-f0cf-11ee-8d63-9748a0e7a936"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("42e3a4e8-f0cf-11ee-8d63-9748a0e7a936"),
+					},
 					Status:   confbridge.StatusTerminated,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("43207666-f0cf-11ee-a8a2-1f40b0249a54"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("43207666-f0cf-11ee-a8a2-1f40b0249a54"),
+					},
 					Status:   confbridge.StatusTerminated,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},

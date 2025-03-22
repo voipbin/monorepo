@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -30,35 +31,41 @@ func Test_Terminating(t *testing.T) {
 		responseConfbridgeUpdate *confbridge.Confbridge
 	}{
 		{
-			"have no bridge id",
+			name: "have no bridge id",
 
-			uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+			id: uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
 
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+				},
 				Type:     confbridge.TypeConnect,
 				Status:   confbridge.StatusProgressing,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+			responseConfbridgeUpdate: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+				},
 				Type:     confbridge.TypeConnect,
 				Status:   confbridge.StatusTerminating,
 				TMDelete: dbhandler.DefaultTimeStamp},
 		},
 		{
-			"have bridge id",
+			name: "have bridge id",
 
-			uuid.FromStringOrNil("0e9ad733-f027-4ba3-932f-dede201f3726"),
+			id: uuid.FromStringOrNil("0e9ad733-f027-4ba3-932f-dede201f3726"),
 
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("0e9ad733-f027-4ba3-932f-dede201f3726"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0e9ad733-f027-4ba3-932f-dede201f3726"),
+				},
 				Type:     confbridge.TypeConnect,
 				Status:   confbridge.StatusProgressing,
 				BridgeID: "ea17cc48-592d-4054-8424-ead8c3e45a26",
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
-			nil,
+			responseConfbridgeUpdate: nil,
 		},
 	}
 
@@ -124,12 +131,14 @@ func Test_Terminate(t *testing.T) {
 		responseConfbridge *confbridge.Confbridge
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("31a7c3b7-65ef-4c3c-bd60-3e0c3a27f58b"),
+			id: uuid.FromStringOrNil("31a7c3b7-65ef-4c3c-bd60-3e0c3a27f58b"),
 
-			&confbridge.Confbridge{
-				ID:     uuid.FromStringOrNil("31a7c3b7-65ef-4c3c-bd60-3e0c3a27f58b"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("31a7c3b7-65ef-4c3c-bd60-3e0c3a27f58b"),
+				},
 				Type:   confbridge.TypeConnect,
 				Status: confbridge.StatusTerminating,
 			},

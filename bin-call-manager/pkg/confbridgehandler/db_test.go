@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -25,23 +26,40 @@ func Test_Create(t *testing.T) {
 		name string
 
 		customer       uuid.UUID
+		activeflowID   uuid.UUID
+		referenceType  confbridge.ReferenceType
+		referenceID    uuid.UUID
 		confbridgeType confbridge.Type
 
-		responseUUID uuid.UUID
+		responseUUID       uuid.UUID
+		responseConfbridge *confbridge.Confbridge
 
 		expectConfbridge *confbridge.Confbridge
 	}{
 		{
-			"normal",
+			name: "all",
 
-			uuid.FromStringOrNil("c050fd9c-9c73-11ed-85ab-e77970de1f56"),
-			confbridge.TypeConference,
+			customer:       uuid.FromStringOrNil("c050fd9c-9c73-11ed-85ab-e77970de1f56"),
+			activeflowID:   uuid.FromStringOrNil("a3ee4d58-06ac-11f0-a3b5-83deb166428d"),
+			referenceType:  confbridge.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("a44a072e-06ac-11f0-9408-87d5d88111cf"),
+			confbridgeType: confbridge.TypeConference,
 
-			uuid.FromStringOrNil("c08d26e6-9c73-11ed-ba48-ab8447f05e1d"),
+			responseUUID: uuid.FromStringOrNil("c08d26e6-9c73-11ed-ba48-ab8447f05e1d"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c08d26e6-9c73-11ed-ba48-ab8447f05e1d"),
+				},
+			},
 
-			&confbridge.Confbridge{
-				ID:         uuid.FromStringOrNil("c08d26e6-9c73-11ed-ba48-ab8447f05e1d"),
-				CustomerID: uuid.FromStringOrNil("c050fd9c-9c73-11ed-85ab-e77970de1f56"),
+			expectConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c08d26e6-9c73-11ed-ba48-ab8447f05e1d"),
+					CustomerID: uuid.FromStringOrNil("c050fd9c-9c73-11ed-85ab-e77970de1f56"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("a3ee4d58-06ac-11f0-a3b5-83deb166428d"),
+				ReferenceType: confbridge.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("a44a072e-06ac-11f0-9408-87d5d88111cf"),
 
 				Type:     confbridge.TypeConference,
 				Status:   confbridge.StatusProgressing,
@@ -86,12 +104,16 @@ func Test_Create(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().ConfbridgeCreate(ctx, tt.expectConfbridge).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseUUID).Return(&confbridge.Confbridge{}, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeCreated, &confbridge.Confbridge{})
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseUUID).Return(tt.responseConfbridge, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeCreated, tt.responseConfbridge)
 
-			_, err := h.Create(ctx, tt.customer, tt.confbridgeType)
+			res, err := h.Create(ctx, tt.customer, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeType)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConfbridge) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConfbridge, res)
 			}
 		})
 	}
@@ -110,23 +132,27 @@ func Test_Gets(t *testing.T) {
 		expectRes    []*confbridge.Confbridge
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			10,
-			"2020-05-03%2021:35:02.809",
-			map[string]string{
+			size:  10,
+			token: "2020-05-03%2021:35:02.809",
+			filters: map[string]string{
 				"customer_id": "78a0debc-f0ce-11ee-8de6-9b2ff94e8b94",
 				"deleted":     "false",
 			},
 
-			[]*confbridge.Confbridge{
+			responseGets: []*confbridge.Confbridge{
 				{
-					ID: uuid.FromStringOrNil("7904c314-f0ce-11ee-bc13-1789810328f5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("7904c314-f0ce-11ee-bc13-1789810328f5"),
+					},
 				},
 			},
-			[]*confbridge.Confbridge{
+			expectRes: []*confbridge.Confbridge{
 				{
-					ID: uuid.FromStringOrNil("7904c314-f0ce-11ee-bc13-1789810328f5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("7904c314-f0ce-11ee-bc13-1789810328f5"),
+					},
 				},
 			},
 		},
@@ -298,18 +324,22 @@ func Test_AddChannelCallID(t *testing.T) {
 		expectEvent        *confbridge.EventConfbridgeJoined
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("be4c1f74-a3bf-11ed-a9e6-4b424bee3fa9"),
-			"becfe048-a3bf-11ed-9a79-139a910fe7a0",
-			uuid.FromStringOrNil("bea13a86-a3bf-11ed-b7b9-efc804ecc73e"),
+			id:        uuid.FromStringOrNil("be4c1f74-a3bf-11ed-a9e6-4b424bee3fa9"),
+			channelID: "becfe048-a3bf-11ed-9a79-139a910fe7a0",
+			callID:    uuid.FromStringOrNil("bea13a86-a3bf-11ed-b7b9-efc804ecc73e"),
 
-			&confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("be4c1f74-a3bf-11ed-a9e6-4b424bee3fa9"),
-			},
-			&confbridge.EventConfbridgeJoined{
-				Confbridge: confbridge.Confbridge{
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("be4c1f74-a3bf-11ed-a9e6-4b424bee3fa9"),
+				},
+			},
+			expectEvent: &confbridge.EventConfbridgeJoined{
+				Confbridge: confbridge.Confbridge{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("be4c1f74-a3bf-11ed-a9e6-4b424bee3fa9"),
+					},
 				},
 				JoinedCallID: uuid.FromStringOrNil("bea13a86-a3bf-11ed-b7b9-efc804ecc73e"),
 			},
@@ -373,7 +403,9 @@ func Test_dbDelete(t *testing.T) {
 			id: uuid.FromStringOrNil("1d170c9a-bce2-11ed-9315-370c4af8e8c4"),
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("1d170c9a-bce2-11ed-9315-370c4af8e8c4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1d170c9a-bce2-11ed-9315-370c4af8e8c4"),
+				},
 			},
 		},
 	}
@@ -438,7 +470,9 @@ func Test_UpdateStatus(t *testing.T) {
 			status: confbridge.StatusTerminating,
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("49331904-83e7-4cd9-a9e2-75c7406554cf"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("49331904-83e7-4cd9-a9e2-75c7406554cf"),
+				},
 			},
 			expectEventType: confbridge.EventTypeConfbridgeTerminating,
 		},

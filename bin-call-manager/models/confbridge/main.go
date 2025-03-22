@@ -1,11 +1,18 @@
 package confbridge
 
-import "github.com/gofrs/uuid"
+import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"github.com/gofrs/uuid"
+)
 
 // Confbridge define
 type Confbridge struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
+
+	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`  // activeflow id
+	ReferenceType ReferenceType `json:"reference_type,omitempty"` // reference type
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`   // reference id
 
 	Type     Type   `json:"type"`
 	Status   Status `json:"status"`
@@ -27,6 +34,14 @@ type Confbridge struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
+
+type ReferenceType string
+
+const (
+	ReferenceTypeCall       ReferenceType = "call"
+	ReferenceTypeConference ReferenceType = "conference"
+	ReferenceTypeAI         ReferenceType = "ai"
+)
 
 // Type define
 type Type string

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
@@ -86,7 +87,9 @@ func Test_FlagAdd(t *testing.T) {
 			flag: confbridge.FlagNoAutoLeave,
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:    uuid.FromStringOrNil("55de6448-d7b2-11ed-a2aa-0f14677b59c0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("55de6448-d7b2-11ed-a2aa-0f14677b59c0"),
+				},
 				Flags: []confbridge.Flag{},
 			},
 
@@ -94,7 +97,9 @@ func Test_FlagAdd(t *testing.T) {
 				confbridge.FlagNoAutoLeave,
 			},
 			expectRes: &confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("55de6448-d7b2-11ed-a2aa-0f14677b59c0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("55de6448-d7b2-11ed-a2aa-0f14677b59c0"),
+				},
 				Flags: []confbridge.Flag{
 					confbridge.FlagNoAutoLeave,
 				},
@@ -158,7 +163,9 @@ func Test_FlagRemove(t *testing.T) {
 			flag: confbridge.FlagNoAutoLeave,
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("c71bc776-d7b3-11ed-9e34-e336e1512377"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c71bc776-d7b3-11ed-9e34-e336e1512377"),
+				},
 				Flags: []confbridge.Flag{
 					confbridge.FlagNoAutoLeave,
 				},
@@ -166,7 +173,9 @@ func Test_FlagRemove(t *testing.T) {
 
 			expectFlags: []confbridge.Flag{},
 			expectRes: &confbridge.Confbridge{
-				ID:    uuid.FromStringOrNil("c71bc776-d7b3-11ed-9e34-e336e1512377"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c71bc776-d7b3-11ed-9e34-e336e1512377"),
+				},
 				Flags: []confbridge.Flag{},
 			},
 		},

@@ -367,7 +367,14 @@ type RequestHandler interface {
 	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount int) error
 
 	// call-manager confbridge
-	CallV1ConfbridgeCreate(ctx context.Context, customerID uuid.UUID, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		activeflowID uuid.UUID,
+		referenceType cmconfbridge.ReferenceType,
+		referenceID uuid.UUID,
+		confbridgeType cmconfbridge.Type,
+	) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeCallKick(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
 	CallV1ConfbridgeCallAdd(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error

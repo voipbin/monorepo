@@ -213,10 +213,12 @@ func Test_Start_confbridge(t *testing.T) {
 			onEndFlowID:   uuid.FromStringOrNil("76d50b1c-0540-11f0-aeef-37900c5fcfeb"),
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:         uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
-				CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
-				BridgeID:   "6822e4c8-90a2-11ed-8002-4bf0087d99cb",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
+					CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
+				},
+				BridgeID: "6822e4c8-90a2-11ed-8002-4bf0087d99cb",
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseBridge: &bridge.Bridge{
 				AsteriskID: "42:01:0a:a4:00:03",

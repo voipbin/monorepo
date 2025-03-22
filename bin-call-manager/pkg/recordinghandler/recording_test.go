@@ -202,10 +202,12 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 			onEndflowID:  uuid.FromStringOrNil("773066c4-0540-11f0-ac8f-6f1699fafec8"),
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:         uuid.FromStringOrNil("4eb0b00a-f24b-11ed-8ceb-9f5eb3969704"),
-				CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
-				BridgeID:   "4ee52ba0-f24b-11ed-a01d-f77eee7d92ee",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4eb0b00a-f24b-11ed-8ceb-9f5eb3969704"),
+					CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
+				},
+				BridgeID: "4ee52ba0-f24b-11ed-a01d-f77eee7d92ee",
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseBridge: &bridge.Bridge{
 				AsteriskID: "42:01:0a:a4:00:03",

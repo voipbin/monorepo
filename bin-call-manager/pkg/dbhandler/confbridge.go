@@ -20,6 +20,10 @@ const (
 		id,
 		customer_id,
 
+		activeflow_id,
+		reference_type,
+		reference_id,
+
 		type,
 		status,
 		bridge_id,
@@ -51,6 +55,10 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+
+		&res.ActiveflowID,
+		&res.ReferenceType,
+		&res.ReferenceID,
 
 		&res.Type,
 		&res.Status,
@@ -109,6 +117,10 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		id,
 		customer_id,
 
+		activeflow_id,
+		reference_type,
+		reference_id,
+
 		type,
 		status,
 		bridge_id,
@@ -126,6 +138,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		tm_delete
 	) values(
 		?, ?,
+		?, ?, ?,
 		?, ?, ?, ?,
 		?,
 		?, ?,
@@ -152,6 +165,10 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 	_, err = h.db.Exec(q,
 		cb.ID.Bytes(),
 		cb.CustomerID.Bytes(),
+
+		cb.ActiveflowID.Bytes(),
+		cb.ReferenceType,
+		cb.ReferenceID.Bytes(),
 
 		cb.Type,
 		cb.Status,
@@ -303,7 +320,7 @@ func (h *handler) ConfbridgeGets(ctx context.Context, size uint64, token string,
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "recording_id", "external_media_id":
+		case "customer_id", "activeflow_id", "reference_id", "recording_id", "external_media_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())

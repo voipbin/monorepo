@@ -1633,18 +1633,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeCallKick(ctx, confbrid
 }
 
 // CallV1ConfbridgeCreate mocks base method.
-func (m *MockRequestHandler) CallV1ConfbridgeCreate(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
+func (m *MockRequestHandler) CallV1ConfbridgeCreate(ctx context.Context, customerID, activeflowID uuid.UUID, referenceType confbridge.ReferenceType, referenceID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1ConfbridgeCreate", ctx, customerID, confbridgeType)
+	ret := m.ctrl.Call(m, "CallV1ConfbridgeCreate", ctx, customerID, activeflowID, referenceType, referenceID, confbridgeType)
 	ret0, _ := ret[0].(*confbridge.Confbridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1ConfbridgeCreate indicates an expected call of CallV1ConfbridgeCreate.
-func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeCreate(ctx, customerID, confbridgeType any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeCreate(ctx, customerID, activeflowID, referenceType, referenceID, confbridgeType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeCreate), ctx, customerID, confbridgeType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeCreate), ctx, customerID, activeflowID, referenceType, referenceID, confbridgeType)
 }
 
 // CallV1ConfbridgeDelete mocks base method.

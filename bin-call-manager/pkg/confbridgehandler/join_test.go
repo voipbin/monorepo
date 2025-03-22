@@ -53,7 +53,9 @@ func Test_Join(t *testing.T) {
 			callID: uuid.FromStringOrNil("00b8301e-9f1d-11ea-a08e-038ccf4318cd"),
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("9c637510-36e2-11ec-b37c-63ed644a2629"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9c637510-36e2-11ec-b37c-63ed644a2629"),
+				},
 				BridgeID: "a5c525ec-dca0-11ea-b139-17780451d9da",
 			},
 
@@ -87,7 +89,9 @@ func Test_Join(t *testing.T) {
 			callID: uuid.FromStringOrNil("2133ea06-38e4-11ec-a400-df96309626a9"),
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("20fb7f68-38e4-11ec-a269-8f5f84d4c603"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("20fb7f68-38e4-11ec-a269-8f5f84d4c603"),
+				},
 				Type: confbridge.TypeConnect,
 			},
 			rsponseCall: &call.Call{
@@ -190,7 +194,9 @@ func Test_createConfbridgeBridge(t *testing.T) {
 			id: uuid.FromStringOrNil("b385b994-a3cc-11ed-a0af-e74c91fe4e29"),
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("b385b994-a3cc-11ed-a0af-e74c91fe4e29"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b385b994-a3cc-11ed-a0af-e74c91fe4e29"),
+				},
 				Type: confbridge.TypeConnect,
 			},
 
@@ -208,7 +214,9 @@ func Test_createConfbridgeBridge(t *testing.T) {
 			id: uuid.FromStringOrNil("248d449e-a3ce-11ed-a551-cf943ca821db"),
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("248d449e-a3ce-11ed-a551-cf943ca821db"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("248d449e-a3ce-11ed-a551-cf943ca821db"),
+				},
 				Type: confbridge.TypeConference,
 			},
 
@@ -272,17 +280,19 @@ func Test_createEndpointTarget(t *testing.T) {
 		expectEndpoint  string
 	}{
 		{
-			"normal",
-			"10.10.10.10",
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("a2a8a798-36e1-11ec-a28e-df4baed10101"),
+			name:            "normal",
+			asteriskAddress: "10.10.10.10",
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a2a8a798-36e1-11ec-a28e-df4baed10101"),
+				},
 				BridgeID: "a2e97408-36e1-11ec-8f9e-77e7152bdb1c",
 			},
-			&bridge.Bridge{
+			bridge: &bridge.Bridge{
 				ID:         "a2e97408-36e1-11ec-8f9e-77e7152bdb1c",
 				AsteriskID: "00:11:22:33:44:55",
 			},
-			"PJSIP/conf-join/sip:a2e97408-36e1-11ec-8f9e-77e7152bdb1c@10.10.10.10:5060",
+			expectEndpoint: "PJSIP/conf-join/sip:a2e97408-36e1-11ec-8f9e-77e7152bdb1c@10.10.10.10:5060",
 		},
 	}
 
