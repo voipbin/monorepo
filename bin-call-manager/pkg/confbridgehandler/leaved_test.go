@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -35,8 +36,8 @@ func Test_Leaved(t *testing.T) {
 		expectCallID       uuid.UUID
 	}{
 		{
-			"normal",
-			&channel.Channel{
+			name: "normal",
+			channel: &channel.Channel{
 				AsteriskID: "00:11:22:33:44:55",
 				ID:         "372b84b4-38e8-11ec-b135-638987bdf59b",
 				StasisData: map[channel.StasisDataType]string{
@@ -44,15 +45,17 @@ func Test_Leaved(t *testing.T) {
 					"call_id":       "eaa09918-38e7-11ec-b386-bb681c4ba744",
 				},
 			},
-			&bridge.Bridge{
+			bridge: &bridge.Bridge{
 				AsteriskID:    "00:11:22:33:44:55",
 				ID:            "1f940122-38e9-11ec-a25c-cb08db10a7c1",
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
 			},
 
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+				},
 				BridgeID: "1f940122-38e9-11ec-a25c-cb08db10a7c1",
 				Type:     confbridge.TypeConference,
 				ChannelCallIDs: map[string]uuid.UUID{
@@ -62,12 +65,12 @@ func Test_Leaved(t *testing.T) {
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 
-			uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
-			uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
+			expectConfbridgeID: uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+			expectCallID:       uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 		},
 		{
-			"confbridge connect type has 1 channel",
-			&channel.Channel{
+			name: "confbridge connect type has 1 channel",
+			channel: &channel.Channel{
 				AsteriskID: "00:11:22:33:44:55",
 				ID:         "372b84b4-38e8-11ec-b135-638987bdf59b",
 				StasisData: map[channel.StasisDataType]string{
@@ -75,15 +78,17 @@ func Test_Leaved(t *testing.T) {
 					"call_id":       "eaa09918-38e7-11ec-b386-bb681c4ba744",
 				},
 			},
-			&bridge.Bridge{
+			bridge: &bridge.Bridge{
 				AsteriskID:    "00:11:22:33:44:55",
 				ID:            "1f940122-38e9-11ec-a25c-cb08db10a7c1",
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),
 			},
 
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),
+				},
 				BridgeID: "1f940122-38e9-11ec-a25c-cb08db10a7c1",
 				Type:     confbridge.TypeConnect,
 				ChannelCallIDs: map[string]uuid.UUID{
@@ -92,8 +97,8 @@ func Test_Leaved(t *testing.T) {
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 
-			uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),
-			uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
+			expectConfbridgeID: uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),
+			expectCallID:       uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 		},
 	}
 

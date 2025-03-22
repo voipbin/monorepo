@@ -33,7 +33,7 @@ func (h *callHandler) setVariablesCall(ctx context.Context, c *call.Call) error 
 		variableCallDigits:       "",
 	}
 
-	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, variables); errSet != nil {
 		return fmt.Errorf("could not set the variable. variables: %s, err: %v", variables, errSet)
 	}
 

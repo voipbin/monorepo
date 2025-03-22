@@ -3,6 +3,10 @@ create table call_confbridges(
   id            binary(16),   -- id
   customer_id   binary(16),   -- customer id
 
+  activeflow_id   binary(16),
+  reference_type  varchar(255),
+  reference_id    binary(16),
+
   type          varchar(255), -- type
   status        varchar(16),  -- status
   bridge_id     varchar(255), -- conference's bridge id
@@ -28,3 +32,5 @@ create table call_confbridges(
 create index idx_call_confbridges_create on call_confbridges(tm_create);
 create index idx_call_confbridges_customer_id on call_confbridges(customer_id);
 create index idx_call_confbridges_bridge_id on call_confbridges(bridge_id);
+create index idx_call_confbridges_activeflow_id on call_confbridges(activeflow_id);
+create index idx_call_confbridges_reference_id on call_confbridges(reference_id);

@@ -121,10 +121,6 @@ func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment)
 		return nil, errors.Errorf("unknown attachment reference type: %v", e.ReferenceType)
 	}
 
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get attachment")
-	}
-
 	encodedAttachment, err := h.downloadToBase64(ctx, f.DownloadURI)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not download attachment")

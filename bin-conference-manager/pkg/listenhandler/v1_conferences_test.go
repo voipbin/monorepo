@@ -489,11 +489,12 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 
 		responseConference *conference.Conference
 
-		expectedID          uuid.UUID
-		expectedFormat      cmrecording.Format
-		expectedDuration    int
-		expectedOnEndFlowID uuid.UUID
-		expectedRes         *sock.Response
+		expectedID           uuid.UUID
+		expectedActiveflowID uuid.UUID
+		expectedFormat       cmrecording.Format
+		expectedDuration     int
+		expectedOnEndFlowID  uuid.UUID
+		expectedRes          *sock.Response
 	}{
 		{
 			name: "normal",
@@ -501,17 +502,18 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 				URI:      "/v1/conferences/17ca9f6a-9102-11ed-9c97-1b1670cb9db9/recording_start",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"format":"wav","duration":600,"on_end_flow_id":"b2f2d696-055f-11f0-8b66-b75440b1ede2"}`),
+				Data:     []byte(`{"activeflow_id":"174670b0-075b-11f0-8de9-ebaa8ca77a57","format":"wav","duration":600,"on_end_flow_id":"b2f2d696-055f-11f0-8b66-b75440b1ede2"}`),
 			},
 
 			responseConference: &conference.Conference{
 				ID: uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
 			},
 
-			expectedID:          uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
-			expectedFormat:      cmrecording.FormatWAV,
-			expectedDuration:    600,
-			expectedOnEndFlowID: uuid.FromStringOrNil("b2f2d696-055f-11f0-8b66-b75440b1ede2"),
+			expectedID:           uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
+			expectedActiveflowID: uuid.FromStringOrNil("174670b0-075b-11f0-8de9-ebaa8ca77a57"),
+			expectedFormat:       cmrecording.FormatWAV,
+			expectedDuration:     600,
+			expectedOnEndFlowID:  uuid.FromStringOrNil("b2f2d696-055f-11f0-8b66-b75440b1ede2"),
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -533,7 +535,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectedID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
+			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectedID, tt.expectedActiveflowID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

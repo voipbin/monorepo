@@ -29,6 +29,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 	tests := []struct {
 		name string
 
+		activeflowID uuid.UUID
 		referenceID  uuid.UUID
 		format       recording.Format
 		endOfSilence int
@@ -51,6 +52,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 		{
 			name: "normal",
 
+			activeflowID: uuid.FromStringOrNil("a1b75e8c-0727-11f0-9222-77e37a9b9643"),
 			referenceID:  uuid.FromStringOrNil("852def0e-f24a-11ed-845f-e32a849e7338"),
 			format:       recording.FormatWAV,
 			endOfSilence: 0,
@@ -63,7 +65,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("852def0e-f24a-11ed-845f-e32a849e7338"),
 					CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
 				},
-				ActiveFlowID: uuid.FromStringOrNil("5e7f87da-0663-11f0-a195-03f01494aa3c"),
+				ActiveflowID: uuid.FromStringOrNil("5e7f87da-0663-11f0-a195-03f01494aa3c"),
 				ChannelID:    "8e5c2a28-f24a-11ed-97f4-5f82e61f6239",
 				Status:       call.StatusProgressing,
 			},
@@ -99,6 +101,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("8e914000-f24a-11ed-b09f-879b31d16030"),
 					CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
 				},
+				ActiveflowID:  uuid.FromStringOrNil("a1b75e8c-0727-11f0-9222-77e37a9b9643"),
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("852def0e-f24a-11ed-845f-e32a849e7338"),
 				Status:        recording.StatusInitiating,
@@ -154,10 +157,9 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.expectRecording, nil)
 
 			// variableUpdateToReferenceInfo
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseCall.ActiveFlowID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 
-			res, err := h.recordingReferenceTypeCall(ctx, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
+			res, err := h.recordingReferenceTypeCall(ctx, tt.activeflowID, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -174,6 +176,7 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 	tests := []struct {
 		name string
 
+		activeflowID uuid.UUID
 		referenceID  uuid.UUID
 		format       recording.Format
 		endOfSilence int
@@ -194,6 +197,7 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 		{
 			name: "normal",
 
+			activeflowID: uuid.FromStringOrNil("d649d7ec-0727-11f0-954b-7f40ec10df84"),
 			referenceID:  uuid.FromStringOrNil("4eb0b00a-f24b-11ed-8ceb-9f5eb3969704"),
 			format:       recording.FormatWAV,
 			endOfSilence: 0,
@@ -202,10 +206,12 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 			onEndflowID:  uuid.FromStringOrNil("773066c4-0540-11f0-ac8f-6f1699fafec8"),
 
 			responseConfbridge: &confbridge.Confbridge{
-				ID:         uuid.FromStringOrNil("4eb0b00a-f24b-11ed-8ceb-9f5eb3969704"),
-				CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
-				BridgeID:   "4ee52ba0-f24b-11ed-a01d-f77eee7d92ee",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4eb0b00a-f24b-11ed-8ceb-9f5eb3969704"),
+					CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
+				},
+				BridgeID: "4ee52ba0-f24b-11ed-a01d-f77eee7d92ee",
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseBridge: &bridge.Bridge{
 				AsteriskID: "42:01:0a:a4:00:03",
@@ -225,6 +231,7 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 					ID:         uuid.FromStringOrNil("4f1ccb00-f24b-11ed-8dc1-6752696fc7aa"),
 					CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
 				},
+				ActiveflowID:  uuid.FromStringOrNil("d649d7ec-0727-11f0-954b-7f40ec10df84"),
 				ReferenceType: recording.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("4eb0b00a-f24b-11ed-8ceb-9f5eb3969704"),
 				Status:        recording.StatusInitiating,
@@ -283,7 +290,7 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 				"fail",
 			)
 
-			res, err := h.recordingReferenceTypeConfbridge(ctx, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndflowID)
+			res, err := h.recordingReferenceTypeConfbridge(ctx, tt.activeflowID, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndflowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

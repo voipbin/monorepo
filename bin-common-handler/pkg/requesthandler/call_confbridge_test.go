@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -21,6 +22,9 @@ func Test_CallV1ConfbridgeCreate(t *testing.T) {
 		name string
 
 		customerID     uuid.UUID
+		activeflowID   uuid.UUID
+		referenceType  cmconfbridge.ReferenceType
+		referenceID    uuid.UUID
 		confbridgeType cmconfbridge.Type
 
 		response      *sock.Response
@@ -32,49 +36,53 @@ func Test_CallV1ConfbridgeCreate(t *testing.T) {
 
 	tests := []test{
 		{
-			"type connect",
+			name: "all",
 
-			uuid.FromStringOrNil("a72262a0-9978-11ed-bb1a-4745c1dde2fa"),
-			cmconfbridge.TypeConnect,
+			customerID:     uuid.FromStringOrNil("a72262a0-9978-11ed-bb1a-4745c1dde2fa"),
+			activeflowID:   uuid.FromStringOrNil("ec4731be-06b1-11f0-bcc4-d71156a49eef"),
+			referenceType:  cmconfbridge.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("ec999abc-06b1-11f0-93b1-77635ee19192"),
+			confbridgeType: cmconfbridge.TypeConnect,
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"700a6ca0-5ba2-11ec-98bd-a3b749617d0b"}`),
 			},
 
-			"bin-manager.call-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.call-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/confbridges",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"a72262a0-9978-11ed-bb1a-4745c1dde2fa","type":"connect"}`),
+				Data:     []byte(`{"customer_id":"a72262a0-9978-11ed-bb1a-4745c1dde2fa","activeflow_id":"ec4731be-06b1-11f0-bcc4-d71156a49eef","reference_type":"call","reference_id":"ec999abc-06b1-11f0-93b1-77635ee19192","type":"connect"}`),
 			},
-			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("700a6ca0-5ba2-11ec-98bd-a3b749617d0b"),
+			expectRes: &cmconfbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("700a6ca0-5ba2-11ec-98bd-a3b749617d0b"),
+				},
 			},
 		},
 		{
-			"type conference",
+			name: "empty",
 
-			uuid.FromStringOrNil("ac15b0dc-9978-11ed-b5db-a729c9e168dd"),
-			cmconfbridge.TypeConference,
-
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a8d56354-978f-11ec-b4a0-2f9706b7c3ff"}`),
 			},
 
-			"bin-manager.call-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.call-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/confbridges",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"ac15b0dc-9978-11ed-b5db-a729c9e168dd","type":"conference"}`),
+				Data:     []byte(`{"customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
-			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("a8d56354-978f-11ec-b4a0-2f9706b7c3ff"),
+			expectRes: &cmconfbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a8d56354-978f-11ec-b4a0-2f9706b7c3ff"),
+				},
 			},
 		},
 	}
@@ -92,7 +100,7 @@ func Test_CallV1ConfbridgeCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1ConfbridgeCreate(ctx, tt.customerID, tt.confbridgeType)
+			res, err := reqHandler.CallV1ConfbridgeCreate(ctx, tt.customerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeType)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -133,7 +141,9 @@ func Test_CallV1ConfbridgeGet(t *testing.T) {
 				Data:       []byte(`{"id":"97e26732-9049-11ed-ac5c-871c69c4583b"}`),
 			},
 			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("97e26732-9049-11ed-ac5c-871c69c4583b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("97e26732-9049-11ed-ac5c-871c69c4583b"),
+				},
 			},
 		},
 	}
@@ -207,7 +217,9 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 				Data:     []byte(`{"external_media_id":"7ef0bc4e-b336-11ef-b176-9ffcf00e7082","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
 			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("8bb7a268-97d0-11ed-bb1d-efd9a3f33560"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8bb7a268-97d0-11ed-bb1d-efd9a3f33560"),
+				},
 			},
 		},
 	}
@@ -266,7 +278,9 @@ func Test_CallV1ConfbridgeExternalMediaStop(t *testing.T) {
 				Method: sock.RequestMethodDelete,
 			},
 			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("8c21d002-97d0-11ed-9bb5-bf7c25553a09"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8c21d002-97d0-11ed-9bb5-bf7c25553a09"),
+				},
 			},
 		},
 	}
@@ -337,7 +351,9 @@ func Test_CallV1ConfbridgeRecordingStart(t *testing.T) {
 				Data:     []byte(`{"format":"wav","end_of_silence":1000,"end_of_key":"#","duration":86400,"on_end_flow_id":"80bb2814-055e-11f0-91a3-a73fe7db2f29"}`),
 			},
 			expectRes: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("9ab869b4-9979-11ed-ae1a-1fd050fd5c80"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9ab869b4-9979-11ed-ae1a-1fd050fd5c80"),
+				},
 			},
 		},
 	}
@@ -396,7 +412,9 @@ func Test_CallV1ConfbridgeRecordingStop(t *testing.T) {
 				Method: sock.RequestMethodPost,
 			},
 			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("9aeabe1e-9979-11ed-9bde-bbb0da66dc29"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9aeabe1e-9979-11ed-9bde-bbb0da66dc29"),
+				},
 			},
 		},
 	}
@@ -459,7 +477,9 @@ func Test_CallV1ConfbridgeFlagAdd(t *testing.T) {
 				Data:     []byte(`{"flag":"no_auto_leave"}`),
 			},
 			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("367d97a2-d7be-11ed-90bb-3354b92cec8a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("367d97a2-d7be-11ed-90bb-3354b92cec8a"),
+				},
 			},
 		},
 	}
@@ -522,7 +542,9 @@ func Test_CallV1ConfbridgeFlagRemove(t *testing.T) {
 				Data:     []byte(`{"flag":"no_auto_leave"}`),
 			},
 			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("96c67bf6-d7be-11ed-abd3-efffaa03c246"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("96c67bf6-d7be-11ed-abd3-efffaa03c246"),
+				},
 			},
 		},
 	}
@@ -581,7 +603,9 @@ func Test_CallV1ConfbridgeTerminate(t *testing.T) {
 				Method: sock.RequestMethodPost,
 			},
 			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("96d39178-dae9-11ed-92a2-17288622d986"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("96d39178-dae9-11ed-92a2-17288622d986"),
+				},
 			},
 		},
 	}
@@ -638,7 +662,9 @@ func Test_CallV1ConfbridgeRing(t *testing.T) {
 				Method: sock.RequestMethodPost,
 			},
 			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("2d37d7f0-db8f-11ed-a1f7-53a2bd6a697d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2d37d7f0-db8f-11ed-a1f7-53a2bd6a697d"),
+				},
 			},
 		},
 	}
@@ -690,7 +716,9 @@ func Test_CallV1ConfbridgeAnswer(t *testing.T) {
 				Method: sock.RequestMethodPost,
 			},
 			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("2d7289f4-db8f-11ed-8c13-efbe206011b3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2d7289f4-db8f-11ed-8c13-efbe206011b3"),
+				},
 			},
 		},
 	}

@@ -32,7 +32,7 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *sock.Re
 	})
 
 	// create confbridge
-	cb, err := h.confbridgeHandler.Create(ctx, req.CustomerID, req.Type)
+	cb, err := h.confbridgeHandler.Create(ctx, req.CustomerID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Type)
 	if err != nil {
 		log.Errorf("Could not create the confbridge. err: %v", err)
 		return simpleResponse(400), nil

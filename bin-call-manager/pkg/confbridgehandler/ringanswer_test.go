@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -28,12 +29,14 @@ func Test_Ring(t *testing.T) {
 		responseConfbridge *confbridge.Confbridge
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("be57968c-a3c0-11ed-bf64-631499c3b3cc"),
+			id: uuid.FromStringOrNil("be57968c-a3c0-11ed-bf64-631499c3b3cc"),
 
-			&confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("be57968c-a3c0-11ed-bf64-631499c3b3cc"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("be57968c-a3c0-11ed-bf64-631499c3b3cc"),
+				},
 				Type: confbridge.TypeConnect,
 				ChannelCallIDs: map[string]uuid.UUID{
 					"be8867f8-a3c0-11ed-b2ba-cf8f720b21c6": uuid.FromStringOrNil("beb15a78-a3c0-11ed-9be6-2f00f66bc267"),
@@ -91,12 +94,14 @@ func Test_Answer(t *testing.T) {
 		responseConfbridge *confbridge.Confbridge
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("1c26b522-a3c1-11ed-95bd-d37a121dcbc6"),
+			id: uuid.FromStringOrNil("1c26b522-a3c1-11ed-95bd-d37a121dcbc6"),
 
-			&confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("1c26b522-a3c1-11ed-95bd-d37a121dcbc6"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1c26b522-a3c1-11ed-95bd-d37a121dcbc6"),
+				},
 				Type: confbridge.TypeConnect,
 				ChannelCallIDs: map[string]uuid.UUID{
 					"1c50f3a0-a3c1-11ed-9c58-4374f80d8554": uuid.FromStringOrNil("1c764bbe-a3c1-11ed-ab22-e316a3f2bcc1"),

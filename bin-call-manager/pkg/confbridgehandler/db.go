@@ -9,21 +9,30 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/confbridge"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 // Create is handy function for creating a confbridge.
 // it increases corresponded counter
-func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "Create",
-		"customer_id": customerID,
-	})
+func (h *confbridgeHandler) Create(
+	ctx context.Context,
+	customerID uuid.UUID,
+	activeflowID uuid.UUID,
+	referenceType confbridge.ReferenceType,
+	referenceID uuid.UUID,
+	confbridgeType confbridge.Type,
+) (*confbridge.Confbridge, error) {
 
 	id := h.utilHandler.UUIDCreate()
-
 	cb := &confbridge.Confbridge{
-		ID:         id,
-		CustomerID: customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+
+		ActiveflowID:  activeflowID,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
 
 		Type:     confbridgeType,
 		Status:   confbridge.StatusProgressing,
@@ -46,8 +55,7 @@ func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, co
 
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get created confbridge info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the created conference. id: %s, customer_id: %S", id, customerID)
 	}
 	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeCreated, res)
 
@@ -56,16 +64,9 @@ func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, co
 
 // Get returns confbridge
 func (h *confbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "Get",
-		"confbridge_id": id,
-	})
-
-	// create confbridge
 	res, err := h.db.ConfbridgeGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get the confbridge. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the confbridge. id: %s", id)
 	}
 
 	return res, nil
@@ -73,16 +74,10 @@ func (h *confbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbridge.
 
 // GetByBridgeID returns confbridge of the given bridge id
 func (h *confbridgeHandler) GetByBridgeID(ctx context.Context, bridgeID string) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":      "GetByBridgeID",
-		"bridge_id": bridgeID,
-	})
 
-	// get confbridge
 	res, err := h.db.ConfbridgeGetByBridgeID(ctx, bridgeID)
 	if err != nil {
-		log.Errorf("Could not get the confbridge. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the confbridge. bridge_id: %s", bridgeID)
 	}
 
 	return res, nil
@@ -90,16 +85,10 @@ func (h *confbridgeHandler) GetByBridgeID(ctx context.Context, bridgeID string) 
 
 // Gets returns confbridge of the given filters
 func (h *confbridgeHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
-		"filters": filters,
-	})
 
-	// get confbridges
 	res, err := h.db.ConfbridgeGets(ctx, size, token, filters)
 	if err != nil {
-		log.Errorf("Could not get the confbridges. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the confbridges. size: %d, token: %s, filters: %v", size, token, filters)
 	}
 
 	return res, nil
@@ -115,24 +104,21 @@ func (h *confbridgeHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID,
 	})
 
 	if errSet := h.db.ConfbridgeSetRecordingID(ctx, id, recordingID); errSet != nil {
-		log.Errorf("Could not set the recording id. err: %v", errSet)
-		return nil, errSet
+		return nil, errors.Wrapf(errSet, "could not set the recording id. confbridge_id: %s, recording_id: %s", id, recordingID)
 	}
 
 	if recordingID != uuid.Nil {
 		// add the recording id
 		log.Debugf("Adding the recording id. confbridge_id: %s, recording_id: %s", id, recordingID)
 		if errAdd := h.db.ConfbridgeAddRecordingIDs(ctx, id, recordingID); errAdd != nil {
-			log.Errorf("Could not add the recording id. err: %v", errAdd)
-			return nil, errAdd
+			return nil, errors.Wrapf(errAdd, "could not add the recording id. confbridge_id: %s, recording_id: %s", id, recordingID)
 		}
 	}
 
 	// get updated confbridge
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated confbridge. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the updated confbridge. confbridge_id: %s", id)
 	}
 
 	return res, nil
@@ -140,22 +126,15 @@ func (h *confbridgeHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID,
 
 // UpdateExternalMediaID updates the confbridge's external media id.
 func (h *confbridgeHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":              "UpdateExternalMediaID",
-		"confbridge_id":     id,
-		"external_media_id": externalMediaID,
-	})
 
 	if errSet := h.db.ConfbridgeSetExternalMediaID(ctx, id, externalMediaID); errSet != nil {
-		log.Errorf("Could not set the external media id. err: %v", errSet)
-		return nil, errSet
+		return nil, errors.Wrapf(errSet, "could not set the external media id. confbridge_id: %s, external_media_id: %s", id, externalMediaID)
 	}
 
 	// get updated confbridge
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated confbridge. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the updated confbridge. confbridge_id: %s", id)
 	}
 
 	return res, nil
@@ -163,22 +142,15 @@ func (h *confbridgeHandler) UpdateExternalMediaID(ctx context.Context, id uuid.U
 
 // UpdateBridgeID updates the confbridge's bridge id.
 func (h *confbridgeHandler) UpdateBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "UpdateBridgeID",
-		"confbridge_id": id,
-		"bridge_id":     bridgeID,
-	})
 
 	if errSet := h.db.ConfbridgeSetBridgeID(ctx, id, bridgeID); errSet != nil {
-		log.Errorf("Could not set the bridge id. err: %v", errSet)
-		return nil, errSet
+		return nil, errors.Wrapf(errSet, "could not set the bridge id. confbridge_id: %s, bridge_id: %s", id, bridgeID)
 	}
 
 	// get updated confbridge
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated confbridge. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the updated confbridge. confbridge_id: %s", id)
 	}
 
 	return res, nil
@@ -186,22 +158,15 @@ func (h *confbridgeHandler) UpdateBridgeID(ctx context.Context, id uuid.UUID, br
 
 // RemoveChannelCallID removes the channel from the channel call id
 func (h *confbridgeHandler) RemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "RemoveChannelCallID",
-		"confbridge_id": id,
-		"channel_id":    channelID,
-	})
 
 	if errRemove := h.db.ConfbridgeRemoveChannelCallID(ctx, id, channelID); errRemove != nil {
-		log.Errorf("Could not remove the channel from the confbridge's channel/call info. err: %v", errRemove)
-		return nil, errors.Wrap(errRemove, "could not remove the channel")
+		return nil, errors.Wrapf(errRemove, "could not remove the channel/call from the confbridge's channel/call info. confbridge_id: %s, channel_id: %s", id, channelID)
 	}
 
 	// get confbridge
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated confbridge. err: %v", err)
-		return nil, errors.Wrap(err, "could not get updated confbridge")
+		return nil, errors.Wrapf(err, "could not get updated confbridge. confbridge_id: %s", id)
 	}
 
 	// Publish the event
@@ -216,22 +181,15 @@ func (h *confbridgeHandler) RemoveChannelCallID(ctx context.Context, id uuid.UUI
 
 // AddChannelCallID adds the channel from the channel call id
 func (h *confbridgeHandler) AddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "AddChannelCallID",
-		"confbridge_id": id,
-		"channel_id":    channelID,
-	})
 
 	if errAdd := h.db.ConfbridgeAddChannelCallID(ctx, id, channelID, callID); errAdd != nil {
-		log.Errorf("Could not add the channel/call to the confbridge's channel/call info. err: %v", errAdd)
-		return nil, errors.Wrap(errAdd, "could not add the channel call")
+		return nil, errors.Wrapf(errAdd, "could not add the channel/call to the confbridge's channel/call info. confbridge_id: %s, channel_id: %s, call_id: %s", id, channelID, callID)
 	}
 
 	// get confbridge
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated confbridge. err: %v", err)
-		return nil, errors.Wrap(err, "could not get updated confbridge")
+		return nil, errors.Wrapf(err, "could not get updated confbridge. confbridge_id: %s", id)
 	}
 
 	// Publish the event
@@ -246,22 +204,16 @@ func (h *confbridgeHandler) AddChannelCallID(ctx context.Context, id uuid.UUID, 
 
 // dbDelete deletes the confbridge
 func (h *confbridgeHandler) dbDelete(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "dbDelete",
-		"confbridge_id": id,
-	})
 
 	// update conference status to terminated
 	if errDelete := h.db.ConfbridgeDelete(ctx, id); errDelete != nil {
-		log.Errorf("Could not terminate the confbridge. err: %v", errDelete)
-		return nil, errDelete
+		return nil, errors.Wrapf(errDelete, "could not delete the confbridge. confbridge_id: %s", id)
 	}
 
 	// notify conference deleted event
 	res, err := h.db.ConfbridgeGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get deleted confbridge info. err: %v", err)
-		return nil, errors.Wrap(err, "Could not get deleted confbridge.")
+		return nil, errors.Wrapf(err, "could not get deleted confbridge. confbridge_id: %s", id)
 	}
 	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, res)
 
@@ -270,22 +222,15 @@ func (h *confbridgeHandler) dbDelete(ctx context.Context, id uuid.UUID) (*confbr
 
 // UpdateFlags updates the confbridge's flags
 func (h *confbridgeHandler) UpdateFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "UpdateFlags",
-		"confbridge_id": id,
-		"flags":         flags,
-	})
 
 	if errSet := h.db.ConfbridgeSetFlags(ctx, id, flags); errSet != nil {
-		log.Errorf("Could not set flags. err: %v", errSet)
-		return nil, errors.Wrap(errSet, "could not set flags")
+		return nil, errors.Wrapf(errSet, "could not set the flags. confbridge_id: %s, flags: %v", id, flags)
 	}
 
 	// notify conference deleted event
 	res, err := h.db.ConfbridgeGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get deleted confbridge info. err: %v", err)
-		return nil, errors.Wrap(err, "Could not get deleted confbridge.")
+		return nil, errors.Wrapf(err, "could not get updated confbridge. confbridge_id: %s", id)
 	}
 
 	return res, nil
@@ -293,22 +238,16 @@ func (h *confbridgeHandler) UpdateFlags(ctx context.Context, id uuid.UUID, flags
 
 // UpdateStatus updates the confbridge status
 func (h *confbridgeHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status confbridge.Status) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "UpdateStatus",
-		"confbridge_id": id,
-	})
 
 	// update conference status to terminated
 	if errSet := h.db.ConfbridgeSetStatus(ctx, id, status); errSet != nil {
-		log.Errorf("Could not set the confbridge status. err: %v", errSet)
-		return nil, errSet
+		return nil, errors.Wrapf(errSet, "could not set the confbridge status. confbridge_id: %s, status: %s", id, status)
 	}
 
 	// notify conference deleted event
 	res, err := h.db.ConfbridgeGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get deleted confbridge info. err: %v", err)
-		return nil, errors.Wrap(err, "Could not get deleted confbridge.")
+		return nil, errors.Wrapf(err, "could not get updated confbridge. confbridge_id: %s", id)
 	}
 
 	switch status {

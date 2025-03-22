@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -35,21 +36,23 @@ func Test_ExternalMediaStart(t *testing.T) {
 		responseExternalMedia *externalmedia.ExternalMedia
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("45c1a114-996f-11ed-b089-575b5e0a4a0d"),
-			uuid.FromStringOrNil("620b555c-b332-11ef-af24-271a7cd9ab2a"),
-			"example.com",
-			externalmedia.EncapsulationRTP,
-			externalmedia.TransportUDP,
-			"client",
-			"ulaw",
-			"both",
+			id:              uuid.FromStringOrNil("45c1a114-996f-11ed-b089-575b5e0a4a0d"),
+			externalMediaID: uuid.FromStringOrNil("620b555c-b332-11ef-af24-271a7cd9ab2a"),
+			externalHost:    "example.com",
+			encapsulation:   externalmedia.EncapsulationRTP,
+			transport:       externalmedia.TransportUDP,
+			connectionType:  "client",
+			format:          "ulaw",
+			direction:       "both",
 
-			&confbridge.Confbridge{
-				ID: uuid.FromStringOrNil("45c1a114-996f-11ed-b089-575b5e0a4a0d"),
+			responseCall: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("45c1a114-996f-11ed-b089-575b5e0a4a0d"),
+				},
 			},
-			&externalmedia.ExternalMedia{
+			responseExternalMedia: &externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
 			},
 		},
@@ -102,15 +105,17 @@ func Test_ExternalMediaStop(t *testing.T) {
 		responseExternalMedia *externalmedia.ExternalMedia
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("46086f68-996f-11ed-a311-3bbc19b864b5"),
+			id: uuid.FromStringOrNil("46086f68-996f-11ed-a311-3bbc19b864b5"),
 
-			&confbridge.Confbridge{
-				ID:              uuid.FromStringOrNil("46086f68-996f-11ed-a311-3bbc19b864b5"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("46086f68-996f-11ed-a311-3bbc19b864b5"),
+				},
 				ExternalMediaID: uuid.FromStringOrNil("462aa10a-996f-11ed-8cd9-47103a32e558"),
 			},
-			&externalmedia.ExternalMedia{
+			responseExternalMedia: &externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("462aa10a-996f-11ed-8cd9-47103a32e558"),
 			},
 		},

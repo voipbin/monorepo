@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -28,18 +29,20 @@ func Test_Kick(t *testing.T) {
 		channel      *channel.Channel
 	}{
 		{
-			"normal",
-			uuid.FromStringOrNil("ea343f84-38e7-11ec-bcba-df9a707c8d39"),
-			uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
+			name:         "normal",
+			confbridgeID: uuid.FromStringOrNil("ea343f84-38e7-11ec-bcba-df9a707c8d39"),
+			callID:       uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+				},
 				BridgeID: "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
 				ChannelCallIDs: map[string]uuid.UUID{
 					"372b84b4-38e8-11ec-b135-638987bdf59b": uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 				},
 			},
-			&channel.Channel{
+			channel: &channel.Channel{
 				AsteriskID: "00:11:22:33:44:55",
 				ID:         "372b84b4-38e8-11ec-b135-638987bdf59b",
 			},

@@ -267,6 +267,7 @@ func (r *requestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Con
 func (r *requestHandler) ConferenceV1ConferenceRecordingStart(
 	ctx context.Context,
 	conferenceID uuid.UUID,
+	activeflowID uuid.UUID,
 	format cmrecording.Format,
 	duration int,
 	onEndFlowID uuid.UUID,
@@ -274,9 +275,10 @@ func (r *requestHandler) ConferenceV1ConferenceRecordingStart(
 	uri := fmt.Sprintf("/v1/conferences/%s/recording_start", conferenceID.String())
 
 	data := &cfrequest.V1DataConferencesIDRecordingStartPost{
-		Format:      format,
-		Duration:    duration,
-		OnEndFlowID: onEndFlowID,
+		ActiveflowID: activeflowID,
+		Format:       format,
+		Duration:     duration,
+		OnEndFlowID:  onEndFlowID,
 	}
 
 	m, err := json.Marshal(data)

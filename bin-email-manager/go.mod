@@ -52,13 +52,13 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
 	github.com/go-redsync/redsync/v4 v4.13.0
-	github.com/go-sql-driver/mysql v1.9.0
+	github.com/go-sql-driver/mysql v1.9.1
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.21.1
-	github.com/redis/go-redis/v9 v9.7.2
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/sendgrid/sendgrid-go v3.16.0+incompatible
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1

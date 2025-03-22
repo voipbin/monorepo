@@ -92,7 +92,9 @@ func Test_transfereeHangupTypeAttended(t *testing.T) {
 				ConfbridgeID: uuid.FromStringOrNil("12ea4df8-dd13-11ed-a2d0-d78513698076"),
 			},
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("12ea4df8-dd13-11ed-a2d0-d78513698076"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("12ea4df8-dd13-11ed-a2d0-d78513698076"),
+				},
 				ChannelCallIDs: map[string]uuid.UUID{
 					"1349b00e-dd13-11ed-a3c0-ef2fe7037b66": uuid.FromStringOrNil("131e8226-dd13-11ed-b587-fbf6f7f2d5fa"),
 					"13702536-dd13-11ed-bfc0-3bef698ff6ae": uuid.FromStringOrNil("139ce378-dd13-11ed-aacf-3b12ccca6a22"),

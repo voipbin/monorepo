@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -27,15 +28,16 @@ func Test_Delete(t *testing.T) {
 		id uuid.UUID
 
 		responseConfbridge *confbridge.Confbridge
-		// responseConfbridgeUpdate *confbridge.Confbridge
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+			id: uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
 
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+				},
 				Type:     confbridge.TypeConnect,
 				Status:   confbridge.StatusTerminating,
 				TMDelete: dbhandler.DefaultTimeStamp,

@@ -8,7 +8,7 @@ create table call_calls(
   channel_id        varchar(255), -- channel id
   bridge_id         varchar(255), -- call bridge id
   flow_id           binary(16),   -- flow id
-  active_flow_id    binary(16),   -- active_flow id
+  activeflow_id    binary(16),   -- activeflow id
   confbridge_id     binary(16),   -- currently joined confbridge id
   type              varchar(16),  -- type of call
 
@@ -69,3 +69,4 @@ create index idx_call_calls_source_target on call_calls(source_target);
 create index idx_call_calls_destination_target on call_calls(destination_target);
 create index idx_call_calls_external_media_id on call_calls(external_media_id);
 create index idx_call_calls_groupcall_id on call_calls(groupcall_id);
+create index idx_call_calls_activeflow_id on call_calls(activeflow_id);

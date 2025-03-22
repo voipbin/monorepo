@@ -12,6 +12,7 @@ type WebhookMessage struct {
 	commonidentity.Identity
 	commonidentity.Owner
 
+	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 	Status        Status        `json:"status"`
@@ -33,6 +34,7 @@ func (h *Recording) ConvertWebhookMessage() *WebhookMessage {
 		Identity: h.Identity,
 		Owner:    h.Owner,
 
+		ActiveflowID:  h.ActiveflowID,
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 		Status:        h.Status,

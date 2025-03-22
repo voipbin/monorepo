@@ -38,9 +38,10 @@ type V1DataConferencesIDPut struct {
 // v1 data type request struct for
 // /v1/conferences/<conference-id>/recording_start POST
 type V1DataConferencesIDRecordingStartPost struct {
-	Format      cmrecording.Format `json:"format"`
-	Duration    int                `json:"duration"` // duration. second
-	OnEndFlowID uuid.UUID          `json:"on_end_flow_id"`
+	ActiveflowID uuid.UUID          `json:"activeflow_id"`
+	Format       cmrecording.Format `json:"format"`
+	Duration     int                `json:"duration"` // duration. second
+	OnEndFlowID  uuid.UUID          `json:"on_end_flow_id"`
 }
 
 // V1DataConferencesIDRecordingIDPut is

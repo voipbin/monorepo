@@ -292,7 +292,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				},
 				ChannelID:      "d948969e-5de3-11ed-94f5-137ec429b6b6",
 				FlowID:         uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
-				ActiveFlowID:   uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+				ActiveflowID:   uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},

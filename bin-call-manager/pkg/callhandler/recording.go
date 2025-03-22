@@ -42,6 +42,7 @@ func (h *callHandler) RecordingStart(
 	// starts the recording
 	rec, err := h.recordingHandler.Start(
 		ctx,
+		c.ActiveflowID,
 		recording.ReferenceTypeCall,
 		c.ID,
 		format,

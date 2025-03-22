@@ -17,6 +17,7 @@ import (
 // recordingReferenceTypeCall creates a new reocording for call type
 func (h *recordingHandler) recordingReferenceTypeCall(
 	ctx context.Context,
+	activeflowID uuid.UUID,
 	referenceID uuid.UUID,
 	format recording.Format,
 	endOfSilence int,
@@ -37,6 +38,11 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 	c, err := h.reqHandler.CallV1CallGet(ctx, referenceID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get call info")
+	}
+
+	if activeflowID == uuid.Nil {
+		log.Debugf("The activeflow id is nil. Set the activeflowID to the call's activeflowID. call_id: %s, activeflow_id: %s", c.ID, c.ActiveflowID)
+		activeflowID = c.ActiveflowID
 	}
 
 	if c.Status != call.StatusProgressing {
@@ -86,6 +92,7 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 		ctx,
 		id,
 		c.CustomerID,
+		activeflowID,
 		recording.ReferenceTypeCall,
 		c.ID,
 		format,
@@ -105,6 +112,7 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 // recordingReferenceTypeConfbridge creates a new reocording for conference type
 func (h *recordingHandler) recordingReferenceTypeConfbridge(
 	ctx context.Context,
+	activeflowID uuid.UUID,
 	confbridgeID uuid.UUID,
 	format recording.Format,
 	endOfSilence int,
@@ -114,6 +122,7 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 ) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "recordingReferenceTypeConfbridge",
+		"activeflow_id":  activeflowID,
 		"reference_id":   confbridgeID,
 		"format":         format,
 		"end_of_silence": endOfSilence,
@@ -127,6 +136,11 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 	cb, err := h.reqHandler.CallV1ConfbridgeGet(ctx, confbridgeID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get confbridge info")
+	}
+
+	if activeflowID == uuid.Nil {
+		log.Debugf("The activeflow id is nil. Set the activeflowID to the confbridge's activeflowID. confbridge_id: %s, activeflow_id: %s", cb.ID, cb.ActiveflowID)
+		activeflowID = cb.ActiveflowID
 	}
 
 	if cb.TMDelete < dbhandler.DefaultTimeStamp {
@@ -153,6 +167,7 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 		ctx,
 		id,
 		cb.CustomerID,
+		activeflowID,
 		recording.ReferenceTypeConfbridge,
 		cb.ID,
 		format,

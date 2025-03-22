@@ -11,6 +11,7 @@ type Recording struct {
 	commonidentity.Identity
 	commonidentity.Owner
 
+	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 	Status        Status        `json:"status"`

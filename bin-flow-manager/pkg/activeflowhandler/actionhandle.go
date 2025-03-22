@@ -454,7 +454,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a confbridge for connect
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, af.CustomerID, cmconfbridge.TypeConnect)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, af.CustomerID, af.ID, cmconfbridge.ReferenceTypeCall, af.ReferenceID, cmconfbridge.TypeConnect)
 	if err != nil {
 		log.Errorf("Could not create a confbridge for connect. err: %v", err)
 		return errors.Wrap(err, "could not create a confbridge for connect")

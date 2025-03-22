@@ -73,7 +73,9 @@ func Test_HealthCheck(t *testing.T) {
 				TMDelete:      dbhandler.DefaultTimeStamp,
 			},
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("fe812e35-b30e-4b38-9705-4cc22cbe3678"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fe812e35-b30e-4b38-9705-4cc22cbe3678"),
+				},
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 
@@ -114,7 +116,9 @@ func Test_HealthCheck(t *testing.T) {
 				TMDelete:      dbhandler.DefaultTimeStamp,
 			},
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("cdc3edd9-ee22-43ec-a598-4f27c896a4ca"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdc3edd9-ee22-43ec-a598-4f27c896a4ca"),
+				},
 			},
 
 			expectRetryCount: 1,

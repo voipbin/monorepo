@@ -427,10 +427,11 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id          uuid.UUID
-		format      cmrecording.Format
-		duration    int
-		onEndFlowID uuid.UUID
+		id           uuid.UUID
+		activeflowID uuid.UUID
+		format       cmrecording.Format
+		duration     int
+		onEndFlowID  uuid.UUID
 
 		response      *sock.Response
 		expectTarget  string
@@ -440,10 +441,11 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 		{
 			name: "normal",
 
-			id:          uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
-			format:      cmrecording.FormatWAV,
-			duration:    600,
-			onEndFlowID: uuid.FromStringOrNil("01eac468-055e-11f0-b60a-2753cc705cdb"),
+			id:           uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
+			activeflowID: uuid.FromStringOrNil("a129ba1c-075b-11f0-9356-b3b5e89e14f0"),
+			format:       cmrecording.FormatWAV,
+			duration:     600,
+			onEndFlowID:  uuid.FromStringOrNil("01eac468-055e-11f0-b60a-2753cc705cdb"),
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -455,7 +457,7 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 				URI:      "/v1/conferences/062311b6-9107-11ed-bd31-fb8ce20a3bd7/recording_start",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"format":"wav","duration":600,"on_end_flow_id":"01eac468-055e-11f0-b60a-2753cc705cdb"}`),
+				Data:     []byte(`{"activeflow_id":"a129ba1c-075b-11f0-9356-b3b5e89e14f0","format":"wav","duration":600,"on_end_flow_id":"01eac468-055e-11f0-b60a-2753cc705cdb"}`),
 			},
 			expectRes: &cfconference.Conference{
 				ID: uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
@@ -476,7 +478,7 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConferenceV1ConferenceRecordingStart(ctx, tt.id, tt.format, tt.duration, tt.onEndFlowID)
+			res, err := reqHandler.ConferenceV1ConferenceRecordingStart(ctx, tt.id, tt.activeflowID, tt.format, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

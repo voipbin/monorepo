@@ -20,7 +20,7 @@ func (h *activeflowHandler) EventCallHangup(ctx context.Context, c *cmcall.Call)
 	log.Debugf("Handling the call_hangup event. call_id: %s", c.ID)
 
 	// stop the activeflow
-	tmp, err := h.Stop(ctx, c.ActiveFlowID)
+	tmp, err := h.Stop(ctx, c.ActiveflowID)
 	if err != nil {
 		log.Errorf("Could not stop the activeflow. err: %v", err)
 		return errors.Wrap(err, "Could not stop the activeflow.")

@@ -38,7 +38,14 @@ type ConfbridgeHandler interface {
 	ARIStasisStart(ctx context.Context, cn *channel.Channel) error
 	ARIBridgeDestroyed(ctx context.Context, br *bridge.Bridge) error
 
-	Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error)
+	Create(
+		ctx context.Context,
+		customerID uuid.UUID,
+		activeflowID uuid.UUID,
+		referenceType confbridge.ReferenceType,
+		referenceID uuid.UUID,
+		confbridgeType confbridge.Type,
+	) (*confbridge.Confbridge, error)
 	Delete(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error)
 	Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)

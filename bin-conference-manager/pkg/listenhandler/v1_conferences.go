@@ -264,7 +264,7 @@ func (h *listenHandler) processV1ConferencesIDRecordingStartPost(ctx context.Con
 		return nil, err
 	}
 
-	tmp, err := h.conferenceHandler.RecordingStart(ctx, cfID, req.Format, req.Duration, req.OnEndFlowID)
+	tmp, err := h.conferenceHandler.RecordingStart(ctx, cfID, req.ActiveflowID, req.Format, req.Duration, req.OnEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start the conference recording id. err: %v", err)
 		return nil, err

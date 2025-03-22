@@ -17,6 +17,7 @@ func (h *recordingHandler) Create(
 	ctx context.Context,
 	id uuid.UUID,
 	customerID uuid.UUID,
+	activeflowID uuid.UUID,
 	referenceType recording.ReferenceType,
 	referenceID uuid.UUID,
 	format recording.Format,
@@ -30,6 +31,7 @@ func (h *recordingHandler) Create(
 		"func":           "Create",
 		"id":             id,
 		"customer_id":    customerID,
+		"activeflow_id":  activeflowID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"format":         format,
@@ -45,6 +47,7 @@ func (h *recordingHandler) Create(
 			OwnerID:   uuid.Nil,
 		},
 
+		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 		Status:        recording.StatusInitiating,

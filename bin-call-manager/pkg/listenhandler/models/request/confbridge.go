@@ -11,8 +11,11 @@ import (
 // v1 data type request struct for
 // /v1/confbridges POST
 type V1DataConfbridgesPost struct {
-	CustomerID uuid.UUID       `json:"customer_id,omitempty"`
-	Type       confbridge.Type `json:"type,omitempty"`
+	CustomerID    uuid.UUID                `json:"customer_id,omitempty"`
+	ActiveflowID  uuid.UUID                `json:"activeflow_id,omitempty"`
+	ReferenceType confbridge.ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID                `json:"reference_id,omitempty"`
+	Type          confbridge.Type          `json:"type,omitempty"`
 }
 
 // V1DataConfbridgesIDExternalMediaPost is

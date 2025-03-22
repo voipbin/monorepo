@@ -10,6 +10,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
@@ -34,40 +35,44 @@ func Test_Create(t *testing.T) {
 		preActions     []fmaction.Action
 		postActions    []fmaction.Action
 
+		responseUUID       uuid.UUID
 		responseConfbridge *cmconfbridge.Confbridge
 		responseFlow       *fmflow.Flow
 
 		expectRes *conference.Conference
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			conference.TypeConnect,
-			uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
-			"test name",
-			"test detail",
-			86400,
-			[]fmaction.Action{
+			conferenceType: conference.TypeConnect,
+			customerID:     uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
+			conferenceName: "test name",
+			detail:         "test detail",
+			timeout:        86400,
+			preActions: []fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			[]fmaction.Action{
+			postActions: []fmaction.Action{
 				{
 					Type: fmaction.TypeTalk,
 				},
 			},
 
-			&cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("a5aab3aa-5b8a-11ec-bf89-432b7557fb8b"),
+			responseUUID: uuid.FromStringOrNil("944e0272-06b5-11f0-8fb6-43b650d2e25d"),
+			responseConfbridge: &cmconfbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a5aab3aa-5b8a-11ec-bf89-432b7557fb8b"),
+				},
 			},
-			&fmflow.Flow{
+			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a5d4bad8-5b8a-11ec-a510-57d74c7f1270"),
 				},
 			},
 
-			&conference.Conference{
+			expectRes: &conference.Conference{
 				ID:           uuid.FromStringOrNil("a5f5c12e-5b8a-11ec-9358-f381c6b41b9f"),
 				Type:         conference.TypeConference,
 				ConfbridgeID: uuid.FromStringOrNil("a5aab3aa-5b8a-11ec-bf89-432b7557fb8b"),
@@ -84,26 +89,29 @@ func Test_Create(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			confbridgeType := cmconfbridge.TypeConnect
 			if tt.conferenceType == conference.TypeConference {
 				confbridgeType = cmconfbridge.TypeConference
 			}
-			mockReq.EXPECT().CallV1ConfbridgeCreate(gomock.Any(), tt.customerID, confbridgeType).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FlowV1FlowCreate(gomock.Any(), gomock.Any(), fmflow.TypeConference, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
-			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectRes.CustomerID, conference.EventTypeConferenceCreated, gomock.Any())
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.customerID, uuid.Nil, cmconfbridge.ReferenceTypeConference, tt.responseUUID, confbridgeType).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, gomock.Any(), fmflow.TypeConference, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
+			mockDB.EXPECT().ConferenceCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, gomock.Any()).Return(tt.expectRes, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectRes.CustomerID, conference.EventTypeConferenceCreated, gomock.Any())
 			if tt.timeout > 0 {
-				mockReq.EXPECT().ConferenceV1ConferenceDeleteDelay(gomock.Any(), gomock.Any(), tt.timeout*1000).Return(nil)
+				mockReq.EXPECT().ConferenceV1ConferenceDeleteDelay(ctx, gomock.Any(), tt.timeout*1000).Return(nil)
 			}
 
 			res, err := h.Create(ctx, tt.conferenceType, tt.customerID, tt.conferenceName, tt.detail, tt.timeout, tt.preActions, tt.postActions)

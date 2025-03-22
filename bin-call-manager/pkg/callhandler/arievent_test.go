@@ -234,7 +234,7 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, call.HangupReasonNormal, call.HangupByRemote).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallHangup, tt.responseCall)
-			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
+			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveflowID).Return(&fmactiveflow.Activeflow{}, nil)
 
 			if err := h.ARIChannelDestroyed(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -306,7 +306,7 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 					ID: uuid.FromStringOrNil("77a82874-e7dd-11ea-9647-27054cd71830"),
 				},
 				FlowID:       uuid.FromStringOrNil("32c36bf4-156f-11ec-af17-87eb4aca917b"),
-				ActiveFlowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),
+				ActiveflowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),
 			},
 			"77a82874-e7dd-11ea-9647-27054cd71830",
 
@@ -316,7 +316,7 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 				},
 				Action:       action.Action{},
 				FlowID:       uuid.FromStringOrNil("32c36bf4-156f-11ec-af17-87eb4aca917b"),
-				ActiveFlowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),
+				ActiveflowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),
 			},
 		},
 	}

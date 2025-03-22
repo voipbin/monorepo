@@ -45,7 +45,9 @@ func Test_attendedInit(t *testing.T) {
 			},
 
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("1f268336-dbb8-11ed-9618-db090c5e42d6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1f268336-dbb8-11ed-9618-db090c5e42d6"),
+				},
 				ChannelCallIDs: map[string]uuid.UUID{
 					"7e2b352a-dbb8-11ed-b0a2-bfac6acb7193": uuid.FromStringOrNil("1ee4b104-dbb8-11ed-aca8-a3870b5b6fec"),
 					"7e5607fa-dbb8-11ed-a821-674a49015505": uuid.FromStringOrNil("7e7f5128-dbb8-11ed-82e6-bb32d9c540fe"),
@@ -108,7 +110,9 @@ func Test_attendedCancel(t *testing.T) {
 			},
 
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("d9c6377c-dc44-11ed-a6ac-7f9a18bc4e86"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d9c6377c-dc44-11ed-a6ac-7f9a18bc4e86"),
+				},
 				ChannelCallIDs: map[string]uuid.UUID{
 					"d9c6377c-dc44-11ed-a6ac-7f9a18bc4e86": uuid.FromStringOrNil("6669d858-dc47-11ed-9246-335a3dd63ec8"),
 					"66878c7c-dc47-11ed-aa6e-d71b35ef69c3": uuid.FromStringOrNil("66ad2fb8-dc47-11ed-974e-dbfd996258ad"),
