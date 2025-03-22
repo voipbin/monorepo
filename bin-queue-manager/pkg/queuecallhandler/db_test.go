@@ -209,6 +209,7 @@ func Test_Create(t *testing.T) {
 		name string
 
 		queue                 *queue.Queue
+		id                    uuid.UUID
 		referenceType         queuecall.ReferenceType
 		referenceID           uuid.UUID
 		referenceActiveflowID uuid.UUID
@@ -238,6 +239,7 @@ func Test_Create(t *testing.T) {
 				WaitTimeout:    100000,
 				ServiceTimeout: 1000000,
 			},
+			id:                    uuid.Nil,
 			referenceType:         queuecall.ReferenceTypeCall,
 			referenceID:           uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
 			referenceActiveflowID: uuid.FromStringOrNil("28063f02-af52-11ec-9025-6775fa083464"),
@@ -317,6 +319,7 @@ func Test_Create(t *testing.T) {
 			res, err := h.Create(
 				ctx,
 				tt.queue,
+				tt.id,
 				tt.referenceType,
 				tt.referenceID,
 				tt.referenceActiveflowID,

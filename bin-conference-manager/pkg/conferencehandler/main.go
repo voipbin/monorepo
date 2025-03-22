@@ -8,6 +8,7 @@ import (
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-flow-manager/models/action"
 
@@ -67,6 +68,7 @@ type conferenceHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
+	utilHandler   utilhandler.UtilHandler
 }
 
 // List of default values
@@ -126,6 +128,7 @@ func NewConferenceHandler(
 		reqHandler:    req,
 		notifyHandler: notify,
 		db:            db,
+		utilHandler:   utilhandler.NewUtilHandler(),
 	}
 
 	return h

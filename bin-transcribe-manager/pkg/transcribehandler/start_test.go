@@ -177,7 +177,9 @@ func Test_isValidReference(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("915fe2c8-98ae-11ed-8b05-bf167f4d8651"),
 
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("915fe2c8-98ae-11ed-8b05-bf167f4d8651"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("915fe2c8-98ae-11ed-8b05-bf167f4d8651"),
+				},
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 

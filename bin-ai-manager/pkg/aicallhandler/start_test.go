@@ -8,7 +8,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-	"monorepo/bin-common-handler/models/identity"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -44,7 +44,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 		{
 			name: "normal",
 			ai: &ai.AI{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
@@ -57,11 +57,13 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			language:     "en-US",
 
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				},
 			},
 			responseUUIDAIcall: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 			responseAIcall: &aicall.AIcall{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 				},
 				ReferenceType: aicall.ReferenceTypeCall,
@@ -72,7 +74,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				Content: "test assistant message.",
 			},
 			expectAIcall: &aicall.AIcall{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
@@ -95,7 +97,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				{Role: "assistant", Content: "test assistant message."},
 			},
 			expectRes: &aicall.AIcall{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 				},
 				ReferenceType: aicall.ReferenceTypeCall,
@@ -126,7 +128,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.ai.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
 
 			// create
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
@@ -167,7 +169,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 		{
 			name: "normal",
 			ai: &ai.AI{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1d758ff0-f06f-11ef-bcb1-1ff1f3691915"),
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 				},
@@ -179,7 +181,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 
 			responseUUIDAIcall: uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
 			responseAIcall: &aicall.AIcall{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
 				},
 			},
@@ -188,7 +190,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 				Content: "test assistant message.",
 			},
 			expectAIcall: &aicall.AIcall{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 				},
@@ -199,7 +201,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 				Status:       aicall.StatusInitiating,
 			},
 			expectRes: &aicall.AIcall{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
 				},
 			},

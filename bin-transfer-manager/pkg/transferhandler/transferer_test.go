@@ -54,7 +54,9 @@ func Test_transfererHangupTypeAttended(t *testing.T) {
 				AnswerCallID: uuid.FromStringOrNil("742f5fb2-dd14-11ed-a171-3f5bdaf8117d"),
 			},
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID: uuid.FromStringOrNil("73abc206-dd14-11ed-82f4-c3a0208de1a0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("73abc206-dd14-11ed-82f4-c3a0208de1a0"),
+				},
 				ChannelCallIDs: map[string]uuid.UUID{
 					"7767f166-dd15-11ed-b14a-6397f82a508f": uuid.FromStringOrNil("73d8d282-dd14-11ed-bcb5-3fbb56ae81cb"),
 					"7792f3de-dd15-11ed-b6c7-476bb2c26621": uuid.FromStringOrNil("77bc1cbe-dd15-11ed-b947-8b03dcbc1956"),

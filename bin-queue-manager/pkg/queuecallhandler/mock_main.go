@@ -47,18 +47,18 @@ func (m *MockQueuecallHandler) EXPECT() *MockQueuecallHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockQueuecallHandler) Create(ctx context.Context, q *queue.Queue, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, forwardActionID, conferenceID uuid.UUID, source address.Address) (*queuecall.Queuecall, error) {
+func (m *MockQueuecallHandler) Create(ctx context.Context, q *queue.Queue, id uuid.UUID, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, forwardActionID, conferenceID uuid.UUID, source address.Address) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, q, referenceType, referenceID, referenceActiveflowID, forwardActionID, conferenceID, source)
+	ret := m.ctrl.Call(m, "Create", ctx, q, id, referenceType, referenceID, referenceActiveflowID, forwardActionID, conferenceID, source)
 	ret0, _ := ret[0].(*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, q, referenceType, referenceID, referenceActiveflowID, forwardActionID, conferenceID, source any) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, q, id, referenceType, referenceID, referenceActiveflowID, forwardActionID, conferenceID, source any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, q, referenceType, referenceID, referenceActiveflowID, forwardActionID, conferenceID, source)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, q, id, referenceType, referenceID, referenceActiveflowID, forwardActionID, conferenceID, source)
 }
 
 // Delete mocks base method.

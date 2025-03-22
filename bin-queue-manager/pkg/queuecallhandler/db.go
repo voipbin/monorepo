@@ -53,6 +53,7 @@ func (h *queuecallHandler) GetByReferenceID(ctx context.Context, referenceID uui
 func (h *queuecallHandler) Create(
 	ctx context.Context,
 	q *queue.Queue,
+	id uuid.UUID,
 	referenceType queuecall.ReferenceType,
 	referenceID uuid.UUID,
 	referenceActiveflowID uuid.UUID,
@@ -70,7 +71,9 @@ func (h *queuecallHandler) Create(
 	log.Debug("Creating a new queuecall.")
 
 	// generate queue id
-	id := h.utilHandler.UUIDCreate()
+	if id == uuid.Nil {
+		id = h.utilHandler.UUIDCreate()
+	}
 	log = log.WithField("id", id)
 
 	qc := &queuecall.Queuecall{

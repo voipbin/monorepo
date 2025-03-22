@@ -41,6 +41,9 @@ const (
 	ReferenceTypeCall       ReferenceType = "call"
 	ReferenceTypeConference ReferenceType = "conference"
 	ReferenceTypeAI         ReferenceType = "ai"
+	ReferenceTypeQueue      ReferenceType = "queue"
+	ReferenceTranscribe     ReferenceType = "transcribe"
+	ReferenceTransfer       ReferenceType = "transfer"
 )
 
 // Type define
