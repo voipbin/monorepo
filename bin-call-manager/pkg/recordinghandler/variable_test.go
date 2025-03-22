@@ -2,7 +2,6 @@ package recordinghandler
 
 import (
 	"context"
-	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -157,7 +156,6 @@ func Test_variableUpdateFromReference_call(t *testing.T) {
 		recording    *recording.Recording
 		activeflowID uuid.UUID
 
-		responseCall             *call.Call
 		responseVariablesCall    *fmvariable.Variable
 		responseVariablesCurrent *fmvariable.Variable
 
@@ -170,7 +168,7 @@ func Test_variableUpdateFromReference_call(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("dde2dd60-059b-11f0-8440-137e4c5dbaad"),
 				},
-
+				ActiveflowID:  uuid.FromStringOrNil("4f32abba-0760-11f0-9a03-170ba1e2f34e"),
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("de0c31b0-059b-11f0-97a4-8b6a41a01458"),
 				Status:        recording.StatusRecording,
@@ -184,9 +182,6 @@ func Test_variableUpdateFromReference_call(t *testing.T) {
 			},
 			activeflowID: uuid.FromStringOrNil("6ab40124-0664-11f0-96a2-9fd56e9b99c1"),
 
-			responseCall: &call.Call{
-				ActiveflowID: uuid.FromStringOrNil("de355f04-059b-11f0-84fe-ab31a7b9b554"),
-			},
 			responseVariablesCall: &fmvariable.Variable{
 				Variables: map[string]string{
 					"voipbin.call.call.source.target": "+123456789",
@@ -230,8 +225,7 @@ func Test_variableUpdateFromReference_call(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.recording.ReferenceID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveflowID).Return(tt.responseVariablesCall, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.recording.ActiveflowID).Return(tt.responseVariablesCall, nil)
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariablesCurrent, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 

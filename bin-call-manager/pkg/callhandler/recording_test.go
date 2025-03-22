@@ -48,7 +48,8 @@ func Test_RecordingStart(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 				},
-				Status: call.StatusProgressing,
+				ActiveflowID: uuid.FromStringOrNil("682ea1e2-0728-11f0-becb-83d82ea88b27"),
+				Status:       call.StatusProgressing,
 			},
 			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{
@@ -79,7 +80,7 @@ func Test_RecordingStart(t *testing.T) {
 
 			ctx := context.Background()
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockRecording.EXPECT().Start(ctx, recording.ReferenceTypeCall, tt.responseCall.ID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Start(ctx, tt.responseCall.ActiveflowID, recording.ReferenceTypeCall, tt.responseCall.ID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().CallSetRecordingID(ctx, tt.responseCall.ID, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().CallAddRecordingIDs(ctx, tt.responseCall.ID, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)

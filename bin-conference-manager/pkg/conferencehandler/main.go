@@ -53,6 +53,7 @@ type ConferenceHandler interface {
 	RecordingStart(
 		ctx context.Context,
 		id uuid.UUID,
+		activeflowID uuid.UUID,
 		format cmrecording.Format,
 		duration int,
 		onEndFlowID uuid.UUID,

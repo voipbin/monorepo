@@ -48,8 +48,9 @@ func Test_RecordingStart(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2c14e1a2-0544-11f0-9e4a-130f7b7aedd4"),
 				},
-				Status:   confbridge.StatusProgressing,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				ActiveflowID: uuid.FromStringOrNil("67e5a500-0728-11f0-86ab-cb19621e1dd9"),
+				Status:       confbridge.StatusProgressing,
+				TMDelete:     dbhandler.DefaultTimeStamp,
 			},
 			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{
@@ -84,7 +85,7 @@ func Test_RecordingStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
-			mockRecording.EXPECT().Start(ctx, recording.ReferenceTypeConfbridge, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Start(ctx, tt.responseConfbridge.ActiveflowID, recording.ReferenceTypeConfbridge, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().ConfbridgeSetRecordingID(ctx, tt.id, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().ConfbridgeAddRecordingIDs(ctx, tt.id, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)

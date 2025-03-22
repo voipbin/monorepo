@@ -17,6 +17,7 @@ import (
 func (h *conferenceHandler) RecordingStart(
 	ctx context.Context,
 	id uuid.UUID,
+	activeflowID uuid.UUID,
 	format cmrecording.Format,
 	duration int,
 	onEndFlowID uuid.UUID,
@@ -42,7 +43,7 @@ func (h *conferenceHandler) RecordingStart(
 	if duration >= defaultRecordingTimeout {
 		duration = defaultRecordingTimeout
 	}
-	tmp, err := h.reqHandler.CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConfbridge, cf.ConfbridgeID, format, 0, "", duration, onEndFlowID)
+	tmp, err := h.reqHandler.CallV1RecordingStart(ctx, activeflowID, cmrecording.ReferenceTypeConfbridge, cf.ConfbridgeID, format, 0, "", duration, onEndFlowID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start the recording")
 	}

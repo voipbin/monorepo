@@ -400,8 +400,9 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
 				},
-				ChannelID: "bfd0e668-2a77-11eb-9993-e72b323b1801",
-				Status:    call.StatusProgressing,
+				ActiveflowID: uuid.FromStringOrNil("6853663a-0728-11f0-857c-ab4a6094268b"),
+				ChannelID:    "bfd0e668-2a77-11eb-9993-e72b323b1801",
+				Status:       call.StatusProgressing,
 				Action: fmaction.Action{
 					Type:   fmaction.TypeRecordingStart,
 					ID:     uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
@@ -445,6 +446,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockRecording.EXPECT().Start(
 				ctx,
+				tt.call.ActiveflowID,
 				recording.ReferenceTypeCall,
 				tt.call.ID,
 				tt.expectFormat,

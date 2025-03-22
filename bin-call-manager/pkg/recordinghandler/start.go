@@ -13,6 +13,7 @@ import (
 // duration: milliseconds
 func (h *recordingHandler) Start(
 	ctx context.Context,
+	activeflowID uuid.UUID,
 	referenceType recording.ReferenceType,
 	referenceID uuid.UUID,
 	format recording.Format,
@@ -24,10 +25,10 @@ func (h *recordingHandler) Start(
 
 	switch referenceType {
 	case recording.ReferenceTypeCall:
-		return h.recordingReferenceTypeCall(ctx, referenceID, format, endOfSilence, endOfKey, duration, onEndFlowID)
+		return h.recordingReferenceTypeCall(ctx, activeflowID, referenceID, format, endOfSilence, endOfKey, duration, onEndFlowID)
 
 	case recording.ReferenceTypeConfbridge:
-		return h.recordingReferenceTypeConfbridge(ctx, referenceID, format, endOfSilence, endOfKey, duration, onEndFlowID)
+		return h.recordingReferenceTypeConfbridge(ctx, activeflowID, referenceID, format, endOfSilence, endOfKey, duration, onEndFlowID)
 
 	default:
 		return nil, fmt.Errorf("unsupported reference type. reference_type: %s, reference_id: %s", referenceType, referenceID)

@@ -441,6 +441,7 @@ type RequestHandler interface {
 	CallV1RecordingDelete(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
 	CallV1RecordingStart(
 		ctx context.Context,
+		activeflowID uuid.UUID,
 		referenceType cmrecording.ReferenceType,
 		referenceID uuid.UUID,
 		format cmrecording.Format,
@@ -624,6 +625,7 @@ type RequestHandler interface {
 	ConferenceV1ConferenceRecordingStart(
 		ctx context.Context,
 		conferenceID uuid.UUID,
+		activeflowID uuid.UUID,
 		format cmrecording.Format,
 		duration int,
 		onEndFlowID uuid.UUID,

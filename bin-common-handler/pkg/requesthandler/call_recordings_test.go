@@ -253,6 +253,7 @@ func Test_CallV1RecordingStart(t *testing.T) {
 	tests := []struct {
 		name string
 
+		activeflowID  uuid.UUID
 		referenceType cmrecording.ReferenceType
 		referenceID   uuid.UUID
 		format        cmrecording.Format
@@ -270,6 +271,7 @@ func Test_CallV1RecordingStart(t *testing.T) {
 		{
 			name: "normal",
 
+			activeflowID:  uuid.FromStringOrNil("2789cd4c-075a-11f0-83eb-ff3c943e1393"),
 			referenceType: cmrecording.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("a49bea54-90ce-11ed-9bfb-67a5f5309240"),
 			format:        cmrecording.FormatWAV,
@@ -289,7 +291,7 @@ func Test_CallV1RecordingStart(t *testing.T) {
 				URI:      "/v1/recordings",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"a49bea54-90ce-11ed-9bfb-67a5f5309240","format":"wav","end_of_silence":10000,"end_of_key":"#","duration":100000,"on_end_flow_id":"0198bf9c-055e-11f0-a389-d7d10200060e"}`),
+				Data:     []byte(`{"owner_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"2789cd4c-075a-11f0-83eb-ff3c943e1393","reference_type":"call","reference_id":"a49bea54-90ce-11ed-9bfb-67a5f5309240","format":"wav","end_of_silence":10000,"end_of_key":"#","duration":100000,"on_end_flow_id":"0198bf9c-055e-11f0-a389-d7d10200060e"}`),
 			},
 			expectRe: &cmrecording.Recording{
 				Identity: commonidentity.Identity{
@@ -312,7 +314,7 @@ func Test_CallV1RecordingStart(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1RecordingStart(ctx, tt.referenceType, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
+			res, err := reqHandler.CallV1RecordingStart(ctx, tt.activeflowID, tt.referenceType, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

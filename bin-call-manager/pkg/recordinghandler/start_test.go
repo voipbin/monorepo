@@ -26,6 +26,7 @@ func Test_Start_call(t *testing.T) {
 	tests := []struct {
 		name string
 
+		activeflowID  uuid.UUID
 		referenceType recording.ReferenceType
 		referenceID   uuid.UUID
 		format        recording.Format
@@ -49,6 +50,7 @@ func Test_Start_call(t *testing.T) {
 		{
 			name: "normal reference type call",
 
+			activeflowID:  uuid.FromStringOrNil("24c83af4-0727-11f0-b906-27a506fc80f9"),
 			referenceType: recording.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("d883a3f2-8fd4-11ed-baee-af9907e4df67"),
 			format:        recording.FormatWAV,
@@ -98,6 +100,7 @@ func Test_Start_call(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e141bb2c-8fd5-11ed-a0f9-9735e31b8411"),
 					CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
 				},
+				ActiveflowID:  uuid.FromStringOrNil("24c83af4-0727-11f0-b906-27a506fc80f9"),
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("d883a3f2-8fd4-11ed-baee-af9907e4df67"),
 				Status:        recording.StatusInitiating,
@@ -154,11 +157,11 @@ func Test_Start_call(t *testing.T) {
 			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.expectRecording, nil)
 
 			// variableUpdateToReferenceInfo
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseCall.ActiveflowID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 
 			res, err := h.Start(
 				ctx,
+				tt.activeflowID,
 				tt.referenceType,
 				tt.referenceID,
 				tt.format,
@@ -183,6 +186,7 @@ func Test_Start_confbridge(t *testing.T) {
 	tests := []struct {
 		name string
 
+		activeflowID  uuid.UUID
 		referenceType recording.ReferenceType
 		referenceID   uuid.UUID
 		format        recording.Format
@@ -204,6 +208,7 @@ func Test_Start_confbridge(t *testing.T) {
 		{
 			name: "normal",
 
+			activeflowID:  uuid.FromStringOrNil("a1645462-0727-11f0-a511-4f58bbcc04ca"),
 			referenceType: recording.ReferenceTypeConfbridge,
 			referenceID:   uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
 			format:        recording.FormatWAV,
@@ -238,6 +243,7 @@ func Test_Start_confbridge(t *testing.T) {
 					ID:         uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
 					CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
 				},
+				ActiveflowID:  uuid.FromStringOrNil("a1645462-0727-11f0-a511-4f58bbcc04ca"),
 				ReferenceType: recording.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
 				Status:        recording.StatusInitiating,
@@ -299,6 +305,7 @@ func Test_Start_confbridge(t *testing.T) {
 
 			res, err := h.Start(
 				ctx,
+				tt.activeflowID,
 				tt.referenceType,
 				tt.referenceID,
 				tt.format,

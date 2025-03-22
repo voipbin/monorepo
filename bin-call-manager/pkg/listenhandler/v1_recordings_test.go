@@ -48,6 +48,7 @@ func Test_processV1RecordingsGet(t *testing.T) {
 						ID:         uuid.FromStringOrNil("cfa4d576-6128-11eb-b69b-9f7a738a1ad7"),
 						CustomerID: uuid.FromStringOrNil("c15af818-7f51-11ec-8eeb-f733ba8df393"),
 					},
+					ActiveflowID:  uuid.FromStringOrNil("18d4f7e4-0729-11f0-b836-df8fafa3c2a1"),
 					ReferenceType: recording.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 					Status:        recording.StatusEnded,
@@ -59,7 +60,7 @@ func Test_processV1RecordingsGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"cfa4d576-6128-11eb-b69b-9f7a738a1ad7","customer_id":"c15af818-7f51-11ec-8eeb-f733ba8df393","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"cfa4d576-6128-11eb-b69b-9f7a738a1ad7","customer_id":"c15af818-7f51-11ec-8eeb-f733ba8df393","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"18d4f7e4-0729-11f0-b836-df8fafa3c2a1","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -104,6 +105,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 
 		responseRecording *recording.Recording
 
+		expectActiveflowID  uuid.UUID
 		expectReferenceType recording.ReferenceType
 		expectReferenceID   uuid.UUID
 		expectFormat        recording.Format
@@ -121,7 +123,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 				URI:      "/v1/recordings",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_type": "call", "reference_id": "30e259e0-90b5-11ed-9ca7-836b535a4622", "format": "wav", "end_of_silence": 0, "end_of_key": "", "duration": 0, "on_end_flow_id": "c69d28ae-0541-11f0-9eb9-f3479d7a3968"}`),
+				Data:     []byte(`{"activeflow_id": "688101bc-0728-11f0-b710-83da269e6001", "reference_type": "call", "reference_id": "30e259e0-90b5-11ed-9ca7-836b535a4622", "format": "wav", "end_of_silence": 0, "end_of_key": "", "duration": 0, "on_end_flow_id": "c69d28ae-0541-11f0-9eb9-f3479d7a3968"}`),
 			},
 
 			responseRecording: &recording.Recording{
@@ -130,6 +132,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 				},
 			},
 
+			expectActiveflowID:  uuid.FromStringOrNil("688101bc-0728-11f0-b710-83da269e6001"),
 			expectReferenceType: recording.ReferenceTypeCall,
 			expectReferenceID:   uuid.FromStringOrNil("30e259e0-90b5-11ed-9ca7-836b535a4622"),
 			expectFormat:        recording.FormatWAV,
@@ -141,7 +144,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"ccf74444-90b5-11ed-958b-4fac7f75981c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":null,"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"ccf74444-90b5-11ed-958b-4fac7f75981c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":null,"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -161,7 +164,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 				recordingHandler: mockRecording,
 			}
 
-			mockRecording.EXPECT().Start(gomock.Any(), tt.expectReferenceType, tt.expectReferenceID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID).Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Start(gomock.Any(), tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID).Return(tt.responseRecording, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -177,20 +180,20 @@ func Test_processV1RecordingsPost(t *testing.T) {
 func Test_processV1RecordingsIDGet(t *testing.T) {
 
 	type test struct {
-		name      string
-		request   *sock.Request
-		recording *recording.Recording
-		expectRes *sock.Response
+		name              string
+		request           *sock.Request
+		responseRecording *recording.Recording
+		expectRes         *sock.Response
 	}
 
 	tests := []test{
 		{
-			"basic",
-			&sock.Request{
+			name: "basic",
+			request: &sock.Request{
 				URI:    "/v1/recordings/00c711be-6129-11eb-9404-b73dcf512957",
 				Method: sock.RequestMethodGet,
 			},
-			&recording.Recording{
+			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("00c711be-6129-11eb-9404-b73dcf512957"),
 					CustomerID: uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
@@ -202,10 +205,10 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"00c711be-6129-11eb-9404-b73dcf512957","customer_id":"d063099a-7f51-11ec-adbd-cf15a2e7ae7d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"00c711be-6129-11eb-9404-b73dcf512957","customer_id":"d063099a-7f51-11ec-adbd-cf15a2e7ae7d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -225,7 +228,7 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 				recordingHandler: mockRecording,
 			}
 
-			mockRecording.EXPECT().Get(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
+			mockRecording.EXPECT().Get(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -251,13 +254,13 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 
 	tests := []test{
 		{
-			"basic",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:    "/v1/recordings/3019fe2a-8eba-11ed-809e-bbab8230e905",
 				Method: sock.RequestMethodDelete,
 			},
 
-			&recording.Recording{
+			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3019fe2a-8eba-11ed-809e-bbab8230e905"),
 					CustomerID: uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
@@ -269,10 +272,10 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3019fe2a-8eba-11ed-809e-bbab8230e905","customer_id":"d063099a-7f51-11ec-adbd-cf15a2e7ae7d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3019fe2a-8eba-11ed-809e-bbab8230e905","customer_id":"d063099a-7f51-11ec-adbd-cf15a2e7ae7d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -318,21 +321,21 @@ func Test_processV1RecordingsIDStopPost(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:    "/v1/recordings/2c7e5af4-90d6-11ed-8ba0-c335ddc4049b/stop",
 				Method: sock.RequestMethodPost,
 			},
 
-			&recording.Recording{
+			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2c7e5af4-90d6-11ed-8ba0-c335ddc4049b"),
 				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2c7e5af4-90d6-11ed-8ba0-c335ddc4049b","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":null,"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"2c7e5af4-90d6-11ed-8ba0-c335ddc4049b","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","recording_name":"","filenames":null,"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

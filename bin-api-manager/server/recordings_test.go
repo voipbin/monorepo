@@ -48,7 +48,7 @@ func Test_recordingsIDGET(t *testing.T) {
 			},
 
 			expectRecordingID: uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929"),
-			expectRes:         `{"id":"31982926-61e3-11eb-a373-37c520973929","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:         `{"id":"31982926-61e3-11eb-a373-37c520973929","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -116,7 +116,7 @@ func Test_recordingsIDDELETE(t *testing.T) {
 			},
 
 			expectRecordingID: uuid.FromStringOrNil("ca5f68bc-8f1e-11ed-957c-9b7ba0e03f3c"),
-			expectRes:         `{"id":"ca5f68bc-8f1e-11ed-957c-9b7ba0e03f3c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:         `{"id":"ca5f68bc-8f1e-11ed-957c-9b7ba0e03f3c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","on_end_flow_id":"00000000-0000-0000-0000-000000000000","tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
