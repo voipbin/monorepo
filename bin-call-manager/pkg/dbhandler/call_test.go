@@ -48,7 +48,7 @@ func Test_CallCreate(t *testing.T) {
 				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				BridgeID:     "fe27852c-90c3-4f60-b357-69c44b605e6e",
 				FlowID:       uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),
-				ActiveFlowID: uuid.FromStringOrNil("b41cfc24-5380-4c41-88ca-d22e95624445"),
+				ActiveflowID: uuid.FromStringOrNil("b41cfc24-5380-4c41-88ca-d22e95624445"),
 				ConfbridgeID: uuid.FromStringOrNil("33115c61-1e97-486f-a337-f212f15a7284"),
 				Type:         call.TypeFlow,
 
@@ -108,7 +108,7 @@ func Test_CallCreate(t *testing.T) {
 				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				BridgeID:     "fe27852c-90c3-4f60-b357-69c44b605e6e",
 				FlowID:       uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),
-				ActiveFlowID: uuid.FromStringOrNil("b41cfc24-5380-4c41-88ca-d22e95624445"),
+				ActiveflowID: uuid.FromStringOrNil("b41cfc24-5380-4c41-88ca-d22e95624445"),
 				ConfbridgeID: uuid.FromStringOrNil("33115c61-1e97-486f-a337-f212f15a7284"),
 				Type:         call.TypeFlow,
 

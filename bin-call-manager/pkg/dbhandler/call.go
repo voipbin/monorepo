@@ -30,7 +30,7 @@ const (
 		channel_id,
 		bridge_id,
 		flow_id,
-		active_flow_id,
+		activeflow_id,
 		confbridge_id,
 		type,
 
@@ -91,7 +91,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.ChannelID,
 		&res.BridgeID,
 		&res.FlowID,
-		&res.ActiveFlowID,
+		&res.ActiveflowID,
 		&res.ConfbridgeID,
 		&res.Type,
 
@@ -218,7 +218,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		bridge_id,
 
 		flow_id,
-		active_flow_id,
+		activeflow_id,
 		confbridge_id,
 		type,
 
@@ -318,7 +318,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.BridgeID,
 
 		c.FlowID.Bytes(),
-		c.ActiveFlowID.Bytes(),
+		c.ActiveflowID.Bytes(),
 		c.ConfbridgeID.Bytes(),
 		c.Type,
 
@@ -427,7 +427,7 @@ func (h *handler) CallGets(ctx context.Context, size uint64, token string, filte
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "owner_id", "flow_id", "active_flow_id", "confbridge_id", "master_call_id", "recording_id", "external_media_id", "groupcall_id", "dialroute_id":
+		case "customer_id", "owner_id", "flow_id", "activeflow_id", "confbridge_id", "master_call_id", "recording_id", "external_media_id", "groupcall_id", "dialroute_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())

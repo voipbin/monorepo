@@ -34,7 +34,7 @@ func Test_EventCallHangup(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("43af6682-ecd8-11ee-8a52-639e2d4145e5"),
 				},
-				ActiveFlowID: uuid.FromStringOrNil("442965e0-ecd8-11ee-b7dd-0bad460f1c42"),
+				ActiveflowID: uuid.FromStringOrNil("442965e0-ecd8-11ee-b7dd-0bad460f1c42"),
 			},
 			responseActiveflow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
@@ -63,7 +63,7 @@ func Test_EventCallHangup(t *testing.T) {
 			ctx := context.Background()
 
 			// stop()
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.call.ActiveFlowID).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.call.ActiveflowID).Return(tt.responseActiveflow, nil)
 			switch tt.responseActiveflow.ReferenceType {
 			case activeflow.ReferenceTypeCall:
 				mockReq.EXPECT().CallV1CallHangup(ctx, tt.responseActiveflow.ReferenceID).Return(&cmcall.Call{}, nil)

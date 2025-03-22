@@ -68,7 +68,7 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.call.ActiveFlowID, tt.expectVariables).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.call.ActiveflowID, tt.expectVariables).Return(nil)
 
 			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -139,8 +139,8 @@ func Test_DTMFReceived_action_digits_receive_continue(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVar, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
+			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveflowID).Return(tt.responseVar, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveflowID, tt.expectVariables).Return(nil)
 
 			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -279,8 +279,8 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
 
-			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
-			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVariable, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveflowID, tt.expectVariables).Return(nil)
+			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveflowID).Return(tt.responseVariable, nil)
 			mockReq.EXPECT().CallV1CallActionNext(gomock.Any(), tt.responseCall.ID, false)
 
 			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
@@ -349,7 +349,7 @@ func Test_DTMFReceived_action_talk_digits_handle_next(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveflowID, tt.expectVariables).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(gomock.Any(), tt.responseCall.ID, true)
 
 			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
@@ -416,7 +416,7 @@ func Test_DTMFReceived_action_talk_digits_handle_none(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveflowID, tt.expectVariables).Return(nil)
 
 			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -446,7 +446,7 @@ func Test_DTMFGet(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1ca7fdc8-defd-11ec-880d-9f8645d0b676"),
 				},
-				ActiveFlowID: uuid.FromStringOrNil("23989d54-defd-11ec-ae0a-9f577eaf8a74"),
+				ActiveflowID: uuid.FromStringOrNil("23989d54-defd-11ec-ae0a-9f577eaf8a74"),
 			},
 			&variable.Variable{
 				ID: uuid.FromStringOrNil("23989d54-defd-11ec-ae0a-9f577eaf8a74"),
@@ -475,7 +475,7 @@ func Test_DTMFGet(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveFlowID).Return(tt.responseVar, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveflowID).Return(tt.responseVar, nil)
 
 			res, err := h.DigitsGet(ctx, tt.id)
 			if err != nil {

@@ -126,7 +126,7 @@ func Test_Create(t *testing.T) {
 				BridgeID:  "dcb241dc-5d15-11ed-9aa3-23e3fffa7037",
 
 				FlowID:       uuid.FromStringOrNil("dce0c20a-5d15-11ed-87b5-d7bb7b446647"),
-				ActiveFlowID: uuid.FromStringOrNil("dd115b5e-5d15-11ed-a748-3f6e22ac12a4"),
+				ActiveflowID: uuid.FromStringOrNil("dd115b5e-5d15-11ed-a748-3f6e22ac12a4"),
 				ConfbridgeID: uuid.FromStringOrNil("dd43df70-5d15-11ed-9eb2-7f19e0311fa0"),
 				Type:         call.TypeFlow,
 

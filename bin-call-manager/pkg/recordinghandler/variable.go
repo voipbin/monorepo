@@ -77,7 +77,7 @@ func (h *recordingHandler) variableGetActiveflowID(ctx context.Context, r *recor
 		if err != nil {
 			return uuid.Nil
 		}
-		return c.ActiveFlowID
+		return c.ActiveflowID
 
 	case recording.ReferenceTypeConfbridge:
 		return uuid.Nil

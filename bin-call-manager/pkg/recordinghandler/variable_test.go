@@ -185,7 +185,7 @@ func Test_variableUpdateFromReference_call(t *testing.T) {
 			activeflowID: uuid.FromStringOrNil("6ab40124-0664-11f0-96a2-9fd56e9b99c1"),
 
 			responseCall: &call.Call{
-				ActiveFlowID: uuid.FromStringOrNil("de355f04-059b-11f0-84fe-ab31a7b9b554"),
+				ActiveflowID: uuid.FromStringOrNil("de355f04-059b-11f0-84fe-ab31a7b9b554"),
 			},
 			responseVariablesCall: &fmvariable.Variable{
 				Variables: map[string]string{
@@ -231,7 +231,7 @@ func Test_variableUpdateFromReference_call(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.recording.ReferenceID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveFlowID).Return(tt.responseVariablesCall, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveflowID).Return(tt.responseVariablesCall, nil)
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariablesCurrent, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 
