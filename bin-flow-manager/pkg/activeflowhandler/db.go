@@ -78,19 +78,13 @@ func (h *activeflowHandler) Create(
 		return nil, errors.Wrapf(err, "could not create the active flow. activeflow_id: %s", id)
 	}
 
-	// // create a new activeflow
-	// v, err := h.variableHandler.Create(ctx, id, map[string]string{})
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "could not create variable. activeflow_id: %s", id)
-	// }
-	// log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
-
 	// get created activeflow
 	res, err := h.db.ActiveflowGet(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get created active flow. activeflow_id: %s", id)
 	}
 
+	// variable create
 	v, err := h.variableCreate(ctx, res)
 	if err != nil {
 		// we could not set the variable. but write the log only.
