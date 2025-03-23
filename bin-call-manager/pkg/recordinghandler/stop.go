@@ -59,7 +59,7 @@ func (h *recordingHandler) stopped(r *recording.Recording) {
 	time.Sleep(time.Minute * 3) // wait for until the storing the recording files
 
 	log.Debugf("The on_end_flow_id is not empty. Executing the new activeflow. on_end_flow_id: %s", r.OnEndFlowID)
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, r.CustomerID, r.OnEndFlowID, activeflow.ReferenceTypeNone, uuid.Nil)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, r.CustomerID, r.OnEndFlowID, activeflow.ReferenceTypeNone, uuid.Nil, r.ActiveflowID)
 	if err != nil {
 		log.Errorf("Could not create the activeflow. err: %v", err)
 		return
@@ -67,9 +67,9 @@ func (h *recordingHandler) stopped(r *recording.Recording) {
 	log = log.WithField("activeflow", af)
 	log.Debugf("Created a new activeflow. activeflow_id: %s", af.ID)
 
-	if errUpdate := h.variableUpdateFromReferenceInfo(ctx, r, af.ID); errUpdate != nil {
-		// if the variable update is failed, but just log the error and continue the flow
-		log.Errorf("Could not update the variable from the reference. err: %v", errUpdate)
+	if errSet := h.variablesSet(ctx, af.ID, r); errSet != nil {
+		// if the variable set is failed, but just log the error and continue the flow
+		log.Errorf("Could not set the variables. err: %v", errSet)
 	}
 
 	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {

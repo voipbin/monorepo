@@ -22,11 +22,12 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		activeflowID  uuid.UUID
-		customerID    uuid.UUID
-		referenceType fmactiveflow.ReferenceType
-		referenceID   uuid.UUID
-		flowID        uuid.UUID
+		activeflowID          uuid.UUID
+		customerID            uuid.UUID
+		referenceType         fmactiveflow.ReferenceType
+		referenceID           uuid.UUID
+		referenceActiveflowID uuid.UUID
+		flowID                uuid.UUID
 
 		response *sock.Response
 
@@ -37,11 +38,12 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 		{
 			name: "all",
 
-			activeflowID:  uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c"),
-			customerID:    uuid.FromStringOrNil("d1f87c4a-049b-11f0-8861-1b914bb9707d"),
-			referenceType: fmactiveflow.ReferenceTypeCall,
-			referenceID:   uuid.FromStringOrNil("447e712e-82d8-11eb-8900-7b97c080ddd8"),
-			flowID:        uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"),
+			activeflowID:          uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c"),
+			customerID:            uuid.FromStringOrNil("d1f87c4a-049b-11f0-8861-1b914bb9707d"),
+			referenceType:         fmactiveflow.ReferenceTypeCall,
+			referenceID:           uuid.FromStringOrNil("447e712e-82d8-11eb-8900-7b97c080ddd8"),
+			referenceActiveflowID: uuid.FromStringOrNil("db596422-07f5-11f0-9afe-e7cd6b75aeac"),
+			flowID:                uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"),
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -54,7 +56,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 				URI:      "/v1/activeflows",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"aa847807-6cc4-4713-9dec-53a42840e74c","customer_id":"d1f87c4a-049b-11f0-8861-1b914bb9707d","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8"}`),
+				Data:     []byte(`{"id":"aa847807-6cc4-4713-9dec-53a42840e74c","customer_id":"d1f87c4a-049b-11f0-8861-1b914bb9707d","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","reference_activeflow_id":"db596422-07f5-11f0-9afe-e7cd6b75aeac"}`),
 			},
 			expectedRes: &fmactiveflow.Activeflow{
 				Identity: identity.Identity{
@@ -70,18 +72,12 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 			},
 		},
 		{
-			name: "empty id",
-
-			activeflowID:  uuid.Nil,
-			customerID:    uuid.Nil,
-			referenceType: fmactiveflow.ReferenceTypeMessage,
-			referenceID:   uuid.FromStringOrNil("a8d145b8-a7b5-11ec-ac30-6b8228b173eb"),
-			flowID:        uuid.FromStringOrNil("a929cd00-a7b5-11ec-a2bd-d375b3bee397"),
+			name: "empty",
 
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"dbcb6a72-07f5-11f0-8fc1-6f24ad37fc2e"}`),
 			},
 
 			expectedQueue: "bin-manager.flow-manager.request",
@@ -89,18 +85,11 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 				URI:      "/v1/activeflows",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb"}`),
+				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 			expectedRes: &fmactiveflow.Activeflow{
 				Identity: identity.Identity{
-					ID:         uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
-					CustomerID: uuid.FromStringOrNil("f42b33e2-7f4d-11ec-8c86-ebf558a4306c"),
-				},
-				ReferenceType: fmactiveflow.ReferenceTypeMessage,
-				ReferenceID:   uuid.FromStringOrNil("a8d145b8-a7b5-11ec-ac30-6b8228b173eb"),
-				FlowID:        uuid.FromStringOrNil("a929cd00-a7b5-11ec-a2bd-d375b3bee397"),
-				CurrentAction: fmaction.Action{
-					ID: fmaction.IDStart,
+					ID: uuid.FromStringOrNil("dbcb6a72-07f5-11f0-8fc1-6f24ad37fc2e"),
 				},
 			},
 		},
@@ -119,7 +108,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedQueue, tt.expectedRequest).Return(tt.response, nil)
-			res, err := reqHandler.FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, tt.referenceType, tt.referenceID)
+			res, err := reqHandler.FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, tt.referenceType, tt.referenceID, tt.referenceActiveflowID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

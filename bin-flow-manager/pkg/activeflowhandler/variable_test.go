@@ -5,53 +5,61 @@ import (
 	"reflect"
 	"testing"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
+	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
 	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
-func Test_variableSubstitueAddress(t *testing.T) {
+func Test_variableCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		address *commonaddress.Address
-		v       *variable.Variable
+		activeflow *activeflow.Activeflow
 
-		responseSubName       string
-		responseSubDetail     string
-		responseSubTarget     string
-		responseSubTargetName string
+		responseReferenceActiveflowVariable *variable.Variable
+		responseVariable                    *variable.Variable
 
-		expectedRes *commonaddress.Address
+		expectedVariables map[string]string
 	}{
 		{
 			name: "normal",
 
-			address: &commonaddress.Address{
-				Type:       commonaddress.TypeTel,
-				Target:     "${test_target}",
-				TargetName: "${test_target_name}",
-				Name:       "${test_name}",
-				Detail:     "${test_detail}",
+			activeflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7953a60e-07f3-11f0-98bc-93c8a022b396"),
+				},
+				ReferenceType:         activeflow.ReferenceTypeCall,
+				ReferenceID:           uuid.FromStringOrNil("79cf3b5c-07f3-11f0-b1f5-ab8e50a8c6f5"),
+				ReferenceActiveflowID: uuid.FromStringOrNil("7a0a2938-07f3-11f0-8103-0b6f3ab09e0c"),
+				FlowID:                uuid.FromStringOrNil("7a78656a-07f3-11f0-a8b5-5faa92a202a8"),
 			},
-			v: &variable.Variable{},
 
-			responseSubTarget:     "+821100000001",
-			responseSubTargetName: "variable target name",
-			responseSubName:       "variable name",
-			responseSubDetail:     "variable detail",
+			responseReferenceActiveflowVariable: &variable.Variable{
+				Variables: map[string]string{
+					"key1": "value1",
+					"key2": "value2",
+				},
+			},
+			responseVariable: &variable.Variable{
+				ID: uuid.FromStringOrNil("7a419b16-07f3-11f0-ac8f-93809a7c98ce"),
+			},
 
-			expectedRes: &commonaddress.Address{
-				Type:       commonaddress.TypeTel,
-				Target:     "+821100000001",
-				TargetName: "variable target name",
-				Name:       "variable name",
-				Detail:     "variable detail",
+			expectedVariables: map[string]string{
+				"key1":                                  "value1",
+				"key2":                                  "value2",
+				variableActiveflowID:                    "7953a60e-07f3-11f0-98bc-93c8a022b396",
+				variableActiveflowReferenceType:         "call",
+				variableActiveflowReferenceID:           "79cf3b5c-07f3-11f0-b1f5-ab8e50a8c6f5",
+				variableActiveflowReferenceActiveflowID: "7a0a2938-07f3-11f0-8103-0b6f3ab09e0c",
+				variableActiveflowFlowID:                "7a78656a-07f3-11f0-a8b5-5faa92a202a8",
 			},
 		},
 	}
@@ -63,21 +71,27 @@ func Test_variableSubstitueAddress(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockVar := variablehandler.NewMockVariableHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := &activeflowHandler{
 				db:              mockDB,
+				reqHandler:      mockReq,
 				variableHandler: mockVar,
 			}
-
 			ctx := context.Background()
 
-			mockVar.EXPECT().SubstituteString(ctx, tt.address.Name, tt.v).Return(tt.responseSubName)
-			mockVar.EXPECT().SubstituteString(ctx, tt.address.Detail, tt.v).Return(tt.responseSubDetail)
-			mockVar.EXPECT().SubstituteString(ctx, tt.address.Target, tt.v).Return(tt.responseSubTarget)
-			mockVar.EXPECT().SubstituteString(ctx, tt.address.TargetName, tt.v).Return(tt.responseSubTargetName)
+			if tt.activeflow.ReferenceActiveflowID != uuid.Nil {
+				mockVar.EXPECT().Get(ctx, tt.activeflow.ReferenceActiveflowID).Return(tt.responseReferenceActiveflowVariable, nil)
+			}
 
-			h.variableSubstitueAddress(ctx, tt.address, tt.v)
-			if reflect.DeepEqual(tt.address, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectedRes, tt.address)
+			mockVar.EXPECT().Create(ctx, tt.activeflow.ID, tt.expectedVariables).Return(tt.responseVariable, nil)
+
+			res, err := h.variableCreate(ctx, tt.activeflow)
+			if err != nil {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", nil, err)
+			}
+
+			if reflect.DeepEqual(res, tt.responseVariable) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseVariable, res)
 			}
 
 		})

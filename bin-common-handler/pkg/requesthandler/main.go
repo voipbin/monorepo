@@ -689,6 +689,7 @@ type RequestHandler interface {
 		flowID uuid.UUID,
 		referenceType fmactiveflow.ReferenceType,
 		referenceID uuid.UUID,
+		referenceActiveflowID uuid.UUID,
 	) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGet(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)

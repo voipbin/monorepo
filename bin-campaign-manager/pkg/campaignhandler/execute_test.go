@@ -153,7 +153,15 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				tt.expectTryCount,
 			).Return(tt.responseCampaigncall, nil)
 			mockCampaigncall.EXPECT().Progressing(ctx, tt.responseCampaigncall.ID).Return(tt.responseCampaigncall, nil)
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.responseCampaigncall.ActiveflowID, tt.responseCampaigncall.CustomerID, tt.responseCampaigncall.FlowID, activeflow.ReferenceTypeNone, uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(
+				ctx,
+				tt.responseCampaigncall.ActiveflowID,
+				tt.responseCampaigncall.CustomerID,
+				tt.responseCampaigncall.FlowID,
+				activeflow.ReferenceTypeCampaign,
+				tt.responseCampaigncall.ID,
+				uuid.Nil,
+			).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
 
 			mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 500).Return(nil)

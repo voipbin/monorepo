@@ -167,7 +167,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
@@ -362,7 +362,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
 			// getDialURI
 			mockReq.EXPECT().RouteV1DialrouteGets(ctx, tt.expectCall.CustomerID, tt.expectDialrouteTarget).Return(tt.responseRoutes, nil)
 
