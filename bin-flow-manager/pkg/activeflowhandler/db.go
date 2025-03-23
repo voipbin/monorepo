@@ -91,7 +91,7 @@ func (h *activeflowHandler) Create(
 		return nil, errors.Wrapf(err, "could not get created active flow. activeflow_id: %s", id)
 	}
 
-	v, err := h.variableCreate(ctx, res, referenceActiveflowID)
+	v, err := h.variableCreate(ctx, res)
 	if err != nil {
 		// we could not set the variable. but write the log only.
 		log.Errorf("Could not set the variable. err: %v", err)
