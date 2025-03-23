@@ -3,7 +3,6 @@ package recordinghandler
 import (
 	"context"
 	"fmt"
-	"maps"
 	"monorepo/bin-call-manager/models/recording"
 	"strings"
 
@@ -34,32 +33,6 @@ func (h *recordingHandler) variablesSet(ctx context.Context, activeflowID uuid.U
 
 	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
 		return fmt.Errorf("could not set the variable. variables: %s, err: %v", variables, errSet)
-	}
-
-	return nil
-}
-
-func (h *recordingHandler) variableUpdateFromReferenceInfo(ctx context.Context, r *recording.Recording, activeflowID uuid.UUID) error {
-
-	tmp, err := h.reqHandler.FlowV1VariableGet(ctx, r.ActiveflowID)
-	if err != nil {
-		return errors.Wrapf(err, "could not get variables")
-	}
-	variables := tmp.Variables
-
-	// get and overwrite variables for current activeflow
-	curVariables, err := h.reqHandler.FlowV1VariableGet(ctx, activeflowID)
-	if err != nil {
-		return errors.Wrapf(err, "could not get variables for current activeflow")
-	}
-	maps.Copy(variables, curVariables.Variables)
-
-	// get and overwrite variables for the recording
-	recVariables := h.variablesGet(r)
-	maps.Copy(variables, recVariables)
-
-	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
-		return errors.Wrapf(errSet, "could not set variables")
 	}
 
 	return nil

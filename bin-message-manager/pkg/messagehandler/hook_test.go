@@ -204,7 +204,15 @@ func Test_executeMessageFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.message.CustomerID, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.message.ID).Return(tt.expectRes, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(
+				ctx,
+				uuid.Nil,
+				tt.message.CustomerID,
+				tt.num.MessageFlowID,
+				fmactiveflow.ReferenceTypeMessage,
+				tt.message.ID,
+				uuid.Nil,
+			).Return(tt.expectRes, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectRes.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.expectRes.ID).Return(nil)
 

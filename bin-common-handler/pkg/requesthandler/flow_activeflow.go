@@ -23,16 +23,18 @@ func (r *requestHandler) FlowV1ActiveflowCreate(
 	flowID uuid.UUID,
 	referenceType fmactiveflow.ReferenceType,
 	referenceID uuid.UUID,
+	referenceActiveflowID uuid.UUID,
 ) (*fmactiveflow.Activeflow, error) {
 
 	uri := "/v1/activeflows"
 
 	m, err := json.Marshal(fmrequest.V1DataActiveFlowsPost{
-		ID:            activeflowID,
-		CustomerID:    customerID,
-		FlowID:        flowID,
-		ReferenceType: referenceType,
-		ReferenceID:   referenceID,
+		ID:                    activeflowID,
+		CustomerID:            customerID,
+		FlowID:                flowID,
+		ReferenceType:         referenceType,
+		ReferenceID:           referenceID,
+		ReferenceActiveflowID: referenceActiveflowID,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not marshal the request")

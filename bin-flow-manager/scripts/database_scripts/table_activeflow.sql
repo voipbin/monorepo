@@ -6,8 +6,9 @@ create table flow_activeflows(
   status    binary(16),
   flow_id   binary(16),
 
-  reference_type  varchar(255),
-  reference_id    binary(16),
+  reference_type          varchar(255),
+  reference_id            binary(16),
+  reference_activeflow_id binary(16),
 
   stack_map json,
 
