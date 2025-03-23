@@ -121,7 +121,15 @@ func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Mess
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, m.CustomerID, num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, m.ID)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(
+		ctx,
+		uuid.Nil,
+		m.CustomerID,
+		num.MessageFlowID,
+		fmactiveflow.ReferenceTypeMessage,
+		m.ID,
+		uuid.Nil,
+	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not create an activeflow. message_id: %s, number_id: %s", m.ID, num.ID)
 	}

@@ -507,7 +507,7 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, customerID, flowID, fmactiveflow.ReferenceTypeCall, id)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, customerID, flowID, fmactiveflow.ReferenceTypeCall, id, uuid.Nil)
 	if err != nil {
 		log.Errorf("Could not create an activeflow. err: %v", err)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
