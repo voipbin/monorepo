@@ -24,6 +24,7 @@ const (
 
 		reference_type,
 		reference_id,
+		reference_activeflow_id,
 
 		stack_map,
 
@@ -60,6 +61,7 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 
 		&res.ReferenceType,
 		&res.ReferenceID,
+		&res.ReferenceActiveflowID,
 
 		&stackMap,
 
@@ -104,6 +106,7 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 
 		reference_type,
 		reference_id,
+		reference_activeflow_id,
 
 		stack_map,
 
@@ -122,7 +125,7 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 	) values(
 		?, ?,
 		?, ?,
-		?, ?,
+		?, ?, ?,
 		?,
 		?, ?,
 		?, ?,
@@ -160,6 +163,7 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 
 		f.ReferenceType,
 		f.ReferenceID.Bytes(),
+		f.ReferenceActiveflowID.Bytes(),
 
 		tmpStackMap,
 
@@ -314,7 +318,7 @@ func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64,
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "flow_id", "reference_id", "current_stack_id", "forward_stack_id", "forward_action_id":
+		case "customer_id", "flow_id", "reference_id", "reference_activeflow_id", "current_stack_id", "forward_stack_id", "forward_action_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())

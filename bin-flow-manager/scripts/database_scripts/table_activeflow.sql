@@ -9,6 +9,8 @@ create table flow_activeflows(
   reference_type  varchar(255),
   reference_id    binary(16),
 
+  reference_activeflow_id binary(16),
+
   stack_map json,
 
   current_stack_id  binary(16),

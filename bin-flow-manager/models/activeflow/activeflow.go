@@ -18,8 +18,9 @@ type Activeflow struct {
 	FlowID uuid.UUID `json:"flow_id"`
 	Status Status    `json:"status"`
 
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"`
+	ReferenceType         ReferenceType `json:"reference_type"`
+	ReferenceID           uuid.UUID     `json:"reference_id"`
+	ReferenceActiveflowID uuid.UUID     `json:"reference_activeflow_id,omitempty"`
 
 	// stack
 	StackMap map[uuid.UUID]*stack.Stack `json:"stack_map"`

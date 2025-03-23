@@ -39,8 +39,9 @@ func Test_ActiveflowCreate(t *testing.T) {
 				},
 				FlowID: uuid.FromStringOrNil("27b0d6c8-ace3-11ec-a47f-7bce91046e73"),
 
-				ReferenceType: activeflow.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("27dcddf4-ace3-11ec-90e8-63edc2ed04c7"),
+				ReferenceType:         activeflow.ReferenceTypeCall,
+				ReferenceID:           uuid.FromStringOrNil("27dcddf4-ace3-11ec-90e8-63edc2ed04c7"),
+				ReferenceActiveflowID: uuid.FromStringOrNil("c5ffef10-07d2-11f0-901d-dfa7036e5fa5"),
 
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -81,8 +82,9 @@ func Test_ActiveflowCreate(t *testing.T) {
 				},
 				FlowID: uuid.FromStringOrNil("27b0d6c8-ace3-11ec-a47f-7bce91046e73"),
 
-				ReferenceType: activeflow.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("27dcddf4-ace3-11ec-90e8-63edc2ed04c7"),
+				ReferenceType:         activeflow.ReferenceTypeCall,
+				ReferenceID:           uuid.FromStringOrNil("27dcddf4-ace3-11ec-90e8-63edc2ed04c7"),
+				ReferenceActiveflowID: uuid.FromStringOrNil("c5ffef10-07d2-11f0-901d-dfa7036e5fa5"),
 
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {

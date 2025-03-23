@@ -16,7 +16,15 @@ import (
 )
 
 // Create creates a new activeflow
-func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, customerID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
+func (h *activeflowHandler) Create(
+	ctx context.Context,
+	id uuid.UUID,
+	customerID uuid.UUID,
+	referenceType activeflow.ReferenceType,
+	referenceID uuid.UUID,
+	referenceActiveflowID uuid.UUID,
+	flowID uuid.UUID,
+) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
 		"id":             id,
@@ -49,8 +57,9 @@ func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, customerID
 		Status: activeflow.StatusRunning,
 		FlowID: flowID,
 
-		ReferenceType: referenceType,
-		ReferenceID:   referenceID,
+		ReferenceType:         referenceType,
+		ReferenceID:           referenceID,
+		ReferenceActiveflowID: referenceActiveflowID,
 
 		StackMap: stackMap,
 
@@ -69,18 +78,26 @@ func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, customerID
 		return nil, errors.Wrapf(err, "could not create the active flow. activeflow_id: %s", id)
 	}
 
-	// create a new activeflow
-	v, err := h.variableHandler.Create(ctx, id, map[string]string{})
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create variable. activeflow_id: %s", id)
-	}
-	log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
+	// // create a new activeflow
+	// v, err := h.variableHandler.Create(ctx, id, map[string]string{})
+	// if err != nil {
+	// 	return nil, errors.Wrapf(err, "could not create variable. activeflow_id: %s", id)
+	// }
+	// log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
 
 	// get created activeflow
 	res, err := h.db.ActiveflowGet(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get created active flow. activeflow_id: %s", id)
 	}
+
+	v, err := h.variableCreate(ctx, res, referenceActiveflowID)
+	if err != nil {
+		// we could not set the variable. but write the log only.
+		log.Errorf("Could not set the variable. err: %v", err)
+	}
+	log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
+
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowCreated, res)
 
 	return res, nil

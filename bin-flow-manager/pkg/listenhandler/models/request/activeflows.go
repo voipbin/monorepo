@@ -16,8 +16,9 @@ type V1DataActiveFlowsPost struct {
 
 	FlowID uuid.UUID `json:"flow_id"`
 
-	ReferenceType activeflow.ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID                `json:"reference_id"`
+	ReferenceType         activeflow.ReferenceType `json:"reference_type"`
+	ReferenceID           uuid.UUID                `json:"reference_id"`
+	ReferenceActiveflowID uuid.UUID                `json:"reference_activeflow_id,omitempty"`
 }
 
 // V1DataActiveFlowsIDNextGet is
