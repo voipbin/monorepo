@@ -26,9 +26,6 @@ func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *soc
 	}
 	promARIEventTotal.WithLabelValues(event.AsteriskID, string(event.Type)).Inc()
 
-	log = log.WithFields(logrus.Fields{"event_type": event.Type})
-	log.WithField("event", event).Debugf("Received ARI event. event_type: %s", event.Type)
-
 	// mapProcess maps ARIEvent name and event handler.
 	var mapProcess = map[ari.EventType]func(context.Context, interface{}) error{
 		ari.EventTypeBridgeCreated:        h.ariEventHandler.EventHandlerBridgeCreated,

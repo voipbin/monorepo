@@ -58,7 +58,7 @@ func Test_AstProxyRecordingFileMove(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstProxyRecordingFileMove(context.Background(), tt.asteriskID, tt.filenames)
+			err := reqHandler.AstProxyRecordingFileMove(context.Background(), tt.asteriskID, tt.filenames, requestTimeoutDefault)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

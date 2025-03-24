@@ -93,16 +93,6 @@ func (h *notifyHandler) PublishEvent(ctx context.Context, eventType string, data
 // publishEvent publishes a event to the event queue.
 func (h *notifyHandler) publishEvent(eventType string, dataType string, data json.RawMessage, timeout int, delay int) error {
 
-	log := logrus.WithFields(logrus.Fields{
-		"func":      "publishEvent",
-		"type":      eventType,
-		"data_type": dataType,
-		"data":      data,
-		"timeout":   timeout,
-		"delay":     delay,
-	})
-	log.Debugf("Publishing the event. type: %s", eventType)
-
 	// create a event
 	evt := &sock.Event{
 		Type:      eventType,
@@ -129,14 +119,9 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 			return fmt.Errorf("could not publish the event. err: %v", err)
 		}
 	}
-
 	promNotifyTotal.WithLabelValues(evt.Type).Inc()
-	log.WithFields(logrus.Fields{
-		"event": evt,
-	}).Debugf("Published event. queue_name: %s, event_publisher: %s, event_type: %s, data_type: %s", h.queueNotify, evt.Publisher, evt.Type, evt.DataType)
 
 	return nil
-
 }
 
 // publishDirectEvent publish the event to the target without delay
