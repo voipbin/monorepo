@@ -38,6 +38,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 		onEndFlowID  uuid.UUID
 
 		responseCall            *call.Call
+		responseCallChannel     *channel.Channel
 		responseUUID            uuid.UUID
 		responseCurTimeRFC      string
 		responseUUIDsChannelIDs []uuid.UUID
@@ -68,6 +69,9 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("5e7f87da-0663-11f0-a195-03f01494aa3c"),
 				ChannelID:    "8e5c2a28-f24a-11ed-97f4-5f82e61f6239",
 				Status:       call.StatusProgressing,
+			},
+			responseCallChannel: &channel.Channel{
+				AsteriskID: "42:01:0a:a4:00:03",
 			},
 			responseUUID:       uuid.FromStringOrNil("8e914000-f24a-11ed-b09f-879b31d16030"),
 			responseCurTimeRFC: "2023-01-05T14:58:05Z",
@@ -146,6 +150,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseCallChannel, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockUtil.EXPECT().TimeGetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
 			for i, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {

@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 // AstProxyRecordingFileMove moves the recording file to the bucket.
@@ -24,8 +23,6 @@ func (r *requestHandler) AstProxyRecordingFileMove(ctx context.Context, asterisk
 	if err != nil {
 		return errors.Wrapf(err, "failed to marshal data")
 	}
-
-	logrus.WithField("data", m).Debugf("AstProxyRecordingFileMove. asteriskID: %s, filenames: %v", asteriskID, filenames)
 
 	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/proxy/recording_file_move", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {

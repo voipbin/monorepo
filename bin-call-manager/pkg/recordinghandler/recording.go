@@ -40,6 +40,11 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 		return nil, errors.Wrapf(err, "could not get call info")
 	}
 
+	cn, err := h.channelHandler.Get(ctx, c.ChannelID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get channel info")
+	}
+
 	if activeflowID == uuid.Nil {
 		log.Debugf("The activeflow id is nil. Set the activeflowID to the call's activeflowID. call_id: %s, activeflow_id: %s", c.ID, c.ActiveflowID)
 		activeflowID = c.ActiveflowID
@@ -54,7 +59,7 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 	filenames := []string{}
 
 	recordingName := h.createRecordingName(recording.ReferenceTypeCall, c.ID.String())
-	asteriskID := ""
+	asteriskID := cn.AsteriskID
 	for _, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {
 		// filenames
 		filename := fmt.Sprintf("%s_%s.%s", recordingName, direction, format)
@@ -85,7 +90,6 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 			return nil, errors.Wrapf(err, "could not create a snoop channel for recording")
 		}
 		log.WithField("channel", tmpChannel).Debugf("Created a snoop channel for recording. channel_id: %s", tmpChannel.ID)
-		asteriskID = tmpChannel.AsteriskID
 	}
 
 	res, err := h.Create(
