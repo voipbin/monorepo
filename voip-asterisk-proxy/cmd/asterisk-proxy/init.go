@@ -84,7 +84,7 @@ func initVariable() {
 
 	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "gcp credential base64")
 
-	pflag.String("recording_bukcet_name", defaultRecordingBucketName, "recording bucket name")
+	pflag.String("recording_bucket_name", defaultRecordingBucketName, "recording bucket name")
 	pflag.String("recording_asterisk_directory", defaultRecordingAsteriskDirectory, "recording directory of the Asterisk server")
 	pflag.String("recording_bucket_directory", defaultRecordingBucketDirectory, "recording directory of the bucket")
 
