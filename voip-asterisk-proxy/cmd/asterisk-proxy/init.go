@@ -36,6 +36,9 @@ const (
 	defaultRedisAddress  = "localhost:6379"
 	defaultRedisPassword = ""
 	defaultRedisDB       = 1
+
+	defaultRecordingAsteriskDirectory = "/var/spool/asterisk/recording"
+	defaultRecordingBucketDirectory   = "/mnt/media/recording"
 )
 
 // proces init
@@ -75,6 +78,9 @@ func initVariable() {
 	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
 	pflag.String("redis_password", defaultRedisPassword, "Password of the Redis server")
 	pflag.Int("redis_database", defaultRedisDB, "Redis database index to use (default is 1)")
+
+	pflag.String("recording_asterisk_directory", defaultRecordingAsteriskDirectory, "recording directory of the Asterisk server")
+	pflag.String("recording_bucket_directory", defaultRecordingBucketDirectory, "recording directory of the bucket")
 
 	pflag.Parse()
 
