@@ -10,7 +10,7 @@ import (
 )
 
 // AstProxyRecordingFileMove moves the recording file to the bucket.
-func (r *requestHandler) AstProxyRecordingFileMove(ctx context.Context, asteriskID string, filenames []string) error {
+func (r *requestHandler) AstProxyRecordingFileMove(ctx context.Context, asteriskID string, filenames []string, timeout int) error {
 	url := "/proxy/recording_file_move"
 
 	type Data struct {
@@ -24,7 +24,7 @@ func (r *requestHandler) AstProxyRecordingFileMove(ctx context.Context, asterisk
 		return errors.Wrapf(err, "failed to marshal data")
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/proxy/recording_file_move", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/proxy/recording_file_move", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

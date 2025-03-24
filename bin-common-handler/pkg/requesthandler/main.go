@@ -259,7 +259,7 @@ type RequestHandler interface {
 	AstRecordingUnmute(ctx context.Context, asteriskID, recordingName string) error
 
 	// asterisk proxy
-	AstProxyRecordingFileMove(ctx context.Context, asteriskID string, filenames []string) error
+	AstProxyRecordingFileMove(ctx context.Context, asteriskID string, filenames []string, timeout int) error
 
 	// agent-manager agent
 	AgentV1AgentCreate(
