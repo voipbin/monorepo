@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -64,19 +65,13 @@ func (h *eventHandler) eventARIConnect() error {
 
 // handleARIEevnt reads the event from the websocket and send it to the rabbitsock.
 func (h *eventHandler) eventARIReceive(ctx context.Context) error {
-	log := logrus.WithField("func", "eventARIReceive")
-
 	// receive ARI events
 	msgType, msgStr, err := h.ariSock.ReadMessage()
 	if err != nil {
-		log.Errorf("Could not read message. msgType: %d, err: %v", msgType, err)
-		return err
+		return errors.Wrapf(err, "Could not read message. msgType: %d", msgType)
 	}
-	log.Debugf("Recevied message. msgType: %s", msgStr)
 
-	// notify
 	h.notifyhandler.PublishEventRaw(ctx, "ari_event", "application/json", msgStr)
-	log.WithField("event", msgStr).Debugf("Published ari event. event_type: %d", msgType)
 
 	return nil
 }

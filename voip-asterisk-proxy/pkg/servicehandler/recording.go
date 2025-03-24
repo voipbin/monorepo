@@ -19,9 +19,10 @@ func (h *serviceHandler) RecordingFileMove(ctx context.Context, filenames []stri
 
 	for _, filename := range filenames {
 		if errUpload := h.recordingFileUpload(ctx, filename); errUpload != nil {
-			log.Errorf("Could not upload the recording file. filename: %s, err: %v", filename, errUpload)
+			return errors.Wrapf(errUpload, "Could not upload the recording file. filename: %s", filename)
 		}
 	}
+	log.Debugf("Uploaded the recording files.")
 
 	return nil
 }

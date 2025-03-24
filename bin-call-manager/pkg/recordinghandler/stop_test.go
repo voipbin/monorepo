@@ -63,7 +63,7 @@ func Test_storeRecordingFiles(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.recording.AsteriskID, tt.recording.Filenames).Return(nil)
+			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.recording.AsteriskID, tt.recording.Filenames, 30000).Return(nil)
 
 			for _, filename := range tt.recording.Filenames {
 				filepath := h.getFilepath(filename)
@@ -145,7 +145,7 @@ func Test_Stopped(t *testing.T) {
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseRecording.CustomerID, recording.EventTypeRecordingFinished, tt.responseRecording)
 
-			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.responseRecording.AsteriskID, tt.responseRecording.Filenames).Return(nil)
+			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.responseRecording.AsteriskID, tt.responseRecording.Filenames, 30000).Return(nil)
 
 			for _, filename := range tt.responseRecording.Filenames {
 				filepath := h.getFilepath(filename)

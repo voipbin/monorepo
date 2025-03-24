@@ -87,7 +87,7 @@ func (h *recordingHandler) storeRecordingFiles(ctx context.Context, r *recording
 	})
 
 	log.Debugf("Sending the request for storing the recording files. filenames: %v", r.Filenames)
-	if errMove := h.reqHandler.AstProxyRecordingFileMove(ctx, r.AsteriskID, r.Filenames); errMove != nil {
+	if errMove := h.reqHandler.AstProxyRecordingFileMove(ctx, r.AsteriskID, r.Filenames, 30000); errMove != nil {
 		return errors.Wrapf(errMove, "Could not move the recording files. err: %v", errMove)
 	}
 
