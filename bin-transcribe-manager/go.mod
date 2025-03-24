@@ -79,7 +79,7 @@ require (
 	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c // indirect
 )
 
-require google.golang.org/protobuf v1.36.5 // indirect
+require google.golang.org/protobuf v1.36.6 // indirect
 
 require (
 	github.com/CyCoreSystems/audiosocket v0.2.1

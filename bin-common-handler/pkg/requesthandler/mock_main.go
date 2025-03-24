@@ -921,6 +921,20 @@ func (mr *MockRequestHandlerMockRecorder) AstPlaybackStop(ctx, asteriskID, playa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstPlaybackStop", reflect.TypeOf((*MockRequestHandler)(nil).AstPlaybackStop), ctx, asteriskID, playabckID)
 }
 
+// AstProxyRecordingFileMove mocks base method.
+func (m *MockRequestHandler) AstProxyRecordingFileMove(ctx context.Context, asteriskID string, filenames []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstProxyRecordingFileMove", ctx, asteriskID, filenames)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstProxyRecordingFileMove indicates an expected call of AstProxyRecordingFileMove.
+func (mr *MockRequestHandlerMockRecorder) AstProxyRecordingFileMove(ctx, asteriskID, filenames any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstProxyRecordingFileMove", reflect.TypeOf((*MockRequestHandler)(nil).AstProxyRecordingFileMove), ctx, asteriskID, filenames)
+}
+
 // AstRecordingMute mocks base method.
 func (m *MockRequestHandler) AstRecordingMute(ctx context.Context, asteriskID, recordingName string) error {
 	m.ctrl.T.Helper()

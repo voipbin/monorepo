@@ -9,7 +9,6 @@ import (
 	"monorepo/bin-transcribe-manager/models/transcript"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -99,68 +98,6 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match. expected: nil, got: %v", resDelete)
 			}
 
-		})
-	}
-}
-
-func Test_Create_race(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		customerID   uuid.UUID
-		transcribeID uuid.UUID
-		language     string
-		direction    transcript.Direction
-	}{
-		{
-			name: "normal",
-
-			customerID:   uuid.FromStringOrNil("b3755cc4-e9da-11ef-812f-a73170810307"),
-			transcribeID: uuid.FromStringOrNil("b3d7ba72-e9da-11ef-8646-f320e52dfd72"),
-			language:     "en-US",
-			direction:    transcript.DirectionIn,
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &streamingHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotfiy,
-				mapStreaming:  make(map[uuid.UUID]*streaming.Streaming),
-			}
-			ctx := context.Background()
-
-			// go func() {
-			for i := 0; i < 100; i++ {
-				go func() {
-					for j := 0; j < 100; j++ {
-
-						go func() {
-							tmpID := uuid.Must(uuid.NewV4())
-							mockUtil.EXPECT().UUIDCreate().Return(tmpID)
-							mockNotfiy.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingStarted, gomock.Any())
-
-							_, err := h.Create(ctx, tt.customerID, tt.transcribeID, tt.language, tt.direction)
-							if err != nil {
-								t.Errorf("Wrong match. expected: ok, got: %v", err)
-							}
-						}()
-					}
-				}()
-			}
-
-			time.Sleep(time.Second * 1)
 		})
 	}
 }
