@@ -17,11 +17,9 @@ func (r *requestHandler) AstProxyRecordingFileMove(ctx context.Context, asterisk
 		Filenames []string `json:"filenames,omitempty"`
 	}
 
-	tmpData := &Data{
+	m, err := json.Marshal(Data{
 		Filenames: filenames,
-	}
-
-	m, err := json.Marshal(tmpData)
+	})
 	if err != nil {
 		return errors.Wrapf(err, "failed to marshal data")
 	}
