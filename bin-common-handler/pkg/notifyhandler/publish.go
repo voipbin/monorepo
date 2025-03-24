@@ -33,7 +33,7 @@ func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid
 func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "PublishWebhook",
-		"call":       data,
+		"data":       data,
 		"evnet_type": eventType,
 	})
 	log.Debugf("Sending webhook event. event_type: %s, message: %s", eventType, data)

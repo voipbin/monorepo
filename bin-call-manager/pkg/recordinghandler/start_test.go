@@ -36,6 +36,7 @@ func Test_Start_call(t *testing.T) {
 		onEndFlowID   uuid.UUID
 
 		responseCall            *call.Call
+		responseCallChannel     *channel.Channel
 		responseUUID            uuid.UUID
 		responseCurTimeRFC      string
 		responseUUIDsChannelIDs []uuid.UUID
@@ -67,6 +68,9 @@ func Test_Start_call(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("885fe05e-0663-11f0-b231-fb801f78c0c3"),
 				ChannelID:    "4f577092-8fd7-11ed-83c6-2fc653ad0b7c",
 				Status:       call.StatusProgressing,
+			},
+			responseCallChannel: &channel.Channel{
+				AsteriskID: "42:01:0a:a4:00:03",
 			},
 			responseUUID:       uuid.FromStringOrNil("e141bb2c-8fd5-11ed-a0f9-9735e31b8411"),
 			responseCurTimeRFC: "2023-01-05T14:58:05Z",
@@ -146,6 +150,7 @@ func Test_Start_call(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseCallChannel, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockUtil.EXPECT().TimeGetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
 			for i, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {

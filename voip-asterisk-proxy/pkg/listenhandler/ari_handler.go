@@ -7,8 +7,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
-
 	"monorepo/bin-common-handler/models/sock"
 )
 
@@ -16,9 +14,6 @@ import (
 // returns status_code, response_message, error
 func (h *listenHandler) ariSendRequestToAsterisk(m *sock.Request) (int, []byte, error) {
 	url := fmt.Sprintf("http://%s%s", h.ariAddr, m.URI)
-	logrus.WithFields(logrus.Fields{
-		"request": m,
-	}).Debug("Sending ARI request.")
 
 	req, err := http.NewRequest(string(m.Method), url, bytes.NewReader(m.Data))
 	if err != nil {

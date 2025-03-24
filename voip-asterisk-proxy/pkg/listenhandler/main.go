@@ -3,10 +3,12 @@ package listenhandler
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/voip-asterisk-proxy/pkg/servicehandler"
 
 	"github.com/ivahaev/amigo"
 	"github.com/sirupsen/logrus"
@@ -29,6 +31,23 @@ type listenHandler struct {
 
 	// ami settings
 	amiSock *amigo.Amigo
+
+	serviceHandler servicehandler.ServiceHandler
+}
+
+var (
+	regAMI = regexp.MustCompile(`^/ami/`)
+	regARI = regexp.MustCompile(`^/ari/`)
+
+	// proxy
+	regProxyRecordingFileMove = regexp.MustCompile(`^/proxy/recording_file_move$`)
+)
+
+// simpleResponse returns simple rabbitmq response
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
+		StatusCode: code,
+	}
 }
 
 // NewListenHandler returns ListenHandler interface object
@@ -41,6 +60,8 @@ func NewListenHandler(
 	ariAddr string,
 	ariAccount string,
 	amiSock *amigo.Amigo,
+
+	serviceHandler servicehandler.ServiceHandler,
 ) ListenHandler {
 
 	handler := &listenHandler{
@@ -52,6 +73,8 @@ func NewListenHandler(
 		ariAccount: ariAccount,
 
 		amiSock: amiSock,
+
+		serviceHandler: serviceHandler,
 	}
 
 	return handler
@@ -107,7 +130,7 @@ func (h *listenHandler) listenRun() error {
 	for _, listenQueue := range listenQueues {
 		log.Infof("Running the request listener. queue: %s", listenQueue)
 		go func(queue string) {
-			if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "", false, false, false, 10, h.listenHandler); errConsume != nil {
+			if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "", false, false, false, 10, h.processRequest); errConsume != nil {
 				log.Errorf("Could not handle the request message correctly. err: %v", errConsume)
 			}
 		}(listenQueue)
@@ -116,17 +139,36 @@ func (h *listenHandler) listenRun() error {
 	return nil
 }
 
-func (h *listenHandler) listenHandler(request *sock.Request) (*sock.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processRequest",
+		"request": m,
+	})
 
-	switch request.URI[0:4] {
-	case "/ari":
-		return h.listenHandlerARI(request)
+	var response *sock.Response
+	var err error
+	switch {
+	case regARI.MatchString(m.URI):
+		return h.listenHandlerARI(m)
 
-	case "/ami":
-		return h.listenHandlerAMI(request)
+	case regAMI.MatchString(m.URI):
+		return h.listenHandlerAMI(m)
+
+	// POST /proxy/recording_file_move
+	case regProxyRecordingFileMove.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processProxyRecordingFileMovePost(context.Background(), m)
 
 	default:
-		logrus.Errorf("Could not find correct listen handler. request: %v", request)
-		return nil, fmt.Errorf("no handler found")
+		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, m.URI)
+		response = simpleResponse(404)
+		err = nil
 	}
+
+	if err != nil {
+		log.Errorf("Could not handle the request message correctly. method: %s, uri: %s, err: %v", m.Method, m.URI, err)
+		response = simpleResponse(400)
+		err = nil
+	}
+
+	return response, err
 }
