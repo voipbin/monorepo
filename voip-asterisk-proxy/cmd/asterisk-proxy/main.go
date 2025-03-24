@@ -51,6 +51,9 @@ var (
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
 
+	gcpCredentialBase64 = ""
+
+	recordingBucketName        = ""
 	recordingAsteriskDirectory = ""
 	recordingBucketDirectory   = ""
 )
@@ -85,7 +88,7 @@ func main() {
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAsteriskEventAll, serviceName)
-	serviceHandler := servicehandler.NewServiceHandler(recordingAsteriskDirectory, recordingBucketDirectory)
+	serviceHandler := servicehandler.NewServiceHandler(gcpCredentialBase64, recordingBucketName, recordingAsteriskDirectory, recordingBucketDirectory)
 
 	// create event handler
 	evtHandler := eventhandler.NewEventHandler(
