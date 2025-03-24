@@ -26,7 +26,7 @@ func (r *requestHandler) AstProxyRecordingFileMove(ctx context.Context, asterisk
 		return errors.Wrapf(err, "failed to marshal data")
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/proxyrecording_file_move", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/proxy/recording_file_move", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

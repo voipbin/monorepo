@@ -5,9 +5,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/sirupsen/logrus"
 )
 
 func (h *serviceHandler) RecordingFileMove(ctx context.Context, filenames []string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "RecordingFileMove",
+		"filenames": filenames,
+	})
+	log.Debugf("Moving the recording files.")
+
 	for _, filename := range filenames {
 		if err := h.recordingFileMove(filename); err != nil {
 			return fmt.Errorf("failed to move recording file: %w", err)
