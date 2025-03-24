@@ -130,7 +130,7 @@ func (h *listenHandler) listenRun() error {
 	for _, listenQueue := range listenQueues {
 		log.Infof("Running the request listener. queue: %s", listenQueue)
 		go func(queue string) {
-			if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "", false, false, false, 10, h.processRequest); errConsume != nil {
+			if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "asterisk-proxy", false, false, false, 10, h.processRequest); errConsume != nil {
 				log.Errorf("Could not handle the request message correctly. err: %v", errConsume)
 			}
 		}(listenQueue)
