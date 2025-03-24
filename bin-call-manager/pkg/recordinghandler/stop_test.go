@@ -12,13 +12,12 @@ import (
 	smfile "monorepo/bin-storage-manager/models/file"
 	reflect "reflect"
 	"testing"
-	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_storeRecording(t *testing.T) {
+func Test_storeRecordingFiles(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -62,27 +61,30 @@ func Test_storeRecording(t *testing.T) {
 				reqHandler: mockReq,
 				db:         mockDB,
 			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.recording.AsteriskID, tt.recording.Filenames).Return(nil)
 
 			for _, filename := range tt.recording.Filenames {
 				filepath := h.getFilepath(filename)
-				mockReq.EXPECT().StorageV1FileCreateWithDelay(
-					gomock.Any(),
+				mockReq.EXPECT().StorageV1FileCreate(
+					ctx,
 					tt.recording.CustomerID,
 					uuid.Nil,
 					smfile.ReferenceTypeRecording,
 					tt.recording.ID,
-					"",
-					"",
+					gomock.Any(),
+					gomock.Any(),
 					filename,
 					defaultBucketName,
 					filepath,
-					requesthandler.DelayMinute*2,
-				).Return(nil)
+					30000,
+				).Return(&smfile.File{}, nil)
 			}
 
-			h.storeRecordingFiles(tt.recording)
-
-			time.Sleep(time.Millisecond * 100)
+			if errFile := h.storeRecordingFiles(ctx, tt.recording); errFile != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errFile)
+			}
 		})
 	}
 }
@@ -143,29 +145,29 @@ func Test_Stopped(t *testing.T) {
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseRecording.CustomerID, recording.EventTypeRecordingFinished, tt.responseRecording)
 
+			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.responseRecording.AsteriskID, tt.responseRecording.Filenames).Return(nil)
+
 			for _, filename := range tt.responseRecording.Filenames {
 				filepath := h.getFilepath(filename)
-				mockReq.EXPECT().StorageV1FileCreateWithDelay(
+				mockReq.EXPECT().StorageV1FileCreate(
 					gomock.Any(),
 					tt.responseRecording.CustomerID,
 					uuid.Nil,
 					smfile.ReferenceTypeRecording,
 					tt.responseRecording.ID,
-					"",
-					"",
+					gomock.Any(),
+					gomock.Any(),
 					filename,
 					defaultBucketName,
 					filepath,
-					requesthandler.DelayMinute*2,
-				).Return(nil)
+					gomock.Any(),
+				).Return(&smfile.File{}, nil)
 			}
 
 			res, err := h.Stopped(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
-			time.Sleep(time.Millisecond * 100)
 
 			if !reflect.DeepEqual(res, tt.responseRecording) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)

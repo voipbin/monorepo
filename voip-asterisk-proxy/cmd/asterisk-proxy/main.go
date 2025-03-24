@@ -20,6 +20,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/voip-asterisk-proxy/pkg/eventhandler"
 	"monorepo/voip-asterisk-proxy/pkg/listenhandler"
+	"monorepo/voip-asterisk-proxy/pkg/servicehandler"
 )
 
 const (
@@ -49,6 +50,9 @@ var (
 
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
+
+	recordingAsteriskDirectory = ""
+	recordingBucketDirectory   = ""
 )
 
 var chSigs = make(chan os.Signal, 1)
@@ -81,6 +85,7 @@ func main() {
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAsteriskEventAll, serviceName)
+	serviceHandler := servicehandler.NewServiceHandler(recordingAsteriskDirectory, recordingBucketDirectory)
 
 	// create event handler
 	evtHandler := eventhandler.NewEventHandler(
@@ -110,6 +115,8 @@ func main() {
 		ariAddress,
 		ariAccount,
 		amiSock,
+
+		serviceHandler,
 	)
 
 	// run listen handler

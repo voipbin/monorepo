@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/recording"
-	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-flow-manager/models/activeflow"
 	smfile "monorepo/bin-storage-manager/models/file"
-	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,40 +28,40 @@ func (h *recordingHandler) Stopped(ctx context.Context, id uuid.UUID) (*recordin
 
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get recording info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Could not get recording info")
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, recording.EventTypeRecordingFinished, res)
 
 	// store the recording
-	go h.stopped(res)
+	if errStopped := h.stopped(ctx, res); errStopped != nil {
+		return nil, errors.Wrapf(errStopped, "Could not handle the stopped recording")
+	}
 
 	return res, nil
 }
 
 // stopped handels stopped recording
 // store the recording files and execute the new activeflow if the on_end_flow_id is not empty
-func (h *recordingHandler) stopped(r *recording.Recording) {
+func (h *recordingHandler) stopped(ctx context.Context, r *recording.Recording) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "stopped",
 		"recording_id": r.ID,
 	})
-	ctx := context.Background()
 
 	// store the recording files
-	h.storeRecordingFiles(r)
-
-	if r.OnEndFlowID == uuid.Nil {
-		return
+	if errFile := h.storeRecordingFiles(ctx, r); errFile != nil {
+		return errors.Wrapf(errFile, "Could not store the recording files")
 	}
 
-	time.Sleep(time.Minute * 3) // wait for until the storing the recording files
+	if r.OnEndFlowID == uuid.Nil {
+		// has no on_end_flow_id. nothing to do
+		return nil
+	}
 
 	log.Debugf("The on_end_flow_id is not empty. Executing the new activeflow. on_end_flow_id: %s", r.OnEndFlowID)
 	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, r.CustomerID, r.OnEndFlowID, activeflow.ReferenceTypeNone, uuid.Nil, r.ActiveflowID)
 	if err != nil {
-		log.Errorf("Could not create the activeflow. err: %v", err)
-		return
+		return errors.Wrapf(err, "Could not create the activeflow")
 	}
 	log = log.WithField("activeflow", af)
 	log.Debugf("Created a new activeflow. activeflow_id: %s", af.ID)
@@ -73,41 +72,36 @@ func (h *recordingHandler) stopped(r *recording.Recording) {
 	}
 
 	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
-		log.Errorf("Could not execute the activeflow. err: %v", errExecute)
-		return
+		return errors.Wrapf(errExecute, "Could not execute the activeflow")
 	}
+
+	return nil
 }
 
 // storeRecordingFiles send a request to the storage-manager to store the recording files
 // into the customer's storage account.
-func (h *recordingHandler) storeRecordingFiles(r *recording.Recording) {
+func (h *recordingHandler) storeRecordingFiles(ctx context.Context, r *recording.Recording) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "storeRecordingFiles",
 		"recording": r,
 	})
 
-	// store the each recording files
-	log.Debugf("Storing the recording files.")
-	for _, filename := range r.Filenames {
-		log := log.WithField("filename", filename)
+	if errMove := h.reqHandler.AstProxyRecordingFileMove(ctx, r.AsteriskID, r.Filenames); errMove != nil {
+		return errors.Wrapf(errMove, "Could not move the recording files. err: %v", errMove)
+	}
 
-		// send delay request wait for file writing
-		// note: The asterisk runs the recording file move script in every minutes.
-		// so we have to wait for 2 mins to ensure that the file was moved to the bucket correctly.
-		// if anyone wants to change this wait time, please don't forget the change the crontab from the asterisks.
-		// asterisk-k8s-call, asterisk-k8s-conference
-		//
-		// # Set cron - recording move script
-		// /bin/mkdir -p /var/spool/asterisk/recording
-		// crontab -l | { cat; echo "* * * * * /cron_recording_move.sh"; } | crontab -
-		delay := requesthandler.DelayMinute * 2
+	for _, filename := range r.Filenames {
 
 		filepath := h.getFilepath(filename)
-		if err := h.reqHandler.StorageV1FileCreateWithDelay(context.Background(), r.CustomerID, uuid.Nil, smfile.ReferenceTypeRecording, r.ID, "", "", filename, defaultBucketName, filepath, delay); err != nil {
+		tmp, err := h.reqHandler.StorageV1FileCreate(ctx, r.CustomerID, uuid.Nil, smfile.ReferenceTypeRecording, r.ID, "recording file", "", filename, defaultBucketName, filepath, 30000)
+		if err != nil {
 			log.Errorf("Could not send the request for the storing the recording correctly. err: %v", err)
-			return
+			return err
 		}
+		log.WithField("storage_file", tmp).Debugf("Recording file stored. filename: %s, filepath: %s", filename, filepath)
 	}
+
+	return nil
 }
 
 // Stop stops the recording

@@ -264,6 +264,29 @@ func initVariable() {
 		panic(errEnv)
 	}
 	prometheusListenAddress = viper.GetString("prometheus_listen_address")
+
+	// recording_asterisk_directory
+	if errFlag := viper.BindPFlag("recording_asterisk_directory", pflag.Lookup("recording_asterisk_directory")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("recording_asterisk_directory", "RECORDING_ASTERISK_DIRECTORY"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	recordingAsteriskDirectory = viper.GetString("recording_asterisk_directory")
+
+	// recording_bucket_directory
+	if errFlag := viper.BindPFlag("recording_bucket_directory", pflag.Lookup("recording_bucket_directory")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("recording_bucket_directory", "RECORDING_BUCKET_DIRECTORY"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	recordingBucketDirectory = viper.GetString("recording_bucket_directory")
+
 }
 
 // initLog inits log settings.
