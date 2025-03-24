@@ -69,7 +69,7 @@ require (
 	github.com/spf13/viper v1.20.0
 	go.uber.org/mock v0.5.0
 	google.golang.org/api v0.227.0
-	google.golang.org/protobuf v1.36.5
+	google.golang.org/protobuf v1.36.6
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
