@@ -5,6 +5,7 @@ import (
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -12,23 +13,23 @@ import (
 )
 
 // ProcessStart starts a aicall process
-func (h *aicallHandler) ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error) {
+func (h *aicallHandler) ProcessStart(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "ProcessStart",
-		"aicall_id": cb.ID,
+		"aicall_id": ac.ID,
 	})
 
 	referenceType := tmtranscribe.ReferenceTypeCall
 
 	// create transcribe
-	tr, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, cb.CustomerID, referenceType, cb.ReferenceID, cb.Language, tmtranscribe.DirectionIn)
+	tr, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, ac.CustomerID, ac.ActiveflowID, uuid.Nil, referenceType, ac.ReferenceID, ac.Language, tmtranscribe.DirectionIn)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not start the transcribe")
 	}
 	log.WithField("transcribe", tr).Debugf("Started transcribe. transcribe_id: %s", tr.ID)
 
 	// update status
-	res, err := h.UpdateStatusStartProgressing(ctx, cb.ID, tr.ID)
+	res, err := h.UpdateStatusStartProgressing(ctx, ac.ID, tr.ID)
 	if err != nil {
 		log.Errorf("Could not update the status to start. err: %v", err)
 		return nil, err

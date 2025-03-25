@@ -248,7 +248,8 @@ type OptionTalk struct {
 
 // OptionTranscribeStart defines action TypeTranscribeStart's option.
 type OptionTranscribeStart struct {
-	Language string `json:"language"` // BCP47 format. en-US
+	Language    string    `json:"language"`                 // BCP47 format. en-US
+	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
 }
 
 // OptionTranscribeStop defines action TypeTranscribeStop's option.
@@ -258,7 +259,8 @@ type OptionTranscribeStop struct {
 
 // OptionTranscribeRecording defines action TypeTranscribeRecording's option.
 type OptionTranscribeRecording struct {
-	Language string `json:"language"` // BCP47 format. en-US
+	Language    string    `json:"language"`                 // BCP47 format. en-US
+	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
 }
 
 // OptionVariableSet defines action TypeVariableSet's option.

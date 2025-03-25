@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-transcribe-manager/models/streaming"
 	"monorepo/bin-transcribe-manager/models/transcript"
 )
@@ -16,8 +17,10 @@ func (h *streamingHandler) Create(ctx context.Context, customerID uuid.UUID, tre
 
 	id := h.utilHandler.UUIDCreate()
 	res := &streaming.Streaming{
-		ID:           id,
-		CustomerID:   customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 		TranscribeID: treanscribeID,
 		Language:     language,
 		Direction:    direction,

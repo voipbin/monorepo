@@ -2710,18 +2710,17 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 		name       string
 		activeflow *activeflow.Activeflow
 
-		callID     uuid.UUID
-		customerID uuid.UUID
-		language   string
-
 		responseCall *cmcall.Call
+
+		expectedLanguage    string
+		expectedOnEndFlowID uuid.UUID
 	}
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			&activeflow.Activeflow{
+			activeflow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					CustomerID: uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
 				},
@@ -2730,20 +2729,19 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
 					Type:   action.TypeTranscribeRecording,
-					Option: []byte(`{"language":"en-US"}`),
+					Option: []byte(`{"language":"en-US","on_end_flow_id":"bf3dffbc-093c-11f0-9fb1-c767cd34606a"}`),
 				},
 			},
 
-			uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
-			uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
-			"en-US",
-
-			&cmcall.Call{
+			responseCall: &cmcall.Call{
 				RecordingIDs: []uuid.UUID{
 					uuid.FromStringOrNil("01e4c8a0-82a3-11ed-b30e-8f633f969f44"),
 					uuid.FromStringOrNil("021e88e2-82a3-11ed-a3de-fba809f8b728"),
 				},
 			},
+
+			expectedLanguage:    "en-US",
+			expectedOnEndFlowID: uuid.FromStringOrNil("bf3dffbc-093c-11f0-9fb1-c767cd34606a"),
 		},
 	}
 
@@ -2764,7 +2762,16 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.activeflow.ReferenceID).Return(tt.responseCall, nil)
 			for _, recordingID := range tt.responseCall.RecordingIDs {
-				mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.activeflow.CustomerID, tmtranscribe.ReferenceTypeRecording, recordingID, tt.language, tmtranscribe.DirectionBoth).Return(&tmtranscribe.Transcribe{}, nil)
+				mockReq.EXPECT().TranscribeV1TranscribeStart(
+					ctx,
+					tt.activeflow.CustomerID,
+					tt.activeflow.ID,
+					tt.expectedOnEndFlowID,
+					tmtranscribe.ReferenceTypeRecording,
+					recordingID,
+					tt.expectedLanguage,
+					tmtranscribe.DirectionBoth,
+				).Return(&tmtranscribe.Transcribe{}, nil)
 			}
 
 			if err := h.actionHandleTranscribeRecording(ctx, tt.activeflow); err != nil {
@@ -2780,19 +2787,22 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 		name       string
 		activeFlow *activeflow.Activeflow
 
-		customerID    uuid.UUID
-		referenceID   uuid.UUID
-		referenceType tmtranscribe.ReferenceType
-		language      string
+		expectedCustomerID    uuid.UUID
+		expectedActiveflowID  uuid.UUID
+		expectedOnEndFlowID   uuid.UUID
+		expectedReferenceID   uuid.UUID
+		expectedReferenceType tmtranscribe.ReferenceType
+		expectedLanguage      string
 
 		response *tmtranscribe.Transcribe
 	}
 
 	tests := []test{
 		{
-			"normal",
-			&activeflow.Activeflow{
+			name: "normal",
+			activeFlow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cfd0865a-093d-11f0-bdc8-87ff6a57d585"),
 					CustomerID: uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
 				},
 				ReferenceType: activeflow.ReferenceTypeCall,
@@ -2800,17 +2810,21 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
 					Type:   action.TypeTranscribeStart,
-					Option: []byte(`{"language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
+					Option: []byte(`{"language":"en-US","on_end_flow_id":"bf629ef8-093c-11f0-a38e-73d3a32d02a6"}`),
 				},
 			},
 
-			uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
-			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			tmtranscribe.ReferenceTypeCall,
-			"en-US",
+			expectedCustomerID:    uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
+			expectedActiveflowID:  uuid.FromStringOrNil("cfd0865a-093d-11f0-bdc8-87ff6a57d585"),
+			expectedOnEndFlowID:   uuid.FromStringOrNil("bf629ef8-093c-11f0-a38e-73d3a32d02a6"),
+			expectedReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+			expectedReferenceType: tmtranscribe.ReferenceTypeCall,
+			expectedLanguage:      "en-US",
 
-			&tmtranscribe.Transcribe{
-				ID:            uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
+			response: &tmtranscribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
+				},
 				ReferenceType: tmtranscribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				HostID:        uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
@@ -2833,7 +2847,16 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tmtranscribe.DirectionBoth).Return(tt.response, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStart(
+				ctx,
+				tt.expectedCustomerID,
+				tt.expectedActiveflowID,
+				tt.expectedOnEndFlowID,
+				tt.expectedReferenceType,
+				tt.expectedReferenceID,
+				tt.expectedLanguage,
+				tmtranscribe.DirectionBoth,
+			).Return(tt.response, nil)
 			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

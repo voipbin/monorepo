@@ -2,45 +2,44 @@ package transcribehandler
 
 import (
 	"context"
-	reflect "reflect"
-	"testing"
-
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
-
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
+	"testing"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_dbDelete(t *testing.T) {
+func Test_variableSet(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		id                 uuid.UUID
-		responseTranscribe *transcribe.Transcribe
+		activeflowID uuid.UUID
+		transcribe   *transcribe.Transcribe
 
-		expectRes *transcribe.Transcribe
+		expectedVariables map[string]string
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
-			&transcribe.Transcribe{
+			activeflowID: uuid.FromStringOrNil("67fc7f4a-0936-11f0-afd4-eb9900f06e41"),
+			transcribe: &transcribe.Transcribe{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+					ID: uuid.FromStringOrNil("6853c98a-0936-11f0-b357-c3182f3cb158"),
 				},
+				Language:  "en-US",
+				Direction: transcribe.DirectionBoth,
 			},
 
-			&transcribe.Transcribe{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
-				},
+			expectedVariables: map[string]string{
+				variableTranscribeID:        "6853c98a-0936-11f0-b357-c3182f3cb158",
+				variableTranscribeLanguage:  "en-US",
+				variableTranscribeDirection: "both",
 			},
 		},
 	}
@@ -61,22 +60,13 @@ func Test_dbDelete(t *testing.T) {
 				notifyHandler:     mockNotify,
 				transcriptHandler: mockGoogle,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, transcribe.EventTypeTranscribeDeleted, gomock.Any())
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 
-			res, err := h.dbDelete(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			if errSet := h.variableSet(ctx, tt.activeflowID, tt.transcribe); errSet != nil {
+				t.Errorf("Wrong match. expected: ok, got: %v", errSet)
 			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-
 		})
 	}
 }

@@ -18,6 +18,8 @@ import (
 func (h *transcribeHandler) Start(
 	ctx context.Context,
 	customerID uuid.UUID,
+	activeflowID uuid.UUID,
+	onEndFlowID uuid.UUID,
 	referenceType transcribe.ReferenceType,
 	referenceID uuid.UUID,
 	language string,
@@ -46,14 +48,14 @@ func (h *transcribeHandler) Start(
 	var err error
 	switch referenceType {
 	case transcribe.ReferenceTypeRecording:
-		res, err = h.startRecording(ctx, customerID, referenceID, lang)
+		res, err = h.startRecording(ctx, customerID, activeflowID, onEndFlowID, referenceID, lang)
 		if err != nil {
 			log.Errorf("Could not transcribe the recording reference type. err: %v", err)
 			return nil, err
 		}
 
 	case transcribe.ReferenceTypeCall, transcribe.ReferenceTypeConfbridge:
-		res, err = h.startLive(ctx, customerID, referenceType, referenceID, lang, direction)
+		res, err = h.startLive(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, lang, direction)
 		if err != nil {
 			log.Errorf("Could not transcribe the call reference type. err: %v", err)
 			return nil, err
@@ -116,6 +118,8 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 func (h *transcribeHandler) startLive(
 	ctx context.Context,
 	customerID uuid.UUID,
+	activeflowID uuid.UUID,
+	onEndFlowID uuid.UUID,
 	referenceType transcribe.ReferenceType,
 	referenceID uuid.UUID,
 	language string,
@@ -124,6 +128,8 @@ func (h *transcribeHandler) startLive(
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "startLive",
 		"customer_id":    customerID,
+		"activeflow_id":  activeflowID,
+		"on_end_flow_id": onEndFlowID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"language":       language,
@@ -155,7 +161,7 @@ func (h *transcribeHandler) startLive(
 	}
 
 	// create transcribing
-	res, err := h.Create(ctx, id, customerID, referenceType, referenceID, language, direction, streamingIDs)
+	res, err := h.Create(ctx, id, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, streamingIDs)
 	if err != nil {
 		log.Errorf("Could not create the transcribe. err: %v", err)
 		return nil, err

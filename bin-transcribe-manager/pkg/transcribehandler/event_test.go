@@ -41,12 +41,16 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			},
 			responseTranscribes: []*transcribe.Transcribe{
 				{
-					ID:       uuid.FromStringOrNil("caeca0bc-f2e4-11ee-a152-e7331c726b3b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("caeca0bc-f2e4-11ee-a152-e7331c726b3b"),
+					},
 					Status:   transcribe.StatusDone,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("cb17285a-f2e4-11ee-aaee-c31bb727756e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("cb17285a-f2e4-11ee-aaee-c31bb727756e"),
+					},
 					Status:   transcribe.StatusDone,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
@@ -123,12 +127,16 @@ func Test_EventCMCallHangup(t *testing.T) {
 			},
 			responseTranscribes: []*transcribe.Transcribe{
 				{
-					ID:       uuid.FromStringOrNil("60c49f2c-f2ef-11ee-b34e-0ff8d9efb06c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("60c49f2c-f2ef-11ee-b34e-0ff8d9efb06c"),
+					},
 					Status:   transcribe.StatusDone,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("61321d36-f2ef-11ee-91a2-1b4be4f8b801"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("61321d36-f2ef-11ee-91a2-1b4be4f8b801"),
+					},
 					Status:   transcribe.StatusDone,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
@@ -195,12 +203,16 @@ func Test_EventCMConfbridgeTerminated(t *testing.T) {
 			},
 			responseTranscribes: []*transcribe.Transcribe{
 				{
-					ID:       uuid.FromStringOrNil("a75970f6-f2f0-11ee-8f5f-c3086817f421"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("a75970f6-f2f0-11ee-8f5f-c3086817f421"),
+					},
 					Status:   transcribe.StatusDone,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("a789fbcc-f2f0-11ee-9902-4b978847b531"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("a789fbcc-f2f0-11ee-9902-4b978847b531"),
+					},
 					Status:   transcribe.StatusDone,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},

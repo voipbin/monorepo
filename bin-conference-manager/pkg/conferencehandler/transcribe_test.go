@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -42,7 +43,9 @@ func Test_TranscribeStart(t *testing.T) {
 				Status:       conference.StatusProgressing,
 			},
 			responseTranscribe: &tmtranscribe.Transcribe{
-				ID: uuid.FromStringOrNil("dd2c7b4e-98c2-11ed-a286-9b582399a47e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dd2c7b4e-98c2-11ed-a286-9b582399a47e"),
+				},
 			},
 		},
 	}
@@ -65,7 +68,16 @@ func Test_TranscribeStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.responseConference.CustomerID, tmtranscribe.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, tt.lang, tmtranscribe.DirectionIn).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStart(
+				ctx,
+				tt.responseConference.CustomerID,
+				uuid.Nil,
+				uuid.Nil,
+				tmtranscribe.ReferenceTypeConfbridge,
+				tt.responseConference.ConfbridgeID,
+				tt.lang,
+				tmtranscribe.DirectionIn,
+			).Return(tt.responseTranscribe, nil)
 			mockDB.EXPECT().ConferenceSetTranscribeID(ctx, tt.responseConference.ID, tt.responseTranscribe.ID).Return(nil)
 			mockDB.EXPECT().ConferenceAddTranscribeIDs(ctx, tt.id, tt.responseTranscribe.ID).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
@@ -104,7 +116,9 @@ func Test_TranscribeStop(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("d00b7324-98c3-11ed-aa8f-0ff9d0b64c91"),
 			},
 			responseTranscribe: &tmtranscribe.Transcribe{
-				ID: uuid.FromStringOrNil("d00b7324-98c3-11ed-aa8f-0ff9d0b64c91"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d00b7324-98c3-11ed-aa8f-0ff9d0b64c91"),
+				},
 			},
 		},
 	}

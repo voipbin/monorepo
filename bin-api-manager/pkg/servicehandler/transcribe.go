@@ -91,13 +91,23 @@ func (h *serviceHandler) TranscribeGets(ctx context.Context, a *amagent.Agent, s
 // TranscribeStart sends a request to transcribe-manager
 // to start a transcribe.
 // it returns transcribe if it succeed.
-func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType string, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error) {
+func (h *serviceHandler) TranscribeStart(
+	ctx context.Context,
+	a *amagent.Agent,
+	referenceType string,
+	referenceID uuid.UUID,
+	language string,
+	direction tmtranscribe.Direction,
+	onEndFlowID uuid.UUID,
+) (*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "TranscribeStart",
 		"customer_id":    a.CustomerID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"language":       language,
+		"direction":      direction,
+		"on_end_flow_id": onEndFlowID,
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -112,7 +122,16 @@ func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, 
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, a.CustomerID, tmpReferenceType, tmpReferenceID, language, direction)
+	tmp, err := h.reqHandler.TranscribeV1TranscribeStart(
+		ctx,
+		a.CustomerID,
+		uuid.Nil,
+		onEndFlowID,
+		tmpReferenceType,
+		tmpReferenceID,
+		language,
+		direction,
+	)
 	if err != nil {
 		log.Errorf("Could not start the transcribe. err: %v", err)
 		return nil, err

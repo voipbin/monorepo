@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -26,9 +27,9 @@ func Test_Get(t *testing.T) {
 		id uuid.UUID
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
+			id: uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
 		},
 	}
 
@@ -72,13 +73,15 @@ func Test_GetByReferenceIDAndLanguage(t *testing.T) {
 		responseTranscribe *transcribe.Transcribe
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("2fd5bd08-7f6c-11ed-8d71-67bb37305dd8"),
-			"en-US",
+			referenceID: uuid.FromStringOrNil("2fd5bd08-7f6c-11ed-8d71-67bb37305dd8"),
+			language:    "en-US",
 
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("300196f8-7f6c-11ed-95d7-1f1fecd1ebc5"),
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("300196f8-7f6c-11ed-95d7-1f1fecd1ebc5"),
+				},
 			},
 		},
 	}
@@ -123,17 +126,19 @@ func Test_Gets(t *testing.T) {
 		responseTranscribes []*transcribe.Transcribe
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			10,
-			"2020-05-03%2021:35:02.809",
-			map[string]string{
+			size:  10,
+			token: "2020-05-03%2021:35:02.809",
+			filters: map[string]string{
 				"customer_id": "2fd5bd08-7f6c-11ed-8d71-67bb37305dd8",
 			},
 
-			[]*transcribe.Transcribe{
+			responseTranscribes: []*transcribe.Transcribe{
 				{
-					ID: uuid.FromStringOrNil("300196f8-7f6c-11ed-95d7-1f1fecd1ebc5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("300196f8-7f6c-11ed-95d7-1f1fecd1ebc5"),
+					},
 				},
 			},
 		},
@@ -174,6 +179,8 @@ func Test_Create(t *testing.T) {
 
 		id            uuid.UUID
 		customerID    uuid.UUID
+		activeflowID  uuid.UUID
+		onEndFlowID   uuid.UUID
 		referenceType transcribe.ReferenceType
 		referenceID   uuid.UUID
 		language      string
@@ -182,29 +189,32 @@ func Test_Create(t *testing.T) {
 
 		responseTranscribe *transcribe.Transcribe
 
-		expectTranscribe *transcribe.Transcribe
+		expectedTranscribe *transcribe.Transcribe
+		expectedVariables  map[string]string
 	}{
 		{
-			"normal type call",
+			name: "normal type call",
 
-			uuid.FromStringOrNil("0afbb01e-986c-11ed-9fdb-d3bf0303c51c"),
-			uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
-			transcribe.ReferenceTypeCall,
-			uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
-			"en-US",
-			transcribe.DirectionBoth,
-			[]uuid.UUID{
+			id:            uuid.FromStringOrNil("0afbb01e-986c-11ed-9fdb-d3bf0303c51c"),
+			customerID:    uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
+			activeflowID:  uuid.FromStringOrNil("db146ae6-0923-11f0-9f2b-8b803c425644"),
+			onEndFlowID:   uuid.FromStringOrNil("db388796-0923-11f0-a775-1b94107ba569"),
+			referenceType: transcribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
+			language:      "en-US",
+			direction:     transcribe.DirectionBoth,
+			streamingIDs: []uuid.UUID{
 				uuid.FromStringOrNil("fbd2802c-986b-11ed-83d3-e34b7b277be6"),
 				uuid.FromStringOrNil("fc071828-986b-11ed-ab88-07e9d45c9d0f"),
 			},
 
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("0afbb01e-986c-11ed-9fdb-d3bf0303c51c"),
-			},
-
-			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("0afbb01e-986c-11ed-9fdb-d3bf0303c51c"),
-				CustomerID:    uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0afbb01e-986c-11ed-9fdb-d3bf0303c51c"),
+					CustomerID: uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("db146ae6-0923-11f0-9f2b-8b803c425644"),
+				OnEndFlowID:   uuid.FromStringOrNil("db388796-0923-11f0-a775-1b94107ba569"),
 				ReferenceType: transcribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
 				Status:        transcribe.StatusProgressing,
@@ -215,6 +225,30 @@ func Test_Create(t *testing.T) {
 					uuid.FromStringOrNil("fbd2802c-986b-11ed-83d3-e34b7b277be6"),
 					uuid.FromStringOrNil("fc071828-986b-11ed-ab88-07e9d45c9d0f"),
 				},
+			},
+
+			expectedTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0afbb01e-986c-11ed-9fdb-d3bf0303c51c"),
+					CustomerID: uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("db146ae6-0923-11f0-9f2b-8b803c425644"),
+				OnEndFlowID:   uuid.FromStringOrNil("db388796-0923-11f0-a775-1b94107ba569"),
+				ReferenceType: transcribe.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
+				Status:        transcribe.StatusProgressing,
+				HostID:        testHostID,
+				Language:      "en-US",
+				Direction:     transcribe.DirectionBoth,
+				StreamingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("fbd2802c-986b-11ed-83d3-e34b7b277be6"),
+					uuid.FromStringOrNil("fc071828-986b-11ed-ab88-07e9d45c9d0f"),
+				},
+			},
+			expectedVariables: map[string]string{
+				variableTranscribeID:        "0afbb01e-986c-11ed-9fdb-d3bf0303c51c",
+				variableTranscribeLanguage:  "en-US",
+				variableTranscribeDirection: "both",
 			},
 		},
 	}
@@ -242,10 +276,11 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe).Return(nil)
+			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectedTranscribe).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
-			res, err := h.Create(ctx, tt.id, tt.customerID, transcribe.ReferenceTypeCall, tt.referenceID, "en-US", transcribe.DirectionBoth, tt.streamingIDs)
+			res, err := h.Create(ctx, tt.id, tt.customerID, tt.activeflowID, tt.onEndFlowID, transcribe.ReferenceTypeCall, tt.referenceID, tt.language, transcribe.DirectionBoth, tt.streamingIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -273,14 +308,18 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
 
 			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+				},
 				Status:        transcribe.StatusDone,
 				ReferenceType: transcribe.ReferenceTypeCall,
 				TMDelete:      dbhandler.DefaultTimeStamp,
 			},
 
 			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+				},
 				Status:        transcribe.StatusDone,
 				ReferenceType: transcribe.ReferenceTypeCall,
 				TMDelete:      dbhandler.DefaultTimeStamp,
@@ -347,10 +386,14 @@ func Test_deleteTranscripts(t *testing.T) {
 
 			[]*transcript.Transcript{
 				{
-					ID: uuid.FromStringOrNil("98e53588-f25e-11ee-9b2c-cb8f088fb4a0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("98e53588-f25e-11ee-9b2c-cb8f088fb4a0"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("99090b48-f25e-11ee-a595-47b42745925b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("99090b48-f25e-11ee-a595-47b42745925b"),
+					},
 				},
 			},
 
@@ -410,10 +453,14 @@ func Test_UpdateStatus(t *testing.T) {
 			transcribe.StatusProgressing,
 
 			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
+				},
 			},
 			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
+				},
 			},
 		},
 	}

@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -43,8 +44,10 @@ func Test_Create(t *testing.T) {
 
 			uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
 			&transcript.Transcript{
-				ID:           uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
-				CustomerID:   uuid.FromStringOrNil("0d662fb2-7eb5-11ed-9d23-d724d9c70f65"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
+					CustomerID: uuid.FromStringOrNil("0d662fb2-7eb5-11ed-9d23-d724d9c70f65"),
+				},
 				TranscribeID: uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 				Direction:    transcript.DirectionIn,
 				Message:      "test transcript",
@@ -52,8 +55,10 @@ func Test_Create(t *testing.T) {
 			},
 
 			&transcript.Transcript{
-				ID:           uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
-				CustomerID:   uuid.FromStringOrNil("0d662fb2-7eb5-11ed-9d23-d724d9c70f65"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
+					CustomerID: uuid.FromStringOrNil("0d662fb2-7eb5-11ed-9d23-d724d9c70f65"),
+				},
 				TranscribeID: uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 				Direction:    transcript.DirectionIn,
 				Message:      "test transcript",
@@ -118,7 +123,9 @@ func Test_Gets(t *testing.T) {
 
 			[]*transcript.Transcript{
 				{
-					ID: uuid.FromStringOrNil("cf8dc02a-ed98-11ee-bc86-53c66222068a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("cf8dc02a-ed98-11ee-bc86-53c66222068a"),
+					},
 				},
 			},
 		},
@@ -165,7 +172,9 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("87cf2e7e-f25f-11ee-81cd-1f9ea9d83ffb"),
 
 			&transcript.Transcript{
-				ID:       uuid.FromStringOrNil("87cf2e7e-f25f-11ee-81cd-1f9ea9d83ffb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("87cf2e7e-f25f-11ee-81cd-1f9ea9d83ffb"),
+				},
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},

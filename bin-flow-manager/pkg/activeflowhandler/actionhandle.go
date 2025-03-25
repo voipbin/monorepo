@@ -604,10 +604,9 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 
 	act := &af.CurrentAction
 
-	var optRecordingToText action.OptionTranscribeRecording
-	if err := json.Unmarshal(act.Option, &optRecordingToText); err != nil {
-		log.Errorf("Could not unmarshal the recording_to_text option. err: %v", err)
-		return err
+	var opt action.OptionTranscribeRecording
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		return errors.Wrapf(err, "could not unmarshal the transcribe_recording option. err: %v", err)
 	}
 
 	if af.ReferenceType != activeflow.ReferenceTypeCall {
@@ -618,16 +617,14 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 
 	c, err := h.reqHandler.CallV1CallGet(ctx, af.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not get the call. err: %s", err)
-		return err
+		return errors.Wrapf(err, "could not get the call. err: %v", err)
 	}
 
 	// transcribe the recordings
 	for _, recordingID := range c.RecordingIDs {
-		tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, tmtranscribe.ReferenceTypeRecording, recordingID, optRecordingToText.Language, tmtranscribe.DirectionBoth)
+		tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, af.ID, opt.OnEndFlowID, tmtranscribe.ReferenceTypeRecording, recordingID, opt.Language, tmtranscribe.DirectionBoth)
 		if err != nil {
-			log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
-			return err
+			return errors.Wrapf(err, "could not handle the call recording to text correctly. err: %v", err)
 		}
 		log.WithField("transcribes", tmp).Debugf("Transcribed the recording. transcribe_id: %s, recording_id: %s", tmp.ID, recordingID)
 	}
@@ -656,7 +653,7 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 	}
 
 	// transcribe start
-	trans, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, tmtranscribe.ReferenceTypeCall, af.ReferenceID, opt.Language, tmtranscribe.DirectionBoth)
+	trans, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, af.ID, opt.OnEndFlowID, tmtranscribe.ReferenceTypeCall, af.ReferenceID, opt.Language, tmtranscribe.DirectionBoth)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
