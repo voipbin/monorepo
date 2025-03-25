@@ -68,7 +68,16 @@ func Test_TranscribeStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.responseConference.CustomerID, uuid.Nil, uuid.Nil, tmtranscribe.ReferenceTypeConference, tt.responseConference.ID, tt.lang, tmtranscribe.DirectionIn).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStart(
+				ctx,
+				tt.responseConference.CustomerID,
+				uuid.Nil,
+				uuid.Nil,
+				tmtranscribe.ReferenceTypeConfbridge,
+				tt.responseConference.ConfbridgeID,
+				tt.lang,
+				tmtranscribe.DirectionIn,
+			).Return(tt.responseTranscribe, nil)
 			mockDB.EXPECT().ConferenceSetTranscribeID(ctx, tt.responseConference.ID, tt.responseTranscribe.ID).Return(nil)
 			mockDB.EXPECT().ConferenceAddTranscribeIDs(ctx, tt.id, tt.responseTranscribe.ID).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
