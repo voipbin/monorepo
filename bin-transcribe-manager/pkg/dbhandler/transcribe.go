@@ -20,6 +20,9 @@ const (
 		id,
 		customer_id,
 
+		activeflow_id,
+		on_end_flow_id,
+
 		reference_type,
 		reference_id,
 
@@ -48,6 +51,9 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+
+		&res.ActiveflowID,
+		&res.OnEndFlowID,
 
 		&res.ReferenceType,
 		&res.ReferenceID,
@@ -99,6 +105,9 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 		id,
 		customer_id,
 
+		activeflow_id,
+		on_end_flow_id,
+
 		reference_type,
 		reference_id,
 
@@ -115,6 +124,7 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 	) values(
 		?, ?,
 		?, ?,
+		?, ?,
 		?, ?, ?, ?,
 		?,
 		?, ?, ?
@@ -123,6 +133,9 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 	_, err = h.db.Exec(q,
 		t.ID.Bytes(),
 		t.CustomerID.Bytes(),
+
+		t.ActiveflowID.Bytes(),
+		t.OnEndFlowID.Bytes(),
 
 		t.ReferenceType,
 		t.ReferenceID.Bytes(),
@@ -151,7 +164,7 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 // transcribeUpdateToCache gets the transcribe from the DB and update the cache.
 func (h *handler) transcribeUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.transcribeGetFromDB(ctx, id)
+	res, err := h.transcribeGetFromDB(id)
 	if err != nil {
 		return err
 	}
@@ -192,7 +205,7 @@ func (h *handler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.
 		return res, nil
 	}
 
-	res, err = h.transcribeGetFromDB(ctx, id)
+	res, err = h.transcribeGetFromDB(id)
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +217,7 @@ func (h *handler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.
 }
 
 // transcribeGetFromDB returns transcribe from the DB.
-func (h *handler) transcribeGetFromDB(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
+func (h *handler) transcribeGetFromDB(id uuid.UUID) (*transcribe.Transcribe, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", transcribeSelect)
@@ -298,7 +311,7 @@ func (h *handler) TranscribeGets(ctx context.Context, size uint64, token string,
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "reference_id", "host_id":
+		case "customer_id", "activeflow_id", "on_end_flow_id", "reference_id", "host_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())

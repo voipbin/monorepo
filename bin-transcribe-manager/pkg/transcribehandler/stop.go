@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 )
 
@@ -20,8 +22,7 @@ func (h *transcribeHandler) Stop(ctx context.Context, id uuid.UUID) (*transcribe
 	// get transcribe and evaluate
 	tr, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get transcribe. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the transcribe. transcribe_id: %s", id)
 	}
 
 	if tr.Status == transcribe.StatusDone {
@@ -30,14 +31,45 @@ func (h *transcribeHandler) Stop(ctx context.Context, id uuid.UUID) (*transcribe
 		return tr, nil
 	}
 
+	var res *transcribe.Transcribe
 	switch tr.ReferenceType {
 	case transcribe.ReferenceTypeCall, transcribe.ReferenceTypeConfbridge:
-		return h.stopLive(ctx, tr)
+		res, err = h.stopLive(ctx, tr)
 
 	default:
 		log.Errorf("Invalid reference type. reference_type: %s", tr.ReferenceType)
 		return nil, fmt.Errorf("invalid reference type")
 	}
+
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not stop the transcribe. transcribe_id: %s", tr.ID)
+	}
+
+	if res.OnEndFlowID == uuid.Nil {
+		return res, nil
+	}
+
+	// create activeflow
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, res.CustomerID, res.OnEndFlowID, fmactiveflow.ReferenceTypeTranscribe, res.ID, res.ActiveflowID)
+	if err != nil {
+		// we could not create the activeflow, but continue to stop the transcribe
+		log.Errorf("Could not create the activeflow. err: %v", err)
+		return res, nil
+	}
+	log.WithField("activeflow", af).Debugf("Created activeflow. activeflow_id: %s", af.ID)
+
+	if errSet := h.variableSet(ctx, af.ID, res); errSet != nil {
+		// we could not set the variable, but continue to handle the on end flow execution
+		log.Errorf("Could not set the variable. err: %v", errSet)
+	}
+
+	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
+		// we could not execute the activeflow, but continue to stop the transcribe
+		log.Errorf("Could not execute the activeflow. activeflow_id: %s, err: %v", af.ID, errExecute)
+		return res, nil
+	}
+
+	return res, nil
 }
 
 // stopLive stops live transcribing.

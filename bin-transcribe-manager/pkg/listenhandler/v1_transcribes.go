@@ -34,7 +34,7 @@ func (h *listenHandler) processV1TranscribesPost(ctx context.Context, m *sock.Re
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.transcribeHandler.Start(ctx, req.CustomerID, req.ReferenceType, req.ReferenceID, req.Language, req.Direction)
+	tmp, err := h.transcribeHandler.Start(ctx, req.CustomerID, req.ActiveflowID, req.OnEndFlowID, req.ReferenceType, req.ReferenceID, req.Language, req.Direction)
 	if err != nil {
 		log.Debugf("Could not create a transcribe. err: %v", err)
 		return simpleResponse(500), nil

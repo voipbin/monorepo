@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-transcribe-manager/models/transcript"
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
@@ -29,8 +30,10 @@ func (h *transcriptHandler) Create(
 
 	id := h.utilHandler.UUIDCreate()
 	tr := &transcript.Transcript{
-		ID:           id,
-		CustomerID:   customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 		TranscribeID: transcribeID,
 
 		Direction: direction,

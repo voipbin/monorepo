@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
@@ -64,6 +65,8 @@ func (h *transcribeHandler) Create(
 	ctx context.Context,
 	id uuid.UUID,
 	customerID uuid.UUID,
+	activeflowID uuid.UUID,
+	onEndFlowID uuid.UUID,
 	referenceType transcribe.ReferenceType,
 	referenceID uuid.UUID,
 	language string,
@@ -74,6 +77,8 @@ func (h *transcribeHandler) Create(
 		"func":           "Create",
 		"id":             id,
 		"customer_id":    customerID,
+		"activeflow_id":  activeflowID,
+		"on_end_flow_id": onEndFlowID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"language":       language,
@@ -81,8 +86,14 @@ func (h *transcribeHandler) Create(
 	})
 
 	tmp := &transcribe.Transcribe{
-		ID:            id,
-		CustomerID:    customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+
+		ActiveflowID: activeflowID,
+		OnEndFlowID:  onEndFlowID,
+
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
@@ -104,6 +115,11 @@ func (h *transcribeHandler) Create(
 	if err != nil {
 		log.Errorf("Could not get created transcribe. err: %v", err)
 		return nil, err
+	}
+
+	if errSet := h.variableSet(ctx, activeflowID, res); errSet != nil {
+		// we could not set the variable, but we just ignore the error and continue anyway
+		log.Errorf("Could not set the variable. err: %v", errSet)
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, transcribe.EventTypeTranscribeCreated, res)
 

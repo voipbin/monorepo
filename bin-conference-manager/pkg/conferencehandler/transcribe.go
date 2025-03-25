@@ -7,6 +7,7 @@ import (
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-conference-manager/models/conference"
@@ -22,26 +23,22 @@ func (h *conferenceHandler) TranscribeStart(ctx context.Context, id uuid.UUID, l
 
 	tmp, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get conference info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get conference info")
 	}
 
 	if tmp.Status != conference.StatusProgressing {
-		log.Errorf("Invalid conference status. status: %s", tmp.Status)
-		return nil, fmt.Errorf("invalid conference status")
+		return nil, errors.Wrapf(err, "invalid conference status")
 	}
 
-	tr, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, tmp.CustomerID, tmtranscribe.ReferenceTypeConfbridge, tmp.ConfbridgeID, lang, tmtranscribe.DirectionIn)
+	tr, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, tmp.CustomerID, uuid.Nil, uuid.Nil, tmtranscribe.ReferenceTypeConference, tmp.ID, lang, tmtranscribe.DirectionIn)
 	if err != nil {
-		log.Errorf("Could not start the transcribe. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not start the transcribe")
 	}
 	log.WithField("transcribe", tr).Debugf("Started transcribe. transcribe_id: %s", tr.ID)
 
 	res, err := h.UpdateTranscribeID(ctx, id, tr.ID)
 	if err != nil {
-		log.Errorf("Could not update transcribe id. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not update transcribe id")
 	}
 	log.WithField("conference", res).Debugf("Started transcribe. conference_id: %s, transcribe_id: %s", res.ID, tr.ID)
 

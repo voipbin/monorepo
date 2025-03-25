@@ -3,6 +3,7 @@ package streaminghandler
 import (
 	"context"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -53,8 +54,10 @@ func Test_Start(t *testing.T) {
 
 			expectExternalMediaID: uuid.FromStringOrNil("e2b13e22-e9df-11ef-81b9-dfb396f7f633"),
 			expectRes: &streaming.Streaming{
-				ID:           uuid.FromStringOrNil("e2b13e22-e9df-11ef-81b9-dfb396f7f633"),
-				CustomerID:   uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e2b13e22-e9df-11ef-81b9-dfb396f7f633"),
+					CustomerID: uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
+				},
 				TranscribeID: uuid.FromStringOrNil("e210a336-e9df-11ef-b5e9-bbbc7edb0445"),
 				Language:     "en-US",
 				Direction:    transcript.DirectionIn,

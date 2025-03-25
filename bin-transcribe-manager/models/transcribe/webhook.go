@@ -2,14 +2,17 @@ package transcribe
 
 import (
 	"encoding/json"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`          // Transcribe id
-	CustomerID uuid.UUID `json:"customer_id"` // customer
+	commonidentity.Identity
+
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"`
+	OnEndFlowID  uuid.UUID `json:"on_end_flow_id,omitempty"`
 
 	ReferenceType ReferenceType `json:"reference_type"` // reference's type
 	ReferenceID   uuid.UUID     `json:"reference_id"`   // call/conference/recording's id
@@ -28,8 +31,10 @@ type WebhookMessage struct {
 func (h *Transcribe) ConvertWebhookMessage() *WebhookMessage {
 
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
+		Identity: h.Identity,
+
+		ActiveflowID: h.ActiveflowID,
+		OnEndFlowID:  h.OnEndFlowID,
 
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,

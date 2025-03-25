@@ -944,6 +944,8 @@ type RequestHandler interface {
 	TranscribeV1TranscribeStart(
 		ctx context.Context,
 		customerID uuid.UUID,
+		activeflowID uuid.UUID,
+		onEndFlowID uuid.UUID,
 		referenceType tmtranscribe.ReferenceType,
 		referenceID uuid.UUID,
 		language string,

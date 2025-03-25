@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -26,6 +27,8 @@ func Test_processV1TranscribesPost(t *testing.T) {
 		responseTranscribe *transcribe.Transcribe
 
 		expectCustomerID    uuid.UUID
+		expectActiveflowID  uuid.UUID
+		expectOnEndFlowID   uuid.UUID
 		expectReferenceType transcribe.ReferenceType
 		expectReferenceID   uuid.UUID
 		expectLanguage      string
@@ -35,29 +38,33 @@ func Test_processV1TranscribesPost(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			&sock.Request{
+			request: &sock.Request{
 				URI:      "/v1/transcribes",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"10a7593a-9693-11ed-b4b7-7b48322d6a8d","reference_type":"call","reference_id":"112d907c-9693-11ed-a72c-8fa9ccd046a7","language":"en-US","direction":"both"}`),
+				Data:     []byte(`{"customer_id":"10a7593a-9693-11ed-b4b7-7b48322d6a8d","activeflow_id":"586e7c60-0925-11f0-85f7-ffa1f967c6d0","on_end_flow_id":"58aedc4c-0925-11f0-a2ea-b36d37f1d67c","reference_type":"call","reference_id":"112d907c-9693-11ed-a72c-8fa9ccd046a7","language":"en-US","direction":"both"}`),
 			},
 
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("1162e178-9693-11ed-9bcf-974fbfeb1ea3"),
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1162e178-9693-11ed-9bcf-974fbfeb1ea3"),
+				},
 			},
 
-			uuid.FromStringOrNil("10a7593a-9693-11ed-b4b7-7b48322d6a8d"),
-			transcribe.ReferenceTypeCall,
-			uuid.FromStringOrNil("112d907c-9693-11ed-a72c-8fa9ccd046a7"),
-			"en-US",
-			transcribe.DirectionBoth,
+			expectCustomerID:    uuid.FromStringOrNil("10a7593a-9693-11ed-b4b7-7b48322d6a8d"),
+			expectActiveflowID:  uuid.FromStringOrNil("586e7c60-0925-11f0-85f7-ffa1f967c6d0"),
+			expectOnEndFlowID:   uuid.FromStringOrNil("58aedc4c-0925-11f0-a2ea-b36d37f1d67c"),
+			expectReferenceType: transcribe.ReferenceTypeCall,
+			expectReferenceID:   uuid.FromStringOrNil("112d907c-9693-11ed-a72c-8fa9ccd046a7"),
+			expectLanguage:      "en-US",
+			expectDirection:     transcribe.DirectionBoth,
 
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1162e178-9693-11ed-9bcf-974fbfeb1ea3","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"1162e178-9693-11ed-9bcf-974fbfeb1ea3","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -77,7 +84,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection).Return(tt.responseTranscribe, nil)
+			mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection).Return(tt.responseTranscribe, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -104,57 +111,63 @@ func Test_processV1TranscribesGet(t *testing.T) {
 		expectRes           *sock.Response
 	}{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=079ffd84-7f68-11ed-ae05-430c9b75ab3b",
 				Method: sock.RequestMethodGet,
 			},
 
-			10,
-			"2020-05-03 21:35:02.809",
+			pageSize:  10,
+			pageToken: "2020-05-03 21:35:02.809",
 
-			map[string]string{
+			responseFilters: map[string]string{
 				"customer_id": "079ffd84-7f68-11ed-ae05-430c9b75ab3b",
 			},
-			[]*transcribe.Transcribe{
+			responseTranscribes: []*transcribe.Transcribe{
 				{
-					ID:         uuid.FromStringOrNil("0710ac06-7f68-11ed-b2cd-877b6dca8ac7"),
-					CustomerID: uuid.FromStringOrNil("079ffd84-7f68-11ed-ae05-430c9b75ab3b"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("0710ac06-7f68-11ed-b2cd-877b6dca8ac7"),
+						CustomerID: uuid.FromStringOrNil("079ffd84-7f68-11ed-ae05-430c9b75ab3b"),
+					},
 				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"0710ac06-7f68-11ed-b2cd-877b6dca8ac7","customer_id":"079ffd84-7f68-11ed-ae05-430c9b75ab3b","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"0710ac06-7f68-11ed-b2cd-877b6dca8ac7","customer_id":"079ffd84-7f68-11ed-ae05-430c9b75ab3b","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
-			"2 items",
-			&sock.Request{
+			name: "2 items",
+			request: &sock.Request{
 				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=871275ba-7f68-11ed-a6e2-dbc6d9a383d9",
 				Method: sock.RequestMethodGet,
 			},
 
-			10,
-			"2020-05-03 21:35:02.809",
+			pageSize:  10,
+			pageToken: "2020-05-03 21:35:02.809",
 
-			map[string]string{
+			responseFilters: map[string]string{
 				"customer_id": "871275ba-7f68-11ed-a6e2-dbc6d9a383d9",
 			},
-			[]*transcribe.Transcribe{
+			responseTranscribes: []*transcribe.Transcribe{
 				{
-					ID:         uuid.FromStringOrNil("873a8eec-7f68-11ed-9c2b-5f1311cc5a88"),
-					CustomerID: uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("873a8eec-7f68-11ed-9c2b-5f1311cc5a88"),
+						CustomerID: uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("876112b0-7f68-11ed-bf8c-074e301a66da"),
-					CustomerID: uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("876112b0-7f68-11ed-bf8c-074e301a66da"),
+						CustomerID: uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),
+					},
 				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"873a8eec-7f68-11ed-9c2b-5f1311cc5a88","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"876112b0-7f68-11ed-bf8c-074e301a66da","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"873a8eec-7f68-11ed-9c2b-5f1311cc5a88","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"876112b0-7f68-11ed-bf8c-074e301a66da","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -198,19 +211,21 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 		expectRes          *sock.Response
 	}{
 		{
-			"basic",
-			&sock.Request{
+			name: "basic",
+			request: &sock.Request{
 				URI:    "/v1/transcribes/06db1ed2-7f69-11ed-a6fe-83fb6c80964d",
 				Method: sock.RequestMethodGet,
 			},
-			&transcribe.Transcribe{
-				ID:         uuid.FromStringOrNil("06db1ed2-7f69-11ed-a6fe-83fb6c80964d"),
-				CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("06db1ed2-7f69-11ed-a6fe-83fb6c80964d"),
+					CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"06db1ed2-7f69-11ed-a6fe-83fb6c80964d","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"06db1ed2-7f69-11ed-a6fe-83fb6c80964d","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -256,22 +271,24 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 		expectRes *sock.Response
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("a4f388dc-86ab-11ec-8d14-9bd962288757"),
-			uuid.FromStringOrNil("45afd578-7ffe-11ec-9430-3bdf65368563"),
+			id:         uuid.FromStringOrNil("a4f388dc-86ab-11ec-8d14-9bd962288757"),
+			customerID: uuid.FromStringOrNil("45afd578-7ffe-11ec-9430-3bdf65368563"),
 
-			&sock.Request{
+			request: &sock.Request{
 				URI:    "/v1/transcribes/a4f388dc-86ab-11ec-8d14-9bd962288757",
 				Method: sock.RequestMethodDelete,
 			},
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("a4f388dc-86ab-11ec-8d14-9bd962288757"),
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4f388dc-86ab-11ec-8d14-9bd962288757"),
+				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a4f388dc-86ab-11ec-8d14-9bd962288757","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a4f388dc-86ab-11ec-8d14-9bd962288757","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -319,23 +336,25 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("06b55408-821c-11ed-980a-cf31e1861a1f"),
-			&sock.Request{
+			transcribeID: uuid.FromStringOrNil("06b55408-821c-11ed-980a-cf31e1861a1f"),
+			request: &sock.Request{
 				URI:      "/v1/transcribes/06b55408-821c-11ed-980a-cf31e1861a1f/stop",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(``),
 			},
 
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("06b55408-821c-11ed-980a-cf31e1861a1f"),
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("06b55408-821c-11ed-980a-cf31e1861a1f"),
+				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"06b55408-821c-11ed-980a-cf31e1861a1f","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"06b55408-821c-11ed-980a-cf31e1861a1f","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -381,12 +400,12 @@ func Test_processV1TranscribesIDHealthCheckPost(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("e04a0326-5c94-446e-bafb-1d53aa310420"),
-			0,
+			id:         uuid.FromStringOrNil("e04a0326-5c94-446e-bafb-1d53aa310420"),
+			retryCount: 0,
 
-			&sock.Request{
+			request: &sock.Request{
 				URI:    "/v1/transcribes/e04a0326-5c94-446e-bafb-1d53aa310420/health-check",
 				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 0}`),

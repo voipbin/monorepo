@@ -2,6 +2,7 @@ package streaminghandler
 
 import (
 	"context"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -31,7 +32,9 @@ func Test_Stop(t *testing.T) {
 		{
 			name: "normal",
 			streaming: &streaming.Streaming{
-				ID: uuid.FromStringOrNil("0ffda78c-e9de-11ef-80b6-af1f6f9f7939"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0ffda78c-e9de-11ef-80b6-af1f6f9f7939"),
+				},
 			},
 
 			id: uuid.FromStringOrNil("0ffda78c-e9de-11ef-80b6-af1f6f9f7939"),
@@ -42,7 +45,9 @@ func Test_Stop(t *testing.T) {
 
 			expectExternalMediaID: uuid.FromStringOrNil("0ffda78c-e9de-11ef-80b6-af1f6f9f7939"),
 			expectRes: &streaming.Streaming{
-				ID: uuid.FromStringOrNil("0ffda78c-e9de-11ef-80b6-af1f6f9f7939"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0ffda78c-e9de-11ef-80b6-af1f6f9f7939"),
+				},
 			},
 		},
 	}

@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -30,7 +31,9 @@ func Test_dbDelete(t *testing.T) {
 			uuid.FromStringOrNil("2adc1780-f260-11ee-9069-8bb772a86cf3"),
 
 			&transcript.Transcript{
-				ID:       uuid.FromStringOrNil("2adc1780-f260-11ee-9069-8bb772a86cf3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2adc1780-f260-11ee-9069-8bb772a86cf3"),
+				},
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},

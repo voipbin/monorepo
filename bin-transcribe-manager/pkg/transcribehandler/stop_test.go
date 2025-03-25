@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -36,13 +37,17 @@ func Test_TranscribingStop_call(t *testing.T) {
 			uuid.FromStringOrNil("e28b21dc-8218-11ed-b54f-d394b81cda3b"),
 
 			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("e28b21dc-8218-11ed-b54f-d394b81cda3b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e28b21dc-8218-11ed-b54f-d394b81cda3b"),
+				},
 				ReferenceType: transcribe.ReferenceTypeCall,
 				Status:        transcribe.StatusProgressing,
 			},
 
 			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("e28b21dc-8218-11ed-b54f-d394b81cda3b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e28b21dc-8218-11ed-b54f-d394b81cda3b"),
+				},
 				ReferenceType: transcribe.ReferenceTypeCall,
 				Status:        transcribe.StatusProgressing,
 			},
@@ -100,7 +105,9 @@ func Test_stopLive(t *testing.T) {
 			"normal",
 
 			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("58ad260c-8789-11ec-87ad-63d573434c69"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("58ad260c-8789-11ec-87ad-63d573434c69"),
+				},
 				StreamingIDs: []uuid.UUID{
 					uuid.FromStringOrNil("d5824a14-8788-11ec-9e71-a7cedf6ca3e1"),
 					uuid.FromStringOrNil("df402f8a-8788-11ec-a14b-af9efb78ed6a"),
