@@ -877,3 +877,77 @@ func Test_marshalOptionRecordingStart(t *testing.T) {
 		})
 	}
 }
+
+func Test_OptionTranscribeStart(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectedRes OptionTranscribeStart
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			option: []byte(`{"language": "en-US", "on_end_flow_id": "ccde4a38-093b-11f0-921a-93245e27ef98"}`),
+
+			expectedRes: OptionTranscribeStart{
+				Language:    "en-US",
+				OnEndFlowID: uuid.FromStringOrNil("ccde4a38-093b-11f0-921a-93245e27ef98"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionTranscribeStart{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
+
+func Test_OptionTranscribeRecording(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectedRes OptionTranscribeRecording
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			option: []byte(`{"language": "en-US", "on_end_flow_id": "cd02b6a2-093b-11f0-b71b-7bc0ff6efaaf"}`),
+
+			expectedRes: OptionTranscribeRecording{
+				Language:    "en-US",
+				OnEndFlowID: uuid.FromStringOrNil("cd02b6a2-093b-11f0-b71b-7bc0ff6efaaf"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionTranscribeRecording{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}

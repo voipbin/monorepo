@@ -2,6 +2,7 @@ package streaminghandler
 
 import (
 	"context"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -39,8 +40,10 @@ func Test_Create(t *testing.T) {
 			responseID: uuid.FromStringOrNil("b422ebbe-e9da-11ef-8537-332e8845ed9e"),
 
 			expectRes: &streaming.Streaming{
-				ID:           uuid.FromStringOrNil("b422ebbe-e9da-11ef-8537-332e8845ed9e"),
-				CustomerID:   uuid.FromStringOrNil("b3755cc4-e9da-11ef-812f-a73170810307"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b422ebbe-e9da-11ef-8537-332e8845ed9e"),
+					CustomerID: uuid.FromStringOrNil("b3755cc4-e9da-11ef-812f-a73170810307"),
+				},
 				TranscribeID: uuid.FromStringOrNil("b3d7ba72-e9da-11ef-8646-f320e52dfd72"),
 				Language:     "en-US",
 				Direction:    transcript.DirectionIn,

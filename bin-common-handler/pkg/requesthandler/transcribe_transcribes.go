@@ -72,6 +72,8 @@ func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageTok
 func (r *requestHandler) TranscribeV1TranscribeStart(
 	ctx context.Context,
 	customerID uuid.UUID,
+	activeflowID uuid.UUID,
+	onEndFlowID uuid.UUID,
 	referenceType tmtranscribe.ReferenceType,
 	referenceID uuid.UUID,
 	language string,
@@ -81,6 +83,8 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 
 	data := &tmrequest.V1DataTranscribesPost{
 		CustomerID:    customerID,
+		ActiveflowID:  activeflowID,
+		OnEndFlowID:   onEndFlowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 		Language:      language,

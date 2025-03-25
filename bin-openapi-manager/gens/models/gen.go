@@ -4002,6 +4002,9 @@ type PostTranscribesJSONBody struct {
 	// Language The language of the transcription.
 	Language string `json:"language"`
 
+	// OnEndFlowId The ID of the flow to be executed when the transcription ends.
+	OnEndFlowId string `json:"on_end_flow_id"`
+
 	// ReferenceId The ID of the reference for the transcription.
 	ReferenceId   string                                   `json:"reference_id"`
 	ReferenceType TranscribeManagerTranscribeReferenceType `json:"reference_type"`

@@ -1,13 +1,17 @@
 package transcribe
 
 import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"github.com/gofrs/uuid"
 )
 
 // Transcribe struct
 type Transcribe struct {
-	ID         uuid.UUID `json:"id"`          // Transcribe id
-	CustomerID uuid.UUID `json:"customer_id"` // customer
+	commonidentity.Identity
+
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"`
+	OnEndFlowID  uuid.UUID `json:"on_end_flow_id,omitempty"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"` // call/conference/recording's id

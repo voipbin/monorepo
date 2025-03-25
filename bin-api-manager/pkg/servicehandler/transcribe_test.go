@@ -48,13 +48,17 @@ func Test_TranscribeGet(t *testing.T) {
 			uuid.FromStringOrNil("808d6e70-826f-11ed-8442-1702cf185b93"),
 
 			&tmtranscribe.Transcribe{
-				ID:         uuid.FromStringOrNil("808d6e70-826f-11ed-8442-1702cf185b93"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("808d6e70-826f-11ed-8442-1702cf185b93"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 
 			&tmtranscribe.WebhookMessage{
-				ID:         uuid.FromStringOrNil("808d6e70-826f-11ed-8442-1702cf185b93"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("808d6e70-826f-11ed-8442-1702cf185b93"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -115,10 +119,14 @@ func Test_TranscribeGets(t *testing.T) {
 
 			[]tmtranscribe.Transcribe{
 				{
-					ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("df6c8bf0-8270-11ed-8a5a-0b5818b7baac"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("df6c8bf0-8270-11ed-8a5a-0b5818b7baac"),
+					},
 				},
 			},
 
@@ -128,10 +136,14 @@ func Test_TranscribeGets(t *testing.T) {
 			},
 			[]*tmtranscribe.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("df6c8bf0-8270-11ed-8a5a-0b5818b7baac"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("df6c8bf0-8270-11ed-8a5a-0b5818b7baac"),
+					},
 				},
 			},
 		},
@@ -174,6 +186,7 @@ func Test_TranscribeStart(t *testing.T) {
 		referenceID   uuid.UUID
 		language      string
 		direction     tmtranscribe.Direction
+		onEndFlowID   uuid.UUID
 
 		responseCall       *cmcall.Call
 		responseRecording  *cmrecording.Recording
@@ -198,6 +211,7 @@ func Test_TranscribeStart(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
 			language:      "en-US",
 			direction:     tmtranscribe.DirectionBoth,
+			onEndFlowID:   uuid.FromStringOrNil("9772a0da-0943-11f0-879f-47ce2d322564"),
 
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
@@ -208,14 +222,18 @@ func Test_TranscribeStart(t *testing.T) {
 				TMDelete: defaultTimestamp,
 			},
 			responseTranscribe: &tmtranscribe.Transcribe{
-				ID:         uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 
 			expectReferenceType: tmtranscribe.ReferenceTypeCall,
 			expectRes: &tmtranscribe.WebhookMessage{
-				ID:         uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -241,9 +259,9 @@ func Test_TranscribeStart(t *testing.T) {
 			case "recording":
 				mockReq.EXPECT().CallV1RecordingGet(ctx, tt.referenceID).Return(tt.responseRecording, nil)
 			}
-			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.agent.CustomerID, tt.expectReferenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.agent.CustomerID, uuid.Nil, tt.onEndFlowID, tt.expectReferenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseTranscribe, nil)
 
-			res, err := h.TranscribeStart(ctx, tt.agent, tt.referenceType, tt.referenceID, tt.language, tt.direction)
+			res, err := h.TranscribeStart(ctx, tt.agent, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -283,13 +301,17 @@ func Test_TranscribeStop(t *testing.T) {
 			transcribeID: uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
 
 			responseTranscribe: &tmtranscribe.Transcribe{
-				ID:         uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 
 			expectRes: &tmtranscribe.WebhookMessage{
-				ID:         uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -353,13 +375,17 @@ func Test_TranscribeDelete(t *testing.T) {
 			transcribeID: uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),
 
 			responseTranscribe: &tmtranscribe.Transcribe{
-				ID:         uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 
 			expectRes: &tmtranscribe.WebhookMessage{
-				ID:         uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}

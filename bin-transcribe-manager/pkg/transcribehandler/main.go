@@ -36,6 +36,8 @@ type TranscribeHandler interface {
 	Start(
 		ctx context.Context,
 		customerID uuid.UUID,
+		activeflowID uuid.UUID,
+		onEndFlowID uuid.UUID,
 		referenceType transcribe.ReferenceType,
 		referenceID uuid.UUID,
 		language string,
@@ -78,6 +80,12 @@ var (
 const (
 	defaultHealthMaxRetryCount = 2
 	defaultHealthDelay         = 10000 // 10 seconds
+)
+
+const (
+	variableTranscribeID        = "voipbin.transcribe.transcribe.id"
+	variableTranscribeLanguage  = "voipbin.transcribe.transcribe.language"
+	variableTranscribeDirection = "voipbin.transcribe.transcribe.direction"
 )
 
 func init() {

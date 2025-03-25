@@ -30,6 +30,8 @@ func Test_Start_referencetype_call(t *testing.T) {
 		name string
 
 		customerID    uuid.UUID
+		activeflowID  uuid.UUID
+		onEndFlowID   uuid.UUID
 		referenceType transcribe.ReferenceType
 		referenceID   uuid.UUID
 		language      string
@@ -44,36 +46,48 @@ func Test_Start_referencetype_call(t *testing.T) {
 		expectRes        *transcribe.Transcribe
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("0e259c1c-8211-11ed-a907-5bf5bd61fa6a"),
-			transcribe.ReferenceTypeCall,
-			uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
-			"en-US",
-			transcribe.DirectionBoth,
+			customerID:    uuid.FromStringOrNil("0e259c1c-8211-11ed-a907-5bf5bd61fa6a"),
+			activeflowID:  uuid.FromStringOrNil("6d6d22b6-0924-11f0-aed1-73724fe094ac"),
+			onEndFlowID:   uuid.FromStringOrNil("6d9af948-0924-11f0-9f13-cb27276eae80"),
+			referenceType: transcribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+			language:      "en-US",
+			direction:     transcribe.DirectionBoth,
 
-			&cmcall.Call{
+			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
 				},
 				Status: cmcall.StatusProgressing,
 			},
-			uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
-			[]*streaming.Streaming{
+			responseUUID: uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
+			responseStreamings: []*streaming.Streaming{
 				{
-					ID: uuid.FromStringOrNil("049c01c4-9876-11ed-968a-0f8060a7f327"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("049c01c4-9876-11ed-968a-0f8060a7f327"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("0b7ca494-9876-11ed-8927-3b1f974a4122"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("0b7ca494-9876-11ed-8927-3b1f974a4122"),
+					},
 				},
 			},
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
+				},
 			},
 
-			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
-				CustomerID:    uuid.FromStringOrNil("0e259c1c-8211-11ed-a907-5bf5bd61fa6a"),
+			expectTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
+					CustomerID: uuid.FromStringOrNil("0e259c1c-8211-11ed-a907-5bf5bd61fa6a"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("6d6d22b6-0924-11f0-aed1-73724fe094ac"),
+				OnEndFlowID:   uuid.FromStringOrNil("6d9af948-0924-11f0-9f13-cb27276eae80"),
 				ReferenceType: transcribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
 				Status:        transcribe.StatusProgressing,
@@ -84,8 +98,10 @@ func Test_Start_referencetype_call(t *testing.T) {
 					uuid.FromStringOrNil("0b7ca494-9876-11ed-8927-3b1f974a4122"),
 				},
 			},
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
+			expectRes: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
+				},
 			},
 		},
 	}
@@ -128,9 +144,10 @@ func Test_Start_referencetype_call(t *testing.T) {
 			// create
 			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 
-			res, err := h.Start(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
+			res, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -232,6 +249,8 @@ func Test_startLive(t *testing.T) {
 		name string
 
 		customerID    uuid.UUID
+		activeflowID  uuid.UUID
+		onEndFlowID   uuid.UUID
 		referenceType transcribe.ReferenceType
 		referenceID   uuid.UUID
 		language      string
@@ -244,29 +263,39 @@ func Test_startLive(t *testing.T) {
 		expectRes *transcribe.Transcribe
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("469b200c-8786-11ec-bd4f-bb7ae5541d57"),
-			transcribe.ReferenceTypeCall,
-			uuid.FromStringOrNil("47b30720-8786-11ec-ac47-f37c07bbbef5"),
-			"en-US",
-			transcribe.DirectionBoth,
+			customerID:    uuid.FromStringOrNil("469b200c-8786-11ec-bd4f-bb7ae5541d57"),
+			activeflowID:  uuid.FromStringOrNil("6dc457de-0924-11f0-9360-739df5241a77"),
+			onEndFlowID:   uuid.FromStringOrNil("6df2b30e-0924-11f0-9350-cf73077f53bd"),
+			referenceType: transcribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("47b30720-8786-11ec-ac47-f37c07bbbef5"),
+			language:      "en-US",
+			direction:     transcribe.DirectionBoth,
 
-			uuid.FromStringOrNil("ad23290c-9877-11ed-8d54-07172f870dfb"),
-			[]*streaming.Streaming{
+			responseUUID: uuid.FromStringOrNil("ad23290c-9877-11ed-8d54-07172f870dfb"),
+			responseStreamings: []*streaming.Streaming{
 				{
-					ID: uuid.FromStringOrNil("d01d68a0-9877-11ed-b51e-072b2ebe66d1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d01d68a0-9877-11ed-b51e-072b2ebe66d1"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("d0462556-9877-11ed-a96d-534363ee9536"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d0462556-9877-11ed-a96d-534363ee9536"),
+					},
 				},
 			},
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("49a3529c-8786-11ec-928e-bb8e9b925697"),
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("49a3529c-8786-11ec-928e-bb8e9b925697"),
+				},
 			},
 
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("49a3529c-8786-11ec-928e-bb8e9b925697"),
+			expectRes: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("49a3529c-8786-11ec-928e-bb8e9b925697"),
+				},
 			},
 		},
 	}
@@ -298,6 +327,7 @@ func Test_startLive(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
 
 			if tt.direction == transcribe.DirectionBoth {
@@ -307,7 +337,7 @@ func Test_startLive(t *testing.T) {
 				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseStreamings[0], nil)
 			}
 
-			res, err := h.startLive(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
+			res, err := h.startLive(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

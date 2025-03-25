@@ -42,7 +42,9 @@ func Test_HealthCheck(t *testing.T) {
 			retryCount: 2,
 
 			responseTranscribe: &transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("d9560fc8-fcfd-4e86-a336-aa9e2110bf51"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d9560fc8-fcfd-4e86-a336-aa9e2110bf51"),
+				},
 				ReferenceType: transcribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("3f7775c7-af75-4fa7-85f2-3e6e9d27663f"),
 				Status:        transcribe.StatusProgressing,
@@ -66,7 +68,9 @@ func Test_HealthCheck(t *testing.T) {
 			retryCount: 2,
 
 			responseTranscribe: &transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("1e04c9d8-2cc6-4b17-a0a4-0dbd0355ff2e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1e04c9d8-2cc6-4b17-a0a4-0dbd0355ff2e"),
+				},
 				ReferenceType: transcribe.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("fe812e35-b30e-4b38-9705-4cc22cbe3678"),
 				Status:        transcribe.StatusProgressing,
@@ -88,7 +92,9 @@ func Test_HealthCheck(t *testing.T) {
 			retryCount: 0,
 
 			responseTranscribe: &transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("99b7a33f-a411-4d86-a613-f317036ef5aa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("99b7a33f-a411-4d86-a613-f317036ef5aa"),
+				},
 				ReferenceType: transcribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("6f459316-678f-4c22-aa16-5f91cd8c4a2d"),
 				TMDelete:      dbhandler.DefaultTimeStamp,
@@ -110,7 +116,9 @@ func Test_HealthCheck(t *testing.T) {
 			retryCount: 0,
 
 			responseTranscribe: &transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("113e33b2-4ad5-4b35-aefd-e9674c9109bc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("113e33b2-4ad5-4b35-aefd-e9674c9109bc"),
+				},
 				ReferenceType: transcribe.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("cdc3edd9-ee22-43ec-a598-4f27c896a4ca"),
 				TMDelete:      dbhandler.DefaultTimeStamp,
