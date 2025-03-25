@@ -718,7 +718,15 @@ type ServiceHandler interface {
 	// transcribe handlers
 	TranscribeGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 	TranscribeGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error)
-	TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType string, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error)
+	TranscribeStart(
+		ctx context.Context,
+		a *amagent.Agent,
+		referenceType string,
+		referenceID uuid.UUID,
+		language string,
+		direction tmtranscribe.Direction,
+		onEndFlowID uuid.UUID,
+	) (*tmtranscribe.WebhookMessage, error)
 	TranscribeStop(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 	TranscribeDelete(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 

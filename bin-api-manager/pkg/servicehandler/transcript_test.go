@@ -49,15 +49,21 @@ func Test_TranscriptGets(t *testing.T) {
 			transcribeID: uuid.FromStringOrNil("9eafc870-8284-11ed-92de-d74d9e2342cb"),
 
 			responseTranscribe: &tmtranscribe.Transcribe{
-				ID:         uuid.FromStringOrNil("9eafc870-8284-11ed-92de-d74d9e2342cb"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9eafc870-8284-11ed-92de-d74d9e2342cb"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			responseTranscripts: []tmtranscript.Transcript{
 				{
-					ID: uuid.FromStringOrNil("9ede9632-8284-11ed-bf13-43420adb75f6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("9ede9632-8284-11ed-bf13-43420adb75f6"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("9f06037a-8284-11ed-8b1a-1f5800b90993"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("9f06037a-8284-11ed-8b1a-1f5800b90993"),
+					},
 				},
 			},
 
