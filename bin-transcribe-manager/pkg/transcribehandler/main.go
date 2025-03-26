@@ -83,9 +83,9 @@ const (
 )
 
 const (
-	variableTranscribeID        = "voipbin.transcribe.transcribe.id"
-	variableTranscribeLanguage  = "voipbin.transcribe.transcribe.language"
-	variableTranscribeDirection = "voipbin.transcribe.transcribe.direction"
+	variableTranscribeID        = "voipbin.transcribe.id"
+	variableTranscribeLanguage  = "voipbin.transcribe.language"
+	variableTranscribeDirection = "voipbin.transcribe.direction"
 )
 
 func init() {
