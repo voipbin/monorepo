@@ -67,12 +67,12 @@ type AIcallHandler interface {
 }
 
 const (
-	variableAIcallID      = "voipbin.ai.aicall_id"
-	variableAIID          = "voipbin.ai.ai_id"
-	variableAIEngineModel = "voipbin.ai.ai_engine_model"
-	variableConfbridgeID  = "voipbin.ai.confbridge_id"
-	variableGender        = "voipbin.ai.gender"
-	variableLanguage      = "voipbin.ai.language"
+	variableAIcallID      = "voipbin.aicall.id"
+	variableAIID          = "voipbin.aicall.ai_id"
+	variableAIEngineModel = "voipbin.aicall.ai_engine_model"
+	variableConfbridgeID  = "voipbin.aicall.confbridge_id"
+	variableGender        = "voipbin.aicall.gender"
+	variableLanguage      = "voipbin.aicall.language"
 )
 
 // aicallHandler define
