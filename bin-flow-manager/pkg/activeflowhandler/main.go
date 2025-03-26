@@ -42,11 +42,11 @@ type activeflowHandler struct {
 
 // list of variables
 const (
-	variableActiveflowID                    = "voipbin.flow.activeflow.id"
-	variableActiveflowReferenceType         = "voipbin.flow.activeflow.reference_type"
-	variableActiveflowReferenceID           = "voipbin.flow.activeflow.reference_id"
-	variableActiveflowReferenceActiveflowID = "voipbin.flow.activeflow.reference_activeflow_id"
-	variableActiveflowFlowID                = "voipbin.flow.activeflow.flow_id"
+	variableActiveflowID                    = "voipbin.activeflow.id"
+	variableActiveflowReferenceType         = "voipbin.activeflow.reference_type"
+	variableActiveflowReferenceID           = "voipbin.activeflow.reference_id"
+	variableActiveflowReferenceActiveflowID = "voipbin.activeflow.reference_activeflow_id"
+	variableActiveflowFlowID                = "voipbin.activeflow.flow_id"
 )
 
 // ActiveflowHandler defines
