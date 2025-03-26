@@ -154,23 +154,23 @@ const (
 
 // list of variables
 const (
-	variableCallID = "voipbin.call.call.id"
+	variableCallID = "voipbin.call.id"
 
-	variableCallSourceName       = "voipbin.call.call.source.name"
-	variableCallSourceDetail     = "voipbin.call.call.source.detail"
-	variableCallSourceTarget     = "voipbin.call.call.source.target"
-	variableCallSourceTargetName = "voipbin.call.call.source.target_name"
-	variableCallSourceType       = "voipbin.call.call.source.type"
+	variableCallSourceName       = "voipbin.call.source.name"
+	variableCallSourceDetail     = "voipbin.call.source.detail"
+	variableCallSourceTarget     = "voipbin.call.source.target"
+	variableCallSourceTargetName = "voipbin.call.source.target_name"
+	variableCallSourceType       = "voipbin.call.source.type"
 
-	variableCallDestinationName       = "voipbin.call.call.destination.name"
-	variableCallDestinationDetail     = "voipbin.call.call.destination.detail"
-	variableCallDestinationTarget     = "voipbin.call.call.destination.target"
-	variableCallDestinationTargetName = "voipbin.call.call.destination.target_name"
-	variableCallDestinationType       = "voipbin.call.call.destination.type"
+	variableCallDestinationName       = "voipbin.call.destination.name"
+	variableCallDestinationDetail     = "voipbin.call.destination.detail"
+	variableCallDestinationTarget     = "voipbin.call.destination.target"
+	variableCallDestinationTargetName = "voipbin.call.destination.target_name"
+	variableCallDestinationType       = "voipbin.call.destination.type"
 
-	variableCallDirection    = "voipbin.call.call.direction"
-	variableCallMasterCallID = "voipbin.call.call.master_call_id"
-	variableCallDigits       = "voipbin.call.call.digits" // digit
+	variableCallDirection    = "voipbin.call.direction"
+	variableCallMasterCallID = "voipbin.call.master_call_id"
+	variableCallDigits       = "voipbin.call.digits" // digit
 )
 
 var (
