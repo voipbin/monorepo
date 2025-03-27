@@ -15,7 +15,7 @@ type Transcript struct {
 	Direction Direction `json:"direction"` // direction. in/out
 	Message   string    `json:"message"`   // message
 
-	TMTranscript string `json:"tm_transcript"` // timestamp transcripted. 0000-00-00 00:00:00.00000 points begining of the transcribe craete time.
+	TMTranscript string `json:"tm_transcript"` // timestamp transcripted. 0001-01-01 00:00:00.00000 points begining of the transcribe craete time.
 
 	TMCreate string `json:"tm_create"` // timestamp create
 	TMDelete string `json:"tm_delete"` // timestamp delete

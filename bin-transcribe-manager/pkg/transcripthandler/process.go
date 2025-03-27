@@ -93,5 +93,5 @@ func convertTime(duration time.Duration) string {
 	seconds := int(duration.Seconds()) % 60
 	microseconds := duration.Microseconds() % 1000000
 
-	return fmt.Sprintf("0000-00-00 %02d:%02d:%02d.%05d", hours, minutes, seconds, microseconds)
+	return fmt.Sprintf("0001-01-01 %02d:%02d:%02d.%05d", hours, minutes, seconds, microseconds)
 }
