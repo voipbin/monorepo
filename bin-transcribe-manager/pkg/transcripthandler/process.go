@@ -2,6 +2,8 @@ package transcripthandler
 
 import (
 	"context"
+	"strings"
+	"time"
 
 	speechpb "cloud.google.com/go/speech/apiv1/speechpb"
 	"github.com/sirupsen/logrus"
@@ -25,6 +27,7 @@ func (h *transcriptHandler) processFromBucket(ctx context.Context, mediaLink str
 			LanguageCode:               language,
 			EnableWordTimeOffsets:      true,
 			EnableAutomaticPunctuation: true,
+			// Model:                      "phone_call", // note: we can't use this model because it's not support for some languages(ex: ko-KR)
 		},
 		Audio: &speechpb.RecognitionAudio{
 			AudioSource: &speechpb.RecognitionAudio_Uri{
@@ -63,6 +66,56 @@ func (h *transcriptHandler) processFromBucket(ctx context.Context, mediaLink str
 		Direction:    transcript.DirectionBoth,
 		Message:      message,
 		TMTranscript: ts,
+	}
+
+	var sentences []struct {
+		Transcript string
+		StartTime  time.Duration
+		EndTime    time.Duration
+	}
+
+	var currentSentence string
+	var sentenceStart time.Duration
+	var sentenceEnd time.Duration
+
+	for _, result := range resp.Results {
+		for _, alt := range result.Alternatives {
+			for _, word := range alt.Words {
+				if currentSentence == "" {
+					sentenceStart = word.StartTime.AsDuration()
+				}
+
+				currentSentence += word.Word + " "
+				sentenceEnd = word.EndTime.AsDuration()
+
+				// 문장 종료 기호 판단
+				if strings.HasSuffix(word.Word, ".") ||
+					strings.HasSuffix(word.Word, "?") ||
+					strings.HasSuffix(word.Word, "!") {
+					sentences = append(sentences, struct {
+						Transcript string
+						StartTime  time.Duration
+						EndTime    time.Duration
+					}{
+						Transcript: strings.TrimSpace(currentSentence),
+						StartTime:  sentenceStart,
+						EndTime:    sentenceEnd,
+					})
+
+					// 초기화
+					currentSentence = ""
+				}
+			}
+		}
+	}
+
+	// 결과 출력
+	for _, sentence := range sentences {
+		log.Infof("Sentence: \"%s\" [Start: %v, End: %v]",
+			sentence.Transcript,
+			sentence.StartTime,
+			sentence.EndTime,
+		)
 	}
 
 	return res, nil
