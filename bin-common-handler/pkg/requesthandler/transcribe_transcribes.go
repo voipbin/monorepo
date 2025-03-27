@@ -78,6 +78,7 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 	referenceID uuid.UUID,
 	language string,
 	direction tmtranscribe.Direction,
+	timeout int,
 ) (*tmtranscribe.Transcribe, error) {
 	uri := "/v1/transcribes"
 
@@ -96,7 +97,7 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes", 30000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

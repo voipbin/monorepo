@@ -204,6 +204,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 		referenceID   uuid.UUID
 		language      string
 		direction     tmtranscribe.Direction
+		timeout       int
 
 		response *sock.Response
 
@@ -221,6 +222,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("2ae8944c-8227-11ed-acb4-c3e23ea3a2a4"),
 			language:      "en-US",
 			direction:     tmtranscribe.DirectionBoth,
+			timeout:       30000,
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -256,7 +258,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
-			res, err := h.TranscribeV1TranscribeStart(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
+			res, err := h.TranscribeV1TranscribeStart(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

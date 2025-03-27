@@ -131,6 +131,7 @@ func (h *serviceHandler) TranscribeStart(
 		tmpReferenceID,
 		language,
 		direction,
+		60000,
 	)
 	if err != nil {
 		log.Errorf("Could not start the transcribe. err: %v", err)

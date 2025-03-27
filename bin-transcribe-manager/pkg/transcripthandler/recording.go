@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
-	"sync"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -38,6 +37,7 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not transcribe the recording. recording_id: %s", recordingID)
 	}
+	log.Debugf("Transcripted the recording. recording_id: %s, len: %d", recordingID, len(tmpTranscripts))
 
 	// sort by tm_transcript
 	sortTranscriptsByTMTranscript(tmpTranscripts)
@@ -57,50 +57,24 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	return res, nil
 }
 
-func (h *transcriptHandler) recordingGetTranscripts(ctx context.Context, files []smfile.File, language string, recordingID string) ([]*transcript.Transcript, error) {
+func (h *transcriptHandler) recordingGetTranscripts(ctx context.Context, files []smfile.File, language string, transcribeID string) ([]*transcript.Transcript, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "recordingTranscribe",
-		"recording_id": recordingID,
+		"func":          "recordingTranscribe",
+		"transcribe_id": transcribeID,
 	})
 
-	var wg sync.WaitGroup
-	chTranscripts := make(chan []*transcript.Transcript, len(files))
-	chErr := make(chan error, len(files))
+	var res []*transcript.Transcript
 	for _, file := range files {
-		wg.Add(1)
-
-		go func(file smfile.File) {
-			defer wg.Done() // Decrement the counter once the goroutine completes
-
-			direction := parseDirection(file.Filename)
-			bucketPath := fmt.Sprintf("gs://%s/%s", file.BucketName, file.Filepath)
-			tmps, err := h.processFromRecording(ctx, bucketPath, language, direction)
-			if err != nil {
-				log.Errorf("Error transcribing recording. recording_id: %s, error: %v", recordingID, err)
-				chErr <- errors.Wrapf(err, "could not transcribe the recording. recording_id: %s", recordingID)
-				return
-			}
-
-			log.Debugf("Transcripted the recording. transcribe_id: %s, len: %d", recordingID, len(tmps))
-			chTranscripts <- tmps
-		}(file)
-	}
-	wg.Wait()
-	close(chTranscripts)
-	close(chErr)
-
-	select {
-	case err := <-chErr:
-		return nil, err
-	default:
-		// No errors, proceed to collect the results
-	}
-
-	res := []*transcript.Transcript{}
-	for transcripts := range chTranscripts {
-		if transcripts != nil {
-			res = append(res, transcripts...)
+		direction := parseDirection(file.Filename)
+		bucketPath := fmt.Sprintf("gs://%s/%s", file.BucketName, file.Filepath)
+		tmps, err := h.processFromRecording(ctx, bucketPath, language, direction)
+		if err != nil {
+			log.Errorf("Error transcribing recording. transcribe_id: %s, error: %v", transcribeID, err)
+			return nil, errors.Wrapf(err, "could not transcribe the recording. transcribe_id: %s", transcribeID)
 		}
+
+		log.Debugf("Transcripted the recording. transcribe_id: %s, len: %d", transcribeID, len(tmps))
+		res = append(res, tmps...)
 	}
 
 	return res, nil
