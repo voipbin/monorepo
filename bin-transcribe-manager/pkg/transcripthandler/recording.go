@@ -64,12 +64,8 @@ func (h *transcriptHandler) recordingGetTranscripts(ctx context.Context, files [
 	})
 
 	var wg sync.WaitGroup
-	tmpTranscripts := []*transcript.Transcript{}
 	chTranscripts := make(chan []*transcript.Transcript, len(files))
 	chErr := make(chan error, len(files))
-	defer close(chTranscripts)
-	defer close(chErr)
-
 	for _, file := range files {
 		wg.Add(1)
 
@@ -90,19 +86,24 @@ func (h *transcriptHandler) recordingGetTranscripts(ctx context.Context, files [
 		}(file)
 	}
 	wg.Wait()
+	close(chTranscripts)
+	close(chErr)
 
-	if len(chErr) > 0 {
-		return nil, <-chErr
+	select {
+	case err := <-chErr:
+		return nil, err
+	default:
+		// No errors, proceed to collect the results
 	}
 
-	// Collect results from the channel
+	res := []*transcript.Transcript{}
 	for transcripts := range chTranscripts {
 		if transcripts != nil {
-			tmpTranscripts = append(tmpTranscripts, transcripts...)
+			res = append(res, transcripts...)
 		}
 	}
 
-	return tmpTranscripts, nil
+	return res, nil
 }
 
 func parseDirection(filename string) transcript.Direction {
