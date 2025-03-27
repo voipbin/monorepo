@@ -22,7 +22,17 @@ func (h *aicallHandler) ProcessStart(ctx context.Context, ac *aicall.AIcall) (*a
 	referenceType := tmtranscribe.ReferenceTypeCall
 
 	// create transcribe
-	tr, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, ac.CustomerID, ac.ActiveflowID, uuid.Nil, referenceType, ac.ReferenceID, ac.Language, tmtranscribe.DirectionIn)
+	tr, err := h.reqHandler.TranscribeV1TranscribeStart(
+		ctx,
+		ac.CustomerID,
+		ac.ActiveflowID,
+		uuid.Nil,
+		referenceType,
+		ac.ReferenceID,
+		ac.Language,
+		tmtranscribe.DirectionIn,
+		30000,
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not start the transcribe")
 	}

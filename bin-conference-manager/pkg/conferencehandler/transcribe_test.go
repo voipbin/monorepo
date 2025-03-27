@@ -77,6 +77,7 @@ func Test_TranscribeStart(t *testing.T) {
 				tt.responseConference.ConfbridgeID,
 				tt.lang,
 				tmtranscribe.DirectionIn,
+				30000,
 			).Return(tt.responseTranscribe, nil)
 			mockDB.EXPECT().ConferenceSetTranscribeID(ctx, tt.responseConference.ID, tt.responseTranscribe.ID).Return(nil)
 			mockDB.EXPECT().ConferenceAddTranscribeIDs(ctx, tt.id, tt.responseTranscribe.ID).Return(nil)
