@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"sync"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	smfile "monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
@@ -32,23 +34,15 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	}
 	log.WithField("files", files).Debugf("Got the files. recording_id: %s", recordingID)
 
-	tmpTranscripts := []*transcript.Transcript{}
-	for _, file := range files {
-
-		direction := parseDirection(file.Filename)
-
-		bucketPath := fmt.Sprintf("gs://%s/%s", file.BucketName, file.Filepath)
-		tmps, err := h.processFromRecording(ctx, bucketPath, language, direction)
-		if err != nil {
-			return nil, errors.Wrapf(err, "could not transcribe the recording. recording_id: %s", recordingID)
-		}
-		log.Debugf("Transcripted the recording. transcribe_id: %s, len: %d", transcribeID, len(tmps))
-		tmpTranscripts = append(tmpTranscripts, tmps...)
+	tmpTranscripts, err := h.recordingGetTranscripts(ctx, files, language, recordingID.String())
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not transcribe the recording. recording_id: %s", recordingID)
 	}
 
 	// sort by tm_transcript
-	res := []*transcript.Transcript{}
 	sortTranscriptsByTMTranscript(tmpTranscripts)
+
+	res := []*transcript.Transcript{}
 	for _, tmp := range tmpTranscripts {
 		t, err := h.Create(ctx, customerID, transcribeID, tmp.Direction, tmp.Message, tmp.TMTranscript)
 		if err != nil {
@@ -61,6 +55,54 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	}
 
 	return res, nil
+}
+
+func (h *transcriptHandler) recordingGetTranscripts(ctx context.Context, files []smfile.File, language string, recordingID string) ([]*transcript.Transcript, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "recordingTranscribe",
+		"recording_id": recordingID,
+	})
+
+	var wg sync.WaitGroup
+	tmpTranscripts := []*transcript.Transcript{}
+	chTranscripts := make(chan []*transcript.Transcript, len(files))
+	chErr := make(chan error, len(files))
+	defer close(chTranscripts)
+	defer close(chErr)
+
+	for _, file := range files {
+		wg.Add(1)
+
+		go func(file smfile.File) {
+			defer wg.Done() // Decrement the counter once the goroutine completes
+
+			direction := parseDirection(file.Filename)
+			bucketPath := fmt.Sprintf("gs://%s/%s", file.BucketName, file.Filepath)
+			tmps, err := h.processFromRecording(ctx, bucketPath, language, direction)
+			if err != nil {
+				log.Errorf("Error transcribing recording. recording_id: %s, error: %v", recordingID, err)
+				chErr <- errors.Wrapf(err, "could not transcribe the recording. recording_id: %s", recordingID)
+				return
+			}
+
+			log.Debugf("Transcripted the recording. transcribe_id: %s, len: %d", recordingID, len(tmps))
+			chTranscripts <- tmps
+		}(file)
+	}
+	wg.Wait()
+
+	if len(chErr) > 0 {
+		return nil, <-chErr
+	}
+
+	// Collect results from the channel
+	for transcripts := range chTranscripts {
+		if transcripts != nil {
+			tmpTranscripts = append(tmpTranscripts, transcripts...)
+		}
+	}
+
+	return tmpTranscripts, nil
 }
 
 func parseDirection(filename string) transcript.Direction {
