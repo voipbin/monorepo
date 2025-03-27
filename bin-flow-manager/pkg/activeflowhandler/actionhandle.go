@@ -622,7 +622,17 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 
 	// transcribe the recordings
 	for _, recordingID := range c.RecordingIDs {
-		tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, af.ID, opt.OnEndFlowID, tmtranscribe.ReferenceTypeRecording, recordingID, opt.Language, tmtranscribe.DirectionBoth)
+		tmp, err := h.reqHandler.TranscribeV1TranscribeStart(
+			ctx,
+			af.CustomerID,
+			af.ID,
+			opt.OnEndFlowID,
+			tmtranscribe.ReferenceTypeRecording,
+			recordingID,
+			opt.Language,
+			tmtranscribe.DirectionBoth,
+			30000,
+		)
 		if err != nil {
 			return errors.Wrapf(err, "could not handle the call recording to text correctly. err: %v", err)
 		}
@@ -653,7 +663,17 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 	}
 
 	// transcribe start
-	trans, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, af.ID, opt.OnEndFlowID, tmtranscribe.ReferenceTypeCall, af.ReferenceID, opt.Language, tmtranscribe.DirectionBoth)
+	trans, err := h.reqHandler.TranscribeV1TranscribeStart(
+		ctx,
+		af.CustomerID,
+		af.ID,
+		opt.OnEndFlowID,
+		tmtranscribe.ReferenceTypeCall,
+		af.ReferenceID,
+		opt.Language,
+		tmtranscribe.DirectionBoth,
+		30000,
+	)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err

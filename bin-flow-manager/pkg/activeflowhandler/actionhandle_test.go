@@ -2771,6 +2771,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 					recordingID,
 					tt.expectedLanguage,
 					tmtranscribe.DirectionBoth,
+					30000,
 				).Return(&tmtranscribe.Transcribe{}, nil)
 			}
 
@@ -2856,6 +2857,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 				tt.expectedReferenceID,
 				tt.expectedLanguage,
 				tmtranscribe.DirectionBoth,
+				30000,
 			).Return(tt.response, nil)
 			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

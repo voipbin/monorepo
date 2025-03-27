@@ -115,7 +115,7 @@ func Test_startRecording(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
 
-			mockTranscript.EXPECT().Recording(ctx, tt.customerID, tt.responseTranscribe.ID, tt.recordingID, tt.language).Return(&transcript.Transcript{}, nil)
+			mockTranscript.EXPECT().Recording(ctx, tt.customerID, tt.responseTranscribe.ID, tt.recordingID, tt.language).Return([]*transcript.Transcript{}, nil)
 
 			// update status
 			mockDB.EXPECT().TranscribeSetStatus(ctx, tt.responseTranscribe.ID, transcribe.StatusDone).Return(nil)

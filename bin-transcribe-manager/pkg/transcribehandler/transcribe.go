@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -13,15 +14,9 @@ import (
 
 // Get returns transcribe
 func (h *transcribeHandler) Get(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "Get",
-		"transcribe_id": id,
-	})
-
 	res, err := h.db.TranscribeGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get transcribe info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get transcribe info. transcribe_id: %s", id)
 	}
 
 	return res, nil
@@ -29,16 +24,9 @@ func (h *transcribeHandler) Get(ctx context.Context, id uuid.UUID) (*transcribe.
 
 // GetByReferenceIDAndLanguage returns transcribe of the given referenceID and language
 func (h *transcribeHandler) GetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "GetByReferenceIDAndLanguage",
-		"reference_id": referenceID,
-		"language":     language,
-	})
-
 	res, err := h.db.TranscribeGetByReferenceIDAndLanguage(ctx, referenceID, language)
 	if err != nil {
-		log.Errorf("Could not get transcribe info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get transcribe info. reference_id: %s, language: %s", referenceID, language)
 	}
 
 	return res, nil
@@ -46,15 +34,9 @@ func (h *transcribeHandler) GetByReferenceIDAndLanguage(ctx context.Context, ref
 
 // Gets returns list of transcribes.
 func (h *transcribeHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcribe.Transcribe, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
-		"filters": filters,
-	})
-
 	res, err := h.db.TranscribeGets(ctx, size, token, filters)
 	if err != nil {
-		log.Errorf("Could not get transcribes. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get transcribes. filters: %v", filters)
 	}
 
 	return res, nil
@@ -106,15 +88,13 @@ func (h *transcribeHandler) Create(
 	}
 
 	if err := h.db.TranscribeCreate(ctx, tmp); err != nil {
-		log.Errorf("Could not create transcribe. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create transcribe. transcribe_id: %s, reference_id: %s", tmp.ID, tmp.ReferenceID)
 	}
 	log.WithField("transcribe", tmp).Debugf("Created a new transcribe. transcribe_id: %s, reference_id: %s", tmp.ID, tmp.ReferenceID)
 
 	res, err := h.db.TranscribeGet(ctx, tmp.ID)
 	if err != nil {
-		log.Errorf("Could not get created transcribe. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get created transcribe. transcribe_id: %s", tmp.ID)
 	}
 
 	if errSet := h.variableSet(ctx, activeflowID, res); errSet != nil {
@@ -136,8 +116,7 @@ func (h *transcribeHandler) Delete(ctx context.Context, id uuid.UUID) (*transcri
 	// get transcribe
 	tr, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get transcribe info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get transcribe info. transcribe_id: %s", id)
 	}
 
 	if tr.TMDelete != dbhandler.DefaultTimeStamp {
@@ -149,23 +128,20 @@ func (h *transcribeHandler) Delete(ctx context.Context, id uuid.UUID) (*transcri
 		// transcribe is ongoing. need to stop the first.
 		tmp, err := h.Stop(ctx, tr.ID)
 		if err != nil {
-			log.Errorf("Could not stop the transcribing. err: %v", err)
-			return nil, err
+			return nil, errors.Wrapf(err, "could not stop the transcribing. transcribe_id: %s", tr.ID)
 		}
 		log.WithField("transcribe", tmp).Debugf("Stopped transcribe. transcribe_id: %s", tr.ID)
 	}
 
 	// delete transcripts
 	if errDelete := h.deleteTranscripts(ctx, tr.ID); errDelete != nil {
-		log.Errorf("Could not delete transcripts. err: %v", errDelete)
-		return nil, errDelete
+		return nil, errors.Wrapf(errDelete, "could not delete transcripts. transcribe_id: %s", tr.ID)
 	}
 
 	// delete
 	res, err := h.dbDelete(ctx, id)
 	if err != nil {
-		log.Errorf("Could not delete the transcribe. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not delete transcribe. transcribe_id: %s", id)
 	}
 
 	return res, nil
@@ -186,8 +162,7 @@ func (h *transcribeHandler) deleteTranscripts(ctx context.Context, transcribeID 
 
 	ts, err := h.transcriptHandler.Gets(ctx, 1000, "", filters)
 	if err != nil {
-		log.Errorf("Could not get transcripts. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not get transcripts. transcribe_id: %s", transcribeID)
 	}
 
 	for _, t := range ts {
@@ -205,34 +180,14 @@ func (h *transcribeHandler) deleteTranscripts(ctx context.Context, transcribeID 
 
 // UpdateStatus updates the transcribe's status
 func (h *transcribeHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status transcribe.Status) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "UpdateStatus",
-		"transcribe_id": id,
-		"status":        status,
-	})
-
-	// // get transcribe and evaluate
-	// tmp, err := h.Get(ctx, id)
-	// if err != nil {
-	// 	log.Errorf("Could not get transcribe. err: %v", err)
-	// 	return nil, errors.Wrap(err, "could not get transcribe info")
-	// }
-
-	// if !transcribe.IsUpdatableStatus(tmp.Status, status) {
-	// 	log.Errorf("Invalid status. old_status: %s, new_status: %s", tmp.Status, status)
-	// 	return nil, fmt.Errorf("invalid status")
-	// }
-
 	if errSet := h.db.TranscribeSetStatus(ctx, id, status); errSet != nil {
-		log.Errorf("Could not delete the transcribe info. err: %v", errSet)
-		return nil, errSet
+		return nil, errors.Wrapf(errSet, "could not update the transcribe status. transcribe_id: %s, status: %s", id, status)
 	}
 
 	// get updated item
 	res, err := h.db.TranscribeGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get deleted transcribe. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get updated transcribe. transcribe_id: %s", id)
 	}
 
 	switch status {
