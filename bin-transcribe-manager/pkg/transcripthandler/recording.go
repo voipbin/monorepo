@@ -38,7 +38,7 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 		log.WithField("transcript", tmp).Debugf("Transcripted the recording. transcribe_id: %s, transcript_id: %s", transcribeID, tmp.ID)
 	}
 
-	return nil, fmt.Errorf("Test Error")
+	return nil, fmt.Errorf("test Error")
 
 	// // send a request to storage-manager to get a media link
 	// recording, err := h.reqHandler.StorageV1RecordingGet(ctx, recordingID, defaultBucketTimeout)
