@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -85,16 +84,7 @@ func parseDirection(filename string) transcript.Direction {
 
 func sortTranscriptsByTMTranscript(transcripts []*transcript.Transcript) {
 	sort.SliceStable(transcripts, func(i, j int) bool {
-		// Parse TMTranscript to time.Time
-		t1, err1 := time.Parse("2006-01-02 15:04:05.000000", transcripts[i].TMTranscript)
-		t2, err2 := time.Parse("2006-01-02 15:04:05.000000", transcripts[j].TMTranscript)
-
-		// Handle invalid date parsing (if needed, can return false or use a fallback)
-		if err1 != nil || err2 != nil {
-			return false
-		}
-
-		// Compare the times
-		return t1.Before(t2)
+		// Directly compare TMTranscript strings
+		return transcripts[i].TMTranscript < transcripts[j].TMTranscript
 	})
 }
