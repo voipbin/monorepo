@@ -11,12 +11,10 @@ import (
 
 // processFromBucket transcribes from the bucket file
 func (h *transcriptHandler) processFromBucket(ctx context.Context, mediaLink string, language string) (*transcript.Transcript, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "processFromBucket",
-			"media_link": mediaLink,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "processFromBucket",
+		"media_link": mediaLink,
+	})
 
 	// Send the contents of the audio file with the encoding and
 	// and sample rate information to be transcripted.
