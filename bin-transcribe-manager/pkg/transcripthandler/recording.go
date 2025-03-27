@@ -28,6 +28,7 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the files. recording_id: %s", recordingID)
 	}
+	log.WithField("files", files).Debugf("Got the files. recording_id: %s", recordingID)
 
 	for _, file := range files {
 		tmp, err := h.processFromBucket(ctx, file.URIBucket, language)
