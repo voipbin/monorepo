@@ -3,6 +3,7 @@ package transcripthandler
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -12,7 +13,7 @@ import (
 )
 
 // Recording transcribe the recoring
-func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, recordingID uuid.UUID, language string) (*transcript.Transcript, error) {
+func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, recordingID uuid.UUID, language string) ([]*transcript.Transcript, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "Recording",
 		"transcribe_id": transcribeID,
@@ -31,35 +32,44 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	log.WithField("files", files).Debugf("Got the files. recording_id: %s", recordingID)
 
 	for _, file := range files {
+
+		direction := parseDirection(file.Filename)
+
 		bucketPath := fmt.Sprintf("gs://%s/%s", file.BucketName, file.Filepath)
-		tmp, err := h.processFromBucket(ctx, bucketPath, language)
+		tmps, err := h.processFromRecording(ctx, bucketPath, language, direction)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not transcribe the recording. recording_id: %s", recordingID)
 		}
+		log.Debugf("Transcripted the recording. transcribe_id: %s, len: %d", transcribeID, len(tmps))
 
-		log.WithField("transcript", tmp).Debugf("Transcripted the recording. transcribe_id: %s, transcript_id: %s", transcribeID, tmp.ID)
+		for _, tmp := range tmps {
+			t, err := h.Create(ctx, customerID, transcribeID, direction, tmp.Message, tmp.TMTranscript)
+			if err != nil {
+				// we could not create transcript here, but we should not return an error
+				log.Errorf("Could not create a tracript. message: %s, err: %v", tmp.Message, err)
+			}
+			log.WithField("transcript", t).Debugf("Created a new transcript. transcript_id: %s, transcribe_id: %s", t.ID, t.TranscribeID)
+		}
 	}
 
 	return nil, fmt.Errorf("test Error")
+}
 
-	// // send a request to storage-manager to get a media link
-	// recording, err := h.reqHandler.StorageV1RecordingGet(ctx, recordingID, defaultBucketTimeout)
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "could not get recording info. recording_id: %s", recordingID)
-	// }
+func parseDirection(filename string) transcript.Direction {
+	// Adjust regex to handle any file extension (e.g., .mp3, .ogg, .wav)
+	re := regexp.MustCompile(`_(in|out)\.[a-zA-Z0-9]+$`)
+	match := re.FindStringSubmatch(filename)
 
-	// // transcribe
-	// tmp, err := h.processFromBucket(ctx, recording.BucketURI, language)
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "could not transcribe the recording. recording_id: %s", recordingID)
-	// }
+	if len(match) < 2 {
+		return transcript.DirectionBoth
+	}
 
-	// // create
-	// ts := "0000-00-00 00:00:00.00000"
-	// res, err := h.Create(ctx, customerID, transcribeID, transcript.DirectionBoth, tmp.Message, ts)
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "could not create the transcript.")
-	// }
-
-	// return res, nil
+	switch match[1] {
+	case "in":
+		return transcript.DirectionIn
+	case "out":
+		return transcript.DirectionOut
+	default:
+		return transcript.DirectionBoth
+	}
 }

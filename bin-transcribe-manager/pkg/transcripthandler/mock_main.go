@@ -88,10 +88,10 @@ func (mr *MockTranscriptHandlerMockRecorder) Gets(ctx, size, token, filters any)
 }
 
 // Recording mocks base method.
-func (m *MockTranscriptHandler) Recording(ctx context.Context, customerID, transcribeID, recordingID uuid.UUID, language string) (*transcript.Transcript, error) {
+func (m *MockTranscriptHandler) Recording(ctx context.Context, customerID, transcribeID, recordingID uuid.UUID, language string) ([]*transcript.Transcript, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Recording", ctx, customerID, transcribeID, recordingID, language)
-	ret0, _ := ret[0].(*transcript.Transcript)
+	ret0, _ := ret[0].([]*transcript.Transcript)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

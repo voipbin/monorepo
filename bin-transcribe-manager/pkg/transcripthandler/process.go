@@ -2,6 +2,7 @@ package transcripthandler
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -11,8 +12,8 @@ import (
 	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
-// processFromBucket transcribes from the bucket file
-func (h *transcriptHandler) processFromBucket(ctx context.Context, mediaLink string, language string) (*transcript.Transcript, error) {
+// processFromRecording transcribes from the bucket file
+func (h *transcriptHandler) processFromRecording(ctx context.Context, mediaLink string, language string, direction transcript.Direction) ([]*transcript.Transcript, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "processFromBucket",
 		"media_link": mediaLink,
@@ -49,74 +50,48 @@ func (h *transcriptHandler) processFromBucket(ctx context.Context, mediaLink str
 		return nil, err
 	}
 
-	// Print the results.
-	for _, result := range resp.Results {
-		for _, alt := range result.Alternatives {
-			log.Debugf("\"%v\" (confidence=%3f)\n", alt.Transcript, alt.Confidence)
-		}
-	}
-
-	// create transcript
-	message := ""
-	if len(resp.Results) > 0 {
-		message = resp.Results[0].Alternatives[0].Transcript
-	}
-	ts := "0000-00-00 00:00:00.00000"
-	res := &transcript.Transcript{
-		Direction:    transcript.DirectionBoth,
-		Message:      message,
-		TMTranscript: ts,
-	}
-
-	var sentences []struct {
-		Transcript string
-		StartTime  time.Duration
-		EndTime    time.Duration
-	}
-
+	res := []*transcript.Transcript{}
 	var currentSentence string
 	var sentenceStart time.Duration
-	var sentenceEnd time.Duration
-
 	for _, result := range resp.Results {
-		for _, alt := range result.Alternatives {
-			for _, word := range alt.Words {
-				if currentSentence == "" {
-					sentenceStart = word.StartTime.AsDuration()
-				}
+		alt := result.Alternatives[0]
+		for _, word := range alt.Words {
+			if currentSentence == "" {
+				sentenceStart = word.StartTime.AsDuration()
+			}
 
-				currentSentence += word.Word + " "
-				sentenceEnd = word.EndTime.AsDuration()
+			currentSentence += word.Word + " "
+			if strings.HasSuffix(word.Word, ".") ||
+				strings.HasSuffix(word.Word, "?") ||
+				strings.HasSuffix(word.Word, "!") {
 
-				// 문장 종료 기호 판단
-				if strings.HasSuffix(word.Word, ".") ||
-					strings.HasSuffix(word.Word, "?") ||
-					strings.HasSuffix(word.Word, "!") {
-					sentences = append(sentences, struct {
-						Transcript string
-						StartTime  time.Duration
-						EndTime    time.Duration
-					}{
-						Transcript: strings.TrimSpace(currentSentence),
-						StartTime:  sentenceStart,
-						EndTime:    sentenceEnd,
-					})
+				res = append(res, &transcript.Transcript{
+					Direction:    direction,
+					Message:      strings.TrimSpace(currentSentence),
+					TMTranscript: convertTime(sentenceStart),
+				})
 
-					// 초기화
-					currentSentence = ""
-				}
+				currentSentence = ""
 			}
 		}
 	}
 
-	// 결과 출력
-	for _, sentence := range sentences {
-		log.Infof("Sentence: \"%s\" [Start: %v, End: %v]",
-			sentence.Transcript,
-			sentence.StartTime,
-			sentence.EndTime,
-		)
+	if currentSentence != "" {
+		res = append(res, &transcript.Transcript{
+			Direction:    direction,
+			Message:      strings.TrimSpace(currentSentence),
+			TMTranscript: convertTime(sentenceStart),
+		})
 	}
 
 	return res, nil
+}
+
+func convertTime(duration time.Duration) string {
+	hours := int(duration.Hours())
+	minutes := int(duration.Minutes()) % 60
+	seconds := int(duration.Seconds()) % 60
+	microseconds := duration.Microseconds() % 1000000
+
+	return fmt.Sprintf("0000-00-00 %02d:%02d:%02d.%05d", hours, minutes, seconds, microseconds)
 }

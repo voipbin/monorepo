@@ -46,11 +46,11 @@ func (h *transcribeHandler) startRecording(ctx context.Context, customerID uuid.
 	log.WithField("transcribe", tr).Debugf("Created transcribe. transcribe_id: %s", tr.ID)
 
 	// transcribe the recording
-	trsc, err := h.transcriptHandler.Recording(ctx, customerID, tr.ID, recordingID, language)
+	transcripts, err := h.transcriptHandler.Recording(ctx, customerID, tr.ID, recordingID, language)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not transcribe the recording.")
 	}
-	log.WithField("transcript", trsc).Debugf("Transcripted the recording. transcribe_id: %s, transcript_id: %s", tr.ID, trsc.ID)
+	log.Debugf("Transcripted the recording. transcribe_id: %s, len: %d", tr.ID, len(transcripts))
 
 	// transcribe done
 	res, err := h.UpdateStatus(ctx, tr.ID, transcribe.StatusDone)
