@@ -21,11 +21,6 @@ import (
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
-// default variables
-const (
-	defaultBucketTimeout = 100000 // 100 sec
-)
-
 // transcriptHandler structure for streaming handler
 type transcriptHandler struct {
 	utilHandler   utilhandler.UtilHandler
