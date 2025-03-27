@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 )
 
@@ -40,6 +41,11 @@ type DBHandler interface {
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageGets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error)
 	MessageDelete(ctx context.Context, id uuid.UUID) error
+
+	SummaryCreate(ctx context.Context, c *summary.Summary) error
+	SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
+	SummaryDelete(ctx context.Context, id uuid.UUID) error
+	SummaryGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error)
 }
 
 // handler database handler

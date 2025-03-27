@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/summary"
 )
 
 type handler struct {
@@ -35,6 +36,9 @@ type CacheHandler interface {
 
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageSet(ctx context.Context, data *message.Message) error
+
+	SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
+	SummarySet(ctx context.Context, data *summary.Summary) error
 }
 
 // NewHandler creates DBHandler

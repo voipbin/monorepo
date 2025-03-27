@@ -1,42 +1,37 @@
-package ai
+package summary
 
 import (
 	"encoding/json"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"github.com/gofrs/uuid"
 )
 
 // WebhookMessage defines webhook event
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	Name   string `json:"name,omitempty"`
-	Detail string `json:"detail,omitempty"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
-	EngineType  EngineType     `json:"engine_type,omitempty"`
-	EngineModel EngineModel    `json:"engine_model,omitempty"`
-	EngineData  map[string]any `json:"engine_data,omitempty"`
+	Language string `json:"language,omitempty"`
+	Content  string `json:"content,omitempty"`
 
-	InitPrompt string `json:"init_prompt,omitempty"`
-
-	// timestamp
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
 	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event
-func (h *AI) ConvertWebhookMessage() *WebhookMessage {
+func (h *Summary) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		Identity: h.Identity,
 
-		Name:   h.Name,
-		Detail: h.Detail,
+		ReferenceType: h.ReferenceType,
+		ReferenceID:   h.ReferenceID,
 
-		EngineType:  h.EngineType,
-		EngineModel: h.EngineModel,
-		EngineData:  h.EngineData,
-
-		InitPrompt: h.InitPrompt,
+		Language: h.Language,
+		Content:  h.Content,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
@@ -45,7 +40,7 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 }
 
 // CreateWebhookEvent generate WebhookEvent
-func (h *AI) CreateWebhookEvent() ([]byte, error) {
+func (h *Summary) CreateWebhookEvent() ([]byte, error) {
 	e := h.ConvertWebhookMessage()
 
 	m, err := json.Marshal(e)

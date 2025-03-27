@@ -18,6 +18,8 @@ const (
 // EngineOpenaiHandler define
 type EngineOpenaiHandler interface {
 	MessageSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (*message.Message, error)
+
+	Send(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error)
 }
 
 // engineOpenaiHandler define
