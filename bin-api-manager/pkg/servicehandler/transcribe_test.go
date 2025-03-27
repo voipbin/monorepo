@@ -259,7 +259,17 @@ func Test_TranscribeStart(t *testing.T) {
 			case "recording":
 				mockReq.EXPECT().CallV1RecordingGet(ctx, tt.referenceID).Return(tt.responseRecording, nil)
 			}
-			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.agent.CustomerID, uuid.Nil, tt.onEndFlowID, tt.expectReferenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStart(
+				ctx,
+				tt.agent.CustomerID,
+				uuid.Nil,
+				tt.onEndFlowID,
+				tt.expectReferenceType,
+				tt.referenceID,
+				tt.language,
+				tt.direction,
+				60000,
+			).Return(tt.responseTranscribe, nil)
 
 			res, err := h.TranscribeStart(ctx, tt.agent, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.onEndFlowID)
 			if err != nil {
