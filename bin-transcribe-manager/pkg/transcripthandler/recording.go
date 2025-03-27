@@ -31,7 +31,7 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	log.WithField("files", files).Debugf("Got the files. recording_id: %s", recordingID)
 
 	for _, file := range files {
-		bucketPath := fmt.Sprintf("gs://%s/%s/%s", file.BucketName, file.Filepath, file.Filename)
+		bucketPath := fmt.Sprintf("gs://%s/%s", file.BucketName, file.Filepath)
 		tmp, err := h.processFromBucket(ctx, bucketPath, language)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not transcribe the recording. recording_id: %s", recordingID)
