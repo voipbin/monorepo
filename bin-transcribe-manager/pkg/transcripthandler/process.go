@@ -25,7 +25,6 @@ func (h *transcriptHandler) processFromBucket(ctx context.Context, mediaLink str
 			LanguageCode:               language,
 			EnableWordTimeOffsets:      true,
 			EnableAutomaticPunctuation: true,
-			Model:                      "phone_call",
 		},
 		Audio: &speechpb.RecognitionAudio{
 			AudioSource: &speechpb.RecognitionAudio_Uri{
