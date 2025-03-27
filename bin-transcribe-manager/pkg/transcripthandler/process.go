@@ -20,9 +20,12 @@ func (h *transcriptHandler) processFromBucket(ctx context.Context, mediaLink str
 	// and sample rate information to be transcripted.
 	req := &speechpb.LongRunningRecognizeRequest{
 		Config: &speechpb.RecognitionConfig{
-			Encoding:        speechpb.RecognitionConfig_LINEAR16,
-			SampleRateHertz: 8000,
-			LanguageCode:    language,
+			Encoding:                   speechpb.RecognitionConfig_LINEAR16,
+			SampleRateHertz:            8000,
+			LanguageCode:               language,
+			EnableWordTimeOffsets:      true,
+			EnableAutomaticPunctuation: true,
+			Model:                      "phone_call",
 		},
 		Audio: &speechpb.RecognitionAudio{
 			AudioSource: &speechpb.RecognitionAudio_Uri{
@@ -52,7 +55,10 @@ func (h *transcriptHandler) processFromBucket(ctx context.Context, mediaLink str
 	}
 
 	// create transcript
-	message := resp.Results[0].Alternatives[0].Transcript
+	message := ""
+	if len(resp.Results) > 0 {
+		message = resp.Results[0].Alternatives[0].Transcript
+	}
 	ts := "0000-00-00 00:00:00.00000"
 	res := &transcript.Transcript{
 		Direction:    transcript.DirectionBoth,
