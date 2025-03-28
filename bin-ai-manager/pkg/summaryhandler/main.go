@@ -3,16 +3,30 @@ package summaryhandler
 //go:generate mockgen -package summaryhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
+	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	"github.com/gofrs/uuid"
 	"github.com/sashabaranov/go-openai"
 )
 
 type SummaryHandler interface {
+	Start(
+		ctx context.Context,
+		customerID uuid.UUID,
+		activeflowID uuid.UUID,
+		referenceType summary.ReferenceType,
+		referenceID uuid.UUID,
+		language string,
+	) (*summary.Summary, error)
+	Get(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error)
+	Delete(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
 }
 
 type summaryHandler struct {

@@ -4,10 +4,16 @@ import (
 	"context"
 	"monorepo/bin-ai-manager/models/summary"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 )
 
 func (h *summaryHandler) variableSet(ctx context.Context, s *summary.Summary) error {
+
+	if s.ActiveflowID == uuid.Nil {
+		return nil
+	}
+
 	variables := map[string]string{
 		variableSummaryID:            s.ID.String(),
 		variableSummaryReferenceType: string(s.ReferenceType),

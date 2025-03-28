@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"monorepo/bin-ai-manager/models/summary"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
@@ -21,9 +23,18 @@ func (h *summaryHandler) Start(
 	language string,
 ) (*summary.Summary, error) {
 
+	tmp, err := h.GetByCustomerIDAndReferenceIDAndLanguage(ctx, customerID, referenceID, language)
+	if err == nil {
+		// already exists
+		return tmp, nil
+	}
+
 	switch referenceType {
 	case summary.ReferenceTypeTranscribe:
 		return h.startReferenceTypeTranscribe(ctx, customerID, activeflowID, referenceID, language)
+
+	case summary.ReferenceTypeRecording:
+		return h.startReferenceTypeRecording(ctx, customerID, activeflowID, referenceID, language)
 
 	default:
 		return nil, errors.Errorf("unsupported reference type: %s", referenceType)
@@ -31,10 +42,49 @@ func (h *summaryHandler) Start(
 }
 
 type RequestContent struct {
-	Prompt      string `json:"prompt,omitempty"`
-	Transcripts []tmtranscript.Transcript
-	Variables   map[string]string
+	Prompt      string                    `json:"prompt,omitempty"`
+	Transcripts []tmtranscript.Transcript `json:"transcripts,omitempty"`
+	Variables   map[string]string         `json:"variables,omitempty"`
 }
+
+// func (h *summaryHandler) startReferenceTypeCall(
+// 	ctx context.Context,
+// 	customerID uuid.UUID,
+// 	activeflowID uuid.UUID,
+// 	referenceID uuid.UUID,
+// 	language string,
+// ) (*summary.Summary, error) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":          "startReferenceTypeTranscribe",
+// 		"activeflow_id": activeflowID,
+// 		"reference_id":  referenceID,
+// 	})
+
+// 	// transcribe start
+
+// 	// get transcripts
+// 	filters := map[string]string{
+// 		"deleted":      "false",
+// 		"reference_id": referenceID.String(),
+// 	}
+// 	ts, err := h.reqestHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
+// 	if err != nil {
+// 		return nil, errors.Wrapf(err, "could not get the transcribe data")
+// 	}
+
+// 	content, err := h.getContent(ctx, activeflowID, ts)
+// 	if err != nil {
+// 		return nil, errors.Wrapf(err, "could not send the request")
+// 	}
+// 	log.WithField("content", content).Debugf("Parsed summary content.")
+
+// 	res, err := h.Create(ctx, customerID, activeflowID, summary.ReferenceTypeTranscribe, referenceID, language, content)
+// 	if err != nil {
+// 		return nil, errors.Wrapf(err, "could not create the summary")
+// 	}
+
+// 	return res, nil
+// }
 
 func (h *summaryHandler) startReferenceTypeTranscribe(
 	ctx context.Context,
@@ -43,8 +93,15 @@ func (h *summaryHandler) startReferenceTypeTranscribe(
 	referenceID uuid.UUID,
 	language string,
 ) (*summary.Summary, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "startReferenceTypeTranscribe",
+		"activeflow_id": activeflowID,
+		"reference_id":  referenceID,
+	})
+
 	// get transcripts
 	filters := map[string]string{
+		"deleted":      "false",
 		"reference_id": referenceID.String(),
 	}
 	ts, err := h.reqestHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
@@ -56,8 +113,9 @@ func (h *summaryHandler) startReferenceTypeTranscribe(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}
+	log.WithField("content", content).Debugf("Parsed summary content.")
 
-	res, err := h.Create(ctx, customerID, summary.ReferenceTypeTranscribe, referenceID, language, content)
+	res, err := h.Create(ctx, customerID, activeflowID, summary.ReferenceTypeTranscribe, referenceID, summary.StatusDone, language, content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the summary")
 	}
@@ -72,21 +130,51 @@ func (h *summaryHandler) startReferenceTypeRecording(
 	referenceID uuid.UUID,
 	language string,
 ) (*summary.Summary, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "startReferenceTypeRecording",
+		"activeflow_id": "activeflowID",
+		"reference_id":  referenceID,
+		"language":      language,
+	})
+
+	log.Debugf("Start the transcribe.")
+
+	// note: here, we set the customer id as the ai manager id
+	// thie is required becasue if we use the customer id, the created transcribe will be shown to the
+	// customer's transcribe list.
+	tr, err := h.reqestHandler.TranscribeV1TranscribeStart(
+		ctx,
+		cmcustomer.IDAIManager,
+		activeflowID,
+		uuid.Nil,
+		tmtranscribe.ReferenceTypeRecording,
+		referenceID,
+		language,
+		tmtranscribe.DirectionBoth,
+		30000,
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not start the transcribe")
+	}
+	log.WithField("transcribe", tr).Debugf("Finished transcribe. transcribe_id: %s", tr.ID)
+
 	// get transcripts
 	filters := map[string]string{
+		"deleted":      "false",
 		"reference_id": referenceID.String(),
 	}
-	ts, err := h.reqestHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
+	transcripts, err := h.reqestHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the transcribe data")
 	}
 
-	content, err := h.getContent(ctx, activeflowID, ts)
+	content, err := h.getContent(ctx, activeflowID, transcripts)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}
+	log.WithField("content", content).Debugf("Parsed summary content.")
 
-	res, err := h.Create(ctx, customerID, summary.ReferenceTypeTranscribe, referenceID, language, content)
+	res, err := h.Create(ctx, customerID, activeflowID, summary.ReferenceTypeRecording, referenceID, summary.StatusDone, language, content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the summary")
 	}

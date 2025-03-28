@@ -10,6 +10,11 @@
 package summaryhandler
 
 import (
+	context "context"
+	summary "monorepo/bin-ai-manager/models/summary"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -35,4 +40,64 @@ func NewMockSummaryHandler(ctrl *gomock.Controller) *MockSummaryHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSummaryHandler) EXPECT() *MockSummaryHandlerMockRecorder {
 	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockSummaryHandler) Delete(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockSummaryHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockSummaryHandler)(nil).Delete), ctx, id)
+}
+
+// Get mocks base method.
+func (m *MockSummaryHandler) Get(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockSummaryHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockSummaryHandler)(nil).Get), ctx, id)
+}
+
+// Gets mocks base method.
+func (m *MockSummaryHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockSummaryHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockSummaryHandler)(nil).Gets), ctx, size, token, filters)
+}
+
+// Start mocks base method.
+func (m *MockSummaryHandler) Start(ctx context.Context, customerID, activeflowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Start", ctx, customerID, activeflowID, referenceType, referenceID, language)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Start indicates an expected call of Start.
+func (mr *MockSummaryHandlerMockRecorder) Start(ctx, customerID, activeflowID, referenceType, referenceID, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSummaryHandler)(nil).Start), ctx, customerID, activeflowID, referenceType, referenceID, language)
 }

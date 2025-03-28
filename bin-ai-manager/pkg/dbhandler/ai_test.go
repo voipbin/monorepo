@@ -203,9 +203,8 @@ func Test_AIGets(t *testing.T) {
 		name string
 		ais  []*ai.AI
 
-		customerID uuid.UUID
-		count      int
-		filters    map[string]string
+		count   int
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*ai.AI
@@ -227,10 +226,10 @@ func Test_AIGets(t *testing.T) {
 				},
 			},
 
-			customerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
-			count:      10,
+			count: 10,
 			filters: map[string]string{
-				"deleted": "false",
+				"deleted":     "false",
+				"customer_id": "6d35368c-a76d-11ed-9699-235c9e4a0117",
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -261,10 +260,10 @@ func Test_AIGets(t *testing.T) {
 			name: "empty",
 			ais:  []*ai.AI{},
 
-			customerID: uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
-			count:      0,
+			count: 0,
 			filters: map[string]string{
-				"deleted": "false",
+				"deleted":     "false",
+				"customer_id": "b31d32ae-7f45-11ec-82c6-936e22306376",
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -295,7 +294,7 @@ func Test_AIGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AIGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.AIGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

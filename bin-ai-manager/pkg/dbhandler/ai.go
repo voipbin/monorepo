@@ -235,17 +235,15 @@ func (h *handler) AIDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // AIGets returns a list of ais.
-func (h *handler) AIGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
+func (h *handler) AIGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		customer_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, aiSelect)
 
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
@@ -256,6 +254,14 @@ func (h *handler) AIGets(ctx context.Context, customerID uuid.UUID, size uint64,
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		case "customer_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, uuid.FromStringOrNil(v).Bytes())
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
 		}
 	}
 

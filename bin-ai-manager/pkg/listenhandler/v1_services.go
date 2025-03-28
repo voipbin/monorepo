@@ -21,7 +21,7 @@ func (h *listenHandler) processV1ServicesTypeAIcallPost(ctx context.Context, m *
 	var req request.V1DataServicesTypeAIcallPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	tmp, err := h.aicallHandler.ServiceStart(ctx, req.AIID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Gender, req.Language, req.Resume)

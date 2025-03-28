@@ -20,6 +20,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"monorepo/bin-ai-manager/pkg/summaryhandler"
 )
 
 // pagination parameters
@@ -42,6 +43,7 @@ type listenHandler struct {
 	aiHandler      aihandler.AIHandler
 	aicallHandler  aicallhandler.AIcallHandler
 	messageHandler messagehandler.MessageHandler
+	summaryHandler summaryhandler.SummaryHandler
 }
 
 var (
@@ -66,6 +68,11 @@ var (
 
 	// service
 	regV1ServicesTypeAIcall = regexp.MustCompile("/v1/services/type/aicall$")
+
+	// summary
+	regV1SummariesGet = regexp.MustCompile(`/v1/summaries\?`)
+	regV1Summaries    = regexp.MustCompile("/v1/summaries$")
+	regV1SummariesID  = regexp.MustCompile("/v1/summaries/" + regUUID + "$")
 )
 
 var (
@@ -121,6 +128,7 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	queueListen string,
 	exchangeDelay string,
+
 	aiHandler aihandler.AIHandler,
 	aicallHandler aicallhandler.AIcallHandler,
 	messageHandler messagehandler.MessageHandler,
@@ -246,11 +254,34 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 
 	/////////////////
 	// services
-	////////////////
+	/////////////////
 	// POST
 	case regV1ServicesTypeAIcall.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ServicesTypeAIcallPost(ctx, m)
 		requestType = "/v1/services/type/aicall"
+
+	/////////////////
+	// summaries
+	/////////////////
+	// GET /summaries
+	case regV1SummariesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1SummariesGet(ctx, m)
+		requestType = "/v1/summaries"
+
+	// POST /summaries
+	case regV1Summaries.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1SummariesPost(ctx, m)
+		requestType = "/v1/summaries"
+
+	// GET /summaries/<summary-id>
+	case regV1SummariesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1SummariesIDGet(ctx, m)
+		requestType = "/v1/summaries/<summary-id>"
+
+	// DELETE /summaries/<summary-id>
+	case regV1SummariesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1SummariesIDDelete(ctx, m)
+		requestType = "/v1/summaries/<summary-id>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

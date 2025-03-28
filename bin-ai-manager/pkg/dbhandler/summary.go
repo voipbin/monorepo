@@ -17,9 +17,11 @@ const (
 		id,
 		customer_id,
 
+		activeflow_id,
 		reference_type,
 		reference_id,
 
+		status,
 		language,
 		content,
 
@@ -39,9 +41,11 @@ func (h *handler) summaryGetFromRow(row *sql.Rows) (*summary.Summary, error) {
 		&res.ID,
 		&res.CustomerID,
 
+		&res.ActiveflowID,
 		&res.ReferenceType,
 		&res.ReferenceID,
 
+		&res.Status,
 		&res.Language,
 		&res.Content,
 
@@ -61,9 +65,11 @@ func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 		id,
 		customer_id,
 
+		activeflow_id,
 		reference_type,
 		reference_id,
 
+		status,
 		language,
 		content,
 		
@@ -72,8 +78,8 @@ func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 		tm_delete
 	) values (
 		?, ?,
-		?, ?,
-		?, ?,
+		?, ?, ?,
+		?, ?, ?,
 		?, ?, ?
 		)
 	`
@@ -82,9 +88,11 @@ func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
 
+		c.ActiveflowID.Bytes(),
 		c.ReferenceType,
 		c.ReferenceID.Bytes(),
 
+		c.Status,
 		c.Language,
 		c.Content,
 
@@ -115,7 +123,7 @@ func (h *handler) summaryGetFromCache(ctx context.Context, id uuid.UUID) (*summa
 }
 
 // summaryGetFromDB returns summary from the DB.
-func (h *handler) summaryGetFromDB(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
+func (h *handler) summaryGetFromDB(id uuid.UUID) (*summary.Summary, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", summarySelect)
@@ -141,7 +149,7 @@ func (h *handler) summaryGetFromDB(ctx context.Context, id uuid.UUID) (*summary.
 // summaryUpdateToCache gets the message from the DB and updates the cache.
 func (h *handler) summaryUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.summaryGetFromDB(ctx, id)
+	res, err := h.summaryGetFromDB(id)
 	if err != nil {
 		return err
 	}
@@ -170,7 +178,7 @@ func (h *handler) SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summar
 		return res, nil
 	}
 
-	res, err = h.summaryGetFromDB(ctx, id)
+	res, err = h.summaryGetFromDB(id)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +230,7 @@ func (h *handler) SummaryGets(ctx context.Context, size uint64, token string, fi
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "reference_id":
+		case "customer_id", "activeflow_id", "reference_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			values = append(values, uuid.FromStringOrNil(v).Bytes())
 

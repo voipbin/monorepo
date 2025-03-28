@@ -35,7 +35,7 @@ type AIcallHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
 	GetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error)
 
 	ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
 	ProcessPause(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error)

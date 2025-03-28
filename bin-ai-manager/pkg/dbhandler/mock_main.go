@@ -89,18 +89,18 @@ func (mr *MockDBHandlerMockRecorder) AIGet(ctx, id any) *gomock.Call {
 }
 
 // AIGets mocks base method.
-func (m *MockDBHandler) AIGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
+func (m *MockDBHandler) AIGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIGets", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "AIGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIGets indicates an expected call of AIGets.
-func (mr *MockDBHandlerMockRecorder) AIGets(ctx, customerID, size, token, filters any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AIGets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGets", reflect.TypeOf((*MockDBHandler)(nil).AIGets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGets", reflect.TypeOf((*MockDBHandler)(nil).AIGets), ctx, size, token, filters)
 }
 
 // AISetInfo mocks base method.
@@ -191,18 +191,18 @@ func (mr *MockDBHandlerMockRecorder) AIcallGetByTranscribeID(ctx, transcribeID a
 }
 
 // AIcallGets mocks base method.
-func (m *MockDBHandler) AIcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+func (m *MockDBHandler) AIcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallGets", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "AIcallGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIcallGets indicates an expected call of AIcallGets.
-func (mr *MockDBHandlerMockRecorder) AIcallGets(ctx, customerID, size, token, filters any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AIcallGets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGets", reflect.TypeOf((*MockDBHandler)(nil).AIcallGets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGets", reflect.TypeOf((*MockDBHandler)(nil).AIcallGets), ctx, size, token, filters)
 }
 
 // AIcallUpdateStatusEnd mocks base method.

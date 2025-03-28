@@ -13,6 +13,7 @@ type Summary struct {
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
+	Status   Status `json:"status,omitempty"`
 	Language string `json:"language,omitempty"`
 	Content  string `json:"content,omitempty"`
 
@@ -26,6 +27,15 @@ type ReferenceType string
 const (
 	ReferenceTypeNone       ReferenceType = ""
 	ReferenceTypeCall       ReferenceType = "call"
+	ReferenceTypeConference ReferenceType = "conference"
 	ReferenceTypeTranscribe ReferenceType = "transcribe"
 	ReferenceTypeRecording  ReferenceType = "recording"
+)
+
+type Status string
+
+const (
+	StatusNone        Status = ""
+	StatusProgressing Status = "progressing"
+	StatusDone        Status = "done"
 )

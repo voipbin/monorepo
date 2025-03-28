@@ -13,10 +13,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// processV1MessagesGet handles GET /v1/messages request
-func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+// processV1SummariesGet handles GET /v1/summaries request
+func (h *listenHandler) processV1SummariesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1MessagesGet",
+		"handler": "processV1SummariesGet",
 		"request": m,
 	})
 
@@ -31,22 +31,18 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get aicall id
-	aicallID := uuid.FromStringOrNil(u.Query().Get("aicall_id"))
-
 	// get filters
 	filters := getFilters(u)
 
 	log = log.WithFields(logrus.Fields{
-		"customer_id": aicallID,
-		"size":        pageSize,
-		"token":       pageToken,
-		"filters":     filters,
+		"size":    pageSize,
+		"token":   pageToken,
+		"filters": filters,
 	})
 
-	tmp, err := h.messageHandler.Gets(ctx, aicallID, pageSize, pageToken, filters)
+	tmp, err := h.summaryHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
-		log.Debugf("Could not get messages. err: %v", err)
+		log.Debugf("Could not get items. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -65,22 +61,22 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	return res, nil
 }
 
-// processV1MessagesPost handles POST /v1/messages request
-func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+// processV1SummariesPost handles POST /v1/summaries request
+func (h *listenHandler) processV1SummariesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1MessagesPost",
+		"handler": "processV1SummariesPost",
 		"request": m,
 	})
 
-	var req request.V1DataMessagesPost
+	var req request.V1DataSummariesPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.messageHandler.Send(ctx, req.AIcallID, req.Role, req.Content)
+	tmp, err := h.summaryHandler.Start(ctx, req.CustomerID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Language)
 	if err != nil {
-		log.Errorf("Could not create ai. err: %v", err)
+		log.Errorf("Could not create item. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -99,10 +95,10 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 	return res, nil
 }
 
-// processV1MessagesIDGet handles POST /v1/messages/<message-id> request
-func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+// processV1SummariesIDGet handles GET /v1/summaries/<summary-id> request
+func (h *listenHandler) processV1SummariesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1MessagesIDGet",
+		"handler": "processV1SummariesIDGet",
 		"request": m,
 	})
 
@@ -113,9 +109,44 @@ func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Requ
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	tmp, err := h.messageHandler.Get(ctx, id)
+	tmp, err := h.summaryHandler.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not create ai. err: %v", err)
+		log.Errorf("Could not get item. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1SummariesIDDelete handles DELETE /v1/summaries/<summary-id> request
+func (h *listenHandler) processV1SummariesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1SummariesIDDelete",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.summaryHandler.Delete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete item. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

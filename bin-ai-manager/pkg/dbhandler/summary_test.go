@@ -33,9 +33,11 @@ func Test_SummaryCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("6a04b59c-0a48-11f0-a206-d723dd7442a6"),
 				},
 
+				ActiveflowID:  uuid.FromStringOrNil("73c7019a-0ba4-11f0-aee5-9b7073db9f34"),
 				ReferenceType: summary.ReferenceTypeTranscribe,
 				ReferenceID:   uuid.FromStringOrNil("6a31d7ac-0a48-11f0-85af-af6f2cf78715"),
 
+				Status:   summary.StatusProgressing,
 				Language: "en-US",
 				Content:  "Hello",
 			},
@@ -47,9 +49,11 @@ func Test_SummaryCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("6a04b59c-0a48-11f0-a206-d723dd7442a6"),
 				},
 
+				ActiveflowID:  uuid.FromStringOrNil("73c7019a-0ba4-11f0-aee5-9b7073db9f34"),
 				ReferenceType: summary.ReferenceTypeTranscribe,
 				ReferenceID:   uuid.FromStringOrNil("6a31d7ac-0a48-11f0-85af-af6f2cf78715"),
 
+				Status:   summary.StatusProgressing,
 				Language: "en-US",
 				Content:  "Hello",
 
