@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-transcribe-manager/models/transcript"
@@ -20,13 +20,6 @@ func (h *transcriptHandler) Create(
 	message string,
 	tmTranscript string,
 ) (*transcript.Transcript, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "Create",
-		"customer_id":   customerID,
-		"transcribe_id": transcribeID,
-		"direction":     direction,
-		"message":       message,
-	})
 
 	id := h.utilHandler.UUIDCreate()
 	tr := &transcript.Transcript{
@@ -43,33 +36,23 @@ func (h *transcriptHandler) Create(
 	}
 
 	if errCreate := h.db.TranscriptCreate(ctx, tr); errCreate != nil {
-		log.Errorf("Could not create a tracript. err: %v", errCreate)
-		return nil, errCreate
+		return nil, errors.Wrapf(errCreate, "could not create the transcript.")
 	}
 
 	res, err := h.db.TranscriptGet(ctx, tr.ID)
 	if err != nil {
-		log.Errorf("Could not get a created transcript. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get a created transcript.")
 	}
-	log.WithField("transcript", res).Debugf("Created a new transcript. transcript_id: %s, transcribe_id: %s", res.ID, res.TranscribeID)
 
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, transcript.EventTypeTranscriptCreated, res)
-
 	return res, nil
 }
 
 // Gets returns list of transcripts.
 func (h *transcriptHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
-		"filters": filters,
-	})
-
 	res, err := h.db.TranscriptGets(ctx, size, token, filters)
 	if err != nil {
-		log.Errorf("Could not get transcripts. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get transcripts. filters: %v", filters)
 	}
 
 	return res, nil
@@ -77,16 +60,10 @@ func (h *transcriptHandler) Gets(ctx context.Context, size uint64, token string,
 
 // Delete deletes the transcript
 func (h *transcriptHandler) Delete(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "Delete",
-		"transcript_id": id,
-	})
-
 	// get transcript
 	tr, err := h.dbGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get transcript info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get transcript info. transcript_id: %s", id)
 	}
 
 	if tr.TMDelete != dbhandler.DefaultTimeStamp {
@@ -96,8 +73,7 @@ func (h *transcriptHandler) Delete(ctx context.Context, id uuid.UUID) (*transcri
 
 	res, err := h.dbDelete(ctx, id)
 	if err != nil {
-		log.Errorf("Could not delete the transcript. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not delete the transcript. transcript_id: %s", id)
 	}
 
 	return res, nil

@@ -363,7 +363,7 @@ func (h *handler) TranscribeGetByReferenceIDAndLanguage(ctx context.Context, ref
 		desc limit ?
 		`, transcribeSelect)
 
-	row, err := h.db.Query(q, referenceID.Bytes(), language, DefaultTimeStamp)
+	row, err := h.db.Query(q, referenceID.Bytes(), language, DefaultTimeStamp, 1)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TranscribeGetByReferenceIDAndLanguage. err: %v", err)
 	}

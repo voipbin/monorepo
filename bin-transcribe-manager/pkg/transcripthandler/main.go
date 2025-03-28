@@ -21,11 +21,6 @@ import (
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
-// default variables
-const (
-	defaultBucketTimeout = 100000 // 100 sec
-)
-
 // transcriptHandler structure for streaming handler
 type transcriptHandler struct {
 	utilHandler   utilhandler.UtilHandler
@@ -63,7 +58,7 @@ type TranscriptHandler interface {
 	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error)
 	Delete(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error)
 
-	Recording(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, recordingID uuid.UUID, language string) (*transcript.Transcript, error)
+	Recording(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, recordingID uuid.UUID, language string) ([]*transcript.Transcript, error)
 }
 
 // NewTranscriptHandler returns sttgoogle interface

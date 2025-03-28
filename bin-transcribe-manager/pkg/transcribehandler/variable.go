@@ -9,6 +9,9 @@ import (
 )
 
 func (h *transcribeHandler) variableSet(ctx context.Context, activeflowID uuid.UUID, tr *transcribe.Transcribe) error {
+	if activeflowID == uuid.Nil {
+		return nil
+	}
 
 	variables := map[string]string{
 		variableTranscribeID:        tr.ID.String(),

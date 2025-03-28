@@ -53,13 +53,13 @@ func Test_dbDelete(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				reqHandler:        mockReq,
 				db:                mockDB,
 				notifyHandler:     mockNotify,
-				transcriptHandler: mockGoogle,
+				transcriptHandler: mockTranscript,
 			}
 
 			ctx := context.Background()

@@ -186,8 +186,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	var err error
 	var response *sock.Response
 
-	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
-
 	start := time.Now()
 	switch {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -260,8 +258,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response = simpleResponse(400)
 		err = nil
 	}
-
-	log.WithField("response", response).Debugf("Response the request. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }

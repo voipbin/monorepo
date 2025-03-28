@@ -7,6 +7,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transcribe-manager/models/transcribe"
@@ -36,7 +37,6 @@ func (h *transcribeHandler) Start(
 
 	// check the reference is valid
 	if valid := h.isValidReference(ctx, referenceType, referenceID); !valid {
-		log.Errorf("The given reference info is not valid for transcribe.")
 		return nil, fmt.Errorf("the given reference info is not valid for transcribe")
 	}
 
@@ -50,20 +50,17 @@ func (h *transcribeHandler) Start(
 	case transcribe.ReferenceTypeRecording:
 		res, err = h.startRecording(ctx, customerID, activeflowID, onEndFlowID, referenceID, lang)
 		if err != nil {
-			log.Errorf("Could not transcribe the recording reference type. err: %v", err)
-			return nil, err
+			return nil, errors.Wrapf(err, "could not start the recording transcribe. reference_id: %s", referenceID)
 		}
 
 	case transcribe.ReferenceTypeCall, transcribe.ReferenceTypeConfbridge:
 		res, err = h.startLive(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, lang, direction)
 		if err != nil {
-			log.Errorf("Could not transcribe the call reference type. err: %v", err)
-			return nil, err
+			return nil, errors.Wrapf(err, "could not start the live transcribe. reference_id: %s", referenceID)
 		}
 
 	default:
-		log.Errorf("Unsupported reference type. reference_type: %s", referenceType)
-		return nil, fmt.Errorf("unsupported reference type. reference_type: %s", referenceType)
+		return nil, errors.Wrapf(err, "unsupported reference type. reference_type: %s", referenceType)
 	}
 
 	return res, nil

@@ -30,7 +30,7 @@ func (h *conferenceHandler) TranscribeStart(ctx context.Context, id uuid.UUID, l
 		return nil, errors.Wrapf(err, "invalid conference status")
 	}
 
-	tr, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, tmp.CustomerID, uuid.Nil, uuid.Nil, tmtranscribe.ReferenceTypeConfbridge, tmp.ConfbridgeID, lang, tmtranscribe.DirectionIn)
+	tr, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, tmp.CustomerID, uuid.Nil, uuid.Nil, tmtranscribe.ReferenceTypeConfbridge, tmp.ConfbridgeID, lang, tmtranscribe.DirectionIn, 30000)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start the transcribe")
 	}
