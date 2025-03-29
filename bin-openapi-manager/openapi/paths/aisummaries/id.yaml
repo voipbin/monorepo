@@ -1,0 +1,39 @@
+get:
+  summary: Get ai summary details.
+  description: Retrieves detailed information for a specific ai summary by its ID.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the ai summary.
+  responses:
+    '200':
+      description: Details of the requested ai summary.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerSummary'
+
+delete:
+  summary: Delete a ai summary.
+  description: Deletes an existing ai summary by its ID.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the ai.
+  responses:
+    '200':
+      description: AI successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerSummary'

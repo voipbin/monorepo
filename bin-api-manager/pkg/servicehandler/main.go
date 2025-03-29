@@ -36,6 +36,7 @@ import (
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
+	amsummary "monorepo/bin-ai-manager/models/summary"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
@@ -290,6 +291,19 @@ type ServiceHandler interface {
 	AImessageGetsByAIcallID(ctx context.Context, a *amagent.Agent, aicallID uuid.UUID, size uint64, token string) ([]*ammessage.WebhookMessage, error)
 	AImessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ammessage.WebhookMessage, error)
 	AImessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ammessage.WebhookMessage, error)
+
+	// ai summary handlers
+	AISummaryCreate(
+		ctx context.Context,
+		a *amagent.Agent,
+		onEndFlowID uuid.UUID,
+		referenceType amsummary.ReferenceType,
+		referenceID uuid.UUID,
+		language string,
+	) (*amsummary.WebhookMessage, error)
+	AISummaryGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amsummary.WebhookMessage, error)
+	AISummaryGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amsummary.WebhookMessage, error)
+	AISummaryDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amsummary.WebhookMessage, error)
 
 	// chatmessage handlers
 	ChatmessageCreate(

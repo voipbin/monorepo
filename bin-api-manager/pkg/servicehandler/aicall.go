@@ -34,6 +34,7 @@ func (h *serviceHandler) AIcallCreate(
 
 	tmp, err := h.reqHandler.AIV1AIcallStart(
 		ctx,
+		uuid.Nil,
 		aiID,
 		referenceType,
 		referenceID,

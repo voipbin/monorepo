@@ -16,6 +16,7 @@ import (
 	ai "monorepo/bin-ai-manager/models/ai"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
+	summary "monorepo/bin-ai-manager/models/summary"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
 	call "monorepo/bin-call-manager/models/call"
@@ -149,6 +150,66 @@ func (m *MockServiceHandler) AIGetsByCustomerID(ctx context.Context, a *agent.Ag
 func (mr *MockServiceHandlerMockRecorder) AIGetsByCustomerID(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).AIGetsByCustomerID), ctx, a, size, token)
+}
+
+// AISummaryCreate mocks base method.
+func (m *MockServiceHandler) AISummaryCreate(ctx context.Context, a *agent.Agent, onEndFlowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string) (*summary.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AISummaryCreate", ctx, a, onEndFlowID, referenceType, referenceID, language)
+	ret0, _ := ret[0].(*summary.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AISummaryCreate indicates an expected call of AISummaryCreate.
+func (mr *MockServiceHandlerMockRecorder) AISummaryCreate(ctx, a, onEndFlowID, referenceType, referenceID, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISummaryCreate", reflect.TypeOf((*MockServiceHandler)(nil).AISummaryCreate), ctx, a, onEndFlowID, referenceType, referenceID, language)
+}
+
+// AISummaryDelete mocks base method.
+func (m *MockServiceHandler) AISummaryDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*summary.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AISummaryDelete", ctx, a, id)
+	ret0, _ := ret[0].(*summary.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AISummaryDelete indicates an expected call of AISummaryDelete.
+func (mr *MockServiceHandlerMockRecorder) AISummaryDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISummaryDelete", reflect.TypeOf((*MockServiceHandler)(nil).AISummaryDelete), ctx, a, id)
+}
+
+// AISummaryGet mocks base method.
+func (m *MockServiceHandler) AISummaryGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*summary.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AISummaryGet", ctx, a, id)
+	ret0, _ := ret[0].(*summary.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AISummaryGet indicates an expected call of AISummaryGet.
+func (mr *MockServiceHandlerMockRecorder) AISummaryGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISummaryGet", reflect.TypeOf((*MockServiceHandler)(nil).AISummaryGet), ctx, a, id)
+}
+
+// AISummaryGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*summary.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AISummaryGetsByCustomerID", ctx, a, size, token)
+	ret0, _ := ret[0].([]*summary.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AISummaryGetsByCustomerID indicates an expected call of AISummaryGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) AISummaryGetsByCustomerID(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISummaryGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).AISummaryGetsByCustomerID), ctx, a, size, token)
 }
 
 // AIUpdate mocks base method.

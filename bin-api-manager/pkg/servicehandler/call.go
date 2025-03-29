@@ -23,22 +23,13 @@ import (
 
 // callGet validates the call's ownership and returns the call info.
 func (h *serviceHandler) callGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "callGet",
-		"call_id": callID,
-	})
-
-	// send request
 	res, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
-		log.Errorf("Could not get the call info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the call info")
 	}
-	log.WithField("call", res).Debug("Received result.")
 
 	if res.TMDelete < defaultTimestamp {
-		log.Debugf("Deleted call. call_id: %s", res.ID)
-		return nil, fmt.Errorf("not found")
+		return nil, fmt.Errorf("deleted call")
 	}
 
 	return res, nil
