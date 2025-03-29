@@ -4,6 +4,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amsummary "monorepo/bin-ai-manager/models/summary"
 	ememail "monorepo/bin-email-manager/models/email"
 
 	"github.com/gofrs/uuid"
@@ -12,6 +13,14 @@ import (
 // OptionAgentCall defines action agent_call's option.
 type OptionAgentCall struct {
 	AgentID uuid.UUID `json:"agent_id"` // target agent id.
+}
+
+// OptionAISummary defines action ai_summary's option.
+type OptionAISummary struct {
+	OnEndFlowID   uuid.UUID               `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
+	ReferenceType amsummary.ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID               `json:"reference_id,omitempty"`
+	Language      string                  `json:"language,omitempty"`
 }
 
 // OptionAITalk defines action ai_talk's option.

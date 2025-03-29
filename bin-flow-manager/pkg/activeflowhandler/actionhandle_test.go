@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amsummary "monorepo/bin-ai-manager/models/summary"
 
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
@@ -3702,6 +3703,115 @@ func Test_actionHandleEmailSend(t *testing.T) {
 			if errCall := h.actionHandleEmailSend(ctx, tt.activeflow); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
 			}
+		})
+	}
+}
+
+func Test_actionHandleAISummary(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflow *activeflow.Activeflow
+
+		responseService *commonservice.Service
+		responseStack   *stack.Stack
+
+		expectedCustomerID    uuid.UUID
+		expectedActiveflowID  uuid.UUID
+		expectedOnEndFlowID   uuid.UUID
+		expectedReferenceType amsummary.ReferenceType
+		expectedReferenceID   uuid.UUID
+		expectedLanguage      string
+	}{
+		{
+			name: "normal",
+
+			activeflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("23dba144-0cc2-11f0-8170-578ee4989f0c"),
+					CustomerID: uuid.FromStringOrNil("2400dbd0-0cc2-11f0-8a2a-9fe2790a79ce"),
+				},
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
+					Type:   action.TypeAITalk,
+					Option: []byte(`{"on_end_flow_id":"0628869e-0cc2-11f0-bc08-6b225f6732dd","reference_type":"call","reference_id":"064d04c4-0cc2-11f0-a507-2f44c43f911a","language":"en-US"}`),
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{},
+			},
+
+			responseService: &commonservice.Service{
+				ID:   uuid.FromStringOrNil("bb68f67a-a8f5-11ed-9a2f-63b973d60f8c"),
+				Type: commonservice.TypeAIcall,
+				PushActions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("bb9239cc-a8f5-11ed-b21f-f7e43c6b6a60"),
+					},
+				},
+			},
+			responseStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("bb68f67a-a8f5-11ed-9a2f-63b973d60f8c"),
+				Actions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("bb9239cc-a8f5-11ed-b21f-f7e43c6b6a60"),
+					},
+				},
+			},
+
+			expectedCustomerID:    uuid.FromStringOrNil("2400dbd0-0cc2-11f0-8a2a-9fe2790a79ce"),
+			expectedActiveflowID:  uuid.FromStringOrNil("23dba144-0cc2-11f0-8170-578ee4989f0c"),
+			expectedOnEndFlowID:   uuid.FromStringOrNil("0628869e-0cc2-11f0-bc08-6b225f6732dd"),
+			expectedReferenceType: amsummary.ReferenceTypeCall,
+			expectedReferenceID:   uuid.FromStringOrNil("064d04c4-0cc2-11f0-a507-2f44c43f911a"),
+			expectedLanguage:      "en-US",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockVariable := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler:   mockAction,
+				variableHandler: mockVariable,
+				stackmapHandler: mockStack,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().AIV1ServiceTypeSummaryStart(
+				ctx,
+				tt.expectedCustomerID,
+				tt.expectedActiveflowID,
+				tt.expectedOnEndFlowID,
+				tt.expectedReferenceType,
+				tt.expectedReferenceID,
+				tt.expectedLanguage,
+				3000,
+			).Return(tt.responseService, nil)
+
+			// push stack
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
+
+			if errCall := h.actionHandleAISummary(ctx, tt.activeflow); errCall != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
+			}
+
+			time.Sleep(500 * time.Millisecond)
 		})
 	}
 }

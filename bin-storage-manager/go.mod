@@ -60,7 +60,7 @@ require (
 	github.com/prometheus/common v0.63.0 // indirect
 	github.com/sirupsen/logrus v1.9.3
 	go.uber.org/mock v0.5.0
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.28.0
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/api v0.228.0

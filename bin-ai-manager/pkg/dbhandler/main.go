@@ -46,6 +46,7 @@ type DBHandler interface {
 	SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
 	SummaryDelete(ctx context.Context, id uuid.UUID) error
 	SummaryGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error)
+	SummaryUpdateStatusDone(ctx context.Context, id uuid.UUID, content string) error
 }
 
 // handler database handler

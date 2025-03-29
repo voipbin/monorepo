@@ -73,10 +73,11 @@ func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *amagent.
 
 	// filters
 	filters := map[string]string{
-		"deleted": "false", // we don't need deleted items
+		"deleted":     "false", // we don't need deleted items
+		"customer_id": a.CustomerID.String(),
 	}
 
-	tmps, err := h.reqHandler.AIV1AIcallGetsByCustomerID(ctx, a.CustomerID, token, size, filters)
+	tmps, err := h.reqHandler.AIV1AIcallGets(ctx, token, size, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get aicalls info")
 	}

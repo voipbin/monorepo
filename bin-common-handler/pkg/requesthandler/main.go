@@ -27,6 +27,7 @@ import (
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	cbmessage "monorepo/bin-ai-manager/models/message"
+	amsummary "monorepo/bin-ai-manager/models/summary"
 	chatchat "monorepo/bin-chat-manager/models/chat"
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
 	chatmedia "monorepo/bin-chat-manager/models/media"
@@ -165,7 +166,7 @@ type RequestHandler interface {
 
 	// ai-manager ai
 	AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
-	AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]amai.AI, error)
+	AIV1AIGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amai.AI, error)
 	AIV1AICreate(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -189,8 +190,8 @@ type RequestHandler interface {
 	) (*amai.AI, error)
 
 	// ai-manager aicall
-	AIV1AIcallStart(ctx context.Context, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error)
-	AIV1AIcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]amaicall.AIcall, error)
+	AIV1AIcallStart(ctx context.Context, activeflowID uuid.UUID, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error)
+	AIV1AIcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amaicall.AIcall, error)
 	AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 
@@ -212,6 +213,31 @@ type RequestHandler interface {
 		language string,
 		requestTimeout int,
 	) (*service.Service, error)
+	AIV1ServiceTypeSummaryStart(
+		ctx context.Context,
+		customerID uuid.UUID,
+		activeflowID uuid.UUID,
+		onEndFlowID uuid.UUID,
+		referenceType amsummary.ReferenceType,
+		referenceID uuid.UUID,
+		language string,
+		requestTimeout int,
+	) (*service.Service, error)
+
+	// ai-manager summary
+	AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amsummary.Summary, error)
+	AIV1SummaryCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		activeflowID uuid.UUID,
+		onEndFlowID uuid.UUID,
+		referenceType amsummary.ReferenceType,
+		referenceID uuid.UUID,
+		language string,
+		timeout int,
+	) (*amsummary.Summary, error)
+	AIV1SummaryGet(ctx context.Context, summaryID uuid.UUID) (*amsummary.Summary, error)
+	AIV1SummaryDelete(ctx context.Context, aiID uuid.UUID) (*amsummary.Summary, error)
 
 	// asterisk AMI
 	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error

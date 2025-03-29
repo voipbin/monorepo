@@ -13,10 +13,12 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func (r *requestHandler) AIV1AIcallStart(ctx context.Context, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error) {
+func (r *requestHandler) AIV1AIcallStart(ctx context.Context, activeflowID uuid.UUID, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error) {
 	uri := "/v1/aicalls"
 
 	data := &cbrequest.V1DataAIcallsPost{
+		ActiveflowID: activeflowID,
+
 		AIID: aiID,
 
 		ReferenceType: referenceType,
@@ -50,11 +52,11 @@ func (r *requestHandler) AIV1AIcallStart(ctx context.Context, aiID uuid.UUID, re
 	return &res, nil
 }
 
-// AIV1AIcallGetsByCustomerID sends a request to ai-manager
+// AIV1AIcallGets sends a request to ai-manager
 // to getting a list of aicall info of the given customer id.
 // it returns detail list of aicall info if it succeed.
-func (r *requestHandler) AIV1AIcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]amaicall.AIcall, error) {
-	uri := fmt.Sprintf("/v1/aicalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) AIV1AIcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amaicall.AIcall, error) {
+	uri := fmt.Sprintf("/v1/aicalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)

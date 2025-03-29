@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	amsummary "monorepo/bin-ai-manager/models/summary"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	ememail "monorepo/bin-email-manager/models/email"
 
@@ -58,29 +59,29 @@ func Test_marshalOptionAMD(t *testing.T) {
 
 	tests := []test{
 		{
-			"machine handle hangup",
+			name: "machine handle hangup",
 
-			[]byte(`{"machine_handle": "hangup"}`),
+			option: []byte(`{"machine_handle": "hangup"}`),
 
-			OptionAMD{
+			expectedRes: OptionAMD{
 				MachineHandle: OptionAMDMachineHandleTypeHangup,
 			},
 		},
 		{
-			"machine handle continue",
+			name: "machine handle continue",
 
-			[]byte(`{"machine_handle": "continue"}`),
+			option: []byte(`{"machine_handle": "continue"}`),
 
-			OptionAMD{
+			expectedRes: OptionAMD{
 				MachineHandle: OptionAMDMachineHandleTypeContinue,
 			},
 		},
 		{
-			"machine handle continue with async true",
+			name: "machine handle continue with async true",
 
-			[]byte(`{"machine_handle": "continue", "async": true}`),
+			option: []byte(`{"machine_handle": "continue", "async": true}`),
 
-			OptionAMD{
+			expectedRes: OptionAMD{
 				MachineHandle: OptionAMDMachineHandleTypeContinue,
 				Async:         true,
 			},
@@ -113,11 +114,11 @@ func Test_marshalOptionAnswer(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{}`),
+			option: []byte(`{}`),
 
-			OptionAnswer{},
+			expectedRes: OptionAnswer{},
 		},
 	}
 
@@ -147,11 +148,11 @@ func Test_marshalOptionBeep(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{}`),
+			option: []byte(`{}`),
 
-			OptionBeep{},
+			expectedRes: OptionBeep{},
 		},
 	}
 
@@ -181,11 +182,11 @@ func Test_marshalOptionBranch(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"variable": "voipbin.call.destination", "default_target_id": "fd73c1b4-9841-11ec-bc63-df666ba736e8", "target_ids":{"1": "13fce870-9842-11ec-a83f-970e9052be06", "2": "1428ec22-9842-11ec-92d4-2ff427b3bb21"}}`),
+			option: []byte(`{"variable": "voipbin.call.destination", "default_target_id": "fd73c1b4-9841-11ec-bc63-df666ba736e8", "target_ids":{"1": "13fce870-9842-11ec-a83f-970e9052be06", "2": "1428ec22-9842-11ec-92d4-2ff427b3bb21"}}`),
 
-			OptionBranch{
+			expectedRes: OptionBranch{
 				Variable:        "voipbin.call.destination",
 				DefaultTargetID: uuid.FromStringOrNil("fd73c1b4-9841-11ec-bc63-df666ba736e8"),
 				TargetIDs: map[string]uuid.UUID{
@@ -195,11 +196,11 @@ func Test_marshalOptionBranch(t *testing.T) {
 			},
 		},
 		{
-			"has no variable",
+			name: "has no variable",
 
-			[]byte(`{"default_target_id": "fd73c1b4-9841-11ec-bc63-df666ba736e8", "target_ids":{"1": "13fce870-9842-11ec-a83f-970e9052be06", "2": "1428ec22-9842-11ec-92d4-2ff427b3bb21"}}`),
+			option: []byte(`{"default_target_id": "fd73c1b4-9841-11ec-bc63-df666ba736e8", "target_ids":{"1": "13fce870-9842-11ec-a83f-970e9052be06", "2": "1428ec22-9842-11ec-92d4-2ff427b3bb21"}}`),
 
-			OptionBranch{
+			expectedRes: OptionBranch{
 				Variable:        "",
 				DefaultTargetID: uuid.FromStringOrNil("fd73c1b4-9841-11ec-bc63-df666ba736e8"),
 				TargetIDs: map[string]uuid.UUID{
@@ -236,11 +237,11 @@ func Test_marshalOptionCall(t *testing.T) {
 
 	tests := []test{
 		{
-			"have all",
+			name: "have all",
 
-			[]byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "flow_id": "5ba29abc-a93b-11ec-ae94-6b77822f1a16", "early_execution":true}`),
+			option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "flow_id": "5ba29abc-a93b-11ec-ae94-6b77822f1a16", "early_execution":true}`),
 
-			OptionCall{
+			expectedRes: OptionCall{
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -260,11 +261,11 @@ func Test_marshalOptionCall(t *testing.T) {
 			},
 		},
 		{
-			"actions set",
+			name: "actions set",
 
-			[]byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+			option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
 
-			OptionCall{
+			expectedRes: OptionCall{
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -318,11 +319,11 @@ func Test_marshalOptionConfbridgeJoin(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"confbridge_id": "1eba27a4-979e-11ec-989d-2b0bbc04a661"}`),
+			option: []byte(`{"confbridge_id": "1eba27a4-979e-11ec-989d-2b0bbc04a661"}`),
 
-			OptionConfbridgeJoin{
+			expectedRes: OptionConfbridgeJoin{
 				ConfbridgeID: uuid.FromStringOrNil("1eba27a4-979e-11ec-989d-2b0bbc04a661"),
 			},
 		},
@@ -354,11 +355,11 @@ func Test_marshalOptionConditionCallDigits(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"length": 5, "key": "#", "false_target_id": "e998777a-9841-11ec-a7e3-3396ba072ea6"}`),
+			option: []byte(`{"length": 5, "key": "#", "false_target_id": "e998777a-9841-11ec-a7e3-3396ba072ea6"}`),
 
-			OptionConditionCallDigits{
+			expectedRes: OptionConditionCallDigits{
 				Length:        5,
 				Key:           "#",
 				FalseTargetID: uuid.FromStringOrNil("e998777a-9841-11ec-a7e3-3396ba072ea6"),
@@ -392,11 +393,11 @@ func Test_marshalOptionConditionCallStatus(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"status": "ringing", "false_target_id": "bcc57e5a-9841-11ec-b4ed-df97ae826297"}`),
+			option: []byte(`{"status": "ringing", "false_target_id": "bcc57e5a-9841-11ec-b4ed-df97ae826297"}`),
 
-			OptionConditionCallStatus{
+			expectedRes: OptionConditionCallStatus{
 				Status:        OptionConditionCallStatusStatusRinging,
 				FalseTargetID: uuid.FromStringOrNil("bcc57e5a-9841-11ec-b4ed-df97ae826297"),
 			},
@@ -429,11 +430,11 @@ func Test_marshalOptionConversationSend(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"conversation_id": "af3620f8-f464-11ec-926e-23a17cd3e34b", "text": "hello world!", "sync": true}`),
+			option: []byte(`{"conversation_id": "af3620f8-f464-11ec-926e-23a17cd3e34b", "text": "hello world!", "sync": true}`),
 
-			OptionConversationSend{
+			expectedRes: OptionConversationSend{
 				ConversationID: uuid.FromStringOrNil("af3620f8-f464-11ec-926e-23a17cd3e34b"),
 				Text:           "hello world!",
 				Sync:           true,
@@ -467,11 +468,11 @@ func Test_marshalOptionVariableSet(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"key": "key 1", "value": "value 1"}`),
+			option: []byte(`{"key": "key 1", "value": "value 1"}`),
 
-			OptionVariableSet{
+			expectedRes: OptionVariableSet{
 				Key:   "key 1",
 				Value: "value 1",
 			},
@@ -504,11 +505,11 @@ func Test_OptionWebhookSend(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"test com"}`),
+			option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"test com"}`),
 
-			OptionWebhookSend{
+			expectedRes: OptionWebhookSend{
 				Sync:     false,
 				URI:      "test.com",
 				Method:   "POST",
@@ -544,11 +545,11 @@ func Test_marshalOptionConditionDatetime(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"condition": ">=", "hour": 8, "day": -1, "month": -1, "weekdays": [], "false_target_id": "722c49b0-a976-4671-b946-489be3b1dc23"}`),
+			option: []byte(`{"condition": ">=", "hour": 8, "day": -1, "month": -1, "weekdays": [], "false_target_id": "722c49b0-a976-4671-b946-489be3b1dc23"}`),
 
-			OptionConditionDatetime{
+			expectedRes: OptionConditionDatetime{
 				Condition:     OptionConditionCommonConditionGreaterEqual,
 				Minute:        0,
 				Hour:          8,
@@ -586,11 +587,11 @@ func Test_marshalOptionConditionVariable(t *testing.T) {
 
 	tests := []test{
 		{
-			"value type string",
+			name: "value type string",
 
-			[]byte(`{"condition": ">=", "variable":"${voipbin.call.source.target}", "value_type": "string", "value_string": "test", "false_target_id": "ebccdde3-f408-4736-99dc-d37407dc14fb"}`),
+			option: []byte(`{"condition": ">=", "variable":"${voipbin.call.source.target}", "value_type": "string", "value_string": "test", "false_target_id": "ebccdde3-f408-4736-99dc-d37407dc14fb"}`),
 
-			OptionConditionVariable{
+			expectedRes: OptionConditionVariable{
 				Condition:     OptionConditionCommonConditionGreaterEqual,
 				Variable:      "${voipbin.call.source.target}",
 				ValueType:     OptionConditionVariableTypeString,
@@ -599,11 +600,11 @@ func Test_marshalOptionConditionVariable(t *testing.T) {
 			},
 		},
 		{
-			"value type number",
+			name: "value type number",
 
-			[]byte(`{"condition": ">=", "variable":"${test.number}", "value_type": "number", "value_number": 110.1, "false_target_id": "79cd79c2-6a94-4d4c-8da4-a4edf875788e"}`),
+			option: []byte(`{"condition": ">=", "variable":"${test.number}", "value_type": "number", "value_number": 110.1, "false_target_id": "79cd79c2-6a94-4d4c-8da4-a4edf875788e"}`),
 
-			OptionConditionVariable{
+			expectedRes: OptionConditionVariable{
 				Condition:     OptionConditionCommonConditionGreaterEqual,
 				Variable:      "${test.number}",
 				ValueType:     OptionConditionVariableTypeNumber,
@@ -612,11 +613,11 @@ func Test_marshalOptionConditionVariable(t *testing.T) {
 			},
 		},
 		{
-			"value type length",
+			name: "value type length",
 
-			[]byte(`{"condition": ">=", "variable":"${voipbin.call.source.target}", "value_type": "length", "value_length": 10, "false_target_id": "83b3a0ba-2c1f-4dd3-b045-3ed6ab6a5eb2"}`),
+			option: []byte(`{"condition": ">=", "variable":"${voipbin.call.source.target}", "value_type": "length", "value_length": 10, "false_target_id": "83b3a0ba-2c1f-4dd3-b045-3ed6ab6a5eb2"}`),
 
-			OptionConditionVariable{
+			expectedRes: OptionConditionVariable{
 				Condition:     OptionConditionCommonConditionGreaterEqual,
 				Variable:      "${voipbin.call.source.target}",
 				ValueType:     OptionConditionVariableTypeLength,
@@ -652,11 +653,11 @@ func Test_marshalOptionHangup(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"reason": "busy", "reference_id": "daf4b1ae-e95c-4a7f-9bb4-f8f52d68fdeb"}`),
+			option: []byte(`{"reason": "busy", "reference_id": "daf4b1ae-e95c-4a7f-9bb4-f8f52d68fdeb"}`),
 
-			OptionHangup{
+			expectedRes: OptionHangup{
 				Reason:      "busy",
 				ReferenceID: uuid.FromStringOrNil("daf4b1ae-e95c-4a7f-9bb4-f8f52d68fdeb"),
 			},
@@ -689,16 +690,16 @@ func Test_marshal_OptionConnect(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{
+			option: []byte(`{
 				"source":{"type":"tel","target":"+821100000001"},
 				"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],
 				"early_media":true,
 				"relay_reason":true
 			}`),
 
-			OptionConnect{
+			expectedRes: OptionConnect{
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -745,16 +746,16 @@ func Test_marshal_OptionAITalk(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{
+			option: []byte(`{
 				"ai_id":"d1c4f676-a8a5-11ed-85ca-7fe57e970bcd",
 				"gender":"female",
 				"language":"en-US",
 				"duration":6000
 			}`),
 
-			OptionAITalk{
+			expectedRes: OptionAITalk{
 				AIID:     uuid.FromStringOrNil("d1c4f676-a8a5-11ed-85ca-7fe57e970bcd"),
 				Gender:   "female",
 				Language: "en-US",
@@ -789,9 +790,9 @@ func Test_marshal_OptionEmailSend(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{
+			option: []byte(`{
 				"destinations": [
 					{"type": "email", "target": "test@voipbin.net", "target_name": "test name"}
 				],
@@ -802,7 +803,7 @@ func Test_marshal_OptionEmailSend(t *testing.T) {
 				]
 			}`),
 
-			OptionEmailSend{
+			expectedRes: OptionEmailSend{
 				Destinations: []commonaddress.Address{
 					{
 						Type:       commonaddress.TypeEmail,
@@ -941,6 +942,50 @@ func Test_OptionTranscribeRecording(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			res := OptionTranscribeRecording{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
+
+func Test_marshal_OptionAISummary(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectedRes OptionAISummary
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			option: []byte(`{
+				"on_end_flow_id":"0d73ca62-0cbd-11f0-8a18-db8b57e75484",
+				"reference_type":"call",
+				"reference_id":"0daf4c36-0cbd-11f0-b157-f3ce7acc9a2d",
+				"language":"en-US"
+			}`),
+
+			expectedRes: OptionAISummary{
+				OnEndFlowID:   uuid.FromStringOrNil("0d73ca62-0cbd-11f0-8a18-db8b57e75484"),
+				ReferenceType: amsummary.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("0daf4c36-0cbd-11f0-b157-f3ce7acc9a2d"),
+				Language:      "en-US",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionAISummary{}
 			if err := json.Unmarshal(tt.option, &res); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

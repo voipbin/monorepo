@@ -3,7 +3,10 @@ package utilhandler
 import (
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
+
+	"golang.org/x/exp/maps"
 )
 
 // URLParseFilters parses filter and returns parsed filters
@@ -38,8 +41,12 @@ func URLParseFilters(u *url.URL) map[string]string {
 // the filters items will be have the "filter_" prefix
 func URLMergeFilters(uri string, filters map[string]string) string {
 	res := uri
-	for k, v := range filters {
-		res = fmt.Sprintf("%s&filter_%s=%s", res, url.QueryEscape(k), url.QueryEscape(v))
+
+	keys := maps.Keys(filters)
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		res = fmt.Sprintf("%s&filter_%s=%s", res, url.QueryEscape(k), url.QueryEscape(filters[k]))
 	}
 
 	return res

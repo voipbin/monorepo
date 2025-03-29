@@ -22,6 +22,7 @@ func Test_Create(t *testing.T) {
 
 		customerID    uuid.UUID
 		activeflowID  uuid.UUID
+		onEndFlowID   uuid.UUID
 		referenceType summary.ReferenceType
 		referenceID   uuid.UUID
 		status        summary.Status
@@ -38,6 +39,7 @@ func Test_Create(t *testing.T) {
 
 			customerID:    uuid.FromStringOrNil("f227397c-f260-11ef-b217-4f6ff6930cf2"),
 			activeflowID:  uuid.FromStringOrNil("581fc4fa-0b8f-11f0-9c7f-0bb793ad8854"),
+			onEndFlowID:   uuid.FromStringOrNil("0efaad5e-0bde-11f0-a31c-0b54acc59c33"),
 			referenceType: summary.ReferenceTypeRecording,
 			referenceID:   uuid.FromStringOrNil("578e0f60-0b8f-11f0-928e-a318d8221ca5"),
 			status:        summary.StatusDone,
@@ -53,6 +55,7 @@ func Test_Create(t *testing.T) {
 				},
 
 				ActiveflowID:  uuid.FromStringOrNil("581fc4fa-0b8f-11f0-9c7f-0bb793ad8854"),
+				OnEndFlowID:   uuid.FromStringOrNil("0efaad5e-0bde-11f0-a31c-0b54acc59c33"),
 				ReferenceType: summary.ReferenceTypeRecording,
 				ReferenceID:   uuid.FromStringOrNil("578e0f60-0b8f-11f0-928e-a318d8221ca5"),
 
@@ -77,6 +80,7 @@ func Test_Create(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("57f1ce10-0b8f-11f0-8383-c3a6583f3a41"),
 				},
+				Status: summary.StatusNone,
 			},
 		},
 	}
@@ -95,7 +99,7 @@ func Test_Create(t *testing.T) {
 				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-				reqestHandler: mockReq,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
 
@@ -109,7 +113,7 @@ func Test_Create(t *testing.T) {
 
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedSummary.CustomerID, summary.EventTypeCreated, tt.expectedSummary)
 
-			res, err := h.Create(ctx, tt.customerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.status, tt.language, tt.content)
+			res, err := h.Create(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.status, tt.language, tt.content)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -156,7 +160,7 @@ func Test_Get(t *testing.T) {
 				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-				reqestHandler: mockReq,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
 
@@ -224,7 +228,7 @@ func Test_Gets(t *testing.T) {
 				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-				reqestHandler: mockReq,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
 
@@ -304,7 +308,7 @@ func Test_GetByCustomerIDAndReferenceIDAndLanguage(t *testing.T) {
 				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-				reqestHandler: mockReq,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
 
@@ -364,7 +368,7 @@ func Test_Delete(t *testing.T) {
 				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-				reqestHandler: mockReq,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
 
@@ -373,6 +377,70 @@ func Test_Delete(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummary.CustomerID, summary.EventTypeDeleted, tt.responseSummary)
 
 			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseSummary) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseSummary, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateStatusDone(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id      uuid.UUID
+		content string
+
+		responseSummary *summary.Summary
+
+		expectedRes *summary.Summary
+	}{
+		{
+			name: "normal",
+
+			id:      uuid.FromStringOrNil("fa821a22-0bd5-11f0-b67e-8728e18c09de"),
+			content: "Hello, world!",
+
+			responseSummary: &summary.Summary{
+				Identity: commonidentity.Identity{},
+			},
+
+			expectedRes: &summary.Summary{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fa821a22-0bd5-11f0-b67e-8728e18c09de"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := summaryHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().SummaryUpdateStatusDone(ctx, tt.id, tt.content).Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.id).Return(tt.responseSummary, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummary.CustomerID, summary.EventTypeUpdated, tt.responseSummary)
+
+			res, err := h.UpdateStatusDone(ctx, tt.id, tt.content)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

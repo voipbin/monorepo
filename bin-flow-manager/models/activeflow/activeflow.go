@@ -58,6 +58,7 @@ type ReferenceType string
 // list of ReferenceType
 const (
 	ReferenceTypeNone       ReferenceType = ""           // none
+	ReferenceTypeAI         ReferenceType = "ai"         // ai
 	ReferenceTypeCall       ReferenceType = "call"       // call
 	ReferenceTypeMessage    ReferenceType = "message"    // message
 	ReferenceTypeCampaign   ReferenceType = "campaign"   // campaign

@@ -98,10 +98,11 @@ func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *amagent.Agen
 
 	// filters
 	filters := map[string]string{
-		"deleted": "false", // we don't need deleted items
+		"deleted":     "false", // we don't need deleted items
+		"customer_id": a.CustomerID.String(),
 	}
 
-	tmps, err := h.reqHandler.AIV1AIGetsByCustomerID(ctx, a.CustomerID, token, size, filters)
+	tmps, err := h.reqHandler.AIV1AIGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get AIs info from the chatobt manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)

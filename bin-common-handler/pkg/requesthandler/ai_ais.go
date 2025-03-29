@@ -13,11 +13,11 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// AIV1AIGetsByCustomerID sends a request to ai-manager
-// to getting a list of ais info of the given customer id.
+// AIV1AIGets sends a request to ai-manager
+// to getting a list of ais info.
 // it returns detail list of ais info if it succeed.
-func (r *requestHandler) AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]amai.AI, error) {
-	uri := fmt.Sprintf("/v1/ais?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) AIV1AIGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amai.AI, error) {
+	uri := fmt.Sprintf("/v1/ais?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)

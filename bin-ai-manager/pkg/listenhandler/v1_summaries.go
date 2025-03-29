@@ -74,7 +74,7 @@ func (h *listenHandler) processV1SummariesPost(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.summaryHandler.Start(ctx, req.CustomerID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Language)
+	tmp, err := h.summaryHandler.Start(ctx, req.CustomerID, req.ActiveflowID, req.OnEndFlowID, req.ReferenceType, req.ReferenceID, req.Language)
 	if err != nil {
 		log.Errorf("Could not create item. err: %v", err)
 		return simpleResponse(500), nil

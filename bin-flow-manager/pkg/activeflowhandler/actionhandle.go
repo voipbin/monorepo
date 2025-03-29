@@ -34,40 +34,29 @@ import (
 // actionHandleGotoLoop handles goto action's loop condition.
 // it updates the loop_count.
 func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *activeflow.Activeflow, act *action.Action, opt *action.OptionGoto) error {
-	log := logrus.New().WithFields(logrus.Fields{
-		"func":       "actionHandleGotoLoop",
-		"activeflow": af,
-		"action":     act,
-		"option":     opt,
-	})
-
 	// find action
 	_, orgAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, act.ID, false)
 	if err != nil {
-		log.Errorf("Could not get original action. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not get the original action. err: %v", err)
 	}
 
 	// find goto action
 	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.TargetID, false)
 	if err != nil {
-		log.Errorf("Could not find loop target action. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not find the goto target action. err: %v", err)
 	}
 
 	opt.LoopCount--
 	raw, err := json.Marshal(opt)
 	if err != nil {
-		log.Errorf("Could not marshal the goto option. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not marshal the goto option. err: %v", err)
 	}
 
 	orgAction.Option = raw
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not update the active flow after appended the patched actions. err: %v", err)
 	}
 
 	return nil
@@ -76,24 +65,17 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 // actionHandleFetch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
 func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflow.Activeflow) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleFetch",
-		"activeflow": af,
-	})
-
 	act := &af.CurrentAction
 
 	// patch the actions from the remote
 	fetchedActions, err := h.actionHandler.ActionFetchGet(act, af.ID, af.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not fetch the actions from the remote. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not fetch the actions from the remote. err: %v", err)
 	}
 
 	// push the actions
 	if errPush := h.PushStack(ctx, af, uuid.Nil, fetchedActions); errPush != nil {
-		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
-		return errPush
+		return errors.Wrapf(errPush, "could not push the actions to the stack. err: %v", errPush)
 	}
 
 	return nil
@@ -135,16 +117,14 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 
 	var opt action.OptionConditionCallDigits
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
-		log.Errorf("Could not unmarshal the option. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not unmarshal the option. err: %v", err)
 	}
 	log.WithField("option", opt).Debugf("Detail option.")
 
 	// gets the received digits
 	digits, err := h.reqHandler.CallV1CallGetDigits(ctx, af.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not get digits. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not get digits. err: %v", err)
 	}
 	log.Debugf("Received digits. digits: %s", digits)
 
@@ -159,8 +139,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 
 	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
 	if err != nil {
-		log.Errorf("Could not find false target action. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not find false target action. err: %v", err)
 	}
 
 	// failed
@@ -168,8 +147,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not update the active flow after appended the patched actions. err: %v", err)
 	}
 
 	return nil
@@ -1027,6 +1005,44 @@ func (h *activeflowHandler) actionHandleEmailSend(ctx context.Context, af *activ
 		return err
 	}
 	log.Debugf("Send an email correctly. email_id: %s", tmp.ID)
+
+	return nil
+}
+
+// actionHandleAISummary handles action ai_summary with activeflow.
+// it starts ai summary service.
+func (h *activeflowHandler) actionHandleAISummary(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "actionHandleAISummary",
+		"activeflow": af,
+	})
+	act := &af.CurrentAction
+
+	var opt action.OptionAISummary
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		return errors.Wrapf(err, "Could not unmarshal the option. err: %v", err)
+	}
+
+	// start service
+	sv, err := h.reqHandler.AIV1ServiceTypeSummaryStart(
+		ctx,
+		af.CustomerID,
+		af.ID,
+		opt.OnEndFlowID,
+		opt.ReferenceType,
+		opt.ReferenceID,
+		opt.Language,
+		3000,
+	)
+	if err != nil {
+		return errors.Wrap(err, "Could not start the service.")
+	}
+	log.WithField("service", sv).Debugf("Started service. service_type: %s, service_id: %s", sv.Type, sv.ID)
+
+	// push the actions
+	if errPush := h.PushStack(ctx, af, sv.ID, sv.PushActions); errPush != nil {
+		return errors.Wrapf(errPush, "Could not push the actions to the stack.")
+	}
 
 	return nil
 }

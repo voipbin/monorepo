@@ -4,6 +4,8 @@ CREATE TABLE ai_summaries (
   customer_id   BINARY(16) NOT NULL,
 
   activeflow_id     BINARY(16) NOT NULL,
+  on_end_flow_id    BINARY(16) NOT NULL,
+
   reference_type    VARCHAR(255) NOT NULL,
   reference_id      BINARY(16) NOT NULL,
 
@@ -20,6 +22,7 @@ CREATE TABLE ai_summaries (
 
 CREATE INDEX idx_ai_summaries_customer_id ON ai_summaries(customer_id);
 CREATE INDEX idx_ai_summaries_activeflow ON ai_summaries(activeflow_id);
+CREATE INDEX idx_ai_summaries_on_end_flow_id ON ai_summaries(on_end_flow_id);
 CREATE INDEX idx_ai_summaries_reference_id_language ON ai_summaries(reference_id, language);
 CREATE INDEX idx_ai_summaries_reference_type ON ai_summaries(reference_type);
 CREATE INDEX idx_ai_summaries_reference_id ON ai_summaries(reference_id);

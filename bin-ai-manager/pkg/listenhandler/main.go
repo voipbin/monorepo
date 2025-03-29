@@ -67,7 +67,8 @@ var (
 	regV1MessagesID  = regexp.MustCompile("/v1/messages/" + regUUID + "$")
 
 	// service
-	regV1ServicesTypeAIcall = regexp.MustCompile("/v1/services/type/aicall$")
+	regV1ServicesTypeAIcall  = regexp.MustCompile("/v1/services/type/aicall$")
+	regV1ServicesTypeSummary = regexp.MustCompile("/v1/services/type/summary$")
 
 	// summary
 	regV1SummariesGet = regexp.MustCompile(`/v1/summaries\?`)
@@ -132,14 +133,17 @@ func NewListenHandler(
 	aiHandler aihandler.AIHandler,
 	aicallHandler aicallhandler.AIcallHandler,
 	messageHandler messagehandler.MessageHandler,
+	summaryHandler summaryhandler.SummaryHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		sockHandler:    sockHandler,
-		queueListen:    queueListen,
-		exchangeDelay:  exchangeDelay,
+		sockHandler:   sockHandler,
+		queueListen:   queueListen,
+		exchangeDelay: exchangeDelay,
+
 		aiHandler:      aiHandler,
 		aicallHandler:  aicallHandler,
 		messageHandler: messageHandler,
+		summaryHandler: summaryHandler,
 	}
 
 	return h
@@ -255,10 +259,15 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	/////////////////
 	// services
 	/////////////////
-	// POST
+	// POST /services/type/aicall
 	case regV1ServicesTypeAIcall.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ServicesTypeAIcallPost(ctx, m)
 		requestType = "/v1/services/type/aicall"
+
+	// POST /services/type/summary
+	case regV1ServicesTypeSummary.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ServicesTypeSummaryPost(ctx, m)
+		requestType = "/v1/services/type/summary"
 
 	/////////////////
 	// summaries

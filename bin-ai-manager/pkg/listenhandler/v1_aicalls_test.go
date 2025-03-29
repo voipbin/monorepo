@@ -110,7 +110,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 				URI:      "/v1/aicalls",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"ai_id": "f9e5ec32-ef4d-11ef-80de-8bc376898e49", "reference_type": "call", "reference_id":"fa2471be-ef4d-11ef-80b1-5bee84085737","gender":"female","language":"en-US"}`),
+				Data:     []byte(`{"ai_id": "f9e5ec32-ef4d-11ef-80de-8bc376898e49", "activeflow_id": "969e3754-0cc3-11f0-80b3-7760a1de452c", "reference_type": "call", "reference_id":"fa2471be-ef4d-11ef-80b1-5bee84085737","gender":"female","language":"en-US"}`),
 			},
 
 			responseAIcall: &aicall.AIcall{
@@ -120,7 +120,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 			},
 
 			expectedAIID:          uuid.FromStringOrNil("f9e5ec32-ef4d-11ef-80de-8bc376898e49"),
-			expectedActiveflowID:  uuid.Nil,
+			expectedActiveflowID:  uuid.FromStringOrNil("969e3754-0cc3-11f0-80b3-7760a1de452c"),
 			expectedReferenceType: aicall.ReferenceTypeCall,
 			expectedReferenceID:   uuid.FromStringOrNil("fa2471be-ef4d-11ef-80b1-5bee84085737"),
 			expectedGender:        aicall.GenderFemale,

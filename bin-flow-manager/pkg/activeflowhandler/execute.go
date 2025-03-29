@@ -98,6 +98,20 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 	}()
 
 	switch actionType {
+	case action.TypeAISummary:
+		if errHandle := h.actionHandleAISummary(ctx, af); errHandle != nil {
+			log.Errorf("Could not handle the ai summary action correctly. err: %v", errHandle)
+			return nil, errHandle
+		}
+		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)
+
+	case action.TypeAITalk:
+		if errHandle := h.actionHandleAITalk(ctx, af); errHandle != nil {
+			log.Errorf("Could not handle the ai talk action correctly. err: %v", errHandle)
+			return nil, errHandle
+		}
+		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)
+
 	case action.TypeBranch:
 		if errHandle := h.actionHandleBranch(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the branch action correctly. err: %v", errHandle)
@@ -108,13 +122,6 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 	case action.TypeCall:
 		if errHandle := h.actionHandleCall(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the call action correctly. err: %v", errHandle)
-			return nil, errHandle
-		}
-		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)
-
-	case action.TypeAITalk:
-		if errHandle := h.actionHandleAITalk(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the ai talk action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)

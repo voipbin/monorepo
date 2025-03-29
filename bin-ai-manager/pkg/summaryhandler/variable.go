@@ -8,9 +8,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (h *summaryHandler) variableSet(ctx context.Context, s *summary.Summary) error {
+func (h *summaryHandler) variableSet(ctx context.Context, activeflowID uuid.UUID, s *summary.Summary) error {
 
-	if s.ActiveflowID == uuid.Nil {
+	if activeflowID == uuid.Nil {
 		return nil
 	}
 
@@ -22,7 +22,7 @@ func (h *summaryHandler) variableSet(ctx context.Context, s *summary.Summary) er
 		variableSummaryContent:       s.Content,
 	}
 
-	if errSet := h.reqestHandler.FlowV1VariableSetVariable(ctx, s.ActiveflowID, variables); errSet != nil {
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
 		return errors.Wrapf(errSet, "could not set the variable. summary_id: %s", s.ID)
 	}
 

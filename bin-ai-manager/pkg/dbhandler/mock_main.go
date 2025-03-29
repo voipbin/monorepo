@@ -376,3 +376,17 @@ func (mr *MockDBHandlerMockRecorder) SummaryGets(ctx, size, token, filters any) 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryGets", reflect.TypeOf((*MockDBHandler)(nil).SummaryGets), ctx, size, token, filters)
 }
+
+// SummaryUpdateStatusDone mocks base method.
+func (m *MockDBHandler) SummaryUpdateStatusDone(ctx context.Context, id uuid.UUID, content string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SummaryUpdateStatusDone", ctx, id, content)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SummaryUpdateStatusDone indicates an expected call of SummaryUpdateStatusDone.
+func (mr *MockDBHandlerMockRecorder) SummaryUpdateStatusDone(ctx, id, content any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryUpdateStatusDone", reflect.TypeOf((*MockDBHandler)(nil).SummaryUpdateStatusDone), ctx, id, content)
+}

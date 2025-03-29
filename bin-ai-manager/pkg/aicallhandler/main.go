@@ -5,6 +5,8 @@ package aicallhandler
 import (
 	"context"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -64,6 +66,10 @@ type AIcallHandler interface {
 	) (*commonservice.Service, error)
 
 	ChatMessage(ctx context.Context, cb *aicall.AIcall, text string) error
+
+	EventCMCallHangup(ctx context.Context, c *cmcall.Call)
+	EventCMConfbridgeJoined(ctx context.Context, evt *cmconfbridge.EventConfbridgeJoined)
+	EventCMConfbridgeLeaved(ctx context.Context, evt *cmconfbridge.EventConfbridgeLeaved)
 }
 
 const (

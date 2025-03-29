@@ -131,7 +131,8 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 			10,
 			"2020-09-20 03:23:20.995000",
 			map[string]string{
-				"deleted": "false",
+				"deleted":     "false",
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
 			},
 
 			[]amaicall.AIcall{
@@ -165,7 +166,7 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIcallGetsByCustomerID(ctx, tt.agent.CustomerID, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIcallGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AIcallGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

@@ -18,6 +18,8 @@ const (
 		customer_id,
 
 		activeflow_id,
+		on_end_flow_id,
+
 		reference_type,
 		reference_id,
 
@@ -42,6 +44,8 @@ func (h *handler) summaryGetFromRow(row *sql.Rows) (*summary.Summary, error) {
 		&res.CustomerID,
 
 		&res.ActiveflowID,
+		&res.OnEndFlowID,
+
 		&res.ReferenceType,
 		&res.ReferenceID,
 
@@ -66,6 +70,8 @@ func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 		customer_id,
 
 		activeflow_id,
+		on_end_flow_id,
+
 		reference_type,
 		reference_id,
 
@@ -78,7 +84,8 @@ func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 		tm_delete
 	) values (
 		?, ?,
-		?, ?, ?,
+		?, ?, 
+		?, ?,
 		?, ?, ?,
 		?, ?, ?
 		)
@@ -89,6 +96,8 @@ func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 		c.CustomerID.Bytes(),
 
 		c.ActiveflowID.Bytes(),
+		c.OnEndFlowID.Bytes(),
+
 		c.ReferenceType,
 		c.ReferenceID.Bytes(),
 
@@ -266,4 +275,28 @@ func (h *handler) SummaryGets(ctx context.Context, size uint64, token string, fi
 	}
 
 	return res, nil
+}
+
+// SummaryUpdateStatusDone updates the status to done
+func (h *handler) SummaryUpdateStatusDone(ctx context.Context, id uuid.UUID, content string) error {
+	// prepare
+	q := `
+	update ai_summaries set
+		status = ?,
+		content = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.TimeGetCurTime()
+	_, err := h.db.Exec(q, summary.StatusDone, content, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. SummaryUpdateStatusDone. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.summaryUpdateToCache(ctx, id)
+
+	return nil
 }

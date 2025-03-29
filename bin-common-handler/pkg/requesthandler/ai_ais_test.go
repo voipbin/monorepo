@@ -17,15 +17,14 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
-func Test_AIV1AIGetsByCustomerID(t *testing.T) {
+func Test_AIV1AIGets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		filters    map[string]string
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		response *sock.Response
 
@@ -37,11 +36,11 @@ func Test_AIV1AIGetsByCustomerID(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("83fec56f-8e28-4356-a50c-7641e39ed2df"),
-			pageToken:  "2020-09-20 03:23:20.995000",
-			pageSize:   10,
+			pageToken: "2020-09-20 03:23:20.995000",
+			pageSize:  10,
 			filters: map[string]string{
-				"deleted": "false",
+				"customer_id": "83fec56f-8e28-4356-a50c-7641e39ed2df",
+				"deleted":     "false",
 			},
 
 			response: &sock.Response{
@@ -50,10 +49,10 @@ func Test_AIV1AIGetsByCustomerID(t *testing.T) {
 				Data:       []byte(`[{"id":"db662396-4449-456c-a6ee-39aa2ec30b55"},{"id":"0ea936d3-c74f-4744-8ca6-44e47178d88a"}]`),
 			},
 
-			expectURL:    "/v1/ais?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df",
+			expectURL:    "/v1/ais?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:    "/v1/ais?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df&filter_deleted=false",
+				URI:    "/v1/ais?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
 			expectRes: []amai.AI{
@@ -87,7 +86,7 @@ func Test_AIV1AIGetsByCustomerID(t *testing.T) {
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.AIV1AIGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.AIV1AIGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

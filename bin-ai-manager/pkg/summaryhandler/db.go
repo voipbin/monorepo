@@ -14,6 +14,7 @@ func (h *summaryHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
 	activeflowID uuid.UUID,
+	onEndFlowID uuid.UUID,
 	referenceType summary.ReferenceType,
 	referenceID uuid.UUID,
 	status summary.Status,
@@ -29,7 +30,9 @@ func (h *summaryHandler) Create(
 			CustomerID: customerID,
 		},
 
-		ActiveflowID:  activeflowID,
+		ActiveflowID: activeflowID,
+		OnEndFlowID:  onEndFlowID,
+
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
@@ -47,12 +50,11 @@ func (h *summaryHandler) Create(
 		return nil, errors.Wrapf(err, "could not get created data")
 	}
 
-	if errSet := h.variableSet(ctx, res); errSet != nil {
+	if errSet := h.variableSet(ctx, res.ActiveflowID, res); errSet != nil {
 		return nil, errors.Wrapf(errSet, "could not set the variable")
 	}
 
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, summary.EventTypeCreated, res)
-
 	return res, nil
 }
 
@@ -66,10 +68,29 @@ func (h *summaryHandler) Get(ctx context.Context, id uuid.UUID) (*summary.Summar
 	return res, nil
 }
 
+func (h *summaryHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*summary.Summary, error) {
+
+	filters := map[string]string{
+		"deleted":      "false",
+		"reference_id": referenceID.String(),
+	}
+
+	tmps, err := h.db.SummaryGets(ctx, 1, "", filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get data")
+	}
+	if len(tmps) == 0 {
+		return nil, errors.Errorf("could not find the summary")
+	}
+
+	res := tmps[0]
+	return res, nil
+}
+
 func (h *summaryHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error) {
 	res, err := h.db.SummaryGets(ctx, size, token, filters)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get data")
 	}
 
 	return res, nil
@@ -87,7 +108,6 @@ func (h *summaryHandler) GetByCustomerIDAndReferenceIDAndLanguage(
 		"reference_id": referenceID.String(),
 		"language":     language,
 	}
-
 	res, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {
 		return nil, err
@@ -108,9 +128,24 @@ func (h *summaryHandler) Delete(ctx context.Context, id uuid.UUID) (*summary.Sum
 
 	res, err := h.db.SummaryGet(ctx, id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not updated summary")
+		return nil, errors.Wrapf(err, "could not get updated summary")
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, summary.EventTypeDeleted, res)
+
+	return res, nil
+}
+
+// UpdateStatusDone deletes the summary.
+func (h *summaryHandler) UpdateStatusDone(ctx context.Context, id uuid.UUID, content string) (*summary.Summary, error) {
+	if err := h.db.SummaryUpdateStatusDone(ctx, id, content); err != nil {
+		return nil, errors.Wrapf(err, "could not update the summary")
+	}
+
+	res, err := h.db.SummaryGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated summary")
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, summary.EventTypeUpdated, res)
 
 	return res, nil
 }

@@ -12,6 +12,9 @@ package summaryhandler
 import (
 	context "context"
 	summary "monorepo/bin-ai-manager/models/summary"
+	call "monorepo/bin-call-manager/models/call"
+	service "monorepo/bin-common-handler/models/service"
+	conference "monorepo/bin-conference-manager/models/conference"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -57,6 +60,30 @@ func (mr *MockSummaryHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockSummaryHandler)(nil).Delete), ctx, id)
 }
 
+// EventCMCallHangup mocks base method.
+func (m *MockSummaryHandler) EventCMCallHangup(ctx context.Context, c *call.Call) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventCMCallHangup", ctx, c)
+}
+
+// EventCMCallHangup indicates an expected call of EventCMCallHangup.
+func (mr *MockSummaryHandlerMockRecorder) EventCMCallHangup(ctx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMCallHangup", reflect.TypeOf((*MockSummaryHandler)(nil).EventCMCallHangup), ctx, c)
+}
+
+// EventCMConferenceUpdated mocks base method.
+func (m *MockSummaryHandler) EventCMConferenceUpdated(ctx context.Context, c *conference.Conference) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventCMConferenceUpdated", ctx, c)
+}
+
+// EventCMConferenceUpdated indicates an expected call of EventCMConferenceUpdated.
+func (mr *MockSummaryHandlerMockRecorder) EventCMConferenceUpdated(ctx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMConferenceUpdated", reflect.TypeOf((*MockSummaryHandler)(nil).EventCMConferenceUpdated), ctx, c)
+}
+
 // Get mocks base method.
 func (m *MockSummaryHandler) Get(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
 	m.ctrl.T.Helper()
@@ -87,17 +114,32 @@ func (mr *MockSummaryHandlerMockRecorder) Gets(ctx, size, token, filters any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockSummaryHandler)(nil).Gets), ctx, size, token, filters)
 }
 
-// Start mocks base method.
-func (m *MockSummaryHandler) Start(ctx context.Context, customerID, activeflowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string) (*summary.Summary, error) {
+// ServiceStart mocks base method.
+func (m *MockSummaryHandler) ServiceStart(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string) (*service.Service, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, customerID, activeflowID, referenceType, referenceID, language)
+	ret := m.ctrl.Call(m, "ServiceStart", ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language)
+	ret0, _ := ret[0].(*service.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceStart indicates an expected call of ServiceStart.
+func (mr *MockSummaryHandlerMockRecorder) ServiceStart(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockSummaryHandler)(nil).ServiceStart), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language)
+}
+
+// Start mocks base method.
+func (m *MockSummaryHandler) Start(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Start", ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language)
 	ret0, _ := ret[0].(*summary.Summary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockSummaryHandlerMockRecorder) Start(ctx, customerID, activeflowID, referenceType, referenceID, language any) *gomock.Call {
+func (mr *MockSummaryHandlerMockRecorder) Start(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSummaryHandler)(nil).Start), ctx, customerID, activeflowID, referenceType, referenceID, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSummaryHandler)(nil).Start), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language)
 }
