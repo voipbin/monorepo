@@ -10,13 +10,15 @@ import (
 // v1 data type request struct for
 // /v1/aicalls POST
 type V1DataAIcallsPost struct {
-	AIID uuid.UUID `json:"ai_id"`
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"`
 
-	ReferenceType aicall.ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID            `json:"reference_id"`
+	AIID uuid.UUID `json:"ai_id,omitempty"`
 
-	Gender   aicall.Gender `json:"gender"`
-	Language string        `json:"language"`
+	ReferenceType aicall.ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID            `json:"reference_id,omitempty"`
+
+	Gender   aicall.Gender `json:"gender,omitempty"`
+	Language string        `json:"language,omitempty"`
 }
 
 // V1DataAIcallsIDMessagesPost is

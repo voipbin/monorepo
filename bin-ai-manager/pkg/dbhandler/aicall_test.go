@@ -613,9 +613,8 @@ func Test_AIcallGets(t *testing.T) {
 		name    string
 		aicalls []*aicall.AIcall
 
-		customerID uuid.UUID
-		count      int
-		filters    map[string]string
+		count   int
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*aicall.AIcall
@@ -637,10 +636,10 @@ func Test_AIcallGets(t *testing.T) {
 				},
 			},
 
-			customerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
-			count:      10,
+			count: 10,
 			filters: map[string]string{
-				"deleted": "false",
+				"deleted":     "false",
+				"customer_id": "6d35368c-a76d-11ed-9699-235c9e4a0117",
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -673,10 +672,10 @@ func Test_AIcallGets(t *testing.T) {
 			name:    "empty",
 			aicalls: []*aicall.AIcall{},
 
-			customerID: uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
-			count:      0,
+			count: 0,
 			filters: map[string]string{
-				"deleted": "false",
+				"deleted":     "false",
+				"customer_id": "a819a17a-0ba7-11f0-94b8-77c77a198260",
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -707,7 +706,7 @@ func Test_AIcallGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AIcallGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.AIcallGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -59,6 +59,16 @@ const (
 	// required media: call
 	TypeAnswer Type = "answer"
 
+	// TypeAISummary starts a summary with ai.
+	// ai-manager
+	// required media: none
+	TypeAISummary Type = "ai_summary"
+
+	// TypeAITalk starts a talk with ai.
+	// ai-manager
+	// required media: call
+	TypeAITalk Type = "ai_talk"
+
 	// TypeBeep plays the beep sound.
 	// call-manager
 	// required media: call
@@ -75,11 +85,6 @@ const (
 	// flow-manager
 	// required media: none
 	TypeCall Type = "call"
-
-	// TypeAITalk starts a talk with ai.
-	// ai-manager
-	// required media: call
-	TypeAITalk Type = "ai_talk"
 
 	// TypeConditionCallDigits deprecated. use the TypeConditionVariable instead.
 	// required media: call
@@ -249,10 +254,11 @@ const (
 var TypeListAll []Type = []Type{
 	TypeAMD,
 	TypeAnswer,
+	TypeAISummary,
+	TypeAITalk,
 	TypeBeep,
 	TypeBranch,
 	TypeCall,
-	TypeAITalk,
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
 	TypeConditionDatetime,

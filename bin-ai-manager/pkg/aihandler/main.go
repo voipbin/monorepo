@@ -29,7 +29,7 @@ type AIHandler interface {
 		initPrompt string,
 	) (*ai.AI, error)
 	Get(ctx context.Context, id uuid.UUID) (*ai.AI, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*ai.AI, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error)
 	Delete(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	Update(
 		ctx context.Context,

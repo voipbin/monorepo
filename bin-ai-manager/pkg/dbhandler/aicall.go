@@ -418,17 +418,18 @@ func (h *handler) AIcallDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // AIcallGets returns a list of aicalls.
-func (h *handler) AIcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+func (h *handler) AIcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
 
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		customer_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, aicallSelect)
 
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
@@ -439,6 +440,14 @@ func (h *handler) AIcallGets(ctx context.Context, customerID uuid.UUID, size uin
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		case "customer_id", "ai_id", "activeflow_id", "reference_id", "confbridge_id", "transcribe_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, uuid.FromStringOrNil(v).Bytes())
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
 		}
 	}
 

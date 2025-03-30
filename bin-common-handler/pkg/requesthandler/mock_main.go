@@ -16,6 +16,7 @@ import (
 	ai "monorepo/bin-ai-manager/models/ai"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
+	summary "monorepo/bin-ai-manager/models/summary"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
 	ari "monorepo/bin-call-manager/models/ari"
@@ -150,19 +151,19 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIGet(ctx, aiID any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIGet), ctx, aiID)
 }
 
-// AIV1AIGetsByCustomerID mocks base method.
-func (m *MockRequestHandler) AIV1AIGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]ai.AI, error) {
+// AIV1AIGets mocks base method.
+func (m *MockRequestHandler) AIV1AIGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIGetsByCustomerID", ctx, customerID, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "AIV1AIGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AIV1AIGetsByCustomerID indicates an expected call of AIV1AIGetsByCustomerID.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIGetsByCustomerID(ctx, customerID, pageToken, pageSize, filters any) *gomock.Call {
+// AIV1AIGets indicates an expected call of AIV1AIGets.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIGetsByCustomerID), ctx, customerID, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIGets", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIGets), ctx, pageToken, pageSize, filters)
 }
 
 // AIV1AIUpdate mocks base method.
@@ -210,34 +211,34 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGet(ctx, aicallID any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallGet), ctx, aicallID)
 }
 
-// AIV1AIcallGetsByCustomerID mocks base method.
-func (m *MockRequestHandler) AIV1AIcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]aicall.AIcall, error) {
+// AIV1AIcallGets mocks base method.
+func (m *MockRequestHandler) AIV1AIcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIcallGetsByCustomerID", ctx, customerID, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "AIV1AIcallGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AIV1AIcallGetsByCustomerID indicates an expected call of AIV1AIcallGetsByCustomerID.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGetsByCustomerID(ctx, customerID, pageToken, pageSize, filters any) *gomock.Call {
+// AIV1AIcallGets indicates an expected call of AIV1AIcallGets.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallGetsByCustomerID), ctx, customerID, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallGets", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallGets), ctx, pageToken, pageSize, filters)
 }
 
 // AIV1AIcallStart mocks base method.
-func (m *MockRequestHandler) AIV1AIcallStart(ctx context.Context, aiID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
+func (m *MockRequestHandler) AIV1AIcallStart(ctx context.Context, activeflowID, aiID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIcallStart", ctx, aiID, referenceType, referenceID, gender, language)
+	ret := m.ctrl.Call(m, "AIV1AIcallStart", ctx, activeflowID, aiID, referenceType, referenceID, gender, language)
 	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AIcallStart indicates an expected call of AIV1AIcallStart.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIcallStart(ctx, aiID, referenceType, referenceID, gender, language any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallStart(ctx, activeflowID, aiID, referenceType, referenceID, gender, language any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallStart), ctx, aiID, referenceType, referenceID, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallStart), ctx, activeflowID, aiID, referenceType, referenceID, gender, language)
 }
 
 // AIV1MessageDelete mocks base method.
@@ -313,6 +314,81 @@ func (m *MockRequestHandler) AIV1ServiceTypeAIcallStart(ctx context.Context, aiI
 func (mr *MockRequestHandlerMockRecorder) AIV1ServiceTypeAIcallStart(ctx, aiID, activeflowID, referenceType, referenceID, resume, gender, language, requestTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ServiceTypeAIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ServiceTypeAIcallStart), ctx, aiID, activeflowID, referenceType, referenceID, resume, gender, language, requestTimeout)
+}
+
+// AIV1ServiceTypeSummaryStart mocks base method.
+func (m *MockRequestHandler) AIV1ServiceTypeSummaryStart(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string, requestTimeout int) (*service.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1ServiceTypeSummaryStart", ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, requestTimeout)
+	ret0, _ := ret[0].(*service.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1ServiceTypeSummaryStart indicates an expected call of AIV1ServiceTypeSummaryStart.
+func (mr *MockRequestHandlerMockRecorder) AIV1ServiceTypeSummaryStart(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, requestTimeout any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ServiceTypeSummaryStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ServiceTypeSummaryStart), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, requestTimeout)
+}
+
+// AIV1SummaryCreate mocks base method.
+func (m *MockRequestHandler) AIV1SummaryCreate(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string, timeout int) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1SummaryCreate", ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, timeout)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1SummaryCreate indicates an expected call of AIV1SummaryCreate.
+func (mr *MockRequestHandlerMockRecorder) AIV1SummaryCreate(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, timeout any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1SummaryCreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1SummaryCreate), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, timeout)
+}
+
+// AIV1SummaryDelete mocks base method.
+func (m *MockRequestHandler) AIV1SummaryDelete(ctx context.Context, aiID uuid.UUID) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1SummaryDelete", ctx, aiID)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1SummaryDelete indicates an expected call of AIV1SummaryDelete.
+func (mr *MockRequestHandlerMockRecorder) AIV1SummaryDelete(ctx, aiID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1SummaryDelete", reflect.TypeOf((*MockRequestHandler)(nil).AIV1SummaryDelete), ctx, aiID)
+}
+
+// AIV1SummaryGet mocks base method.
+func (m *MockRequestHandler) AIV1SummaryGet(ctx context.Context, summaryID uuid.UUID) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1SummaryGet", ctx, summaryID)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1SummaryGet indicates an expected call of AIV1SummaryGet.
+func (mr *MockRequestHandlerMockRecorder) AIV1SummaryGet(ctx, summaryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1SummaryGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1SummaryGet), ctx, summaryID)
+}
+
+// AIV1SummaryGets mocks base method.
+func (m *MockRequestHandler) AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1SummaryGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1SummaryGets indicates an expected call of AIV1SummaryGets.
+func (mr *MockRequestHandlerMockRecorder) AIV1SummaryGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1SummaryGets", reflect.TypeOf((*MockRequestHandler)(nil).AIV1SummaryGets), ctx, pageToken, pageSize, filters)
 }
 
 // AgentV1AgentCreate mocks base method.

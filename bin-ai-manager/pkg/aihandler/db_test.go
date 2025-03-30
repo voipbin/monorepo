@@ -113,21 +113,20 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
-		filters    map[string]string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseAIs []*ai.AI
 	}{
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("132be434-f839-11ed-ae95-efa657af10fb"),
-			size:       10,
-			token:      "2023-01-03 21:35:02.809",
+			size:  10,
+			token: "2023-01-03 21:35:02.809",
 			filters: map[string]string{
-				"deleted": "false",
+				"deleted":     "false",
+				"customer_id": "132be434-f839-11ed-ae95-efa657af10fb",
 			},
 
 			responseAIs: []*ai.AI{
@@ -159,9 +158,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIGets(ctx, tt.customerID, tt.size, tt.token, tt.filters).Return(tt.responseAIs, nil)
+			mockDB.EXPECT().AIGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseAIs, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
+			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

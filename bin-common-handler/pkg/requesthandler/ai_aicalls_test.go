@@ -24,6 +24,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 	tests := []struct {
 		name string
 
+		activeflowID  uuid.UUID
 		aiID          uuid.UUID
 		referenceType amaicall.ReferenceType
 		referenceID   uuid.UUID
@@ -39,6 +40,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 		{
 			name: "normal",
 
+			activeflowID:  uuid.FromStringOrNil("eb23a6b0-0cc3-11f0-8150-0f33dc4cfdc4"),
 			aiID:          uuid.FromStringOrNil("e8604e8a-ef52-11ef-88be-43d681e412f7"),
 			referenceType: amaicall.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9"),
@@ -56,7 +58,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 				URI:      "/v1/aicalls",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"ai_id":"e8604e8a-ef52-11ef-88be-43d681e412f7","reference_type":"call","reference_id":"e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9","gender":"female","language":"en-US"}`),
+				Data:     []byte(`{"activeflow_id":"eb23a6b0-0cc3-11f0-8150-0f33dc4cfdc4","ai_id":"e8604e8a-ef52-11ef-88be-43d681e412f7","reference_type":"call","reference_id":"e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9","gender":"female","language":"en-US"}`),
 			},
 			expectRes: &amaicall.AIcall{
 				Identity: identity.Identity{
@@ -79,7 +81,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AIcallStart(ctx, tt.aiID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			cf, err := reqHandler.AIV1AIcallStart(ctx, tt.activeflowID, tt.aiID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -91,46 +93,45 @@ func Test_AIV1AIcallStart(t *testing.T) {
 	}
 }
 
-func Test_AIV1AIcallGetsByCustomerID(t *testing.T) {
+func Test_AIV1AIcallGets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		filters    map[string]string
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		expectResult  []amaicall.AIcall
+		expectRes     []amaicall.AIcall
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("ccf7720e-4838-4f97-bb61-3021e14c185a"),
-			"2020-09-20 03:23:20.995000",
-			10,
-			map[string]string{
-				"deleted": "false",
+			pageToken: "2020-09-20 03:23:20.995000",
+			pageSize:  10,
+			filters: map[string]string{
+				"deleted":     "false",
+				"customer_id": "ccf7720e-4838-4f97-bb61-3021e14c185a",
 			},
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"c3ac26c7-567c-4230-aaf8-d19b6fde4d6c"},{"id":"eb36875a-0d7a-4a8f-92a9-7551f4f29fd6"}]`),
 			},
 
-			"/v1/aicalls?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a",
-			string(outline.QueueNameAIRequest),
-			&sock.Request{
-				URI:    fmt.Sprintf("/v1/aicalls?page_token=%s&page_size=10&customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
+			expectURL:    "/v1/aicalls?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:    fmt.Sprintf("/v1/aicalls?page_token=%s&page_size=10&filter_customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method: sock.RequestMethodGet,
 			},
-			[]amaicall.AIcall{
+			expectRes: []amaicall.AIcall{
 				{
 					Identity: identity.Identity{
 						ID: uuid.FromStringOrNil("c3ac26c7-567c-4230-aaf8-d19b6fde4d6c"),
@@ -161,13 +162,13 @@ func Test_AIV1AIcallGetsByCustomerID(t *testing.T) {
 			h.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AIV1AIcallGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.AIV1AIcallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectResult, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}

@@ -1,0 +1,58 @@
+get:
+  summary: Gets a list of ai summaries.
+  description: Retrieves a paginated list of ai summaries.
+  tags:
+    - AI
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of ai summaries.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIManagerSummary'
+
+post:
+  summary: Create a new ai summary.
+  description: Creates a new ai summary and returns the created ai summary's details.
+  tags:
+    - AI
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            on_end_flow_id:
+              type: string
+              description: The ID of the flow to be executed when the ai summary ends.
+            reference_type:
+              $ref: '#/components/schemas/AIManagerSummaryReferenceType'
+            reference_id:
+              type: string
+              description: The ID of the reference for the ai summary.
+            language:
+              type: string
+              description: The language of the ai summary.
+          required:
+            - on_end_flow_id
+            - reference_type
+            - reference_id
+            - language
+  responses:
+    '200':
+      description: Details of the created ai summary.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerSummary'

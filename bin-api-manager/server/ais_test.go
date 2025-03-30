@@ -17,7 +17,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_aisPOST(t *testing.T) {
+func Test_PostAis(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -109,7 +109,7 @@ func Test_aisPOST(t *testing.T) {
 	}
 }
 
-func Test_aisGET(t *testing.T) {
+func Test_GetAis(t *testing.T) {
 
 	type test struct {
 		name  string
@@ -218,7 +218,7 @@ func Test_aisGET(t *testing.T) {
 	}
 }
 
-func Test_aisIDGET(t *testing.T) {
+func Test_GetAisId(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -286,7 +286,7 @@ func Test_aisIDGET(t *testing.T) {
 	}
 }
 
-func Test_aisIDDELETE(t *testing.T) {
+func Test_DeleteAisId(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -354,7 +354,7 @@ func Test_aisIDDELETE(t *testing.T) {
 	}
 }
 
-func Test_aisIDPUT(t *testing.T) {
+func Test_PutAisId(t *testing.T) {
 
 	tests := []struct {
 		name  string

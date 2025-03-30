@@ -14,6 +14,7 @@ import (
 	ai "monorepo/bin-ai-manager/models/ai"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
+	summary "monorepo/bin-ai-manager/models/summary"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -173,4 +174,33 @@ func (m *MockCacheHandler) MessageSet(ctx context.Context, data *message.Message
 func (mr *MockCacheHandlerMockRecorder) MessageSet(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSet", reflect.TypeOf((*MockCacheHandler)(nil).MessageSet), ctx, data)
+}
+
+// SummaryGet mocks base method.
+func (m *MockCacheHandler) SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SummaryGet", ctx, id)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SummaryGet indicates an expected call of SummaryGet.
+func (mr *MockCacheHandlerMockRecorder) SummaryGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryGet", reflect.TypeOf((*MockCacheHandler)(nil).SummaryGet), ctx, id)
+}
+
+// SummarySet mocks base method.
+func (m *MockCacheHandler) SummarySet(ctx context.Context, data *summary.Summary) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SummarySet", ctx, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SummarySet indicates an expected call of SummarySet.
+func (mr *MockCacheHandlerMockRecorder) SummarySet(ctx, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummarySet", reflect.TypeOf((*MockCacheHandler)(nil).SummarySet), ctx, data)
 }

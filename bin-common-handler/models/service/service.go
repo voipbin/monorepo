@@ -19,6 +19,7 @@ type Type string
 // list of types
 const (
 	TypeAIcall         Type = "aicall"
+	TypeAISummary      Type = "ai_summary"
 	TypeConferencecall Type = "conferencecall"
 	TypeQueuecall      Type = "queuecall"
 )

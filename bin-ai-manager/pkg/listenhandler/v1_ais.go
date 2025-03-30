@@ -24,7 +24,8 @@ func (h *listenHandler) processV1AIsGet(ctx context.Context, m *sock.Request) (*
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return nil, err
+		log.Errorf("Could not parse the request uri. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
 	// parse the pagination params
@@ -32,20 +33,16 @@ func (h *listenHandler) processV1AIsGet(ctx context.Context, m *sock.Request) (*
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
 	// get filters
 	filters := getFilters(u)
 
 	log = log.WithFields(logrus.Fields{
-		"customer_id": customerID,
-		"size":        pageSize,
-		"token":       pageToken,
-		"filters":     filters,
+		"size":    pageSize,
+		"token":   pageToken,
+		"filters": filters,
 	})
 
-	tmp, err := h.aiHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
+	tmp, err := h.aiHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
 		return simpleResponse(500), nil
@@ -76,7 +73,7 @@ func (h *listenHandler) processV1AIsPost(ctx context.Context, m *sock.Request) (
 	var req request.V1DataAIsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	tmp, err := h.aiHandler.Create(ctx, req.CustomerID, req.Name, req.Detail, req.EngineType, req.EngineModel, req.EngineData, req.InitPrompt)
@@ -180,7 +177,7 @@ func (h *listenHandler) processV1AIsIDPut(ctx context.Context, m *sock.Request) 
 	var req request.V1DataAIsIDPut
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	uriItems := strings.Split(m.URI, "/")
