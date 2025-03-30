@@ -96,6 +96,7 @@ Format the summary as follows:
 4. **Action Items & Next Steps**: Clearly list any follow-up tasks or required actions.
 5. **Additional Notes** (if applicable): Mention any other important details such as timestamps for key moments in recorded calls.
 
+**If no transcription is provided, do not generate a summary.**  
 **Generate the summary in the language of the provided transcription.** Ensure that the summary remains clear, concise, and actionable.
 `
 )

@@ -105,9 +105,8 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 			log.Debugf("Could not received the result. Consider this hangup. err: %v", err)
 			return
 		} else if len(tmp.Results) == 0 {
-			// result end
-			log.Debugf("Received the result end. transcribe_id: %s", st.TranscribeID)
-			return
+			// no result
+			continue
 		}
 
 		if !tmp.Results[0].IsFinal {
