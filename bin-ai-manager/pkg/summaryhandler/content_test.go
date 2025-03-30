@@ -3,13 +3,17 @@ package summaryhandler
 import (
 	"context"
 	"encoding/json"
+	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cfconference "monorepo/bin-conference-manager/models/conference"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 	"reflect"
 	"testing"
@@ -132,6 +136,142 @@ func Test_contentGet(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectedRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
+
+func Test_contentProcessReferenceTypeConference(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conferenceID uuid.UUID
+
+		responseSummaries   []*summary.Summary
+		responseConference  *cfconference.Conference
+		responseTranscribes []tmtranscribe.Transcribe
+		responseTranscripts []tmtranscript.Transcript
+		responseVariable    *fmvariable.Variable
+		responseSend        *openai.ChatCompletionResponse
+
+		expectedFilterSummary     map[string]string
+		expectedReferenceID       uuid.UUID
+		expectedFilterTranscribe  map[string]string
+		expectedFilterTranscripts map[string]string
+		expectedActiveflowID      uuid.UUID
+		expectedSummaryContent    string
+	}{
+		{
+			name: "normal",
+
+			conferenceID: uuid.FromStringOrNil("12793fb8-0d78-11f0-b745-5bd13769c11a"),
+
+			responseSummaries: []*summary.Summary{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("12c0991c-0d78-11f0-956f-c7fd6e2a65cd"),
+					},
+					ActiveflowID: uuid.FromStringOrNil("4eb1732e-0d78-11f0-adc7-070b3fa7186b"),
+					ReferenceID:  uuid.FromStringOrNil("4ddead0e-0d78-11f0-896a-930b66cfb72b"),
+				},
+			},
+			responseConference: &cfconference.Conference{
+				ID:           uuid.FromStringOrNil("4ddead0e-0d78-11f0-896a-930b66cfb72b"),
+				ConfbridgeID: uuid.FromStringOrNil("4e0cb7d0-0d78-11f0-bba8-27fe297783c9"),
+			},
+			responseTranscribes: []tmtranscribe.Transcribe{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4e316e40-0d78-11f0-b125-a79d64ccad15"),
+					},
+				},
+			},
+			responseTranscripts: []tmtranscript.Transcript{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4e5f7218-0d78-11f0-97fa-ffa151b9b13c"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4e880ac0-0d78-11f0-bacc-73f6c9abeebe"),
+					},
+				},
+			},
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{
+					"key1": "value1",
+				},
+			},
+			responseSend: &openai.ChatCompletionResponse{
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Message: openai.ChatCompletionMessage{
+							Content: "response content",
+						},
+					},
+				},
+			},
+
+			expectedFilterSummary: map[string]string{
+				"deleted":      "false",
+				"reference_id": "12793fb8-0d78-11f0-b745-5bd13769c11a",
+			},
+			expectedReferenceID: uuid.FromStringOrNil("12793fb8-0d78-11f0-b745-5bd13769c11a"),
+			expectedFilterTranscribe: map[string]string{
+				"deleted":      "false",
+				"customer_id":  cmcustomer.IDAIManager.String(),
+				"reference_id": "4e0cb7d0-0d78-11f0-bba8-27fe297783c9",
+			},
+			expectedFilterTranscripts: map[string]string{
+				"deleted":       "false",
+				"transcribe_id": "4e316e40-0d78-11f0-b125-a79d64ccad15",
+			},
+			expectedActiveflowID:   uuid.FromStringOrNil("4eb1732e-0d78-11f0-adc7-070b3fa7186b"),
+			expectedSummaryContent: "response content",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+
+			h := summaryHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+
+				engineOpenaiHandler: mockOpenai,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().SummaryGets(ctx, uint64(1), "", tt.expectedFilterSummary).Return(tt.responseSummaries, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectedReferenceID).Return(tt.responseConference, nil)
+
+			// contentGetTranscripts
+			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, "", uint64(1), tt.expectedFilterTranscribe).Return(tt.responseTranscribes, nil)
+			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFilterTranscripts).Return(tt.responseTranscripts, nil)
+
+			// contentGet
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.expectedActiveflowID).Return(tt.responseVariable, nil)
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(tt.responseSend, nil)
+
+			// UpdateStatusDone
+			mockDB.EXPECT().SummaryUpdateStatusDone(ctx, tt.responseSummaries[0].ID, tt.expectedSummaryContent).Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.responseSummaries[0].ID).Return(tt.responseSummaries[0], nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummaries[0].CustomerID, summary.EventTypeUpdated, tt.responseSummaries[0])
+
+			if err := h.contentProcessReferenceTypeConference(ctx, tt.conferenceID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

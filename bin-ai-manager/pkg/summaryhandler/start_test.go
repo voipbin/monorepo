@@ -258,9 +258,8 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 		responseActiveflow  *fmactiveflow.Activeflow
 
 		expectedFiltersTranscripts map[string]string
-		// expectedAIRequest          *openai.ChatCompletionRequest
-		expectedSummary   *summary.Summary
-		expectedVariables map[string]string
+		expectedSummary            *summary.Summary
+		expectedVariables          map[string]string
 	}{
 		{
 			name: "normal",
@@ -305,18 +304,9 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 			},
 
 			expectedFiltersTranscripts: map[string]string{
-				"deleted":      "false",
-				"reference_id": "705f227a-0ba0-11f0-aa84-b3acfd22daa1",
+				"deleted":       "false",
+				"transcribe_id": "705f227a-0ba0-11f0-aa84-b3acfd22daa1",
 			},
-			// expectedAIRequest: &openai.ChatCompletionRequest{
-			// 	Model: defaultModel,
-			// 	Messages: []openai.ChatCompletionMessage{
-			// 		{
-			// 			Role:    openai.ChatMessageRoleUser,
-			// 			Content: `{"prompt":"Generate a concise yet informative call summary based on the provided transcription, recording link, conference details and other variables. Focus on key points, action items, and important decisions made during the call.","transcripts":[{"id":"6fba4494-0ba0-11f0-8a39-4f28e940be73","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""},{"id":"6fe870ee-0ba0-11f0-9edb-bf0d1f088063","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""}],"variables":{"key1":"value1"}}`,
-			// 		},
-			// 	},
-			// },
 			expectedSummary: &summary.Summary{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("fe470e72-0ba0-11f0-87c8-a39a79b2cfe1"),
@@ -365,7 +355,6 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 
 			// getContent
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
-			// mockOpenai.EXPECT().Send(ctx, tt.expectedAIRequest).Return(tt.responseOpenai, nil)
 			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(tt.responseOpenai, nil)
 
 			// Create
@@ -421,9 +410,8 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 		responseActiveflow  *fmactiveflow.Activeflow
 
 		expectedFiltersTranscripts map[string]string
-		// expectedAIRequest          *openai.ChatCompletionRequest
-		expectedSummary   *summary.Summary
-		expectedVariables map[string]string
+		expectedSummary            *summary.Summary
+		expectedVariables          map[string]string
 	}{
 		{
 			name: "normal",
@@ -473,18 +461,9 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 			},
 
 			expectedFiltersTranscripts: map[string]string{
-				"deleted":      "false",
-				"reference_id": "58618082-0b9b-11f0-bd70-b74a9214cd07",
+				"deleted":       "false",
+				"transcribe_id": "5885ec42-0b9b-11f0-99ba-4b3106d01f9b",
 			},
-			// expectedAIRequest: &openai.ChatCompletionRequest{
-			// 	Model: defaultModel,
-			// 	Messages: []openai.ChatCompletionMessage{
-			// 		{
-			// 			Role:    openai.ChatMessageRoleUser,
-			// 			Content: `{"prompt":"Generate a concise yet informative call summary based on the provided transcription, recording link, conference details and other variables. Focus on key points, action items, and important decisions made during the call.","transcripts":[{"id":"78cdacd8-0b96-11f0-83d8-e71b47975e9a","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""},{"id":"79ee469a-0b96-11f0-ad07-37789426e403","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""}],"variables":{"key1":"value1"}}`,
-			// 		},
-			// 	},
-			// },
 			expectedSummary: &summary.Summary{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("58aa4c9a-0b9b-11f0-a701-a706590d3061"),

@@ -174,8 +174,8 @@ func (h *summaryHandler) startReferenceTypeTranscribe(
 
 	// get transcripts
 	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": referenceID.String(),
+		"deleted":       "false",
+		"transcribe_id": referenceID.String(),
 	}
 	ts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
 	if err != nil {
@@ -240,8 +240,8 @@ func (h *summaryHandler) startReferenceTypeRecording(
 
 	// get transcripts
 	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": referenceID.String(),
+		"deleted":       "false",
+		"transcribe_id": tr.ID.String(),
 	}
 	transcripts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
 	if err != nil {
