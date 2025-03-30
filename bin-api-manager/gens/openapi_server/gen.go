@@ -72,6 +72,22 @@ const (
 	AIManagerMessageRoleUser      AIManagerMessageRole = "user"
 )
 
+// Defines values for AIManagerSummaryReferenceType.
+const (
+	AIManagerSummaryReferenceTypeCall       AIManagerSummaryReferenceType = "call"
+	AIManagerSummaryReferenceTypeConference AIManagerSummaryReferenceType = "conference"
+	AIManagerSummaryReferenceTypeNone       AIManagerSummaryReferenceType = ""
+	AIManagerSummaryReferenceTypeRecording  AIManagerSummaryReferenceType = "recording"
+	AIManagerSummaryReferenceTypeTranscribe AIManagerSummaryReferenceType = "transcribe"
+)
+
+// Defines values for AIManagerSummaryStatus.
+const (
+	AIManagerSummaryStatusDone        AIManagerSummaryStatus = "done"
+	AIManagerSummaryStatusNone        AIManagerSummaryStatus = ""
+	AIManagerSummaryStatusProgressing AIManagerSummaryStatus = "progressing"
+)
+
 // Defines values for AgentManagerAgentPermission.
 const (
 	AgentManagerPermissionAll               AgentManagerAgentPermission = 65535
@@ -760,6 +776,47 @@ type AIManagerMessageDirection string
 
 // AIManagerMessageRole Role of the entity in the conversation.
 type AIManagerMessageRole string
+
+// AIManagerSummary defines model for AIManagerSummary.
+type AIManagerSummary struct {
+	// ActiveflowId Unique identifier for the activeflow.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// Content Content of the message.
+	Content *string `json:"content,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id Unique identifier for the message.
+	Id *string `json:"id,omitempty"`
+
+	// Language Language used during the ai call.
+	Language *string `json:"language,omitempty"`
+
+	// OnEndFlowId Unique identifier for the on end flow.
+	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
+
+	// ReferenceId Unique identifier for the reference.
+	ReferenceId   *string                        `json:"reference_id,omitempty"`
+	ReferenceType *AIManagerSummaryReferenceType `json:"reference_type,omitempty"`
+	Status        *AIManagerSummaryStatus        `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the message was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// AIManagerSummaryReferenceType defines model for AIManagerSummaryReferenceType.
+type AIManagerSummaryReferenceType string
+
+// AIManagerSummaryStatus defines model for AIManagerSummaryStatus.
+type AIManagerSummaryStatus string
 
 // AgentManagerAgent Represents an agent resource.
 type AgentManagerAgent struct {
@@ -2755,6 +2812,28 @@ type PutAisIdJSONBody struct {
 	Name       string                `json:"name"`
 }
 
+// GetAisummariesParams defines parameters for GetAisummaries.
+type GetAisummariesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostAisummariesJSONBody defines parameters for PostAisummaries.
+type PostAisummariesJSONBody struct {
+	// Language The language of the ai summary.
+	Language string `json:"language"`
+
+	// OnEndFlowId The ID of the flow to be executed when the ai summary ends.
+	OnEndFlowId string `json:"on_end_flow_id"`
+
+	// ReferenceId The ID of the reference for the ai summary.
+	ReferenceId   string                        `json:"reference_id"`
+	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
+}
+
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
 	// PageSize The size of results.
@@ -4112,6 +4191,9 @@ type PostAisJSONRequestBody PostAisJSONBody
 // PutAisIdJSONRequestBody defines body for PutAisId for application/json ContentType.
 type PutAisIdJSONRequestBody PutAisIdJSONBody
 
+// PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
+type PostAisummariesJSONRequestBody PostAisummariesJSONBody
+
 // PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
 type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody
 
@@ -4465,6 +4547,18 @@ type ServerInterface interface {
 	// Update a ai.
 	// (PUT /ais/{id})
 	PutAisId(c *gin.Context, id string)
+	// Gets a list of ai summaries.
+	// (GET /aisummaries)
+	GetAisummaries(c *gin.Context, params GetAisummariesParams)
+	// Create a new ai summary.
+	// (POST /aisummaries)
+	PostAisummaries(c *gin.Context)
+	// Delete a ai summary.
+	// (DELETE /aisummaries/{id})
+	DeleteAisummariesId(c *gin.Context, id string)
+	// Get ai summary details.
+	// (GET /aisummaries/{id})
+	GetAisummariesId(c *gin.Context, id string)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(c *gin.Context, params GetAvailableNumbersParams)
@@ -5981,6 +6075,101 @@ func (siw *ServerInterfaceWrapper) PutAisId(c *gin.Context) {
 	}
 
 	siw.Handler.PutAisId(c, id)
+}
+
+// GetAisummaries operation middleware
+func (siw *ServerInterfaceWrapper) GetAisummaries(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAisummariesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAisummaries(c, params)
+}
+
+// PostAisummaries operation middleware
+func (siw *ServerInterfaceWrapper) PostAisummaries(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAisummaries(c)
+}
+
+// DeleteAisummariesId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteAisummariesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteAisummariesId(c, id)
+}
+
+// GetAisummariesId operation middleware
+func (siw *ServerInterfaceWrapper) GetAisummariesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAisummariesId(c, id)
 }
 
 // GetAvailableNumbers operation middleware
@@ -11703,6 +11892,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/ais/:id", wrapper.DeleteAisId)
 	router.GET(options.BaseURL+"/ais/:id", wrapper.GetAisId)
 	router.PUT(options.BaseURL+"/ais/:id", wrapper.PutAisId)
+	router.GET(options.BaseURL+"/aisummaries", wrapper.GetAisummaries)
+	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
+	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
+	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
 	router.GET(options.BaseURL+"/billing_accounts", wrapper.GetBillingAccounts)
 	router.POST(options.BaseURL+"/billing_accounts", wrapper.PostBillingAccounts)
@@ -12576,6 +12769,78 @@ type PutAisIdResponseObject interface {
 type PutAisId200JSONResponse AIManagerAI
 
 func (response PutAisId200JSONResponse) VisitPutAisIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisummariesRequestObject struct {
+	Params GetAisummariesParams
+}
+
+type GetAisummariesResponseObject interface {
+	VisitGetAisummariesResponse(w http.ResponseWriter) error
+}
+
+type GetAisummaries200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string             `json:"next_page_token,omitempty"`
+	Result        *[]AIManagerSummary `json:"result,omitempty"`
+}
+
+func (response GetAisummaries200JSONResponse) VisitGetAisummariesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisummariesRequestObject struct {
+	Body *PostAisummariesJSONRequestBody
+}
+
+type PostAisummariesResponseObject interface {
+	VisitPostAisummariesResponse(w http.ResponseWriter) error
+}
+
+type PostAisummaries200JSONResponse AIManagerSummary
+
+func (response PostAisummaries200JSONResponse) VisitPostAisummariesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAisummariesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteAisummariesIdResponseObject interface {
+	VisitDeleteAisummariesIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteAisummariesId200JSONResponse AIManagerSummary
+
+func (response DeleteAisummariesId200JSONResponse) VisitDeleteAisummariesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisummariesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetAisummariesIdResponseObject interface {
+	VisitGetAisummariesIdResponse(w http.ResponseWriter) error
+}
+
+type GetAisummariesId200JSONResponse AIManagerSummary
+
+func (response GetAisummariesId200JSONResponse) VisitGetAisummariesIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -16863,6 +17128,18 @@ type StrictServerInterface interface {
 	// Update a ai.
 	// (PUT /ais/{id})
 	PutAisId(ctx context.Context, request PutAisIdRequestObject) (PutAisIdResponseObject, error)
+	// Gets a list of ai summaries.
+	// (GET /aisummaries)
+	GetAisummaries(ctx context.Context, request GetAisummariesRequestObject) (GetAisummariesResponseObject, error)
+	// Create a new ai summary.
+	// (POST /aisummaries)
+	PostAisummaries(ctx context.Context, request PostAisummariesRequestObject) (PostAisummariesResponseObject, error)
+	// Delete a ai summary.
+	// (DELETE /aisummaries/{id})
+	DeleteAisummariesId(ctx context.Context, request DeleteAisummariesIdRequestObject) (DeleteAisummariesIdResponseObject, error)
+	// Get ai summary details.
+	// (GET /aisummaries/{id})
+	GetAisummariesId(ctx context.Context, request GetAisummariesIdRequestObject) (GetAisummariesIdResponseObject, error)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(ctx context.Context, request GetAvailableNumbersRequestObject) (GetAvailableNumbersResponseObject, error)
@@ -18551,6 +18828,120 @@ func (sh *strictHandler) PutAisId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutAisIdResponseObject); ok {
 		if err := validResponse.VisitPutAisIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAisummaries operation middleware
+func (sh *strictHandler) GetAisummaries(ctx *gin.Context, params GetAisummariesParams) {
+	var request GetAisummariesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAisummaries(ctx, request.(GetAisummariesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAisummaries")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAisummariesResponseObject); ok {
+		if err := validResponse.VisitGetAisummariesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAisummaries operation middleware
+func (sh *strictHandler) PostAisummaries(ctx *gin.Context) {
+	var request PostAisummariesRequestObject
+
+	var body PostAisummariesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAisummaries(ctx, request.(PostAisummariesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAisummaries")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAisummariesResponseObject); ok {
+		if err := validResponse.VisitPostAisummariesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteAisummariesId operation middleware
+func (sh *strictHandler) DeleteAisummariesId(ctx *gin.Context, id string) {
+	var request DeleteAisummariesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteAisummariesId(ctx, request.(DeleteAisummariesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteAisummariesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteAisummariesIdResponseObject); ok {
+		if err := validResponse.VisitDeleteAisummariesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAisummariesId operation middleware
+func (sh *strictHandler) GetAisummariesId(ctx *gin.Context, id string) {
+	var request GetAisummariesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAisummariesId(ctx, request.(GetAisummariesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAisummariesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAisummariesIdResponseObject); ok {
+		if err := validResponse.VisitGetAisummariesIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

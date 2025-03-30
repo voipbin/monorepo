@@ -199,16 +199,15 @@ func (h *aicallHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID) (*aic
 }
 
 // Gets returns list of aicalls.
-func (h *aicallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+func (h *aicallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Gets",
-		"customer_id": customerID,
-		"size":        size,
-		"token":       token,
-		"filters":     filters,
+		"func":    "Gets",
+		"size":    size,
+		"token":   token,
+		"filters": filters,
 	})
 
-	res, err := h.db.AIcallGets(ctx, customerID, size, token, filters)
+	res, err := h.db.AIcallGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get aicalls. err: %v", err)
 		return nil, err

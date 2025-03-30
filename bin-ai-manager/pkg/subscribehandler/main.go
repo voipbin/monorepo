@@ -9,6 +9,7 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cfconference "monorepo/bin-conference-manager/models/conference"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -20,6 +21,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	"monorepo/bin-ai-manager/pkg/summaryhandler"
 )
 
 // list of publishers
@@ -41,7 +43,8 @@ type subscribeHandler struct {
 	subscribeQueue   string
 	subscribeTargets []string
 
-	aicallHandler aicallhandler.AIcallHandler
+	aicallHandler  aicallhandler.AIcallHandler
+	summaryHandler summaryhandler.SummaryHandler
 }
 
 var (
@@ -73,6 +76,7 @@ func NewSubscribeHandler(
 	subscribeQueue string,
 	subscribeTargets []string,
 	aicallHandler aicallhandler.AIcallHandler,
+	summaryHandler summaryhandler.SummaryHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		serviceName:      serviceName,
@@ -80,6 +84,7 @@ func NewSubscribeHandler(
 		subscribeQueue:   subscribeQueue,
 		subscribeTargets: subscribeTargets,
 		aicallHandler:    aicallHandler,
+		summaryHandler:   summaryHandler,
 	}
 
 	return h
@@ -144,6 +149,10 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	case m.Publisher == publisherCallManager && m.Type == string(cmcall.EventTypeCallHangup):
 		err = h.processEventCMCallHangup(ctx, m)
+
+	// conference-manager
+	case m.Publisher == string(commonoutline.ServiceNameConferenceManager) && m.Type == string(cfconference.EventTypeConferenceUpdated):
+		err = h.processEventCMConferenceUpdated(ctx, m)
 
 	// transcribe-manager
 	case m.Publisher == publisherTranscribeManager && m.Type == string(tmtranscript.EventTypeTranscriptCreated):

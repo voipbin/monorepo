@@ -2,12 +2,12 @@ package ai
 
 import (
 	"encoding/json"
-	"monorepo/bin-common-handler/models/identity"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 // WebhookMessage defines webhook event
 type WebhookMessage struct {
-	identity.Identity
+	commonidentity.Identity
 
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
@@ -37,9 +37,6 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		EngineData:  h.EngineData,
 
 		InitPrompt: h.InitPrompt,
-
-		// CredentialBase64:    h.CredentialBase64,
-		// CredentialProjectID: h.CredentialProjectID,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

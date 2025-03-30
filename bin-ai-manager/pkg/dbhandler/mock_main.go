@@ -14,6 +14,7 @@ import (
 	ai "monorepo/bin-ai-manager/models/ai"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
+	summary "monorepo/bin-ai-manager/models/summary"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -88,18 +89,18 @@ func (mr *MockDBHandlerMockRecorder) AIGet(ctx, id any) *gomock.Call {
 }
 
 // AIGets mocks base method.
-func (m *MockDBHandler) AIGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
+func (m *MockDBHandler) AIGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIGets", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "AIGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIGets indicates an expected call of AIGets.
-func (mr *MockDBHandlerMockRecorder) AIGets(ctx, customerID, size, token, filters any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AIGets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGets", reflect.TypeOf((*MockDBHandler)(nil).AIGets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGets", reflect.TypeOf((*MockDBHandler)(nil).AIGets), ctx, size, token, filters)
 }
 
 // AISetInfo mocks base method.
@@ -190,18 +191,18 @@ func (mr *MockDBHandlerMockRecorder) AIcallGetByTranscribeID(ctx, transcribeID a
 }
 
 // AIcallGets mocks base method.
-func (m *MockDBHandler) AIcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+func (m *MockDBHandler) AIcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallGets", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "AIcallGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIcallGets indicates an expected call of AIcallGets.
-func (mr *MockDBHandlerMockRecorder) AIcallGets(ctx, customerID, size, token, filters any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AIcallGets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGets", reflect.TypeOf((*MockDBHandler)(nil).AIcallGets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGets", reflect.TypeOf((*MockDBHandler)(nil).AIcallGets), ctx, size, token, filters)
 }
 
 // AIcallUpdateStatusEnd mocks base method.
@@ -316,4 +317,76 @@ func (m *MockDBHandler) MessageGets(ctx context.Context, aicallID uuid.UUID, siz
 func (mr *MockDBHandlerMockRecorder) MessageGets(ctx, aicallID, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockDBHandler)(nil).MessageGets), ctx, aicallID, size, token, filters)
+}
+
+// SummaryCreate mocks base method.
+func (m *MockDBHandler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SummaryCreate", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SummaryCreate indicates an expected call of SummaryCreate.
+func (mr *MockDBHandlerMockRecorder) SummaryCreate(ctx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryCreate", reflect.TypeOf((*MockDBHandler)(nil).SummaryCreate), ctx, c)
+}
+
+// SummaryDelete mocks base method.
+func (m *MockDBHandler) SummaryDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SummaryDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SummaryDelete indicates an expected call of SummaryDelete.
+func (mr *MockDBHandlerMockRecorder) SummaryDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryDelete", reflect.TypeOf((*MockDBHandler)(nil).SummaryDelete), ctx, id)
+}
+
+// SummaryGet mocks base method.
+func (m *MockDBHandler) SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SummaryGet", ctx, id)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SummaryGet indicates an expected call of SummaryGet.
+func (mr *MockDBHandlerMockRecorder) SummaryGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryGet", reflect.TypeOf((*MockDBHandler)(nil).SummaryGet), ctx, id)
+}
+
+// SummaryGets mocks base method.
+func (m *MockDBHandler) SummaryGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SummaryGets", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SummaryGets indicates an expected call of SummaryGets.
+func (mr *MockDBHandlerMockRecorder) SummaryGets(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryGets", reflect.TypeOf((*MockDBHandler)(nil).SummaryGets), ctx, size, token, filters)
+}
+
+// SummaryUpdateStatusDone mocks base method.
+func (m *MockDBHandler) SummaryUpdateStatusDone(ctx context.Context, id uuid.UUID, content string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SummaryUpdateStatusDone", ctx, id, content)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SummaryUpdateStatusDone indicates an expected call of SummaryUpdateStatusDone.
+func (mr *MockDBHandlerMockRecorder) SummaryUpdateStatusDone(ctx, id, content any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryUpdateStatusDone", reflect.TypeOf((*MockDBHandler)(nil).SummaryUpdateStatusDone), ctx, id, content)
 }

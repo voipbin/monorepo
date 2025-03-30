@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-common-handler/models/identity"
@@ -21,16 +21,6 @@ func (h *aiHandler) dbCreate(
 	engineData map[string]any,
 	initPrompt string,
 ) (*ai.AI, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "Create",
-		"customer_id":  customerID,
-		"name":         name,
-		"detail":       detail,
-		"engine_type":  engineType,
-		"engine_model": engineModel,
-		"data":         engineData,
-	})
-
 	id := h.utilHandler.UUIDCreate()
 	c := &ai.AI{
 		Identity: identity.Identity{
@@ -47,17 +37,14 @@ func (h *aiHandler) dbCreate(
 
 		InitPrompt: initPrompt,
 	}
-	log.WithField("ai", c).Debugf("Creating a new ai. ai_id: %s", c.ID)
 
 	if err := h.db.AICreate(ctx, c); err != nil {
-		log.Errorf("Could not create a call. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create ai")
 	}
 
 	res, err := h.db.AIGet(ctx, c.ID)
 	if err != nil {
-		log.Errorf("Could not get a created call. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get created ai")
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeCreated, res)
 
@@ -66,32 +53,19 @@ func (h *aiHandler) dbCreate(
 
 // Get returns ai.
 func (h *aiHandler) Get(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "Get",
-		"ai_id": id,
-	})
-
 	res, err := h.db.AIGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get ai. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get ai")
 	}
 
 	return res, nil
 }
 
 // Gets returns list of ais.
-func (h *aiHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "Gets",
-		"customer_id": customerID,
-		"filters":     filters,
-	})
-
-	res, err := h.db.AIGets(ctx, customerID, size, token, filters)
+func (h *aiHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
+	res, err := h.db.AIGets(ctx, size, token, filters)
 	if err != nil {
-		log.Errorf("Could not get ais. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get ais")
 	}
 
 	return res, nil
@@ -99,20 +73,13 @@ func (h *aiHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64,
 
 // Delete deletes the ai.
 func (h *aiHandler) Delete(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "Delete",
-		"ai_id": id,
-	})
-
 	if err := h.db.AIDelete(ctx, id); err != nil {
-		log.Errorf("Could not delete the ai. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not delete ai")
 	}
 
 	res, err := h.db.AIGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not updated ai. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get deleted ai")
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeDeleted, res)
 
@@ -130,26 +97,13 @@ func (h *aiHandler) dbUpdate(
 	engineData map[string]any,
 	initPrompt string,
 ) (*ai.AI, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "Update",
-		"ai_id":        id,
-		"name":         name,
-		"detail":       detail,
-		"engine_type":  engineType,
-		"engine_model": engineModel,
-		"engine_data":  engineData,
-		"init_prompt":  initPrompt,
-	})
-
 	if err := h.db.AISetInfo(ctx, id, name, detail, engineType, engineModel, engineData, initPrompt); err != nil {
-		log.Errorf("Could not update the ai. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not update ai")
 	}
 
 	res, err := h.db.AIGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not updated ai. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get updated ai")
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
 

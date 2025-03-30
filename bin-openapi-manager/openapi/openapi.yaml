@@ -1450,6 +1450,70 @@ components:
           type: string
           description: Timestamp when the message was deleted.
 
+    AIManagerSummaryReferenceType:
+      type: string
+      enum:
+        - ""
+        - "call"
+        - "conference"
+        - "transcribe"
+        - "recording"
+      x-enum-varnames:
+        - AIManagerSummaryReferenceTypeNone
+        - AIManagerSummaryReferenceTypeCall
+        - AIManagerSummaryReferenceTypeConference
+        - AIManagerSummaryReferenceTypeTranscribe
+        - AIManagerSummaryReferenceTypeRecording
+
+    AIManagerSummaryStatus:
+      type: string
+      enum:
+        - ""
+        - "progressing"
+        - "done"
+      x-enum-varnames:
+        - AIManagerSummaryStatusNone
+        - AIManagerSummaryStatusProgressing
+        - AIManagerSummaryStatusDone
+
+    AIManagerSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the message.
+        customer_id:
+          type: string
+          description: Unique identifier of the associated customer.
+        activeflow_id:
+          type: string
+          description: Unique identifier for the activeflow.
+        on_end_flow_id:
+          type: string
+          description: Unique identifier for the on end flow.
+        reference_type:
+          $ref: '#/components/schemas/AIManagerSummaryReferenceType'
+        reference_id:
+          type: string
+          description: Unique identifier for the reference.
+        status:
+          $ref: '#/components/schemas/AIManagerSummaryStatus'
+        language:
+          type: string
+          description: Language used during the ai call.
+        content:
+          type: string
+          description: Content of the message.
+        tm_create:
+          type: string
+          description: Timestamp when the message was created.
+        tm_update:
+          type: string
+          description: Timestamp when the message was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the message was deleted.
+
 
 #########################################
 # Common
@@ -3188,6 +3252,11 @@ paths:
     $ref: './paths/ais/id.yaml'
   /ais:
     $ref: './paths/ais/main.yaml'
+
+  /aisummaries/{id}:
+    $ref: './paths/aisummaries/id.yaml'
+  /aisummaries:
+    $ref: './paths/aisummaries/main.yaml'
 
   /available_numbers:
     $ref: './paths/available_numbers/main.yaml'

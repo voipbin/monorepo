@@ -63,6 +63,22 @@ const (
 	AIManagerMessageRoleUser      AIManagerMessageRole = "user"
 )
 
+// Defines values for AIManagerSummaryReferenceType.
+const (
+	AIManagerSummaryReferenceTypeCall       AIManagerSummaryReferenceType = "call"
+	AIManagerSummaryReferenceTypeConference AIManagerSummaryReferenceType = "conference"
+	AIManagerSummaryReferenceTypeNone       AIManagerSummaryReferenceType = ""
+	AIManagerSummaryReferenceTypeRecording  AIManagerSummaryReferenceType = "recording"
+	AIManagerSummaryReferenceTypeTranscribe AIManagerSummaryReferenceType = "transcribe"
+)
+
+// Defines values for AIManagerSummaryStatus.
+const (
+	AIManagerSummaryStatusDone        AIManagerSummaryStatus = "done"
+	AIManagerSummaryStatusNone        AIManagerSummaryStatus = ""
+	AIManagerSummaryStatusProgressing AIManagerSummaryStatus = "progressing"
+)
+
 // Defines values for AgentManagerAgentPermission.
 const (
 	AgentManagerPermissionAll               AgentManagerAgentPermission = 65535
@@ -751,6 +767,47 @@ type AIManagerMessageDirection string
 
 // AIManagerMessageRole Role of the entity in the conversation.
 type AIManagerMessageRole string
+
+// AIManagerSummary defines model for AIManagerSummary.
+type AIManagerSummary struct {
+	// ActiveflowId Unique identifier for the activeflow.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// Content Content of the message.
+	Content *string `json:"content,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id Unique identifier for the message.
+	Id *string `json:"id,omitempty"`
+
+	// Language Language used during the ai call.
+	Language *string `json:"language,omitempty"`
+
+	// OnEndFlowId Unique identifier for the on end flow.
+	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
+
+	// ReferenceId Unique identifier for the reference.
+	ReferenceId   *string                        `json:"reference_id,omitempty"`
+	ReferenceType *AIManagerSummaryReferenceType `json:"reference_type,omitempty"`
+	Status        *AIManagerSummaryStatus        `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the message was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// AIManagerSummaryReferenceType defines model for AIManagerSummaryReferenceType.
+type AIManagerSummaryReferenceType string
+
+// AIManagerSummaryStatus defines model for AIManagerSummaryStatus.
+type AIManagerSummaryStatus string
 
 // AgentManagerAgent Represents an agent resource.
 type AgentManagerAgent struct {
@@ -2746,6 +2803,28 @@ type PutAisIdJSONBody struct {
 	Name       string                `json:"name"`
 }
 
+// GetAisummariesParams defines parameters for GetAisummaries.
+type GetAisummariesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostAisummariesJSONBody defines parameters for PostAisummaries.
+type PostAisummariesJSONBody struct {
+	// Language The language of the ai summary.
+	Language string `json:"language"`
+
+	// OnEndFlowId The ID of the flow to be executed when the ai summary ends.
+	OnEndFlowId string `json:"on_end_flow_id"`
+
+	// ReferenceId The ID of the reference for the ai summary.
+	ReferenceId   string                        `json:"reference_id"`
+	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
+}
+
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
 	// PageSize The size of results.
@@ -4102,6 +4181,9 @@ type PostAisJSONRequestBody PostAisJSONBody
 
 // PutAisIdJSONRequestBody defines body for PutAisId for application/json ContentType.
 type PutAisIdJSONRequestBody PutAisIdJSONBody
+
+// PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
+type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 
 // PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
 type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody

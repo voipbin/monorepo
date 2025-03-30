@@ -8,6 +8,10 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
+func (h *engineOpenaiHandler) Send(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+	return h.send(ctx, req)
+}
+
 func (h *engineOpenaiHandler) send(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
 	expBackoff := backoff.NewExponentialBackOff()
 	expBackoff.InitialInterval = 1 * time.Second

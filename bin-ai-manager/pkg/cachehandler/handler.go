@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/summary"
 )
 
 // getSerialize returns cached serialized info.
@@ -134,6 +135,29 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 // MessageSet sets the ai info into the cache.
 func (h *handler) MessageSet(ctx context.Context, data *message.Message) error {
 	key := fmt.Sprintf("ai:message:%s", data.ID)
+
+	if err := h.setSerialize(ctx, key, data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// SummaryGet returns cached summary info
+func (h *handler) SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
+	key := fmt.Sprintf("ai:summary:%s", id)
+
+	var res summary.Summary
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// SummarySet sets the ai info into the cache.
+func (h *handler) SummarySet(ctx context.Context, data *summary.Summary) error {
+	key := fmt.Sprintf("ai:summary:%s", data.ID)
 
 	if err := h.setSerialize(ctx, key, data); err != nil {
 		return err

@@ -17,9 +17,12 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
+	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
 	"monorepo/bin-ai-manager/pkg/listenhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/subscribehandler"
+	"monorepo/bin-ai-manager/pkg/summaryhandler"
 )
 
 const (
@@ -89,17 +92,21 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	aiHandler := aihandler.NewAIHandler(requestHandler, notifyHandler, db)
 
+	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(engineKeyChatgpt)
+	engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
+
 	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler)
-	messageHandler := messagehandler.NewMessageHandler(notifyHandler, db, aicallHandler, engineKeyChatgpt)
+	messageHandler := messagehandler.NewMessageHandler(notifyHandler, db, aicallHandler, engineOpenaiHandler, engineDialogflowHandler)
+	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, messageHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, messageHandler, summaryHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
 
 	// run subscribe
-	if errSubscribe := runSubscribe(sockHandler, aicallHandler); errSubscribe != nil {
+	if errSubscribe := runSubscribe(sockHandler, aicallHandler, summaryHandler); errSubscribe != nil {
 		log.Errorf("Could not start runSubscribe. err: %v", errSubscribe)
 		return errSubscribe
 	}
@@ -111,6 +118,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 func runSubscribe(
 	sockHandler sockhandler.SockHandler,
 	aicallHandler aicallhandler.AIcallHandler,
+	summaryHandler summaryhandler.SummaryHandler,
 ) error {
 
 	subscribeTargets := []string{
@@ -124,6 +132,7 @@ func runSubscribe(
 		string(commonoutline.QueueNameAISubscribe),
 		subscribeTargets,
 		aicallHandler,
+		summaryHandler,
 	)
 
 	// run
@@ -141,6 +150,7 @@ func runListen(
 	aiHandler aihandler.AIHandler,
 	aicallhandler aicallhandler.AIcallHandler,
 	messageHandler messagehandler.MessageHandler,
+	summaryHandler summaryhandler.SummaryHandler,
 ) error {
 	listenHandler := listenhandler.NewListenHandler(
 		sockHandler,
@@ -149,6 +159,7 @@ func runListen(
 		aiHandler,
 		aicallhandler,
 		messageHandler,
+		summaryHandler,
 	)
 
 	// run

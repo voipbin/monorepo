@@ -13,6 +13,8 @@ import (
 	context "context"
 	ai "monorepo/bin-ai-manager/models/ai"
 	aicall "monorepo/bin-ai-manager/models/aicall"
+	call "monorepo/bin-call-manager/models/call"
+	confbridge "monorepo/bin-call-manager/models/confbridge"
 	service "monorepo/bin-common-handler/models/service"
 	reflect "reflect"
 
@@ -88,6 +90,42 @@ func (mr *MockAIcallHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAIcallHandler)(nil).Delete), ctx, id)
 }
 
+// EventCMCallHangup mocks base method.
+func (m *MockAIcallHandler) EventCMCallHangup(ctx context.Context, c *call.Call) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventCMCallHangup", ctx, c)
+}
+
+// EventCMCallHangup indicates an expected call of EventCMCallHangup.
+func (mr *MockAIcallHandlerMockRecorder) EventCMCallHangup(ctx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMCallHangup", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMCallHangup), ctx, c)
+}
+
+// EventCMConfbridgeJoined mocks base method.
+func (m *MockAIcallHandler) EventCMConfbridgeJoined(ctx context.Context, evt *confbridge.EventConfbridgeJoined) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventCMConfbridgeJoined", ctx, evt)
+}
+
+// EventCMConfbridgeJoined indicates an expected call of EventCMConfbridgeJoined.
+func (mr *MockAIcallHandlerMockRecorder) EventCMConfbridgeJoined(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMConfbridgeJoined", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMConfbridgeJoined), ctx, evt)
+}
+
+// EventCMConfbridgeLeaved mocks base method.
+func (m *MockAIcallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *confbridge.EventConfbridgeLeaved) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventCMConfbridgeLeaved", ctx, evt)
+}
+
+// EventCMConfbridgeLeaved indicates an expected call of EventCMConfbridgeLeaved.
+func (mr *MockAIcallHandlerMockRecorder) EventCMConfbridgeLeaved(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMConfbridgeLeaved", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMConfbridgeLeaved), ctx, evt)
+}
+
 // Get mocks base method.
 func (m *MockAIcallHandler) Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -134,18 +172,18 @@ func (mr *MockAIcallHandlerMockRecorder) GetByTranscribeID(ctx, transcribeID any
 }
 
 // Gets mocks base method.
-func (m *MockAIcallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+func (m *MockAIcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockAIcallHandlerMockRecorder) Gets(ctx, customerID, size, token, filters any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAIcallHandler)(nil).Gets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAIcallHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // ProcessEnd mocks base method.

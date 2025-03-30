@@ -9,92 +9,42 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 
-	"github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 )
 
 // processEventCMConfbridgeJoined handles the call-manager's call related event
 func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m *sock.Event) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMConfbridgeJoined",
-		"event": m,
-	})
-
 	evt := cmconfbridge.EventConfbridgeJoined{}
 	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
-		log.Errorf("Could not unmarshal the data. err: %v", err)
-		return err
+		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	// get aicall
-	cc, err := h.aicallHandler.GetByReferenceID(ctx, evt.JoinedCallID)
-	if err != nil {
-		// aicall not found. Not a aicall.
-		return nil
-	}
-
-	_, err = h.aicallHandler.ProcessStart(ctx, cc)
-	if err != nil {
-		log.Errorf("Could not start the aicall. aicall_id: %s", err)
-		return err
-	}
+	go h.aicallHandler.EventCMConfbridgeJoined(context.Background(), &evt)
 
 	return nil
 }
 
 // processEventCMConfbridgeLeaved handles the call-manager's call related event
 func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m *sock.Event) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMConfbridgeLeaved",
-		"event": m,
-	})
-
 	evt := cmconfbridge.EventConfbridgeLeaved{}
 	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
-		log.Errorf("Could not unmarshal the data. err: %v", err)
-		return err
+		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	// get aicall
-	cc, err := h.aicallHandler.GetByReferenceID(ctx, evt.LeavedCallID)
-	if err != nil {
-		// aicall not found.
-		return nil
-	}
-
-	_, err = h.aicallHandler.ProcessPause(ctx, cc)
-	if err != nil {
-		log.Errorf("Could not terminated the aicall call. err: %v", err)
-		return err
-	}
+	go h.aicallHandler.EventCMConfbridgeLeaved(context.Background(), &evt)
 
 	return nil
 }
 
 // processEventCMCallHangup handles the call-manager's call hangup event
 func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *sock.Event) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMCallHangup",
-		"event": m,
-	})
-
 	evt := cmcall.Call{}
 	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
-		log.Errorf("Could not unmarshal the data. err: %v", err)
-		return err
+		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	// get aicall
-	cc, err := h.aicallHandler.GetByReferenceID(ctx, evt.ID)
-	if err != nil {
-		// aicall not found.
-		return nil
-	}
-
-	_, err = h.aicallHandler.ProcessEnd(ctx, cc)
-	if err != nil {
-		log.Errorf("Could not terminated the aicall call. err: %v", err)
-		return err
-	}
+	go h.aicallHandler.EventCMCallHangup(context.Background(), &evt)
+	go h.summaryHandler.EventCMCallHangup(context.Background(), &evt)
 
 	return nil
 }

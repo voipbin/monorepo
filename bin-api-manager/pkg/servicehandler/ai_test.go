@@ -108,28 +108,29 @@ func Test_AIGetsByCustomerID(t *testing.T) {
 		expectRes []*amai.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			10,
-			"2020-09-20 03:23:20.995000",
-			map[string]string{
-				"deleted": "false",
+			size:  10,
+			token: "2020-09-20 03:23:20.995000",
+			filters: map[string]string{
+				"deleted":     "false",
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
 			},
 
-			[]amai.AI{
+			response: []amai.AI{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("1dacd73f-5dca-46bd-b408-d703409ec557"),
 					},
 				},
 			},
-			[]*amai.WebhookMessage{
+			expectRes: []*amai.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("1dacd73f-5dca-46bd-b408-d703409ec557"),
@@ -154,7 +155,7 @@ func Test_AIGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGetsByCustomerID(ctx, tt.agent.CustomerID, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AIGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

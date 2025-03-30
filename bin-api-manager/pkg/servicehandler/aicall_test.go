@@ -92,7 +92,15 @@ func Test_AIcallCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID).Return(tt.responseAI, nil)
-			mockReq.EXPECT().AIV1AIcallStart(ctx, tt.aiID, tt.referenceType, tt.referenceID, tt.gender, tt.language).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().AIV1AIcallStart(
+				ctx,
+				uuid.Nil,
+				tt.aiID,
+				tt.referenceType,
+				tt.referenceID,
+				tt.gender,
+				tt.language,
+			).Return(tt.responseAIcall, nil)
 
 			res, err := h.AIcallCreate(ctx, tt.agent, tt.aiID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
@@ -120,28 +128,30 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 		expectRes []*amaicall.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			10,
-			"2020-09-20 03:23:20.995000",
-			map[string]string{
-				"deleted": "false",
+			size:  10,
+			token: "2020-09-20 03:23:20.995000",
+			filters: map[string]string{
+				"deleted":     "false",
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
 			},
 
-			[]amaicall.AIcall{
+			response: []amaicall.AIcall{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("78b58aef-2fcf-4a88-81e2-054f4e4c37d4"),
 					},
 				},
 			},
-			[]*amaicall.WebhookMessage{
+			expectRes: []*amaicall.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("78b58aef-2fcf-4a88-81e2-054f4e4c37d4"),
@@ -165,7 +175,7 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIcallGetsByCustomerID(ctx, tt.agent.CustomerID, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIcallGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AIcallGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -191,23 +201,24 @@ func Test_AIcallGet(t *testing.T) {
 		expectRes *amaicall.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("2c10c2af-fb73-416e-ab86-8e91e7db32c4"),
+			aicallID: uuid.FromStringOrNil("2c10c2af-fb73-416e-ab86-8e91e7db32c4"),
 
-			&amaicall.AIcall{
+			response: &amaicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2c10c2af-fb73-416e-ab86-8e91e7db32c4"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			&amaicall.WebhookMessage{
+			expectRes: &amaicall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2c10c2af-fb73-416e-ab86-8e91e7db32c4"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -251,27 +262,28 @@ func Test_AIcallDelete(t *testing.T) {
 		agent    *amagent.Agent
 		aicallID uuid.UUID
 
-		responseChat *amaicall.AIcall
-		expectRes    *amaicall.WebhookMessage
+		responseAicall *amaicall.AIcall
+		expectRes      *amaicall.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+			aicallID: uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
 
-			&amaicall.AIcall{
+			responseAicall: &amaicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b35fcdb7-f3ee-4534-b6fa-24d78b437356"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			&amaicall.WebhookMessage{
+			expectRes: &amaicall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b35fcdb7-f3ee-4534-b6fa-24d78b437356"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -294,8 +306,8 @@ func Test_AIcallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseChat, nil)
-			mockReq.EXPECT().AIV1AIcallDelete(ctx, tt.aicallID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAicall, nil)
+			mockReq.EXPECT().AIV1AIcallDelete(ctx, tt.aicallID).Return(tt.responseAicall, nil)
 
 			res, err := h.AIcallDelete(ctx, tt.agent, tt.aicallID)
 			if err != nil {

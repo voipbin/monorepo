@@ -22,7 +22,8 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return nil, err
+		log.Errorf("Could not parse the request uri. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
 	// parse the pagination params
@@ -74,7 +75,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 	var req request.V1DataMessagesPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	tmp, err := h.messageHandler.Send(ctx, req.AIcallID, req.Role, req.Content)

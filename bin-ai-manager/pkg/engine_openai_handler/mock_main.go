@@ -15,6 +15,7 @@ import (
 	message "monorepo/bin-ai-manager/models/message"
 	reflect "reflect"
 
+	openai "github.com/sashabaranov/go-openai"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -55,4 +56,19 @@ func (m *MockEngineOpenaiHandler) MessageSend(ctx context.Context, cc *aicall.AI
 func (mr *MockEngineOpenaiHandlerMockRecorder) MessageSend(ctx, cc, messages any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSend", reflect.TypeOf((*MockEngineOpenaiHandler)(nil).MessageSend), ctx, cc, messages)
+}
+
+// Send mocks base method.
+func (m *MockEngineOpenaiHandler) Send(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Send", ctx, req)
+	ret0, _ := ret[0].(*openai.ChatCompletionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Send indicates an expected call of Send.
+func (mr *MockEngineOpenaiHandlerMockRecorder) Send(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockEngineOpenaiHandler)(nil).Send), ctx, req)
 }

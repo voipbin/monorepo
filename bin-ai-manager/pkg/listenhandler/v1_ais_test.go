@@ -23,20 +23,19 @@ func Test_processV1AIsGet(t *testing.T) {
 
 		responseAIs []*ai.AI
 
-		expectCustomerID uuid.UUID
-		expectPageSize   uint64
-		expectPageToken  string
-		expectFilters    map[string]string
-		expectRes        *sock.Response
+		expectPageSize  uint64
+		expectPageToken string
+		expectFilters   map[string]string
+		expectRes       *sock.Response
 	}{
 		{
-			"normal",
-			&sock.Request{
-				URI:    "/v1/ais?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=24676972-7f49-11ec-bc89-b7d33e9d3ea8&filter_deleted=false",
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/ais?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=24676972-7f49-11ec-bc89-b7d33e9d3ea8&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
 
-			[]*ai.AI{
+			responseAIs: []*ai.AI{
 				{
 					Identity: identity.Identity{
 						ID: uuid.FromStringOrNil("0b61dcbe-a770-11ed-bab4-2fc1dac66672"),
@@ -49,14 +48,14 @@ func Test_processV1AIsGet(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8"),
-			10,
-			"2020-05-03 21:35:02.809",
-			map[string]string{
-				"deleted": "false",
+			expectPageSize:  10,
+			expectPageToken: "2020-05-03 21:35:02.809",
+			expectFilters: map[string]string{
+				"deleted":     "false",
+				"customer_id": "24676972-7f49-11ec-bc89-b7d33e9d3ea8",
 			},
 
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"0b61dcbe-a770-11ed-bab4-2fc1dac66672","customer_id":"00000000-0000-0000-0000-000000000000"},{"id":"0bbe1dee-a770-11ed-b455-cbb60d5dd90b","customer_id":"00000000-0000-0000-0000-000000000000"}]`),
@@ -77,7 +76,7 @@ func Test_processV1AIsGet(t *testing.T) {
 				aiHandler:   mockAI,
 			}
 
-			mockAI.EXPECT().Gets(gomock.Any(), tt.expectCustomerID, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseAIs, nil)
+			mockAI.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseAIs, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
