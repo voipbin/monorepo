@@ -106,6 +106,7 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 			return
 		} else if len(tmp.Results) == 0 {
 			// result end
+			log.Debugf("Received the result end. transcribe_id: %s", st.TranscribeID)
 			return
 		}
 
