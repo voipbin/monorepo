@@ -70,7 +70,7 @@ func (h *summaryHandler) startReferenceTypeCall(
 	}
 
 	if c.Status == cmcall.StatusHangup {
-		return nil, fmt.Errorf("the call is already hangup")
+		return nil, fmt.Errorf("the call has already been hung up")
 	}
 
 	if activeflowID == uuid.Nil {
