@@ -2,7 +2,10 @@ package summaryhandler
 
 import (
 	"context"
+	"fmt"
 	"monorepo/bin-ai-manager/models/summary"
+	cmcall "monorepo/bin-call-manager/models/call"
+	cfconference "monorepo/bin-conference-manager/models/conference"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -59,6 +62,21 @@ func (h *summaryHandler) startReferenceTypeCall(
 		"activeflow_id": activeflowID,
 		"reference_id":  referenceID,
 	})
+
+	// get call info
+	c, err := h.reqHandler.CallV1CallGet(ctx, referenceID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the call data")
+	}
+
+	if c.Status == cmcall.StatusHangup {
+		return nil, fmt.Errorf("the call has already been hung up")
+	}
+
+	if activeflowID == uuid.Nil {
+		log.Debugf("ActiveflowID is nil. Set the activeflowID as the call's activeflowID.")
+		activeflowID = c.ActiveflowID
+	}
 
 	// transcribe start
 	// note: here, we set the customer id as the ai manager id
@@ -118,6 +136,10 @@ func (h *summaryHandler) startReferenceTypeConference(
 		return nil, errors.Wrapf(err, "could not get the conference data")
 	}
 
+	if cf.Status != cfconference.StatusProgressing {
+		return nil, fmt.Errorf("the conference is not progressing")
+	}
+
 	// transcribe start
 	// note: here, we set the customer id as the ai manager id
 	// thie is required becasue if we use the customer id, the created transcribe will be shown to the
@@ -174,8 +196,8 @@ func (h *summaryHandler) startReferenceTypeTranscribe(
 
 	// get transcripts
 	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": referenceID.String(),
+		"deleted":       "false",
+		"transcribe_id": referenceID.String(),
 	}
 	ts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
 	if err != nil {
@@ -240,8 +262,8 @@ func (h *summaryHandler) startReferenceTypeRecording(
 
 	// get transcripts
 	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": referenceID.String(),
+		"deleted":       "false",
+		"transcribe_id": tr.ID.String(),
 	}
 	transcripts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
 	if err != nil {

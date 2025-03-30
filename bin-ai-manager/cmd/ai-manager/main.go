@@ -66,7 +66,7 @@ func main() {
 	_ = run(sqlDB, cache)
 	<-chDone
 
-	log.Info("Finishing conference-manager.")
+	log.Info("Finished ai-manager.")
 }
 
 // signalHandler catches signals and set the done
