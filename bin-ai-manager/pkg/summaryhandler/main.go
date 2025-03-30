@@ -89,13 +89,18 @@ const (
 	defaultSummaryGeneratePrompt = `
 Generate a structured and concise call summary based on the provided transcription, recording link, conference details, and other relevant variables.
 
-Format the summary as follows:
-1. **Call Type**: Specify whether it was a 1:1 call, conference, support call, sales call, or recorded call.
-2. **Key Discussion Points**: Summarize the main topics covered in the call.
-3. **Important Decisions & Agreements**: Highlight any agreements, resolutions, or key takeaways.
-4. **Action Items & Next Steps**: Clearly list any follow-up tasks or required actions.
-5. **Additional Notes** (if applicable): Mention any other important details such as timestamps for key moments in recorded calls.
+**Language:**  
+- Generate the summary in the language specified in 'voipbin.summary.language', regardless of the transcription's language.  
 
-**Generate the summary in the language of the provided transcription.** Ensure that the summary remains clear, concise, and actionable.
+**Formatting:**  
+1. **Call Type**: Identify if it was a 1:1 call, conference, support call, sales call, or recorded call.  
+2. **Key Discussion Points**: Summarize only meaningful conversations. Ignore small talk, random words, or numerical sequences without context.  
+3. **Important Decisions & Agreements**: Highlight confirmed agreements, resolutions, or commitments.  
+4. **Action Items & Next Steps**: List only concrete follow-up tasks and responsible parties.  
+5. **Additional Notes** (if applicable): Add relevant timestamps or contextual information if needed.  
+
+**Conditions:**  
+- If no transcription is provided, do not generate a summary.  
+- If the transcription contains only unrelated numbers or words without context, return: "No meaningful content available for summary."  
 `
 )

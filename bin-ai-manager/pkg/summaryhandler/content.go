@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"monorepo/bin-ai-manager/models/summary"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
@@ -53,14 +54,9 @@ func (h *summaryHandler) contentProcessReferenceTypeCall(ctx context.Context, ca
 		return errors.Wrapf(err, "could not get the summary")
 	}
 
-	// get transcripts
-	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": sm.ReferenceID.String(),
-	}
-	transcripts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
+	transcripts, err := h.contentGetTranscripts(ctx, sm.ReferenceID)
 	if err != nil {
-		return errors.Wrapf(err, "could not get the transcribe data")
+		return errors.Wrapf(err, "could not get the transcripts")
 	}
 
 	content, err := h.contentGet(ctx, sm.ActiveflowID, transcripts)
@@ -100,14 +96,9 @@ func (h *summaryHandler) contentProcessReferenceTypeConference(ctx context.Conte
 		return errors.Wrapf(err, "could not get the conference data")
 	}
 
-	// get transcripts
-	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": cf.ConfbridgeID.String(),
-	}
-	transcripts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
+	transcripts, err := h.contentGetTranscripts(ctx, cf.ConfbridgeID)
 	if err != nil {
-		return errors.Wrapf(err, "could not get the transcribe data")
+		return errors.Wrapf(err, "could not get the transcripts")
 	}
 
 	content, err := h.contentGet(ctx, sm.ActiveflowID, transcripts)
@@ -130,23 +121,61 @@ func (h *summaryHandler) contentProcessReferenceTypeConference(ctx context.Conte
 	return nil
 }
 
+func (h *summaryHandler) contentGetTranscripts(ctx context.Context, referenceID uuid.UUID) ([]tmtranscript.Transcript, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "contentGetTranscripts",
+		"reference_id": referenceID,
+	})
+
+	// get transcribe
+	transcribeFilters := map[string]string{
+		"deleted":      "false",
+		"customer_id":  cmcustomer.IDAIManager.String(),
+		"reference_id": referenceID.String(),
+	}
+
+	tr, err := h.reqHandler.TranscribeV1TranscribeGets(ctx, "", 1, transcribeFilters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the transcribe data")
+	} else if len(tr) == 0 {
+		return nil, errors.Errorf("could not find the transcribe data")
+	}
+	log.WithField("transcribe", tr).Debugf("Found transcribe. transcribe_id: %s", tr[0].ID)
+
+	transcriptFilters := map[string]string{
+		"deleted":       "false",
+		"transcribe_id": tr[0].ID.String(),
+	}
+	res, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, transcriptFilters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the transcribe data")
+	}
+
+	return res, nil
+}
+
 func (h *summaryHandler) contentGet(ctx context.Context, activeflowID uuid.UUID, ts []tmtranscript.Transcript) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "contentGet",
 		"activeflow_id": activeflowID,
 	})
 
-	// get variable
-	variable, err := h.reqHandler.FlowV1VariableGet(ctx, activeflowID)
-	if err != nil {
-		return "", errors.Wrapf(err, "could not get the variable")
+	// get variables
+	var variables map[string]string
+	if activeflowID != uuid.Nil {
+		tmp, err := h.reqHandler.FlowV1VariableGet(ctx, activeflowID)
+		if err != nil {
+			return "", errors.Wrapf(err, "could not get the variable")
+		}
+		log.WithField("variable", tmp).Debugf("Received variable")
+
+		variables = tmp.Variables
 	}
-	log.WithField("variable", variable).Debugf("Received variable")
 
 	requestContent := RequestContent{
 		Prompt:      defaultSummaryGeneratePrompt,
 		Transcripts: ts,
-		Variables:   variable.Variables,
+		Variables:   variables,
 	}
 
 	tmpContent, err := json.Marshal(requestContent)

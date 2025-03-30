@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -33,6 +34,7 @@ func Test_ServiceStart_referencetype_call(t *testing.T) {
 		referenceID   uuid.UUID
 		language      string
 
+		responseCall *cmcall.Call
 		responseUUID uuid.UUID
 
 		expectedSummary   *summary.Summary
@@ -49,6 +51,11 @@ func Test_ServiceStart_referencetype_call(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("d6bfb5ea-0cb6-11f0-8db4-a32464ec8a1c"),
 			language:      "en-US",
 
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d6bfb5ea-0cb6-11f0-8db4-a32464ec8a1c"),
+				},
+			},
 			responseUUID: uuid.FromStringOrNil("d6edbfda-0cb6-11f0-bc8f-ffb8645d4a00"),
 
 			expectedSummary: &summary.Summary{
@@ -98,6 +105,7 @@ func Test_ServiceStart_referencetype_call(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockDB.EXPECT().SummaryGets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,

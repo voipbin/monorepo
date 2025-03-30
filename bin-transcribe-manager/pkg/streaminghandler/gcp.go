@@ -60,8 +60,8 @@ func (h *streamingHandler) gcpInit(ctx context.Context, st *streaming.Streaming)
 			AudioChannelCount:          int32(defaultGCPAudioChannelCount),
 			LanguageCode:               st.Language,
 			EnableAutomaticPunctuation: true,
-			Model:                      defaultGCPModel,
 			UseEnhanced:                true,
+			// Model:                      "phone_call", // note: we can not use the phone_call model because it supports only limited languages
 		},
 		InterimResults: true,
 	}
@@ -105,8 +105,8 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 			log.Debugf("Could not received the result. Consider this hangup. err: %v", err)
 			return
 		} else if len(tmp.Results) == 0 {
-			// result end
-			return
+			// no result
+			continue
 		}
 
 		if !tmp.Results[0].IsFinal {
