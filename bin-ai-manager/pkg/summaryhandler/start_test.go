@@ -5,6 +5,7 @@ import (
 	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
+	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -35,6 +36,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 		referenceID  uuid.UUID
 		language     string
 
+		responseCall       *cmcall.Call
 		responseTranscribe *tmtranscribe.Transcribe
 		responseUUID       uuid.UUID
 
@@ -50,6 +52,11 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			referenceID:  uuid.FromStringOrNil("1c0229b8-0bf3-11f0-b474-cf304324c97a"),
 			language:     "en-US",
 
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1c0229b8-0bf3-11f0-b474-cf304324c97a"),
+				},
+			},
 			responseTranscribe: &tmtranscribe.Transcribe{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1c394aba-0bf3-11f0-affc-23b38f9c795c"),
@@ -98,6 +105,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
 				cmcustomer.IDAIManager,
@@ -158,6 +166,7 @@ func Test_startReferenceTypeConference(t *testing.T) {
 
 			responseConference: &cfconference.Conference{
 				ConfbridgeID: uuid.FromStringOrNil("cbe3ed20-0bf4-11f0-87e6-6b37fa660498"),
+				Status:       cfconference.StatusProgressing,
 			},
 			responseTranscribe: &tmtranscribe.Transcribe{
 				Identity: commonidentity.Identity{

@@ -2,7 +2,10 @@ package summaryhandler
 
 import (
 	"context"
+	"fmt"
 	"monorepo/bin-ai-manager/models/summary"
+	cmcall "monorepo/bin-call-manager/models/call"
+	cfconference "monorepo/bin-conference-manager/models/conference"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -60,6 +63,21 @@ func (h *summaryHandler) startReferenceTypeCall(
 		"reference_id":  referenceID,
 	})
 
+	// get call info
+	c, err := h.reqHandler.CallV1CallGet(ctx, referenceID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the call data")
+	}
+
+	if c.Status == cmcall.StatusHangup {
+		return nil, fmt.Errorf("the call is already hangup")
+	}
+
+	if activeflowID == uuid.Nil {
+		log.Debugf("ActiveflowID is nil. Set the activeflowID as the call's activeflowID.")
+		activeflowID = c.ActiveflowID
+	}
+
 	// transcribe start
 	// note: here, we set the customer id as the ai manager id
 	// thie is required becasue if we use the customer id, the created transcribe will be shown to the
@@ -116,6 +134,10 @@ func (h *summaryHandler) startReferenceTypeConference(
 	cf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, referenceID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the conference data")
+	}
+
+	if cf.Status != cfconference.StatusProgressing {
+		return nil, fmt.Errorf("the conference is not progressing")
 	}
 
 	// transcribe start
