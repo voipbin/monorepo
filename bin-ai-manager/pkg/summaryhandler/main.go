@@ -97,6 +97,6 @@ Format the summary as follows:
 5. **Additional Notes** (if applicable): Mention any other important details such as timestamps for key moments in recorded calls.
 
 **If no transcription is provided, do not generate a summary.**  
-**Generate the summary in the language of the provided transcription.** Ensure that the summary remains clear, concise, and actionable.
+**Generate the summary in the language of the provided summary's language config ('voipbin.summary.language'). If the transcription is in Korean, generate the summary in Korean.**
 `
 )

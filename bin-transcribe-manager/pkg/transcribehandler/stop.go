@@ -83,7 +83,7 @@ func (h *transcribeHandler) stopLive(ctx context.Context, tr *transcribe.Transcr
 		st, err := h.streamingHandler.Stop(ctx, streamingID)
 		if err != nil {
 			// could not stop the streaming, but continue to stop the other streamings
-			log.Errorf("Could not stop the streaming. streaming_id: %s, err: %v", streamingID, err)
+			log.Infof("Could not stop the streaming. But consider already stopped. streaming_id: %s, err: %v", streamingID, err)
 			continue
 		}
 		log.WithField("streaming", st).Debugf("Stopped streaming. streaming_id: %s", st.ID)
@@ -91,8 +91,7 @@ func (h *transcribeHandler) stopLive(ctx context.Context, tr *transcribe.Transcr
 
 	res, err := h.UpdateStatus(ctx, tr.ID, transcribe.StatusDone)
 	if err != nil {
-		log.Errorf("Could not update the status. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not update the status. transcribe_id: %s", tr.ID)
 	}
 	log.WithField("transcribe", res).Debugf("Updated transcribe status done. transcribe_id: %s", res.ID)
 
