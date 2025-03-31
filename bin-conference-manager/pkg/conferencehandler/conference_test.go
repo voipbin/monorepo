@@ -73,7 +73,9 @@ func Test_Create(t *testing.T) {
 			},
 
 			expectRes: &conference.Conference{
-				ID:           uuid.FromStringOrNil("a5f5c12e-5b8a-11ec-9358-f381c6b41b9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a5f5c12e-5b8a-11ec-9358-f381c6b41b9f"),
+				},
 				Type:         conference.TypeConference,
 				ConfbridgeID: uuid.FromStringOrNil("a5aab3aa-5b8a-11ec-bf89-432b7557fb8b"),
 				Timeout:      86400,
@@ -276,7 +278,9 @@ func Test_GetByConfbridgeID(t *testing.T) {
 			uuid.FromStringOrNil("3d72398e-13bd-11ed-9abc-67fe710b5f19"),
 
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("3d72398e-13bd-11ed-9abc-67fe710b5f19"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3d72398e-13bd-11ed-9abc-67fe710b5f19"),
+				},
 			},
 		},
 	}
@@ -329,7 +333,9 @@ func Test_UpdateRecordingID(t *testing.T) {
 			uuid.FromStringOrNil("cbf14380-9090-11ed-8ae5-0bdda69156ed"),
 
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("cbbf9c7c-9090-11ed-b005-b76aad1ce504"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cbbf9c7c-9090-11ed-b005-b76aad1ce504"),
+				},
 			},
 		},
 		{
@@ -339,7 +345,9 @@ func Test_UpdateRecordingID(t *testing.T) {
 			uuid.Nil,
 
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("f036af26-98c1-11ed-a796-0753c08f103e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f036af26-98c1-11ed-a796-0753c08f103e"),
+				},
 			},
 		},
 	}
@@ -396,7 +404,9 @@ func Test_UpdateTranscribeID(t *testing.T) {
 			uuid.FromStringOrNil("d629b3ee-98c1-11ed-8d37-d7fa7c56235d"),
 
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("d5e141cc-98c1-11ed-8cce-6b7c71104332"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d5e141cc-98c1-11ed-8cce-6b7c71104332"),
+				},
 			},
 		},
 		{
@@ -406,7 +416,9 @@ func Test_UpdateTranscribeID(t *testing.T) {
 			uuid.Nil,
 
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("f0138906-98c1-11ed-8b15-77a88eafac75"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0138906-98c1-11ed-8b15-77a88eafac75"),
+				},
 			},
 		},
 	}
@@ -463,7 +475,9 @@ func Test_AddConferencecallID(t *testing.T) {
 			uuid.FromStringOrNil("3b1b4a50-94a9-11ed-a34c-13244d5ec3ce"),
 
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("3a9eb896-94a9-11ed-b58c-af21495e92d6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3a9eb896-94a9-11ed-b58c-af21495e92d6"),
+				},
 			},
 		},
 	}
@@ -516,7 +530,9 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("9e43cc72-94e2-11ed-b2f6-b3ea29f01f60"),
 
 			&conference.Conference{
-				ID:     uuid.FromStringOrNil("9e43cc72-94e2-11ed-b2f6-b3ea29f01f60"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9e43cc72-94e2-11ed-b2f6-b3ea29f01f60"),
+				},
 				Status: conference.StatusTerminating,
 			},
 		},
@@ -583,13 +599,17 @@ func Test_Gets(t *testing.T) {
 
 			responseConference: []*conference.Conference{
 				{
-					ID: uuid.FromStringOrNil("c831941c-afd3-11ee-b91b-8fdf2766ea5e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c831941c-afd3-11ee-b91b-8fdf2766ea5e"),
+					},
 				},
 			},
 
 			expectRes: []*conference.Conference{
 				{
-					ID: uuid.FromStringOrNil("c831941c-afd3-11ee-b91b-8fdf2766ea5e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c831941c-afd3-11ee-b91b-8fdf2766ea5e"),
+					},
 				},
 			},
 		},

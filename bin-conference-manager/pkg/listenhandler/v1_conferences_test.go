@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -44,8 +45,10 @@ func Test_processV1ConferencesGet(t *testing.T) {
 			},
 			[]*conference.Conference{
 				{
-					ID:         uuid.FromStringOrNil("0addf332-9312-11eb-95e8-9b90e44428a0"),
-					CustomerID: uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("0addf332-9312-11eb-95e8-9b90e44428a0"),
+						CustomerID: uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8"),
+					},
 				},
 			},
 			&sock.Response{
@@ -68,8 +71,10 @@ func Test_processV1ConferencesGet(t *testing.T) {
 			},
 			[]*conference.Conference{
 				{
-					ID:                uuid.FromStringOrNil("33b1138a-3bef-11ec-a187-f77a455f3ced"),
-					CustomerID:        uuid.FromStringOrNil("3be94c82-7f49-11ec-814e-ff2a9d84a806"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("33b1138a-3bef-11ec-a187-f77a455f3ced"),
+						CustomerID: uuid.FromStringOrNil("3be94c82-7f49-11ec-814e-ff2a9d84a806"),
+					},
 					ConfbridgeID:      uuid.FromStringOrNil("343ae074-3bef-11ec-b657-db12d3135e42"),
 					FlowID:            uuid.FromStringOrNil("49da6378-3bef-11ec-88b6-f31f8c97b61b"),
 					Data:              map[string]interface{}{},
@@ -102,8 +107,10 @@ func Test_processV1ConferencesGet(t *testing.T) {
 			},
 			[]*conference.Conference{
 				{
-					ID:                uuid.FromStringOrNil("c1e0a078-3de6-11ec-ae88-13052faf6ad7"),
-					CustomerID:        uuid.FromStringOrNil("4d4d8ce0-7f49-11ec-a61f-1358990ed631"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("c1e0a078-3de6-11ec-ae88-13052faf6ad7"),
+						CustomerID: uuid.FromStringOrNil("4d4d8ce0-7f49-11ec-a61f-1358990ed631"),
+					},
 					Type:              conference.TypeConference,
 					ConfbridgeID:      uuid.FromStringOrNil("c21b98ea-3de6-11ec-ab1e-4bcde9e784af"),
 					FlowID:            uuid.FromStringOrNil("c234ce0a-3de6-11ec-8807-0b3f00d6e280"),
@@ -170,12 +177,14 @@ func Test_processV1ConferencesPost(t *testing.T) {
 				Data:     []byte(`{"type": "conference", "customer_id": "2375a978-7f4b-11ec-81ed-73f63efd9dd8", "name": "test", "detail": "test detail", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"answer"}], "timeout": 86400}`),
 			},
 			&conference.Conference{
-				ID:         uuid.FromStringOrNil("5e0d6cb0-4003-11ec-a7f9-f72079d71f10"),
-				CustomerID: uuid.FromStringOrNil("2375a978-7f4b-11ec-81ed-73f63efd9dd8"),
-				Type:       conference.TypeConference,
-				Name:       "test",
-				Detail:     "test detail",
-				Timeout:    86400,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5e0d6cb0-4003-11ec-a7f9-f72079d71f10"),
+					CustomerID: uuid.FromStringOrNil("2375a978-7f4b-11ec-81ed-73f63efd9dd8"),
+				},
+				Type:    conference.TypeConference,
+				Name:    "test",
+				Detail:  "test detail",
+				Timeout: 86400,
 				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
@@ -242,7 +251,9 @@ func Test_processV1ConferencesIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("8d920096-3bf2-11ec-9ff1-87ad93d2f885"),
 
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("8d920096-3bf2-11ec-9ff1-87ad93d2f885"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8d920096-3bf2-11ec-9ff1-87ad93d2f885"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -296,8 +307,10 @@ func Test_processV1ConferencesIDPut(t *testing.T) {
 				Data:     []byte(`{"name": "test update", "detail": "test detail update", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"hangup"}], "timeout": 86400}`),
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("a07e574a-4002-11ec-9c73-a31093777cf0"),
-				CustomerID:   uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a07e574a-4002-11ec-9c73-a31093777cf0"),
+					CustomerID: uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("590b7a70-4005-11ec-882c-cff85956bfd4"),
 				FlowID:       uuid.FromStringOrNil("5937a834-4005-11ec-98ca-2770f4d8351a"),
 				Type:         conference.TypeConference,
@@ -369,12 +382,14 @@ func Test_processV1ConferencesIDGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 			&conference.Conference{
-				ID:         uuid.FromStringOrNil("11f067f6-3bf3-11ec-9bca-877deb76639d"),
-				CustomerID: uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
-				Type:       conference.TypeConference,
-				Name:       "test",
-				Detail:     "test detail",
-				Timeout:    86400,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("11f067f6-3bf3-11ec-9bca-877deb76639d"),
+					CustomerID: uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
+				},
+				Type:    conference.TypeConference,
+				Name:    "test",
+				Detail:  "test detail",
+				Timeout: 86400,
 				PreActions: []fmaction.Action{
 					{
 						Type: "answer",
@@ -442,7 +457,9 @@ func Test_processV1ConferencesIDRecordingIDPut(t *testing.T) {
 				Data:     []byte(`{"recording_id":"822a2c52-9091-11ed-99a1-5f802877affb"}`),
 			},
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("81d69286-9091-11ed-8036-5f6887716de3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("81d69286-9091-11ed-8036-5f6887716de3"),
+				},
 			},
 
 			uuid.FromStringOrNil("81d69286-9091-11ed-8036-5f6887716de3"),
@@ -506,7 +523,9 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 			},
 
 			responseConference: &conference.Conference{
-				ID: uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
+				},
 			},
 
 			expectedID:           uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
@@ -567,7 +586,9 @@ func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
 				DataType: "application/json",
 			},
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("18033654-9102-11ed-994e-4b9c733834a5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("18033654-9102-11ed-994e-4b9c733834a5"),
+				},
 			},
 
 			uuid.FromStringOrNil("18033654-9102-11ed-994e-4b9c733834a5"),
@@ -626,7 +647,9 @@ func Test_processV1ConferencesIDTranscribeStartPost(t *testing.T) {
 				Data:     []byte(`{"language":"en-US"}`),
 			},
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("95cf180c-98c6-11ed-8330-bb119cab4678"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("95cf180c-98c6-11ed-8330-bb119cab4678"),
+				},
 			},
 
 			uuid.FromStringOrNil("95cf180c-98c6-11ed-8330-bb119cab4678"),
@@ -684,7 +707,9 @@ func Test_processV1ConferencesIDTranscribeStopPost(t *testing.T) {
 				DataType: "application/json",
 			},
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("95fdc09e-98c6-11ed-a6a1-ff3648dce452"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("95fdc09e-98c6-11ed-a6a1-ff3648dce452"),
+				},
 			},
 
 			uuid.FromStringOrNil("95fdc09e-98c6-11ed-a6a1-ff3648dce452"),
@@ -741,7 +766,9 @@ func Test_processV1ConferencesIDStopPost(t *testing.T) {
 				DataType: "application/json",
 			},
 			&conference.Conference{
-				ID: uuid.FromStringOrNil("24883eab-931d-4743-bf26-bd867b52127e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("24883eab-931d-4743-bf26-bd867b52127e"),
+				},
 			},
 
 			uuid.FromStringOrNil("24883eab-931d-4743-bf26-bd867b52127e"),

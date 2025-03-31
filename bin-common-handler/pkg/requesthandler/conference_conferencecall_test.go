@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -54,10 +55,14 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 
 			[]cfconferencecall.Conferencecall{
 				{
-					ID: uuid.FromStringOrNil("99d4af42-50c8-11ee-8240-d360bb85c265"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("99d4af42-50c8-11ee-8240-d360bb85c265"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("9a0b7f2c-50c8-11ee-a3e8-b7c427a82ef8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("9a0b7f2c-50c8-11ee-a3e8-b7c427a82ef8"),
+					},
 				},
 			},
 		},
@@ -122,7 +127,9 @@ func Test_ConferenceV1ConferencecallGet(t *testing.T) {
 				Data:       []byte(`{"id":"7baaa99e-14e8-11ed-8f79-f79014b94b6f"}`),
 			},
 			&cfconferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("7baaa99e-14e8-11ed-8f79-f79014b94b6f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7baaa99e-14e8-11ed-8f79-f79014b94b6f"),
+				},
 			},
 		},
 	}
@@ -183,7 +190,9 @@ func Test_ConferenceV1ConferencecallKick(t *testing.T) {
 			},
 
 			&cfconferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("dd4ff2e2-14e5-11ed-8eec-97413dd96f29"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dd4ff2e2-14e5-11ed-8eec-97413dd96f29"),
+				},
 			},
 		},
 	}
@@ -251,7 +260,9 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 			},
 
 			&cfconferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("23d64db6-94a6-11ed-9b9f-2bfedef352c1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("23d64db6-94a6-11ed-9b9f-2bfedef352c1"),
+				},
 			},
 		},
 	}

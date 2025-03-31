@@ -44,18 +44,18 @@ func (m *MockConferencecallHandler) EXPECT() *MockConferencecallHandlerMockRecor
 }
 
 // Create mocks base method.
-func (m *MockConferencecallHandler) Create(ctx context.Context, customerID, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
+func (m *MockConferencecallHandler) Create(ctx context.Context, customerID, activeflowID, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, conferenceID, referenceType, referenceID)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, activeflowID, conferenceID, referenceType, referenceID)
 	ret0, _ := ret[0].(*conferencecall.Conferencecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockConferencecallHandlerMockRecorder) Create(ctx, customerID, conferenceID, referenceType, referenceID any) *gomock.Call {
+func (mr *MockConferencecallHandlerMockRecorder) Create(ctx, customerID, activeflowID, conferenceID, referenceType, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferencecallHandler)(nil).Create), ctx, customerID, conferenceID, referenceType, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferencecallHandler)(nil).Create), ctx, customerID, activeflowID, conferenceID, referenceType, referenceID)
 }
 
 // Get mocks base method.
@@ -131,18 +131,18 @@ func (mr *MockConferencecallHandlerMockRecorder) Joined(ctx, cc any) *gomock.Cal
 }
 
 // ServiceStart mocks base method.
-func (m *MockConferencecallHandler) ServiceStart(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error) {
+func (m *MockConferencecallHandler) ServiceStart(ctx context.Context, activeflowID, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceStart", ctx, conferenceID, referenceType, referenceID)
+	ret := m.ctrl.Call(m, "ServiceStart", ctx, activeflowID, conferenceID, referenceType, referenceID)
 	ret0, _ := ret[0].(*service.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceStart indicates an expected call of ServiceStart.
-func (mr *MockConferencecallHandlerMockRecorder) ServiceStart(ctx, conferenceID, referenceType, referenceID any) *gomock.Call {
+func (mr *MockConferencecallHandlerMockRecorder) ServiceStart(ctx, activeflowID, conferenceID, referenceType, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockConferencecallHandler)(nil).ServiceStart), ctx, conferenceID, referenceType, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockConferencecallHandler)(nil).ServiceStart), ctx, activeflowID, conferenceID, referenceType, referenceID)
 }
 
 // Terminate mocks base method.

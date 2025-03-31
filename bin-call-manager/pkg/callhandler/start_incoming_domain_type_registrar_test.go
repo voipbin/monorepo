@@ -185,9 +185,11 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeConference(t *testing.
 				Target: "99accfb7-c0dd-4a54-997d-dd18af7bc280",
 			},
 			responseConference: &cfconference.Conference{
-				ID:         uuid.FromStringOrNil("99accfb7-c0dd-4a54-997d-dd18af7bc280"),
-				CustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
-				FlowID:     uuid.FromStringOrNil("90f05e61-408b-429b-85fb-0ee3d2d77c21"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("99accfb7-c0dd-4a54-997d-dd18af7bc280"),
+					CustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
+				},
+				FlowID: uuid.FromStringOrNil("90f05e61-408b-429b-85fb-0ee3d2d77c21"),
 			},
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{

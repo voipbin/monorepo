@@ -18,12 +18,14 @@ import (
 // it increases corresponded counter
 func (h *conferencecallHandler) ServiceStart(
 	ctx context.Context,
+	activeflowID uuid.UUID,
 	conferenceID uuid.UUID,
 	referenceType conferencecall.ReferenceType,
 	referenceID uuid.UUID,
 ) (*commonservice.Service, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ServiceStart",
+		"activeflow_id":  activeflowID,
 		"conference_id":  conferenceID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
@@ -37,7 +39,7 @@ func (h *conferencecallHandler) ServiceStart(
 	}
 
 	// create conference call
-	cc, err := h.Create(ctx, cf.CustomerID, conferenceID, referenceType, referenceID)
+	cc, err := h.Create(ctx, cf.CustomerID, activeflowID, conferenceID, referenceType, referenceID)
 	if err != nil {
 		log.Errorf("Could not create conferencecall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create conferencecall.")

@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -28,7 +29,9 @@ func Test_Joined(t *testing.T) {
 			"normal",
 
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("f1ffe572-94d7-11ed-bee9-7f769a54345b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f1ffe572-94d7-11ed-bee9-7f769a54345b"),
+				},
 			},
 		},
 	}

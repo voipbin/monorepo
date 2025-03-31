@@ -41,7 +41,9 @@ func Test_RecordingStart(t *testing.T) {
 			onEndFlowID:  uuid.FromStringOrNil("b2c5186e-055f-11f0-94cc-af3bd4410b74"),
 
 			responseConference: &conference.Conference{
-				ID:     uuid.FromStringOrNil("5aee9cbe-90fe-11ed-86b9-f36325211a1b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5aee9cbe-90fe-11ed-86b9-f36325211a1b"),
+				},
 				Type:   conference.TypeConference,
 				Status: conference.StatusProgressing,
 			},
@@ -104,7 +106,9 @@ func Test_RecordingStop(t *testing.T) {
 			id: uuid.FromStringOrNil("56c9e61a-90ff-11ed-83a0-637ed1b2ef21"),
 
 			responseConference: &conference.Conference{
-				ID:          uuid.FromStringOrNil("56c9e61a-90ff-11ed-83a0-637ed1b2ef21"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("56c9e61a-90ff-11ed-83a0-637ed1b2ef21"),
+				},
 				Type:        conference.TypeConference,
 				Status:      conference.StatusProgressing,
 				RecordingID: uuid.FromStringOrNil("57053ff8-90ff-11ed-8583-8feb357ff230"),

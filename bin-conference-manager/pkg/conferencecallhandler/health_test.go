@@ -42,7 +42,9 @@ func Test_HealthCheck(t *testing.T) {
 			0,
 
 			&conferencecall.Conferencecall{
-				ID:          uuid.FromStringOrNil("ad03211e-94d2-11ed-8e1d-2f0082408655"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ad03211e-94d2-11ed-8e1d-2f0082408655"),
+				},
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("ae1a2bec-94d2-11ed-913d-73ee1991cfa1"),
 				TMCreate:    "2023-01-03 21:35:02.809",
@@ -56,7 +58,9 @@ func Test_HealthCheck(t *testing.T) {
 				Status:       cmcall.StatusProgressing,
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("ae4358e6-94d2-11ed-ab3a-c37c216ef696"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ae4358e6-94d2-11ed-ab3a-c37c216ef696"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("ae654a6e-94d2-11ed-b9ca-5b472f10031a"),
 				Status:       conference.StatusProgressing,
 			},
@@ -121,7 +125,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			retryCount: defaultHealthCheckRetryMax + 1,
 
 			responseConferencecall: &conferencecall.Conferencecall{
-				ID:          uuid.FromStringOrNil("8e1fd114-94d4-11ed-87da-43e1e2fa43d6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8e1fd114-94d4-11ed-87da-43e1e2fa43d6"),
+				},
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("8e75c934-94d4-11ed-9de9-7fce898af73a"),
 				TMCreate:    "2023-01-03 21:35:02.809",
@@ -135,7 +141,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				Status:       cmcall.StatusProgressing,
 			},
 			responseConference: &conference.Conference{
-				ID:           uuid.FromStringOrNil("8ecae996-94d4-11ed-aff9-577bc62739a2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8ecae996-94d4-11ed-aff9-577bc62739a2"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("8ea3058e-94d4-11ed-b42c-b7dc2e29c819"),
 			},
 		},
@@ -155,7 +163,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			retryCount: 0,
 
 			responseConferencecall: &conferencecall.Conferencecall{
-				ID:       uuid.FromStringOrNil("c01de0ec-94d5-11ed-b353-77ec1e03ac6a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c01de0ec-94d5-11ed-b353-77ec1e03ac6a"),
+				},
 				Status:   conferencecall.StatusLeaved,
 				TMCreate: "2023-01-03 21:35:02.809",
 			},
@@ -168,7 +178,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			retryCount: 0,
 
 			responseConferencecall: &conferencecall.Conferencecall{
-				ID:          uuid.FromStringOrNil("c04eba0a-94d5-11ed-94b1-875536510dcb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c04eba0a-94d5-11ed-94b1-875536510dcb"),
+				},
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("c07ee874-94d5-11ed-8da1-6fef0f91be9b"),
 				TMCreate:    "2023-01-03 21:35:02.809",
@@ -185,7 +197,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			retryCount: 0,
 
 			responseConferencecall: &conferencecall.Conferencecall{
-				ID:          uuid.FromStringOrNil("8582538a-94d7-11ed-8719-0fd363bed4df"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8582538a-94d7-11ed-8719-0fd363bed4df"),
+				},
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("85a99b98-94d7-11ed-87b3-4f8bf6bfbd39"),
 				TMCreate:    "2023-01-03 21:35:02.809",
@@ -207,7 +221,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			retryCount: 0,
 
 			responseConferencecall: &conferencecall.Conferencecall{
-				ID:           uuid.FromStringOrNil("a5481a34-94d6-11ed-add0-7ba046e6403b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a5481a34-94d6-11ed-add0-7ba046e6403b"),
+				},
 				Status:       conferencecall.StatusJoined,
 				ReferenceID:  uuid.FromStringOrNil("a5724d7c-94d6-11ed-bc34-5f290587207e"),
 				ConferenceID: uuid.FromStringOrNil("a599133a-94d6-11ed-9556-9fe210b5e9df"),
@@ -230,7 +246,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			retryCount: 0,
 
 			responseConferencecall: &conferencecall.Conferencecall{
-				ID:           uuid.FromStringOrNil("196a6c64-94d7-11ed-8672-87a16e3986ed"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("196a6c64-94d7-11ed-8672-87a16e3986ed"),
+				},
 				Status:       conferencecall.StatusJoined,
 				ReferenceID:  uuid.FromStringOrNil("198fbabe-94d7-11ed-b69a-5336a8f18455"),
 				ConferenceID: uuid.FromStringOrNil("19bc2734-94d7-11ed-9373-37b511c36f27"),
@@ -244,7 +262,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				ConfbridgeID: uuid.FromStringOrNil("19ec879e-94d7-11ed-957c-5b56c6cdd831"),
 			},
 			responseConference: &conference.Conference{
-				ID:           uuid.FromStringOrNil("19bc2734-94d7-11ed-9373-37b511c36f27"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("19bc2734-94d7-11ed-9373-37b511c36f27"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("1a346b04-94d7-11ed-8435-db5573ae1660"),
 				Status:       conference.StatusTerminated,
 			},
@@ -258,7 +278,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			retryCount: 0,
 
 			responseConferencecall: &conferencecall.Conferencecall{
-				ID:           uuid.FromStringOrNil("40f411a8-1e26-44b5-b335-ac2c4e00276f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("40f411a8-1e26-44b5-b335-ac2c4e00276f"),
+				},
 				Status:       conferencecall.StatusJoined,
 				ReferenceID:  uuid.FromStringOrNil("3f3059d5-6a74-4e6b-a225-964ee1d315b8"),
 				ConferenceID: uuid.FromStringOrNil("bfb771f8-c594-45f2-bca7-7dd06e431031"),
@@ -272,7 +294,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				ConfbridgeID: uuid.FromStringOrNil("a772d8cd-1fdb-4553-ae35-19b0f9f499cc"),
 			},
 			responseConference: &conference.Conference{
-				ID:           uuid.FromStringOrNil("bfb771f8-c594-45f2-bca7-7dd06e431031"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bfb771f8-c594-45f2-bca7-7dd06e431031"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("a772d8cd-1fdb-4553-ae35-19b0f9f499cc"),
 				Status:       conference.StatusTerminated,
 			},

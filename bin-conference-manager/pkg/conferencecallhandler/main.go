@@ -24,6 +24,7 @@ type ConferencecallHandler interface {
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
+		activeflowID uuid.UUID,
 		conferenceID uuid.UUID,
 		referenceType conferencecall.ReferenceType,
 		referenceID uuid.UUID,
@@ -36,6 +37,7 @@ type ConferencecallHandler interface {
 
 	ServiceStart(
 		ctx context.Context,
+		activeflowID uuid.UUID,
 		conferenceID uuid.UUID,
 		referenceType conferencecall.ReferenceType,
 		referenceID uuid.UUID,

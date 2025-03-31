@@ -24,10 +24,11 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 
 		responseService *commonservice.Service
 
-		expectConferenceID  uuid.UUID
-		expectReferenceType conferencecall.ReferenceType
-		expectReferenceID   uuid.UUID
-		expectRes           *sock.Response
+		expectedActiveflowID  uuid.UUID
+		expectedConferenceID  uuid.UUID
+		expectedReferenceType conferencecall.ReferenceType
+		expectedReferenceID   uuid.UUID
+		expectedRes           *sock.Response
 	}{
 		{
 			name: "normal",
@@ -35,17 +36,18 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 				URI:      "/v1/services/type/conferencecall",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"conference_id":"43c7671e-c0ab-11ed-a8bc-6f436b081030","reference_type":"call","reference_id":"440e58f4-c0ab-11ed-89d9-7340c26c4034"}`),
+				Data:     []byte(`{"activeflow_id":"c2a6aa3e-0e44-11f0-92f8-03deb7d17448","conference_id":"43c7671e-c0ab-11ed-a8bc-6f436b081030","reference_type":"call","reference_id":"440e58f4-c0ab-11ed-89d9-7340c26c4034"}`),
 			},
 			responseService: &commonservice.Service{
 				ID: uuid.FromStringOrNil("95cf180c-98c6-11ed-8330-bb119cab4678"),
 			},
 
-			expectConferenceID:  uuid.FromStringOrNil("43c7671e-c0ab-11ed-a8bc-6f436b081030"),
-			expectReferenceType: conferencecall.ReferenceTypeCall,
-			expectReferenceID:   uuid.FromStringOrNil("440e58f4-c0ab-11ed-89d9-7340c26c4034"),
+			expectedActiveflowID:  uuid.FromStringOrNil("c2a6aa3e-0e44-11f0-92f8-03deb7d17448"),
+			expectedConferenceID:  uuid.FromStringOrNil("43c7671e-c0ab-11ed-a8bc-6f436b081030"),
+			expectedReferenceType: conferencecall.ReferenceTypeCall,
+			expectedReferenceID:   uuid.FromStringOrNil("440e58f4-c0ab-11ed-89d9-7340c26c4034"),
 
-			expectRes: &sock.Response{
+			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"95cf180c-98c6-11ed-8330-bb119cab4678","type":"","push_actions":null}`),
@@ -68,14 +70,14 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 				conferencecallHandler: mockConfcall,
 			}
 
-			mockConfcall.EXPECT().ServiceStart(gomock.Any(), tt.expectConferenceID, tt.expectReferenceType, tt.expectReferenceID).Return(tt.responseService, nil)
+			mockConfcall.EXPECT().ServiceStart(gomock.Any(), tt.expectedActiveflowID, tt.expectedConferenceID, tt.expectedReferenceType, tt.expectedReferenceID).Return(tt.responseService, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

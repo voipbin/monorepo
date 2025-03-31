@@ -402,7 +402,7 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 		return fmt.Errorf("wrong reference type. reference_type: %s", af.ReferenceType)
 	}
 
-	sv, err := h.reqHandler.ConferenceV1ServiceTypeConferencecallStart(ctx, opt.ConferenceID, cfconferencecall.ReferenceTypeCall, af.ReferenceID)
+	sv, err := h.reqHandler.ConferenceV1ServiceTypeConferencecallStart(ctx, af.ID, opt.ConferenceID, cfconferencecall.ReferenceTypeCall, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not start the service. err: %v", err)
 		return errors.Wrap(err, "Could not start the service.")

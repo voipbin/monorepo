@@ -10,7 +10,8 @@ import (
 // v1 data type request struct for
 // /v1/services/conferencecall" POST
 type V1DataServicesTypeConferencecallPost struct {
-	ConferenceID  uuid.UUID                    `json:"conference_id"`
-	ReferenceType conferencecall.ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID                    `json:"reference_id"`
+	ActiveflowID  uuid.UUID                    `json:"activeflow_id,omitempty"`
+	ConferenceID  uuid.UUID                    `json:"conference_id,omitempty"`
+	ReferenceType conferencecall.ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID                    `json:"reference_id,omitempty"`
 }

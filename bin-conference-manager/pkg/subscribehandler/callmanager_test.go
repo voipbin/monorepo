@@ -5,6 +5,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -36,7 +37,9 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 				Data:      []byte(`{"id":"2a8739a2-9368-11ed-82dd-bfa0ae5f78fb","joined_call_id":"2abecb4c-9368-11ed-9130-b74b5a76b8d3"}`),
 			},
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("18033654-9102-11ed-994e-4b9c733834a5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("18033654-9102-11ed-994e-4b9c733834a5"),
+				},
 			},
 
 			uuid.FromStringOrNil("2abecb4c-9368-11ed-9130-b74b5a76b8d3"),
@@ -89,7 +92,9 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 			},
 
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("417fb8ae-9369-11ed-aa39-5fa8ce8a29d4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("417fb8ae-9369-11ed-aa39-5fa8ce8a29d4"),
+				},
 			},
 
 			uuid.FromStringOrNil("3ea3ebe6-9369-11ed-b4e3-075af58c7edb"),

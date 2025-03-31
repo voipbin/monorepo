@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
@@ -67,8 +68,10 @@ func (h *conferenceHandler) Create(
 
 	// create a conference struct
 	tmp := &conference.Conference{
-		ID:           id,
-		CustomerID:   customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 		ConfbridgeID: cb.ID,
 		FlowID:       f.ID,
 		Type:         conferenceType,

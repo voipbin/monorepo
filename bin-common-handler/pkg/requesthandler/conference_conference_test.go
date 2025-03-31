@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -46,7 +47,9 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 				Data:       []byte(`{"id":"c337c4de-4132-11ec-b076-ab42296b65d5","flow_id":"e0e5c2ba-4132-11ec-a38b-c7c6ccec4af6"}`),
 			},
 			&cfconference.Conference{
-				ID:     uuid.FromStringOrNil("c337c4de-4132-11ec-b076-ab42296b65d5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c337c4de-4132-11ec-b076-ab42296b65d5"),
+				},
 				FlowID: uuid.FromStringOrNil("e0e5c2ba-4132-11ec-a38b-c7c6ccec4af6"),
 			},
 		},
@@ -115,10 +118,14 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 
 			[]cfconference.Conference{
 				{
-					ID: uuid.FromStringOrNil("281c89f0-ec61-11ec-a18d-a7389bd741ca"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("281c89f0-ec61-11ec-a18d-a7389bd741ca"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("2886cafe-ec61-11ec-b982-5b047f4851d6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2886cafe-ec61-11ec-b982-5b047f4851d6"),
+					},
 				},
 			},
 		},
@@ -181,7 +188,9 @@ func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 				Method: sock.RequestMethodDelete,
 			},
 			&cfconference.Conference{
-				ID: uuid.FromStringOrNil("2d9227a4-3d17-11ec-ab43-cfdad30eccdf"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2d9227a4-3d17-11ec-ab43-cfdad30eccdf"),
+				},
 			},
 		},
 	}
@@ -243,7 +252,9 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 				Method: sock.RequestMethodPost,
 			},
 			&cfconference.Conference{
-				ID: uuid.FromStringOrNil("9df75377-cffe-448a-825e-7afc7f86f9e6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9df75377-cffe-448a-825e-7afc7f86f9e6"),
+				},
 			},
 		},
 		{
@@ -325,12 +336,14 @@ func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 				Data:     []byte(`{"type":"connect","customer_id":"9d27750e-7f4f-11ec-b98f-839769cdfb25","name":"test","detail":"test detail","timeout":86400000,"data":null,"pre_actions":null,"post_actions":null}`),
 			},
 			&cfconference.Conference{
-				ID:         uuid.FromStringOrNil("04432fd6-3d19-11ec-8ad9-43e6162f0953"),
-				CustomerID: uuid.FromStringOrNil("9d27750e-7f4f-11ec-b98f-839769cdfb25"),
-				Type:       cfconference.TypeConnect,
-				Name:       "test",
-				Detail:     "test detail",
-				Timeout:    86400000,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("04432fd6-3d19-11ec-8ad9-43e6162f0953"),
+					CustomerID: uuid.FromStringOrNil("9d27750e-7f4f-11ec-b98f-839769cdfb25"),
+				},
+				Type:    cfconference.TypeConnect,
+				Name:    "test",
+				Detail:  "test detail",
+				Timeout: 86400000,
 			},
 		},
 	}
@@ -392,7 +405,9 @@ func Test_ConferenceV1ConferenceUpdateRecordingID(t *testing.T) {
 				Data:     []byte(`{"recording_id":"6ad3b3cc-909e-11ed-b6de-bb34ce55e617"}`),
 			},
 			&cfconference.Conference{
-				ID: uuid.FromStringOrNil("6a8bb630-909e-11ed-8e51-4ba49096d3f7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6a8bb630-909e-11ed-8e51-4ba49096d3f7"),
+				},
 			},
 		},
 	}
@@ -460,7 +475,9 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 				Data:     []byte(`{"activeflow_id":"a129ba1c-075b-11f0-9356-b3b5e89e14f0","format":"wav","duration":600,"on_end_flow_id":"01eac468-055e-11f0-b60a-2753cc705cdb"}`),
 			},
 			expectRes: &cfconference.Conference{
-				ID: uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
+				},
 			},
 		},
 	}
@@ -518,7 +535,9 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 				Method: sock.RequestMethodPost,
 			},
 			&cfconference.Conference{
-				ID: uuid.FromStringOrNil("0660ce2a-9107-11ed-8c04-93e3837ffdcd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0660ce2a-9107-11ed-8c04-93e3837ffdcd"),
+				},
 			},
 		},
 	}
@@ -580,7 +599,9 @@ func Test_ConferenceV1ConferenceTranscribeStart(t *testing.T) {
 				Data:     []byte(`{"language":"en-US"}`),
 			},
 			&cfconference.Conference{
-				ID: uuid.FromStringOrNil("dfa5e700-98e7-11ed-a643-4bd2f59007ae"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dfa5e700-98e7-11ed-a643-4bd2f59007ae"),
+				},
 			},
 		},
 	}
@@ -638,7 +659,9 @@ func Test_ConferenceV1ConferenceTranscribeStop(t *testing.T) {
 				Method: sock.RequestMethodPost,
 			},
 			&cfconference.Conference{
-				ID: uuid.FromStringOrNil("dfda30dc-98e7-11ed-a69c-e781929a3118"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dfda30dc-98e7-11ed-a69c-e781929a3118"),
+				},
 			},
 		},
 	}
