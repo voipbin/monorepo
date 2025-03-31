@@ -131,10 +131,12 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				},
 			},
 			&cfconference.Conference{
-				ID:         uuid.FromStringOrNil("bad943d8-9b59-11ea-b409-4ba263721f17"),
-				CustomerID: uuid.FromStringOrNil("2d6e83b0-5e56-11ed-9fcc-db15249e4a66"),
-				Type:       cfconference.TypeConference,
-				FlowID:     uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bad943d8-9b59-11ea-b409-4ba263721f17"),
+					CustomerID: uuid.FromStringOrNil("2d6e83b0-5e56-11ed-9fcc-db15249e4a66"),
+				},
+				Type:   cfconference.TypeConference,
+				FlowID: uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
 			},
 			&fmactiveflow.Activeflow{
 				Identity: commonidentity.Identity{

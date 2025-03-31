@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	uuid "github.com/gofrs/uuid"
@@ -26,11 +27,15 @@ func Test_ConferencecallCreate(t *testing.T) {
 		expectRes       *conferencecall.Conferencecall
 	}{
 		{
-			"have all",
+			name: "normal",
 
-			&conferencecall.Conferencecall{
-				ID:           uuid.FromStringOrNil("aab1d10e-2bb2-41fe-b519-273af50e8774"),
-				CustomerID:   uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
+			conferencecall: &conferencecall.Conferencecall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aab1d10e-2bb2-41fe-b519-273af50e8774"),
+					CustomerID: uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
+				},
+
+				ActiveflowID: uuid.FromStringOrNil("14ba8cce-0e44-11f0-93a5-435304a9f2fd"),
 				ConferenceID: uuid.FromStringOrNil("edce43fd-8e5d-4178-b2e6-93479fa4f024"),
 
 				ReferenceType: conferencecall.ReferenceTypeCall,
@@ -39,10 +44,14 @@ func Test_ConferencecallCreate(t *testing.T) {
 				Status: conferencecall.StatusJoining,
 			},
 
-			"2023-01-03 21:35:02.809",
-			&conferencecall.Conferencecall{
-				ID:           uuid.FromStringOrNil("aab1d10e-2bb2-41fe-b519-273af50e8774"),
-				CustomerID:   uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes: &conferencecall.Conferencecall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aab1d10e-2bb2-41fe-b519-273af50e8774"),
+					CustomerID: uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
+				},
+
+				ActiveflowID: uuid.FromStringOrNil("14ba8cce-0e44-11f0-93a5-435304a9f2fd"),
 				ConferenceID: uuid.FromStringOrNil("edce43fd-8e5d-4178-b2e6-93479fa4f024"),
 
 				ReferenceType: conferencecall.ReferenceTypeCall,
@@ -109,8 +118,10 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 		{
 			"normal",
 			&conferencecall.Conferencecall{
-				ID:            uuid.FromStringOrNil("1b4e752c-b766-4419-b778-73308e9607be"),
-				CustomerID:    uuid.FromStringOrNil("1afc3ce2-9861-11ec-90b1-d76e949c3805"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1b4e752c-b766-4419-b778-73308e9607be"),
+					CustomerID: uuid.FromStringOrNil("1afc3ce2-9861-11ec-90b1-d76e949c3805"),
+				},
 				ReferenceType: conferencecall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("371ebbd2-b52c-4e03-9444-0110f2b695cb"),
 			},
@@ -119,8 +130,10 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 
 			"2023-01-03 21:35:02.809",
 			&conferencecall.Conferencecall{
-				ID:            uuid.FromStringOrNil("1b4e752c-b766-4419-b778-73308e9607be"),
-				CustomerID:    uuid.FromStringOrNil("1afc3ce2-9861-11ec-90b1-d76e949c3805"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1b4e752c-b766-4419-b778-73308e9607be"),
+					CustomerID: uuid.FromStringOrNil("1afc3ce2-9861-11ec-90b1-d76e949c3805"),
+				},
 				ReferenceType: conferencecall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("371ebbd2-b52c-4e03-9444-0110f2b695cb"),
 				TMCreate:      "2023-01-03 21:35:02.809",
@@ -183,12 +196,16 @@ func Test_ConferencecallGets(t *testing.T) {
 			"normal",
 			[]*conferencecall.Conferencecall{
 				{
-					ID:         uuid.FromStringOrNil("43b02684-94ce-11ed-95e6-3727def0e4fd"),
-					CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("43b02684-94ce-11ed-95e6-3727def0e4fd"),
+						CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("50be6c64-94ce-11ed-9def-dfcdc44a112d"),
-					CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("50be6c64-94ce-11ed-9def-dfcdc44a112d"),
+						CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
+					},
 				},
 			},
 
@@ -201,18 +218,22 @@ func Test_ConferencecallGets(t *testing.T) {
 			"2023-01-03 21:35:02.809",
 			[]*conferencecall.Conferencecall{
 				{
-					ID:         uuid.FromStringOrNil("43b02684-94ce-11ed-95e6-3727def0e4fd"),
-					CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
-					TMCreate:   "2023-01-03 21:35:02.809",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("43b02684-94ce-11ed-95e6-3727def0e4fd"),
+						CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
+					},
+					TMCreate: "2023-01-03 21:35:02.809",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("50be6c64-94ce-11ed-9def-dfcdc44a112d"),
-					CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
-					TMCreate:   "2023-01-03 21:35:02.809",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("50be6c64-94ce-11ed-9def-dfcdc44a112d"),
+						CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
+					},
+					TMCreate: "2023-01-03 21:35:02.809",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -279,14 +300,18 @@ func Test_ConferencecallDelete(t *testing.T) {
 		{
 			"normal",
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("284a800e-94d0-11ed-89ad-c749aec641a6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("284a800e-94d0-11ed-89ad-c749aec641a6"),
+				},
 			},
 
 			uuid.FromStringOrNil("284a800e-94d0-11ed-89ad-c749aec641a6"),
 
 			"2023-01-03 21:35:02.809",
 			&conferencecall.Conferencecall{
-				ID:       uuid.FromStringOrNil("284a800e-94d0-11ed-89ad-c749aec641a6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("284a800e-94d0-11ed-89ad-c749aec641a6"),
+				},
 				TMCreate: "2023-01-03 21:35:02.809",
 				TMUpdate: "2023-01-03 21:35:02.809",
 				TMDelete: "2023-01-03 21:35:02.809",

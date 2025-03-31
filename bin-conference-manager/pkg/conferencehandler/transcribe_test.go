@@ -36,8 +36,10 @@ func Test_TranscribeStart(t *testing.T) {
 			lang: "en-US",
 
 			responseConference: &conference.Conference{
-				ID:           uuid.FromStringOrNil("dd016dfa-98c2-11ed-8725-2712895395fe"),
-				CustomerID:   uuid.FromStringOrNil("dd5a2b20-98c2-11ed-b9f1-d77ec9cc4ee1"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dd016dfa-98c2-11ed-8725-2712895395fe"),
+					CustomerID: uuid.FromStringOrNil("dd5a2b20-98c2-11ed-b9f1-d77ec9cc4ee1"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("dd7fe02c-98c2-11ed-b244-53a1c8648a76"),
 				Type:         conference.TypeConference,
 				Status:       conference.StatusProgressing,
@@ -111,7 +113,9 @@ func Test_TranscribeStop(t *testing.T) {
 			id: uuid.FromStringOrNil("cfa6500c-98c3-11ed-9f10-c3f50b15365f"),
 
 			responseConference: &conference.Conference{
-				ID:           uuid.FromStringOrNil("cfa6500c-98c3-11ed-9f10-c3f50b15365f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cfa6500c-98c3-11ed-9f10-c3f50b15365f"),
+				},
 				Type:         conference.TypeConference,
 				Status:       conference.StatusProgressing,
 				TranscribeID: uuid.FromStringOrNil("d00b7324-98c3-11ed-aa8f-0ff9d0b64c91"),

@@ -51,7 +51,9 @@ func Test_conferencesPOST(t *testing.T) {
 			reqBody:  []byte(`{"type": "conference", "name": "test name", "detail": "test detail", "data":{"key1": "val1", "key2": 2.1}, "timeout": 86400, "pre_actions": [{"type": "answer"}], "post_actions":[{"type": "hangup"}]}`),
 
 			responseConference: &cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("ee1e90cc-ac7a-11ea-8474-e740530b4266"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ee1e90cc-ac7a-11ea-8474-e740530b4266"),
+				},
 			},
 
 			expectType:   cfconference.TypeConference,
@@ -86,7 +88,9 @@ func Test_conferencesPOST(t *testing.T) {
 			reqBody:  []byte(`{}`),
 
 			responseConference: &cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("62fc88ba-3fe9-11ec-8ebb-8f1ee591edec"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("62fc88ba-3fe9-11ec-8ebb-8f1ee591edec"),
+				},
 			},
 
 			expectPreActions:  []fmaction.Action{},
@@ -161,7 +165,9 @@ func TestConferencesIDGET(t *testing.T) {
 
 			reqQuery: "/conferences/5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb",
 			responseConference: &cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
+				},
 			},
 			expectConferenceID: uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
 		},
@@ -220,7 +226,9 @@ func Test_conferencesIDDELETE(t *testing.T) {
 			reqQuery: "/conferences/f49f8cc6-ac7f-11ea-91a3-e7103a41fa51",
 
 			responseConference: &cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
+				},
 			},
 
 			expectConferenceID: uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
@@ -288,7 +296,9 @@ func Test_conferencesIDPUT(t *testing.T) {
 			reqBody:  []byte(`{"name": "update name", "detail": "update detail", "timeout": 86400, "pre_actions": [{"type": "answer"}], "post_actions":[{"type": "hangup"}]}`),
 
 			responseConference: &cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
+				},
 			},
 
 			expectConferenceID: uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
@@ -367,7 +377,9 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 			reqBody:  []byte(`{"format":"wav","duration":600,"on_end_flow_id": "523cf054-0567-11f0-82fe-1b103d8f043c"}`),
 
 			responseConference: &cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
+				},
 			},
 			expectedConferenceID: uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
 			expectedFormat:       cmrecording.FormatWAV,
@@ -430,7 +442,9 @@ func Test_conferencesIDRecordingStopPOST(t *testing.T) {
 			reqQuery: "/conferences/f1f4d55c-910c-11ed-ad67-8768a5ad30d8/recording_stop",
 
 			responseConference: &cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("f1f4d55c-910c-11ed-ad67-8768a5ad30d8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f1f4d55c-910c-11ed-ad67-8768a5ad30d8"),
+				},
 			},
 			expectConferenceID: uuid.FromStringOrNil("f1f4d55c-910c-11ed-ad67-8768a5ad30d8"),
 		},
@@ -494,7 +508,9 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 			reqBody:  []byte(`{"language": "en-US"}`),
 
 			responseConference: &cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("af60d8b6-98ec-11ed-9e1b-ab94ae0c68d9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("af60d8b6-98ec-11ed-9e1b-ab94ae0c68d9"),
+				},
 			},
 
 			expectConferenceID: uuid.FromStringOrNil("af60d8b6-98ec-11ed-9e1b-ab94ae0c68d9"),
@@ -556,7 +572,9 @@ func Test_conferencesIDTranscribeStopPOST(t *testing.T) {
 			reqQuery: "/conferences/af8db78c-98ec-11ed-9d8c-ffdf26e9202d/transcribe_stop",
 
 			responseConference: &cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("af8db78c-98ec-11ed-9d8c-ffdf26e9202d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("af8db78c-98ec-11ed-9d8c-ffdf26e9202d"),
+				},
 			},
 			expectConferenceID: uuid.FromStringOrNil("af8db78c-98ec-11ed-9d8c-ffdf26e9202d"),
 		},

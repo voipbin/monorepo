@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -25,11 +26,13 @@ func Test_Terminating(t *testing.T) {
 		responseConference *conference.Conference
 	}{
 		{
-			"normal",
-			uuid.FromStringOrNil("9f5001a6-9482-11eb-956e-f7ead445bb7a"),
+			name: "normal",
+			id:   uuid.FromStringOrNil("9f5001a6-9482-11eb-956e-f7ead445bb7a"),
 
-			&conference.Conference{
-				ID:                uuid.FromStringOrNil("9f5001a6-9482-11eb-956e-f7ead445bb7a"),
+			responseConference: &conference.Conference{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9f5001a6-9482-11eb-956e-f7ead445bb7a"),
+				},
 				Type:              conference.TypeConference,
 				Status:            conference.StatusProgressing,
 				ConfbridgeID:      uuid.FromStringOrNil("4649cc0a-2086-11ec-8439-af4c561e87eb"),
@@ -37,11 +40,13 @@ func Test_Terminating(t *testing.T) {
 			},
 		},
 		{
-			"have 1 call",
-			uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
+			name: "have 1 call",
+			id:   uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
 
-			&conference.Conference{
-				ID:           uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
+			responseConference: &conference.Conference{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
+				},
 				Type:         conference.TypeConference,
 				Status:       conference.StatusProgressing,
 				ConfbridgeID: uuid.FromStringOrNil("3b5c6712-4368-11ec-a76b-0fcdde373728"),
@@ -51,11 +56,13 @@ func Test_Terminating(t *testing.T) {
 			},
 		},
 		{
-			"2 calls in the conference",
-			uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
+			name: "2 calls in the conference",
+			id:   uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
 
-			&conference.Conference{
-				ID:           uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
+			responseConference: &conference.Conference{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
+				},
 				Type:         conference.TypeConference,
 				Status:       conference.StatusProgressing,
 				ConfbridgeID: uuid.FromStringOrNil("3b8d65f6-4368-11ec-95eb-9751947b5cae"),

@@ -44,14 +44,16 @@ func Test_conferencecallsGET(t *testing.T) {
 
 			responseConferencecalls: []*cfconferencecall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("abd295d0-50cb-11ee-8248-c352b46cb94a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("abd295d0-50cb-11ee-8248-c352b46cb94a"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"abd295d0-50cb-11ee-8248-c352b46cb94a","customer_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectRes:       `{"result":[{"id":"abd295d0-50cb-11ee-8248-c352b46cb94a","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000"}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -65,22 +67,28 @@ func Test_conferencecallsGET(t *testing.T) {
 
 			responseConferencecalls: []*cfconferencecall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("ac00629e-50cb-11ee-979d-4f2d9dd53b6f"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ac00629e-50cb-11ee-979d-4f2d9dd53b6f"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("ac330f78-50cb-11ee-a312-5f2d51198045"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ac330f78-50cb-11ee-a312-5f2d51198045"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("ac5c2840-50cb-11ee-85d2-0321e8bcf0d4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ac5c2840-50cb-11ee-85d2-0321e8bcf0d4"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"ac00629e-50cb-11ee-979d-4f2d9dd53b6f","customer_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"ac330f78-50cb-11ee-a312-5f2d51198045","customer_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"ac5c2840-50cb-11ee-85d2-0321e8bcf0d4","customer_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectRes:       `{"result":[{"id":"ac00629e-50cb-11ee-979d-4f2d9dd53b6f","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000"},{"id":"ac330f78-50cb-11ee-a312-5f2d51198045","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000"},{"id":"ac5c2840-50cb-11ee-85d2-0321e8bcf0d4","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000"}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -144,11 +152,13 @@ func Test_ConferencecallsIDGET(t *testing.T) {
 			reqQuery: "/conferencecalls/c2de6db2-15b2-11ed-a8c9-df3874205c01",
 
 			responseConference: &cfconferencecall.WebhookMessage{
-				ID: uuid.FromStringOrNil("c2de6db2-15b2-11ed-a8c9-df3874205c01"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c2de6db2-15b2-11ed-a8c9-df3874205c01"),
+				},
 			},
 
 			expectConferencecallID: uuid.FromStringOrNil("c2de6db2-15b2-11ed-a8c9-df3874205c01"),
-			expectRes:              `{"id":"c2de6db2-15b2-11ed-a8c9-df3874205c01","customer_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:              `{"id":"c2de6db2-15b2-11ed-a8c9-df3874205c01","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -209,11 +219,13 @@ func Test_conferencecallsIDDELETE(t *testing.T) {
 			reqQuery: "/conferencecalls/23d576b4-15b4-11ed-b6f4-fbfaed3df462",
 
 			responseConferencecall: &cfconferencecall.WebhookMessage{
-				ID: uuid.FromStringOrNil("23d576b4-15b4-11ed-b6f4-fbfaed3df462"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("23d576b4-15b4-11ed-b6f4-fbfaed3df462"),
+				},
 			},
 
 			expectConferencecallID: uuid.FromStringOrNil("23d576b4-15b4-11ed-b6f4-fbfaed3df462"),
-			expectRes:              `{"id":"23d576b4-15b4-11ed-b6f4-fbfaed3df462","customer_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:              `{"id":"23d576b4-15b4-11ed-b6f4-fbfaed3df462","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
