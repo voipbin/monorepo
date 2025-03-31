@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -23,6 +24,7 @@ func Test_Create(t *testing.T) {
 		name string
 
 		customerID    uuid.UUID
+		activeflowID  uuid.UUID
 		conferenceID  uuid.UUID
 		referenceType conferencecall.ReferenceType
 		referenceID   uuid.UUID
@@ -31,16 +33,19 @@ func Test_Create(t *testing.T) {
 		responseConferencecall *conferencecall.Conferencecall
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("6f6934f0-1350-11ed-8084-2f82e5efd9c2"),
-			uuid.FromStringOrNil("6fabe796-1350-11ed-a9be-63d034c16c8d"),
-			conferencecall.ReferenceTypeCall,
-			uuid.FromStringOrNil("6fdaccaa-1350-11ed-8a93-cb0e3c8d6bf8"),
+			customerID:    uuid.FromStringOrNil("6f6934f0-1350-11ed-8084-2f82e5efd9c2"),
+			activeflowID:  uuid.FromStringOrNil("14e81da6-0e44-11f0-aee7-a3902cfbf3fc"),
+			conferenceID:  uuid.FromStringOrNil("6fabe796-1350-11ed-a9be-63d034c16c8d"),
+			referenceType: conferencecall.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("6fdaccaa-1350-11ed-8a93-cb0e3c8d6bf8"),
 
-			uuid.FromStringOrNil("d0278cd8-1350-11ed-91f4-4f03d0c82169"),
-			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("d0278cd8-1350-11ed-91f4-4f03d0c82169"),
+			responseUUID: uuid.FromStringOrNil("d0278cd8-1350-11ed-91f4-4f03d0c82169"),
+			responseConferencecall: &conferencecall.Conferencecall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d0278cd8-1350-11ed-91f4-4f03d0c82169"),
+				},
 			},
 		},
 	}
@@ -69,7 +74,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().ConferencecallGet(ctx, gomock.Any()).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallJoining, tt.responseConferencecall)
 			mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.responseConferencecall.ID, 0, defaultHealthCheckDelay)
-			res, err := h.Create(ctx, tt.customerID, tt.conferenceID, tt.referenceType, tt.referenceID)
+			res, err := h.Create(ctx, tt.customerID, tt.activeflowID, tt.conferenceID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -105,7 +110,9 @@ func Test_Gets(t *testing.T) {
 
 			[]*conferencecall.Conferencecall{
 				{
-					ID: uuid.FromStringOrNil("ae267468-50c2-11ee-9ddb-0f6ca6c40243"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ae267468-50c2-11ee-9ddb-0f6ca6c40243"),
+					},
 				},
 			},
 		},
@@ -156,7 +163,9 @@ func Test_GetByReferenceID(t *testing.T) {
 			uuid.FromStringOrNil("e1d0969a-1351-11ed-9ea6-9b31710d7e97"),
 
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("e85478a6-1351-11ed-9dfa-f744cd7d0d42"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e85478a6-1351-11ed-9dfa-f744cd7d0d42"),
+				},
 			},
 		},
 	}
@@ -208,7 +217,9 @@ func Test_updateStatus(t *testing.T) {
 			conferencecall.StatusJoining,
 
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("385e5d94-1352-11ed-af65-03b479fb4c5b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("385e5d94-1352-11ed-af65-03b479fb4c5b"),
+				},
 			},
 		},
 	}
@@ -259,7 +270,9 @@ func Test_updateStatusJoined(t *testing.T) {
 			uuid.FromStringOrNil("6c149caa-94d2-11ed-9638-c3b106edcdbd"),
 
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("6c149caa-94d2-11ed-9638-c3b106edcdbd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6c149caa-94d2-11ed-9638-c3b106edcdbd"),
+				},
 			},
 		},
 	}
@@ -312,7 +325,9 @@ func Test_updateStatusLeaving(t *testing.T) {
 			uuid.FromStringOrNil("b85d4172-13bb-11ed-b867-7b2a6353ea11"),
 
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("b85d4172-13bb-11ed-b867-7b2a6353ea11"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b85d4172-13bb-11ed-b867-7b2a6353ea11"),
+				},
 			},
 		},
 	}
@@ -365,7 +380,9 @@ func Test_updateStatusLeaved(t *testing.T) {
 			uuid.FromStringOrNil("54b337fc-13bc-11ed-86cb-5b5a22ffd1e3"),
 
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("54b337fc-13bc-11ed-86cb-5b5a22ffd1e3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("54b337fc-13bc-11ed-86cb-5b5a22ffd1e3"),
+				},
 			},
 		},
 	}

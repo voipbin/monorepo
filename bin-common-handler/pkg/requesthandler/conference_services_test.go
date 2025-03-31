@@ -20,6 +20,7 @@ func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {
 	tests := []struct {
 		name string
 
+		activeflowID  uuid.UUID
 		conferenceID  uuid.UUID
 		referenceType cfconferencecall.ReferenceType
 		referenceID   uuid.UUID
@@ -33,6 +34,7 @@ func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {
 		{
 			name: "normal",
 
+			activeflowID:  uuid.FromStringOrNil("91b53e8a-0e45-11f0-ac41-7bac99ada187"),
 			conferenceID:  uuid.FromStringOrNil("ef5341ba-ab71-11ed-8b32-b3ea2332246a"),
 			referenceType: cfconferencecall.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("ef7fa3e0-ab71-11ed-9a00-3f98e88afb4e"),
@@ -48,7 +50,7 @@ func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {
 				URI:      "/v1/services/type/conferencecall",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"conference_id":"ef5341ba-ab71-11ed-8b32-b3ea2332246a","reference_type":"call","reference_id":"ef7fa3e0-ab71-11ed-9a00-3f98e88afb4e"}`),
+				Data:     []byte(`{"activeflow_id":"91b53e8a-0e45-11f0-ac41-7bac99ada187","conference_id":"ef5341ba-ab71-11ed-8b32-b3ea2332246a","reference_type":"call","reference_id":"ef7fa3e0-ab71-11ed-9a00-3f98e88afb4e"}`),
 			},
 			expectRes: &service.Service{
 				ID: uuid.FromStringOrNil("efa863ca-ab71-11ed-a65f-0730598fc7d9"),
@@ -69,7 +71,7 @@ func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ConferenceV1ServiceTypeConferencecallStart(ctx, tt.conferenceID, tt.referenceType, tt.referenceID)
+			cf, err := reqHandler.ConferenceV1ServiceTypeConferencecallStart(ctx, tt.activeflowID, tt.conferenceID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

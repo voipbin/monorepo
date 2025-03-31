@@ -16,6 +16,8 @@ const (
 	select
 		id,
 		customer_id,
+
+		activeflow_id,
 		conference_id,
 
 		reference_type,
@@ -39,6 +41,8 @@ func (h *handler) conferencecallGetFromRow(row *sql.Rows) (*conferencecall.Confe
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+
+		&res.ActiveflowID,
 		&res.ConferenceID,
 
 		&res.ReferenceType,
@@ -61,6 +65,8 @@ func (h *handler) ConferencecallCreate(ctx context.Context, cf *conferencecall.C
 	q := `insert into conference_conferencecalls(
 		id,
 		customer_id,
+
+		activeflow_id,
 		conference_id,
 
 		reference_type,
@@ -72,7 +78,8 @@ func (h *handler) ConferencecallCreate(ctx context.Context, cf *conferencecall.C
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?,
+		?, ?, 
+		?, ?,
 		?, ?,
 		?,
 		?, ?, ?
@@ -82,6 +89,8 @@ func (h *handler) ConferencecallCreate(ctx context.Context, cf *conferencecall.C
 	_, err := h.db.Exec(q,
 		cf.ID.Bytes(),
 		cf.CustomerID.Bytes(),
+
+		cf.ActiveflowID.Bytes(),
 		cf.ConferenceID.Bytes(),
 
 		cf.ReferenceType,
@@ -229,7 +238,7 @@ func (h *handler) ConferencecallGets(ctx context.Context, size uint64, token str
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "conference_id", "reference_id":
+		case "customer_id", "activeflow_id", "conference_id", "reference_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())

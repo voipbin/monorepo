@@ -3,6 +3,7 @@ package conference
 import (
 	"encoding/json"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	uuid "github.com/gofrs/uuid"
@@ -10,9 +11,9 @@ import (
 
 // WebhookMessage defines conference webhook event
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	Type       Type      `json:"type"`
+	commonidentity.Identity
+
+	Type Type `json:"type"`
 
 	Status Status `json:"status"`
 
@@ -42,9 +43,9 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Conference) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
-		Type:       h.Type,
+		Identity: h.Identity,
+
+		Type: h.Type,
 
 		Status: h.Status,
 

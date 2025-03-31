@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-conference-manager/models/conferencecall"
 )
 
@@ -15,6 +16,7 @@ import (
 func (h *conferencecallHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
+	activeflowID uuid.UUID,
 	conferenceID uuid.UUID,
 	referenceType conferencecall.ReferenceType,
 	referenceID uuid.UUID,
@@ -22,6 +24,7 @@ func (h *conferencecallHandler) Create(
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
 		"customer_id":    customerID,
+		"activeflow_id":  activeflowID,
 		"conference_id":  conferenceID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
@@ -29,8 +32,12 @@ func (h *conferencecallHandler) Create(
 
 	id := h.utilHandler.UUIDCreate()
 	tmp := &conferencecall.Conferencecall{
-		ID:           id,
-		CustomerID:   customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+
+		ActiveflowID: activeflowID,
 		ConferenceID: conferenceID,
 
 		ReferenceType: referenceType,

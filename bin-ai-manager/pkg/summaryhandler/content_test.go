@@ -177,7 +177,9 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 				},
 			},
 			responseConference: &cfconference.Conference{
-				ID:           uuid.FromStringOrNil("4ddead0e-0d78-11f0-896a-930b66cfb72b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4ddead0e-0d78-11f0-896a-930b66cfb72b"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("4e0cb7d0-0d78-11f0-bba8-27fe297783c9"),
 			},
 			responseTranscribes: []tmtranscribe.Transcribe{

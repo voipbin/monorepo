@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -37,12 +38,16 @@ func Test_Terminate_kickable(t *testing.T) {
 			retryCount: defaultHealthCheckRetryMax + 1,
 
 			responseConferencecall: &conferencecall.Conferencecall{
-				ID:          uuid.FromStringOrNil("335a95ec-94da-11ed-8016-9317e1c7c8e7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("335a95ec-94da-11ed-8016-9317e1c7c8e7"),
+				},
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("338cffc8-94da-11ed-95e4-2754365ed8a0"),
 			},
 			responseConference: &conference.Conference{
-				ID:           uuid.FromStringOrNil("33db117c-94da-11ed-aa96-ab85ca5dc13a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("33db117c-94da-11ed-aa96-ab85ca5dc13a"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("33b512ba-94da-11ed-8a65-27c4c9eb7665"),
 			},
 		},
@@ -106,12 +111,16 @@ func Test_Terminate_unkickable(t *testing.T) {
 			retryCount: defaultHealthCheckRetryMax + 1,
 
 			responseConferencecall: &conferencecall.Conferencecall{
-				ID:          uuid.FromStringOrNil("bfa810e6-94db-11ed-a904-4f44913cdbb2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bfa810e6-94db-11ed-a904-4f44913cdbb2"),
+				},
 				Status:      conferencecall.StatusLeaving,
 				ReferenceID: uuid.FromStringOrNil("bfc9be3a-94db-11ed-939f-d72160afc80c"),
 			},
 			responseConference: &conference.Conference{
-				ID:           uuid.FromStringOrNil("c0219010-94db-11ed-b38d-13f659f67758"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c0219010-94db-11ed-b38d-13f659f67758"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("bff40334-94db-11ed-8a5f-3f6b77b599f1"),
 			},
 		},
@@ -228,7 +237,9 @@ func Test_Terminated(t *testing.T) {
 			name: "normal",
 
 			conferencecall: &conferencecall.Conferencecall{
-				ID:           uuid.FromStringOrNil("cf8520fc-94dc-11ed-bacf-13ff11224cdb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cf8520fc-94dc-11ed-bacf-13ff11224cdb"),
+				},
 				ConferenceID: uuid.FromStringOrNil("dcae37aa-94dc-11ed-a462-07f286738971"),
 			},
 
@@ -236,7 +247,9 @@ func Test_Terminated(t *testing.T) {
 				ConfbridgeID: uuid.FromStringOrNil("dcae37aa-94dc-11ed-a462-07f286738971"),
 			},
 			expectRes: &conferencecall.Conferencecall{
-				ID:           uuid.FromStringOrNil("cf8520fc-94dc-11ed-bacf-13ff11224cdb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cf8520fc-94dc-11ed-bacf-13ff11224cdb"),
+				},
 				ConferenceID: uuid.FromStringOrNil("dcae37aa-94dc-11ed-a462-07f286738971"),
 			},
 		},

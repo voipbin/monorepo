@@ -671,7 +671,13 @@ type RequestHandler interface {
 	ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int, delay int) error
 
 	// conference-manager service
-	ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error)
+	ConferenceV1ServiceTypeConferencecallStart(
+		ctx context.Context,
+		activeflowID uuid.UUID,
+		conferenceID uuid.UUID,
+		referenceType cfconferencecall.ReferenceType,
+		referenceID uuid.UUID,
+	) (*service.Service, error)
 
 	// conversation-manager account
 	ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)

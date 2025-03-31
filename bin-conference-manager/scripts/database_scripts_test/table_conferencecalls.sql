@@ -1,23 +1,26 @@
-create table conference_conferencecalls(
+CREATE TABLE conference_conferencecalls(
   -- identity
-  id            binary(16),   -- id
-  customer_id   binary(16),   -- customer id
-  conference_id binary(16),
+  id            BINARY(16),   -- id
+  customer_id   BINARY(16),   -- customer id
 
-  reference_type    varchar(255),
-  reference_id      binary(16),
+  activeflow_id BINARY(16),   -- activeflow id
+  conference_id BINARY(16),
 
-  status  varchar(255),   -- status
+  reference_type    VARCHAR(255),
+  reference_id      BINARY(16),
+
+  status  VARCHAR(255),   -- status
 
   -- timestamps
-  tm_create datetime(6),  --
-  tm_update datetime(6),  --
-  tm_delete datetime(6),  --
+  tm_create DATETIME(6),  --
+  tm_update DATETIME(6),  --
+  tm_delete DATETIME(6),  --
 
-  primary key(id)
+  PRIMARY KEY(id)
 );
 
-create index idx_conference_conferencecalls_customer_id on conference_conferencecalls(customer_id);
-create index idx_conference_conferencecalls_conference_id on conference_conferencecalls(conference_id);
-create index idx_conference_conferencecalls_reference_id on conference_conferencecalls(reference_id);
-create index idx_conference_conferencecalls_create on conference_conferencecalls(tm_create);
+CREATE INDEX idx_conference_conferencecalls_customer_id ON conference_conferencecalls(customer_id);
+CREATE INDEX idx_conference_conferencecalls_conference_id ON conference_conferencecalls(conference_id);
+CREATE INDEX idx_conference_conferencecalls_reference_id ON conference_conferencecalls(reference_id);
+CREATE INDEX idx_conference_conferencecalls_create ON conference_conferencecalls(tm_create);
+CREATE INDEX idx_conference_conferencecalls_activeflow_id ON conference_conferencecalls(activeflow_id);

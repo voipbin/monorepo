@@ -1,21 +1,26 @@
 package conferencecall
 
-import "github.com/gofrs/uuid"
+import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"github.com/gofrs/uuid"
+)
 
 // Conferencecall defines contents of conferencecall
 type Conferencecall struct {
-	ID           uuid.UUID `json:"id"`
-	CustomerID   uuid.UUID `json:"customer_id"`
-	ConferenceID uuid.UUID `json:"conference_id"`
+	commonidentity.Identity
 
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"`
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"`
+	ConferenceID uuid.UUID `json:"conference_id,omitempty"`
 
-	Status Status `json:"status"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	Status Status `json:"status,omitempty"`
+
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ReferenceType define

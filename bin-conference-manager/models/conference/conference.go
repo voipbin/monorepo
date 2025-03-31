@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	uuid "github.com/gofrs/uuid"
@@ -11,8 +12,8 @@ import (
 
 // Conference type
 type Conference struct {
-	ID           uuid.UUID `json:"id"`
-	CustomerID   uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
+
 	ConfbridgeID uuid.UUID `json:"confbridge_id"` // confbridge id(call-manager)
 	FlowID       uuid.UUID `json:"flow_id"`       // flow id(flow-manager)
 	Type         Type      `json:"type"`
