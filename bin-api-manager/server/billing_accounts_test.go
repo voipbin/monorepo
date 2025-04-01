@@ -47,7 +47,9 @@ func Test_PostBillingAccounts(t *testing.T) {
 			reqBody: []byte(`{"name":"test name","detail":"test detail","payment_type":"prepaid","payment_method":"credit card"}`),
 
 			responsBillingAccount: &bmaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("fa87d0ce-11e6-11ee-9d0a-ef3f8b33f9d9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fa87d0ce-11e6-11ee-9d0a-ef3f8b33f9d9"),
+				},
 			},
 
 			expectedName:          "test name",
@@ -123,7 +125,9 @@ func Test_GetBillingAccounts(t *testing.T) {
 
 			resBillingAccounts: []*bmaccount.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("30984a42-11ea-11ee-b5d2-93d4f8db3dca"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("30984a42-11ea-11ee-b5d2-93d4f8db3dca"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -143,15 +147,21 @@ func Test_GetBillingAccounts(t *testing.T) {
 
 			resBillingAccounts: []*bmaccount.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("30caab9a-11ea-11ee-8f18-5735018f9df2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("30caab9a-11ea-11ee-8f18-5735018f9df2"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("30f86f76-11ea-11ee-ae51-ef177df11436"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("30f86f76-11ea-11ee-ae51-ef177df11436"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("312228ca-11ea-11ee-9004-eb6099103496"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("312228ca-11ea-11ee-9004-eb6099103496"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
@@ -222,7 +232,9 @@ func Test_DeleteBillingAccountsId(t *testing.T) {
 			reqQuery: "/billing_accounts/9738a486-11ea-11ee-b56b-db24f5d2c81a",
 
 			responseBillingAccount: &bmaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("9738a486-11ea-11ee-b56b-db24f5d2c81a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9738a486-11ea-11ee-b56b-db24f5d2c81a"),
+				},
 			},
 			expectBillingAccountID: uuid.FromStringOrNil("9738a486-11ea-11ee-b56b-db24f5d2c81a"),
 			expectRes:              `{"id":"9738a486-11ea-11ee-b56b-db24f5d2c81a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
@@ -289,7 +301,9 @@ func Test_GetBillingAccountsId(t *testing.T) {
 			billingAccountID: uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
 
 			responseBillingAccount: &bmaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
+				},
 			},
 			expectRes: `{"id":"602eb6b4-11eb-11ee-b79f-03124621dcc4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
@@ -359,7 +373,9 @@ func Test_PutBillingAccountsId(t *testing.T) {
 			reqBody:  []byte(`{"name":"update name","detail":"update detail"}`),
 
 			responsBillingAccount: &bmaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("8d1d01bc-4cdd-11ee-a22f-03714037d3db"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8d1d01bc-4cdd-11ee-a22f-03714037d3db"),
+				},
 			},
 
 			expectBillingAccountID: uuid.FromStringOrNil("8d1d01bc-4cdd-11ee-a22f-03714037d3db"),
@@ -436,7 +452,9 @@ func Test_PutBillingAccountsIdPaymentInfo(t *testing.T) {
 			reqBody:  []byte(`{"payment_type":"prepaid","payment_method":"credit card"}`),
 
 			responsBillingAccount: &bmaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("64461024-4cdf-11ee-be1f-e7111eb57d28"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("64461024-4cdf-11ee-be1f-e7111eb57d28"),
+				},
 			},
 
 			expectBillingAccountID: uuid.FromStringOrNil("64461024-4cdf-11ee-be1f-e7111eb57d28"),
@@ -512,7 +530,9 @@ func Test_PostBillingAccountsIdBalanceAddForce(t *testing.T) {
 			reqBody:  []byte(`{"balance": 20.9}`),
 
 			responseBillingAccount: &bmaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("605eae78-11eb-11ee-b8d3-6fd8da9d9879"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("605eae78-11eb-11ee-b8d3-6fd8da9d9879"),
+				},
 			},
 
 			expectBillingAccountID: uuid.FromStringOrNil("605eae78-11eb-11ee-b8d3-6fd8da9d9879"),
@@ -584,7 +604,9 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 			reqBody:  []byte(`{"balance": 20.9}`),
 
 			responseBillingAccount: &bmaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("e4e38ff6-11eb-11ee-879b-cb22a78168e4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e4e38ff6-11eb-11ee-879b-cb22a78168e4"),
+				},
 			},
 
 			expectBillingAccountID: uuid.FromStringOrNil("e4e38ff6-11eb-11ee-879b-cb22a78168e4"),

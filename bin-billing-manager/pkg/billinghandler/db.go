@@ -10,6 +10,7 @@ import (
 
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 // Create creates a new billing and return the created billing.
@@ -34,8 +35,10 @@ func (h *billingHandler) Create(
 
 	id := h.utilHandler.UUIDCreate()
 	c := &billing.Billing{
-		ID:               id,
-		CustomerID:       customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 		AccountID:        accountID,
 		Status:           billing.StatusProgressing,
 		ReferenceType:    referenceType,

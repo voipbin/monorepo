@@ -38,9 +38,11 @@ func Test_billingAccountGet(t *testing.T) {
 			},
 			uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
 			&bmaccount.Account{
-				ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -97,14 +99,18 @@ func Test_BillingAccountDelete(t *testing.T) {
 			billingAccountID: uuid.FromStringOrNil("f7685000-105e-11ee-a7b9-fb7f3da1cef4"),
 
 			responseBillingAccount: &bmaccount.Account{
-				ID:         uuid.FromStringOrNil("f7685000-105e-11ee-a7b9-fb7f3da1cef4"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f7685000-105e-11ee-a7b9-fb7f3da1cef4"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			expectRes: &bmaccount.WebhookMessage{
-				ID:         uuid.FromStringOrNil("f7685000-105e-11ee-a7b9-fb7f3da1cef4"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f7685000-105e-11ee-a7b9-fb7f3da1cef4"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -165,10 +171,14 @@ func Test_BillingAccountGets(t *testing.T) {
 
 			responseBillingAcounts: []bmaccount.Account{
 				{
-					ID: uuid.FromStringOrNil("3b598286-105d-11ee-a8e0-d3fe1d127d17"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3b598286-105d-11ee-a8e0-d3fe1d127d17"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("3b7fc41e-105d-11ee-9b29-a77a519ca3b9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3b7fc41e-105d-11ee-9b29-a77a519ca3b9"),
+					},
 				},
 			},
 			expectFilters: map[string]string{
@@ -177,10 +187,14 @@ func Test_BillingAccountGets(t *testing.T) {
 			},
 			expectRes: []*bmaccount.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("3b598286-105d-11ee-a8e0-d3fe1d127d17"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3b598286-105d-11ee-a8e0-d3fe1d127d17"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("3b7fc41e-105d-11ee-9b29-a77a519ca3b9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3b7fc41e-105d-11ee-9b29-a77a519ca3b9"),
+					},
 				},
 			},
 		},
@@ -245,10 +259,14 @@ func Test_BillingAccountCreate(t *testing.T) {
 			paymentMethod:      bmaccount.PaymentMethodCreditCard,
 
 			responseBillingAccount: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				},
 			},
 			expectRes: &bmaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				},
 			},
 		},
 	}
@@ -309,14 +327,18 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 			detail:             "test detail",
 
 			responseBillingAccount: &bmaccount.Account{
-				ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			expectRes: &bmaccount.WebhookMessage{
-				ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -378,14 +400,18 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 			paymentMethod:    bmaccount.PaymentMethodCreditCard,
 
 			responseBillingAccount: &bmaccount.Account{
-				ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			expectRes: &bmaccount.WebhookMessage{
-				ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -445,10 +471,14 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 			balance:   32.21,
 
 			responseBillingAccount: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				},
 			},
 			expectRes: &bmaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				},
 			},
 		},
 	}

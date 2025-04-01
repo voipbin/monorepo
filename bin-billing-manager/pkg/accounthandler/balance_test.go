@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -45,7 +46,9 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 				BillingAccountID: uuid.FromStringOrNil("8802cee4-09f5-11ee-9491-378bbbda7e50"),
 			},
 			responseAccount: &account.Account{
-				ID:       uuid.FromStringOrNil("8802cee4-09f5-11ee-9491-378bbbda7e50"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8802cee4-09f5-11ee-9491-378bbbda7e50"),
+				},
 				Balance:  10.0,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
@@ -63,7 +66,9 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 				BillingAccountID: uuid.FromStringOrNil("a0e702cc-09f5-11ee-a6d0-e77ef7485142"),
 			},
 			responseAccount: &account.Account{
-				ID:       uuid.FromStringOrNil("a0e702cc-09f5-11ee-a6d0-e77ef7485142"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0e702cc-09f5-11ee-a6d0-e77ef7485142"),
+				},
 				Type:     account.TypeAdmin,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
@@ -127,7 +132,9 @@ func Test_IsValidBalance(t *testing.T) {
 			count:       1,
 
 			responseAccount: &account.Account{
-				ID:       uuid.FromStringOrNil("u53d1e596-1342-11ee-86c6-23afd019902d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("u53d1e596-1342-11ee-86c6-23afd019902d"),
+				},
 				Balance:  10.0,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
@@ -141,7 +148,9 @@ func Test_IsValidBalance(t *testing.T) {
 			count:       1,
 
 			responseAccount: &account.Account{
-				ID:       uuid.FromStringOrNil("540fbd80-1342-11ee-bdfc-e3cff38ae489"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("540fbd80-1342-11ee-bdfc-e3cff38ae489"),
+				},
 				Type:     account.TypeAdmin,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},

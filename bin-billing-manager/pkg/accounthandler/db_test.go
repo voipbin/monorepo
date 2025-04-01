@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -46,12 +47,16 @@ func Test_Create(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("3972c20e-08f4-11ee-893b-032e633ef73a"),
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("3972c20e-08f4-11ee-893b-032e633ef73a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3972c20e-08f4-11ee-893b-032e633ef73a"),
+				},
 			},
 
 			expectAccount: &account.Account{
-				ID:            uuid.FromStringOrNil("3972c20e-08f4-11ee-893b-032e633ef73a"),
-				CustomerID:    uuid.FromStringOrNil("06011a02-08f3-11ee-b4c1-73257fafcdb3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3972c20e-08f4-11ee-893b-032e633ef73a"),
+					CustomerID: uuid.FromStringOrNil("06011a02-08f3-11ee-b4c1-73257fafcdb3"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				Type:          account.TypeNormal,
@@ -112,7 +117,9 @@ func Test_Get(t *testing.T) {
 			id: uuid.FromStringOrNil("8ba5c986-08f4-11ee-a292-4f01790e9d2b"),
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("8ba5c986-08f4-11ee-a292-4f01790e9d2b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8ba5c986-08f4-11ee-a292-4f01790e9d2b"),
+				},
 			},
 		},
 	}
@@ -169,7 +176,9 @@ func Test_GetByCustomerID(t *testing.T) {
 				BillingAccountID: uuid.FromStringOrNil("b74fe472-08f4-11ee-8dbb-8bec316a131c"),
 			},
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("b74fe472-08f4-11ee-8dbb-8bec316a131c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b74fe472-08f4-11ee-8dbb-8bec316a131c"),
+				},
 			},
 		},
 	}
@@ -231,10 +240,14 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			responseAccounts: []*account.Account{
 				{
-					ID: uuid.FromStringOrNil("ba0e7152-0b96-11ee-9bbb-ef5ba49d06fb"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ba0e7152-0b96-11ee-9bbb-ef5ba49d06fb"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("ba3c016c-0b96-11ee-9850-53f4edbab1be"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ba3c016c-0b96-11ee-9850-53f4edbab1be"),
+					},
 				},
 			},
 		},
@@ -289,7 +302,9 @@ func Test_SubtractBalance(t *testing.T) {
 			balance:   20.1,
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("287f9762-09f6-11ee-a305-2f57be32e59c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("287f9762-09f6-11ee-a305-2f57be32e59c"),
+				},
 			},
 		},
 	}
@@ -344,7 +359,9 @@ func Test_AddBalance(t *testing.T) {
 			balance:   20.1,
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("f3f570d8-09f6-11ee-a665-fb550b87c0f6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f3f570d8-09f6-11ee-a665-fb550b87c0f6"),
+				},
 			},
 		},
 	}
@@ -397,7 +414,9 @@ func Test_Delete(t *testing.T) {
 			accountID: uuid.FromStringOrNil("920b8062-0e68-11ee-b337-7315804888d0"),
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("920b8062-0e68-11ee-b337-7315804888d0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("920b8062-0e68-11ee-b337-7315804888d0"),
+				},
 			},
 		},
 	}
@@ -454,7 +473,9 @@ func Test_dbUpdateBasicInfo(t *testing.T) {
 			detail:      "update detail",
 
 			responseAccounts: &account.Account{
-				ID: uuid.FromStringOrNil("5fc8b882-4cce-11ee-a6be-2b19227e7197"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5fc8b882-4cce-11ee-a6be-2b19227e7197"),
+				},
 			},
 		},
 	}

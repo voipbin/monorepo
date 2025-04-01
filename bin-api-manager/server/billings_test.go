@@ -45,7 +45,9 @@ func Test_billingsGET(t *testing.T) {
 
 			responseBillings: []*bmbilling.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("30984a42-11ea-11ee-b5d2-93d4f8db3dca"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("30984a42-11ea-11ee-b5d2-93d4f8db3dca"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -66,15 +68,21 @@ func Test_billingsGET(t *testing.T) {
 
 			responseBillings: []*bmbilling.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("30caab9a-11ea-11ee-8f18-5735018f9df2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("30caab9a-11ea-11ee-8f18-5735018f9df2"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("30f86f76-11ea-11ee-ae51-ef177df11436"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("30f86f76-11ea-11ee-ae51-ef177df11436"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("312228ca-11ea-11ee-9004-eb6099103496"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("312228ca-11ea-11ee-9004-eb6099103496"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},

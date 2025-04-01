@@ -63,12 +63,12 @@ require (
 	golang.org/x/sys v0.31.0 // indirect
 	google.golang.org/api v0.228.0
 	google.golang.org/genproto v0.0.0-20250324211829-b45e905df463 // indirect
-	google.golang.org/grpc v1.71.0
+	google.golang.org/grpc v1.71.1
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
 
 require (
-	cloud.google.com/go/texttospeech v1.11.2
+	cloud.google.com/go/texttospeech v1.12.0
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/pkg/errors v0.9.1
@@ -81,7 +81,7 @@ require (
 	cloud.google.com/go/auth v0.15.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
-	cloud.google.com/go/iam v1.4.2 // indirect
+	cloud.google.com/go/iam v1.5.0 // indirect
 	cloud.google.com/go/longrunning v0.6.6 // indirect
 	cloud.google.com/go/monitoring v1.24.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.27.0 // indirect
