@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -45,10 +46,14 @@ func Test_processV1AccountsGet(t *testing.T) {
 			},
 			responseAccounts: []*account.Account{
 				{
-					ID: uuid.FromStringOrNil("dafc10d0-0b97-11ee-af30-2fb7811295dd"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("dafc10d0-0b97-11ee-af30-2fb7811295dd"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("db4e7e24-0b97-11ee-91f9-c7d5620abcd7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("db4e7e24-0b97-11ee-91f9-c7d5620abcd7"),
+					},
 				},
 			},
 
@@ -119,7 +124,9 @@ func Test_processV1AccountsPost(t *testing.T) {
 			},
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("c28443b6-0e75-11ee-90ec-1bb28081d375"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c28443b6-0e75-11ee-90ec-1bb28081d375"),
+				},
 			},
 
 			expectCustomerID:    uuid.FromStringOrNil("c28443b6-0e75-11ee-90ec-1bb28081d375"),
@@ -183,7 +190,9 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			},
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("922907b6-0942-11ee-960e-f31d2cc10daa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("922907b6-0942-11ee-960e-f31d2cc10daa"),
+				},
 			},
 
 			expectID: uuid.FromStringOrNil("922907b6-0942-11ee-960e-f31d2cc10daa"),
@@ -221,65 +230,6 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 	}
 }
 
-// func Test_processV1AccountsCustomerIDIDGet(t *testing.T) {
-
-// 	type test struct {
-// 		name    string
-// 		request *sock.Request
-
-// 		responseAccount *account.Account
-
-// 		expectCustomerID uuid.UUID
-// 		expectRes        *sock.Response
-// 	}
-
-// 	tests := []test{
-// 		{
-// 			name: "normal",
-// 			request: &sock.Request{
-// 				URI:    "/v1/accounts/customer_id/6b16ec0c-09ff-11ee-bd17-1f6f65cee5c7",
-// 				Method: sock.RequestMethodGet,
-// 			},
-
-// 			responseAccount: &account.Account{
-// 				ID: uuid.FromStringOrNil("6b76f5ac-09ff-11ee-b6ff-8790f56e5a46"),
-// 			},
-
-// 			expectCustomerID: uuid.FromStringOrNil("6b16ec0c-09ff-11ee-bd17-1f6f65cee5c7"),
-// 			expectRes: &sock.Response{
-// 				StatusCode: 200,
-// 				DataType:   "application/json",
-// 				Data:       []byte(`{"id":"6b76f5ac-09ff-11ee-b6ff-8790f56e5a46","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockSock := sockhandler.NewMockSockHandler(mc)
-// 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-
-// 			h := &listenHandler{
-// 				rabbitSock:     mockSock,
-// 				accountHandler: mockAccount,
-// 			}
-
-// 			mockAccount.EXPECT().GetByCustomerID(gomock.Any(), tt.expectCustomerID).Return(tt.responseAccount, nil)
-// 			res, err := h.processRequest(tt.request)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if reflect.DeepEqual(res, tt.expectRes) != true {
-// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
-
 func Test_processV1AccountsIDPut(t *testing.T) {
 
 	type test struct {
@@ -305,7 +255,9 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 			},
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("3a952284-4ccf-11ee-bd5e-03a7d7220fad"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3a952284-4ccf-11ee-bd5e-03a7d7220fad"),
+				},
 			},
 
 			expectAccountID: uuid.FromStringOrNil("3a952284-4ccf-11ee-bd5e-03a7d7220fad"),
@@ -366,7 +318,9 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 			},
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("a9e3587c-4ccf-11ee-9872-8b9300051977"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a9e3587c-4ccf-11ee-9872-8b9300051977"),
+				},
 			},
 
 			expectAccountID: uuid.FromStringOrNil("a9e3587c-4ccf-11ee-9872-8b9300051977"),
@@ -428,7 +382,9 @@ func Test_processV1AccountsIDBalanceAddForcePost(t *testing.T) {
 			},
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("42d34adc-0dbb-11ee-a41b-eb337ba453c8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("42d34adc-0dbb-11ee-a41b-eb337ba453c8"),
+				},
 			},
 
 			expectAccountID: uuid.FromStringOrNil("42d34adc-0dbb-11ee-a41b-eb337ba453c8"),
@@ -491,7 +447,9 @@ func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 			},
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("43180e06-0dbb-11ee-8124-17d122da2950"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("43180e06-0dbb-11ee-8124-17d122da2950"),
+				},
 			},
 
 			expectAccountID: uuid.FromStringOrNil("43180e06-0dbb-11ee-8124-17d122da2950"),
@@ -620,7 +578,9 @@ func Test_processV1AccountsIDPaymentInfoPut(t *testing.T) {
 			},
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("512ab538-4cd2-11ee-91be-7779c29dd4f8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("512ab538-4cd2-11ee-91be-7779c29dd4f8"),
+				},
 			},
 
 			expectAccountID:     uuid.FromStringOrNil("512ab538-4cd2-11ee-91be-7779c29dd4f8"),

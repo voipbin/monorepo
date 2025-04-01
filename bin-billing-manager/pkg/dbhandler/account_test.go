@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -30,8 +31,10 @@ func Test_AccountCreate(t *testing.T) {
 		{
 			"have all",
 			&account.Account{
-				ID:            uuid.FromStringOrNil("6ecdb856-0600-11ee-b746-d3ef5adc8ef7"),
-				CustomerID:    uuid.FromStringOrNil("6efc4a5e-0600-11ee-9aca-57553e6045e7"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6ecdb856-0600-11ee-b746-d3ef5adc8ef7"),
+					CustomerID: uuid.FromStringOrNil("6efc4a5e-0600-11ee-9aca-57553e6045e7"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				Type:          account.TypeNormal,
@@ -42,8 +45,10 @@ func Test_AccountCreate(t *testing.T) {
 
 			"2023-06-07 03:22:17.995000",
 			&account.Account{
-				ID:            uuid.FromStringOrNil("6ecdb856-0600-11ee-b746-d3ef5adc8ef7"),
-				CustomerID:    uuid.FromStringOrNil("6efc4a5e-0600-11ee-9aca-57553e6045e7"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6ecdb856-0600-11ee-b746-d3ef5adc8ef7"),
+					CustomerID: uuid.FromStringOrNil("6efc4a5e-0600-11ee-9aca-57553e6045e7"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				Type:          account.TypeNormal,
@@ -59,12 +64,16 @@ func Test_AccountCreate(t *testing.T) {
 			"empty",
 
 			&account.Account{
-				ID: uuid.FromStringOrNil("9b219300-0600-11ee-bd0c-db57aac06783"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9b219300-0600-11ee-bd0c-db57aac06783"),
+				},
 			},
 
 			"2020-04-18 03:22:17.995000",
 			&account.Account{
-				ID:       uuid.FromStringOrNil("9b219300-0600-11ee-bd0c-db57aac06783"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9b219300-0600-11ee-bd0c-db57aac06783"),
+				},
 				TMCreate: "2020-04-18 03:22:17.995000",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
@@ -124,12 +133,16 @@ func Test_AccountGets(t *testing.T) {
 			name: "normal",
 			accounts: []*account.Account{
 				{
-					ID:         uuid.FromStringOrNil("99a99eb2-f3d7-11ee-8c0a-f7457252a2f8"),
-					CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("99a99eb2-f3d7-11ee-8c0a-f7457252a2f8"),
+						CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("99ceaf40-f3d7-11ee-b8bb-97bb778dce9e"),
-					CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("99ceaf40-f3d7-11ee-b8bb-97bb778dce9e"),
+						CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+					},
 				},
 			},
 
@@ -140,18 +153,22 @@ func Test_AccountGets(t *testing.T) {
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: []*account.Account{
 				{
-					ID:         uuid.FromStringOrNil("99a99eb2-f3d7-11ee-8c0a-f7457252a2f8"),
-					CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
-					TMCreate:   "2023-06-08 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("99a99eb2-f3d7-11ee-8c0a-f7457252a2f8"),
+						CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+					},
+					TMCreate: "2023-06-08 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("99ceaf40-f3d7-11ee-b8bb-97bb778dce9e"),
-					CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
-					TMCreate:   "2023-06-08 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("99ceaf40-f3d7-11ee-b8bb-97bb778dce9e"),
+						CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+					},
+					TMCreate: "2023-06-08 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -208,12 +225,16 @@ func Test_AccountGetsByCustomerID(t *testing.T) {
 			name: "normal",
 			accounts: []*account.Account{
 				{
-					ID:         uuid.FromStringOrNil("1d6fcb5a-06ca-11ee-96c1-bb6797183957"),
-					CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("1d6fcb5a-06ca-11ee-96c1-bb6797183957"),
+						CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("21e3a2a6-06ca-11ee-a265-73b6edfdaf51"),
-					CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("21e3a2a6-06ca-11ee-a265-73b6edfdaf51"),
+						CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
+					},
 				},
 			},
 
@@ -223,18 +244,22 @@ func Test_AccountGetsByCustomerID(t *testing.T) {
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: []*account.Account{
 				{
-					ID:         uuid.FromStringOrNil("21e3a2a6-06ca-11ee-a265-73b6edfdaf51"),
-					CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
-					TMCreate:   "2023-06-08 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("21e3a2a6-06ca-11ee-a265-73b6edfdaf51"),
+						CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
+					},
+					TMCreate: "2023-06-08 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("1d6fcb5a-06ca-11ee-96c1-bb6797183957"),
-					CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
-					TMCreate:   "2023-06-08 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("1d6fcb5a-06ca-11ee-96c1-bb6797183957"),
+						CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
+					},
+					TMCreate: "2023-06-08 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -291,7 +316,9 @@ func Test_AccountSet(t *testing.T) {
 		{
 			name: "normal",
 			account: &account.Account{
-				ID: uuid.FromStringOrNil("697786c6-06cc-11ee-88f6-a79092bb719c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("697786c6-06cc-11ee-88f6-a79092bb719c"),
+				},
 			},
 
 			id:          uuid.FromStringOrNil("697786c6-06cc-11ee-88f6-a79092bb719c"),
@@ -300,7 +327,9 @@ func Test_AccountSet(t *testing.T) {
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: &account.Account{
-				ID:       uuid.FromStringOrNil("697786c6-06cc-11ee-88f6-a79092bb719c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("697786c6-06cc-11ee-88f6-a79092bb719c"),
+				},
 				Name:     "test name",
 				Detail:   "test detail",
 				TMCreate: "2023-06-08 03:22:17.995000",
@@ -368,9 +397,11 @@ func Test_AccountAddBalance(t *testing.T) {
 		{
 			name: "normal",
 			account: &account.Account{
-				ID:         uuid.FromStringOrNil("c05e0eba-09bf-11ee-867c-13d325e0d976"),
-				CustomerID: uuid.FromStringOrNil("1a547210-06cd-11ee-bf06-abb9387009e2"),
-				Balance:    20.0,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c05e0eba-09bf-11ee-867c-13d325e0d976"),
+					CustomerID: uuid.FromStringOrNil("1a547210-06cd-11ee-bf06-abb9387009e2"),
+				},
+				Balance: 20.0,
 			},
 
 			accountID: uuid.FromStringOrNil("c05e0eba-09bf-11ee-867c-13d325e0d976"),
@@ -378,12 +409,14 @@ func Test_AccountAddBalance(t *testing.T) {
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: &account.Account{
-				ID:         uuid.FromStringOrNil("c05e0eba-09bf-11ee-867c-13d325e0d976"),
-				CustomerID: uuid.FromStringOrNil("1a547210-06cd-11ee-bf06-abb9387009e2"),
-				Balance:    908.88,
-				TMCreate:   "2023-06-08 03:22:17.995000",
-				TMUpdate:   "2023-06-08 03:22:17.995000",
-				TMDelete:   DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c05e0eba-09bf-11ee-867c-13d325e0d976"),
+					CustomerID: uuid.FromStringOrNil("1a547210-06cd-11ee-bf06-abb9387009e2"),
+				},
+				Balance:  908.88,
+				TMCreate: "2023-06-08 03:22:17.995000",
+				TMUpdate: "2023-06-08 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -446,9 +479,11 @@ func Test_AccountSubtractBalance(t *testing.T) {
 		{
 			name: "normal",
 			account: &account.Account{
-				ID:         uuid.FromStringOrNil("2788b4ce-07b7-11ee-acdb-07679240a451"),
-				CustomerID: uuid.FromStringOrNil("0d9c3274-09c0-11ee-a384-1f58f10e9a62"),
-				Balance:    20.0,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2788b4ce-07b7-11ee-acdb-07679240a451"),
+					CustomerID: uuid.FromStringOrNil("0d9c3274-09c0-11ee-a384-1f58f10e9a62"),
+				},
+				Balance: 20.0,
 			},
 
 			accountID: uuid.FromStringOrNil("2788b4ce-07b7-11ee-acdb-07679240a451"),
@@ -456,12 +491,14 @@ func Test_AccountSubtractBalance(t *testing.T) {
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: &account.Account{
-				ID:         uuid.FromStringOrNil("2788b4ce-07b7-11ee-acdb-07679240a451"),
-				CustomerID: uuid.FromStringOrNil("0d9c3274-09c0-11ee-a384-1f58f10e9a62"),
-				Balance:    11.12,
-				TMCreate:   "2023-06-08 03:22:17.995000",
-				TMUpdate:   "2023-06-08 03:22:17.995000",
-				TMDelete:   DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2788b4ce-07b7-11ee-acdb-07679240a451"),
+					CustomerID: uuid.FromStringOrNil("0d9c3274-09c0-11ee-a384-1f58f10e9a62"),
+				},
+				Balance:  11.12,
+				TMCreate: "2023-06-08 03:22:17.995000",
+				TMUpdate: "2023-06-08 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -525,7 +562,9 @@ func Test_AccountSetPaymentInfo(t *testing.T) {
 		{
 			name: "normal",
 			account: &account.Account{
-				ID: uuid.FromStringOrNil("5d0dd0e2-06cd-11ee-a292-3bc4c472124e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5d0dd0e2-06cd-11ee-a292-3bc4c472124e"),
+				},
 			},
 
 			id:            uuid.FromStringOrNil("5d0dd0e2-06cd-11ee-a292-3bc4c472124e"),
@@ -534,7 +573,9 @@ func Test_AccountSetPaymentInfo(t *testing.T) {
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: &account.Account{
-				ID:            uuid.FromStringOrNil("5d0dd0e2-06cd-11ee-a292-3bc4c472124e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5d0dd0e2-06cd-11ee-a292-3bc4c472124e"),
+				},
 				PaymentType:   account.PaymentTypePrepaid,
 				PaymentMethod: account.PaymentMethodCreditCard,
 				TMCreate:      "2023-06-08 03:22:17.995000",
@@ -601,14 +642,18 @@ func Test_AccountDelete(t *testing.T) {
 		{
 			name: "normal",
 			account: &account.Account{
-				ID: uuid.FromStringOrNil("3d9d1d2c-06d1-11ee-a149-033de1ce53d7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3d9d1d2c-06d1-11ee-a149-033de1ce53d7"),
+				},
 			},
 
 			id: uuid.FromStringOrNil("3d9d1d2c-06d1-11ee-a149-033de1ce53d7"),
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: &account.Account{
-				ID:       uuid.FromStringOrNil("3d9d1d2c-06d1-11ee-a149-033de1ce53d7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3d9d1d2c-06d1-11ee-a149-033de1ce53d7"),
+				},
 				TMCreate: "2023-06-08 03:22:17.995000",
 				TMUpdate: "2023-06-08 03:22:17.995000",
 				TMDelete: "2023-06-08 03:22:17.995000",

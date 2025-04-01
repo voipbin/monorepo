@@ -1,14 +1,16 @@
 package billing
 
 import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"github.com/gofrs/uuid"
 )
 
 // Billing define
 type Billing struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	AccountID  uuid.UUID `json:"account_id"` // billing account
+	commonidentity.Identity
+
+	AccountID uuid.UUID `json:"account_id"` // billing account
 
 	Status Status `json:"status"`
 

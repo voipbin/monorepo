@@ -45,10 +45,14 @@ func Test_BillingGets(t *testing.T) {
 
 			responseBillingAcounts: []bmbilling.Billing{
 				{
-					ID: uuid.FromStringOrNil("e3b28042-f566-11ee-baaf-af8732074c75"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e3b28042-f566-11ee-baaf-af8732074c75"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e4214112-f566-11ee-8e24-0f932b0506b8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e4214112-f566-11ee-8e24-0f932b0506b8"),
+					},
 				},
 			},
 			expectFilters: map[string]string{
@@ -57,10 +61,14 @@ func Test_BillingGets(t *testing.T) {
 			},
 			expectRes: []*bmbilling.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("e3b28042-f566-11ee-baaf-af8732074c75"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e3b28042-f566-11ee-baaf-af8732074c75"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e4214112-f566-11ee-8e24-0f932b0506b8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e4214112-f566-11ee-8e24-0f932b0506b8"),
+					},
 				},
 			},
 		},
