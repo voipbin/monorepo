@@ -114,3 +114,59 @@ Current Limitations & Future Enhancements
 * Context Retention: Each AI request is processed independently, meaning there is no built-in conversation memory.
 
 VoIPBin's AI feature offers a flexible and intelligent way to automate voice interactions within flows. By leveraging AI-powered responses and structured action execution, developers can enhance call experiences with minimal effort. As VoIPBin continues to evolve, future updates will introduce greater customization options and multilingual capabilities.
+
+
+AI Summary
+==========
+
+The AI Summary feature in VoIPBin generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.
+
+.. image:: _static/images/ai_overview_summary.png
+    :alt: AI summary component in action builder
+    :align: center
+
+Supported Resources
+-------------------
+
+AI summaries work with a single resource at a time. The supported resources are:
+
+Real-time Summary: 
+* Live call transcription
+* Live conference transcription
+
+Non-Real-time Summary:
+* Transcribed recordings (post-call)
+* Recorded conferences (post-call)
+
+Choosing Between Real-time and Non-Real-time Summaries
+------------------------------------------------------
+
+Developers must decide whether to use a real-time or non-real-time summary based on their needs:
+
+=========================== ============= ==============================================
+Use Case                    Summary Type  Recommendation
+=========================== ============= ==============================================
+Live call monitoring        Real-time     Use AI summary with a live call transcription
+--------------------------- ------------- ----------------------------------------------
+Live conference insights    Real-time     Use AI summary with a live conference transcription
+--------------------------- ------------- ----------------------------------------------
+Post-call analysis          Non-real-time Use AI summary with transcribe_id from a completed call
+--------------------------- ------------- ----------------------------------------------
+Recorded conference summary Non-real-time Use AI summary with recording_id
+=========================== ============= ==============================================
+
+AI Summary Behavior
+-------------------
+
+* The summary action processes only one resource at a time.
+* If multiple AI summary actions are used in a flow, each executes independently.
+* If an AI summary action is triggered multiple times for the same resource, it only returns the most recent segment.
+* In conference calls, the summary is unified across all participants rather than per speaker.
+
+Ensuring Full Coverage
+----------------------
+
+Since starting an AI summary action late in the call results in missing earlier conversations, developers should follow best practices:
+* Enable transcribe_start early: This ensures that transcriptions are available even if an AI summary action is triggered later.
+* Use transcribe_id instead of call_id: This allows summarizing a full transcription rather than just the latest segment.
+* For post-call summaries, use recording_id: This ensures that the full conversation is summarized from the recorded audio.

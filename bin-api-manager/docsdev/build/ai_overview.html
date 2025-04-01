@@ -253,6 +253,67 @@
 <p>VoIPBin’s AI feature offers a flexible and intelligent way to automate voice interactions within flows. By leveraging AI-powered responses and structured action execution, developers can enhance call experiences with minimal effort. As VoIPBin continues to evolve, future updates will introduce greater customization options and multilingual capabilities.</p>
 </section>
 </section>
+<section id="ai-summary">
+<h1>AI Summary<a class="headerlink" href="#ai-summary" title="Link to this heading"></a></h1>
+<p>The AI Summary feature in VoIPBin generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.</p>
+<img alt="AI summary component in action builder" class="align-center" src="_images/ai_overview_summary.png" />
+<section id="supported-resources">
+<h2>Supported Resources<a class="headerlink" href="#supported-resources" title="Link to this heading"></a></h2>
+<p>AI summaries work with a single resource at a time. The supported resources are:</p>
+<p>Real-time Summary:
+* Live call transcription
+* Live conference transcription</p>
+<p>Non-Real-time Summary:
+* Transcribed recordings (post-call)
+* Recorded conferences (post-call)</p>
+</section>
+<section id="choosing-between-real-time-and-non-real-time-summaries">
+<h2>Choosing Between Real-time and Non-Real-time Summaries<a class="headerlink" href="#choosing-between-real-time-and-non-real-time-summaries" title="Link to this heading"></a></h2>
+<p>Developers must decide whether to use a real-time or non-real-time summary based on their needs:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Use Case</p></th>
+<th class="head"><p>Summary Type</p></th>
+<th class="head"><p>Recommendation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Live call monitoring</p></td>
+<td><p>Real-time</p></td>
+<td><p>Use AI summary with a live call transcription</p></td>
+</tr>
+<tr class="row-odd"><td><p>Live conference insights</p></td>
+<td><p>Real-time</p></td>
+<td><p>Use AI summary with a live conference transcription</p></td>
+</tr>
+<tr class="row-even"><td><p>Post-call analysis</p></td>
+<td><p>Non-real-time</p></td>
+<td><p>Use AI summary with transcribe_id from a completed call</p></td>
+</tr>
+<tr class="row-odd"><td><p>Recorded conference summary</p></td>
+<td><p>Non-real-time</p></td>
+<td><p>Use AI summary with recording_id</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="ai-summary-behavior">
+<h2>AI Summary Behavior<a class="headerlink" href="#ai-summary-behavior" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>The summary action processes only one resource at a time.</p></li>
+<li><p>If multiple AI summary actions are used in a flow, each executes independently.</p></li>
+<li><p>If an AI summary action is triggered multiple times for the same resource, it only returns the most recent segment.</p></li>
+<li><p>In conference calls, the summary is unified across all participants rather than per speaker.</p></li>
+</ul>
+</section>
+<section id="ensuring-full-coverage">
+<h2>Ensuring Full Coverage<a class="headerlink" href="#ensuring-full-coverage" title="Link to this heading"></a></h2>
+<p>Since starting an AI summary action late in the call results in missing earlier conversations, developers should follow best practices:
+* Enable transcribe_start early: This ensures that transcriptions are available even if an AI summary action is triggered later.
+* Use transcribe_id instead of call_id: This allows summarizing a full transcription rather than just the latest segment.
+* For post-call summaries, use recording_id: This ensures that the full conversation is summarized from the recorded audio.</p>
+</section>
+</section>
 
 </main>
                         
@@ -284,6 +345,13 @@
 <li><a class="reference internal" href="#escalation-to-live-agents">Escalation to Live Agents</a></li>
 <li><a class="reference internal" href="#logging-debugging">Logging &amp; Debugging</a></li>
 <li><a class="reference internal" href="#current-limitations-future-enhancements">Current Limitations &amp; Future Enhancements</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ai-summary">AI Summary</a><ul>
+<li><a class="reference internal" href="#supported-resources">Supported Resources</a></li>
+<li><a class="reference internal" href="#choosing-between-real-time-and-non-real-time-summaries">Choosing Between Real-time and Non-Real-time Summaries</a></li>
+<li><a class="reference internal" href="#ai-summary-behavior">AI Summary Behavior</a></li>
+<li><a class="reference internal" href="#ensuring-full-coverage">Ensuring Full Coverage</a></li>
 </ul>
 </li>
 </ul>
