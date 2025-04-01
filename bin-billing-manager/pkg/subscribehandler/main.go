@@ -18,7 +18,6 @@ import (
 
 	nmnumber "monorepo/bin-number-manager/models/number"
 
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
@@ -120,7 +119,7 @@ func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 	})
 
 	if errProcess := h.processEvent(m); errProcess != nil {
-		log.Errorf("Could not consume the ARI event message correctly. err: %v", errProcess)
+		log.Errorf("Could not consume the subscribed event message correctly. err: %v", errProcess)
 	}
 
 	return nil
@@ -181,7 +180,7 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 
 	if err != nil {
 		log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
-		return errors.Wrap(err, "could not process the event correctly.")
+		return nil
 	}
 
 	return nil
