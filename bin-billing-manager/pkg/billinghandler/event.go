@@ -2,10 +2,12 @@ package billinghandler
 
 import (
 	"context"
+	"fmt"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 
 	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/dbhandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
@@ -17,14 +19,7 @@ import (
 
 // EventCMCallProgressing handles the call-manager's call_progressing event
 func (h *billingHandler) EventCMCallProgressing(ctx context.Context, c *cmcall.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "EventCMCallProgressing",
-		"call": c,
-	})
-	log.Debugf("Received call_progressing event. call_id: %s", c.ID)
-
 	if errBilling := h.BillingStart(ctx, c.CustomerID, billing.ReferenceTypeCall, c.ID, c.TMProgressing, &c.Source, &c.Destination); errBilling != nil {
-		log.Errorf("Could not start a billing. err: %v", errBilling)
 		return errors.Wrap(errBilling, "could not start a billing")
 	}
 
@@ -33,11 +28,6 @@ func (h *billingHandler) EventCMCallProgressing(ctx context.Context, c *cmcall.C
 
 // EventCMCallHangup handles the call-manager's call_hangup event
 func (h *billingHandler) EventCMCallHangup(ctx context.Context, c *cmcall.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "EventCMCallHangup",
-		"call": c,
-	})
-	log.Debugf("Received call_hangup event. call_id: %s", c.ID)
 
 	// get billing info
 	b, err := h.GetByReferenceID(ctx, c.ID)
@@ -46,9 +36,12 @@ func (h *billingHandler) EventCMCallHangup(ctx context.Context, c *cmcall.Call) 
 		return nil
 	}
 
+	if c.TMHangup == "" || c.TMHangup == dbhandler.DefaultTimeStamp {
+		return fmt.Errorf("invalid tm_hangup. call_id: %s, tm_hangup: %s", c.ID, c.TMHangup)
+	}
+
 	if errEnd := h.BillingEnd(ctx, b, c.TMHangup, &c.Source, &c.Destination); errEnd != nil {
-		log.Errorf("Could not end the billing. err: %v", errEnd)
-		return errors.Wrap(errEnd, "could not end the billing")
+		return errors.Wrapf(errEnd, "could not end the billing. billing_id: %s, call_id: %s, err: %v", b.ID, c.ID, errEnd)
 	}
 
 	return nil
@@ -65,8 +58,7 @@ func (h *billingHandler) EventMMMessageCreated(ctx context.Context, m *mmmessage
 	for _, target := range m.Targets {
 		log.WithField("target", target).Debugf("Creating billing for message. destination: %v", target.Destination)
 		if errBilling := h.BillingStart(ctx, m.CustomerID, billing.ReferenceTypeSMS, m.ID, m.TMCreate, m.Source, &target.Destination); errBilling != nil {
-			log.Errorf("Could not create a billing. target: %v, err: %v", target, errBilling)
-			return errors.Wrap(errBilling, "could not create a billing")
+			return errors.Wrapf(errBilling, "could not create a billing. target: %v", target)
 		}
 	}
 
@@ -82,8 +74,7 @@ func (h *billingHandler) EventNMNumberCreated(ctx context.Context, n *nmnumber.N
 	log.Debugf("Received number_created event. number_id: %s", n.ID)
 
 	if errBilling := h.BillingStart(ctx, n.CustomerID, billing.ReferenceTypeNumber, n.ID, n.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
-		log.Errorf("Could not create a billing. number_id: %s", n.ID)
-		return errors.Wrap(errBilling, "could not create a billing")
+		return errors.Wrapf(errBilling, "could not create a billing. number_id: %s", n.ID)
 	}
 
 	return nil

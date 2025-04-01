@@ -69,7 +69,9 @@ func Test_CustomerCreate(t *testing.T) {
 				},
 			},
 			responseBillingAccount: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("504e0afa-cbaf-11ee-8184-cfce50394145"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("504e0afa-cbaf-11ee-8184-cfce50394145"),
+				},
 			},
 
 			expectFilters: map[string]string{
@@ -422,9 +424,11 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
 			},
 			responseBillingAccount: &bmaccount.Account{
-				ID:         uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
-				CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
+					CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			expectRes: &cscustomer.WebhookMessage{
 				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),

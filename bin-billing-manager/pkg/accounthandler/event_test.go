@@ -6,6 +6,7 @@ import (
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -40,11 +41,15 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 
 			responseAccounts: []*account.Account{
 				{
-					ID:       uuid.FromStringOrNil("d7c03c9c-0e68-11ee-a061-7ff3a502f79b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d7c03c9c-0e68-11ee-a061-7ff3a502f79b"),
+					},
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("d7e88e72-0e68-11ee-8ecd-fffa5f8b006c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d7e88e72-0e68-11ee-8ecd-fffa5f8b006c"),
+					},
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 			},
@@ -55,11 +60,15 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			},
 			expectRes: []*account.Account{
 				{
-					ID:       uuid.FromStringOrNil("d7c03c9c-0e68-11ee-a061-7ff3a502f79b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d7c03c9c-0e68-11ee-a061-7ff3a502f79b"),
+					},
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("d7e88e72-0e68-11ee-8ecd-fffa5f8b006c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d7e88e72-0e68-11ee-8ecd-fffa5f8b006c"),
+					},
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 			},
@@ -117,7 +126,9 @@ func Test_EventCUCustomerCreated(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("b4a076de-c8eb-11ef-b239-3f082786094e"),
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("b4a076de-c8eb-11ef-b239-3f082786094e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b4a076de-c8eb-11ef-b239-3f082786094e"),
+				},
 			},
 		},
 	}

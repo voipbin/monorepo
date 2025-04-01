@@ -6,6 +6,7 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -53,17 +54,23 @@ func Test_BillingStart(t *testing.T) {
 			},
 
 			responseAccount: &account.Account{
-				ID:         uuid.FromStringOrNil("a2519e7c-09f7-11ee-a244-cb84b8c33ef0"),
-				CustomerID: uuid.FromStringOrNil("a1f18e42-09f7-11ee-8485-5b8f354924bd"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a2519e7c-09f7-11ee-a244-cb84b8c33ef0"),
+					CustomerID: uuid.FromStringOrNil("a1f18e42-09f7-11ee-8485-5b8f354924bd"),
+				},
 			},
 			responseUUID: uuid.FromStringOrNil("a27635f2-09f7-11ee-8003-8f7d80359ed0"),
 			responseBilling: &billing.Billing{
-				ID: uuid.FromStringOrNil("a27635f2-09f7-11ee-8003-8f7d80359ed0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a27635f2-09f7-11ee-8003-8f7d80359ed0"),
+				},
 			},
 
 			expectBilling: &billing.Billing{
-				ID:               uuid.FromStringOrNil("a27635f2-09f7-11ee-8003-8f7d80359ed0"),
-				CustomerID:       uuid.FromStringOrNil("a1f18e42-09f7-11ee-8485-5b8f354924bd"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a27635f2-09f7-11ee-8003-8f7d80359ed0"),
+					CustomerID: uuid.FromStringOrNil("a1f18e42-09f7-11ee-8485-5b8f354924bd"),
+				},
 				AccountID:        uuid.FromStringOrNil("a2519e7c-09f7-11ee-a244-cb84b8c33ef0"),
 				Status:           billing.StatusProgressing,
 				ReferenceType:    billing.ReferenceTypeCall,
@@ -143,13 +150,17 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			},
 
 			responseAccount: &account.Account{
-				ID:         uuid.FromStringOrNil("c3462102-16a9-11ee-97c1-077bf7697388"),
-				CustomerID: uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c3462102-16a9-11ee-97c1-077bf7697388"),
+					CustomerID: uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
+				},
 			},
 			responseUUID: uuid.FromStringOrNil("c378602c-16a9-11ee-a774-0f294c1a0b21"),
 			responseBilling: &billing.Billing{
-				ID:            uuid.FromStringOrNil("c378602c-16a9-11ee-a774-0f294c1a0b21"),
-				CustomerID:    uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c378602c-16a9-11ee-a774-0f294c1a0b21"),
+					CustomerID: uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
+				},
 				AccountID:     uuid.FromStringOrNil("c3462102-16a9-11ee-97c1-077bf7697388"),
 				Status:        billing.StatusProgressing,
 				ReferenceType: billing.ReferenceTypeSMS,
@@ -158,8 +169,10 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			},
 
 			expectBilling: &billing.Billing{
-				ID:               uuid.FromStringOrNil("c378602c-16a9-11ee-a774-0f294c1a0b21"),
-				CustomerID:       uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c378602c-16a9-11ee-a774-0f294c1a0b21"),
+					CustomerID: uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
+				},
 				AccountID:        uuid.FromStringOrNil("c3462102-16a9-11ee-97c1-077bf7697388"),
 				Status:           billing.StatusProgressing,
 				ReferenceType:    billing.ReferenceTypeSMS,
@@ -233,8 +246,10 @@ func Test_BillingEnd(t *testing.T) {
 			name: "reference type call",
 
 			billing: &billing.Billing{
-				ID:             uuid.FromStringOrNil("2349c024-16ad-11ee-aeac-f305605c1bff"),
-				CustomerID:     uuid.FromStringOrNil("2381e58a-16ad-11ee-94c5-4b595e64a13d"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2349c024-16ad-11ee-aeac-f305605c1bff"),
+					CustomerID: uuid.FromStringOrNil("2381e58a-16ad-11ee-94c5-4b595e64a13d"),
+				},
 				AccountID:      uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:  billing.ReferenceTypeCall,
 				TMBillingStart: "2023-06-08 03:22:07.991000",
@@ -248,14 +263,18 @@ func Test_BillingEnd(t *testing.T) {
 			},
 
 			responseBilling: &billing.Billing{
-				ID:             uuid.FromStringOrNil("2349c024-16ad-11ee-aeac-f305605c1bff"),
-				CustomerID:     uuid.FromStringOrNil("2381e58a-16ad-11ee-94c5-4b595e64a13d"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2349c024-16ad-11ee-aeac-f305605c1bff"),
+					CustomerID: uuid.FromStringOrNil("2381e58a-16ad-11ee-94c5-4b595e64a13d"),
+				},
 				AccountID:      uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:  billing.ReferenceTypeCall,
 				TMBillingStart: "2023-06-08 03:22:07.991000",
 			},
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
+				},
 			},
 
 			expectBillingUnitCount: 10.004,
@@ -264,8 +283,10 @@ func Test_BillingEnd(t *testing.T) {
 			name: "reference type sms",
 
 			billing: &billing.Billing{
-				ID:             uuid.FromStringOrNil("9dc58620-16ae-11ee-8e68-639b889e0538"),
-				CustomerID:     uuid.FromStringOrNil("9de95a50-16ae-11ee-a50f-dfdbce035244"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9dc58620-16ae-11ee-8e68-639b889e0538"),
+					CustomerID: uuid.FromStringOrNil("9de95a50-16ae-11ee-a50f-dfdbce035244"),
+				},
 				AccountID:      uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:  billing.ReferenceTypeSMS,
 				TMBillingStart: "2023-06-08 03:22:07.991000",
@@ -275,14 +296,18 @@ func Test_BillingEnd(t *testing.T) {
 			destination:  &commonaddress.Address{},
 
 			responseBilling: &billing.Billing{
-				ID:             uuid.FromStringOrNil("9dc58620-16ae-11ee-8e68-639b889e0538"),
-				CustomerID:     uuid.FromStringOrNil("9de95a50-16ae-11ee-a50f-dfdbce035244"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9dc58620-16ae-11ee-8e68-639b889e0538"),
+					CustomerID: uuid.FromStringOrNil("9de95a50-16ae-11ee-a50f-dfdbce035244"),
+				},
 				AccountID:      uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:  billing.ReferenceTypeCall,
 				TMBillingStart: "2023-06-08 03:22:07.991000",
 			},
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
+				},
 			},
 
 			expectBillingUnitCount: 1,

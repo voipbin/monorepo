@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -53,10 +54,14 @@ func Test_BillingV1BillingGets(t *testing.T) {
 			},
 			expectRes: []bmbilling.Billing{
 				{
-					ID: uuid.FromStringOrNil("854608c2-f556-11ee-bcaa-7b93c058e8f6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("854608c2-f556-11ee-bcaa-7b93c058e8f6"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("85fdae46-f556-11ee-ba13-c3b959ad9a23"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("85fdae46-f556-11ee-ba13-c3b959ad9a23"),
+					},
 				},
 			},
 		},

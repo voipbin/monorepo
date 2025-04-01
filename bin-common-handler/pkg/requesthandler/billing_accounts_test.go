@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -48,10 +49,14 @@ func Test_BillingV1AccountGets(t *testing.T) {
 			},
 			expectRes: []bmaccount.Account{
 				{
-					ID: uuid.FromStringOrNil("022bfc94-0b9b-11ee-8ea1-f3e4fbd66309"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("022bfc94-0b9b-11ee-8ea1-f3e4fbd66309"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("025e6814-0b9b-11ee-8e8d-93e70b8939a0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("025e6814-0b9b-11ee-8e8d-93e70b8939a0"),
+					},
 				},
 			},
 
@@ -124,7 +129,9 @@ func Test_BillingV1AccountCreate(t *testing.T) {
 				Data:     []byte(`{"customer_id":"513712d6-0e7c-11ee-9a95-1b0696a625b6","name":"test name","detail":"test detail","payment_type":"prepaid","payment_method":"credit card"}`),
 			},
 			expectRes: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("8be2a24c-0e7c-11ee-957a-c7e813baceb9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8be2a24c-0e7c-11ee-957a-c7e813baceb9"),
+				},
 			},
 
 			response: &sock.Response{
@@ -184,7 +191,9 @@ func Test_BillingV1AccountGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 			expectRes: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("9000392c-0b9b-11ee-aa1d-8b84b3626bc7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9000392c-0b9b-11ee-aa1d-8b84b3626bc7"),
+				},
 			},
 
 			response: &sock.Response{
@@ -244,7 +253,9 @@ func Test_BillingV1AccountDelete(t *testing.T) {
 				Method: sock.RequestMethodDelete,
 			},
 			expectRes: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"),
+				},
 			},
 
 			response: &sock.Response{
@@ -309,7 +320,9 @@ func Test_BillingV1AccountAddBalanceForce(t *testing.T) {
 				Data:     []byte(`{"balance":20}`),
 			},
 			expectRes: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("79403360-0dbf-11ee-b1ad-c3eebc4a6196"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("79403360-0dbf-11ee-b1ad-c3eebc4a6196"),
+				},
 			},
 
 			response: &sock.Response{
@@ -373,7 +386,9 @@ func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 				Data:     []byte(`{"balance":20}`),
 			},
 			expectRes: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("c7b00aa2-0dbf-11ee-ab39-b7ac15120be3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c7b00aa2-0dbf-11ee-ab39-b7ac15120be3"),
+				},
 			},
 
 			response: &sock.Response{
@@ -504,7 +519,9 @@ func Test_BillingV1AccountUpdateBasicInfo(t *testing.T) {
 				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
 			},
 			expectRes: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("c1085dc6-4cd5-11ee-8065-a7ccfdd78669"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1085dc6-4cd5-11ee-8065-a7ccfdd78669"),
+				},
 			},
 
 			response: &sock.Response{
@@ -570,7 +587,9 @@ func Test_BillingV1AccountUpdatePaymentInfo(t *testing.T) {
 				Data:     []byte(`{"payment_type":"prepaid","payment_method":"credit card"}`),
 			},
 			expectRes: &bmaccount.Account{
-				ID: uuid.FromStringOrNil("c149ecbe-4cd5-11ee-bf72-872e67a10683"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c149ecbe-4cd5-11ee-bf72-872e67a10683"),
+				},
 			},
 
 			response: &sock.Response{

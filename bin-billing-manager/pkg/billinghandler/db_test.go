@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -47,12 +48,16 @@ func Test_Create(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("97a8cf42-08fb-11ee-a352-8fbcbed34869"),
 			responseBilling: &billing.Billing{
-				ID: uuid.FromStringOrNil("97a8cf42-08fb-11ee-a352-8fbcbed34869"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("97a8cf42-08fb-11ee-a352-8fbcbed34869"),
+				},
 			},
 
 			expectBilling: &billing.Billing{
-				ID:             uuid.FromStringOrNil("97a8cf42-08fb-11ee-a352-8fbcbed34869"),
-				CustomerID:     uuid.FromStringOrNil("9727c0a0-08fb-11ee-b990-6ba2967f21c4"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("97a8cf42-08fb-11ee-a352-8fbcbed34869"),
+					CustomerID: uuid.FromStringOrNil("9727c0a0-08fb-11ee-b990-6ba2967f21c4"),
+				},
 				AccountID:      uuid.FromStringOrNil("975d1a8e-08fb-11ee-abea-539ff7bc4054"),
 				Status:         billing.StatusProgressing,
 				ReferenceType:  billing.ReferenceTypeCall,
@@ -116,7 +121,9 @@ func Test_Get(t *testing.T) {
 			id: uuid.FromStringOrNil("02be7194-08ff-11ee-a093-e33795e9c217"),
 
 			responseBilling: &billing.Billing{
-				ID: uuid.FromStringOrNil("02be7194-08ff-11ee-a093-e33795e9c217"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("02be7194-08ff-11ee-a093-e33795e9c217"),
+				},
 			},
 		},
 	}
@@ -172,7 +179,9 @@ func Test_GetByReferenceID(t *testing.T) {
 			referenceID: uuid.FromStringOrNil("627a9144-08ff-11ee-ab4e-37938da304ad"),
 
 			responseBilling: &billing.Billing{
-				ID:            uuid.FromStringOrNil("62a020a8-08ff-11ee-bbc8-47c7ce23b6bb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("62a020a8-08ff-11ee-bbc8-47c7ce23b6bb"),
+				},
 				ReferenceType: billing.ReferenceTypeCall,
 			},
 		},
@@ -236,10 +245,14 @@ func Test_Gets(t *testing.T) {
 
 			responseBillings: []*billing.Billing{
 				{
-					ID: uuid.FromStringOrNil("bd9346e8-08ff-11ee-b6dd-cbff408887a9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("bd9346e8-08ff-11ee-b6dd-cbff408887a9"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("bdcb268a-08ff-11ee-a67f-d307488a3fe3"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("bdcb268a-08ff-11ee-a67f-d307488a3fe3"),
+					},
 				},
 			},
 		},
@@ -300,7 +313,9 @@ func Test_UpdateStatusEnd(t *testing.T) {
 			tmBillingEnd:    "2023-06-09 03:22:17.995000",
 
 			responseBilling: &billing.Billing{
-				ID: uuid.FromStringOrNil("a33c2c6e-0900-11ee-b83b-5f7796e6df8a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a33c2c6e-0900-11ee-b83b-5f7796e6df8a"),
+				},
 			},
 		},
 	}

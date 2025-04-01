@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/account"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 // dbCreate creates a new account and return the created account.
@@ -19,8 +20,10 @@ func (h *accountHandler) dbCreate(ctx context.Context, customerID uuid.UUID, nam
 
 	id := h.utilHandler.UUIDCreate()
 	a := &account.Account{
-		ID:            id,
-		CustomerID:    customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 		Name:          name,
 		Detail:        detail,
 		Type:          account.TypeNormal,

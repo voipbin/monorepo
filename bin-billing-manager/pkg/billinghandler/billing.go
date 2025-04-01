@@ -70,7 +70,10 @@ func (h *billingHandler) BillingStart(
 	if flagEnd {
 		log.Debugf("The end flag has set. End the billing now. reference_id: %s", referenceID)
 		go func() {
-			_ = h.BillingEnd(context.Background(), tmp, tmBillingStart, source, destination)
+			if errBilling := h.BillingEnd(context.Background(), tmp, tmBillingStart, source, destination); errBilling != nil {
+				// note: we could not bill the cost. But we write the log only here.
+				log.Errorf("Could not end the billing. err: %v", errBilling)
+			}
 		}()
 	}
 
@@ -103,7 +106,7 @@ func (h *billingHandler) BillingEnd(
 
 	default:
 		log.WithField("billing", bill).Errorf("Unsupported billing reference type. reference_type: %s", bill.ReferenceType)
-		return fmt.Errorf("unsupported billing reference type")
+		return fmt.Errorf("unsupported billing reference type. reference_type: %s", bill.ReferenceType)
 	}
 
 	tmp, err := h.UpdateStatusEnd(ctx, bill.ID, float32(billingUnitCount.Seconds()), tmBillingEnd)
