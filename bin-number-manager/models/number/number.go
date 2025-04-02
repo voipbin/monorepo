@@ -1,12 +1,16 @@
 package number
 
-import "github.com/gofrs/uuid"
+import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"github.com/gofrs/uuid"
+)
 
 // Number struct represent number information
 type Number struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	Number     string    `json:"number"`
+	commonidentity.Identity
+
+	Number string `json:"number"`
 
 	CallFlowID    uuid.UUID `json:"call_flow_id"`
 	MessageFlowID uuid.UUID `json:"message_flow_id"`
