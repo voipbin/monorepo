@@ -29,20 +29,28 @@ func Test_campaignRun(t *testing.T) {
 
 		id uuid.UUID
 
-		response *campaign.Campaign
+		responseCampaign *campaign.Campaign
+		responseOutplan  *outplan.Outplan
 	}{
 		{
 			name: "normal",
 
 			id: uuid.FromStringOrNil("8ff1d160-6110-43d4-a2da-d132f8696aaf"),
 
-			response: &campaign.Campaign{
+			responseCampaign: &campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("bfd09fa5-4c2c-46ea-aee9-a01a386e154a"),
 					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
 				},
 				OutplanID: uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
 				OutdialID: uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
+			},
+			responseOutplan: &outplan.Outplan{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -64,22 +72,22 @@ func Test_campaignRun(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
 
 			// validate resource
-			if tt.response.OutplanID != uuid.Nil {
-				mockOutplan.EXPECT().Get(ctx, tt.response.OutplanID).Return(&outplan.Outplan{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+			if tt.responseCampaign.OutplanID != uuid.Nil {
+				mockOutplan.EXPECT().Get(ctx, tt.responseCampaign.OutplanID).Return(tt.responseOutplan, nil)
 			}
-			if tt.response.OutdialID != uuid.Nil {
-				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.response.OutdialID).Return(&omoutdial.Outdial{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+			if tt.responseCampaign.OutdialID != uuid.Nil {
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.responseCampaign.OutdialID).Return(&omoutdial.Outdial{CustomerID: tt.responseCampaign.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
 			}
-			if tt.response.QueueID != uuid.Nil {
-				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.response.QueueID).Return(&qmqueue.Queue{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+			if tt.responseCampaign.QueueID != uuid.Nil {
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.responseCampaign.QueueID).Return(&qmqueue.Queue{CustomerID: tt.responseCampaign.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
 			}
 
 			mockDB.EXPECT().CampaignUpdateStatusAndExecute(ctx, tt.id, campaign.StatusRun, campaign.ExecuteRun).Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusRun, tt.response)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignStatusRun, tt.responseCampaign)
 			mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 1000).Return(nil)
 
 			res, err := h.campaignRun(ctx, tt.id)
@@ -87,8 +95,8 @@ func Test_campaignRun(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.response) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			if reflect.DeepEqual(res, tt.responseCampaign) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseCampaign, res)
 			}
 		})
 	}

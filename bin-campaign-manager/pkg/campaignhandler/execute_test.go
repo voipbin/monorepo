@@ -63,7 +63,9 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				Type:      campaign.TypeFlow,
 			},
 			responseOutplan: &outplan.Outplan{
-				ID:           uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
+				},
 				MaxTryCount0: 4,
 			},
 			responseOmoutdialtarget: []omoutdialtarget.OutdialTarget{
@@ -78,7 +80,9 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 			},
 			responseUUID: uuid.FromStringOrNil("400524dc-c402-11ec-9e8f-2fefadc4fc39"),
 			responseCampaigncall: &campaigncall.Campaigncall{
-				ID:           uuid.FromStringOrNil("400524dc-c402-11ec-9e8f-2fefadc4fc39"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("400524dc-c402-11ec-9e8f-2fefadc4fc39"),
+				},
 				ActiveflowID: uuid.FromStringOrNil("6bab615a-c402-11ec-931f-df3080b6bcef"),
 			},
 			responseActiveflow: &activeflow.Activeflow{
@@ -200,7 +204,9 @@ func Test_getTarget(t *testing.T) {
 				Type:      campaign.TypeFlow,
 			},
 			&outplan.Outplan{
-				ID:           uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
+				},
 				MaxTryCount0: 4,
 			},
 
@@ -239,7 +245,9 @@ func Test_getTarget(t *testing.T) {
 				Type:      campaign.TypeFlow,
 			},
 			&outplan.Outplan{
-				ID:           uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
+				},
 				MaxTryCount0: 4,
 			},
 

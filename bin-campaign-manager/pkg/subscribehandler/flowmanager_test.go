@@ -9,6 +9,7 @@ import (
 	"monorepo/bin-campaign-manager/models/campaigncall"
 	"monorepo/bin-campaign-manager/pkg/campaigncallhandler"
 	"monorepo/bin-campaign-manager/pkg/campaignhandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 )
 
@@ -34,7 +35,9 @@ func Test_processEventFMActiveflowDeleted(t *testing.T) {
 			uuid.FromStringOrNil("1f2da650-c473-11ec-871d-fbc80a740724"),
 
 			&campaigncall.Campaigncall{
-				ID:            uuid.FromStringOrNil("e6cca6a4-c46c-11ec-8175-3fd04df5a0dc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e6cca6a4-c46c-11ec-8175-3fd04df5a0dc"),
+				},
 				CampaignID:    uuid.FromStringOrNil("f4f81330-c46c-11ec-845b-634ec638de76"),
 				ReferenceType: campaigncall.ReferenceTypeFlow,
 			},

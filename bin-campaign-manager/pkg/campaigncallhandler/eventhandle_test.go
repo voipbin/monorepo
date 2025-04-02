@@ -31,10 +31,14 @@ func Test_EventHandleActiveflowDeleted(t *testing.T) {
 			"normal",
 
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("3fe521fa-1c8e-412d-a57f-24f9a7d255be"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3fe521fa-1c8e-412d-a57f-24f9a7d255be"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("3fe521fa-1c8e-412d-a57f-24f9a7d255be"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3fe521fa-1c8e-412d-a57f-24f9a7d255be"),
+				},
 			},
 		},
 	}
@@ -90,10 +94,14 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				HangupReason: cmcall.HangupReasonNormal,
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 
 			campaigncall.ResultSuccess,
@@ -109,10 +117,14 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				HangupReason: cmcall.HangupReasonAMD,
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 
 			campaigncall.ResultFail,
@@ -128,10 +140,14 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				HangupReason: cmcall.HangupReasonBusy,
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 
 			campaigncall.ResultFail,
@@ -147,10 +163,14 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				HangupReason: cmcall.HangupReasonCanceled,
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 
 			campaigncall.ResultFail,
@@ -166,10 +186,14 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				HangupReason: cmcall.HangupReasonDialout,
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 
 			campaigncall.ResultFail,
@@ -185,10 +209,14 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				HangupReason: cmcall.HangupReasonFailed,
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 
 			campaigncall.ResultFail,
@@ -204,10 +232,14 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				HangupReason: cmcall.HangupReasonNoanswer,
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 
 			campaigncall.ResultFail,
@@ -223,10 +255,14 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 				HangupReason: cmcall.HangupReasonTimeout,
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+				},
 			},
 
 			campaigncall.ResultFail,

@@ -2,14 +2,15 @@ package campaigncall
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
 
 // Campaigncall defines
 type Campaigncall struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
+
 	CampaignID uuid.UUID `json:"campaign_id"`
 
 	OutplanID       uuid.UUID `json:"outplan_id"`

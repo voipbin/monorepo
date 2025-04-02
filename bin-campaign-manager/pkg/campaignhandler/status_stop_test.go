@@ -213,7 +213,9 @@ func Test_isStoppable(t *testing.T) {
 			},
 			[]*campaigncall.Campaigncall{
 				{
-					ID: uuid.FromStringOrNil("b708b214-c444-11ec-943a-ff8f38547200"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b708b214-c444-11ec-943a-ff8f38547200"),
+					},
 				},
 			},
 

@@ -78,9 +78,11 @@ func Test_Create(t *testing.T) {
 			nextCampaignID: uuid.FromStringOrNil("c6da6162-dfc5-495d-a5af-e99efc9a97f7"),
 
 			responseOutplan: &outplan.Outplan{
-				ID:         uuid.FromStringOrNil("7d568cbe-2928-4dbe-b41f-3b2afad1b6e3"),
-				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7d568cbe-2928-4dbe-b41f-3b2afad1b6e3"),
+					CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseOutdial: &omoutdial.Outdial{
 				ID:         uuid.FromStringOrNil("fb4d2a07-187d-4274-85bf-70186d902873"),
@@ -346,6 +348,7 @@ func Test_UpdateResourceInfo(t *testing.T) {
 		nextCampaignID uuid.UUID
 
 		responseCampaign     *campaign.Campaign
+		responseOutplan      *outplan.Outplan
 		responseNextCampaign *campaign.Campaign
 	}{
 		{
@@ -368,6 +371,13 @@ func Test_UpdateResourceInfo(t *testing.T) {
 					},
 				},
 				FlowID: uuid.FromStringOrNil("f52090d7-7325-418e-bacd-b4a82692f6b5"),
+			},
+			responseOutplan: &outplan.Outplan{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b4850013-42fe-4b18-9753-0e2871be2157"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseNextCampaign: &campaign.Campaign{
 				Identity: commonidentity.Identity{
@@ -401,7 +411,7 @@ func Test_UpdateResourceInfo(t *testing.T) {
 
 			// validate
 			if tt.outplanID != uuid.Nil {
-				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(&outplan.Outplan{CustomerID: tt.responseCampaign.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(tt.responseOutplan, nil)
 			}
 			if tt.outdialID != uuid.Nil {
 				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(&omoutdial.Outdial{CustomerID: tt.responseCampaign.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
@@ -950,9 +960,11 @@ func Test_isValidOutplanID(t *testing.T) {
 			customerID: uuid.FromStringOrNil("2c806932-7615-11ee-b345-3f3d8312ef2b"),
 
 			responseOutplan: &outplan.Outplan{
-				ID:         uuid.FromStringOrNil("5feb6e54-6cfe-11ee-bc10-03bb387f94b5"),
-				CustomerID: uuid.FromStringOrNil("2c806932-7615-11ee-b345-3f3d8312ef2b"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5feb6e54-6cfe-11ee-bc10-03bb387f94b5"),
+					CustomerID: uuid.FromStringOrNil("2c806932-7615-11ee-b345-3f3d8312ef2b"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
 		{
@@ -1202,9 +1214,11 @@ func Test_validateResources(t *testing.T) {
 			nextCampaignID: uuid.FromStringOrNil("afa1590c-6d00-11ee-9168-635f279cf425"),
 
 			responseOutplan: &outplan.Outplan{
-				ID:         uuid.FromStringOrNil("af229982-6d00-11ee-b767-5b0d2ca26cb4"),
-				CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("af229982-6d00-11ee-b767-5b0d2ca26cb4"),
+					CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseOutdial: &omoutdial.Outdial{
 				ID:         uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
