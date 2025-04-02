@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -94,7 +95,9 @@ func Test_v1OutdialsGet(t *testing.T) {
 			},
 			[]*outdial.Outdial{
 				{
-					ID: uuid.FromStringOrNil("5024139c-b36c-11ec-9b26-9b18d7d76e07"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5024139c-b36c-11ec-9b26-9b18d7d76e07"),
+					},
 				},
 			},
 			&sock.Response{
@@ -115,10 +118,14 @@ func Test_v1OutdialsGet(t *testing.T) {
 			},
 			[]*outdial.Outdial{
 				{
-					ID: uuid.FromStringOrNil("977b9012-b36c-11ec-bd33-0bcd25d394aa"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("977b9012-b36c-11ec-bd33-0bcd25d394aa"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("97a59bd2-b36c-11ec-93c9-eb2b606d229c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("97a59bd2-b36c-11ec-93c9-eb2b606d229c"),
+					},
 				},
 			},
 			&sock.Response{
@@ -174,7 +181,9 @@ func Test_v1OutdialsIDGet(t *testing.T) {
 				Data:     nil,
 			},
 			&outdial.Outdial{
-				ID: uuid.FromStringOrNil("323e28ee-b36d-11ec-86bb-6b0ff7646ddc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("323e28ee-b36d-11ec-86bb-6b0ff7646ddc"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -643,7 +652,9 @@ func Test_v1OutdialsIDCampaignIDPut(t *testing.T) {
 			uuid.FromStringOrNil("646baed4-b563-11ec-980c-f3bbe82e67fb"),
 
 			&outdial.Outdial{
-				ID: uuid.FromStringOrNil("643ef1e6-b563-11ec-bacf-d356bc75b302"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("643ef1e6-b563-11ec-bacf-d356bc75b302"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -706,7 +717,9 @@ func Test_v1OutdialsIDDataPut(t *testing.T) {
 			"test_data",
 
 			&outdial.Outdial{
-				ID: uuid.FromStringOrNil("beddb5ce-b563-11ec-99e9-dfdfa34a3196"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("beddb5ce-b563-11ec-99e9-dfdfa34a3196"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
