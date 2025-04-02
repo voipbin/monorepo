@@ -1,11 +1,12 @@
 package tag
 
-import "github.com/gofrs/uuid"
+import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+)
 
 // Tag data model
 type Tag struct {
-	ID         uuid.UUID `json:"id"`          // tag id
-	CustomerID uuid.UUID `json:"customer_id"` // owner's id
+	commonidentity.Identity
 
 	Name   string `json:"name"`   // tag's name
 	Detail string `json:"detail"` // tag's detail

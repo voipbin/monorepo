@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -41,13 +42,15 @@ func TestProcessV1TagsGet(t *testing.T) {
 
 			[]*tag.Tag{
 				{
-					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-					Name:       "test tag 1",
-					Detail:     "test tag 1 detail",
-					TMCreate:   "2021-11-23 17:55:39.712000",
-					TMUpdate:   "9999-01-01 00:00:00.000000",
-					TMDelete:   "9999-01-01 00:00:00.000000",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+						CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+					},
+					Name:     "test tag 1",
+					Detail:   "test tag 1 detail",
+					TMCreate: "2021-11-23 17:55:39.712000",
+					TMUpdate: "9999-01-01 00:00:00.000000",
+					TMDelete: "9999-01-01 00:00:00.000000",
 				},
 			},
 			&sock.Response{
@@ -70,22 +73,26 @@ func TestProcessV1TagsGet(t *testing.T) {
 
 			[]*tag.Tag{
 				{
-					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-					Name:       "test tag 1",
-					Detail:     "test tag 1 detail",
-					TMCreate:   "2021-11-23 17:55:39.712000",
-					TMUpdate:   "9999-01-01 00:00:00.000000",
-					TMDelete:   "9999-01-01 00:00:00.000000",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+						CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+					},
+					Name:     "test tag 1",
+					Detail:   "test tag 1 detail",
+					TMCreate: "2021-11-23 17:55:39.712000",
+					TMUpdate: "9999-01-01 00:00:00.000000",
+					TMDelete: "9999-01-01 00:00:00.000000",
 				},
 				{
-					ID:         uuid.FromStringOrNil("7379c73c-4e69-11ec-b667-4313a9abe846"),
-					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-					Name:       "test tag 2",
-					Detail:     "test tag 2 detail",
-					TMCreate:   "2021-11-23 17:55:39.712000",
-					TMUpdate:   "9999-01-01 00:00:00.000000",
-					TMDelete:   "9999-01-01 00:00:00.000000",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("7379c73c-4e69-11ec-b667-4313a9abe846"),
+						CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+					},
+					Name:     "test tag 2",
+					Detail:   "test tag 2 detail",
+					TMCreate: "2021-11-23 17:55:39.712000",
+					TMUpdate: "9999-01-01 00:00:00.000000",
+					TMDelete: "9999-01-01 00:00:00.000000",
 				},
 			},
 			&sock.Response{
@@ -152,13 +159,15 @@ func TestProcessV1TagsPost(t *testing.T) {
 			"test tag1 detail",
 
 			&tag.Tag{
-				ID:         uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-				CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-				Name:       "test tag1",
-				Detail:     "test tag1 detail",
-				TMCreate:   "2021-11-23 17:55:39.712000",
-				TMUpdate:   "9999-01-01 00:00:00.000000",
-				TMDelete:   "9999-01-01 00:00:00.000000",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+				},
+				Name:     "test tag1",
+				Detail:   "test tag1 detail",
+				TMCreate: "2021-11-23 17:55:39.712000",
+				TMUpdate: "9999-01-01 00:00:00.000000",
+				TMDelete: "9999-01-01 00:00:00.000000",
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -220,13 +229,15 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
 
 			&tag.Tag{
-				ID:         uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-				CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-				Name:       "test tag1",
-				Detail:     "test tag1 detail",
-				TMCreate:   "2021-11-23 17:55:39.712000",
-				TMUpdate:   "9999-01-01 00:00:00.000000",
-				TMDelete:   "9999-01-01 00:00:00.000000",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+				},
+				Name:     "test tag1",
+				Detail:   "test tag1 detail",
+				TMCreate: "2021-11-23 17:55:39.712000",
+				TMUpdate: "9999-01-01 00:00:00.000000",
+				TMDelete: "9999-01-01 00:00:00.000000",
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -293,7 +304,9 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 			"update detail",
 
 			&tag.Tag{
-				ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -352,7 +365,9 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
 
 			&tag.Tag{
-				ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,

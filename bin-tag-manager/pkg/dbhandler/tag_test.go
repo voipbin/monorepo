@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -27,14 +28,18 @@ func Test_TagCreate(t *testing.T) {
 		{
 			name: "normal",
 			tag: &tag.Tag{
-				ID:     uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
+				},
 				Name:   "name1",
 				Detail: "detail1",
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &tag.Tag{
-				ID:       uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
+				},
 				Name:     "name1",
 				Detail:   "detail1",
 				TMCreate: "2020-04-18 03:22:17.995000",
@@ -94,16 +99,20 @@ func Test_TagGets(t *testing.T) {
 			name: "normal",
 			tags: []*tag.Tag{
 				{
-					ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
-					Name:       "name1",
-					Detail:     "detail1",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
+						CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
+					},
+					Name:   "name1",
+					Detail: "detail1",
 				},
 				{
-					ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
-					Name:       "name2",
-					Detail:     "detail2",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
+						CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
+					},
+					Name:   "name2",
+					Detail: "detail2",
 				},
 			},
 
@@ -113,22 +122,26 @@ func Test_TagGets(t *testing.T) {
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: []*tag.Tag{
 				{
-					ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
-					Name:       "name1",
-					Detail:     "detail1",
-					TMCreate:   "2020-04-18 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
+						CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
+					},
+					Name:     "name1",
+					Detail:   "detail1",
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
-					Name:       "name2",
-					Detail:     "detail2",
-					TMCreate:   "2020-04-18 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
+						CustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
+					},
+					Name:     "name2",
+					Detail:   "detail2",
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -191,22 +204,26 @@ func Test_TagSetBasicInfo(t *testing.T) {
 
 			tags: []*tag.Tag{
 				{
-					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
-					CustomerID: uuid.FromStringOrNil("b7442490-7fe1-11ec-a66b-b7a03a06132f"),
-					Name:       "name1",
-					Detail:     "detail1",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+						CustomerID: uuid.FromStringOrNil("b7442490-7fe1-11ec-a66b-b7a03a06132f"),
+					},
+					Name:   "name1",
+					Detail: "detail1",
 				},
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &tag.Tag{
-				ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
-				CustomerID: uuid.FromStringOrNil("b7442490-7fe1-11ec-a66b-b7a03a06132f"),
-				Name:       "name1",
-				Detail:     "detail1",
-				TMCreate:   "2020-04-18 03:22:17.995000",
-				TMUpdate:   "2020-04-18 03:22:17.995000",
-				TMDelete:   DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					CustomerID: uuid.FromStringOrNil("b7442490-7fe1-11ec-a66b-b7a03a06132f"),
+				},
+				Name:     "name1",
+				Detail:   "detail1",
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -268,23 +285,27 @@ func Test_TagDelete(t *testing.T) {
 		{
 			name: "normal",
 			tag: &tag.Tag{
-				ID:         uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
-				CustomerID: uuid.FromStringOrNil("dd805a3e-7fe1-11ec-b37d-134362dec03c"),
-				Name:       "name1",
-				Detail:     "detail1",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
+					CustomerID: uuid.FromStringOrNil("dd805a3e-7fe1-11ec-b37d-134362dec03c"),
+				},
+				Name:   "name1",
+				Detail: "detail1",
 			},
 
 			id: uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &tag.Tag{
-				ID:         uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
-				CustomerID: uuid.FromStringOrNil("dd805a3e-7fe1-11ec-b37d-134362dec03c"),
-				Name:       "name1",
-				Detail:     "detail1",
-				TMCreate:   "2020-04-18 03:22:17.995000",
-				TMUpdate:   "2020-04-18 03:22:17.995000",
-				TMDelete:   "2020-04-18 03:22:17.995000",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
+					CustomerID: uuid.FromStringOrNil("dd805a3e-7fe1-11ec-b37d-134362dec03c"),
+				},
+				Name:     "name1",
+				Detail:   "detail1",
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: "2020-04-18 03:22:17.995000",
 			},
 		},
 	}
