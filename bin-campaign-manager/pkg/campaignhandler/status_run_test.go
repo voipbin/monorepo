@@ -31,6 +31,8 @@ func Test_campaignRun(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 		responseOutplan  *outplan.Outplan
+		responseOutdial  *omoutdial.Outdial
+		responseQueue    *qmqueue.Queue
 	}{
 		{
 			name: "normal",
@@ -48,6 +50,20 @@ func Test_campaignRun(t *testing.T) {
 			responseOutplan: &outplan.Outplan{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseOutdial: &omoutdial.Outdial{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseQueue: &qmqueue.Queue{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
 					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
 				},
 				TMDelete: dbhandler.DefaultTimeStamp,
@@ -79,10 +95,10 @@ func Test_campaignRun(t *testing.T) {
 				mockOutplan.EXPECT().Get(ctx, tt.responseCampaign.OutplanID).Return(tt.responseOutplan, nil)
 			}
 			if tt.responseCampaign.OutdialID != uuid.Nil {
-				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.responseCampaign.OutdialID).Return(&omoutdial.Outdial{CustomerID: tt.responseCampaign.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.responseCampaign.OutdialID).Return(tt.responseOutdial, nil)
 			}
 			if tt.responseCampaign.QueueID != uuid.Nil {
-				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.responseCampaign.QueueID).Return(&qmqueue.Queue{CustomerID: tt.responseCampaign.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.responseCampaign.QueueID).Return(tt.responseQueue, nil)
 			}
 
 			mockDB.EXPECT().CampaignUpdateStatusAndExecute(ctx, tt.id, campaign.StatusRun, campaign.ExecuteRun).Return(nil)

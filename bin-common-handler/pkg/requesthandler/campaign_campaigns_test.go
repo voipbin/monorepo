@@ -14,6 +14,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -72,7 +73,9 @@ func Test_CampaignV1CampaignCreate(t *testing.T) {
 				Data:     []byte(`{"id":"1d8334ff-afa2-4687-9b9a-038df4f27cf9","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"call","name":"test name","detail":"test detail","service_level":100,"end_handle":"stop","actions":[],"outplan_id":"7db3f543-e9f4-4e87-aec9-b66713d2b4da","outdial_id":"b07a3fb5-59df-450f-a3bf-779faea8baaf","queue_id":"6d23319a-74f9-4251-bdbf-650926b7ceb6","next_campaign_id":"01f7ce4d-69bc-4d6a-aafa-6b4cdf43a4d1"}`),
 			},
 			&cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("1d8334ff-afa2-4687-9b9a-038df4f27cf9"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("1d8334ff-afa2-4687-9b9a-038df4f27cf9"),
+				},
 			},
 		},
 	}
@@ -152,7 +155,9 @@ func Test_CampaignV1CampaignGetsByCustomerID(t *testing.T) {
 			},
 			[]cacampaign.Campaign{
 				{
-					ID: uuid.FromStringOrNil("2bf5c9ab-25bd-4bdf-a637-56b882785da9"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("2bf5c9ab-25bd-4bdf-a637-56b882785da9"),
+					},
 				},
 			},
 		},
@@ -213,7 +218,9 @@ func Test_CampaignV1CampaignGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("8633f201-cf6d-42e7-af63-d63fbc36f637"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("8633f201-cf6d-42e7-af63-d63fbc36f637"),
+				},
 			},
 		},
 	}
@@ -273,7 +280,9 @@ func Test_CampaignV1CampaignDelete(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("22d9075d-08bd-4eb0-b868-3b102f0bcb39"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("22d9075d-08bd-4eb0-b868-3b102f0bcb39"),
+				},
 			},
 		},
 	}
@@ -421,7 +430,9 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 				Data:     []byte(`{"name":"update name","detail":"update detail","type":"call","service_level":100,"end_handle":"continue"}`),
 			},
 			expectResult: &cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
+				},
 			},
 		},
 	}
@@ -485,7 +496,9 @@ func Test_CampaignV1CampaignUpdateStatus(t *testing.T) {
 				Data:     []byte(`{"status":"run"}`),
 			},
 			&cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("f08f88a9-1e97-4da3-8052-3506ec5d73ae"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("f08f88a9-1e97-4da3-8052-3506ec5d73ae"),
+				},
 			},
 		},
 	}
@@ -549,7 +562,9 @@ func Test_CampaignV1CampaignUpdateServiceLevel(t *testing.T) {
 				Data:     []byte(`{"service_level":100}`),
 			},
 			&cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("4a334640-35f9-4742-8428-97d386804c8b"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("4a334640-35f9-4742-8428-97d386804c8b"),
+				},
 			},
 		},
 	}
@@ -617,7 +632,9 @@ func Test_CampaignV1CampaignUpdateActions(t *testing.T) {
 				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}`),
 			},
 			&cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("381d05c3-5cc2-4296-89c9-80aa751e2d2c"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("381d05c3-5cc2-4296-89c9-80aa751e2d2c"),
+				},
 			},
 		},
 	}
@@ -687,7 +704,9 @@ func Test_CampaignV1CampaignUpdateResourceInfo(t *testing.T) {
 				Data:     []byte(`{"outplan_id":"e5907394-c6b3-11ec-9dfa-17e8177ec4c1","outdial_id":"e5bcde16-c6b3-11ec-b955-b75320ec1cc2","queue_id":"e5e5f206-c6b3-11ec-bc99-17af712a37b1","next_campaign_id":"eeff5402-7cd0-11ee-bcb6-9b5f97f1f8a9"}`),
 			},
 			expectResult: &cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("e559c128-c6b3-11ec-8f7c-67e43d0d08d8"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e559c128-c6b3-11ec-8f7c-67e43d0d08d8"),
+				},
 			},
 		},
 	}
@@ -751,7 +770,9 @@ func Test_CampaignV1CampaignUpdateNextCampaignID(t *testing.T) {
 				Data:     []byte(`{"next_campaign_id":"2bed4c36-c6b4-11ec-92e6-1b01011d10cf"}`),
 			},
 			&cacampaign.Campaign{
-				ID: uuid.FromStringOrNil("42a6943c-c6b4-11ec-a70b-cb75b0197d55"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("42a6943c-c6b4-11ec-a70b-cb75b0197d55"),
+				},
 			},
 		},
 	}

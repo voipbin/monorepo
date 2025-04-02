@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -54,12 +55,14 @@ func Test_RegistrarExtensionCreate(t *testing.T) {
 				Data:       []byte(`{"id":"121dd178-5712-11ee-b6b3-4b0ab7784e17","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_id":"","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a","name":"test name","detail":"test detail"}`),
 			},
 			&rmextension.Extension{
-				ID:         uuid.FromStringOrNil("121dd178-5712-11ee-b6b3-4b0ab7784e17"),
-				CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
-				Name:       "test name",
-				Detail:     "test detail",
-				Extension:  "4c98b74a-6f9e-11eb-a82f-37575ab16881",
-				Password:   "53710356-6f9e-11eb-8a91-43345d98682a",
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("121dd178-5712-11ee-b6b3-4b0ab7784e17"),
+					CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
+				},
+				Name:      "test name",
+				Detail:    "test detail",
+				Extension: "4c98b74a-6f9e-11eb-a82f-37575ab16881",
+				Password:  "53710356-6f9e-11eb-8a91-43345d98682a",
 			},
 		},
 	}
@@ -126,11 +129,13 @@ func Test_RegistrarExtensionUpdate(t *testing.T) {
 				Data:     []byte(`{"name":"update name","detail":"update detail","password":"update password"}`),
 			},
 			&rmextension.Extension{
-				ID:         uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
-				CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
-				Name:       "update name",
-				Detail:     "update detail",
-				Password:   "update password",
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+					CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
+				},
+				Name:     "update name",
+				Detail:   "update detail",
+				Password: "update password",
 			},
 		},
 	}
@@ -190,15 +195,17 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&rmextension.Extension{
-				ID:         uuid.FromStringOrNil("342f9734-6fa1-11eb-a937-17d537105d6a"),
-				CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
-				Extension:  "test",
-				Password:   "password",
-				Name:       "test domain",
-				Detail:     "test domain detail",
-				TMCreate:   "2020-09-20 03:23:20.995000",
-				TMUpdate:   "",
-				TMDelete:   "",
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("342f9734-6fa1-11eb-a937-17d537105d6a"),
+					CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
+				},
+				Extension: "test",
+				Password:  "password",
+				Name:      "test domain",
+				Detail:    "test domain detail",
+				TMCreate:  "2020-09-20 03:23:20.995000",
+				TMUpdate:  "",
+				TMDelete:  "",
 			},
 		},
 	}
@@ -227,66 +234,6 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 		})
 	}
 }
-
-// func Test_RegistrarV1ExtensionGetByEndpoint(t *testing.T) {
-
-// 	tests := []struct {
-// 		name string
-
-// 		endpoint string
-
-// 		response *sock.Response
-
-// 		expectTarget  string
-// 		expectRequest *sock.Request
-// 		expectRes     *rmextension.Extension
-// 	}{
-// 		{
-// 			"normal",
-
-// 			"test_exten@test_domain",
-// 			&sock.Response{
-// 				StatusCode: 200,
-// 				DataType:   "application/json",
-// 				Data:       []byte(`{"id":"c9522a85-a7a0-4917-93bd-017368f65dde"}`),
-// 			},
-
-// 			"bin-manager.registrar-manager.request",
-// 			&sock.Request{
-// 				URI:      "/v1/extensions/endpoint/test_exten@test_domain",
-// 				Method:   sock.RequestMethodGet,
-// 				DataType: ContentTypeJSON,
-// 			},
-// 			&rmextension.Extension{
-// 				ID: uuid.FromStringOrNil("c9522a85-a7a0-4917-93bd-017368f65dde"),
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockSock := sockhandler.NewMockSockHandler(mc)
-// 			reqHandler := requestHandler{
-// 				sock: mockSock,
-// 			}
-
-// 			ctx := context.Background()
-// 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-// 			res, err := reqHandler.RegistrarV1ExtensionGetByEndpoint(ctx, tt.endpoint)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if reflect.DeepEqual(*tt.expectRes, *res) == false {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectRes, *res)
-// 			}
-// 		})
-// 	}
-// }
 
 func Test_RegistrarExtensionDelete(t *testing.T) {
 
@@ -318,7 +265,9 @@ func Test_RegistrarExtensionDelete(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&rmextension.Extension{
-				ID: uuid.FromStringOrNil("b2ca6024-6fa1-11eb-aa5a-738c234d2ee1"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("b2ca6024-6fa1-11eb-aa5a-738c234d2ee1"),
+				},
 			},
 		},
 	}
@@ -388,7 +337,9 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 			},
 			[]rmextension.Extension{
 				{
-					ID: uuid.FromStringOrNil("f1d6686e-4ff3-11ee-a1cc-cbb904dc2d7e"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("f1d6686e-4ff3-11ee-a1cc-cbb904dc2d7e"),
+					},
 				},
 			},
 		},
@@ -454,15 +405,17 @@ func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 			&rmextension.Extension{
-				ID:         uuid.FromStringOrNil("d19c3956-6ed8-11eb-b971-fb12bc338aeb"),
-				CustomerID: uuid.FromStringOrNil("5703f08a-5710-11ee-9295-77eb098ad269"),
-				Name:       "test",
-				Detail:     "test detail",
-				Extension:  "test",
-				Password:   "password",
-				TMCreate:   "2020-09-20 03:23:20.995000",
-				TMUpdate:   "",
-				TMDelete:   "",
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("d19c3956-6ed8-11eb-b971-fb12bc338aeb"),
+					CustomerID: uuid.FromStringOrNil("5703f08a-5710-11ee-9295-77eb098ad269"),
+				},
+				Name:      "test",
+				Detail:    "test detail",
+				Extension: "test",
+				Password:  "password",
+				TMCreate:  "2020-09-20 03:23:20.995000",
+				TMUpdate:  "",
+				TMDelete:  "",
 			},
 		},
 	}
