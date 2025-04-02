@@ -151,7 +151,9 @@ func Test_TransfereeAnswer_TypeBlind(t *testing.T) {
 			name: "normal",
 
 			tr: &transfer.Transfer{
-				ID:           uuid.FromStringOrNil("b22de150-dbaf-11ed-84f8-9f0eb78f20bf"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b22de150-dbaf-11ed-84f8-9f0eb78f20bf"),
+				},
 				Type:         transfer.TypeBlind,
 				ConfbridgeID: uuid.FromStringOrNil("4e2b6cc2-dbaf-11ed-b0ac-8ff64c6f7a2d"),
 			},
@@ -160,7 +162,9 @@ func Test_TransfereeAnswer_TypeBlind(t *testing.T) {
 			},
 
 			expectTransfer: &transfer.Transfer{
-				ID:               uuid.FromStringOrNil("b22de150-dbaf-11ed-84f8-9f0eb78f20bf"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b22de150-dbaf-11ed-84f8-9f0eb78f20bf"),
+				},
 				Type:             transfer.TypeBlind,
 				ConfbridgeID:     uuid.FromStringOrNil("4e2b6cc2-dbaf-11ed-b0ac-8ff64c6f7a2d"),
 				TransfereeCallID: uuid.FromStringOrNil("4e5527ec-dbaf-11ed-a26e-5b3c8272a6e5"),

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -62,7 +63,9 @@ func Test_v1OutplansPost(t *testing.T) {
 			5,
 
 			&outplan.Outplan{
-				ID: uuid.FromStringOrNil("3ca9708e-c463-11ec-95e7-53d07a0e8bb2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ca9708e-c463-11ec-95e7-53d07a0e8bb2"),
+				},
 			},
 
 			&sock.Response{
@@ -127,7 +130,9 @@ func Test_v1OutplansGet(t *testing.T) {
 
 			[]*outplan.Outplan{
 				{
-					ID: uuid.FromStringOrNil("4d100e66-c467-11ec-b6c1-eb8c7f0b8f24"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4d100e66-c467-11ec-b6c1-eb8c7f0b8f24"),
+					},
 				},
 			},
 
@@ -188,7 +193,9 @@ func Test_v1OutplansIDGet(t *testing.T) {
 			uuid.FromStringOrNil("a96cd4d2-c467-11ec-b1b4-0f35d821b46c"),
 
 			&outplan.Outplan{
-				ID: uuid.FromStringOrNil("a96cd4d2-c467-11ec-b1b4-0f35d821b46c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a96cd4d2-c467-11ec-b1b4-0f35d821b46c"),
+				},
 			},
 
 			&sock.Response{
@@ -248,7 +255,9 @@ func Test_v1OutplansIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("dfce10d6-c467-11ec-b1d3-0fb0c67e2f11"),
 
 			&outplan.Outplan{
-				ID: uuid.FromStringOrNil("dfce10d6-c467-11ec-b1d3-0fb0c67e2f11"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dfce10d6-c467-11ec-b1d3-0fb0c67e2f11"),
+				},
 			},
 
 			&sock.Response{
@@ -313,7 +322,9 @@ func Test_v1OutplansIDPut(t *testing.T) {
 			"update detail",
 
 			&outplan.Outplan{
-				ID: uuid.FromStringOrNil("1819e97e-c468-11ec-bf3c-63e7e7c996db"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1819e97e-c468-11ec-bf3c-63e7e7c996db"),
+				},
 			},
 
 			&sock.Response{
@@ -393,7 +404,9 @@ func Test_v1OutplansIDDialsPut(t *testing.T) {
 			5,
 
 			&outplan.Outplan{
-				ID: uuid.FromStringOrNil("703adb5e-c468-11ec-b8ff-f3c00713cce4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("703adb5e-c468-11ec-b8ff-f3c00713cce4"),
+				},
 			},
 
 			&sock.Response{

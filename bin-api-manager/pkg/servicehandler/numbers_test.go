@@ -48,7 +48,9 @@ func Test_OrderNumberGets(t *testing.T) {
 
 			[]nmnumber.Number{
 				{
-					ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
+					},
 				},
 			},
 
@@ -58,7 +60,9 @@ func Test_OrderNumberGets(t *testing.T) {
 			},
 			[]*nmnumber.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
+					},
 				},
 			},
 		},
@@ -114,14 +118,18 @@ func Test_OrderNumberGet(t *testing.T) {
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 
 			&nmnumber.Number{
-				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			&nmnumber.WebhookMessage{
-				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -177,8 +185,10 @@ func Test_OrderNumberGetError(t *testing.T) {
 			uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
 
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
-				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Number:              "+821021656521",
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
@@ -246,10 +256,14 @@ func Test_NumberCreate(t *testing.T) {
 			"test detail",
 
 			&nmnumber.Number{
-				ID: uuid.FromStringOrNil("f06c8c36-7b1d-11eb-8b01-83e94e91b409"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f06c8c36-7b1d-11eb-8b01-83e94e91b409"),
+				},
 			},
 			&nmnumber.WebhookMessage{
-				ID: uuid.FromStringOrNil("f06c8c36-7b1d-11eb-8b01-83e94e91b409"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f06c8c36-7b1d-11eb-8b01-83e94e91b409"),
+				},
 			},
 		},
 	}
@@ -305,8 +319,10 @@ func Test_NumberDelete(t *testing.T) {
 			uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
 
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
-				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Number:              "+821021656521",
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
@@ -316,8 +332,10 @@ func Test_NumberDelete(t *testing.T) {
 				TMDelete:            defaultTimestamp,
 			},
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
-				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Number:              "+821021656521",
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
@@ -396,8 +414,10 @@ func Test_NumberUpdate(t *testing.T) {
 			"update detail",
 
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Number:              "+821021656521",
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
@@ -421,8 +441,10 @@ func Test_NumberUpdate(t *testing.T) {
 				TMDelete: defaultTimestamp,
 			},
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				CallFlowID:          uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
 				Number:              "+821021656521",
 				ProviderName:        "telnyx",
@@ -499,8 +521,10 @@ func Test_NumberUpdateError(t *testing.T) {
 			"update detail",
 
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Number:              "+821021656521",
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
@@ -563,18 +587,26 @@ func Test_NumberRenew(t *testing.T) {
 
 			responseNumbers: []nmnumber.Number{
 				{
-					ID: uuid.FromStringOrNil("92647ae8-161d-11ee-9746-6387778bd96f"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("92647ae8-161d-11ee-9746-6387778bd96f"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("92d0da8a-161d-11ee-924f-ab88344e1aa3"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("92d0da8a-161d-11ee-924f-ab88344e1aa3"),
+					},
 				},
 			},
 			expectRes: []*nmnumber.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("92647ae8-161d-11ee-9746-6387778bd96f"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("92647ae8-161d-11ee-9746-6387778bd96f"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("92d0da8a-161d-11ee-924f-ab88344e1aa3"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("92d0da8a-161d-11ee-924f-ab88344e1aa3"),
+					},
 				},
 			},
 		},

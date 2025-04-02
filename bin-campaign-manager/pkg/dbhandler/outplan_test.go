@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -27,10 +28,12 @@ func Test_OutplanCreate(t *testing.T) {
 		{
 			"normal",
 			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("504dbdd4-b3b5-11ec-b050-8f20b3a62441"),
-				CustomerID: uuid.FromStringOrNil("50745688-b3b5-11ec-91bd-c3d3ee057cb1"),
-				Name:       "test name",
-				Detail:     "test detail",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("504dbdd4-b3b5-11ec-b050-8f20b3a62441"),
+					CustomerID: uuid.FromStringOrNil("50745688-b3b5-11ec-91bd-c3d3ee057cb1"),
+				},
+				Name:   "test name",
+				Detail: "test detail",
 
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -50,10 +53,12 @@ func Test_OutplanCreate(t *testing.T) {
 			"2020-04-18 03:22:17.995000",
 
 			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("504dbdd4-b3b5-11ec-b050-8f20b3a62441"),
-				CustomerID: uuid.FromStringOrNil("50745688-b3b5-11ec-91bd-c3d3ee057cb1"),
-				Name:       "test name",
-				Detail:     "test detail",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("504dbdd4-b3b5-11ec-b050-8f20b3a62441"),
+					CustomerID: uuid.FromStringOrNil("50745688-b3b5-11ec-91bd-c3d3ee057cb1"),
+				},
+				Name:   "test name",
+				Detail: "test detail",
 
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -123,8 +128,10 @@ func Test_OutplanDelete(t *testing.T) {
 		{
 			"normal",
 			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("9a72c25e-b47f-11ec-8c84-fbce9a6f9ddf"),
-				CustomerID: uuid.FromStringOrNil("9aa97862-b47f-11ec-a611-5379cfa62666"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9a72c25e-b47f-11ec-8c84-fbce9a6f9ddf"),
+					CustomerID: uuid.FromStringOrNil("9aa97862-b47f-11ec-a611-5379cfa62666"),
+				},
 
 				Name:   "test name",
 				Detail: "test detail",
@@ -146,8 +153,10 @@ func Test_OutplanDelete(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("9a72c25e-b47f-11ec-8c84-fbce9a6f9ddf"),
-				CustomerID: uuid.FromStringOrNil("9aa97862-b47f-11ec-a611-5379cfa62666"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9a72c25e-b47f-11ec-8c84-fbce9a6f9ddf"),
+					CustomerID: uuid.FromStringOrNil("9aa97862-b47f-11ec-a611-5379cfa62666"),
+				},
 
 				Name:   "test name",
 				Detail: "test detail",
@@ -229,8 +238,10 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			"1 item",
 			[]*outplan.Outplan{
 				{
-					ID:         uuid.FromStringOrNil("0b2e5afe-b3b7-11ec-90fb-0f96dcc8665c"),
-					CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("0b2e5afe-b3b7-11ec-90fb-0f96dcc8665c"),
+						CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
+					},
 
 					Name:   "test name",
 					Detail: "test detail",
@@ -258,8 +269,10 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			"2020-04-18 03:22:17.995000",
 			[]*outplan.Outplan{
 				{
-					ID:         uuid.FromStringOrNil("0b2e5afe-b3b7-11ec-90fb-0f96dcc8665c"),
-					CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("0b2e5afe-b3b7-11ec-90fb-0f96dcc8665c"),
+						CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
+					},
 
 					Name:   "test name",
 					Detail: "test detail",
@@ -288,10 +301,12 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			"2 items",
 			[]*outplan.Outplan{
 				{
-					ID:         uuid.FromStringOrNil("373b3dc8-b3b8-11ec-b5ef-dfeccd01e42e"),
-					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
-					Name:       "test name",
-					Detail:     "test detail",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("373b3dc8-b3b8-11ec-b5ef-dfeccd01e42e"),
+						CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
+					},
+					Name:   "test name",
+					Detail: "test detail",
 
 					Source: &commonaddress.Address{
 						Type:   commonaddress.TypeTel,
@@ -308,10 +323,12 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					MaxTryCount4: 3,
 				},
 				{
-					ID:         uuid.FromStringOrNil("3792fa72-b3b8-11ec-94f5-ff4b74330ee9"),
-					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
-					Name:       "test name",
-					Detail:     "test detail",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("3792fa72-b3b8-11ec-94f5-ff4b74330ee9"),
+						CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
+					},
+					Name:   "test name",
+					Detail: "test detail",
 
 					Source: &commonaddress.Address{
 						Type:   commonaddress.TypeTel,
@@ -336,10 +353,12 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			"2020-04-18 03:22:17.995000",
 			[]*outplan.Outplan{
 				{
-					ID:         uuid.FromStringOrNil("3792fa72-b3b8-11ec-94f5-ff4b74330ee9"),
-					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
-					Name:       "test name",
-					Detail:     "test detail",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("3792fa72-b3b8-11ec-94f5-ff4b74330ee9"),
+						CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
+					},
+					Name:   "test name",
+					Detail: "test detail",
 
 					Source: &commonaddress.Address{
 						Type:   commonaddress.TypeTel,
@@ -360,10 +379,12 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("373b3dc8-b3b8-11ec-b5ef-dfeccd01e42e"),
-					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
-					Name:       "test name",
-					Detail:     "test detail",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("373b3dc8-b3b8-11ec-b5ef-dfeccd01e42e"),
+						CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
+					},
+					Name:   "test name",
+					Detail: "test detail",
 
 					Source: &commonaddress.Address{
 						Type:   commonaddress.TypeTel,
@@ -437,10 +458,12 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 		{
 			"normal",
 			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("b231e8a0-b3d2-11ec-b78a-57bdcb8f39c3"),
-				CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
-				Name:       "test name",
-				Detail:     "test detail",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b231e8a0-b3d2-11ec-b78a-57bdcb8f39c3"),
+					CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
+				},
+				Name:   "test name",
+				Detail: "test detail",
 
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -462,10 +485,12 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("b231e8a0-b3d2-11ec-b78a-57bdcb8f39c3"),
-				CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
-				Name:       "update name",
-				Detail:     "update detail",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b231e8a0-b3d2-11ec-b78a-57bdcb8f39c3"),
+					CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
+				},
+				Name:   "update name",
+				Detail: "update detail",
 
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -548,10 +573,12 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 		{
 			"normal",
 			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("78f2b8de-b3ce-11ec-b4f4-e7c49d54d606"),
-				CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
-				Name:       "test name",
-				Detail:     "test detail",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("78f2b8de-b3ce-11ec-b4f4-e7c49d54d606"),
+					CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
+				},
+				Name:   "test name",
+				Detail: "test detail",
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -579,10 +606,12 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&outplan.Outplan{
-				ID:         uuid.FromStringOrNil("78f2b8de-b3ce-11ec-b4f4-e7c49d54d606"),
-				CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
-				Name:       "test name",
-				Detail:     "test detail",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("78f2b8de-b3ce-11ec-b4f4-e7c49d54d606"),
+					CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
+				},
+				Name:   "test name",
+				Detail: "test detail",
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",

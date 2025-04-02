@@ -6,6 +6,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -29,24 +30,28 @@ func Test_CallCreate(t *testing.T) {
 		{
 			"have all",
 			&account.Account{
-				ID:         uuid.FromStringOrNil("ec5d6fba-fdf3-11ed-9329-5b12d37e3b82"),
-				CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
-				Type:       account.TypeLine,
-				Name:       "test name",
-				Detail:     "test detail",
-				Secret:     "test secret",
-				Token:      "test token",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ec5d6fba-fdf3-11ed-9329-5b12d37e3b82"),
+					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
+				},
+				Type:   account.TypeLine,
+				Name:   "test name",
+				Detail: "test detail",
+				Secret: "test secret",
+				Token:  "test token",
 			},
 			"2020-04-18T03:22:17.995000",
 
 			&account.Account{
-				ID:         uuid.FromStringOrNil("ec5d6fba-fdf3-11ed-9329-5b12d37e3b82"),
-				CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
-				Type:       account.TypeLine,
-				Name:       "test name",
-				Detail:     "test detail",
-				Secret:     "test secret",
-				Token:      "test token",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ec5d6fba-fdf3-11ed-9329-5b12d37e3b82"),
+					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
+				},
+				Type:   account.TypeLine,
+				Name:   "test name",
+				Detail: "test detail",
+				Secret: "test secret",
+				Token:  "test token",
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: DefaultTimeStamp,
@@ -57,12 +62,16 @@ func Test_CallCreate(t *testing.T) {
 			"empty",
 
 			&account.Account{
-				ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
+				},
 			},
 			"2020-04-18T03:22:17.995000",
 
 			&account.Account{
-				ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
+				},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: DefaultTimeStamp,
@@ -125,9 +134,11 @@ func Test_AccountSet(t *testing.T) {
 		{
 			name: "normal",
 			account: &account.Account{
-				ID:         uuid.FromStringOrNil("463bfbc0-fee2-11ed-81c2-639d6bd87cf4"),
-				CustomerID: uuid.FromStringOrNil("826fdb34-fee2-11ed-ae20-83883bd52100"),
-				Type:       account.TypeLine,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("463bfbc0-fee2-11ed-81c2-639d6bd87cf4"),
+					CustomerID: uuid.FromStringOrNil("826fdb34-fee2-11ed-ae20-83883bd52100"),
+				},
+				Type: account.TypeLine,
 			},
 
 			id:          uuid.FromStringOrNil("463bfbc0-fee2-11ed-81c2-639d6bd87cf4"),
@@ -138,16 +149,18 @@ func Test_AccountSet(t *testing.T) {
 
 			responseCurTime: "2020-04-18T03:22:17.995000",
 			expectRes: &account.Account{
-				ID:         uuid.FromStringOrNil("463bfbc0-fee2-11ed-81c2-639d6bd87cf4"),
-				CustomerID: uuid.FromStringOrNil("826fdb34-fee2-11ed-ae20-83883bd52100"),
-				Type:       account.TypeLine,
-				Name:       "test name",
-				Detail:     "test detail",
-				Secret:     "test secret",
-				Token:      "test token",
-				TMCreate:   "2020-04-18T03:22:17.995000",
-				TMUpdate:   "2020-04-18T03:22:17.995000",
-				TMDelete:   DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("463bfbc0-fee2-11ed-81c2-639d6bd87cf4"),
+					CustomerID: uuid.FromStringOrNil("826fdb34-fee2-11ed-ae20-83883bd52100"),
+				},
+				Type:     account.TypeLine,
+				Name:     "test name",
+				Detail:   "test detail",
+				Secret:   "test secret",
+				Token:    "test token",
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -207,7 +220,9 @@ func Test_AccountGet(t *testing.T) {
 			uuid.FromStringOrNil("9df9c40e-e427-11ec-b9aa-13b03cb8a3c9"),
 
 			&account.Account{
-				ID: uuid.FromStringOrNil("9df9c40e-e427-11ec-b9aa-13b03cb8a3c9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9df9c40e-e427-11ec-b9aa-13b03cb8a3c9"),
+				},
 			},
 		},
 	}
@@ -253,12 +268,16 @@ func Test_AccountGets(t *testing.T) {
 			name: "normal",
 			accounts: []*account.Account{
 				{
-					ID:         uuid.FromStringOrNil("151e39da-3e16-11ef-955d-4711f28377ec"),
-					CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("151e39da-3e16-11ef-955d-4711f28377ec"),
+						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("15b4e826-3e16-11ef-8cff-47069c33bcae"),
-					CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("15b4e826-3e16-11ef-8cff-47069c33bcae"),
+						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
+					},
 				},
 			},
 
@@ -272,18 +291,22 @@ func Test_AccountGets(t *testing.T) {
 			responseCurTime: "2022-04-18 03:22:17.995000",
 			expectRes: []*account.Account{
 				{
-					ID:         uuid.FromStringOrNil("151e39da-3e16-11ef-955d-4711f28377ec"),
-					CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
-					TMCreate:   "2022-04-18 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("151e39da-3e16-11ef-955d-4711f28377ec"),
+						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
+					},
+					TMCreate: "2022-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("15b4e826-3e16-11ef-8cff-47069c33bcae"),
-					CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
-					TMCreate:   "2022-04-18 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("15b4e826-3e16-11ef-8cff-47069c33bcae"),
+						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
+					},
+					TMCreate: "2022-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},

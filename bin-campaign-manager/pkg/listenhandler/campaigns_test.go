@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -67,7 +68,9 @@ func Test_v1CampaignsPost(t *testing.T) {
 			uuid.FromStringOrNil("61b3c7f8-c454-11ec-9d0e-07f30d37566d"),
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("3653adb2-c454-11ec-8c9f-7bcd6924ee69"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3653adb2-c454-11ec-8c9f-7bcd6924ee69"),
+				},
 			},
 
 			&sock.Response{
@@ -132,7 +135,9 @@ func Test_v1CampaignsGet(t *testing.T) {
 
 			[]*campaign.Campaign{
 				{
-					ID: uuid.FromStringOrNil("3653adb2-c454-11ec-8c9f-7bcd6924ee69"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3653adb2-c454-11ec-8c9f-7bcd6924ee69"),
+					},
 				},
 			},
 
@@ -193,7 +198,9 @@ func Test_v1CampaignsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("edb1a7ca-c459-11ec-b591-733bb55d7160"),
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("edb1a7ca-c459-11ec-b591-733bb55d7160"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("edb1a7ca-c459-11ec-b591-733bb55d7160"),
+				},
 			},
 
 			&sock.Response{
@@ -253,7 +260,9 @@ func Test_v1CampaignsIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("5a797d38-c45a-11ec-95be-bb5e6cfb1d96"),
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("5a797d38-c45a-11ec-95be-bb5e6cfb1d96"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5a797d38-c45a-11ec-95be-bb5e6cfb1d96"),
+				},
 			},
 
 			&sock.Response{
@@ -324,7 +333,9 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 			endHandle:    campaign.EndHandleContinue,
 
 			responseCampaign: &campaign.Campaign{
-				ID: uuid.FromStringOrNil("40b95d6c-c466-11ec-88ac-734fd1ce5539"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("40b95d6c-c466-11ec-88ac-734fd1ce5539"),
+				},
 			},
 
 			expectRes: &sock.Response{
@@ -384,7 +395,9 @@ func Test_v1CampaignsIDExecutePost(t *testing.T) {
 			uuid.FromStringOrNil("741b122e-c45a-11ec-9a3f-9ba245ef6dec"),
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("741b122e-c45a-11ec-9a3f-9ba245ef6dec"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("741b122e-c45a-11ec-9a3f-9ba245ef6dec"),
+				},
 			},
 
 			&sock.Response{
@@ -446,7 +459,9 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 			campaign.StatusRun,
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
+				},
 			},
 
 			&sock.Response{
@@ -468,7 +483,9 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 			campaign.StatusStop,
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("d26b0c58-c45a-11ec-b42d-3b261e615304"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d26b0c58-c45a-11ec-b42d-3b261e615304"),
+				},
 			},
 
 			&sock.Response{
@@ -531,7 +548,9 @@ func Test_v1CampaignsIDServiceLevelPut(t *testing.T) {
 			100,
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
+				},
 			},
 
 			&sock.Response{
@@ -598,7 +617,9 @@ func Test_v1CampaignsIDActionsPut(t *testing.T) {
 			},
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("045cdfc4-c45c-11ec-915c-5b6e9c81d305"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("045cdfc4-c45c-11ec-915c-5b6e9c81d305"),
+				},
 			},
 
 			&sock.Response{
@@ -667,7 +688,9 @@ func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 			nextCampaignID: uuid.FromStringOrNil("0468ac9c-7cce-11ee-9d09-7feca9bc6422"),
 
 			responseCampaign: &campaign.Campaign{
-				ID: uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
+				},
 			},
 
 			expectRes: &sock.Response{
@@ -730,7 +753,9 @@ func Test_v1CampaignsIDNextCampaignIDPut(t *testing.T) {
 			uuid.FromStringOrNil("e98f6ab6-c6b0-11ec-b69c-df65d271a9d5"),
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("e1f5109e-c6b0-11ec-a87d-1f8fe2380e97"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e1f5109e-c6b0-11ec-a87d-1f8fe2380e97"),
+				},
 			},
 
 			&sock.Response{

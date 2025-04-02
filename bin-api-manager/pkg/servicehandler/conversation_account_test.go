@@ -44,10 +44,14 @@ func Test_ConversationAccount(t *testing.T) {
 
 			[]cvaccount.Account{
 				{
-					ID: uuid.FromStringOrNil("e7c38e4c-0048-11ee-b366-4bc7a645f6fb"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e7c38e4c-0048-11ee-b366-4bc7a645f6fb"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e7ec5106-0048-11ee-af79-4b073b23214a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e7ec5106-0048-11ee-af79-4b073b23214a"),
+					},
 				},
 			},
 			map[string]string{
@@ -56,10 +60,14 @@ func Test_ConversationAccount(t *testing.T) {
 			},
 			[]*cvaccount.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("e7c38e4c-0048-11ee-b366-4bc7a645f6fb"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e7c38e4c-0048-11ee-b366-4bc7a645f6fb"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e7ec5106-0048-11ee-af79-4b073b23214a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e7ec5106-0048-11ee-af79-4b073b23214a"),
+					},
 				},
 			},
 		},
@@ -115,12 +123,16 @@ func Test_ConversationAccountGet(t *testing.T) {
 			accountID: uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
 
 			response: &cvaccount.Account{
-				ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			expectRes: &cvaccount.WebhookMessage{
-				ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -185,12 +197,16 @@ func Test_ConversationAccountCreate(t *testing.T) {
 			token:       "test token",
 
 			response: &cvaccount.Account{
-				ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
-				CustomerID: uuid.FromStringOrNil("2ace8e8a-0049-11ee-b51e-2b070dbfafef"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
+					CustomerID: uuid.FromStringOrNil("2ace8e8a-0049-11ee-b51e-2b070dbfafef"),
+				},
 			},
 			expectRes: &cvaccount.WebhookMessage{
-				ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
-				CustomerID: uuid.FromStringOrNil("2ace8e8a-0049-11ee-b51e-2b070dbfafef"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
+					CustomerID: uuid.FromStringOrNil("2ace8e8a-0049-11ee-b51e-2b070dbfafef"),
+				},
 			},
 		},
 	}
@@ -254,12 +270,16 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 			token:       "test token",
 
 			response: &cvaccount.Account{
-				ID:         uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			expectRes: &cvaccount.WebhookMessage{
-				ID:         uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -316,12 +336,16 @@ func Test_ConversationAccountDelete(t *testing.T) {
 			accountID: uuid.FromStringOrNil("19beb18c-004a-11ee-a0fb-6325445ef551"),
 
 			response: &cvaccount.Account{
-				ID:         uuid.FromStringOrNil("19beb18c-004a-11ee-a0fb-6325445ef551"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("19beb18c-004a-11ee-a0fb-6325445ef551"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			expectRes: &cvaccount.WebhookMessage{
-				ID:         uuid.FromStringOrNil("19beb18c-004a-11ee-a0fb-6325445ef551"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("19beb18c-004a-11ee-a0fb-6325445ef551"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}

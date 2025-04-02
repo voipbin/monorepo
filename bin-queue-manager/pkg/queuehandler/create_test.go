@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -58,12 +59,16 @@ func Test_Create(t *testing.T) {
 
 			uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
+				},
 			},
 
 			&queue.Queue{
-				ID:            uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
-				CustomerID:    uuid.FromStringOrNil("1ed812a6-7f56-11ec-82c1-8bb47b0f9d98"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
+					CustomerID: uuid.FromStringOrNil("1ed812a6-7f56-11ec-82c1-8bb47b0f9d98"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				RoutingMethod: queue.RoutingMethodRandom,
@@ -85,7 +90,9 @@ func Test_Create(t *testing.T) {
 				TotalAbandonedCount: 0,
 			},
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
+				},
 			},
 		},
 	}

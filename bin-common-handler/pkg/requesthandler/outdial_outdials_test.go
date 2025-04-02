@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -113,7 +114,9 @@ func Test_OutdialV1OutdialGetsByCustomerID(t *testing.T) {
 			},
 			[]omoutdial.Outdial{
 				{
-					ID: uuid.FromStringOrNil("74e6ced6-b650-11ec-ac88-8f6fc68ead7d"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("74e6ced6-b650-11ec-ac88-8f6fc68ead7d"),
+					},
 				},
 			},
 		},
@@ -174,7 +177,9 @@ func Test_OutdialV1OutdialGet(t *testing.T) {
 				Data:       []byte(`{"id":"f3ca7112-b650-11ec-aad7-17a0858dadcf"}`),
 			},
 			&omoutdial.Outdial{
-				ID: uuid.FromStringOrNil("f3ca7112-b650-11ec-aad7-17a0858dadcf"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("f3ca7112-b650-11ec-aad7-17a0858dadcf"),
+				},
 			},
 		},
 	}
@@ -234,7 +239,9 @@ func Test_OutdialV1OutdialDelete(t *testing.T) {
 				Data:       []byte(`{"id":"d21d8788-b651-11ec-8ada-53590bef4cc1"}`),
 			},
 			&omoutdial.Outdial{
-				ID: uuid.FromStringOrNil("d21d8788-b651-11ec-8ada-53590bef4cc1"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("d21d8788-b651-11ec-8ada-53590bef4cc1"),
+				},
 			},
 		},
 	}
@@ -298,7 +305,9 @@ func Test_OutdialV1OutdialUpdateBasicInfo(t *testing.T) {
 				Data:       []byte(`{"id":"e2fd1a18-b652-11ec-9823-efc193bad6bf"}`),
 			},
 			&omoutdial.Outdial{
-				ID: uuid.FromStringOrNil("e2fd1a18-b652-11ec-9823-efc193bad6bf"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e2fd1a18-b652-11ec-9823-efc193bad6bf"),
+				},
 			},
 		},
 	}
@@ -360,7 +369,9 @@ func Test_OutdialV1OutdialUpdateCampaignID(t *testing.T) {
 				Data:       []byte(`{"id":"127cef34-b653-11ec-94f1-bf920056048a"}`),
 			},
 			&omoutdial.Outdial{
-				ID: uuid.FromStringOrNil("127cef34-b653-11ec-94f1-bf920056048a"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("127cef34-b653-11ec-94f1-bf920056048a"),
+				},
 			},
 		},
 	}
@@ -422,7 +433,9 @@ func Test_OutdialV1OutdialUpdateData(t *testing.T) {
 				Data:       []byte(`{"id":"5d0e4cf0-b653-11ec-8e87-af57dbb5c13a"}`),
 			},
 			&omoutdial.Outdial{
-				ID: uuid.FromStringOrNil("5d0e4cf0-b653-11ec-8e87-af57dbb5c13a"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("5d0e4cf0-b653-11ec-8e87-af57dbb5c13a"),
+				},
 			},
 		},
 	}

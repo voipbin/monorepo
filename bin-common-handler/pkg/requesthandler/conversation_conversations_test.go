@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -202,7 +203,9 @@ func Test_ConversationV1MessageSend(t *testing.T) {
 			},
 
 			&cvmessage.Message{
-				ID: uuid.FromStringOrNil("6d5ed26a-ec62-11ec-9aaa-7b9dc8a28675"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("6d5ed26a-ec62-11ec-9aaa-7b9dc8a28675"),
+				},
 			},
 		},
 	}
@@ -268,10 +271,14 @@ func Test_ConversationV1ConversationMessageGetsByConversationID(t *testing.T) {
 
 			[]cvmessage.Message{
 				{
-					ID: uuid.FromStringOrNil("1489cedc-ec63-11ec-995f-9361e44de4ab"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("1489cedc-ec63-11ec-995f-9361e44de4ab"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("14b9f530-ec63-11ec-961e-2fc971635023"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("14b9f530-ec63-11ec-961e-2fc971635023"),
+					},
 				},
 			},
 		},

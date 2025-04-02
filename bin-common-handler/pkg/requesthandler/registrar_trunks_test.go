@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -61,7 +62,9 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 				Data:       []byte(`{"id":"dc3b0e5a-549a-11ee-9469-abda3b219d1d"}`),
 			},
 			expectRes: &rmtrunk.Trunk{
-				ID: uuid.FromStringOrNil("dc3b0e5a-549a-11ee-9469-abda3b219d1d"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("dc3b0e5a-549a-11ee-9469-abda3b219d1d"),
+				},
 			},
 		},
 	}
@@ -130,7 +133,9 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 			},
 			expectRes: []rmtrunk.Trunk{
 				{
-					ID: uuid.FromStringOrNil("b215904a-549b-11ee-874c-7f01e2fb3e8c"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("b215904a-549b-11ee-874c-7f01e2fb3e8c"),
+					},
 				},
 			},
 		},
@@ -194,7 +199,9 @@ func Test_RegistrarV1TrunkGet(t *testing.T) {
 				DataType: ContentTypeNone,
 			},
 			expectRes: &rmtrunk.Trunk{
-				ID: uuid.FromStringOrNil("f5547ab0-549b-11ee-a653-93228d9f8207"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("f5547ab0-549b-11ee-a653-93228d9f8207"),
+				},
 			},
 		},
 	}
@@ -254,7 +261,9 @@ func Test_RegistrarV1TrunkGetByDomainName(t *testing.T) {
 				DataType: ContentTypeNone,
 			},
 			expectRes: &rmtrunk.Trunk{
-				ID: uuid.FromStringOrNil("4b766408-549c-11ee-a5ad-077c11ba6415"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("4b766408-549c-11ee-a5ad-077c11ba6415"),
+				},
 			},
 		},
 	}
@@ -314,7 +323,9 @@ func Test_RegistrarV1TrunkDelete(t *testing.T) {
 				DataType: ContentTypeNone,
 			},
 			expectRes: &rmtrunk.Trunk{
-				ID: uuid.FromStringOrNil("98fbcfba-549c-11ee-8a74-73230f51555d"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("98fbcfba-549c-11ee-8a74-73230f51555d"),
+				},
 			},
 		},
 	}
@@ -388,7 +399,9 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 				Data:     []byte(`{"name":"update name","detail":"update detail","auth_types":["basic","ip"],"username":"updateusername","password":"updatepassword","allowed_ips":["1.2.3.4"]}`),
 			},
 			expectRes: &rmtrunk.Trunk{
-				ID: uuid.FromStringOrNil("f27448ce-549c-11ee-b466-57162d71a670"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("f27448ce-549c-11ee-b466-57162d71a670"),
+				},
 			},
 		},
 	}

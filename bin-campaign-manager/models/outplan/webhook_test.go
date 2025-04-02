@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
@@ -22,10 +23,12 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 			name: "normal",
 
 			data: Outplan{
-				ID:         uuid.FromStringOrNil("036b16aa-7fbb-11ee-aff0-b322b7ffe078"),
-				CustomerID: uuid.FromStringOrNil("03a64b4e-7fbb-11ee-b17b-7f37303b51ff"),
-				Name:       "test name",
-				Detail:     "test detail",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("036b16aa-7fbb-11ee-aff0-b322b7ffe078"),
+					CustomerID: uuid.FromStringOrNil("03a64b4e-7fbb-11ee-b17b-7f37303b51ff"),
+				},
+				Name:   "test name",
+				Detail: "test detail",
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -43,10 +46,12 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 			},
 
 			expectRes: &WebhookMessage{
-				ID:         uuid.FromStringOrNil("036b16aa-7fbb-11ee-aff0-b322b7ffe078"),
-				CustomerID: uuid.FromStringOrNil("03a64b4e-7fbb-11ee-b17b-7f37303b51ff"),
-				Name:       "test name",
-				Detail:     "test detail",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("036b16aa-7fbb-11ee-aff0-b322b7ffe078"),
+					CustomerID: uuid.FromStringOrNil("03a64b4e-7fbb-11ee-b17b-7f37303b51ff"),
+				},
+				Name:   "test name",
+				Detail: "test detail",
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",

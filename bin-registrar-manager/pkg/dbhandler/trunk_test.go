@@ -6,6 +6,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -31,8 +32,10 @@ func Test_TrunkCreate(t *testing.T) {
 		{
 			"have all",
 			&trunk.Trunk{
-				ID:         uuid.FromStringOrNil("5de945ba-519a-11ee-809d-0397adb97529"),
-				CustomerID: uuid.FromStringOrNil("64bb7020-519a-11ee-b9ae-0f71e4c28f81"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5de945ba-519a-11ee-809d-0397adb97529"),
+					CustomerID: uuid.FromStringOrNil("64bb7020-519a-11ee-b9ae-0f71e4c28f81"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",
@@ -48,8 +51,10 @@ func Test_TrunkCreate(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&trunk.Trunk{
-				ID:         uuid.FromStringOrNil("5de945ba-519a-11ee-809d-0397adb97529"),
-				CustomerID: uuid.FromStringOrNil("64bb7020-519a-11ee-b9ae-0f71e4c28f81"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5de945ba-519a-11ee-809d-0397adb97529"),
+					CustomerID: uuid.FromStringOrNil("64bb7020-519a-11ee-b9ae-0f71e4c28f81"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",
@@ -69,12 +74,16 @@ func Test_TrunkCreate(t *testing.T) {
 		{
 			"empty",
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("21ed74e4-cc80-11ee-b64b-b36a53c6cafc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("21ed74e4-cc80-11ee-b64b-b36a53c6cafc"),
+				},
 			},
 
 			"2021-02-26 18:26:49.000",
 			&trunk.Trunk{
-				ID:         uuid.FromStringOrNil("21ed74e4-cc80-11ee-b64b-b36a53c6cafc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("21ed74e4-cc80-11ee-b64b-b36a53c6cafc"),
+				},
 				AuthTypes:  []sipauth.AuthType{},
 				AllowedIPs: []string{},
 				TMCreate:   "2021-02-26 18:26:49.000",
@@ -152,13 +161,17 @@ func Test_TrunkGets(t *testing.T) {
 			"normal",
 			[]trunk.Trunk{
 				{
-					ID:         uuid.FromStringOrNil("1c4b4fd8-cdc1-11ee-914a-67975f17aab4"),
-					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("1c4b4fd8-cdc1-11ee-914a-67975f17aab4"),
+						CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
+					},
 					DomainName: "test1",
 				},
 				{
-					ID:         uuid.FromStringOrNil("1c829d94-cdc1-11ee-9ae0-0700acee5380"),
-					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("1c829d94-cdc1-11ee-9ae0-0700acee5380"),
+						CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
+					},
 					DomainName: "test2",
 				},
 			},
@@ -174,8 +187,10 @@ func Test_TrunkGets(t *testing.T) {
 
 			[]*trunk.Trunk{
 				{
-					ID:         uuid.FromStringOrNil("1c829d94-cdc1-11ee-9ae0-0700acee5380"),
-					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("1c829d94-cdc1-11ee-9ae0-0700acee5380"),
+						CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
+					},
 					DomainName: "test2",
 					AuthTypes:  []sipauth.AuthType{},
 					AllowedIPs: []string{},
@@ -246,8 +261,10 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 		{
 			"test normal",
 			&trunk.Trunk{
-				ID:         uuid.FromStringOrNil("cbf0af5e-519e-11ee-a4c4-9f155401d234"),
-				CustomerID: uuid.FromStringOrNil("77030aee-7fec-11ec-9fc4-0fa126e45204"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cbf0af5e-519e-11ee-a4c4-9f155401d234"),
+					CustomerID: uuid.FromStringOrNil("77030aee-7fec-11ec-9fc4-0fa126e45204"),
+				},
 				DomainName: "cc1fa35e-519e-11ee-adcf-1f15aa304cb4",
 			},
 
@@ -265,8 +282,10 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 			"2021-02-26 18:26:49.000",
 
 			&trunk.Trunk{
-				ID:         uuid.FromStringOrNil("cbf0af5e-519e-11ee-a4c4-9f155401d234"),
-				CustomerID: uuid.FromStringOrNil("77030aee-7fec-11ec-9fc4-0fa126e45204"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cbf0af5e-519e-11ee-a4c4-9f155401d234"),
+					CustomerID: uuid.FromStringOrNil("77030aee-7fec-11ec-9fc4-0fa126e45204"),
+				},
 				Name:       "update name",
 				Detail:     "update detail",
 				DomainName: "cc1fa35e-519e-11ee-adcf-1f15aa304cb4",

@@ -45,12 +45,16 @@ func Test_MessageGets(t *testing.T) {
 
 			[]mmmessage.Message{
 				{
-					ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
+					},
 				},
 			},
 			[]*mmmessage.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
+					},
 				},
 			},
 		},
@@ -112,14 +116,18 @@ func Test_MessageGet(t *testing.T) {
 			uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
 
 			&mmmessage.Message{
-				ID:         uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			&mmmessage.WebhookMessage{
-				ID:         uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -188,10 +196,14 @@ func Test_MessageSend(t *testing.T) {
 			"hello world",
 
 			&mmmessage.Message{
-				ID: uuid.FromStringOrNil("14e68482-a2e5-11ec-8d92-6bc6fec62487"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("14e68482-a2e5-11ec-8d92-6bc6fec62487"),
+				},
 			},
 			&mmmessage.WebhookMessage{
-				ID: uuid.FromStringOrNil("14e68482-a2e5-11ec-8d92-6bc6fec62487"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("14e68482-a2e5-11ec-8d92-6bc6fec62487"),
+				},
 			},
 		},
 	}
@@ -245,14 +257,18 @@ func Test_MessageDelete(t *testing.T) {
 			uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
 
 			&mmmessage.Message{
-				ID:         uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			&mmmessage.WebhookMessage{
-				ID:         uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -59,7 +60,9 @@ func Test_QueueV1QueueGets(t *testing.T) {
 			},
 			[]qmqueue.Queue{
 				{
-					ID: uuid.FromStringOrNil("07e42460-6159-11ec-8191-3b89ed95cdb5"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("07e42460-6159-11ec-8191-3b89ed95cdb5"),
+					},
 				},
 			},
 		},
@@ -86,10 +89,14 @@ func Test_QueueV1QueueGets(t *testing.T) {
 			},
 			[]qmqueue.Queue{
 				{
-					ID: uuid.FromStringOrNil("08a7c974-6159-11ec-9b3d-0f52d15f98f7"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("08a7c974-6159-11ec-9b3d-0f52d15f98f7"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("08c9ef2c-6159-11ec-9540-8b38d1cb2283"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("08c9ef2c-6159-11ec-9540-8b38d1cb2283"),
+					},
 				},
 			},
 		},
@@ -152,7 +159,9 @@ func Test_QueueV1QueueGet(t *testing.T) {
 				Data:       []byte(`{"id":"a2764422-6159-11ec-8d87-975236f7d7b7"}`),
 			},
 			&qmqueue.Queue{
-				ID: uuid.FromStringOrNil("a2764422-6159-11ec-8d87-975236f7d7b7"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a2764422-6159-11ec-8d87-975236f7d7b7"),
+				},
 			},
 		},
 	}
@@ -322,7 +331,9 @@ func Test_QueueV1QueueCreate(t *testing.T) {
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"}`),
 			},
 			&qmqueue.Queue{
-				ID: uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+				},
 			},
 		},
 	}
@@ -383,7 +394,9 @@ func Test_QueueV1QueueDelete(t *testing.T) {
 				Data:       []byte(`{"id":"a2764422-6159-11ec-8d87-975236f7d7b7"}`),
 			},
 			&qmqueue.Queue{
-				ID: uuid.FromStringOrNil("a2764422-6159-11ec-8d87-975236f7d7b7"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a2764422-6159-11ec-8d87-975236f7d7b7"),
+				},
 			},
 		},
 	}
@@ -467,7 +480,9 @@ func Test_QueueV1QueueUpdate(t *testing.T) {
 				Data:       []byte(`{"id":"bacc13d4-615a-11ec-a73d-ff4194d49ef7"}`),
 			},
 			&qmqueue.Queue{
-				ID: uuid.FromStringOrNil("bacc13d4-615a-11ec-a73d-ff4194d49ef7"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("bacc13d4-615a-11ec-a73d-ff4194d49ef7"),
+				},
 			},
 		},
 	}
@@ -533,7 +548,9 @@ func Test_QueueV1QueueUpdateTagIDs(t *testing.T) {
 				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
 			},
 			&qmqueue.Queue{
-				ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
+				},
 			},
 		},
 	}
@@ -598,7 +615,9 @@ func Test_QueueV1QueueUpdateRoutingMethod(t *testing.T) {
 				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
 			},
 			&qmqueue.Queue{
-				ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
+				},
 			},
 		},
 	}
@@ -671,7 +690,9 @@ func Test_QueueV1QueueUpdateActions(t *testing.T) {
 				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
 			},
 			&qmqueue.Queue{
-				ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
+				},
 			},
 		},
 	}
@@ -742,7 +763,9 @@ func Test_QueueV1QueueCreateQueuecall(t *testing.T) {
 			},
 
 			&qmqueuecall.Queuecall{
-				ID: uuid.FromStringOrNil("ad7799f4-615c-11ec-b77c-87ab9fdc627c"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("ad7799f4-615c-11ec-b77c-87ab9fdc627c"),
+				},
 			},
 		},
 	}
@@ -862,7 +885,9 @@ func Test_QueueV1QueueUpdateExecute(t *testing.T) {
 			},
 
 			&qmqueue.Queue{
-				ID: uuid.FromStringOrNil("7f72fd14-d263-11ec-8a58-ef9e846046ae"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("7f72fd14-d263-11ec-8a58-ef9e846046ae"),
+				},
 			},
 		},
 	}

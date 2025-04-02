@@ -177,7 +177,9 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeConference(t *testing.
 			},
 			responseExtensions: []rmextension.Extension{
 				{
-					ID: uuid.FromStringOrNil("fd825ef8-3070-11ef-9d4f-7fde01005dda"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("fd825ef8-3070-11ef-9d4f-7fde01005dda"),
+					},
 				},
 			},
 			responseDestination: &commonaddress.Address{
@@ -404,7 +406,9 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 			},
 			responseExtensions: []rmextension.Extension{
 				{
-					ID:        uuid.FromStringOrNil("eb145bae-2814-11ef-b5c9-fb53bd2bff02"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("eb145bae-2814-11ef-b5c9-fb53bd2bff02"),
+					},
 					Extension: "test-destination",
 				},
 			},
@@ -499,9 +503,11 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 			},
 
 			responseExtension: &rmextension.Extension{
-				ID:         uuid.FromStringOrNil("b5352e7c-3071-11ef-8ca8-1f8365f8db34"),
-				CustomerID: uuid.FromStringOrNil("9884e39e-3071-11ef-9e2e-bfa99d572134"),
-				Extension:  "2000",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b5352e7c-3071-11ef-8ca8-1f8365f8db34"),
+					CustomerID: uuid.FromStringOrNil("9884e39e-3071-11ef-9e2e-bfa99d572134"),
+				},
+				Extension: "2000",
 			},
 
 			expectExtensionID: uuid.FromStringOrNil("b5352e7c-3071-11ef-8ca8-1f8365f8db34"),
@@ -522,9 +528,11 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 
 			responseExtensions: []rmextension.Extension{
 				{
-					ID:         uuid.FromStringOrNil("b5710de8-3071-11ef-a281-e3ba0cb3824b"),
-					CustomerID: uuid.FromStringOrNil("b556c3d4-3071-11ef-bb2d-ab2af3aa5a97"),
-					Extension:  "3000",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("b5710de8-3071-11ef-a281-e3ba0cb3824b"),
+						CustomerID: uuid.FromStringOrNil("b556c3d4-3071-11ef-bb2d-ab2af3aa5a97"),
+					},
+					Extension: "3000",
 				},
 			},
 

@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-number-manager/models/number"
 )
 
@@ -41,8 +42,10 @@ func (h *numberHandler) dbCreate(
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
 
 	tmp := &number.Number{
-		ID:                  h.utilHandler.UUIDCreate(),
-		CustomerID:          customerID,
+		Identity: commonidentity.Identity{
+			ID:         h.utilHandler.UUIDCreate(),
+			CustomerID: customerID,
+		},
 		Number:              num,
 		CallFlowID:          callFlowID,
 		MessageFlowID:       messageFlowID,

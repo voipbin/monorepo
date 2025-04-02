@@ -40,9 +40,11 @@ func Test_Execute(t *testing.T) {
 			uuid.FromStringOrNil("558dc9da-d1ae-11ec-b9f8-e323caeb57c4"),
 
 			&queue.Queue{
-				ID:         uuid.FromStringOrNil("558dc9da-d1ae-11ec-b9f8-e323caeb57c4"),
-				CustomerID: uuid.FromStringOrNil("a3361ad8-d1af-11ec-865d-cf7070170a25"),
-				Execute:    queue.ExecuteRun,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("558dc9da-d1ae-11ec-b9f8-e323caeb57c4"),
+					CustomerID: uuid.FromStringOrNil("a3361ad8-d1af-11ec-865d-cf7070170a25"),
+				},
+				Execute: queue.ExecuteRun,
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("a3a6841c-d1af-11ec-8844-c7602a790709"),
 				},
@@ -51,7 +53,9 @@ func Test_Execute(t *testing.T) {
 			"2023-02-14 03:22:17.995000",
 			[]queuecall.Queuecall{
 				{
-					ID: uuid.FromStringOrNil("0313ffe8-d1af-11ec-a1e7-3b1e1fb76015"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("0313ffe8-d1af-11ec-a1e7-3b1e1fb76015"),
+					},
 				},
 			},
 			[]amagent.Agent{

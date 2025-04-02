@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	mmmessage "monorepo/bin-message-manager/models/message"
 
@@ -48,8 +49,10 @@ func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message
 
 		// create a message
 		tmp := &message.Message{
-			ID:         uuid.Nil,
-			CustomerID: m.CustomerID,
+			Identity: commonidentity.Identity{
+				ID:         uuid.Nil,
+				CustomerID: m.CustomerID,
+			},
 
 			ConversationID: uuid.Nil,
 			Status:         status,

@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -50,7 +51,9 @@ func Test_TagV1TagCreate(t *testing.T) {
 				Data:       []byte(`{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f"}`),
 			},
 			expectRes: &tmtag.Tag{
-				ID: uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+				},
 			},
 		},
 	}
@@ -115,7 +118,9 @@ func Test_TagV1TagUpdate(t *testing.T) {
 				Data:       []byte(`{"id":"8f8b1638-2c75-11ee-89e0-23baf30fef23"}`),
 			},
 			expectRes: &tmtag.Tag{
-				ID: uuid.FromStringOrNil("8f8b1638-2c75-11ee-89e0-23baf30fef23"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("8f8b1638-2c75-11ee-89e0-23baf30fef23"),
+				},
 			},
 		},
 	}
@@ -175,7 +180,9 @@ func Test_TagV1TagDelete(t *testing.T) {
 				Data:       []byte(`{"id":"8fb8f1fc-2c75-11ee-aa2c-cb07baf2171a"}`),
 			},
 			expectRes: &tmtag.Tag{
-				ID: uuid.FromStringOrNil("8fb8f1fc-2c75-11ee-aa2c-cb07baf2171a"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("8fb8f1fc-2c75-11ee-aa2c-cb07baf2171a"),
+				},
 			},
 		},
 	}
@@ -235,7 +242,9 @@ func Test_TagV1TagGet(t *testing.T) {
 				Data:       []byte(`{"id":"8fe6c136-2c75-11ee-a3a4-37400837e12e"}`),
 			},
 			expectRes: &tmtag.Tag{
-				ID: uuid.FromStringOrNil("8fe6c136-2c75-11ee-a3a4-37400837e12e"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("8fe6c136-2c75-11ee-a3a4-37400837e12e"),
+				},
 			},
 		},
 	}
@@ -300,7 +309,9 @@ func Test_TagV1TagGets(t *testing.T) {
 			},
 			expectRes: []tmtag.Tag{
 				{
-					ID: uuid.FromStringOrNil("8fe6c136-2c75-11ee-a3a4-37400837e12e"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("8fe6c136-2c75-11ee-a3a4-37400837e12e"),
+					},
 				},
 			},
 		},

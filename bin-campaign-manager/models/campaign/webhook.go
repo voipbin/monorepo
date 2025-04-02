@@ -3,6 +3,7 @@ package campaign
 import (
 	"encoding/json"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -10,8 +11,7 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	Type Type `json:"type"`
 
@@ -40,8 +40,7 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Campaign) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
+		Identity: h.Identity,
 
 		Type: h.Type,
 

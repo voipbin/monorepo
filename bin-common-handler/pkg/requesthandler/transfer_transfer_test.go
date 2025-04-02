@@ -11,6 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -57,7 +58,9 @@ func Test_TransferV1TransferStart(t *testing.T) {
 				Data:       []byte(`{"id":"926ea4c6-dd35-11ed-8414-27310fdd3d82"}`),
 			},
 			expectRes: &tmtransfer.Transfer{
-				ID: uuid.FromStringOrNil("926ea4c6-dd35-11ed-8414-27310fdd3d82"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("926ea4c6-dd35-11ed-8414-27310fdd3d82"),
+				},
 			},
 		},
 	}

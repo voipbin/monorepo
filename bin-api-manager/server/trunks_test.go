@@ -51,7 +51,9 @@ func Test_trunksPOST(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","domain_name":"test","auth_types":["basic"],"username":"testusername","password":"testpassword","allowed_ips":["1.2.3.4"]}`),
 
 			responseTrunk: &rmtrunk.WebhookMessage{
-				ID: uuid.FromStringOrNil("cb948fb8-db12-11ef-81f7-ef8092e4f1b5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cb948fb8-db12-11ef-81f7-ef8092e4f1b5"),
+				},
 			},
 
 			expectName:       "test name",
@@ -131,10 +133,14 @@ func Test_trunksGET(t *testing.T) {
 
 			responseTrunks: []*rmtrunk.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("39c62e0a-db14-11ef-beab-071cd0697120"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("39c62e0a-db14-11ef-beab-071cd0697120"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("3ac27c32-db14-11ef-b206-cf30e0a672b7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3ac27c32-db14-11ef-b206-cf30e0a672b7"),
+					},
 				},
 			},
 
@@ -206,8 +212,10 @@ func Test_TrunksIDGET(t *testing.T) {
 			reqQuery: "/trunks/733b46f6-5588-11ee-b04e-c781770c2c87",
 
 			responseTrunk: &rmtrunk.WebhookMessage{
-				ID:         uuid.FromStringOrNil("733b46f6-5588-11ee-b04e-c781770c2c87"),
-				CustomerID: uuid.FromStringOrNil("d8eff4fa-7ff7-11ec-834f-679286ad908b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("733b46f6-5588-11ee-b04e-c781770c2c87"),
+					CustomerID: uuid.FromStringOrNil("d8eff4fa-7ff7-11ec-834f-679286ad908b"),
+				},
 			},
 
 			expectTrunkID: uuid.FromStringOrNil("733b46f6-5588-11ee-b04e-c781770c2c87"),

@@ -36,7 +36,9 @@ func Test_transfererHangupTypeAttended(t *testing.T) {
 			name: "normal",
 
 			tr: &transfer.Transfer{
-				ID:           uuid.FromStringOrNil("7374ed3a-dd14-11ed-9281-cf586a573929"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7374ed3a-dd14-11ed-9281-cf586a573929"),
+				},
 				Type:         transfer.TypeAttended,
 				ConfbridgeID: uuid.FromStringOrNil("73abc206-dd14-11ed-82f4-c3a0208de1a0"),
 			},
@@ -63,7 +65,9 @@ func Test_transfererHangupTypeAttended(t *testing.T) {
 				},
 			},
 			expectTransfer: &transfer.Transfer{
-				ID:               uuid.FromStringOrNil("7374ed3a-dd14-11ed-9281-cf586a573929"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7374ed3a-dd14-11ed-9281-cf586a573929"),
+				},
 				Type:             transfer.TypeAttended,
 				ConfbridgeID:     uuid.FromStringOrNil("73abc206-dd14-11ed-82f4-c3a0208de1a0"),
 				TransfereeCallID: uuid.FromStringOrNil("742f5fb2-dd14-11ed-a171-3f5bdaf8117d"),

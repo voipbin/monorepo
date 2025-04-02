@@ -583,8 +583,10 @@ func Test_UpdateAddresses(t *testing.T) {
 				},
 			},
 			responseExtension: &rmextension.Extension{
-				ID:         uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71"),
-				CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
 			},
 		},
 	}

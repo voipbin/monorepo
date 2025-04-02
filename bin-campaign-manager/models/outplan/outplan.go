@@ -2,14 +2,12 @@ package outplan
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
-
-	"github.com/gofrs/uuid"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 // Outplan defines
 type Outplan struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	// basic info
 	Name   string `json:"name"`

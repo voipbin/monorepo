@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -43,8 +44,10 @@ func (h *queueHandler) Create(
 
 	// create a new queue
 	a := &queue.Queue{
-		ID:         id,
-		CustomerID: customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 
 		Name:   name,
 		Detail: detail,

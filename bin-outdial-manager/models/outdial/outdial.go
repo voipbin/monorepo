@@ -1,12 +1,15 @@
 package outdial
 
-import "github.com/gofrs/uuid"
+import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"github.com/gofrs/uuid"
+)
 
 // Outdial defines
 type Outdial struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	
+	commonidentity.Identity
+
 	CampaignID uuid.UUID `json:"campaign_id"`
 
 	Name   string `json:"name"`

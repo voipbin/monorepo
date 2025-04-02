@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -27,9 +28,11 @@ func Test_MessageCreate(t *testing.T) {
 		{
 			"test normal",
 			&message.Message{
-				ID:         uuid.FromStringOrNil("f5f2cefa-a055-11ec-a0d1-c7b28923b1f5"),
-				CustomerID: uuid.FromStringOrNil("326ef638-a056-11ec-95de-6b924aa3ef53"),
-				Type:       message.TypeSMS,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f5f2cefa-a055-11ec-a0d1-c7b28923b1f5"),
+					CustomerID: uuid.FromStringOrNil("326ef638-a056-11ec-95de-6b924aa3ef53"),
+				},
+				Type: message.TypeSMS,
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -52,9 +55,11 @@ func Test_MessageCreate(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&message.Message{
-				ID:         uuid.FromStringOrNil("f5f2cefa-a055-11ec-a0d1-c7b28923b1f5"),
-				CustomerID: uuid.FromStringOrNil("326ef638-a056-11ec-95de-6b924aa3ef53"),
-				Type:       message.TypeSMS,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f5f2cefa-a055-11ec-a0d1-c7b28923b1f5"),
+					CustomerID: uuid.FromStringOrNil("326ef638-a056-11ec-95de-6b924aa3ef53"),
+				},
+				Type: message.TypeSMS,
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -128,9 +133,11 @@ func Test_MessageDelete(t *testing.T) {
 		{
 			"test normal",
 			&message.Message{
-				ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
-				CustomerID: uuid.FromStringOrNil("3f7a4c24-a2a4-11ec-b26e-3f8d47c2b450"),
-				Type:       message.TypeSMS,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
+					CustomerID: uuid.FromStringOrNil("3f7a4c24-a2a4-11ec-b26e-3f8d47c2b450"),
+				},
+				Type: message.TypeSMS,
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -153,9 +160,11 @@ func Test_MessageDelete(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&message.Message{
-				ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
-				CustomerID: uuid.FromStringOrNil("3f7a4c24-a2a4-11ec-b26e-3f8d47c2b450"),
-				Type:       message.TypeSMS,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
+					CustomerID: uuid.FromStringOrNil("3f7a4c24-a2a4-11ec-b26e-3f8d47c2b450"),
+				},
+				Type: message.TypeSMS,
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -238,9 +247,11 @@ func Test_MessageUpdateTargets(t *testing.T) {
 		{
 			"test normal",
 			&message.Message{
-				ID:         uuid.FromStringOrNil("4757235a-a226-11ec-9834-f70b08e3860f"),
-				CustomerID: uuid.FromStringOrNil("502469b6-a226-11ec-aedf-9fd7c533e572"),
-				Type:       message.TypeSMS,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4757235a-a226-11ec-9834-f70b08e3860f"),
+					CustomerID: uuid.FromStringOrNil("502469b6-a226-11ec-aedf-9fd7c533e572"),
+				},
+				Type: message.TypeSMS,
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -273,9 +284,11 @@ func Test_MessageUpdateTargets(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&message.Message{
-				ID:         uuid.FromStringOrNil("4757235a-a226-11ec-9834-f70b08e3860f"),
-				CustomerID: uuid.FromStringOrNil("502469b6-a226-11ec-aedf-9fd7c533e572"),
-				Type:       message.TypeSMS,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4757235a-a226-11ec-9834-f70b08e3860f"),
+					CustomerID: uuid.FromStringOrNil("502469b6-a226-11ec-aedf-9fd7c533e572"),
+				},
+				Type: message.TypeSMS,
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -358,8 +371,10 @@ func Test_MessageGets(t *testing.T) {
 			"normal",
 			[]*message.Message{
 				{
-					ID:         uuid.FromStringOrNil("a7dbbd7e-a296-11ec-b88e-07268af4c3b0"),
-					CustomerID: uuid.FromStringOrNil("a73a34f4-a296-11ec-b7df-a3ed77d36f0d"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a7dbbd7e-a296-11ec-b88e-07268af4c3b0"),
+						CustomerID: uuid.FromStringOrNil("a73a34f4-a296-11ec-b7df-a3ed77d36f0d"),
+					},
 
 					TMCreate: "2021-01-01 00:00:00.000",
 					TMUpdate: DefaultTimeStamp,

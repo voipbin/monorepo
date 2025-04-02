@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -59,13 +60,17 @@ func Test_Create(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("f6834112-0240-11ee-8146-2fb17ae9ef0a"),
 			responseMessage: &message.Message{
-				ID:         uuid.FromStringOrNil("03b6a572-e870-11ec-a4a7-0bf92e5d8985"),
-				CustomerID: uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("03b6a572-e870-11ec-a4a7-0bf92e5d8985"),
+					CustomerID: uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
+				},
 			},
 
 			expectMessage: &message.Message{
-				ID:             uuid.FromStringOrNil("f6834112-0240-11ee-8146-2fb17ae9ef0a"),
-				CustomerID:     uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f6834112-0240-11ee-8146-2fb17ae9ef0a"),
+					CustomerID: uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
+				},
 				ConversationID: uuid.FromStringOrNil("8e0e1dce-e86e-11ec-9537-77df0d80af26"),
 				Direction:      message.DirectionIncoming,
 				Status:         message.StatusSent,
@@ -132,8 +137,10 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("af7c3310-f1d8-11ec-a2f1-db31b43cade8"),
 
 			&message.Message{
-				ID:         uuid.FromStringOrNil("af7c3310-f1d8-11ec-a2f1-db31b43cade8"),
-				CustomerID: uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("af7c3310-f1d8-11ec-a2f1-db31b43cade8"),
+					CustomerID: uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
+				},
 			},
 		},
 	}
@@ -189,7 +196,9 @@ func Test_GetsByConversationID(t *testing.T) {
 
 			[]*message.Message{
 				{
-					ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
+					},
 				},
 			},
 		},
@@ -245,7 +254,9 @@ func Test_GetsByTransactionID(t *testing.T) {
 
 			[]*message.Message{
 				{
-					ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
+					},
 				},
 			},
 		},

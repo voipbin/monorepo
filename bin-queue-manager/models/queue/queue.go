@@ -1,6 +1,7 @@
 package queue
 
 import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -8,8 +9,7 @@ import (
 
 // Queue defines
 type Queue struct {
-	ID         uuid.UUID `json:"id"`          // queue id
-	CustomerID uuid.UUID `json:"customer_id"` // owner id
+	commonidentity.Identity
 
 	// basic info
 	Name   string `json:"name"`   // queue's name

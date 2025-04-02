@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -56,12 +57,16 @@ func Test_dbCreate(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("95223280-1f4f-11ee-91f2-7703e1598c47"),
 			responseNumber: &number.Number{
-				ID: uuid.FromStringOrNil("95223280-1f4f-11ee-91f2-7703e1598c47"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("95223280-1f4f-11ee-91f2-7703e1598c47"),
+				},
 			},
 
 			expectNumber: &number.Number{
-				ID:                  uuid.FromStringOrNil("95223280-1f4f-11ee-91f2-7703e1598c47"),
-				CustomerID:          uuid.FromStringOrNil("9469dadc-1f4f-11ee-8336-df1969096eee"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("95223280-1f4f-11ee-91f2-7703e1598c47"),
+					CustomerID: uuid.FromStringOrNil("9469dadc-1f4f-11ee-8336-df1969096eee"),
+				},
 				Number:              "+821100000001",
 				CallFlowID:          uuid.FromStringOrNil("94a0b5c0-1f4f-11ee-aae2-4b3d5394a85a"),
 				MessageFlowID:       uuid.FromStringOrNil("94cd4568-1f4f-11ee-8246-4f9a649f4565"),
@@ -133,7 +138,9 @@ func Test_dbUpdateFlowID(t *testing.T) {
 			messageFlowID: uuid.FromStringOrNil("b1b4c734-20b0-11ee-9097-7f486b745239"),
 
 			responseNumber: &number.Number{
-				ID: uuid.FromStringOrNil("b14ed168-20b0-11ee-b635-cf0e0e6774ba"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b14ed168-20b0-11ee-b635-cf0e0e6774ba"),
+				},
 			},
 		},
 	}

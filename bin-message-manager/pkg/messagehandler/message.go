@@ -4,6 +4,7 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -29,9 +30,11 @@ func (h *messageHandler) Create(ctx context.Context, id uuid.UUID, customerID uu
 		id = h.utilHandler.UUIDCreate()
 	}
 	m := &message.Message{
-		ID:         id,
-		CustomerID: customerID,
-		Type:       message.TypeSMS,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Type: message.TypeSMS,
 
 		Source:  source,
 		Targets: targets,

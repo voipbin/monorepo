@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -42,7 +43,9 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 
 			[]*campaigncall.Campaigncall{
 				{
-					ID: uuid.FromStringOrNil("d4852cba-c849-11ec-986c-e360df927fc5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d4852cba-c849-11ec-986c-e360df927fc5"),
+					},
 				},
 			},
 
@@ -107,7 +110,9 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 
 			[]*campaigncall.Campaigncall{
 				{
-					ID: uuid.FromStringOrNil("a5fa0f84-6e31-11ee-a6f2-0bb6f14c4687"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("a5fa0f84-6e31-11ee-a6f2-0bb6f14c4687"),
+					},
 				},
 			},
 
@@ -168,7 +173,9 @@ func Test_v1CampaigncallsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("5f7dd038-c84a-11ec-9943-936e5cfdeb4c"),
 
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("5f7dd038-c84a-11ec-9943-936e5cfdeb4c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5f7dd038-c84a-11ec-9943-936e5cfdeb4c"),
+				},
 			},
 
 			&sock.Response{
@@ -228,7 +235,9 @@ func Test_v1CampaigncallsIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("ef345db4-d31a-11ee-b584-2f258c86723e"),
 
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("ef345db4-d31a-11ee-b584-2f258c86723e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ef345db4-d31a-11ee-b584-2f258c86723e"),
+				},
 			},
 
 			&sock.Response{

@@ -66,10 +66,14 @@ func Test_OutplanCreate(t *testing.T) {
 			5,
 			5,
 			&caoutplan.Outplan{
-				ID: uuid.FromStringOrNil("5e602408-e819-4aa0-aac6-24072a224dff"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5e602408-e819-4aa0-aac6-24072a224dff"),
+				},
 			},
 			&caoutplan.WebhookMessage{
-				ID: uuid.FromStringOrNil("5e602408-e819-4aa0-aac6-24072a224dff"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5e602408-e819-4aa0-aac6-24072a224dff"),
+				},
 			},
 		},
 	}
@@ -124,12 +128,16 @@ func Test_OutplanDelete(t *testing.T) {
 			uuid.FromStringOrNil("bcbcffb4-c640-11ec-bdab-03b1d679601d"),
 
 			&caoutplan.Outplan{
-				ID:         uuid.FromStringOrNil("bcbcffb4-c640-11ec-bdab-03b1d679601d"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bcbcffb4-c640-11ec-bdab-03b1d679601d"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&caoutplan.WebhookMessage{
-				ID:         uuid.FromStringOrNil("bcbcffb4-c640-11ec-bdab-03b1d679601d"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bcbcffb4-c640-11ec-bdab-03b1d679601d"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -187,18 +195,26 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 
 			[]caoutplan.Outplan{
 				{
-					ID: uuid.FromStringOrNil("6c3a509a-c641-11ec-97f3-97762ce0f584"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6c3a509a-c641-11ec-97f3-97762ce0f584"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("6c8f8c0e-c641-11ec-ae79-63f803cffc1f"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6c8f8c0e-c641-11ec-ae79-63f803cffc1f"),
+					},
 				},
 			},
 			[]*caoutplan.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("6c3a509a-c641-11ec-97f3-97762ce0f584"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6c3a509a-c641-11ec-97f3-97762ce0f584"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("6c8f8c0e-c641-11ec-ae79-63f803cffc1f"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6c8f8c0e-c641-11ec-ae79-63f803cffc1f"),
+					},
 				},
 			},
 		},
@@ -254,12 +270,16 @@ func Test_OutplanGet(t *testing.T) {
 			uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
 
 			&caoutplan.Outplan{
-				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&caoutplan.WebhookMessage{
-				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -318,12 +338,16 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 			"test detail",
 
 			&caoutplan.Outplan{
-				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&caoutplan.WebhookMessage{
-				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -398,12 +422,16 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 			5,
 
 			&caoutplan.Outplan{
-				ID:         uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&caoutplan.WebhookMessage{
-				ID:         uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}

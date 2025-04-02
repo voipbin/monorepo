@@ -2,14 +2,15 @@ package outdialtargetcall
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
 
 // OutdialTargetCall defines
 type OutdialTargetCall struct {
-	ID              uuid.UUID `json:"id"`
-	CustomerID      uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
+
 	CampaignID      uuid.UUID `json:"campaign_id"`
 	OutdialID       uuid.UUID `json:"outdial_id"`
 	OutdialTargetID uuid.UUID `json:"outdial_target_id"`

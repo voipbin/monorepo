@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -52,7 +53,9 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 			},
 			[]cacampaigncall.Campaigncall{
 				{
-					ID: uuid.FromStringOrNil("0dccc282-6e23-11ee-8173-23149728867a"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("0dccc282-6e23-11ee-8173-23149728867a"),
+					},
 				},
 			},
 		},
@@ -119,7 +122,9 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 			},
 			[]cacampaigncall.Campaigncall{
 				{
-					ID: uuid.FromStringOrNil("bd6d3594-c859-11ec-b2ed-af1657f376a7"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("bd6d3594-c859-11ec-b2ed-af1657f376a7"),
+					},
 				},
 			},
 		},
@@ -180,7 +185,9 @@ func Test_CampaignV1CampaigncallGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&cacampaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("f3cff130-c859-11ec-ba02-4b142bed8c58"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("f3cff130-c859-11ec-ba02-4b142bed8c58"),
+				},
 			},
 		},
 	}
@@ -240,7 +247,9 @@ func Test_CampaignV1CampaigncallDelete(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&cacampaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("08508d40-c85a-11ec-9a16-531149eb320b"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("08508d40-c85a-11ec-9a16-531149eb320b"),
+				},
 			},
 		},
 	}

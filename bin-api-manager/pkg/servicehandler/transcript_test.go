@@ -73,10 +73,14 @@ func Test_TranscriptGets(t *testing.T) {
 			},
 			expectRes: []*tmtranscript.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("9ede9632-8284-11ed-bf13-43420adb75f6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("9ede9632-8284-11ed-bf13-43420adb75f6"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("9f06037a-8284-11ed-8b1a-1f5800b90993"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("9f06037a-8284-11ed-8b1a-1f5800b90993"),
+					},
 				},
 			},
 		},

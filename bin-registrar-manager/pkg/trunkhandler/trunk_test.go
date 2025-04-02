@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -57,7 +58,9 @@ func Test_Create(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
 			responseTrunk: &trunk.Trunk{
-				ID:        uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
+				},
 				AuthTypes: []sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
 				Realm:     "test-domain.trunk.voipbin.net",
 				Username:  "testusername",
@@ -72,8 +75,10 @@ func Test_Create(t *testing.T) {
 				"domain_name": "test-domain",
 			},
 			expectTrunk: &trunk.Trunk{
-				ID:         uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
-				CustomerID: uuid.FromStringOrNil("202b2592-8967-11ec-aeab-3336a440f2c1"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
+					CustomerID: uuid.FromStringOrNil("202b2592-8967-11ec-aeab-3336a440f2c1"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test-domain",
@@ -150,7 +155,9 @@ func Test_Get(t *testing.T) {
 			uuid.FromStringOrNil("a27578e6-756f-45e4-88f0-d97e725f4507"),
 
 			&trunk.Trunk{
-				CustomerID: uuid.FromStringOrNil("a27578e6-756f-45e4-88f0-d97e725f4507"),
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("a27578e6-756f-45e4-88f0-d97e725f4507"),
+				},
 			},
 		},
 	}
@@ -203,12 +210,16 @@ func Test_Gets(t *testing.T) {
 
 			[]*trunk.Trunk{
 				{
-					ID: uuid.FromStringOrNil("ab7dcb80-5234-11ee-a234-f7fd070d72e4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ab7dcb80-5234-11ee-a234-f7fd070d72e4"),
+					},
 				},
 			},
 			[]*trunk.Trunk{
 				{
-					ID: uuid.FromStringOrNil("ab7dcb80-5234-11ee-a234-f7fd070d72e4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ab7dcb80-5234-11ee-a234-f7fd070d72e4"),
+					},
 				},
 			},
 		},
@@ -263,11 +274,15 @@ func Test_GetByDomainName(t *testing.T) {
 			"test",
 
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("efce1da4-cdc6-11ee-8fd0-93756984748c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("efce1da4-cdc6-11ee-8fd0-93756984748c"),
+				},
 			},
 
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("efce1da4-cdc6-11ee-8fd0-93756984748c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("efce1da4-cdc6-11ee-8fd0-93756984748c"),
+				},
 			},
 		},
 	}
@@ -329,7 +344,9 @@ func Test_Update(t *testing.T) {
 			},
 
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("80a7dd20-5229-11ee-bf8c-a3fb6b428056"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("80a7dd20-5229-11ee-bf8c-a3fb6b428056"),
+				},
 			},
 
 			&sipauth.SIPAuth{
@@ -381,10 +398,14 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("8a603afc-6f31-11eb-8ca1-0777f2a6f66e"),
 
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("8a603afc-6f31-11eb-8ca1-0777f2a6f66e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8a603afc-6f31-11eb-8ca1-0777f2a6f66e"),
+				},
 			},
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("8a603afc-6f31-11eb-8ca1-0777f2a6f66e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8a603afc-6f31-11eb-8ca1-0777f2a6f66e"),
+				},
 			},
 		},
 	}

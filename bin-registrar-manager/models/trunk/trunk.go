@@ -1,15 +1,13 @@
 package trunk
 
 import (
-	"github.com/gofrs/uuid"
-
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
 
 // Trunk struct
 type Trunk struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`

@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -33,11 +34,13 @@ func Test_UpdateStatusStopping(t *testing.T) {
 			uuid.FromStringOrNil("6341e026-c442-11ec-8a25-ef389fb6d478"),
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("6341e026-c442-11ec-8a25-ef389fb6d478"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				OutplanID:  uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
-				OutdialID:  uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
-				Status:     campaign.StatusRun,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6341e026-c442-11ec-8a25-ef389fb6d478"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				OutplanID: uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
+				OutdialID: uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
+				Status:    campaign.StatusRun,
 			},
 		},
 	}
@@ -90,9 +93,11 @@ func Test_updateStatusStop(t *testing.T) {
 			uuid.FromStringOrNil("dd70296f-fadd-4fb0-bfc4-017944ec4597"),
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("dd70296f-fadd-4fb0-bfc4-017944ec4597"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				Status:     campaign.StatusStopping,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dd70296f-fadd-4fb0-bfc4-017944ec4597"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				Status: campaign.StatusStopping,
 			},
 		},
 	}
@@ -148,10 +153,12 @@ func Test_isStoppable(t *testing.T) {
 			uuid.FromStringOrNil("dd70296f-fadd-4fb0-bfc4-017944ec4597"),
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("dd70296f-fadd-4fb0-bfc4-017944ec4597"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				Execute:    campaign.ExecuteStop,
-				Status:     campaign.StatusStopping,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dd70296f-fadd-4fb0-bfc4-017944ec4597"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				Execute: campaign.ExecuteStop,
+				Status:  campaign.StatusStopping,
 			},
 			[]*campaigncall.Campaigncall{},
 
@@ -163,10 +170,12 @@ func Test_isStoppable(t *testing.T) {
 			uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				Execute:    campaign.ExecuteRun,
-				Status:     campaign.StatusStopping,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				Execute: campaign.ExecuteRun,
+				Status:  campaign.StatusStopping,
 			},
 			[]*campaigncall.Campaigncall{},
 
@@ -178,10 +187,12 @@ func Test_isStoppable(t *testing.T) {
 			uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				Execute:    campaign.ExecuteStop,
-				Status:     campaign.StatusRun,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				Execute: campaign.ExecuteStop,
+				Status:  campaign.StatusRun,
 			},
 			[]*campaigncall.Campaigncall{},
 
@@ -193,14 +204,18 @@ func Test_isStoppable(t *testing.T) {
 			uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				Execute:    campaign.ExecuteStop,
-				Status:     campaign.StatusStopping,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				Execute: campaign.ExecuteStop,
+				Status:  campaign.StatusStopping,
 			},
 			[]*campaigncall.Campaigncall{
 				{
-					ID: uuid.FromStringOrNil("b708b214-c444-11ec-943a-ff8f38547200"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b708b214-c444-11ec-943a-ff8f38547200"),
+					},
 				},
 			},
 

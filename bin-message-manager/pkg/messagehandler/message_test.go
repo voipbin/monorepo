@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -58,12 +59,16 @@ func Test_Create(t *testing.T) {
 			direction:    message.DirectionInbound,
 
 			responseMessage: &message.Message{
-				ID: uuid.FromStringOrNil("6dd9d746-197d-11ee-a39d-0ffbf2a45563"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6dd9d746-197d-11ee-a39d-0ffbf2a45563"),
+				},
 			},
 			expectMessage: &message.Message{
-				ID:         uuid.FromStringOrNil("6dd9d746-197d-11ee-a39d-0ffbf2a45563"),
-				CustomerID: uuid.FromStringOrNil("755c7b90-197d-11ee-9cb0-a3ddbcba0c6f"),
-				Type:       message.TypeSMS,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6dd9d746-197d-11ee-a39d-0ffbf2a45563"),
+					CustomerID: uuid.FromStringOrNil("755c7b90-197d-11ee-9cb0-a3ddbcba0c6f"),
+				},
+				Type: message.TypeSMS,
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",

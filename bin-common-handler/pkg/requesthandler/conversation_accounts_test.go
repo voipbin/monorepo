@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -45,7 +46,9 @@ func Test_ConversationV1AccountGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 			expectRes: &cvaccount.Account{
-				ID: uuid.FromStringOrNil("a6512c7e-003b-11ee-90ce-77b8ed60c6b0"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a6512c7e-003b-11ee-90ce-77b8ed60c6b0"),
+				},
 			},
 		},
 	}
@@ -115,10 +118,14 @@ func Test_ConversationV1AccountGets(t *testing.T) {
 
 			expectRes: []cvaccount.Account{
 				{
-					ID: uuid.FromStringOrNil("78a9b0c8-003d-11ee-a05f-2bc10442c9f9"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("78a9b0c8-003d-11ee-a05f-2bc10442c9f9"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("78d2ae88-003d-11ee-a2d7-574f3cd765cd"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("78d2ae88-003d-11ee-a2d7-574f3cd765cd"),
+					},
 				},
 			},
 		},
@@ -194,7 +201,9 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 			},
 
 			expectRes: &cvaccount.Account{
-				ID: uuid.FromStringOrNil("22c10b42-003e-11ee-9d2b-5fc3b9f2d82a"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("22c10b42-003e-11ee-9d2b-5fc3b9f2d82a"),
+				},
 			},
 		},
 	}
@@ -265,7 +274,9 @@ func Test_ConversationV1AccountUpdate(t *testing.T) {
 			},
 
 			expectRes: &cvaccount.Account{
-				ID: uuid.FromStringOrNil("a3c2b754-003e-11ee-aa7e-e760c874d75f"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a3c2b754-003e-11ee-aa7e-e760c874d75f"),
+				},
 			},
 		},
 	}
@@ -327,7 +338,9 @@ func Test_ConversationV1AccountDelete(t *testing.T) {
 			},
 
 			expectRes: &cvaccount.Account{
-				ID: uuid.FromStringOrNil("cb700d10-003e-11ee-be73-4b361dcf2748"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("cb700d10-003e-11ee-be73-4b361dcf2748"),
+				},
 			},
 		},
 	}

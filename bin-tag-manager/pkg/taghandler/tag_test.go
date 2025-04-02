@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -36,7 +37,9 @@ func Test_Gets(t *testing.T) {
 
 			responseTags: []*tag.Tag{
 				{
-					ID: uuid.FromStringOrNil("a0c95b3e-2a00-11ee-a3cd-3307849aa505"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("a0c95b3e-2a00-11ee-a3cd-3307849aa505"),
+					},
 				},
 			},
 		},
@@ -85,7 +88,9 @@ func Test_Get(t *testing.T) {
 			id: uuid.FromStringOrNil("27d26bf2-2a01-11ee-82a4-63ea4f4f7211"),
 
 			responseTag: &tag.Tag{
-				ID: uuid.FromStringOrNil("27d26bf2-2a01-11ee-82a4-63ea4f4f7211"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("27d26bf2-2a01-11ee-82a4-63ea4f4f7211"),
+				},
 			},
 		},
 	}
@@ -137,7 +142,9 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			detail:  "test detail",
 
 			responseTag: &tag.Tag{
-				ID: uuid.FromStringOrNil("5f6a7ef6-2a01-11ee-8594-87f2ee5140ed"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5f6a7ef6-2a01-11ee-8594-87f2ee5140ed"),
+				},
 			},
 		},
 	}
@@ -193,7 +200,9 @@ func Test_Create(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("5c82c65e-2a4b-11ee-b4ae-c3cd00ea0c41"),
 			responseTag: &tag.Tag{
-				ID: uuid.FromStringOrNil("5c82c65e-2a4b-11ee-b4ae-c3cd00ea0c41"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5c82c65e-2a4b-11ee-b4ae-c3cd00ea0c41"),
+				},
 			},
 		},
 	}
@@ -215,10 +224,12 @@ func Test_Create(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().TagCreate(ctx, &tag.Tag{
-				ID:         tt.responseUUID,
-				CustomerID: tt.customerID,
-				Name:       tt.tagName,
-				Detail:     tt.detail,
+				Identity: commonidentity.Identity{
+					ID:         tt.responseUUID,
+					CustomerID: tt.customerID,
+				},
+				Name:   tt.tagName,
+				Detail: tt.detail,
 			}).Return(nil)
 			mockDB.EXPECT().TagGet(ctx, tt.responseUUID).Return(tt.responseTag, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, tag.EventTypeTagCreated, tt.responseTag)
@@ -252,7 +263,9 @@ func Test_Delete(t *testing.T) {
 			id: uuid.FromStringOrNil("a6b3cf48-2a4b-11ee-b574-2bad4f039ce5"),
 
 			responseTag: &tag.Tag{
-				ID: uuid.FromStringOrNil("a6b3cf48-2a4b-11ee-b574-2bad4f039ce5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a6b3cf48-2a4b-11ee-b574-2bad4f039ce5"),
+				},
 			},
 
 			expectNewTagIds: [][]uuid.UUID{

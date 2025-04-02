@@ -53,7 +53,9 @@ func Test_outplansPOST(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 
 			responseOutplan: &caoutplan.WebhookMessage{
-				ID: uuid.FromStringOrNil("1e701ed2-c649-11ec-97e4-87f868a3e3a9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1e701ed2-c649-11ec-97e4-87f868a3e3a9"),
+				},
 			},
 
 			expectName:   "test name",
@@ -149,7 +151,9 @@ func Test_outplansGET(t *testing.T) {
 
 			responseOutplans: []*caoutplan.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("891dceb2-c64b-11ec-ad40-4f3b7ab8bd4e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("891dceb2-c64b-11ec-ad40-4f3b7ab8bd4e"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -170,15 +174,21 @@ func Test_outplansGET(t *testing.T) {
 
 			responseOutplans: []*caoutplan.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("b85b50fa-c64b-11ec-a17f-fb6cd8c28a0d"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b85b50fa-c64b-11ec-a17f-fb6cd8c28a0d"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("b88bd6f8-c64b-11ec-a895-0f50245da5a9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b88bd6f8-c64b-11ec-a895-0f50245da5a9"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("b8c11570-c64b-11ec-82f7-abb0350c1d7d"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b8c11570-c64b-11ec-82f7-abb0350c1d7d"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
@@ -248,7 +258,9 @@ func Test_outplansIDGET(t *testing.T) {
 			rqeQuery: "/outplans/1b27088c-c64c-11ec-b7df-b37c8b4c4c13",
 
 			responseOutplan: &caoutplan.WebhookMessage{
-				ID: uuid.FromStringOrNil("1b27088c-c64c-11ec-b7df-b37c8b4c4c13"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1b27088c-c64c-11ec-b7df-b37c8b4c4c13"),
+				},
 			},
 
 			expectOutplanID: uuid.FromStringOrNil("1b27088c-c64c-11ec-b7df-b37c8b4c4c13"),
@@ -314,7 +326,9 @@ func Test_outplansIDDELETE(t *testing.T) {
 			reqQuery: "/outplans/3b58765e-c64c-11ec-a2c1-03acafdff2d7",
 
 			responseOutplan: &caoutplan.WebhookMessage{
-				ID: uuid.FromStringOrNil("3b58765e-c64c-11ec-a2c1-03acafdff2d7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3b58765e-c64c-11ec-a2c1-03acafdff2d7"),
+				},
 			},
 
 			expectOutplanID: uuid.FromStringOrNil("3b58765e-c64c-11ec-a2c1-03acafdff2d7"),
@@ -384,7 +398,9 @@ func Test_outplansIDPUT(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail"}`),
 
 			responseOuplan: &caoutplan.WebhookMessage{
-				ID: uuid.FromStringOrNil("5ad57130-c64c-11ec-b131-a787ac641f8a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5ad57130-c64c-11ec-b131-a787ac641f8a"),
+				},
 			},
 
 			expectOutplanID: uuid.FromStringOrNil("5ad57130-c64c-11ec-b131-a787ac641f8a"),
@@ -463,7 +479,9 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 			reqBody:  []byte(`{"source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 
 			responseOutplan: &caoutplan.WebhookMessage{
-				ID: uuid.FromStringOrNil("d94e07e8-c64c-11ec-9e9d-8b700336c5ef"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d94e07e8-c64c-11ec-9e9d-8b700336c5ef"),
+				},
 			},
 
 			expectOutplanID: uuid.FromStringOrNil("d94e07e8-c64c-11ec-9e9d-8b700336c5ef"),

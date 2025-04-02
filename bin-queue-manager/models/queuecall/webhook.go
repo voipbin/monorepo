@@ -2,14 +2,14 @@ package queuecall
 
 import (
 	"encoding/json"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	uuid "github.com/gofrs/uuid"
 )
 
 // WebhookMessage defines conference webhook event
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"` // owner id
+	commonidentity.Identity
 
 	ReferenceType string    `json:"reference_type"`
 	ReferenceID   uuid.UUID `json:"reference_id"`
@@ -29,8 +29,7 @@ type WebhookMessage struct {
 // ConvertWebhookMessage defines
 func (h *Queuecall) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
+		Identity: h.Identity,
 
 		ReferenceType: string(h.ReferenceType),
 		ReferenceID:   h.ReferenceID,

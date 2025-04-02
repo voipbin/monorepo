@@ -215,8 +215,10 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 
 			[]*message.Message{
 				{
-					ID:         uuid.FromStringOrNil("645891fe-e863-11ec-b291-9f454e92f1bb"),
-					CustomerID: uuid.FromStringOrNil("64a3cbd8-e863-11ec-85de-1bcd09d3872e"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("645891fe-e863-11ec-b291-9f454e92f1bb"),
+						CustomerID: uuid.FromStringOrNil("64a3cbd8-e863-11ec-85de-1bcd09d3872e"),
+					},
 				},
 			},
 
@@ -239,12 +241,16 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 
 			[]*message.Message{
 				{
-					ID:         uuid.FromStringOrNil("d373f1e8-e866-11ec-91ef-7711453397a7"),
-					CustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("d373f1e8-e866-11ec-91ef-7711453397a7"),
+						CustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("d3a1f9f8-e866-11ec-a403-07ca24d89997"),
-					CustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("d3a1f9f8-e866-11ec-a403-07ca24d89997"),
+						CustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+					},
 				},
 			},
 			&sock.Request{
@@ -309,7 +315,9 @@ func Test_processV1ConversationsIDMessagesPost(t *testing.T) {
 			[]media.Media{},
 
 			&message.Message{
-				ID: uuid.FromStringOrNil("bb509f64-ec56-11ec-aa8b-374ae78e9b98"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bb509f64-ec56-11ec-aa8b-374ae78e9b98"),
+				},
 			},
 
 			&sock.Request{
