@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
 
@@ -22,8 +23,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 		{
 			name: "normal",
 			trunk: Trunk{
-				ID:         uuid.FromStringOrNil("dfd1c0d6-5210-11ee-9b01-8f98fa57b2ce"),
-				CustomerID: uuid.FromStringOrNil("e01eb224-5210-11ee-893e-e33a13839d13"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dfd1c0d6-5210-11ee-9b01-8f98fa57b2ce"),
+					CustomerID: uuid.FromStringOrNil("e01eb224-5210-11ee-893e-e33a13839d13"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",
@@ -39,8 +42,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 			},
 
 			expectRes: &WebhookMessage{
-				ID:         uuid.FromStringOrNil("dfd1c0d6-5210-11ee-9b01-8f98fa57b2ce"),
-				CustomerID: uuid.FromStringOrNil("e01eb224-5210-11ee-893e-e33a13839d13"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dfd1c0d6-5210-11ee-9b01-8f98fa57b2ce"),
+					CustomerID: uuid.FromStringOrNil("e01eb224-5210-11ee-893e-e33a13839d13"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",

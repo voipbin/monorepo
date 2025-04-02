@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -51,8 +52,10 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 			"4b1f7a6e-6ebf-11eb-a47e-5351700cd612",
 
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("3f4bc63e-6ebf-11eb-b7de-df47266bf559"),
-				CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3f4bc63e-6ebf-11eb-b7de-df47266bf559"),
+					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+				},
 
 				EndpointID: "45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net",
 				AORID:      "45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net",
@@ -135,12 +138,16 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			},
 			responseExtensions: []*extension.Extension{
 				{
-					ID:         uuid.FromStringOrNil("c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec"),
-					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec"),
+						CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("c4fb2336-6f4d-11eb-b51d-b318fdb3e042"),
-					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("c4fb2336-6f4d-11eb-b51d-b318fdb3e042"),
+						CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+					},
 				}},
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -222,17 +229,21 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 		{
 			"empty addresses",
 			&extension.Extension{
-				ID:       uuid.FromStringOrNil("6dc9dd22-6f4e-11eb-8059-2fe116db7a2b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6dc9dd22-6f4e-11eb-8059-2fe116db7a2b"),
+				},
 				Name:     "update name",
 				Detail:   "update detail",
 				Password: "update password",
 			},
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("6dc9dd22-6f4e-11eb-8059-2fe116db7a2b"),
-				CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
-				Name:       "update name",
-				Detail:     "update detail",
-				Password:   "update password",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6dc9dd22-6f4e-11eb-8059-2fe116db7a2b"),
+					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+				},
+				Name:     "update name",
+				Detail:   "update detail",
+				Password: "update password",
 			},
 			&sock.Request{
 				URI:      "/v1/extensions/6dc9dd22-6f4e-11eb-8059-2fe116db7a2b",
@@ -302,7 +313,9 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 			},
 
 			&extension.Extension{
-				ID: uuid.FromStringOrNil("adeea2b0-6f4f-11eb-acb7-13291c18927b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("adeea2b0-6f4f-11eb-acb7-13291c18927b"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -363,7 +376,9 @@ func Test_processV1ExtensionsExtensionExtensionGet(t *testing.T) {
 			},
 
 			&extension.Extension{
-				ID: uuid.FromStringOrNil("922a32a2-5650-11ee-8341-cb03501d873e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("922a32a2-5650-11ee-8341-cb03501d873e"),
+				},
 			},
 
 			uuid.FromStringOrNil("14529572-5650-11ee-8bac-8f91175c7ceb"),

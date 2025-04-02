@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -52,7 +53,9 @@ func Test_Create(t *testing.T) {
 
 			responseUUIDExtensionID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
 			responseExtension: &extension.Extension{
-				ID:        uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+				},
 				Extension: "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
 				Realm:     "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
 				Username:  "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
@@ -78,8 +81,10 @@ func Test_Create(t *testing.T) {
 				Auth: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),
 			},
 			expectExtension: &extension.Extension{
-				ID:         uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
-				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				EndpointID: "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
@@ -159,7 +164,9 @@ func Test_Get(t *testing.T) {
 			uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
 
 			&extension.Extension{
-				ID: uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
+				},
 			},
 		},
 	}
@@ -193,59 +200,6 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-// func Test_GetByEndpoint(t *testing.T) {
-
-// 	type test struct {
-// 		name string
-
-// 		endpoint string
-
-// 		expectEndpointID  string
-// 		responseExtension *extension.Extension
-// 	}
-
-// 	tests := []test{
-// 		{
-// 			"normal",
-
-// 			"test_ext@test_domain",
-
-// 			"test_ext@test_domain.sip.voipbin.net",
-// 			&extension.Extension{
-// 				ID: uuid.FromStringOrNil("256c7fd2-e461-4871-83c0-8f60ab3acb84"),
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		mc := gomock.NewController(t)
-// 		defer mc.Finish()
-
-// 		mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 		mockDBAst := dbhandler.NewMockDBHandler(mc)
-// 		mockDBBin := dbhandler.NewMockDBHandler(mc)
-// 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 		h := &extensionHandler{
-// 			utilHandler:   mockUtil,
-// 			dbAst:         mockDBAst,
-// 			dbBin:         mockDBBin,
-// 			notifyHandler: mockNotify,
-// 		}
-// 		ctx := context.Background()
-
-// 		mockDBBin.EXPECT().ExtensionGetByEndpointID(ctx, tt.expectEndpointID).Return(tt.responseExtension, nil)
-
-// 		res, err := h.GetByEndpoint(ctx, tt.endpoint)
-// 		if err != nil {
-// 			t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 		}
-
-// 		if !reflect.DeepEqual(res, tt.responseExtension) {
-// 			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseExtension, res)
-// 		}
-// 	}
-// }
-
 func Test_Update(t *testing.T) {
 
 	type test struct {
@@ -274,8 +228,10 @@ func Test_Update(t *testing.T) {
 			password:      "update password",
 
 			responseExtension: &extension.Extension{
-				ID:         uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
-				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
 				Name:       "update name",
 				Detail:     "update detail",
 				AuthID:     "66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net",
@@ -291,17 +247,21 @@ func Test_Update(t *testing.T) {
 				Password: getStringPointer("update password"),
 			},
 			updateExt: &extension.Extension{
-				ID:         uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
-				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
-				Name:       "update name",
-				Detail:     "update detail",
-				AuthID:     "66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net",
-				Extension:  "66f6b86c-6f44-11eb-ab55-934942c23f91",
-				Password:   "update password",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				AuthID:    "66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net",
+				Extension: "66f6b86c-6f44-11eb-ab55-934942c23f91",
+				Password:  "update password",
 			},
 			updatedExt: &extension.Extension{
-				ID:         uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
-				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
 				Name:       "update name",
 				Detail:     "update detail",
 				AuthID:     "66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net",
@@ -368,8 +328,10 @@ func Test_ExtensionDelete(t *testing.T) {
 		{
 			"test normal",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("4a6b7618-6f46-11eb-a2fb-1f7595db4195"),
-				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4a6b7618-6f46-11eb-a2fb-1f7595db4195"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				AuthID:     "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
@@ -380,8 +342,10 @@ func Test_ExtensionDelete(t *testing.T) {
 			},
 
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("4a6b7618-6f46-11eb-a2fb-1f7595db4195"),
-				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4a6b7618-6f46-11eb-a2fb-1f7595db4195"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				AuthID:     "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
@@ -439,8 +403,10 @@ func Test_ExtensionGet(t *testing.T) {
 		{
 			"test normal",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("798f8bcc-6f47-11eb-8908-efd77279298d"),
-				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("798f8bcc-6f47-11eb-8908-efd77279298d"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				AuthID:     "798f8bcc-6f47-11eb-8908-efd77279298d@test.sip.voipbin.net",
@@ -502,7 +468,9 @@ func Test_Gets(t *testing.T) {
 
 			[]*extension.Extension{
 				{
-					ID: uuid.FromStringOrNil("2ccb7cd0-cdca-11ee-be37-a33e4200ba32"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2ccb7cd0-cdca-11ee-be37-a33e4200ba32"),
+					},
 				},
 			},
 		},

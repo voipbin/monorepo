@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -52,7 +53,9 @@ func Test_processV1TrunksPost(t *testing.T) {
 			},
 
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("1744ccb4-6e13-11eb-b08d-bb42431b2fb3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1744ccb4-6e13-11eb-b08d-bb42431b2fb3"),
+				},
 			},
 			&sock.Request{
 				URI:      "/v1/trunks",
@@ -128,12 +131,16 @@ func Test_processV1TrunksGet(t *testing.T) {
 			},
 			[]*trunk.Trunk{
 				{
-					ID:         uuid.FromStringOrNil("abd3467a-6ee6-11eb-824f-c386fbaad128"),
-					CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("abd3467a-6ee6-11eb-824f-c386fbaad128"),
+						CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("af6488da-6ee6-11eb-8d4d-0f848f8e1aee"),
-					CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("af6488da-6ee6-11eb-8d4d-0f848f8e1aee"),
+						CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
+					},
 				}},
 			&sock.Response{
 				StatusCode: 200,
@@ -237,7 +244,9 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 				Data:     []byte(`{"name":"update name", "detail":"update detail", "auth_types": ["basic"], "username": "testusername", "password": "testpassword", "allowed_ips": ["1.2.3.4"]}`),
 			},
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("a3e97272-5232-11ee-acd9-bbb3933eed48"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a3e97272-5232-11ee-acd9-bbb3933eed48"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -298,7 +307,9 @@ func Test_processV1TrunksIDGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("4e1f3c12-5234-11ee-ad7f-ef5be37113b2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e1f3c12-5234-11ee-ad7f-ef5be37113b2"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -356,7 +367,9 @@ func Test_processV1TrunksTrunkNameTrunkNameGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("d5829769-dacf-420e-9260-c8931560331e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d5829769-dacf-420e-9260-c8931560331e"),
+				},
 			},
 
 			"testdomain",
@@ -417,7 +430,9 @@ func Test_processV1TrunksDelete(t *testing.T) {
 				Method: sock.RequestMethodDelete,
 			},
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("09e94cb4-6f32-11eb-af29-27dcd65a7064"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("09e94cb4-6f32-11eb-af29-27dcd65a7064"),
+				},
 			},
 
 			&sock.Response{
