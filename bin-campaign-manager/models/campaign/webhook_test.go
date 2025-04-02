@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -22,8 +23,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 			name: "normal",
 
 			data: Campaign{
-				ID:           uuid.FromStringOrNil("9e375ad0-8e62-11ee-8a45-530d00e19a2d"),
-				CustomerID:   uuid.FromStringOrNil("9e6bdbfc-8e62-11ee-b13f-dfdb25fe3da2"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9e375ad0-8e62-11ee-8a45-530d00e19a2d"),
+					CustomerID: uuid.FromStringOrNil("9e6bdbfc-8e62-11ee-b13f-dfdb25fe3da2"),
+				},
 				Type:         TypeCall,
 				Execute:      ExecuteRun,
 				Name:         "test name",
@@ -47,8 +50,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 			},
 
 			expectRes: &WebhookMessage{
-				ID:           uuid.FromStringOrNil("9e375ad0-8e62-11ee-8a45-530d00e19a2d"),
-				CustomerID:   uuid.FromStringOrNil("9e6bdbfc-8e62-11ee-b13f-dfdb25fe3da2"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9e375ad0-8e62-11ee-8a45-530d00e19a2d"),
+					CustomerID: uuid.FromStringOrNil("9e6bdbfc-8e62-11ee-b13f-dfdb25fe3da2"),
+				},
 				Type:         TypeCall,
 				Name:         "test name",
 				Detail:       "test detail",

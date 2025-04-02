@@ -69,22 +69,3 @@ func (h *campaignHandler) campaignRun(ctx context.Context, id uuid.UUID) (*campa
 
 	return res, nil
 }
-
-// // isRunable returns true if a given campaign is run-able
-// func (h *campaignHandler) isRunable(ctx context.Context, c *campaign.Campaign) bool {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":        "isDialable",
-// 		"campaign_id": c.ID,
-// 	})
-// 	log.Debug("Checking the campaign is run-able.")
-
-// 	if c.OutdialID == uuid.Nil {
-// 		log.Infof("The campaign has no outdial_id.")
-// 		return false
-// 	} else if c.OutplanID == uuid.Nil {
-// 		log.Infof("The campaign has no outplan_id.")
-// 		return false
-// 	}
-
-// 	return true
-// }

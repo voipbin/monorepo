@@ -6,6 +6,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -29,8 +30,10 @@ func Test_CampaignCreate(t *testing.T) {
 		{
 			"type call with endhandle stop",
 			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
-				CustomerID:   uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
+					CustomerID: uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				},
 				Type:         campaign.TypeCall,
 				Execute:      campaign.ExecuteStop,
 				Name:         "test name",
@@ -55,8 +58,10 @@ func Test_CampaignCreate(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
-				CustomerID:   uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
+					CustomerID: uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				},
 				Type:         campaign.TypeCall,
 				Execute:      campaign.ExecuteStop,
 				Name:         "test name",
@@ -82,8 +87,10 @@ func Test_CampaignCreate(t *testing.T) {
 		{
 			"type flow endhandle continue",
 			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("18ebc9ba-8765-4171-8b21-36f8792384ce"),
-				CustomerID:   uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("18ebc9ba-8765-4171-8b21-36f8792384ce"),
+					CustomerID: uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				},
 				Type:         campaign.TypeFlow,
 				Execute:      campaign.ExecuteRun,
 				Name:         "test name",
@@ -108,8 +115,10 @@ func Test_CampaignCreate(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("18ebc9ba-8765-4171-8b21-36f8792384ce"),
-				CustomerID:   uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("18ebc9ba-8765-4171-8b21-36f8792384ce"),
+					CustomerID: uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				},
 				Type:         campaign.TypeFlow,
 				Execute:      campaign.ExecuteRun,
 				Name:         "test name",
@@ -178,8 +187,10 @@ func Test_CampaignDelete(t *testing.T) {
 		{
 			"normal",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("1cc92874-b480-11ec-b7cf-4f5d95304498"),
-				CustomerID:     uuid.FromStringOrNil("1cf4905e-b480-11ec-8e27-038c9a252614"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1cc92874-b480-11ec-b7cf-4f5d95304498"),
+					CustomerID: uuid.FromStringOrNil("1cf4905e-b480-11ec-8e27-038c9a252614"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -243,8 +254,10 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 			"1 item",
 			[]*campaign.Campaign{
 				{
-					ID:           uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
-					CustomerID:   uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
+						CustomerID: uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
+					},
 					Name:         "test name",
 					Detail:       "test detail",
 					Status:       campaign.StatusStop,
@@ -270,8 +283,10 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 			"2020-04-18 03:22:18.995000",
 			[]*campaign.Campaign{
 				{
-					ID:           uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
-					CustomerID:   uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
+						CustomerID: uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
+					},
 					Name:         "test name",
 					Detail:       "test detail",
 					Status:       campaign.StatusStop,
@@ -297,8 +312,10 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 			"2 items",
 			[]*campaign.Campaign{
 				{
-					ID:             uuid.FromStringOrNil("4392eaa6-b3d3-11ec-94aa-339707f75f8e"),
-					CustomerID:     uuid.FromStringOrNil("49e070b8-b3d3-11ec-9b5f-0f066e1f46e6"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("4392eaa6-b3d3-11ec-94aa-339707f75f8e"),
+						CustomerID: uuid.FromStringOrNil("49e070b8-b3d3-11ec-9b5f-0f066e1f46e6"),
+					},
 					Name:           "test name",
 					Detail:         "test detail",
 					Status:         campaign.StatusStop,
@@ -308,8 +325,10 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 					NextCampaignID: uuid.FromStringOrNil("f9f84bf2-b3d2-11ec-8a68-d7464098d793"),
 				},
 				{
-					ID:             uuid.FromStringOrNil("43c183a2-b3d3-11ec-8bd7-b39a3d003ed6"),
-					CustomerID:     uuid.FromStringOrNil("49e070b8-b3d3-11ec-9b5f-0f066e1f46e6"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("43c183a2-b3d3-11ec-8bd7-b39a3d003ed6"),
+						CustomerID: uuid.FromStringOrNil("49e070b8-b3d3-11ec-9b5f-0f066e1f46e6"),
+					},
 					Name:           "test name",
 					Detail:         "test detail",
 					Status:         campaign.StatusStop,
@@ -327,8 +346,10 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 			"2020-04-18 03:22:17.995000",
 			[]*campaign.Campaign{
 				{
-					ID:             uuid.FromStringOrNil("43c183a2-b3d3-11ec-8bd7-b39a3d003ed6"),
-					CustomerID:     uuid.FromStringOrNil("49e070b8-b3d3-11ec-9b5f-0f066e1f46e6"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("43c183a2-b3d3-11ec-8bd7-b39a3d003ed6"),
+						CustomerID: uuid.FromStringOrNil("49e070b8-b3d3-11ec-9b5f-0f066e1f46e6"),
+					},
 					Name:           "test name",
 					Detail:         "test detail",
 					Status:         campaign.StatusStop,
@@ -341,8 +362,10 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 					TMDelete:       DefaultTimeStamp,
 				},
 				{
-					ID:             uuid.FromStringOrNil("4392eaa6-b3d3-11ec-94aa-339707f75f8e"),
-					CustomerID:     uuid.FromStringOrNil("49e070b8-b3d3-11ec-9b5f-0f066e1f46e6"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("4392eaa6-b3d3-11ec-94aa-339707f75f8e"),
+						CustomerID: uuid.FromStringOrNil("49e070b8-b3d3-11ec-9b5f-0f066e1f46e6"),
+					},
 					Name:           "test name",
 					Detail:         "test detail",
 					Status:         campaign.StatusStop,
@@ -411,8 +434,10 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 		{
 			name: "normal",
 			data: &campaign.Campaign{
-				ID:             uuid.FromStringOrNil("cadc92e6-b3d3-11ec-a6ec-ab2d193ab762"),
-				CustomerID:     uuid.FromStringOrNil("cb089aa8-b3d3-11ec-b831-0b9f457c4610"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cadc92e6-b3d3-11ec-a6ec-ab2d193ab762"),
+					CustomerID: uuid.FromStringOrNil("cb089aa8-b3d3-11ec-b831-0b9f457c4610"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Type:           campaign.TypeCall,
@@ -431,8 +456,10 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &campaign.Campaign{
-				ID:             uuid.FromStringOrNil("cadc92e6-b3d3-11ec-a6ec-ab2d193ab762"),
-				CustomerID:     uuid.FromStringOrNil("cb089aa8-b3d3-11ec-b831-0b9f457c4610"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cadc92e6-b3d3-11ec-a6ec-ab2d193ab762"),
+					CustomerID: uuid.FromStringOrNil("cb089aa8-b3d3-11ec-b831-0b9f457c4610"),
+				},
 				Name:           "update name",
 				Detail:         "update detail",
 				Type:           campaign.TypeFlow,
@@ -507,8 +534,10 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 		{
 			name: "normal",
 			campaign: &campaign.Campaign{
-				ID:             uuid.FromStringOrNil("2928a27c-b3d4-11ec-93ea-932164cd844b"),
-				CustomerID:     uuid.FromStringOrNil("29594044-b3d4-11ec-98b2-730b7dd059bf"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2928a27c-b3d4-11ec-93ea-932164cd844b"),
+					CustomerID: uuid.FromStringOrNil("29594044-b3d4-11ec-98b2-730b7dd059bf"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -525,8 +554,10 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &campaign.Campaign{
-				ID:             uuid.FromStringOrNil("2928a27c-b3d4-11ec-93ea-932164cd844b"),
-				CustomerID:     uuid.FromStringOrNil("29594044-b3d4-11ec-98b2-730b7dd059bf"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2928a27c-b3d4-11ec-93ea-932164cd844b"),
+					CustomerID: uuid.FromStringOrNil("29594044-b3d4-11ec-98b2-730b7dd059bf"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -596,8 +627,10 @@ func Test_CampaignUpdateNextCampaignID(t *testing.T) {
 		{
 			"normal",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("ba9569b6-b3d4-11ec-854c-778329a51158"),
-				CustomerID:     uuid.FromStringOrNil("bac2fe58-b3d4-11ec-b992-f7d429877f14"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ba9569b6-b3d4-11ec-854c-778329a51158"),
+					CustomerID: uuid.FromStringOrNil("bac2fe58-b3d4-11ec-b992-f7d429877f14"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -611,8 +644,10 @@ func Test_CampaignUpdateNextCampaignID(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("ba9569b6-b3d4-11ec-854c-778329a51158"),
-				CustomerID:     uuid.FromStringOrNil("bac2fe58-b3d4-11ec-b992-f7d429877f14"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ba9569b6-b3d4-11ec-854c-778329a51158"),
+					CustomerID: uuid.FromStringOrNil("bac2fe58-b3d4-11ec-b992-f7d429877f14"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -682,8 +717,10 @@ func Test_CampaignUpdateStatus(t *testing.T) {
 		{
 			"normal",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("ef762a33-24ef-486a-bb91-5496456ebaa5"),
-				CustomerID:     uuid.FromStringOrNil("4117518d-ab99-45d2-813c-b32f78efa09b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ef762a33-24ef-486a-bb91-5496456ebaa5"),
+					CustomerID: uuid.FromStringOrNil("4117518d-ab99-45d2-813c-b32f78efa09b"),
+				},
 				Type:           campaign.TypeCall,
 				Execute:        campaign.ExecuteStop,
 				Name:           "test name",
@@ -699,8 +736,10 @@ func Test_CampaignUpdateStatus(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("ef762a33-24ef-486a-bb91-5496456ebaa5"),
-				CustomerID:     uuid.FromStringOrNil("4117518d-ab99-45d2-813c-b32f78efa09b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ef762a33-24ef-486a-bb91-5496456ebaa5"),
+					CustomerID: uuid.FromStringOrNil("4117518d-ab99-45d2-813c-b32f78efa09b"),
+				},
 				Type:           campaign.TypeCall,
 				Execute:        campaign.ExecuteStop,
 				Name:           "test name",
@@ -772,8 +811,10 @@ func Test_CampaignUpdateStatusAndExecute(t *testing.T) {
 		{
 			"normal",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("1b18e1e0-18a7-4a8f-b0ca-5f99597a0bea"),
-				CustomerID:     uuid.FromStringOrNil("c329475f-11fd-452b-b838-d4d079090065"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1b18e1e0-18a7-4a8f-b0ca-5f99597a0bea"),
+					CustomerID: uuid.FromStringOrNil("c329475f-11fd-452b-b838-d4d079090065"),
+				},
 				Type:           campaign.TypeCall,
 				Execute:        campaign.ExecuteStop,
 				Name:           "test name",
@@ -790,8 +831,10 @@ func Test_CampaignUpdateStatusAndExecute(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("1b18e1e0-18a7-4a8f-b0ca-5f99597a0bea"),
-				CustomerID:     uuid.FromStringOrNil("c329475f-11fd-452b-b838-d4d079090065"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1b18e1e0-18a7-4a8f-b0ca-5f99597a0bea"),
+					CustomerID: uuid.FromStringOrNil("c329475f-11fd-452b-b838-d4d079090065"),
+				},
 				Type:           campaign.TypeCall,
 				Execute:        campaign.ExecuteRun,
 				Name:           "test name",
@@ -862,8 +905,10 @@ func Test_CampaignUpdateExecute(t *testing.T) {
 		{
 			"normal",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("41089aad-d8c0-4685-a609-8ab9f264ab74"),
-				CustomerID:     uuid.FromStringOrNil("b901d73c-a5fd-464e-9684-dc9f6970e6b3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("41089aad-d8c0-4685-a609-8ab9f264ab74"),
+					CustomerID: uuid.FromStringOrNil("b901d73c-a5fd-464e-9684-dc9f6970e6b3"),
+				},
 				Type:           campaign.TypeCall,
 				Execute:        campaign.ExecuteStop,
 				Name:           "test name",
@@ -879,8 +924,10 @@ func Test_CampaignUpdateExecute(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("41089aad-d8c0-4685-a609-8ab9f264ab74"),
-				CustomerID:     uuid.FromStringOrNil("b901d73c-a5fd-464e-9684-dc9f6970e6b3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("41089aad-d8c0-4685-a609-8ab9f264ab74"),
+					CustomerID: uuid.FromStringOrNil("b901d73c-a5fd-464e-9684-dc9f6970e6b3"),
+				},
 				Type:           campaign.TypeCall,
 				Execute:        campaign.ExecuteRun,
 				Name:           "test name",
@@ -951,8 +998,10 @@ func Test_OutplanUpdateServiceLevel(t *testing.T) {
 		{
 			"normal",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("a1bf91b2-b741-11ec-8260-47e8860a9e3b"),
-				CustomerID:     uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1bf91b2-b741-11ec-8260-47e8860a9e3b"),
+					CustomerID: uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -967,8 +1016,10 @@ func Test_OutplanUpdateServiceLevel(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("a1bf91b2-b741-11ec-8260-47e8860a9e3b"),
-				CustomerID:     uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1bf91b2-b741-11ec-8260-47e8860a9e3b"),
+					CustomerID: uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -1038,8 +1089,10 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 		{
 			"normal",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("38a47dc8-704e-4818-bb16-113335ed85ec"),
-				CustomerID:     uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("38a47dc8-704e-4818-bb16-113335ed85ec"),
+					CustomerID: uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -1055,8 +1108,10 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("38a47dc8-704e-4818-bb16-113335ed85ec"),
-				CustomerID:     uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("38a47dc8-704e-4818-bb16-113335ed85ec"),
+					CustomerID: uuid.FromStringOrNil("a1eca4cc-b741-11ec-85e0-8bb267cad154"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -1127,8 +1182,10 @@ func Test_CampaignUpdateActions(t *testing.T) {
 		{
 			"normal",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("20e8968f-b36b-4b2c-acc7-d4240724d967"),
-				CustomerID:     uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("20e8968f-b36b-4b2c-acc7-d4240724d967"),
+					CustomerID: uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				},
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
@@ -1149,8 +1206,10 @@ func Test_CampaignUpdateActions(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("20e8968f-b36b-4b2c-acc7-d4240724d967"),
-				CustomerID:   uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("20e8968f-b36b-4b2c-acc7-d4240724d967"),
+					CustomerID: uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				},
 				Name:         "test name",
 				Detail:       "test detail",
 				Status:       campaign.StatusStop,
@@ -1227,8 +1286,10 @@ func Test_OutplanUpdateType(t *testing.T) {
 		{
 			"update to typecall",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("da627f5c-52c3-4509-b80d-505d346e631f"),
-				CustomerID:     uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("da627f5c-52c3-4509-b80d-505d346e631f"),
+					CustomerID: uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				},
 				Type:           campaign.TypeFlow,
 				Name:           "test name",
 				Detail:         "test detail",
@@ -1246,8 +1307,10 @@ func Test_OutplanUpdateType(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("da627f5c-52c3-4509-b80d-505d346e631f"),
-				CustomerID:     uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("da627f5c-52c3-4509-b80d-505d346e631f"),
+					CustomerID: uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
+				},
 				Type:           campaign.TypeCall,
 				Name:           "test name",
 				Detail:         "test detail",

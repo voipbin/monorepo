@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -8,8 +9,7 @@ import (
 
 // Campaign defines
 type Campaign struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	Type Type `json:"type"`
 

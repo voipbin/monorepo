@@ -52,7 +52,9 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 			id: uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
 
 			responseCampaign: &campaign.Campaign{
-				ID:        uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
+				},
 				OutdialID: uuid.FromStringOrNil("bcad478e-c3fe-11ec-be28-a73254d6e0fc"),
 				OutplanID: uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
 				QueueID:   uuid.Nil,
@@ -187,7 +189,9 @@ func Test_getTarget(t *testing.T) {
 			"normal",
 
 			&campaign.Campaign{
-				ID:        uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
+				},
 				OutdialID: uuid.FromStringOrNil("bcad478e-c3fe-11ec-be28-a73254d6e0fc"),
 				OutplanID: uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
 				QueueID:   uuid.Nil,
@@ -224,7 +228,9 @@ func Test_getTarget(t *testing.T) {
 			"return empty",
 
 			&campaign.Campaign{
-				ID:        uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
+				},
 				OutdialID: uuid.FromStringOrNil("bcad478e-c3fe-11ec-be28-a73254d6e0fc"),
 				OutplanID: uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
 				QueueID:   uuid.Nil,

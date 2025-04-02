@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -32,7 +33,9 @@ func Test_EventHandleActiveflowDeletedWithStoppableCampaign(t *testing.T) {
 			uuid.FromStringOrNil("8aca83f6-c3fb-11ec-b191-83f696719884"),
 
 			&campaign.Campaign{
-				ID:      uuid.FromStringOrNil("8aca83f6-c3fb-11ec-b191-83f696719884"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8aca83f6-c3fb-11ec-b191-83f696719884"),
+				},
 				Execute: campaign.ExecuteStop,
 				Status:  campaign.StatusStopping,
 			},
@@ -93,7 +96,9 @@ func Test_EventHandleReferenceCallHungupWithStoppableCampaign(t *testing.T) {
 			uuid.FromStringOrNil("86df1c8c-c3fd-11ec-a381-8fac03339669"),
 
 			&campaign.Campaign{
-				ID:      uuid.FromStringOrNil("86df1c8c-c3fd-11ec-a381-8fac03339669"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("86df1c8c-c3fd-11ec-a381-8fac03339669"),
+				},
 				Execute: campaign.ExecuteStop,
 				Status:  campaign.StatusStopping,
 			},

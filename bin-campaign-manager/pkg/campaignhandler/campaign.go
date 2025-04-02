@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
@@ -64,8 +65,10 @@ func (h *campaignHandler) Create(
 	log.WithField("flow", f).Debugf("Created a flow for campaign. flow_id: %s", f.ID)
 
 	t := &campaign.Campaign{
-		ID:             id,
-		CustomerID:     customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 		Type:           campaignType,
 		Name:           name,
 		Detail:         detail,
