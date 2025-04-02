@@ -197,7 +197,9 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 
 			responseMessages: []*cvmessage.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("120bc6da-ed2e-11ec-839d-cb324c315bf3"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("120bc6da-ed2e-11ec-839d-cb324c315bf3"),
+					},
 				},
 			},
 
@@ -273,7 +275,9 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 			reqBody:  []byte(`{"text":"hello world."}`),
 
 			responseMessage: &cvmessage.WebhookMessage{
-				ID: uuid.FromStringOrNil("44757534-ed2f-11ec-b41b-b36583f1d5a7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("44757534-ed2f-11ec-b41b-b36583f1d5a7"),
+				},
 			},
 
 			expectConversationID: uuid.FromStringOrNil("5950b02c-ed2f-11ec-9093-d3dcc91a72fa"),

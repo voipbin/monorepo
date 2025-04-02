@@ -49,7 +49,9 @@ func TestExtensionsPOST(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","extension":"test","password":"password"}`),
 
 			responseExtension: &rmextension.WebhookMessage{
-				ID: uuid.FromStringOrNil("a6405fe0-d8e1-11ef-945f-9fe89b72b04d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a6405fe0-d8e1-11ef-945f-9fe89b72b04d"),
+				},
 			},
 
 			expectExtension: "test",
@@ -124,7 +126,9 @@ func Test_ExtensionsGET(t *testing.T) {
 
 			responseExntesions: []*rmextension.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("2ce09268-d8e2-11ef-af37-7baa30593c20"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2ce09268-d8e2-11ef-af37-7baa30593c20"),
+					},
 				},
 			},
 
@@ -194,7 +198,9 @@ func Test_ExtensionsIDGET(t *testing.T) {
 			reqQuery: "/extensions/2fbb29c0-6fb0-11eb-b2ef-4303769ecba5",
 
 			responseExntesion: &rmextension.WebhookMessage{
-				ID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+				},
 			},
 
 			expectExntesionID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
@@ -267,7 +273,9 @@ func TestExtensionsIDPUT(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","password":"update password"}`),
 
 			responseExtension: &rmextension.WebhookMessage{
-				ID: uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+				},
 			},
 
 			extensionID:    uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
@@ -340,7 +348,9 @@ func TestExtensionsIDDELETE(t *testing.T) {
 			reqQuery: "/extensions/be0c2b70-6fb0-11eb-849d-3f923b334d3b",
 
 			responseExtension: &rmextension.WebhookMessage{
-				ID: uuid.FromStringOrNil("be0c2b70-6fb0-11eb-849d-3f923b334d3b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("be0c2b70-6fb0-11eb-849d-3f923b334d3b"),
+				},
 			},
 
 			expectExtensionID: uuid.FromStringOrNil("be0c2b70-6fb0-11eb-849d-3f923b334d3b"),

@@ -47,12 +47,14 @@ func Test_TagsPOST(t *testing.T) {
 			reqBody:  []byte(`{"name":"test1 name", "detail": "test1 detail"}`),
 
 			responseTag: &tmtag.WebhookMessage{
-				ID: uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
+				},
 			},
 
 			expectName:   "test1 name",
 			expectDetail: "test1 detail",
-			expectRes:    `{"id":"bd8cee04-4f21-11ec-9955-db7041b6d997","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:    `{"id":"bd8cee04-4f21-11ec-9955-db7041b6d997","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -121,14 +123,16 @@ func TestTagsGET(t *testing.T) {
 
 			responseTags: []*tmtag.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
 
 			expectPageSize:  11,
 			expectPageToken: "2020-09-20T03:23:20.995000",
-			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			name: "more than 2 results",
@@ -142,18 +146,22 @@ func TestTagsGET(t *testing.T) {
 
 			responseTags: []*tmtag.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("2c1abc5c-500d-11ec-8896-9bca824c5a63"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2c1abc5c-500d-11ec-8896-9bca824c5a63"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995002",
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000",
-			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"2c1abc5c-500d-11ec-8896-9bca824c5a63","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995002","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995002"}`,
+			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"2c1abc5c-500d-11ec-8896-9bca824c5a63","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995002","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995002"}`,
 		},
 	}
 
@@ -217,11 +225,13 @@ func TestTagsDelete(t *testing.T) {
 			reqQuery: "/tags/c07ff34e-500d-11ec-8393-2bc7870b7eff",
 
 			responseTag: &tmtag.WebhookMessage{
-				ID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
+				},
 			},
 
 			expectTagID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
-			expectRes:   `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:   `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -287,11 +297,13 @@ func TestTagsIDGet(t *testing.T) {
 			reqQuery: "/tags/c07ff34e-500d-11ec-8393-2bc7870b7eff",
 
 			responseTag: &tmtag.WebhookMessage{
-				ID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
+				},
 			},
 
 			expectTagID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
-			expectRes:   `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:   `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -361,13 +373,15 @@ func Test_TagsIDPut(t *testing.T) {
 			reqQuery: "/tags/c07ff34e-500d-11ec-8393-2bc7870b7eff",
 
 			responseTag: &tmtag.WebhookMessage{
-				ID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
+				},
 			},
 
 			expectTagID:  uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			expectName:   "update name",
 			expectDetail: "update detail",
-			expectRes:    `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:    `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 

@@ -45,7 +45,9 @@ func Test_conversationAccountsGet(t *testing.T) {
 
 			responseAccounts: []*cvaccount.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("6adce0da-004e-11ee-b74a-23da476139db"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6adce0da-004e-11ee-b74a-23da476139db"),
+					},
 				},
 			},
 
@@ -123,7 +125,9 @@ func Test_conversationAccountsPost(t *testing.T) {
 			reqBody:  []byte(`{"type":"line","name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 
 			responseAccount: &cvaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("6cc1b186-004f-11ee-91df-7f283f71f97a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6cc1b186-004f-11ee-91df-7f283f71f97a"),
+				},
 			},
 
 			expectType:   cvaccount.TypeLine,
@@ -197,7 +201,9 @@ func Test_conversationAccountsIDGet(t *testing.T) {
 			reqQuery: "/conversation_accounts/ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c",
 
 			responseConversationAccount: &cvaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c"),
+				},
 			},
 
 			expectConversationAccountID: uuid.FromStringOrNil("ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c"),
@@ -273,7 +279,9 @@ func Test_conversationAccountsIDPut(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 
 			responseConversationAccount: &cvaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("009f2ac8-0050-11ee-b416-5f4fb9c7c682"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("009f2ac8-0050-11ee-b416-5f4fb9c7c682"),
+				},
 			},
 
 			expectConversationAccountID: uuid.FromStringOrNil("009f2ac8-0050-11ee-b416-5f4fb9c7c682"),
@@ -347,7 +355,9 @@ func Test_conversationAccountsIDDelete(t *testing.T) {
 			reqQuery: "/conversation_accounts/31a54f8a-0050-11ee-aa7e-d3a80a493b8b",
 
 			responseConversationAccount: &cvaccount.WebhookMessage{
-				ID: uuid.FromStringOrNil("31a54f8a-0050-11ee-aa7e-d3a80a493b8b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("31a54f8a-0050-11ee-aa7e-d3a80a493b8b"),
+				},
 			},
 
 			expectConversationAccountID: uuid.FromStringOrNil("31a54f8a-0050-11ee-aa7e-d3a80a493b8b"),

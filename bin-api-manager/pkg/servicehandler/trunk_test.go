@@ -57,11 +57,15 @@ func Test_TrunkCreate(t *testing.T) {
 			allowedIPs: []string{"1.2.3.4"},
 
 			response: &rmtrunk.Trunk{
-				ID: uuid.FromStringOrNil("bc669058-54a5-11ee-999b-a3c9289707a5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bc669058-54a5-11ee-999b-a3c9289707a5"),
+				},
 			},
 
 			expectRes: &rmtrunk.WebhookMessage{
-				ID: uuid.FromStringOrNil("bc669058-54a5-11ee-999b-a3c9289707a5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bc669058-54a5-11ee-999b-a3c9289707a5"),
+				},
 			},
 		},
 	}
@@ -118,12 +122,16 @@ func Test_TrunkDelete(t *testing.T) {
 			uuid.FromStringOrNil("02369970-54a6-11ee-8436-576a6c6712f2"),
 
 			&rmtrunk.Trunk{
-				ID:         uuid.FromStringOrNil("02369970-54a6-11ee-8436-576a6c6712f2"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("02369970-54a6-11ee-8436-576a6c6712f2"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&rmtrunk.WebhookMessage{
-				ID:         uuid.FromStringOrNil("02369970-54a6-11ee-8436-576a6c6712f2"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("02369970-54a6-11ee-8436-576a6c6712f2"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -181,12 +189,16 @@ func Test_TrunkGet(t *testing.T) {
 			uuid.FromStringOrNil("32309590-54a6-11ee-8466-9b257305288b"),
 
 			&rmtrunk.Trunk{
-				ID:         uuid.FromStringOrNil("32309590-54a6-11ee-8466-9b257305288b"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("32309590-54a6-11ee-8466-9b257305288b"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&rmtrunk.WebhookMessage{
-				ID:         uuid.FromStringOrNil("32309590-54a6-11ee-8466-9b257305288b"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("32309590-54a6-11ee-8466-9b257305288b"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -248,10 +260,14 @@ func Test_TrunkGets(t *testing.T) {
 
 			[]rmtrunk.Trunk{
 				{
-					ID: uuid.FromStringOrNil("6ac312f2-54a6-11ee-9e12-3bb0c25cd1e2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6ac312f2-54a6-11ee-9e12-3bb0c25cd1e2"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("6af5fe56-54a6-11ee-8db0-b750622f6cc0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6af5fe56-54a6-11ee-8db0-b750622f6cc0"),
+					},
 				},
 			},
 
@@ -261,10 +277,14 @@ func Test_TrunkGets(t *testing.T) {
 			},
 			[]*rmtrunk.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("6ac312f2-54a6-11ee-9e12-3bb0c25cd1e2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6ac312f2-54a6-11ee-9e12-3bb0c25cd1e2"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("6af5fe56-54a6-11ee-8db0-b750622f6cc0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6af5fe56-54a6-11ee-8db0-b750622f6cc0"),
+					},
 				},
 			},
 		},
@@ -336,12 +356,16 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 			[]string{"1.2.3.4"},
 
 			&rmtrunk.Trunk{
-				ID:         uuid.FromStringOrNil("bdf14732-54a6-11ee-b262-1f9dcbae10b2"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bdf14732-54a6-11ee-b262-1f9dcbae10b2"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&rmtrunk.WebhookMessage{
-				ID:         uuid.FromStringOrNil("bdf14732-54a6-11ee-b262-1f9dcbae10b2"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bdf14732-54a6-11ee-b262-1f9dcbae10b2"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}

@@ -48,7 +48,9 @@ func Test_transfersPOST(t *testing.T) {
 			reqBody:  []byte(`{"transfer_type":"attended","transferer_call_id":"204aaffe-dd3d-11ed-8c3a-5f454beaba92","transferee_addresses":[{"type":"tel","target":"+821100000001"}]}`),
 
 			responseTransfer: &tmtransfer.WebhookMessage{
-				ID: uuid.FromStringOrNil("72e68b78-8286-11ed-8875-378ced61c021"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72e68b78-8286-11ed-8875-378ced61c021"),
+				},
 			},
 
 			expectTransferType:     tmtransfer.TypeAttended,

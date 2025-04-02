@@ -50,12 +50,16 @@ func Test_ExtensionCreate(t *testing.T) {
 			"test detail",
 
 			&rmextension.Extension{
-				ID:         uuid.FromStringOrNil("4037dd90-6fa4-11eb-b51b-771a2747271b"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4037dd90-6fa4-11eb-b51b-771a2747271b"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&rmextension.WebhookMessage{
-				ID:         uuid.FromStringOrNil("4037dd90-6fa4-11eb-b51b-771a2747271b"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4037dd90-6fa4-11eb-b51b-771a2747271b"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -120,24 +124,28 @@ func Test_ExtensionUpdate(t *testing.T) {
 			"update password",
 
 			&rmextension.Extension{
-				ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				Name:       "update name",
-				Detail:     "update detail",
-				Extension:  "test",
-				Password:   "update password",
-				TMCreate:   "2020-09-20 03:23:20.995000",
-				TMUpdate:   "2020-09-20 03:23:23.995000",
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  "2020-09-20 03:23:20.995000",
+				TMUpdate:  "2020-09-20 03:23:23.995000",
 			},
 			&rmextension.WebhookMessage{
-				ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				Name:       "update name",
-				Detail:     "update detail",
-				Extension:  "test",
-				Password:   "update password",
-				TMCreate:   "2020-09-20 03:23:20.995000",
-				TMUpdate:   "2020-09-20 03:23:23.995000"},
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  "2020-09-20 03:23:20.995000",
+				TMUpdate:  "2020-09-20 03:23:23.995000"},
 		},
 	}
 
@@ -193,8 +201,10 @@ func Test_ExtensionDelete(t *testing.T) {
 			uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
 
 			&rmextension.Extension{
-				ID:         uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 
 				Name:   "test",
 				Detail: "test detail",
@@ -203,8 +213,10 @@ func Test_ExtensionDelete(t *testing.T) {
 				Password:  "password",
 			},
 			&rmextension.WebhookMessage{
-				ID:         uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 
 				Name:   "test",
 				Detail: "test detail",
@@ -268,15 +280,19 @@ func Test_ExtensionGet(t *testing.T) {
 			uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
 
 			&rmextension.Extension{
-				ID:         uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 
 				Name:   "test",
 				Detail: "test detail",
 			},
 			&rmextension.WebhookMessage{
-				ID:         uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 
 				Name:   "test",
 				Detail: "test detail",
@@ -343,18 +359,26 @@ func Test_ExtensionGets(t *testing.T) {
 
 			[]rmextension.Extension{
 				{
-					ID: uuid.FromStringOrNil("cd569cb4-4ff5-11ee-931b-177bc147dd69"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("cd569cb4-4ff5-11ee-931b-177bc147dd69"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("cda81aa8-4ff5-11ee-a7c5-ab71c50d7ed0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("cda81aa8-4ff5-11ee-a7c5-ab71c50d7ed0"),
+					},
 				},
 			},
 			[]*rmextension.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("cd569cb4-4ff5-11ee-931b-177bc147dd69"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("cd569cb4-4ff5-11ee-931b-177bc147dd69"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("cda81aa8-4ff5-11ee-a7c5-ab71c50d7ed0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("cda81aa8-4ff5-11ee-a7c5-ab71c50d7ed0"),
+					},
 				},
 			},
 		},

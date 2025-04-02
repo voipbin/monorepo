@@ -65,18 +65,26 @@ func Test_ServiceAgentExtensionGets(t *testing.T) {
 			},
 			responseExtensions: []*rmextension.Extension{
 				{
-					ID: uuid.FromStringOrNil("2e3b3c3c-bbc1-11ef-93c0-17537443cb56"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2e3b3c3c-bbc1-11ef-93c0-17537443cb56"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("2e67d562-bbc1-11ef-b531-a3248f6d1477"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2e67d562-bbc1-11ef-b531-a3248f6d1477"),
+					},
 				},
 			},
 			expectedRes: []*rmextension.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("2e3b3c3c-bbc1-11ef-93c0-17537443cb56"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2e3b3c3c-bbc1-11ef-93c0-17537443cb56"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("2e67d562-bbc1-11ef-b531-a3248f6d1477"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2e67d562-bbc1-11ef-b531-a3248f6d1477"),
+					},
 				},
 			},
 		},

@@ -44,7 +44,9 @@ func Test_queuecallsGet(t *testing.T) {
 
 			responseCalls: []*qmqueuecall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("63b75166-4b2e-11ee-9664-e3e0b9c5de8e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("63b75166-4b2e-11ee-9664-e3e0b9c5de8e"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -65,15 +67,21 @@ func Test_queuecallsGet(t *testing.T) {
 
 			responseCalls: []*qmqueuecall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("0e6061a8-4b2e-11ee-85d4-b366dd061d10"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("0e6061a8-4b2e-11ee-85d4-b366dd061d10"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("f1d22dd6-6476-11ec-84e0-676f11515eed"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f1d22dd6-6476-11ec-84e0-676f11515eed"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("f1fd30c6-6476-11ec-8b55-7f9c5b9550b7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f1fd30c6-6476-11ec-8b55-7f9c5b9550b7"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
@@ -145,7 +153,9 @@ func Test_queuecallsIDGet(t *testing.T) {
 			reqQuery: "/queuecalls/7d54d626-1681-11ed-ab05-473fa9aa2542",
 
 			responseQueuecall: &qmqueuecall.WebhookMessage{
-				ID:       uuid.FromStringOrNil("7d54d626-1681-11ed-ab05-473fa9aa2542"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d54d626-1681-11ed-ab05-473fa9aa2542"),
+				},
 				TMCreate: "2020-09-20T03:23:21.995000",
 			},
 
@@ -278,7 +288,9 @@ func Test_queuecallsIDKickPOST(t *testing.T) {
 			requQuery: "/queuecalls/72c9dfb0-bcbe-11ed-853f-7f662faaee5b/kick",
 
 			responseQueuecall: &qmqueuecall.WebhookMessage{
-				ID: uuid.FromStringOrNil("72c9dfb0-bcbe-11ed-853f-7f662faaee5b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72c9dfb0-bcbe-11ed-853f-7f662faaee5b"),
+				},
 			},
 
 			expectQueuecallID: uuid.FromStringOrNil("72c9dfb0-bcbe-11ed-853f-7f662faaee5b"),
@@ -346,7 +358,9 @@ func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
 			requQuery: "/queuecalls/reference_id/e01d78ce-bcbe-11ed-8164-f3c4a472391e/kick",
 
 			responseQueuecall: &qmqueuecall.WebhookMessage{
-				ID: uuid.FromStringOrNil("e01d78ce-bcbe-11ed-8164-f3c4a472391e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e01d78ce-bcbe-11ed-8164-f3c4a472391e"),
+				},
 			},
 
 			expectReferenceID: uuid.FromStringOrNil("e01d78ce-bcbe-11ed-8164-f3c4a472391e"),

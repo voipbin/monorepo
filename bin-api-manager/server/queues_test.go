@@ -46,7 +46,9 @@ func Test_queuesGet(t *testing.T) {
 
 			responseQueues: []*qmqueue.WebhookMessage{
 				{
-					ID:          uuid.FromStringOrNil("f188b7aa-6476-11ec-a130-03a796c9e1e4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f188b7aa-6476-11ec-a130-03a796c9e1e4"),
+					},
 					TagIDs:      []uuid.UUID{},
 					WaitActions: []fmaction.Action{},
 
@@ -72,7 +74,9 @@ func Test_queuesGet(t *testing.T) {
 
 			responseQueues: []*qmqueue.WebhookMessage{
 				{
-					ID:          uuid.FromStringOrNil("f1ad64a6-6476-11ec-a650-cf22de7273e6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f1ad64a6-6476-11ec-a650-cf22de7273e6"),
+					},
 					TagIDs:      []uuid.UUID{},
 					WaitActions: []fmaction.Action{},
 
@@ -81,7 +85,9 @@ func Test_queuesGet(t *testing.T) {
 					TMCreate:            "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:          uuid.FromStringOrNil("f1d22dd6-6476-11ec-84e0-676f11515eed"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f1d22dd6-6476-11ec-84e0-676f11515eed"),
+					},
 					TagIDs:      []uuid.UUID{},
 					WaitActions: []fmaction.Action{},
 
@@ -90,7 +96,9 @@ func Test_queuesGet(t *testing.T) {
 					TMCreate:            "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:          uuid.FromStringOrNil("f1fd30c6-6476-11ec-8b55-7f9c5b9550b7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f1fd30c6-6476-11ec-8b55-7f9c5b9550b7"),
+					},
 					TagIDs:      []uuid.UUID{},
 					WaitActions: []fmaction.Action{},
 
@@ -175,7 +183,9 @@ func Test_queuesPost(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","routing_method":"random","tag_ids":["296b096c-6476-11ec-8fc0-2f39371fef93"],"wait_actions":[{"type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
 
 			responseQueue: &qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("72fe03fa-6475-11ec-b559-0fdf19201178"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72fe03fa-6475-11ec-b559-0fdf19201178"),
+				},
 			},
 
 			expectName:          "test name",
@@ -267,7 +277,9 @@ func Test_queuesIDGet(t *testing.T) {
 			reqQuery: "/queues/395518ca-830a-11eb-badc-b3582bc51917",
 
 			responseQueue: &qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
+				},
 			},
 
 			expectQueueID: uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
@@ -335,7 +347,9 @@ func Test_queuesIDDelete(t *testing.T) {
 			reqQuery: "/queues/5842d88a-6478-11ec-92cc-7fb5eb5d5e5a",
 
 			responseQueue: &qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("5842d88a-6478-11ec-92cc-7fb5eb5d5e5a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5842d88a-6478-11ec-92cc-7fb5eb5d5e5a"),
+				},
 			},
 
 			expectQueueID: uuid.FromStringOrNil("5842d88a-6478-11ec-92cc-7fb5eb5d5e5a"),
@@ -412,7 +426,9 @@ func Test_queuesIDPut(t *testing.T) {
 			reqBody:  []byte(`{"name":"new name","detail":"new detail","routing_method":"random","tag_ids":["7e1be274-4a89-11ee-84ec-5b122e282794","7e762acc-4a89-11ee-9c08-43e00aea3bd6"],"wait_actions":[{"type":"answer"}],"wait_timeout":60000,"service_timeout":6000000}`),
 
 			responseQueue: &qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("39a61292-6479-11ec-8cee-d7ba44bf24ac"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("39a61292-6479-11ec-8cee-d7ba44bf24ac"),
+				},
 			},
 
 			expectQueueID:       uuid.FromStringOrNil("39a61292-6479-11ec-8cee-d7ba44bf24ac"),
@@ -496,7 +512,9 @@ func Test_queuesIDTagIDsPut(t *testing.T) {
 			reqBody:  []byte(`{"tag_ids":["aa740178-6479-11ec-879d-ab827778d4dd"]}`),
 
 			responseQueue: &qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("9ec11e74-6479-11ec-8956-9b1c6c142f77"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9ec11e74-6479-11ec-8956-9b1c6c142f77"),
+				},
 			},
 
 			expectQueueID: uuid.FromStringOrNil("9ec11e74-6479-11ec-8956-9b1c6c142f77"),
@@ -569,7 +587,9 @@ func Test_queuesIDRoutingMethodPut(t *testing.T) {
 			reqBody:  []byte(`{"routing_method":"random"}`),
 
 			responseQueue: &qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("9ec11e74-6479-11ec-8956-9b1c6c142f77"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9ec11e74-6479-11ec-8956-9b1c6c142f77"),
+				},
 			},
 
 			expectQueueID:       uuid.FromStringOrNil("9ec11e74-6479-11ec-8956-9b1c6c142f77"),
@@ -643,7 +663,9 @@ func Test_queuesIDActionsPut(t *testing.T) {
 			reqBody:  []byte(`{"wait_actions":[{"type":"answer"}],"timeout_wait":10000,"timeout_service":100000}`),
 
 			responseQueue: &qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("70665304-647a-11ec-a5ca-4746cc95b189"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("70665304-647a-11ec-a5ca-4746cc95b189"),
+				},
 			},
 
 			expectQueueID: uuid.FromStringOrNil("70665304-647a-11ec-a5ca-4746cc95b189"),

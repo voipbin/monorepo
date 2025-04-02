@@ -79,8 +79,10 @@ func Test_OutdialtargetCreate(t *testing.T) {
 			},
 
 			&omoutdial.Outdial{
-				ID:         uuid.FromStringOrNil("410fa394-8764-4300-a8b0-a6e6108c4208"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("410fa394-8764-4300-a8b0-a6e6108c4208"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&omoutdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("5e602408-e819-4aa0-aac6-24072a224dff"),
@@ -114,8 +116,10 @@ func Test_OutdialtargetCreate(t *testing.T) {
 			nil,
 
 			&omoutdial.Outdial{
-				ID:         uuid.FromStringOrNil("7aff596d-1db2-4456-95b4-bdab04296cd8"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7aff596d-1db2-4456-95b4-bdab04296cd8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&omoutdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("895b86d9-4e58-4778-af61-d389dbeb9cf7"),
@@ -179,8 +183,10 @@ func Test_OutdialtargetGet(t *testing.T) {
 			uuid.FromStringOrNil("27092132-c523-11ec-8626-bb2b11494c8d"),
 
 			&omoutdial.Outdial{
-				ID:         uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&omoutdialtarget.OutdialTarget{
 				ID:        uuid.FromStringOrNil("27092132-c523-11ec-8626-bb2b11494c8d"),
@@ -250,8 +256,10 @@ func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
 			10,
 
 			&omoutdial.Outdial{
-				ID:         uuid.FromStringOrNil("cf21cd20-c829-11ec-8452-6746e25a4103"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cf21cd20-c829-11ec-8452-6746e25a4103"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			[]omoutdialtarget.OutdialTarget{
 				{
@@ -327,8 +335,10 @@ func Test_OutdialtargetDelete(t *testing.T) {
 			uuid.FromStringOrNil("f814109a-c62e-4cc3-8c8b-616fd91314a6"),
 
 			&omoutdial.Outdial{
-				ID:         uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&omoutdialtarget.OutdialTarget{
 				ID:        uuid.FromStringOrNil("f814109a-c62e-4cc3-8c8b-616fd91314a6"),
