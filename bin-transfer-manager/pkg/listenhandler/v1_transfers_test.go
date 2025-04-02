@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -38,7 +39,9 @@ func Test_processV1TransfersPost(t *testing.T) {
 			},
 
 			responseTransfer: &transfer.Transfer{
-				ID: uuid.FromStringOrNil("9e44cd92-dc73-11ed-ab06-c7042aaaba15"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9e44cd92-dc73-11ed-ab06-c7042aaaba15"),
+				},
 			},
 
 			expectType:             transfer.TypeBlind,

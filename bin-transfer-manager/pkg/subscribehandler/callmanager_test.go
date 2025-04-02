@@ -37,7 +37,9 @@ func Test_processEventCMGroupcallProgressing(t *testing.T) {
 			},
 
 			responseTransfer: &transfer.Transfer{
-				ID: uuid.FromStringOrNil("0d891352-da26-11ed-bc4a-0b4f86826133"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0d891352-da26-11ed-bc4a-0b4f86826133"),
+				},
 			},
 
 			expectGroupcall: &cmgroupcall.Groupcall{
@@ -88,7 +90,9 @@ func Test_processEventCMGroupcallHangup(t *testing.T) {
 				Data:      []byte(`{"id":"e29736e6-da26-11ed-a609-b755ca01899f","answer_call_id":"e2c65a66-da26-11ed-9479-c7409ab92ef8"}`),
 			},
 			responseTransfer: &transfer.Transfer{
-				ID: uuid.FromStringOrNil("e2f76cc8-da26-11ed-9c2f-7bd1ea71acf7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e2f76cc8-da26-11ed-9c2f-7bd1ea71acf7"),
+				},
 			},
 			expectGroupcall: &cmgroupcall.Groupcall{
 				Identity: commonidentity.Identity{
@@ -138,7 +142,9 @@ func Test_processEventCMCallHangup(t *testing.T) {
 				Data:      []byte(`{"id":"a07bf864-dd19-11ed-a362-a792c5b0fd6d"}`),
 			},
 			responseTransfer: &transfer.Transfer{
-				ID: uuid.FromStringOrNil("a0ae40ee-dd19-11ed-bc9e-63ab3d06e4c3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0ae40ee-dd19-11ed-bc9e-63ab3d06e4c3"),
+				},
 			},
 			expectCall: &cmcall.Call{
 				Identity: commonidentity.Identity{

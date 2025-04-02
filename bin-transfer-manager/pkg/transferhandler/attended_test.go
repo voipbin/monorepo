@@ -208,13 +208,17 @@ func Test_attendedExecute(t *testing.T) {
 				},
 			},
 			responseTransfer: &transfer.Transfer{
-				ID: uuid.FromStringOrNil("a0b45cb8-dc6f-11ed-98ba-177bdc1ba9c2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0b45cb8-dc6f-11ed-98ba-177bdc1ba9c2"),
+				},
 			},
 			responseUUIDTransfer: uuid.FromStringOrNil("a0b45cb8-dc6f-11ed-98ba-177bdc1ba9c2"),
 
 			expectTransfer: &transfer.Transfer{
-				ID:               uuid.FromStringOrNil("a0b45cb8-dc6f-11ed-98ba-177bdc1ba9c2"),
-				CustomerID:       uuid.FromStringOrNil("64631858-dc6f-11ed-97c9-c74c6afbd067"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a0b45cb8-dc6f-11ed-98ba-177bdc1ba9c2"),
+					CustomerID: uuid.FromStringOrNil("64631858-dc6f-11ed-97c9-c74c6afbd067"),
+				},
 				Type:             transfer.TypeAttended,
 				TransfererCallID: uuid.FromStringOrNil("64243052-dc6f-11ed-ac22-e7d20e32e435"),
 				TransfereeAddresses: []commonaddress.Address{
