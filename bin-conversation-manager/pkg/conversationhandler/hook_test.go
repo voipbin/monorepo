@@ -67,7 +67,9 @@ func Test_Hook(t *testing.T) {
 			expectAccountID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
 
 			responseAccount: &account.Account{
-				ID:   uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+				},
 				Type: account.TypeLine,
 			},
 			responseConversations: []*conversation.Conversation{
@@ -150,7 +152,9 @@ func Test_hookLine(t *testing.T) {
 			name: "normal",
 
 			account: &account.Account{
-				ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+				},
 			},
 			data: []byte(`{
 				"destination": "U11298214116e3afbad432b5794a6d3a0",

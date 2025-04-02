@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	mmmessage "monorepo/bin-message-manager/models/message"
@@ -39,7 +40,9 @@ func Test_Event(t *testing.T) {
 
 			expectResMessages: []*message.Message{
 				{
-					CustomerID:    uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
+					Identity: commonidentity.Identity{
+						CustomerID: uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
+					},
 					Status:        message.StatusReceived,
 					ReferenceType: conversation.ReferenceTypeMessage,
 					ReferenceID:   "+821100000001",

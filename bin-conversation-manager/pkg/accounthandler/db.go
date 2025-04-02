@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-conversation-manager/models/account"
 )
 
@@ -26,8 +27,10 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accou
 
 	id := h.utilHandler.UUIDCreate()
 	ac := &account.Account{
-		ID:         id,
-		CustomerID: customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 
 		Type: accountType,
 

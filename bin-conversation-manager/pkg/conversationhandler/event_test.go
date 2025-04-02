@@ -39,7 +39,9 @@ func Test_Event(t *testing.T) {
 
 			responseEvent: []*message.Message{
 				{
-					ID:     uuid.FromStringOrNil("c4fd2a56-f12d-11ec-b443-1f1133008bfc"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c4fd2a56-f12d-11ec-b443-1f1133008bfc"),
+					},
 					Source: &commonaddress.Address{},
 				},
 			},
@@ -120,7 +122,9 @@ func Test_eventSMS(t *testing.T) {
 
 			responseEvent: []*message.Message{
 				{
-					ID:     uuid.FromStringOrNil("20ab5674-f12f-11ec-9809-9ba9b288fb2c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("20ab5674-f12f-11ec-9809-9ba9b288fb2c"),
+					},
 					Source: &commonaddress.Address{},
 				},
 			},
