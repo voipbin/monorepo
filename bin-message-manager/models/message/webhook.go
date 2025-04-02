@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-
-	"github.com/gofrs/uuid"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-message-manager/models/target"
 )
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	Type       Type      `json:"type"`
+	commonidentity.Identity
+
+	Type Type `json:"type"`
 
 	// from/to info
 	Source  *commonaddress.Address `json:"source"`
@@ -32,9 +31,9 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
-		Type:       h.Type,
+		Identity: h.Identity,
+
+		Type: h.Type,
 
 		Source:  h.Source,
 		Targets: h.Targets,

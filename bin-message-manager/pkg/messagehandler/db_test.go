@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 
 	"github.com/gofrs/uuid"
@@ -28,13 +29,19 @@ func Test_dbCreate(t *testing.T) {
 		{
 			"normal",
 			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				},
 			},
 			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				},
 			},
 			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				},
 			},
 		},
 	}
@@ -100,10 +107,14 @@ func Test_UpdateTargets(t *testing.T) {
 			},
 
 			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				},
 			},
 			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+				},
 			},
 		},
 	}
@@ -157,10 +168,14 @@ func Test_Get(t *testing.T) {
 			uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
 
 			&message.Message{
-				ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
+				},
 			},
 			&message.Message{
-				ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
+				},
 			},
 		},
 	}
@@ -215,12 +230,16 @@ func Test_Gets(t *testing.T) {
 
 			[]*message.Message{
 				{
-					ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
+					},
 				},
 			},
 			[]*message.Message{
 				{
-					ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
+					},
 				},
 			},
 		},
@@ -271,10 +290,14 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
 
 			&message.Message{
-				ID: uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
+				},
 			},
 			&message.Message{
-				ID: uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
+				},
 			},
 		},
 	}
