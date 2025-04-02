@@ -45,7 +45,9 @@ func TestNumbersGET(t *testing.T) {
 
 			responseNumbers: []*nmnumber.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("31ee638c-7b23-11eb-858a-33e73c4f82f7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("31ee638c-7b23-11eb-858a-33e73c4f82f7"),
+					},
 				},
 			},
 			expectPageSize:  10,
@@ -112,7 +114,9 @@ func Test_NumbersIDGET(t *testing.T) {
 			reqQuery: "/numbers/3ab6711c-7be6-11eb-8da6-d31a9f3d45a6",
 
 			responseNumber: &nmnumber.WebhookMessage{
-				ID: uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
+				},
 			},
 
 			expectNumberID: uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
@@ -180,7 +184,9 @@ func TestNumbersIDDELETE(t *testing.T) {
 			reqQuery: "/numbers/d905c26e-7be6-11eb-b92a-ab4802b4bde3",
 
 			responseNumber: &nmnumber.WebhookMessage{
-				ID: uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
+				},
 			},
 
 			expectNumberID: uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
@@ -254,7 +260,9 @@ func TestNumbersPOST(t *testing.T) {
 			reqBody:  []byte(`{"number":"+821021656521","call_flow_id":"7762e356-88b1-11ec-bb0c-7f21b7cad172","message_flow_id":"354120a2-d938-11ef-a7fa-a37e9ed87b6c","name":"test name","detail":"test detail"}`),
 
 			responseNumber: &nmnumber.WebhookMessage{
-				ID: uuid.FromStringOrNil("b244d2b6-d937-11ef-9ac7-2bcab0184b07"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b244d2b6-d937-11ef-9ac7-2bcab0184b07"),
+				},
 			},
 
 			expectNumber:        "+821021656521",
@@ -335,7 +343,9 @@ func TestNumbersIDPUT(t *testing.T) {
 			expectNumberID: uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
 
 			responseNumber: &nmnumber.WebhookMessage{
-				ID: uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
+				},
 			},
 
 			expectCallFlowID:    uuid.FromStringOrNil("e2263f7a-2ca3-11ee-82b7-97de2fb4a790"),
@@ -410,7 +420,9 @@ func TestNumbersIDFlowIDsPUT(t *testing.T) {
 			reqBody:  []byte(`{"call_flow_id":"b6161d70-94cd-11ec-b56c-bb1a417ae104","message_flow_id":"6e7ecc24-a881-11ec-bb4f-4b5822260cbe"}`),
 
 			responseNumber: &nmnumber.WebhookMessage{
-				ID: uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
+				},
 			},
 
 			expectNumberID:      uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
@@ -483,10 +495,14 @@ func Test_NumbersRenewPOST(t *testing.T) {
 
 			responseNumbers: []*nmnumber.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("c2998386-1634-11ee-993a-37ac8d7a675d"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c2998386-1634-11ee-993a-37ac8d7a675d"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a"),
+					},
 				},
 			},
 

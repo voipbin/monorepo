@@ -2,13 +2,12 @@ package tag
 
 import (
 	"encoding/json"
-
-	"github.com/gofrs/uuid"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID uuid.UUID `json:"id"` // tag id
+	commonidentity.Identity
 
 	Name   string `json:"name"`   // tag's name
 	Detail string `json:"detail"` // tag's detail
@@ -21,7 +20,7 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Tag) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID: h.ID,
+		Identity: h.Identity,
 
 		Name:   h.Name,
 		Detail: h.Detail,

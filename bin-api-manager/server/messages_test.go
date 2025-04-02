@@ -43,7 +43,9 @@ func Test_MessagesGET(t *testing.T) {
 
 			responseGets: []*mmmessage.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("282cf482-a2e9-11ec-a87d-6f5255677379"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("282cf482-a2e9-11ec-a87d-6f5255677379"),
+					},
 				},
 			},
 
@@ -111,7 +113,9 @@ func Test_MessagesIDGET(t *testing.T) {
 			reqQuery: "/messages/55b11820-a2e9-11ec-bc5e-936e4fe1096f",
 
 			responseMessage: &mmmessage.WebhookMessage{
-				ID: uuid.FromStringOrNil("55b11820-a2e9-11ec-bc5e-936e4fe1096f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("55b11820-a2e9-11ec-bc5e-936e4fe1096f"),
+				},
 			},
 
 			expectMessageID: uuid.FromStringOrNil("55b11820-a2e9-11ec-bc5e-936e4fe1096f"),
@@ -179,7 +183,9 @@ func Test_messagesIDDELETE(t *testing.T) {
 			reqQuery: "/messages/9dd8042e-a2e9-11ec-b9b1-5740852cabef",
 
 			responseMessage: &mmmessage.WebhookMessage{
-				ID: uuid.FromStringOrNil("9dd8042e-a2e9-11ec-b9b1-5740852cabef"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9dd8042e-a2e9-11ec-b9b1-5740852cabef"),
+				},
 			},
 
 			expectMessageID: uuid.FromStringOrNil("9dd8042e-a2e9-11ec-b9b1-5740852cabef"),
@@ -251,7 +257,9 @@ func Test_messagesPOST(t *testing.T) {
 			reqBody:  []byte(`{"source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"}],"text":"hello world"}`),
 
 			responseMessage: &mmmessage.WebhookMessage{
-				ID: uuid.FromStringOrNil("d0b1f3f4-a2e9-11ec-8b3b-4b3b3b3b3b3b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d0b1f3f4-a2e9-11ec-8b3b-4b3b3b3b3b3b"),
+				},
 			},
 
 			expectSource: &commonaddress.Address{

@@ -38,13 +38,17 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			},
 			responseNumbers: []*number.Number{
 				{
-					ID:           uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
-					CustomerID:   uuid.FromStringOrNil("82ed53fa-ccca-11ee-be19-17f582a54cf4"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
+						CustomerID: uuid.FromStringOrNil("82ed53fa-ccca-11ee-be19-17f582a54cf4"),
+					},
 					ProviderName: number.ProviderNameTelnyx,
 				},
 				{
-					ID:           uuid.FromStringOrNil("e39bfb34-ccca-11ee-9c3e-2fba9dd3bf35"),
-					CustomerID:   uuid.FromStringOrNil("82ed53fa-ccca-11ee-be19-17f582a54cf4"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("e39bfb34-ccca-11ee-9c3e-2fba9dd3bf35"),
+						CustomerID: uuid.FromStringOrNil("82ed53fa-ccca-11ee-be19-17f582a54cf4"),
+					},
 					ProviderName: number.ProviderNameTelnyx,
 				},
 			},
@@ -125,7 +129,9 @@ func Test_EventFlowDeleted(t *testing.T) {
 			},
 			[]*number.Number{
 				{
-					ID:         uuid.FromStringOrNil("e9e983b2-7d22-11eb-acd3-13c2efec905d"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e9e983b2-7d22-11eb-acd3-13c2efec905d"),
+					},
 					CallFlowID: uuid.FromStringOrNil("dd92f3fa-7d22-11eb-be53-47ee94a9bce3"),
 				},
 			},
@@ -151,15 +157,21 @@ func Test_EventFlowDeleted(t *testing.T) {
 
 			[]*number.Number{
 				{
-					ID:         uuid.FromStringOrNil("094aa406-7d24-11eb-81d5-2f5e99ab6fc1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("094aa406-7d24-11eb-81d5-2f5e99ab6fc1"),
+					},
 					CallFlowID: uuid.FromStringOrNil("01647c7a-ecb7-11ee-9273-7b59a4ee0467"),
 				},
 				{
-					ID:         uuid.FromStringOrNil("0993e8dc-7d24-11eb-8bee-dbca074d9894"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("0993e8dc-7d24-11eb-8bee-dbca074d9894"),
+					},
 					CallFlowID: uuid.FromStringOrNil("01647c7a-ecb7-11ee-9273-7b59a4ee0467"),
 				},
 				{
-					ID:         uuid.FromStringOrNil("09ada2cc-7d24-11eb-8518-97f716018857"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("09ada2cc-7d24-11eb-8518-97f716018857"),
+					},
 					CallFlowID: uuid.FromStringOrNil("01647c7a-ecb7-11ee-9273-7b59a4ee0467"),
 				},
 			},

@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	mmmessage "monorepo/bin-message-manager/models/message"
@@ -32,7 +33,9 @@ func Test_processEventMMMessageCreated(t *testing.T) {
 			},
 
 			expectMessage: &mmmessage.Message{
-				ID: uuid.FromStringOrNil("bacfd05c-0a03-11ee-aff4-37ba74639f85"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bacfd05c-0a03-11ee-aff4-37ba74639f85"),
+				},
 			},
 		},
 	}

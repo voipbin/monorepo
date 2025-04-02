@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-tag-manager/models/tag"
 )
 
@@ -79,10 +80,12 @@ func (h *tagHandler) dbCreate(ctx context.Context, customerID uuid.UUID, name st
 
 	id := h.utilHandler.UUIDCreate()
 	a := &tag.Tag{
-		ID:         id,
-		CustomerID: customerID,
-		Name:       name,
-		Detail:     detail,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Name:   name,
+		Detail: detail,
 	}
 	log = log.WithField("tag_id", id)
 

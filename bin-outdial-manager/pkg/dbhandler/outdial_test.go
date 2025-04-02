@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-outdial-manager/models/outdial"
 	"monorepo/bin-outdial-manager/pkg/cachehandler"
 )
@@ -31,8 +32,10 @@ func Test_OutdialCreate(t *testing.T) {
 		{
 			"have no actions",
 			&outdial.Outdial{
-				ID:         uuid.FromStringOrNil("f1c1fede-abf7-11ec-afd7-c7d38010c6da"),
-				CustomerID: uuid.FromStringOrNil("f1f9e8d0-abf7-11ec-a318-e3437a92791f"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f1c1fede-abf7-11ec-afd7-c7d38010c6da"),
+					CustomerID: uuid.FromStringOrNil("f1f9e8d0-abf7-11ec-a318-e3437a92791f"),
+				},
 				CampaignID: uuid.FromStringOrNil("f22a533a-abf7-11ec-b485-4fb99c030404"),
 
 				Name:   "test outdial name",
@@ -43,8 +46,10 @@ func Test_OutdialCreate(t *testing.T) {
 				TMCreate: "2020-04-18 03:22:17.995000",
 			},
 			&outdial.Outdial{
-				ID:         uuid.FromStringOrNil("f1c1fede-abf7-11ec-afd7-c7d38010c6da"),
-				CustomerID: uuid.FromStringOrNil("f1f9e8d0-abf7-11ec-a318-e3437a92791f"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f1c1fede-abf7-11ec-afd7-c7d38010c6da"),
+					CustomerID: uuid.FromStringOrNil("f1f9e8d0-abf7-11ec-a318-e3437a92791f"),
+				},
 				CampaignID: uuid.FromStringOrNil("f22a533a-abf7-11ec-b485-4fb99c030404"),
 
 				Name:   "test outdial name",
@@ -104,30 +109,38 @@ func Test_OutdialGets(t *testing.T) {
 			10,
 			[]outdial.Outdial{
 				{
-					ID:         uuid.FromStringOrNil("8c2eff6c-abf8-11ec-aef8-9757be01931e"),
-					CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
-					Name:       "test1",
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("8c2eff6c-abf8-11ec-aef8-9757be01931e"),
+						CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
+					},
+					Name:     "test1",
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("8c807824-abf8-11ec-bf9f-9f7c1fd38a43"),
-					CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
-					Name:       "test2",
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("8c807824-abf8-11ec-bf9f-9f7c1fd38a43"),
+						CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
+					},
+					Name:     "test2",
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 			[]*outdial.Outdial{
 				{
-					ID:         uuid.FromStringOrNil("8c807824-abf8-11ec-bf9f-9f7c1fd38a43"),
-					CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
-					Name:       "test2",
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("8c807824-abf8-11ec-bf9f-9f7c1fd38a43"),
+						CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
+					},
+					Name:     "test2",
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("8c2eff6c-abf8-11ec-aef8-9757be01931e"),
-					CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
-					Name:       "test1",
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("8c2eff6c-abf8-11ec-aef8-9757be01931e"),
+						CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
+					},
+					Name:     "test1",
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -178,14 +191,18 @@ func Test_OutdialUpdateBasicInfo(t *testing.T) {
 		{
 			"test normal",
 			&outdial.Outdial{
-				ID: uuid.FromStringOrNil("802c0b50-abf9-11ec-bed8-3f61478b7331"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("802c0b50-abf9-11ec-bed8-3f61478b7331"),
+				},
 			},
 
 			"test name",
 			"test detail",
 
 			&outdial.Outdial{
-				ID:     uuid.FromStringOrNil("802c0b50-abf9-11ec-bed8-3f61478b7331"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("802c0b50-abf9-11ec-bed8-3f61478b7331"),
+				},
 				Name:   "test name",
 				Detail: "test detail",
 			},
@@ -238,7 +255,9 @@ func Test_OutdialUpdateCampaignID(t *testing.T) {
 		{
 			"test normal",
 			&outdial.Outdial{
-				ID:     uuid.FromStringOrNil("d985ffe4-abf9-11ec-9a44-232311136ad4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d985ffe4-abf9-11ec-9a44-232311136ad4"),
+				},
 				Name:   "test name",
 				Detail: "test detail",
 			},
@@ -246,7 +265,9 @@ func Test_OutdialUpdateCampaignID(t *testing.T) {
 			uuid.FromStringOrNil("d9a443b4-abf9-11ec-835b-d75f14d69cb2"),
 
 			&outdial.Outdial{
-				ID:         uuid.FromStringOrNil("d985ffe4-abf9-11ec-9a44-232311136ad4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d985ffe4-abf9-11ec-9a44-232311136ad4"),
+				},
 				Name:       "test name",
 				Detail:     "test detail",
 				CampaignID: uuid.FromStringOrNil("d9a443b4-abf9-11ec-835b-d75f14d69cb2"),
@@ -300,7 +321,9 @@ func Test_OutdialUpdateData(t *testing.T) {
 		{
 			"test normal",
 			&outdial.Outdial{
-				ID:     uuid.FromStringOrNil("0db4b65c-abfa-11ec-9e15-0b454feb2f7e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0db4b65c-abfa-11ec-9e15-0b454feb2f7e"),
+				},
 				Name:   "test name",
 				Detail: "test detail",
 			},
@@ -308,7 +331,9 @@ func Test_OutdialUpdateData(t *testing.T) {
 			"test data string",
 
 			&outdial.Outdial{
-				ID:     uuid.FromStringOrNil("0db4b65c-abfa-11ec-9e15-0b454feb2f7e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0db4b65c-abfa-11ec-9e15-0b454feb2f7e"),
+				},
 				Name:   "test name",
 				Detail: "test detail",
 				Data:   "test data string",

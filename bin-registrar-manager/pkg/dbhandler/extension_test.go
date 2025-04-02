@@ -6,6 +6,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -30,8 +31,10 @@ func Test_ExtensionCreate(t *testing.T) {
 		{
 			"normal",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
-				CustomerID: uuid.FromStringOrNil("83db3318-7fec-11ec-a205-736ad70c9180"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
+					CustomerID: uuid.FromStringOrNil("83db3318-7fec-11ec-a205-736ad70c9180"),
+				},
 
 				Name:   "test name",
 				Detail: "test detail",
@@ -50,8 +53,10 @@ func Test_ExtensionCreate(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
-				CustomerID: uuid.FromStringOrNil("83db3318-7fec-11ec-a205-736ad70c9180"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
+					CustomerID: uuid.FromStringOrNil("83db3318-7fec-11ec-a205-736ad70c9180"),
+				},
 
 				Name:   "test name",
 				Detail: "test detail",
@@ -137,8 +142,10 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 		{
 			"test normal",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("569711e0-564d-11ee-97bc-e73899c004b9"),
-				CustomerID: uuid.FromStringOrNil("56c83c70-564d-11ee-b707-d3539191ce8c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("569711e0-564d-11ee-97bc-e73899c004b9"),
+					CustomerID: uuid.FromStringOrNil("56c83c70-564d-11ee-b707-d3539191ce8c"),
+				},
 
 				Name:   "test name",
 				Detail: "test detail",
@@ -159,8 +166,10 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("569711e0-564d-11ee-97bc-e73899c004b9"),
-				CustomerID: uuid.FromStringOrNil("56c83c70-564d-11ee-b707-d3539191ce8c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("569711e0-564d-11ee-97bc-e73899c004b9"),
+					CustomerID: uuid.FromStringOrNil("56c83c70-564d-11ee-b707-d3539191ce8c"),
+				},
 
 				Name:   "test name",
 				Detail: "test detail",
@@ -232,8 +241,10 @@ func Test_ExtensionDelete(t *testing.T) {
 		{
 			"test normal",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
-				CustomerID: uuid.FromStringOrNil("8cadaf5c-7fec-11ec-b004-53f79c2b8387"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
+					CustomerID: uuid.FromStringOrNil("8cadaf5c-7fec-11ec-b004-53f79c2b8387"),
+				},
 
 				Name:   "test name",
 				Detail: "test detail",
@@ -251,8 +262,10 @@ func Test_ExtensionDelete(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
-				CustomerID: uuid.FromStringOrNil("8cadaf5c-7fec-11ec-b004-53f79c2b8387"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
+					CustomerID: uuid.FromStringOrNil("8cadaf5c-7fec-11ec-b004-53f79c2b8387"),
+				},
 
 				Name:   "test name",
 				Detail: "test detail",
@@ -335,8 +348,10 @@ func Test_ExtensionUpdate(t *testing.T) {
 		{
 			"test normal",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
-				CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
+					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
+				},
 
 				Name:   "test",
 				Detail: "detail",
@@ -355,8 +370,10 @@ func Test_ExtensionUpdate(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&extension.Extension{
-				ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
-				CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
+					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
+				},
 
 				Name:   "update name",
 				Detail: "update detail",
@@ -434,14 +451,18 @@ func Test_ExtensionGets(t *testing.T) {
 			"normal",
 			[]extension.Extension{
 				{
-					ID:         uuid.FromStringOrNil("f3672bd4-cdc8-11ee-843b-1f9dbb177486"),
-					CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
-					Name:       "test1",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f3672bd4-cdc8-11ee-843b-1f9dbb177486"),
+						CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
+					},
+					Name: "test1",
 				},
 				{
-					ID:         uuid.FromStringOrNil("f39e3124-cdc8-11ee-8e67-fb88ad978691"),
-					CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
-					Name:       "test2",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f39e3124-cdc8-11ee-8e67-fb88ad978691"),
+						CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
+					},
+					Name: "test2",
 				},
 			},
 
@@ -454,20 +475,24 @@ func Test_ExtensionGets(t *testing.T) {
 			"2021-02-26 18:26:49.000",
 			[]*extension.Extension{
 				{
-					ID:         uuid.FromStringOrNil("f3672bd4-cdc8-11ee-843b-1f9dbb177486"),
-					CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
-					Name:       "test1",
-					TMCreate:   "2021-02-26 18:26:49.000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f3672bd4-cdc8-11ee-843b-1f9dbb177486"),
+						CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
+					},
+					Name:     "test1",
+					TMCreate: "2021-02-26 18:26:49.000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("f39e3124-cdc8-11ee-8e67-fb88ad978691"),
-					CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
-					Name:       "test2",
-					TMCreate:   "2021-02-26 18:26:49.000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f39e3124-cdc8-11ee-8e67-fb88ad978691"),
+						CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
+					},
+					Name:     "test2",
+					TMCreate: "2021-02-26 18:26:49.000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},

@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -47,7 +48,9 @@ func Test_processV1AccountsGet(t *testing.T) {
 			},
 			responseAccounts: []*account.Account{
 				{
-					ID: uuid.FromStringOrNil("645891fe-e863-11ec-b291-9f454e92f1bb"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("645891fe-e863-11ec-b291-9f454e92f1bb"),
+					},
 				},
 			},
 
@@ -74,10 +77,14 @@ func Test_processV1AccountsGet(t *testing.T) {
 			},
 			responseAccounts: []*account.Account{
 				{
-					ID: uuid.FromStringOrNil("6b5f9da6-fecb-11ed-a0ea-4fdabd236387"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6b5f9da6-fecb-11ed-a0ea-4fdabd236387"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("6b906c9c-fecb-11ed-a341-f38426e7e737"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6b906c9c-fecb-11ed-a341-f38426e7e737"),
+					},
 				},
 			},
 
@@ -146,7 +153,9 @@ func Test_processV1AccountsPost(t *testing.T) {
 			expectToken:      "test token",
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("459c19ae-fecc-11ed-9558-fbf54c7aa51e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("459c19ae-fecc-11ed-9558-fbf54c7aa51e"),
+				},
 			},
 
 			request: &sock.Request{
@@ -207,7 +216,9 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			expectID: uuid.FromStringOrNil("1793ed06-fecd-11ed-ab65-07ce8687961d"),
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("1793ed06-fecd-11ed-ab65-07ce8687961d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1793ed06-fecd-11ed-ab65-07ce8687961d"),
+				},
 			},
 
 			request: &sock.Request{
@@ -274,7 +285,9 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 			expectToken:  "test token",
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("17c1c726-fecd-11ed-8139-dff04db7fa05"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("17c1c726-fecd-11ed-8139-dff04db7fa05"),
+				},
 			},
 
 			request: &sock.Request{
@@ -335,7 +348,9 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 			expectID: uuid.FromStringOrNil("17eeb786-fecd-11ed-8113-5f6f4693c29f"),
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("17eeb786-fecd-11ed-8113-5f6f4693c29f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("17eeb786-fecd-11ed-8113-5f6f4693c29f"),
+				},
 			},
 
 			request: &sock.Request{

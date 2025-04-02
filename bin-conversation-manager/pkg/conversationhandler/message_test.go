@@ -48,7 +48,9 @@ func Test_MessageSend(t *testing.T) {
 			},
 
 			&message.Message{
-				ID: uuid.FromStringOrNil("9d11dae8-e870-11ec-b319-fb0d0b15716f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9d11dae8-e870-11ec-b319-fb0d0b15716f"),
+				},
 			},
 		},
 	}

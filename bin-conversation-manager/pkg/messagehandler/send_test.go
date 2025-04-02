@@ -55,13 +55,17 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 			medias: []media.Media{},
 
 			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("086b4920-fe3f-11ed-b570-bf801ec89642"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("086b4920-fe3f-11ed-b570-bf801ec89642"),
+				},
 			},
 			responseUUID: uuid.FromStringOrNil("a0a1478e-0246-11ee-9a48-57bb5aa639c8"),
 
 			expectMessage: &message.Message{
-				ID:             uuid.FromStringOrNil("a0a1478e-0246-11ee-9a48-57bb5aa639c8"),
-				CustomerID:     uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a0a1478e-0246-11ee-9a48-57bb5aa639c8"),
+					CustomerID: uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
+				},
 				ConversationID: uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
 				Direction:      message.DirectionOutgoing,
 				Status:         message.StatusSending,

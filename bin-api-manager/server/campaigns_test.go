@@ -54,7 +54,9 @@ func Test_campaignsPOST(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","type":"call","service_level":100,"end_handle":"stop","actions":[{"type":"answer"}],"outplan_id":"a1380082-c68a-11ec-9fa9-d7588fa9c904","outdial_id":"a16d488c-c68a-11ec-8252-375e8f888c2f","queue_id":"a19393ca-c68a-11ec-a78d-a7110df02eb3","next_campaign_id":"a1ba021c-c68a-11ec-b81e-f3e6f905293b"}`),
 
 			response: &cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("1e701ed2-c649-11ec-97e4-87f868a3e3a9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1e701ed2-c649-11ec-97e4-87f868a3e3a9"),
+				},
 			},
 
 			expectName:         "test name",
@@ -150,7 +152,9 @@ func Test_campaignsGET(t *testing.T) {
 
 			responseCampaigns: []*cacampaign.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -171,15 +175,21 @@ func Test_campaignsGET(t *testing.T) {
 
 			responseCampaigns: []*cacampaign.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("3bfa9cc4-c68b-11ec-a1cf-5fffd85773bb"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3bfa9cc4-c68b-11ec-a1cf-5fffd85773bb"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("3c2648d8-c68b-11ec-a47f-7bfbe26dbdcf"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3c2648d8-c68b-11ec-a47f-7bfbe26dbdcf"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("3c4d9a1e-c68b-11ec-8b46-5f282fd0eb19"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3c4d9a1e-c68b-11ec-8b46-5f282fd0eb19"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
@@ -247,7 +257,9 @@ func Test_campaignsIDGET(t *testing.T) {
 			reqQuery: "/campaigns/832bd31a-c68b-11ec-bcd0-7f66f70ae88d",
 
 			responseCampaign: &cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("832bd31a-c68b-11ec-bcd0-7f66f70ae88d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("832bd31a-c68b-11ec-bcd0-7f66f70ae88d"),
+				},
 			},
 
 			expectCampaignID: uuid.FromStringOrNil("832bd31a-c68b-11ec-bcd0-7f66f70ae88d"),
@@ -313,7 +325,9 @@ func Test_campaignsIDDELETE(t *testing.T) {
 			reqQuery: "/campaigns/aa1a055a-c68b-11ec-99c7-173b42898a47",
 
 			responseCampaign: &cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("aa1a055a-c68b-11ec-99c7-173b42898a47"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("aa1a055a-c68b-11ec-99c7-173b42898a47"),
+				},
 			},
 
 			expectCampaignID: uuid.FromStringOrNil("aa1a055a-c68b-11ec-99c7-173b42898a47"),
@@ -386,7 +400,9 @@ func Test_campaignsIDPUT(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","type":"call","service_level":100,"end_handle":"continue"}`),
 
 			responseCampaign: &cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
+				},
 			},
 
 			expectCampaignID:   uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
@@ -462,7 +478,9 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 			reqBody:  []byte(`{"status":"run"}`),
 
 			responseCampaign: &cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("1bbc5316-c68c-11ec-a2cd-7b9fb7e1e855"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1bbc5316-c68c-11ec-a2cd-7b9fb7e1e855"),
+				},
 			},
 
 			expectCampaignID: uuid.FromStringOrNil("1bbc5316-c68c-11ec-a2cd-7b9fb7e1e855"),
@@ -532,7 +550,9 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 			reqQuery: "/campaigns/40460ace-c68c-11ec-9694-830803c448f7/service_level",
 			reqBody:  []byte(`{"service_level":100}`),
 			responseCampaign: &cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("40460ace-c68c-11ec-9694-830803c448f7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("40460ace-c68c-11ec-9694-830803c448f7"),
+				},
 			},
 
 			expectCampaignID:   uuid.FromStringOrNil("40460ace-c68c-11ec-9694-830803c448f7"),
@@ -603,7 +623,9 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 			reqBody:  []byte(`{"actions":[{"type":"answer"},{"type":"talk","option":{"text":"hello"}}]}`),
 
 			responseCampaign: &cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("79027712-c68c-11ec-b75e-27bce33a22a8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("79027712-c68c-11ec-b75e-27bce33a22a8"),
+				},
 			},
 
 			expectCampaignID: uuid.FromStringOrNil("79027712-c68c-11ec-b75e-27bce33a22a8"),
@@ -685,7 +707,9 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 			reqBody:  []byte(`{"outplan_id":"60fbac4e-c6b7-11ec-869d-3bb7acd5d21a","outdial_id":"61276366-c6b7-11ec-9a5f-07c38e459ee5","queue_id":"614def2c-c6b7-11ec-be49-f350c18391d0","next_campaign_id":"2d21918e-7cd4-11ee-9f07-c3d4e266f6f6"}`),
 
 			responseCampaign: &cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("47a64a88-c6b7-11ec-973d-1f139c4db335"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("47a64a88-c6b7-11ec-973d-1f139c4db335"),
+				},
 			},
 
 			expectCampaignID:     uuid.FromStringOrNil("47a64a88-c6b7-11ec-973d-1f139c4db335"),
@@ -760,7 +784,9 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 			reqBody:  []byte(`{"next_campaign_id":"b045bff6-c6b7-11ec-8d03-2f6187fcf80f"}`),
 
 			responseCampaign: &cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
+				},
 			},
 
 			expectNextCampaignID: uuid.FromStringOrNil("b045bff6-c6b7-11ec-8d03-2f6187fcf80f"),
@@ -831,7 +857,9 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 			reqQuery: "/campaigns/571e5aa6-c86e-11ec-a62f-d7989ff2e4dd/campaigncalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 			responseOutdials: []*cacampaigncall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -853,15 +881,21 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 
 			responseOutdials: []*cacampaigncall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("ef5da59c-c86e-11ec-95bf-b7309c164fc2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ef5da59c-c86e-11ec-95bf-b7309c164fc2"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("ef83ff26-c86e-11ec-bfae-d34d64f4c3a5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ef83ff26-c86e-11ec-bfae-d34d64f4c3a5"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("efab58fa-c86e-11ec-9fcb-4b7edd03d7cb"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("efab58fa-c86e-11ec-9fcb-4b7edd03d7cb"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},

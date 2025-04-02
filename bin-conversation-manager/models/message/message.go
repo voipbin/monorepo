@@ -2,6 +2,7 @@ package message
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 
@@ -11,8 +12,7 @@ import (
 
 // Message defines
 type Message struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	ConversationID uuid.UUID `json:"conversation_id"`
 	Direction      Direction `json:"direction"`

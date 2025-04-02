@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -36,8 +37,10 @@ func Test_processV1MessagesGet(t *testing.T) {
 			"2021-03-01 03:30:17.000000",
 			[]*message.Message{
 				{
-					ID:         uuid.FromStringOrNil("eeafd418-7a4e-11eb-8750-9bb0ca1d7926"),
-					CustomerID: uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("eeafd418-7a4e-11eb-8750-9bb0ca1d7926"),
+						CustomerID: uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
+					},
 				},
 			},
 			&sock.Request{
@@ -58,12 +61,16 @@ func Test_processV1MessagesGet(t *testing.T) {
 			"2021-03-01 03:30:17.000000",
 			[]*message.Message{
 				{
-					ID:         uuid.FromStringOrNil("760f30fa-a29b-11ec-87e7-2fc5bdc8739b"),
-					CustomerID: uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("760f30fa-a29b-11ec-87e7-2fc5bdc8739b"),
+						CustomerID: uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("7639e39a-a29b-11ec-b393-5b239b119501"),
-					CustomerID: uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("7639e39a-a29b-11ec-b393-5b239b119501"),
+						CustomerID: uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
+					},
 				},
 			},
 			&sock.Request{
@@ -138,7 +145,9 @@ func Test_processV1MessagesPost(t *testing.T) {
 			"hello, world",
 
 			&message.Message{
-				ID: uuid.FromStringOrNil("5f00c9bc-f176-11ec-bda0-af0b8c9491f5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5f00c9bc-f176-11ec-bda0-af0b8c9491f5"),
+				},
 			},
 
 			&sock.Request{
@@ -196,7 +205,9 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			"1 number",
 			uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
 			&message.Message{
-				ID: uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
+				},
 			},
 			&sock.Request{
 				URI:    "/v1/messages/73071e00-a29a-11ec-a43a-079fe08ce740",
@@ -250,7 +261,9 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("63772a08-a2ee-11ec-8c6d-9714fb1cc108"),
 			&message.Message{
-				ID: uuid.FromStringOrNil("63772a08-a2ee-11ec-8c6d-9714fb1cc108"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("63772a08-a2ee-11ec-8c6d-9714fb1cc108"),
+				},
 			},
 			&sock.Request{
 				URI:    "/v1/messages/63772a08-a2ee-11ec-8c6d-9714fb1cc108",

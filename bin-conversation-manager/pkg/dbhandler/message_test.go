@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -32,8 +33,10 @@ func Test_MessageCreate(t *testing.T) {
 			name: "normal",
 
 			message: &message.Message{
-				ID:             uuid.FromStringOrNil("19c162d4-e4a2-11ec-a3ce-ef751a8980e7"),
-				CustomerID:     uuid.FromStringOrNil("1a3cf002-e4a2-11ec-855c-9fdc2a6e37d3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("19c162d4-e4a2-11ec-a3ce-ef751a8980e7"),
+					CustomerID: uuid.FromStringOrNil("1a3cf002-e4a2-11ec-855c-9fdc2a6e37d3"),
+				},
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Direction:      message.DirectionIncoming,
 				Status:         message.StatusReceived,
@@ -50,8 +53,10 @@ func Test_MessageCreate(t *testing.T) {
 
 			responseCurTime: "2022-04-18 03:22:17.995000",
 			expectRes: &message.Message{
-				ID:             uuid.FromStringOrNil("19c162d4-e4a2-11ec-a3ce-ef751a8980e7"),
-				CustomerID:     uuid.FromStringOrNil("1a3cf002-e4a2-11ec-855c-9fdc2a6e37d3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("19c162d4-e4a2-11ec-a3ce-ef751a8980e7"),
+					CustomerID: uuid.FromStringOrNil("1a3cf002-e4a2-11ec-855c-9fdc2a6e37d3"),
+				},
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Direction:      message.DirectionIncoming,
 				Status:         message.StatusReceived,
@@ -135,8 +140,10 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 
 			messages: []*message.Message{
 				{
-					ID:             uuid.FromStringOrNil("b0f40ae2-e4a4-11ec-b2f2-9f29af0582dc"),
-					CustomerID:     uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("b0f40ae2-e4a4-11ec-b2f2-9f29af0582dc"),
+						CustomerID: uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+					},
 					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
@@ -149,8 +156,10 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					Medias: []media.Media{},
 				},
 				{
-					ID:             uuid.FromStringOrNil("1f4dc5fa-e4a5-11ec-9ee3-1f32b34259d3"),
-					CustomerID:     uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("1f4dc5fa-e4a5-11ec-9ee3-1f32b34259d3"),
+						CustomerID: uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+					},
 					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
@@ -171,8 +180,10 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 			responseCurTime: "2022-04-18 03:22:17.995000",
 			expectRes: []*message.Message{
 				{
-					ID:             uuid.FromStringOrNil("b0f40ae2-e4a4-11ec-b2f2-9f29af0582dc"),
-					CustomerID:     uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("b0f40ae2-e4a4-11ec-b2f2-9f29af0582dc"),
+						CustomerID: uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+					},
 					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
@@ -188,8 +199,10 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:             uuid.FromStringOrNil("1f4dc5fa-e4a5-11ec-9ee3-1f32b34259d3"),
-					CustomerID:     uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("1f4dc5fa-e4a5-11ec-9ee3-1f32b34259d3"),
+						CustomerID: uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+					},
 					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
@@ -257,18 +270,22 @@ func Test_MessageUpdateStatus(t *testing.T) {
 		{
 			name: "test normal",
 			message: &message.Message{
-				ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
-				CustomerID: uuid.FromStringOrNil("3f7a4c24-a2a4-11ec-b26e-3f8d47c2b450"),
-				Status:     message.StatusSending,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
+					CustomerID: uuid.FromStringOrNil("3f7a4c24-a2a4-11ec-b26e-3f8d47c2b450"),
+				},
+				Status: message.StatusSending,
 			},
 
 			status: message.StatusSent,
 
 			responseCurTime: "2021-02-26 18:26:49.000",
 			expectRes: &message.Message{
-				ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
-				CustomerID: uuid.FromStringOrNil("3f7a4c24-a2a4-11ec-b26e-3f8d47c2b450"),
-				Status:     message.StatusSent,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
+					CustomerID: uuid.FromStringOrNil("3f7a4c24-a2a4-11ec-b26e-3f8d47c2b450"),
+				},
+				Status: message.StatusSent,
 
 				TMCreate: "2021-02-26 18:26:49.000",
 				TMUpdate: "2021-02-26 18:26:49.000",
@@ -330,8 +347,10 @@ func Test_MessageDelete(t *testing.T) {
 		{
 			name: "normal",
 			message: &message.Message{
-				ID:             uuid.FromStringOrNil("4292410e-f1d8-11ec-b03e-639c5da6a05a"),
-				CustomerID:     uuid.FromStringOrNil("1a3cf002-e4a2-11ec-855c-9fdc2a6e37d3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4292410e-f1d8-11ec-b03e-639c5da6a05a"),
+					CustomerID: uuid.FromStringOrNil("1a3cf002-e4a2-11ec-855c-9fdc2a6e37d3"),
+				},
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Status:         message.StatusReceived,
 				ReferenceType:  conversation.ReferenceTypeLine,
@@ -347,8 +366,10 @@ func Test_MessageDelete(t *testing.T) {
 
 			responseCurTime: "2021-02-26 18:26:49.000",
 			expectRes: &message.Message{
-				ID:             uuid.FromStringOrNil("4292410e-f1d8-11ec-b03e-639c5da6a05a"),
-				CustomerID:     uuid.FromStringOrNil("1a3cf002-e4a2-11ec-855c-9fdc2a6e37d3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4292410e-f1d8-11ec-b03e-639c5da6a05a"),
+					CustomerID: uuid.FromStringOrNil("1a3cf002-e4a2-11ec-855c-9fdc2a6e37d3"),
+				},
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Status:         message.StatusReceived,
 				ReferenceType:  conversation.ReferenceTypeLine,

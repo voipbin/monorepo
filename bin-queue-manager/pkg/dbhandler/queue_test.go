@@ -6,6 +6,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -30,8 +31,10 @@ func Test_QueueCreate(t *testing.T) {
 		{
 			"normal",
 			&queue.Queue{
-				ID:            uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
-				CustomerID:    uuid.FromStringOrNil("4fc7cef8-7f54-11ec-8e1f-6f6a91905190"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
+					CustomerID: uuid.FromStringOrNil("4fc7cef8-7f54-11ec-8e1f-6f6a91905190"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				RoutingMethod: "random",
@@ -52,8 +55,10 @@ func Test_QueueCreate(t *testing.T) {
 
 			"2023-02-15 03:22:17.994000",
 			&queue.Queue{
-				ID:            uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
-				CustomerID:    uuid.FromStringOrNil("4fc7cef8-7f54-11ec-8e1f-6f6a91905190"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
+					CustomerID: uuid.FromStringOrNil("4fc7cef8-7f54-11ec-8e1f-6f6a91905190"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				RoutingMethod: "random",
@@ -78,8 +83,10 @@ func Test_QueueCreate(t *testing.T) {
 		{
 			"have QueueCallID",
 			&queue.Queue{
-				ID:            uuid.FromStringOrNil("731e523e-59e1-11ec-9156-abd8ba26f843"),
-				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("731e523e-59e1-11ec-9156-abd8ba26f843"),
+					CustomerID: uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				RoutingMethod: "random",
@@ -102,8 +109,10 @@ func Test_QueueCreate(t *testing.T) {
 
 			"2023-02-15 03:22:17.994000",
 			&queue.Queue{
-				ID:            uuid.FromStringOrNil("731e523e-59e1-11ec-9156-abd8ba26f843"),
-				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("731e523e-59e1-11ec-9156-abd8ba26f843"),
+					CustomerID: uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				RoutingMethod: "random",
@@ -130,8 +139,10 @@ func Test_QueueCreate(t *testing.T) {
 		{
 			"have wait timeout, service timeout",
 			&queue.Queue{
-				ID:            uuid.FromStringOrNil("2c4c233c-5f67-11ec-8eea-bbf4408ec1d8"),
-				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2c4c233c-5f67-11ec-8eea-bbf4408ec1d8"),
+					CustomerID: uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				RoutingMethod: "random",
@@ -157,8 +168,10 @@ func Test_QueueCreate(t *testing.T) {
 
 			"2023-02-15 03:22:17.994000",
 			&queue.Queue{
-				ID:            uuid.FromStringOrNil("2c4c233c-5f67-11ec-8eea-bbf4408ec1d8"),
-				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2c4c233c-5f67-11ec-8eea-bbf4408ec1d8"),
+					CustomerID: uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
+				},
 				Name:          "test name",
 				Detail:        "test detail",
 				RoutingMethod: "random",
@@ -238,8 +251,10 @@ func Test_QueueGets(t *testing.T) {
 			"normal",
 			[]*queue.Queue{
 				{
-					ID:                  uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					CustomerID:          uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
+						CustomerID: uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
+					},
 					Name:                "test name 1",
 					Detail:              "test detail 1",
 					TagIDs:              []uuid.UUID{},
@@ -248,8 +263,10 @@ func Test_QueueGets(t *testing.T) {
 					ServiceQueuecallIDs: []uuid.UUID{},
 				},
 				{
-					ID:                  uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					CustomerID:          uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
+						CustomerID: uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
+					},
 					Name:                "test name 2",
 					Detail:              "test detail 2",
 					TagIDs:              []uuid.UUID{},
@@ -269,8 +286,10 @@ func Test_QueueGets(t *testing.T) {
 			"2020-04-18T03:22:17.995000",
 			[]*queue.Queue{
 				{
-					ID:                  uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					CustomerID:          uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
+						CustomerID: uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
+					},
 					Name:                "test name 1",
 					Detail:              "test detail 1",
 					TagIDs:              []uuid.UUID{},
@@ -282,8 +301,10 @@ func Test_QueueGets(t *testing.T) {
 					TMDelete:            DefaultTimeStamp,
 				},
 				{
-					ID:                  uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					CustomerID:          uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
+						CustomerID: uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
+					},
 					Name:                "test name 2",
 					Detail:              "test detail 2",
 					TagIDs:              []uuid.UUID{},
@@ -343,12 +364,16 @@ func Test_QueueDelete(t *testing.T) {
 		{
 			"normal",
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				},
 			},
 
 			"2023-02-18 03:22:17.995000",
 			&queue.Queue{
-				ID:                  uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				},
 				TagIDs:              []uuid.UUID{},
 				WaitActions:         []fmaction.Action{},
 				WaitQueuecallIDs:    []uuid.UUID{},
@@ -422,7 +447,9 @@ func Test_QueueSetBasicInfo(t *testing.T) {
 			name: "normal",
 
 			data: &queue.Queue{
-				ID: uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
+				},
 			},
 
 			id:            uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
@@ -443,7 +470,9 @@ func Test_QueueSetBasicInfo(t *testing.T) {
 
 			responseCurTime: "2020-04-18T03:22:17.995000",
 			expectRes: &queue.Queue{
-				ID:            uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
+				},
 				Name:          "new name",
 				Detail:        "new detail",
 				RoutingMethod: queue.RoutingMethodRandom,
@@ -533,14 +562,18 @@ func Test_QueueSetRoutingMethod(t *testing.T) {
 			"test normal",
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
+				},
 			},
 			uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
 			queue.RoutingMethodRandom,
 
 			"2020-04-18 03:22:17.995000",
 			&queue.Queue{
-				ID:                  uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
+				},
 				RoutingMethod:       queue.RoutingMethodRandom,
 				TagIDs:              []uuid.UUID{},
 				WaitActions:         []fmaction.Action{},
@@ -610,7 +643,9 @@ func Test_QueueSetTagIDs(t *testing.T) {
 			"test normal",
 
 			&queue.Queue{
-				ID:       uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
+				},
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
@@ -620,7 +655,9 @@ func Test_QueueSetTagIDs(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
+				},
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("21fcd3d4-5a73-11ec-a185-935d2e1f0846"),
 				},
@@ -693,7 +730,9 @@ func Test_QueueSetWaitActions(t *testing.T) {
 			"normal",
 
 			&queue.Queue{
-				ID:       uuid.FromStringOrNil("5ef4f122-5a73-11ec-8a63-3f0918c21af8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5ef4f122-5a73-11ec-8a63-3f0918c21af8"),
+				},
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			uuid.FromStringOrNil("5ef4f122-5a73-11ec-8a63-3f0918c21af8"),
@@ -707,7 +746,9 @@ func Test_QueueSetWaitActions(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&queue.Queue{
-				ID:     uuid.FromStringOrNil("5ef4f122-5a73-11ec-8a63-3f0918c21af8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5ef4f122-5a73-11ec-8a63-3f0918c21af8"),
+				},
 				TagIDs: []uuid.UUID{},
 				WaitActions: []fmaction.Action{
 					{

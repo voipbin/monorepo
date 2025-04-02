@@ -13,6 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -72,7 +73,9 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 				Data:     []byte(`{"customer_id":"6a9320a2-c513-11ec-8d26-bfc178781416","name":"test name","detail":"test detail","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
 			&caoutplan.Outplan{
-				ID: uuid.FromStringOrNil("99528bbc-c513-11ec-89b2-e3f0ee0792fc"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("99528bbc-c513-11ec-89b2-e3f0ee0792fc"),
+				},
 			},
 		},
 	}
@@ -151,7 +154,9 @@ func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 			},
 			[]caoutplan.Outplan{
 				{
-					ID: uuid.FromStringOrNil("b654bd9c-c514-11ec-962e-77d79eb3b3fe"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("b654bd9c-c514-11ec-962e-77d79eb3b3fe"),
+					},
 				},
 			},
 		},
@@ -212,7 +217,9 @@ func Test_CampaignV1OutplanGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&caoutplan.Outplan{
-				ID: uuid.FromStringOrNil("0838f768-c515-11ec-a969-4fec734bbc81"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("0838f768-c515-11ec-a969-4fec734bbc81"),
+				},
 			},
 		},
 	}
@@ -272,7 +279,9 @@ func Test_CampaignV1OutplanDelete(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&caoutplan.Outplan{
-				ID: uuid.FromStringOrNil("22d9075d-08bd-4eb0-b868-3b102f0bcb39"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("22d9075d-08bd-4eb0-b868-3b102f0bcb39"),
+				},
 			},
 		},
 	}
@@ -338,7 +347,9 @@ func Test_CampaignV1OutplanUpdateBasicInfo(t *testing.T) {
 				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
 			},
 			&caoutplan.Outplan{
-				ID: uuid.FromStringOrNil("63e29b96-c515-11ec-ba52-ab7d7001913f"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("63e29b96-c515-11ec-ba52-ab7d7001913f"),
+				},
 			},
 		},
 	}
@@ -419,7 +430,9 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 				Data:     []byte(`{"source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
 			&caoutplan.Outplan{
-				ID: uuid.FromStringOrNil("e2b014d4-c516-11ec-a724-8bf87a1beb50"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e2b014d4-c516-11ec-a724-8bf87a1beb50"),
+				},
 			},
 		},
 	}

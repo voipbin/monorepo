@@ -68,8 +68,10 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 				Target: "+821100000001",
 			},
 			responseTrunk: &rmtrunk.Trunk{
-				ID:         uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
-				CustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
+					CustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
+				},
 			},
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{

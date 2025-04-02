@@ -43,7 +43,9 @@ func Test_Send(t *testing.T) {
 			text:          "test message.",
 
 			responseMessage: &mmmessage.Message{
-				ID: uuid.FromStringOrNil("b39d29ee-ffd4-11ed-9b1e-170678b894f5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b39d29ee-ffd4-11ed-9b1e-170678b894f5"),
+				},
 			},
 			expectDestinations: []commonaddress.Address{
 				{

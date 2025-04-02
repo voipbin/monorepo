@@ -8,6 +8,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -39,7 +40,9 @@ func Test_Kick(t *testing.T) {
 			uuid.FromStringOrNil("101b66d0-d1b5-11ec-b1fc-03d1a45f37e3"),
 
 			&queuecall.Queuecall{
-				ID:                    uuid.FromStringOrNil("101b66d0-d1b5-11ec-b1fc-03d1a45f37e3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("101b66d0-d1b5-11ec-b1fc-03d1a45f37e3"),
+				},
 				QueueID:               uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
@@ -70,7 +73,9 @@ func Test_Kick(t *testing.T) {
 			uuid.FromStringOrNil("07beb726-d291-11ec-b24c-9b1e9b9bd80b"),
 
 			&queuecall.Queuecall{
-				ID:                    uuid.FromStringOrNil("07beb726-d291-11ec-b24c-9b1e9b9bd80b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("07beb726-d291-11ec-b24c-9b1e9b9bd80b"),
+				},
 				QueueID:               uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
@@ -162,7 +167,9 @@ func Test_KickByReferenceID(t *testing.T) {
 			uuid.FromStringOrNil("04f47408-d1b6-11ec-b497-c7ab793dd73d"),
 
 			&queuecall.Queuecall{
-				ID:                    uuid.FromStringOrNil("101b66d0-d1b5-11ec-b1fc-03d1a45f37e3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("101b66d0-d1b5-11ec-b1fc-03d1a45f37e3"),
+				},
 				QueueID:               uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("04f47408-d1b6-11ec-b497-c7ab793dd73d"),
@@ -252,7 +259,9 @@ func Test_kickForce(t *testing.T) {
 			uuid.FromStringOrNil("33fb29fa-d541-11ee-aa2a-1353084c4f20"),
 
 			&queuecall.Queuecall{
-				ID:                    uuid.FromStringOrNil("33fb29fa-d541-11ee-aa2a-1353084c4f20"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("33fb29fa-d541-11ee-aa2a-1353084c4f20"),
+				},
 				QueueID:               uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("04f47408-d1b6-11ec-b497-c7ab793dd73d"),
@@ -281,7 +290,9 @@ func Test_kickForce(t *testing.T) {
 			uuid.FromStringOrNil("610b8dc6-d542-11ee-a00a-e77abee6dec8"),
 
 			&queuecall.Queuecall{
-				ID:                    uuid.FromStringOrNil("610b8dc6-d542-11ee-a00a-e77abee6dec8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("610b8dc6-d542-11ee-a00a-e77abee6dec8"),
+				},
 				QueueID:               uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("04f47408-d1b6-11ec-b497-c7ab793dd73d"),

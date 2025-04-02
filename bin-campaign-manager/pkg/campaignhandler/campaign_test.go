@@ -78,28 +78,38 @@ func Test_Create(t *testing.T) {
 			nextCampaignID: uuid.FromStringOrNil("c6da6162-dfc5-495d-a5af-e99efc9a97f7"),
 
 			responseOutplan: &outplan.Outplan{
-				ID:         uuid.FromStringOrNil("7d568cbe-2928-4dbe-b41f-3b2afad1b6e3"),
-				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7d568cbe-2928-4dbe-b41f-3b2afad1b6e3"),
+					CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseOutdial: &omoutdial.Outdial{
-				ID:         uuid.FromStringOrNil("fb4d2a07-187d-4274-85bf-70186d902873"),
-				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fb4d2a07-187d-4274-85bf-70186d902873"),
+					CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseQueue: &qmqueue.Queue{
-				ID:         uuid.FromStringOrNil("b5e1c926-6753-42ca-be72-e4a521d40bed"),
-				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b5e1c926-6753-42ca-be72-e4a521d40bed"),
+					CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseNextCampaign: &campaign.Campaign{
-				ID:         uuid.FromStringOrNil("c6da6162-dfc5-495d-a5af-e99efc9a97f7"),
-				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c6da6162-dfc5-495d-a5af-e99efc9a97f7"),
+					CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseCampaign: &campaign.Campaign{
-				ID:         uuid.FromStringOrNil("dc55d2f4-c453-11ec-a621-8be3afeb72f9"),
-				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dc55d2f4-c453-11ec-a621-8be3afeb72f9"),
+					CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				},
 			},
 		},
 	}
@@ -177,10 +187,12 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("ef3feb86-db79-4dab-a55d-41d65a231c10"),
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("ef3feb86-db79-4dab-a55d-41d65a231c10"),
-				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
-				FlowID:     uuid.FromStringOrNil("60e0f90a-db73-4aaf-add8-6b7cd8edc82c"),
-				Status:     campaign.StatusStop,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ef3feb86-db79-4dab-a55d-41d65a231c10"),
+					CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				},
+				FlowID: uuid.FromStringOrNil("60e0f90a-db73-4aaf-add8-6b7cd8edc82c"),
+				Status: campaign.StatusStop,
 			},
 		},
 	}
@@ -282,12 +294,16 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			endHandle:    campaign.EndHandleContinue,
 
 			response: &campaign.Campaign{
-				ID:         uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
 			},
 			expectRes: &campaign.Campaign{
-				ID:         uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
 			},
 		},
 	}
@@ -335,7 +351,11 @@ func Test_UpdateResourceInfo(t *testing.T) {
 		queueID        uuid.UUID
 		nextCampaignID uuid.UUID
 
-		response *campaign.Campaign
+		responseCampaign     *campaign.Campaign
+		responseOutplan      *outplan.Outplan
+		responseOutdial      *omoutdial.Outdial
+		responseQueue        *qmqueue.Queue
+		responseNextCampaign *campaign.Campaign
 	}{
 		{
 			name: "test normal",
@@ -346,15 +366,45 @@ func Test_UpdateResourceInfo(t *testing.T) {
 			queueID:        uuid.FromStringOrNil("12f560a9-9aed-4b5a-b748-06b6fe146ae4"),
 			nextCampaignID: uuid.FromStringOrNil("cc7a0346-7ccb-11ee-a1fb-633ebf371fc3"),
 
-			response: &campaign.Campaign{
-				ID:         uuid.FromStringOrNil("1951cdde-9d6f-4aeb-8e64-f56fc67a5a4e"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+			responseCampaign: &campaign.Campaign{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1951cdde-9d6f-4aeb-8e64-f56fc67a5a4e"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
 				Actions: []fmaction.Action{
 					{
 						Type: fmaction.TypeAnswer,
 					},
 				},
 				FlowID: uuid.FromStringOrNil("f52090d7-7325-418e-bacd-b4a82692f6b5"),
+			},
+			responseOutplan: &outplan.Outplan{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b4850013-42fe-4b18-9753-0e2871be2157"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseOutdial: &omoutdial.Outdial{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bc2031d2-53eb-4ee6-982e-b08ec0ffbde6"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseQueue: &qmqueue.Queue{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("12f560a9-9aed-4b5a-b748-06b6fe146ae4"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseNextCampaign: &campaign.Campaign{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cc7a0346-7ccb-11ee-a1fb-633ebf371fc3"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -377,41 +427,41 @@ func Test_UpdateResourceInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
 
 			// validate
 			if tt.outplanID != uuid.Nil {
-				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(&outplan.Outplan{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(tt.responseOutplan, nil)
 			}
 			if tt.outdialID != uuid.Nil {
-				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(&omoutdial.Outdial{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
 			}
 			if tt.queueID != uuid.Nil {
-				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(&qmqueue.Queue{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			}
 			if tt.nextCampaignID != uuid.Nil {
-				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(&campaign.Campaign{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(tt.responseNextCampaign, nil)
 
 			}
 
 			mockDB.EXPECT().CampaignUpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(nil)
 
-			tmpActions, err := h.createFlowActions(ctx, tt.response.Actions, tt.queueID)
+			tmpActions, err := h.createFlowActions(ctx, tt.responseCampaign.Actions, tt.queueID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.response.FlowID, tmpActions).Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.responseCampaign.FlowID, tmpActions).Return(&fmflow.Flow{}, nil)
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignUpdated, tt.responseCampaign)
 
 			res, err := h.UpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.response) != true {
-				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.response, res)
+			if reflect.DeepEqual(res, tt.responseCampaign) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.responseCampaign, res)
 			}
 		})
 	}
@@ -434,8 +484,10 @@ func Test_UpdateNextCampaignID(t *testing.T) {
 			uuid.FromStringOrNil("2861e6ce-844b-42e5-bc5a-625c2123f662"),
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("bfd09fa5-4c2c-46ea-aee9-a01a386e154a"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bfd09fa5-4c2c-46ea-aee9-a01a386e154a"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
 			},
 		},
 	}
@@ -492,8 +544,10 @@ func Test_UpdateServiceLevel(t *testing.T) {
 			100,
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("d4e36568-c3f4-11ec-9151-8357f70ffbc4"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d4e36568-c3f4-11ec-9151-8357f70ffbc4"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
 			},
 		},
 	}
@@ -553,9 +607,11 @@ func Test_UpdateActions(t *testing.T) {
 			},
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("d4e36568-c3f4-11ec-9151-8357f70ffbc4"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				FlowID:     uuid.FromStringOrNil("8840b1c4-c3f5-11ec-8961-bbf3aed170d6"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d4e36568-c3f4-11ec-9151-8357f70ffbc4"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+				FlowID: uuid.FromStringOrNil("8840b1c4-c3f5-11ec-8961-bbf3aed170d6"),
 			},
 			&fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -580,10 +636,12 @@ func Test_UpdateActions(t *testing.T) {
 			},
 
 			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("ffce8382-cbd0-11ec-9cfd-af33d5b4a740"),
-				CustomerID: uuid.FromStringOrNil("fffd05d6-cbd0-11ec-85f8-c79ba4d71e60"),
-				FlowID:     uuid.FromStringOrNil("0027a886-cbd1-11ec-8440-137d167ffeb1"),
-				QueueID:    uuid.FromStringOrNil("0054fcf0-cbd1-11ec-978d-9b83e6ca7ad6"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ffce8382-cbd0-11ec-9cfd-af33d5b4a740"),
+					CustomerID: uuid.FromStringOrNil("fffd05d6-cbd0-11ec-85f8-c79ba4d71e60"),
+				},
+				FlowID:  uuid.FromStringOrNil("0027a886-cbd1-11ec-8440-137d167ffeb1"),
+				QueueID: uuid.FromStringOrNil("0054fcf0-cbd1-11ec-978d-9b83e6ca7ad6"),
 			},
 			&fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -729,7 +787,9 @@ func Test_updateExecuteStopAndCampaignIsStoppable(t *testing.T) {
 			uuid.FromStringOrNil("c58bf240-c3f6-11ec-99bd-83480d2667d8"),
 
 			&campaign.Campaign{
-				ID:      uuid.FromStringOrNil("c58bf240-c3f6-11ec-99bd-83480d2667d8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c58bf240-c3f6-11ec-99bd-83480d2667d8"),
+				},
 				Execute: campaign.ExecuteStop,
 				Status:  campaign.StatusStopping,
 			},
@@ -792,7 +852,9 @@ func Test_updateExecuteStopAndCampaignIsNotStoppable(t *testing.T) {
 			uuid.FromStringOrNil("19cb128e-c3fa-11ec-b6ab-6f645ada73ce"),
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("19cb128e-c3fa-11ec-b6ab-6f645ada73ce"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("19cb128e-c3fa-11ec-b6ab-6f645ada73ce"),
+				},
 			},
 		},
 	}
@@ -853,8 +915,10 @@ func Test_isValidOutdialID(t *testing.T) {
 			customerID: uuid.FromStringOrNil("d87b08d8-7614-11ee-bc88-3f7993d217a7"),
 
 			responseOutdial: &omoutdial.Outdial{
-				ID:         uuid.FromStringOrNil("caeec970-6cfa-11ee-8922-db4df7f7be10"),
-				CustomerID: uuid.FromStringOrNil("d87b08d8-7614-11ee-bc88-3f7993d217a7"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("caeec970-6cfa-11ee-8922-db4df7f7be10"),
+					CustomerID: uuid.FromStringOrNil("d87b08d8-7614-11ee-bc88-3f7993d217a7"),
+				},
 				CampaignID: uuid.FromStringOrNil("fbf0b198-6cfd-11ee-b521-37013565562b"),
 				TMDelete:   dbhandler.DefaultTimeStamp,
 			},
@@ -867,9 +931,11 @@ func Test_isValidOutdialID(t *testing.T) {
 			customerID: uuid.FromStringOrNil("bc8a2ba8-7615-11ee-9eac-fb9471a8b634"),
 
 			responseOutdial: &omoutdial.Outdial{
-				ID:         uuid.FromStringOrNil("0c29e430-6cfe-11ee-a345-a3447618246d"),
-				CustomerID: uuid.FromStringOrNil("bc8a2ba8-7615-11ee-9eac-fb9471a8b634"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0c29e430-6cfe-11ee-a345-a3447618246d"),
+					CustomerID: uuid.FromStringOrNil("bc8a2ba8-7615-11ee-9eac-fb9471a8b634"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -918,9 +984,11 @@ func Test_isValidOutplanID(t *testing.T) {
 			customerID: uuid.FromStringOrNil("2c806932-7615-11ee-b345-3f3d8312ef2b"),
 
 			responseOutplan: &outplan.Outplan{
-				ID:         uuid.FromStringOrNil("5feb6e54-6cfe-11ee-bc10-03bb387f94b5"),
-				CustomerID: uuid.FromStringOrNil("2c806932-7615-11ee-b345-3f3d8312ef2b"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5feb6e54-6cfe-11ee-bc10-03bb387f94b5"),
+					CustomerID: uuid.FromStringOrNil("2c806932-7615-11ee-b345-3f3d8312ef2b"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
 		{
@@ -980,9 +1048,11 @@ func Test_isValidQueueID(t *testing.T) {
 			customerID: uuid.FromStringOrNil("2cebe0e0-7615-11ee-aab6-272f6a805a85"),
 
 			responseQueue: &qmqueue.Queue{
-				ID:         uuid.FromStringOrNil("97519ade-6cff-11ee-8f11-ab52f82847cb"),
-				CustomerID: uuid.FromStringOrNil("2cebe0e0-7615-11ee-aab6-272f6a805a85"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("97519ade-6cff-11ee-8f11-ab52f82847cb"),
+					CustomerID: uuid.FromStringOrNil("2cebe0e0-7615-11ee-aab6-272f6a805a85"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
 		{
@@ -1040,9 +1110,11 @@ func Test_isValidNextCampaignID(t *testing.T) {
 			customerID:     uuid.FromStringOrNil("2d179f8c-7615-11ee-b87b-03f5ec3a4037"),
 
 			responseCampaign: &campaign.Campaign{
-				ID:         uuid.FromStringOrNil("b395c760-6cff-11ee-9dc5-c7265f1e5d16"),
-				CustomerID: uuid.FromStringOrNil("2d179f8c-7615-11ee-b87b-03f5ec3a4037"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b395c760-6cff-11ee-9dc5-c7265f1e5d16"),
+					CustomerID: uuid.FromStringOrNil("2d179f8c-7615-11ee-b87b-03f5ec3a4037"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
 		{
@@ -1096,7 +1168,9 @@ func Test_updateReferencedResources(t *testing.T) {
 			name: "normal",
 
 			campaign: &campaign.Campaign{
-				ID:             uuid.FromStringOrNil("55c70eb8-6d00-11ee-af57-2f785264f30a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("55c70eb8-6d00-11ee-af57-2f785264f30a"),
+				},
 				OutplanID:      uuid.FromStringOrNil("55f43ff0-6d00-11ee-bbf1-97a90f12ce6b"),
 				OutdialID:      uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
 				QueueID:        uuid.FromStringOrNil("56545c96-6d00-11ee-955f-af50e79460c9"),
@@ -1104,7 +1178,9 @@ func Test_updateReferencedResources(t *testing.T) {
 			},
 
 			responseOutdial: &omoutdial.Outdial{
-				ID:       uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
+				},
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
@@ -1166,24 +1242,32 @@ func Test_validateResources(t *testing.T) {
 			nextCampaignID: uuid.FromStringOrNil("afa1590c-6d00-11ee-9168-635f279cf425"),
 
 			responseOutplan: &outplan.Outplan{
-				ID:         uuid.FromStringOrNil("af229982-6d00-11ee-b767-5b0d2ca26cb4"),
-				CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("af229982-6d00-11ee-b767-5b0d2ca26cb4"),
+					CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseOutdial: &omoutdial.Outdial{
-				ID:         uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
-				CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
+					CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseQueue: &qmqueue.Queue{
-				ID:         uuid.FromStringOrNil("af755fdc-6d00-11ee-98b2-275890b0ec69"),
-				CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("af755fdc-6d00-11ee-98b2-275890b0ec69"),
+					CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseNextCampaign: &campaign.Campaign{
-				ID:         uuid.FromStringOrNil("afa1590c-6d00-11ee-9168-635f279cf425"),
-				CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("afa1590c-6d00-11ee-9168-635f279cf425"),
+					CustomerID: uuid.FromStringOrNil("2d3d77ac-7615-11ee-817f-c75f8810ad99"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
 	}

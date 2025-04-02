@@ -11,6 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -49,7 +50,9 @@ func Test_MessageV1MessageGets(t *testing.T) {
 			},
 			[]mmmessage.Message{
 				{
-					ID: uuid.FromStringOrNil("29c761de-a2b1-11ec-98af-e7185fc83700"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("29c761de-a2b1-11ec-98af-e7185fc83700"),
+					},
 				},
 			},
 		},
@@ -73,10 +76,14 @@ func Test_MessageV1MessageGets(t *testing.T) {
 			},
 			[]mmmessage.Message{
 				{
-					ID: uuid.FromStringOrNil("6f3a1e50-a2b1-11ec-a108-33dea3457c3b"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("6f3a1e50-a2b1-11ec-a108-33dea3457c3b"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("6f68ee1a-a2b1-11ec-934e-fb86dd720e70"),
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("6f68ee1a-a2b1-11ec-934e-fb86dd720e70"),
+					},
 				},
 			},
 		},
@@ -136,7 +143,9 @@ func Test_MessageV1MessageGet(t *testing.T) {
 				Data:       []byte(`{"id":"c6132bfe-a2b1-11ec-a9fd-0f7e4afd00d8"}`),
 			},
 			&mmmessage.Message{
-				ID: uuid.FromStringOrNil("c6132bfe-a2b1-11ec-a9fd-0f7e4afd00d8"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("c6132bfe-a2b1-11ec-a9fd-0f7e4afd00d8"),
+				},
 			},
 		},
 	}
@@ -195,7 +204,9 @@ func Test_MessageV1MessageDelete(t *testing.T) {
 				Data:       []byte(`{"id":"b8c3c122-a2c3-11ec-89ee-ebb21f6a7e14"}`),
 			},
 			&mmmessage.Message{
-				ID: uuid.FromStringOrNil("b8c3c122-a2c3-11ec-89ee-ebb21f6a7e14"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("b8c3c122-a2c3-11ec-89ee-ebb21f6a7e14"),
+				},
 			},
 		},
 	}
@@ -271,7 +282,9 @@ func Test_MessageV1MessageSend(t *testing.T) {
 				Data:       []byte(`{"id":"dde92b9a-f179-11ec-adc4-931faecc6a89"}`),
 			},
 			&mmmessage.Message{
-				ID: uuid.FromStringOrNil("dde92b9a-f179-11ec-adc4-931faecc6a89"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("dde92b9a-f179-11ec-adc4-931faecc6a89"),
+				},
 			},
 		},
 		{
@@ -304,7 +317,9 @@ func Test_MessageV1MessageSend(t *testing.T) {
 				Data:       []byte(`{"id":"283d6350-f17a-11ec-9277-436d6d821637"}`),
 			},
 			&mmmessage.Message{
-				ID: uuid.FromStringOrNil("283d6350-f17a-11ec-9277-436d6d821637"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("283d6350-f17a-11ec-9277-436d6d821637"),
+				},
 			},
 		},
 		{
@@ -341,7 +356,9 @@ func Test_MessageV1MessageSend(t *testing.T) {
 				Data:       []byte(`{"id":"3378aa5a-a2c3-11ec-abb8-97d85696ccd9"}`),
 			},
 			&mmmessage.Message{
-				ID: uuid.FromStringOrNil("3378aa5a-a2c3-11ec-abb8-97d85696ccd9"),
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("3378aa5a-a2c3-11ec-abb8-97d85696ccd9"),
+				},
 			},
 		},
 	}

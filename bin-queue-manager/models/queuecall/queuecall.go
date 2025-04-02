@@ -2,6 +2,7 @@ package queuecall
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 
@@ -10,9 +11,9 @@ import (
 
 // Queuecall defines
 type Queuecall struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	QueueID    uuid.UUID `json:"queue_id"`
+	commonidentity.Identity
+
+	QueueID uuid.UUID `json:"queue_id"`
 
 	ReferenceType         ReferenceType `json:"reference_type"`          // referenced resource's type.
 	ReferenceID           uuid.UUID     `json:"reference_id"`            // referenced resource's id.

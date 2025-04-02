@@ -3,15 +3,13 @@ package trunk
 import (
 	"encoding/json"
 
-	"github.com/gofrs/uuid"
-
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
@@ -32,8 +30,7 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Trunk) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
+		Identity: h.Identity,
 
 		Name:   h.Name,
 		Detail: h.Detail,

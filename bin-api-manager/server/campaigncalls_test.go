@@ -44,7 +44,9 @@ func Test_campaigncallsGET(t *testing.T) {
 
 			responseCampaigncalls: []*cacampaigncall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("13d06624-6e29-11ee-8c18-37f3708d43b9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("13d06624-6e29-11ee-8c18-37f3708d43b9"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -65,15 +67,21 @@ func Test_campaigncallsGET(t *testing.T) {
 
 			responseCampaigncalls: []*cacampaigncall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("1402a4ea-6e29-11ee-a53c-1b448648df2e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1402a4ea-6e29-11ee-a53c-1b448648df2e"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("142f6b10-6e29-11ee-b771-a7835a2bf8ef"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("142f6b10-6e29-11ee-b771-a7835a2bf8ef"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("212ed990-6e29-11ee-951e-9ffe2d340f93"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("212ed990-6e29-11ee-951e-9ffe2d340f93"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
@@ -143,7 +151,9 @@ func Test_campaigncallsIDGET(t *testing.T) {
 			reqQuery: "/campaigncalls/897e611a-c870-11ec-9b81-a7b70b7cdaa1",
 
 			responseCampaigncall: &cacampaigncall.WebhookMessage{
-				ID: uuid.FromStringOrNil("897e611a-c870-11ec-9b81-a7b70b7cdaa1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("897e611a-c870-11ec-9b81-a7b70b7cdaa1"),
+				},
 			},
 
 			expectCampaigncallID: uuid.FromStringOrNil("897e611a-c870-11ec-9b81-a7b70b7cdaa1"),
@@ -207,7 +217,9 @@ func Test_campaigncallsIDDELETE(t *testing.T) {
 
 			reqQuery: "/campaigncalls/afe97cd6-c870-11ec-b750-f3db7eda3a33",
 			responseCampaigncall: &cacampaigncall.WebhookMessage{
-				ID: uuid.FromStringOrNil("afe97cd6-c870-11ec-b750-f3db7eda3a33"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("afe97cd6-c870-11ec-b750-f3db7eda3a33"),
+				},
 			},
 
 			expectCampaigncallID: uuid.FromStringOrNil("afe97cd6-c870-11ec-b750-f3db7eda3a33"),

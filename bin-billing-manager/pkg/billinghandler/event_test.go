@@ -207,7 +207,9 @@ func Test_EventMMMessageCreated(t *testing.T) {
 			name: "normal",
 
 			message: &mmmessage.Message{
-				ID: uuid.FromStringOrNil("2cb5bb08-f54c-11ee-a40b-0f5555eb875b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2cb5bb08-f54c-11ee-a40b-0f5555eb875b"),
+				},
 				Targets: []mmtarget.Target{
 					{
 						Destination: commonaddress.Address{},
@@ -314,8 +316,10 @@ func Test_EventNMNumberCreated(t *testing.T) {
 			name: "normal",
 
 			number: &nmnumber.Number{
-				ID:         uuid.FromStringOrNil("7359bada-f54e-11ee-ae36-37d1feaf6c4c"),
-				CustomerID: uuid.FromStringOrNil("74483cdc-f54e-11ee-ac89-bb4150764799"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7359bada-f54e-11ee-ae36-37d1feaf6c4c"),
+					CustomerID: uuid.FromStringOrNil("74483cdc-f54e-11ee-ac89-bb4150764799"),
+				},
 			},
 
 			responseAccount: &account.Account{
@@ -397,8 +401,10 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 			name: "normal",
 
 			number: &nmnumber.Number{
-				ID:         uuid.FromStringOrNil("e2eda0c8-f54e-11ee-9c57-c76cbcca2410"),
-				CustomerID: uuid.FromStringOrNil("e3537aa6-f54e-11ee-84fb-bb29ab77496c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e2eda0c8-f54e-11ee-9c57-c76cbcca2410"),
+					CustomerID: uuid.FromStringOrNil("e3537aa6-f54e-11ee-84fb-bb29ab77496c"),
+				},
 			},
 
 			responseAccount: &account.Account{

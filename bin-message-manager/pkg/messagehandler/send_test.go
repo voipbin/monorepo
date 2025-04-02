@@ -8,6 +8,7 @@ import (
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -55,8 +56,10 @@ func Test_Send(t *testing.T) {
 			text: "hello world",
 
 			responseMessage: &message.Message{
-				ID:         uuid.FromStringOrNil("804d4eb1-00ef-424b-9e14-e8d4c7a060e7"),
-				CustomerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("804d4eb1-00ef-424b-9e14-e8d4c7a060e7"),
+					CustomerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
+				},
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -86,9 +89,11 @@ func Test_Send(t *testing.T) {
 			},
 
 			expectMessage: &message.Message{
-				ID:         uuid.FromStringOrNil("804d4eb1-00ef-424b-9e14-e8d4c7a060e7"),
-				CustomerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
-				Type:       message.TypeSMS,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("804d4eb1-00ef-424b-9e14-e8d4c7a060e7"),
+					CustomerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
+				},
+				Type: message.TypeSMS,
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -205,8 +210,10 @@ func Test_sendMessage(t *testing.T) {
 			},
 
 			responseGet: &message.Message{
-				ID:         uuid.FromStringOrNil("f9eaa2ba-a2d7-11ec-a29e-cf6eefb11b42"),
-				CustomerID: uuid.FromStringOrNil("fa365854-a2d7-11ec-8fe6-3b93248d4ab9"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f9eaa2ba-a2d7-11ec-a29e-cf6eefb11b42"),
+					CustomerID: uuid.FromStringOrNil("fa365854-a2d7-11ec-8fe6-3b93248d4ab9"),
+				},
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",

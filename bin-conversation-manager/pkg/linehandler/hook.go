@@ -177,8 +177,10 @@ func (h *lineHandler) hookHandleMessage(ctx context.Context, ac *account.Account
 
 	// create a message
 	m := &message.Message{
-		ID:         uuid.Nil,
-		CustomerID: ac.CustomerID,
+		Identity: commonidentity.Identity{
+			ID:         uuid.Nil,
+			CustomerID: ac.CustomerID,
+		},
 
 		ConversationID: uuid.Nil,
 		Status:         message.StatusReceived,

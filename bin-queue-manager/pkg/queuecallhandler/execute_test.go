@@ -44,7 +44,9 @@ func Test_Execute(t *testing.T) {
 			agentID: uuid.FromStringOrNil("624e1cd6-d1b0-11ec-8b3b-db12aa2e35f6"),
 
 			responseQueuecall: &queuecall.Queuecall{
-				ID:              uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+				},
 				QueueID:         uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("b658394e-5ee0-11ec-92ba-5f2f2eabf000"),

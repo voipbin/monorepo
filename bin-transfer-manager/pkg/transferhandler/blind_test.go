@@ -78,13 +78,17 @@ func Test_blindExecute(t *testing.T) {
 				},
 			},
 			responseTransfer: &transfer.Transfer{
-				ID: uuid.FromStringOrNil("89b9c942-dbb3-11ed-8784-67bdc93fd8af"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("89b9c942-dbb3-11ed-8784-67bdc93fd8af"),
+				},
 			},
 			responseUUIDTransfer: uuid.FromStringOrNil("89b9c942-dbb3-11ed-8784-67bdc93fd8af"),
 
 			expectTransfer: &transfer.Transfer{
-				ID:               uuid.FromStringOrNil("89b9c942-dbb3-11ed-8784-67bdc93fd8af"),
-				CustomerID:       uuid.FromStringOrNil("87a36756-dbb5-11ed-8ab5-0b2b7aab415b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("89b9c942-dbb3-11ed-8784-67bdc93fd8af"),
+					CustomerID: uuid.FromStringOrNil("87a36756-dbb5-11ed-8ab5-0b2b7aab415b"),
+				},
 				Type:             transfer.TypeBlind,
 				TransfererCallID: uuid.FromStringOrNil("884eeae2-dbb3-11ed-bf74-8f39182ac412"),
 				TransfereeAddresses: []commonaddress.Address{

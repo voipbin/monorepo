@@ -48,7 +48,9 @@ func Test_outdialsGET(t *testing.T) {
 
 			responseOutdials: []*omoutdial.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("438f0ccc-c64a-11ec-9ac6-b729ca9f28bf"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("438f0ccc-c64a-11ec-9ac6-b729ca9f28bf"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -69,15 +71,21 @@ func Test_outdialsGET(t *testing.T) {
 
 			responseOutdials: []*omoutdial.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("ad4ec08a-c64a-11ec-ad4d-2b9c85718834"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ad4ec08a-c64a-11ec-ad4d-2b9c85718834"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("b088244e-c64a-11ec-afb8-2f6ebf108ed8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b088244e-c64a-11ec-afb8-2f6ebf108ed8"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("c3e247e0-c64a-11ec-b415-c786d3fa957c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c3e247e0-c64a-11ec-b415-c786d3fa957c"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
@@ -150,7 +158,9 @@ func Test_outdialsPOST(t *testing.T) {
 			reqBody:  []byte(`{"campaign_id":"5770a50e-1a94-45fc-9ba1-79064573cf06","name":"test name","detail":"test detail","data":"test data"}`),
 
 			responseOutdial: &omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("99b197a5-010e-4f4e-b9fc-aae44e241ddb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("99b197a5-010e-4f4e-b9fc-aae44e241ddb"),
+				},
 			},
 
 			expectCampaignID: uuid.FromStringOrNil("5770a50e-1a94-45fc-9ba1-79064573cf06"),
@@ -220,7 +230,9 @@ func Test_outdialsIDGET(t *testing.T) {
 			reqQuery: "/outdials/3bb463ed-aa6e-4b64-9fc5-b1fc62096b67",
 
 			responseOutdial: &omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("3bb463ed-aa6e-4b64-9fc5-b1fc62096b67"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3bb463ed-aa6e-4b64-9fc5-b1fc62096b67"),
+				},
 			},
 
 			expectOutdialID: uuid.FromStringOrNil("3bb463ed-aa6e-4b64-9fc5-b1fc62096b67"),
@@ -286,7 +298,9 @@ func Test_outdialsIDDELETE(t *testing.T) {
 			reqQuery: "/outdials/37877e5d-ebe3-492d-be8c-54d62e98b4db",
 
 			responseOutdial: &omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("37877e5d-ebe3-492d-be8c-54d62e98b4db"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("37877e5d-ebe3-492d-be8c-54d62e98b4db"),
+				},
 			},
 
 			expectOutdialID: uuid.FromStringOrNil("37877e5d-ebe3-492d-be8c-54d62e98b4db"),
@@ -352,7 +366,9 @@ func Test_outdialsIDPUT(t *testing.T) {
 			reqBody:  []byte(`{"name":"test name","detail":"test detail"}`),
 
 			responseOutdial: &omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("38114323-144a-499c-bfde-f3d8af114a7a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("38114323-144a-499c-bfde-f3d8af114a7a"),
+				},
 			},
 
 			expectOutdialID: uuid.FromStringOrNil("38114323-144a-499c-bfde-f3d8af114a7a"),
@@ -424,7 +440,9 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 			reqBody:  []byte(`{"campaign_id":"caad42fb-8266-4a24-be3f-9963ba14a20a"}`),
 
 			responseOutdial: &omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("607ea822-121d-4a52-ad3f-3f5320445ec8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("607ea822-121d-4a52-ad3f-3f5320445ec8"),
+				},
 			},
 
 			expectOutdialID:  uuid.FromStringOrNil("607ea822-121d-4a52-ad3f-3f5320445ec8"),
@@ -495,7 +513,9 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 			reqBody:  []byte(`{"data":"test data"}`),
 
 			responseOutdial: &omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("056eefbd-8afa-402a-8c9e-681040ec8803"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("056eefbd-8afa-402a-8c9e-681040ec8803"),
+				},
 			},
 
 			expectOutdialID: uuid.FromStringOrNil("056eefbd-8afa-402a-8c9e-681040ec8803"),

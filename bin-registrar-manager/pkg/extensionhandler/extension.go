@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astendpoint"
@@ -77,8 +78,10 @@ func (h *extensionHandler) Create(
 	// create a new extension
 	id := h.utilHandler.UUIDCreate()
 	e := &extension.Extension{
-		ID:         id,
-		CustomerID: customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 
 		Name:   name,
 		Detail: detail,
@@ -123,7 +126,7 @@ func (h *extensionHandler) Get(ctx context.Context, id uuid.UUID) (*extension.Ex
 	return h.dbBin.ExtensionGet(ctx, id)
 }
 
-// GetByEndpoint gets a exists extension of the given endpoint
+// GetByExtension gets a exists extension of the given endpoint
 func (h *extensionHandler) GetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error) {
 	return h.dbBin.ExtensionGetByExtension(ctx, customerID, ext)
 }

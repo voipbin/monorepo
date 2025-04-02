@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -30,7 +31,9 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("013d3b56-f090-11ee-bbc1-a359f9e014d8"),
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("013d3b56-f090-11ee-bbc1-a359f9e014d8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("013d3b56-f090-11ee-bbc1-a359f9e014d8"),
+				},
 			},
 		},
 	}

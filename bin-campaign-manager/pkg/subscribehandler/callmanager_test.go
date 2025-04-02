@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	cmcall "monorepo/bin-call-manager/models/call"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
@@ -36,7 +37,9 @@ func Test_processEventCMCallHangup(t *testing.T) {
 			uuid.FromStringOrNil("62a54c96-c46c-11ec-aff0-ebddfa5d9bc4"),
 
 			&campaigncall.Campaigncall{
-				ID:         uuid.FromStringOrNil("e6cca6a4-c46c-11ec-8175-3fd04df5a0dc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e6cca6a4-c46c-11ec-8175-3fd04df5a0dc"),
+				},
 				CampaignID: uuid.FromStringOrNil("f4f81330-c46c-11ec-845b-634ec638de76"),
 			},
 		},

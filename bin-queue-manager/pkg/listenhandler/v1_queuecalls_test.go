@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -50,8 +51,10 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 
 			[]*queuecall.Queuecall{
 				{
-					ID:         uuid.FromStringOrNil("4b46ad9c-6152-11ec-a4a6-7b3b226046a5"),
-					CustomerID: uuid.FromStringOrNil("f9f94078-7f54-11ec-8387-9fe49204286f"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("4b46ad9c-6152-11ec-a4a6-7b3b226046a5"),
+						CustomerID: uuid.FromStringOrNil("f9f94078-7f54-11ec-8387-9fe49204286f"),
+					},
 				},
 			},
 			&sock.Response{
@@ -76,12 +79,16 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 
 			[]*queuecall.Queuecall{
 				{
-					ID:         uuid.FromStringOrNil("4ca0c722-6152-11ec-a0ad-1be04f100fff"),
-					CustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("4ca0c722-6152-11ec-a0ad-1be04f100fff"),
+						CustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("4cc9430a-6152-11ec-9295-d783a3ffb68e"),
-					CustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("4cc9430a-6152-11ec-9295-d783a3ffb68e"),
+						CustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
+					},
 				},
 			},
 			&sock.Response{
@@ -143,8 +150,10 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 
 			uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
 			&queuecall.Queuecall{
-				ID:         uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
-				CustomerID: uuid.FromStringOrNil("2ff5fe64-7f55-11ec-8c3c-83bef268c5ed"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
+					CustomerID: uuid.FromStringOrNil("2ff5fe64-7f55-11ec-8c3c-83bef268c5ed"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -204,7 +213,9 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("4a76400a-60ab-11ec-aeb8-eb262d80acf1"),
 
 			&queuecall.Queuecall{
-				ID: uuid.FromStringOrNil("4a76400a-60ab-11ec-aeb8-eb262d80acf1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4a76400a-60ab-11ec-aeb8-eb262d80acf1"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -263,7 +274,9 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 			uuid.FromStringOrNil("319fec77-0843-4207-8c6a-65bf067e4bac"),
 
 			&queuecall.Queuecall{
-				ID: uuid.FromStringOrNil("319fec77-0843-4207-8c6a-65bf067e4bac"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("319fec77-0843-4207-8c6a-65bf067e4bac"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -325,7 +338,9 @@ func Test_processV1QueuecallsIDHealthCheckPost(t *testing.T) {
 			1,
 
 			&queuecall.Queuecall{
-				ID: uuid.FromStringOrNil("4a85453c-d534-11ee-8746-a3727fdf5678"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4a85453c-d534-11ee-8746-a3727fdf5678"),
+				},
 			},
 			nil,
 		},
@@ -383,7 +398,9 @@ func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
 			uuid.FromStringOrNil("c8794c51-4e4d-46ef-bfa1-5220f66aea87"),
 
 			&queuecall.Queuecall{
-				ID: uuid.FromStringOrNil("b1d4d172-52e3-4927-bf10-77eafebd19d8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b1d4d172-52e3-4927-bf10-77eafebd19d8"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -440,7 +457,9 @@ func Test_processV1QueuecallsReferenceIDIDGet(t *testing.T) {
 
 			uuid.FromStringOrNil("b5f73c26-bcb7-11ed-af77-e397b8122b09"),
 			&queuecall.Queuecall{
-				ID: uuid.FromStringOrNil("b673a022-bcb7-11ed-8212-6fef4fabe382"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b673a022-bcb7-11ed-8212-6fef4fabe382"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,

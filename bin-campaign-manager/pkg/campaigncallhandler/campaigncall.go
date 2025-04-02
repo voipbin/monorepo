@@ -4,6 +4,7 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -39,8 +40,10 @@ func (h *campaigncallHandler) Create(
 
 	id := h.util.UUIDCreate()
 	t := &campaigncall.Campaigncall{
-		ID:         id,
-		CustomerID: customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 
 		CampaignID:      campaignID,
 		OutplanID:       outplanID,

@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-outdial-manager/models/outdial"
 	"monorepo/bin-outdial-manager/pkg/dbhandler"
 )
@@ -27,8 +28,10 @@ func (h *outdialHandler) Create(
 
 	id := uuid.Must(uuid.NewV4())
 	t := &outdial.Outdial{
-		ID:         id,
-		CustomerID: customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 		CampaignID: campaignID,
 
 		Name:   name,

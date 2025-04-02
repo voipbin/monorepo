@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -37,12 +38,16 @@ func Test_Done(t *testing.T) {
 			campaigncall.ResultSuccess,
 
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("f8eb1445-d31d-4adb-909f-e0284792ef8d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f8eb1445-d31d-4adb-909f-e0284792ef8d"),
+				},
 			},
 			omoutdialtarget.StatusDone,
 
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("f8eb1445-d31d-4adb-909f-e0284792ef8d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f8eb1445-d31d-4adb-909f-e0284792ef8d"),
+				},
 			},
 		},
 		{
@@ -52,12 +57,16 @@ func Test_Done(t *testing.T) {
 			campaigncall.ResultFail,
 
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("7093a2e7-9e1a-4955-90cf-2b5d7b544a64"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7093a2e7-9e1a-4955-90cf-2b5d7b544a64"),
+				},
 			},
 			omoutdialtarget.StatusIdle,
 
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("7093a2e7-9e1a-4955-90cf-2b5d7b544a64"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7093a2e7-9e1a-4955-90cf-2b5d7b544a64"),
+				},
 			},
 		},
 	}
@@ -112,10 +121,14 @@ func Test_Progressing(t *testing.T) {
 			uuid.FromStringOrNil("f8eb1445-d31d-4adb-909f-e0284792ef8d"),
 
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("f8eb1445-d31d-4adb-909f-e0284792ef8d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f8eb1445-d31d-4adb-909f-e0284792ef8d"),
+				},
 			},
 			&campaigncall.Campaigncall{
-				ID: uuid.FromStringOrNil("f8eb1445-d31d-4adb-909f-e0284792ef8d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f8eb1445-d31d-4adb-909f-e0284792ef8d"),
+				},
 			},
 		},
 	}

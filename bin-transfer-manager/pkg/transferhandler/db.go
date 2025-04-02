@@ -4,6 +4,7 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -32,8 +33,10 @@ func (h *transferHandler) Create(
 
 	// create a conference struct
 	res := &transfer.Transfer{
-		ID:         h.utilHandler.UUIDCreate(),
-		CustomerID: customerID,
+		Identity: commonidentity.Identity{
+			ID:         h.utilHandler.UUIDCreate(),
+			CustomerID: customerID,
+		},
 
 		Type: transferType,
 

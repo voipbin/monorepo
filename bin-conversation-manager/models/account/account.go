@@ -1,13 +1,12 @@
 package account
 
 import (
-	"github.com/gofrs/uuid"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 // Account defines
 type Account struct {
-	ID         uuid.UUID `json:"id"`          // customer id
-	CustomerID uuid.UUID `json:"customer_id"` // customer
+	commonidentity.Identity
 
 	Type Type `json:"type"`
 

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -28,8 +29,10 @@ func Test_setVariables(t *testing.T) {
 			name: "normal",
 
 			queue: &queue.Queue{
-				ID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
-				CustomerID: uuid.FromStringOrNil("c910ccc8-7f55-11ec-9c6e-a356bdf34421"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
+					CustomerID: uuid.FromStringOrNil("c910ccc8-7f55-11ec-9c6e-a356bdf34421"),
+				},
 
 				RoutingMethod: queue.RoutingMethodRandom,
 				TagIDs: []uuid.UUID{
@@ -40,7 +43,9 @@ func Test_setVariables(t *testing.T) {
 				ServiceTimeout: 1000000,
 			},
 			queuecall: &queuecall.Queuecall{
-				ID:                    uuid.FromStringOrNil("ec57c480-db57-11ec-bb3e-b36e382aaec6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ec57c480-db57-11ec-bb3e-b36e382aaec6"),
+				},
 				ReferenceActiveflowID: uuid.FromStringOrNil("48acb876-db58-11ec-a465-3fdb0b80f24c"),
 
 				TimeoutWait:    100000,
@@ -97,8 +102,10 @@ func Test_deleteVariables(t *testing.T) {
 			name: "normal",
 
 			queue: &queue.Queue{
-				ID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
-				CustomerID: uuid.FromStringOrNil("c910ccc8-7f55-11ec-9c6e-a356bdf34421"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
+					CustomerID: uuid.FromStringOrNil("c910ccc8-7f55-11ec-9c6e-a356bdf34421"),
+				},
 
 				RoutingMethod: queue.RoutingMethodRandom,
 				TagIDs: []uuid.UUID{
@@ -109,7 +116,9 @@ func Test_deleteVariables(t *testing.T) {
 				ServiceTimeout: 1000000,
 			},
 			queuecall: &queuecall.Queuecall{
-				ID:                    uuid.FromStringOrNil("ec57c480-db57-11ec-bb3e-b36e382aaec6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ec57c480-db57-11ec-bb3e-b36e382aaec6"),
+				},
 				ReferenceActiveflowID: uuid.FromStringOrNil("360c2e5e-db58-11ec-a454-13204c0093d8"),
 
 				TimeoutWait:    100000,

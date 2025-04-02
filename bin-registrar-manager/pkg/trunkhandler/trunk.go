@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/models/trunk"
@@ -48,8 +49,10 @@ func (h *trunkHandler) Create(
 	id := h.utilHandler.UUIDCreate()
 	realm := common.GenerateRealmTrunkDomain(domainName)
 	t := &trunk.Trunk{
-		ID:         id,
-		CustomerID: customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 
 		Name:   name,
 		Detail: detail,

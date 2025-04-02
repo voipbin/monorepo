@@ -40,10 +40,14 @@ func Test_extensionsGET(t *testing.T) {
 
 			responseExtensions: []*rmextension.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("7ea872bc-bbc5-11ef-83ae-dfcd9b190c58"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("7ea872bc-bbc5-11ef-83ae-dfcd9b190c58"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("7efedf4e-bbc5-11ef-8d7d-ff69121f9899"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("7efedf4e-bbc5-11ef-8d7d-ff69121f9899"),
+					},
 				},
 			},
 
@@ -107,7 +111,9 @@ func Test_extensionsIDGET(t *testing.T) {
 
 			reqQuery: "/service_agents/extensions/7f22ea24-bbc5-11ef-8c3f-139aa5535776",
 			responseExtension: &rmextension.WebhookMessage{
-				ID: uuid.FromStringOrNil("7f22ea24-bbc5-11ef-8c3f-139aa5535776"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7f22ea24-bbc5-11ef-8c3f-139aa5535776"),
+				},
 			},
 
 			expectedExtensionID: uuid.FromStringOrNil("7f22ea24-bbc5-11ef-8c3f-139aa5535776"),

@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -44,7 +45,9 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 			responseMessages: []*message.Message{
 				{
-					ID: uuid.FromStringOrNil("ca8db014-1a1f-407e-9443-54282b975e40"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ca8db014-1a1f-407e-9443-54282b975e40"),
+					},
 				},
 			},
 
@@ -68,10 +71,14 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 			responseMessages: []*message.Message{
 				{
-					ID: uuid.FromStringOrNil("8956ba14-7ac4-45f6-b0fb-97af3a1d2520"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("8956ba14-7ac4-45f6-b0fb-97af3a1d2520"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("a72d1b51-aa78-4e86-928d-a18c40da4cac"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("a72d1b51-aa78-4e86-928d-a18c40da4cac"),
+					},
 				},
 			},
 

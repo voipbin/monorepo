@@ -2,17 +2,16 @@ package message
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
-
-	"github.com/gofrs/uuid"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-message-manager/models/target"
 )
 
 // Message defines
 type Message struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	Type       Type      `json:"type"`
+	commonidentity.Identity
+
+	Type Type `json:"type"`
 
 	// from/to info
 	Source  *commonaddress.Address `json:"source"`

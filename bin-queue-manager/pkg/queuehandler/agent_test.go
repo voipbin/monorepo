@@ -40,8 +40,10 @@ func Test_GetAgents(t *testing.T) {
 			amagent.StatusNone,
 
 			&queue.Queue{
-				ID:         uuid.FromStringOrNil("10b6bd90-b49d-11ec-950c-d3213b7e8cda"),
-				CustomerID: uuid.FromStringOrNil("dd185d70-b499-11ec-a4b6-735983739876"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("10b6bd90-b49d-11ec-950c-d3213b7e8cda"),
+					CustomerID: uuid.FromStringOrNil("dd185d70-b499-11ec-a4b6-735983739876"),
+				},
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("5d443cfe-b499-11ec-ac74-83f95d8a0381"),
 					uuid.FromStringOrNil("4fc21d6c-b244-11ee-9bd1-1b47f77edd77"),
@@ -75,8 +77,10 @@ func Test_GetAgents(t *testing.T) {
 			amagent.StatusAvailable,
 
 			&queue.Queue{
-				ID:         uuid.FromStringOrNil("10f079ea-b49d-11ec-9eae-9bf3cacd1f17"),
-				CustomerID: uuid.FromStringOrNil("dd185d70-b499-11ec-a4b6-735983739876"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("10f079ea-b49d-11ec-9eae-9bf3cacd1f17"),
+					CustomerID: uuid.FromStringOrNil("dd185d70-b499-11ec-a4b6-735983739876"),
+				},
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("5d443cfe-b499-11ec-ac74-83f95d8a0381"),
 				},

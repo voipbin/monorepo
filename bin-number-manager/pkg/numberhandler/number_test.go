@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -56,15 +57,19 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 				EmergencyEnabled: false,
 			},
 			responseNumber: &number.Number{
-				ID:           uuid.FromStringOrNil("96c97670-7315-11ed-8501-739535181602"),
-				CustomerID:   uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("96c97670-7315-11ed-8501-739535181602"),
+					CustomerID: uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+				},
 				Number:       "+821021656521",
 				ProviderName: number.ProviderNameTelnyx,
 			},
 
 			expectNumber: &number.Number{
-				ID:                  uuid.FromStringOrNil("96c97670-7315-11ed-8501-739535181602"),
-				CustomerID:          uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("96c97670-7315-11ed-8501-739535181602"),
+					CustomerID: uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+				},
 				Number:              "+821021656521",
 				CallFlowID:          uuid.FromStringOrNil("1b38eca6-a864-11ec-a2a1-6f2bb4ef8c7e"),
 				MessageFlowID:       uuid.FromStringOrNil("3ba45c68-8821-11ec-bc88-2367c938e4d5"),
@@ -148,10 +153,12 @@ func Test_UpdateInfo(t *testing.T) {
 			"update detail",
 
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("1e5f4238-7c58-11eb-a6aa-fb7278bbb0bc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1e5f4238-7c58-11eb-a6aa-fb7278bbb0bc"),
+					CustomerID: uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
+				},
 				CallFlowID:          uuid.FromStringOrNil("1f71c61e-7c58-11eb-8d07-6f618f90475f"),
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 				Name:                "update name",
 				Detail:              "update detail",
 				ProviderName:        number.ProviderNameTelnyx,
@@ -223,9 +230,11 @@ func Test_Gets(t *testing.T) {
 
 			[]*number.Number{
 				{
-					ID:                  uuid.FromStringOrNil("da535752-7a4d-11eb-aec4-5bac74c24370"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("da535752-7a4d-11eb-aec4-5bac74c24370"),
+						CustomerID: uuid.FromStringOrNil("0b22cb36-eca8-11ee-a178-2f4c3561dcfd"),
+					},
 					Number:              "+821021656521",
-					CustomerID:          uuid.FromStringOrNil("0b22cb36-eca8-11ee-a178-2f4c3561dcfd"),
 					ProviderName:        number.ProviderNameTelnyx,
 					ProviderReferenceID: "1580568175064384684",
 					Status:              number.StatusActive,
@@ -294,7 +303,9 @@ func Test_Get(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
 			&number.Number{
-				ID: uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b737aade-7a34-11eb-90bb-978a74aed8f6"),
+				},
 			},
 		},
 	}
@@ -346,12 +357,16 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("3ed894d6-7316-11ed-896c-2bd2d37eb485"),
 
 			&number.Number{
-				ID:           uuid.FromStringOrNil("3ed894d6-7316-11ed-896c-2bd2d37eb485"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ed894d6-7316-11ed-896c-2bd2d37eb485"),
+				},
 				ProviderName: number.ProviderNameTelnyx,
 			},
 
 			&number.Number{
-				ID:           uuid.FromStringOrNil("3ed894d6-7316-11ed-896c-2bd2d37eb485"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ed894d6-7316-11ed-896c-2bd2d37eb485"),
+				},
 				ProviderName: number.ProviderNameTelnyx,
 			},
 		},

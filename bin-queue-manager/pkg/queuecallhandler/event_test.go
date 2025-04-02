@@ -7,6 +7,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -37,7 +38,9 @@ func Test_EventCallCallHangup(t *testing.T) {
 			uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
 
 			&queuecall.Queuecall{
-				ID:              uuid.FromStringOrNil("b5bbd69e-5ef9-11ec-a39e-73a3a50a1e26"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b5bbd69e-5ef9-11ec-a39e-73a3a50a1e26"),
+				},
 				QueueID:         uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
@@ -118,7 +121,9 @@ func Test_EventCallConfbridgeJoined(t *testing.T) {
 			uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 
 			&queuecall.Queuecall{
-				ID:              uuid.FromStringOrNil("b5bbd69e-5ef9-11ec-a39e-73a3a50a1e26"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b5bbd69e-5ef9-11ec-a39e-73a3a50a1e26"),
+				},
 				QueueID:         uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
@@ -200,7 +205,9 @@ func Test_EventCallConfbridgeLeaved(t *testing.T) {
 			uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 
 			&queuecall.Queuecall{
-				ID:              uuid.FromStringOrNil("b5bbd69e-5ef9-11ec-a39e-73a3a50a1e26"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b5bbd69e-5ef9-11ec-a39e-73a3a50a1e26"),
+				},
 				QueueID:         uuid.FromStringOrNil("c935c7d0-5edf-11ec-8d87-5b567f32807e"),
 				ReferenceType:   queuecall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
@@ -280,19 +287,27 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 
 			responseQueuecalls: []*queuecall.Queuecall{
 				{
-					ID:     uuid.FromStringOrNil("6cf821a8-f08b-11ee-ba34-87171b9d8aec"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6cf821a8-f08b-11ee-ba34-87171b9d8aec"),
+					},
 					Status: queuecall.StatusDone,
 				},
 				{
-					ID:     uuid.FromStringOrNil("6d6aca96-f08b-11ee-8eda-b357cf02292b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6d6aca96-f08b-11ee-8eda-b357cf02292b"),
+					},
 					Status: queuecall.StatusDone,
 				},
 				{
-					ID:     uuid.FromStringOrNil("6d999c9a-f08b-11ee-a47a-03dddb8092f7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6d999c9a-f08b-11ee-a47a-03dddb8092f7"),
+					},
 					Status: queuecall.StatusDone,
 				},
 				{
-					ID:     uuid.FromStringOrNil("6dccccc8-f08b-11ee-a0e6-1fccc2222158"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6dccccc8-f08b-11ee-a0e6-1fccc2222158"),
+					},
 					Status: queuecall.StatusDone,
 				},
 			},

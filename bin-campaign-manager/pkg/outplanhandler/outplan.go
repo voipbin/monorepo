@@ -4,6 +4,7 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -35,8 +36,10 @@ func (h *outplanHandler) Create(
 
 	id := h.util.UUIDCreate()
 	t := &outplan.Outplan{
-		ID:         id,
-		CustomerID: customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 
 		Name:   name,
 		Detail: detail,

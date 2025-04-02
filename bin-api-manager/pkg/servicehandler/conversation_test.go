@@ -203,18 +203,26 @@ func Test_ConversationMessageGetsByConversationID(t *testing.T) {
 			},
 			[]cvmessage.Message{
 				{
-					ID: uuid.FromStringOrNil("13c78e5e-ed25-11ec-b924-b319c14e0209"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("13c78e5e-ed25-11ec-b924-b319c14e0209"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("13e8436a-ed25-11ec-ba44-8b0716e4b2f0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("13e8436a-ed25-11ec-ba44-8b0716e4b2f0"),
+					},
 				},
 			},
 			[]*cvmessage.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("13c78e5e-ed25-11ec-b924-b319c14e0209"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("13c78e5e-ed25-11ec-b924-b319c14e0209"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("13e8436a-ed25-11ec-ba44-8b0716e4b2f0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("13e8436a-ed25-11ec-ba44-8b0716e4b2f0"),
+					},
 				},
 			},
 		},
@@ -286,11 +294,15 @@ func Test_ConversationMessageSend(t *testing.T) {
 				},
 			},
 			&cvmessage.Message{
-				ID: uuid.FromStringOrNil("c9bd73a4-ed25-11ec-8283-43aafea65e87"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c9bd73a4-ed25-11ec-8283-43aafea65e87"),
+				},
 			},
 
 			&cvmessage.WebhookMessage{
-				ID: uuid.FromStringOrNil("c9bd73a4-ed25-11ec-8283-43aafea65e87"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c9bd73a4-ed25-11ec-8283-43aafea65e87"),
+				},
 			},
 		},
 	}

@@ -65,13 +65,17 @@ func Test_TransferStart(t *testing.T) {
 				TMDelete: defaultTimestamp,
 			},
 			responseTransfer: &tmtransfer.Transfer{
-				ID:         uuid.FromStringOrNil("00ff06ba-dd3b-11ed-944c-bf71648b5aaa"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("00ff06ba-dd3b-11ed-944c-bf71648b5aaa"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 
 			expectRes: &tmtransfer.WebhookMessage{
-				ID:         uuid.FromStringOrNil("00ff06ba-dd3b-11ed-944c-bf71648b5aaa"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("00ff06ba-dd3b-11ed-944c-bf71648b5aaa"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
