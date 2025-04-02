@@ -4,6 +4,7 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -77,9 +78,11 @@ func (h *queuecallHandler) Create(
 	log = log.WithField("id", id)
 
 	qc := &queuecall.Queuecall{
-		ID:         id,
-		CustomerID: q.CustomerID,
-		QueueID:    q.ID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: q.CustomerID,
+		},
+		QueueID: q.ID,
 
 		ReferenceType:         referenceType,
 		ReferenceID:           referenceID,

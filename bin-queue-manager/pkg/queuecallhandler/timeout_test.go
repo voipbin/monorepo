@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -31,7 +32,9 @@ func Test_TimeoutWait(t *testing.T) {
 			uuid.FromStringOrNil("c4d753c4-ad59-11ed-ab8b-7f97d8c89352"),
 
 			&queuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("c4d753c4-ad59-11ed-ab8b-7f97d8c89352"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c4d753c4-ad59-11ed-ab8b-7f97d8c89352"),
+				},
 				Status: queuecall.StatusWaiting,
 			},
 		},
@@ -81,7 +84,9 @@ func Test_TimeoutService(t *testing.T) {
 			uuid.FromStringOrNil("52f489c4-ad5a-11ed-b0e7-53ea18cc4a48"),
 
 			&queuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("52f489c4-ad5a-11ed-b0e7-53ea18cc4a48"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("52f489c4-ad5a-11ed-b0e7-53ea18cc4a48"),
+				},
 				Status: queuecall.StatusService,
 			},
 		},

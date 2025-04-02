@@ -55,8 +55,10 @@ func Test_ServiceStart(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("e82487ee-acef-11ed-b6a0-d375ffdc940c"),
 
 			responseQueue: &queue.Queue{
-				ID:            uuid.FromStringOrNil("e7d1c428-acef-11ed-9009-f32fafb30091"),
-				CustomerID:    uuid.FromStringOrNil("525c62ba-acf2-11ed-a514-c7d0b90804bb"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e7d1c428-acef-11ed-9009-f32fafb30091"),
+					CustomerID: uuid.FromStringOrNil("525c62ba-acf2-11ed-a514-c7d0b90804bb"),
+				},
 				RoutingMethod: queue.RoutingMethodRandom,
 				TagIDs:        []uuid.UUID{},
 				WaitActions: []fmaction.Action{
@@ -83,12 +85,16 @@ func Test_ServiceStart(t *testing.T) {
 			},
 			responseUUIDActionID: uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
 			responseQueuecall: &queuecall.Queuecall{
-				ID: uuid.FromStringOrNil("b0fd8d1e-acf0-11ed-9430-6f880d5c9104"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b0fd8d1e-acf0-11ed-9430-6f880d5c9104"),
+				},
 			},
 
 			expectQueuecall: &queuecall.Queuecall{
-				ID:                    uuid.FromStringOrNil("b0fd8d1e-acf0-11ed-9430-6f880d5c9104"),
-				CustomerID:            uuid.FromStringOrNil("525c62ba-acf2-11ed-a514-c7d0b90804bb"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0fd8d1e-acf0-11ed-9430-6f880d5c9104"),
+					CustomerID: uuid.FromStringOrNil("525c62ba-acf2-11ed-a514-c7d0b90804bb"),
+				},
 				QueueID:               uuid.FromStringOrNil("e7d1c428-acef-11ed-9009-f32fafb30091"),
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("e82487ee-acef-11ed-b6a0-d375ffdc940c"),
@@ -189,7 +195,9 @@ func Test_createActions(t *testing.T) {
 			"normal",
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("61a4651c-60e3-11ec-86ff-efca21ef8707"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("61a4651c-60e3-11ec-86ff-efca21ef8707"),
+				},
 				WaitActions: []fmaction.Action{
 					{
 						ID:   uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),

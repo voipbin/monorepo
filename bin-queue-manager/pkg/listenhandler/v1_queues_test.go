@@ -68,8 +68,10 @@ func Test_processV1QueuesPost(t *testing.T) {
 			6000000,
 
 			&queue.Queue{
-				ID:         uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
-				CustomerID: uuid.FromStringOrNil("442f5d62-7f55-11ec-a2c0-0bcd3814d515"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
+					CustomerID: uuid.FromStringOrNil("442f5d62-7f55-11ec-a2c0-0bcd3814d515"),
+				},
 
 				Name:   "name",
 				Detail: "detail",
@@ -177,8 +179,10 @@ func Test_processV1QueuesGet(t *testing.T) {
 
 			[]*queue.Queue{
 				{
-					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
-					CustomerID: uuid.FromStringOrNil("570b5094-7f55-11ec-b5cd-1b925f9028af"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
+						CustomerID: uuid.FromStringOrNil("570b5094-7f55-11ec-b5cd-1b925f9028af"),
+					},
 				},
 			},
 
@@ -204,12 +208,16 @@ func Test_processV1QueuesGet(t *testing.T) {
 
 			[]*queue.Queue{
 				{
-					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
-					CustomerID: uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
+						CustomerID: uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("e218b154-5f6b-11ec-818d-633351f9e341"),
-					CustomerID: uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("e218b154-5f6b-11ec-818d-633351f9e341"),
+						CustomerID: uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
+					},
 				},
 			},
 			&sock.Response{
@@ -330,7 +338,9 @@ func Test_processV1QueuesIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("a8e8faba-6150-11ec-bde0-e75ae9f16df7"),
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("a8e8faba-6150-11ec-bde0-e75ae9f16df7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a8e8faba-6150-11ec-bde0-e75ae9f16df7"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -412,7 +422,9 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 			6000000,
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("66f7d436-5f6c-11ec-9298-677df04a59c2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("66f7d436-5f6c-11ec-9298-677df04a59c2"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -487,7 +499,9 @@ func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 			},
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("4c898be8-5f6d-11ec-b701-a7ba1509a629"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4c898be8-5f6d-11ec-b701-a7ba1509a629"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -511,7 +525,9 @@ func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 			},
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("1c0938ae-6019-11ec-8a5d-ab6c7909948a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1c0938ae-6019-11ec-8a5d-ab6c7909948a"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -574,7 +590,9 @@ func Test_processV1QueuesIDRoutingMethodPut(t *testing.T) {
 			queue.RoutingMethodRandom,
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("89b402a8-6019-11ec-8f65-cb5c282f0024"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("89b402a8-6019-11ec-8f65-cb5c282f0024"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -646,7 +664,9 @@ func Test_processV1QueuesIDWaitActionsPut(t *testing.T) {
 			100000,
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("e4d05ee8-6019-11ec-ac25-1bd30b213fe2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e4d05ee8-6019-11ec-ac25-1bd30b213fe2"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -826,7 +846,9 @@ func Test_processV1QueuesIDExecutePut(t *testing.T) {
 			queue.ExecuteRun,
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("e5e9af02-d1d7-11ec-b5e1-0782d8999acb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e5e9af02-d1d7-11ec-b5e1-0782d8999acb"),
+				},
 			},
 
 			&sock.Response{
@@ -886,7 +908,9 @@ func Test_processV1QueuecallsIDStatusWaitingPost(t *testing.T) {
 			uuid.FromStringOrNil("7c9e9cae-d1ca-11ec-a81e-0baaef8ce608"),
 
 			&queuecall.Queuecall{
-				ID: uuid.FromStringOrNil("7c9e9cae-d1ca-11ec-a81e-0baaef8ce608"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7c9e9cae-d1ca-11ec-a81e-0baaef8ce608"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,

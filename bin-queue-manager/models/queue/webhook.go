@@ -3,6 +3,7 @@ package queue
 import (
 	"encoding/json"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -10,8 +11,7 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`          // queue id
-	CustomerID uuid.UUID `json:"customer_id"` // owner id
+	commonidentity.Identity
 
 	// basic info
 	Name   string `json:"name"`   // queue's name
@@ -42,8 +42,7 @@ type WebhookMessage struct {
 // ConvertWebhookMessage Convert to the publishable message.
 func (h *Queue) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
+		Identity: h.Identity,
 
 		Name:          h.Name,
 		Detail:        h.Detail,

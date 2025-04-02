@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -40,7 +41,9 @@ func Test_Gets(t *testing.T) {
 
 			[]*queue.Queue{
 				{
-					ID: uuid.FromStringOrNil("14ca28c8-d25b-11ec-9e2b-3fc096b513f8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("14ca28c8-d25b-11ec-9e2b-3fc096b513f8"),
+					},
 				},
 			},
 		},
@@ -92,7 +95,9 @@ func Test_Get(t *testing.T) {
 			uuid.FromStringOrNil("55ea87c6-d25b-11ec-953d-1be008fae5a9"),
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("55ea87c6-d25b-11ec-953d-1be008fae5a9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("55ea87c6-d25b-11ec-953d-1be008fae5a9"),
+				},
 			},
 		},
 	}
@@ -143,7 +148,9 @@ func Test_dbDelete(t *testing.T) {
 			uuid.FromStringOrNil("8f1edb5a-d25b-11ec-a7ee-6be8a6eba340"),
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("8f1edb5a-d25b-11ec-a7ee-6be8a6eba340"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8f1edb5a-d25b-11ec-a7ee-6be8a6eba340"),
+				},
 			},
 		},
 	}
@@ -216,7 +223,9 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			serviceTimeout: 6000000,
 
 			responseQueue: &queue.Queue{
-				ID: uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+				},
 			},
 		},
 	}
@@ -293,7 +302,9 @@ func Test_UpdateTagIDs(t *testing.T) {
 			},
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("427a0bd4-d25c-11ec-9602-cfbab70ad4a5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("427a0bd4-d25c-11ec-9602-cfbab70ad4a5"),
+				},
 			},
 		},
 	}
@@ -348,7 +359,9 @@ func Test_UpdateRoutingMethod(t *testing.T) {
 			queue.RoutingMethodRandom,
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("895d0e0c-d25c-11ec-b633-bf12408d3840"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("895d0e0c-d25c-11ec-b633-bf12408d3840"),
+				},
 			},
 		},
 	}
@@ -411,7 +424,9 @@ func Test_UpdateWaitActionsAndTimeouts(t *testing.T) {
 			6000000,
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("bbd57b08-d25c-11ec-9ac2-97f8bfe533ea"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bbd57b08-d25c-11ec-9ac2-97f8bfe533ea"),
+				},
 			},
 		},
 	}
@@ -466,7 +481,9 @@ func Test_UpdateExecute(t *testing.T) {
 			queue.ExecuteRun,
 
 			&queue.Queue{
-				ID:      uuid.FromStringOrNil("2a4d6dc0-d25d-11ec-96c0-7773a7853963"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a4d6dc0-d25d-11ec-96c0-7773a7853963"),
+				},
 				Execute: queue.ExecuteStop,
 			},
 		},
@@ -477,7 +494,9 @@ func Test_UpdateExecute(t *testing.T) {
 			queue.ExecuteStop,
 
 			&queue.Queue{
-				ID:      uuid.FromStringOrNil("ee418518-d25d-11ec-85fb-53edf0302f1b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ee418518-d25d-11ec-85fb-53edf0302f1b"),
+				},
 				Execute: queue.ExecuteStop,
 			},
 		},
@@ -488,7 +507,9 @@ func Test_UpdateExecute(t *testing.T) {
 			queue.ExecuteStop,
 
 			&queue.Queue{
-				ID:      uuid.FromStringOrNil("fcb25d48-d25d-11ec-b24f-f351a11e35da"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fcb25d48-d25d-11ec-b24f-f351a11e35da"),
+				},
 				Execute: queue.ExecuteRun,
 			},
 		},
@@ -499,7 +520,9 @@ func Test_UpdateExecute(t *testing.T) {
 			queue.ExecuteRun,
 
 			&queue.Queue{
-				ID:      uuid.FromStringOrNil("0ab54d9c-d25e-11ec-bd35-fff3fd5a3028"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0ab54d9c-d25e-11ec-bd35-fff3fd5a3028"),
+				},
 				Execute: queue.ExecuteRun,
 			},
 		},
@@ -563,7 +586,9 @@ func Test_RemoveQueuecallID(t *testing.T) {
 			uuid.FromStringOrNil("c169ab4e-d542-11ee-89a9-13ae647f6142"),
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("c0dc4682-d542-11ee-961d-5f6dc6c01c7e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c0dc4682-d542-11ee-961d-5f6dc6c01c7e"),
+				},
 			},
 		},
 	}
