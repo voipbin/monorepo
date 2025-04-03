@@ -74,11 +74,11 @@ func NewSummaryHandler(
 
 // list of variables
 const (
-	variableSummaryID            = "voipbin.summary.id"
-	variableSummaryReferenceType = "voipbin.summary.reference_type"
-	variableSummaryReferenceID   = "voipbin.summary.reference_id"
-	variableSummaryLanguage      = "voipbin.summary.language"
-	variableSummaryContent       = "voipbin.summary.content"
+	variableSummaryID            = "voipbin.ai_summary.id"
+	variableSummaryReferenceType = "voipbin.ai_summary.reference_type"
+	variableSummaryReferenceID   = "voipbin.ai_summary.reference_id"
+	variableSummaryLanguage      = "voipbin.ai_summary.language"
+	variableSummaryContent       = "voipbin.ai_summary.content"
 )
 
 const (

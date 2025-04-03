@@ -1032,7 +1032,7 @@ func (h *activeflowHandler) actionHandleAISummary(ctx context.Context, af *activ
 		opt.ReferenceType,
 		opt.ReferenceID,
 		opt.Language,
-		3000,
+		60000,
 	)
 	if err != nil {
 		return errors.Wrap(err, "Could not start the service.")

@@ -3800,7 +3800,7 @@ func Test_actionHandleAISummary(t *testing.T) {
 				tt.expectedReferenceType,
 				tt.expectedReferenceID,
 				tt.expectedLanguage,
-				3000,
+				60000,
 			).Return(tt.responseService, nil)
 
 			// push stack
