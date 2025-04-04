@@ -32,23 +32,23 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 		expectRes       *sock.Response
 	}{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:      "/v1/agents?page_size=10&page_token=2021-11-23%2017:55:39.712000&filter_customer_id=5fd7f9b8-cb37-11ee-bd29-f30560a6ac86&filter_tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91&filter_deleted=false&filter_status=available",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			10,
-			"2021-11-23 17:55:39.712000",
+			pageSize:  10,
+			pageToken: "2021-11-23 17:55:39.712000",
 
-			map[string]string{
+			responseFilters: map[string]string{
 				"customer_id": "5fd7f9b8-cb37-11ee-bd29-f30560a6ac86",
 				"deleted":     "false",
 				"status":      string(agent.StatusAvailable),
 				"tag_ids":     "f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91",
 			},
-			[]*agent.Agent{
+			responseAgents: []*agent.Agent{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
@@ -73,10 +73,10 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 					TMDelete: "9999-01-01 00:00:00.000000",
 				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 	}
@@ -431,30 +431,30 @@ func TestProcessV1AgentsPost(t *testing.T) {
 		expectRes *sock.Response
 	}{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:      "/v1/agents",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["27d3bc3e-4d88-11ec-a61d-af78fdede455"], "addresses":[{"type": "tel", "target":"+821021656521"}]}`),
 			},
 
-			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-			"test1",
-			"password",
-			"test agent1",
-			"test agent1 detail",
-			"ringall",
-			1,
-			[]uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
-			[]commonaddress.Address{
+			customerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+			username:   "test1",
+			password:   "password",
+			agentName:  "test agent1",
+			detail:     "test agent1 detail",
+			ringMethod: "ringall",
+			permission: 1,
+			tagIDs:     []uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
+			addresses: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
 
-			&agent.Agent{
+			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
@@ -477,40 +477,40 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 		{
-			"have 2 tags",
-			&sock.Request{
+			name: "have 2 tags",
+			request: &sock.Request{
 				URI:      "/v1/agents",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["159623f0-4d8c-11ec-85da-432863b96d60", "15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"], "addresses":[{"type": "tel", "target":"+821021656521"}]}`),
 			},
 
-			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-			"test1",
-			"password",
-			"test agent1",
-			"test agent1 detail",
-			"ringall",
-			1,
-			[]uuid.UUID{
+			customerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+			username:   "test1",
+			password:   "password",
+			agentName:  "test agent1",
+			detail:     "test agent1 detail",
+			ringMethod: "ringall",
+			permission: 1,
+			tagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("159623f0-4d8c-11ec-85da-432863b96d60"),
 				uuid.FromStringOrNil("15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"),
 			},
-			[]commonaddress.Address{
+			addresses: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
 
-			&agent.Agent{
+			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("28a63cc8-4d8c-11ec-959e-6bedf5864e94"),
 					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
@@ -536,33 +536,33 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"28a63cc8-4d8c-11ec-959e-6bedf5864e94","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["159623f0-4d8c-11ec-85da-432863b96d60","15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"28a63cc8-4d8c-11ec-959e-6bedf5864e94","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["159623f0-4d8c-11ec-85da-432863b96d60","15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 		{
-			"have 2 tags and addresses",
-			&sock.Request{
+			name: "have 2 tags and addresses",
+			request: &sock.Request{
 				URI:      "/v1/agents",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["e7b166ec-4d8c-11ec-8c61-0b9e85603e10", "e82a311c-4d8c-11ec-9411-3382b1284325"], "addresses":[{"type": "tel", "target":"+821021656521"},{"type": "tel", "target":"+821021656522"}]}`),
 			},
 
-			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-			"test1",
-			"password",
-			"test agent1",
-			"test agent1 detail",
-			"ringall",
-			1,
-			[]uuid.UUID{
+			customerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+			username:   "test1",
+			password:   "password",
+			agentName:  "test agent1",
+			detail:     "test agent1 detail",
+			ringMethod: "ringall",
+			permission: 1,
+			tagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("e7b166ec-4d8c-11ec-8c61-0b9e85603e10"),
 				uuid.FromStringOrNil("e82a311c-4d8c-11ec-9411-3382b1284325"),
 			},
-			[]commonaddress.Address{
+			addresses: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
@@ -573,7 +573,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				},
 			},
 
-			&agent.Agent{
+			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e85d8d78-4d8c-11ec-8a91-1f780097ef8d"),
 					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
@@ -603,10 +603,10 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e85d8d78-4d8c-11ec-8a91-1f780097ef8d","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"e85d8d78-4d8c-11ec-8a91-1f780097ef8d","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521"},{"type":"tel","target":"+821021656522"}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -652,18 +652,18 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 		expectRes *sock.Response
 	}{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:      "/v1/agents/test1/login",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","password":"password"}`),
 			},
 
-			"test1",
-			"password",
+			username: "test1",
+			password: "password",
 
-			&agent.Agent{
+			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
@@ -686,10 +686,10 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}

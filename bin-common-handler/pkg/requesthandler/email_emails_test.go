@@ -146,7 +146,7 @@ func Test_EmailV1EmailSend(t *testing.T) {
 				URI:      "/v1/emails",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"b9750256-0077-11f0-acf2-13e93f5406e0","activeflow_id":"b9a787c6-0077-11f0-a27f-53ed03e505eb","destinations":[{"type":"email","target":"test@voipbin.net","target_name":"test name","name":"","detail":""}],"subject":"test subject","content":"test content","attachments":[{"reference_type":"recording","reference_id":"b9de7150-0077-11f0-a65a-dfc71909ce11"}]}`),
+				Data:     []byte(`{"customer_id":"b9750256-0077-11f0-acf2-13e93f5406e0","activeflow_id":"b9a787c6-0077-11f0-a27f-53ed03e505eb","destinations":[{"type":"email","target":"test@voipbin.net","target_name":"test name"}],"subject":"test subject","content":"test content","attachments":[{"reference_type":"recording","reference_id":"b9de7150-0077-11f0-a65a-dfc71909ce11"}]}`),
 			},
 			expectRes: &ememail.Email{
 				Identity: identity.Identity{

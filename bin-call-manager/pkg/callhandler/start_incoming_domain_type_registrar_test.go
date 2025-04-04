@@ -90,19 +90,13 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 					Type: fmaction.TypeConnect,
 					Option: map[string]any{
 						"source": map[string]any{
-							"type":        "extension",
-							"target":      "test-exten",
-							"detail":      "",
-							"name":        "",
-							"target_name": "",
+							"type":   "extension",
+							"target": "test-exten",
 						},
 						"destinations": []map[string]any{
 							{
-								"type":        "agent",
-								"target":      "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
-								"detail":      "",
-								"name":        "",
-								"target_name": "",
+								"type":   "agent",
+								"target": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
 							},
 						},
 						"early_media":  false,
@@ -370,19 +364,13 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 					Type: fmaction.TypeConnect,
 					Option: map[string]any{
 						"source": map[string]any{
-							"type":        "extension",
-							"target":      "test-exten",
-							"detail":      "",
-							"name":        "",
-							"target_name": "",
+							"type":   "extension",
+							"target": "test-exten",
 						},
 						"destinations": []map[string]any{
 							{
-								"type":        "tel",
-								"target":      "+821100000001",
-								"detail":      "",
-								"name":        "",
-								"target_name": "",
+								"type":   "tel",
+								"target": "+821100000001",
 							},
 						},
 						"early_media":  true,
@@ -538,19 +526,14 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 					Type: fmaction.TypeConnect,
 					Option: map[string]any{
 						"source": map[string]any{
-							"type":        "extension",
-							"target":      "test-exten",
-							"detail":      "",
-							"name":        "",
-							"target_name": "",
+							"type":   "extension",
+							"target": "test-exten",
 						},
 						"destinations": []map[string]any{
 							{
 								"type":        "extension",
 								"target":      "eb145bae-2814-11ef-b5c9-fb53bd2bff02",
 								"target_name": "test-destination",
-								"detail":      "",
-								"name":        "",
 							},
 						},
 						"early_media":  false,

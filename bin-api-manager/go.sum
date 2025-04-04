@@ -382,8 +382,8 @@ cloud.google.com/go/tpu v1.3.0/go.mod h1:aJIManG0o20tfDQlRIej44FcwGGl/cD0oiRyMKG
 cloud.google.com/go/tpu v1.4.0/go.mod h1:mjZaX8p0VBgllCzF6wcU2ovUXN9TONFLd7iz227X2Xg=
 cloud.google.com/go/trace v1.3.0/go.mod h1:FFUE83d9Ca57C+K8rDl/Ih8LwOzWIV1krKgxg6N0G28=
 cloud.google.com/go/trace v1.4.0/go.mod h1:UG0v8UBqzusp+z63o7FK74SdFE+AXpCLdFb1rshXG+Y=
-cloud.google.com/go/trace v1.11.3 h1:c+I4YFjxRQjvAhRmSsmjpASUKq88chOX854ied0K/pE=
-cloud.google.com/go/trace v1.11.3/go.mod h1:pt7zCYiDSQjC9Y2oqCsh9jF4GStB/hmjrYLsxRR27q8=
+cloud.google.com/go/trace v1.11.5 h1:CALS1loyxJMnRiCwZSpdf8ac7iCsjreMxFD2WGxzzHU=
+cloud.google.com/go/trace v1.11.5/go.mod h1:TwblCcqNInriu5/qzaeYEIH7wzUcchSdeY2l5wL3Eec=
 cloud.google.com/go/translate v1.3.0/go.mod h1:gzMUwRjvOqj5i69y/LYLd8RrNQk+hOmIXTi9+nb3Djs=
 cloud.google.com/go/translate v1.4.0/go.mod h1:06Dn/ppvLD6WvA5Rhdp029IX2Mi3Mn7fpMRLPvXT5Wg=
 cloud.google.com/go/video v1.8.0/go.mod h1:sTzKFc0bUSByE8Yoh8X0mn8bMymItVGPfTuUBUyRgxk=
@@ -445,7 +445,6 @@ github.com/bytedance/sonic/loader v0.2.4/go.mod h1:N8A3vUdtUebEY2/VQC0MyhYeKUFos
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.3.0/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.4.1/go.mod h1:4T9NM4+4Vw91VeyqjLS6ao50K5bOcLKN6Q42XnYaRYw=
-github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
@@ -1358,12 +1357,12 @@ google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f/go.mod h1:RGgjbofJ
 google.golang.org/genproto v0.0.0-20230124163310-31e0e69b6fc2/go.mod h1:RGgjbofJ8xD9Sq1VVhDM1Vok1vRONV+rg+CjzG4SZKM=
 google.golang.org/genproto v0.0.0-20230209215440-0dfe4f8abfcc/go.mod h1:RGgjbofJ8xD9Sq1VVhDM1Vok1vRONV+rg+CjzG4SZKM=
 google.golang.org/genproto v0.0.0-20230216225411-c8e22ba71e44/go.mod h1:8B0gmkoRebU8ukX6HP+4wrVQUY1+6PkQ44BSyIlflHA=
-google.golang.org/genproto v0.0.0-20250324211829-b45e905df463 h1:qEFnJI6AnfZk0NNe8YTyXQh5i//Zxi4gBHwRgp76qpw=
-google.golang.org/genproto v0.0.0-20250324211829-b45e905df463/go.mod h1:SqIx1NV9hcvqdLHo7uNZDS5lrUJybQ3evo3+z/WBfA0=
-google.golang.org/genproto/googleapis/api v0.0.0-20250324211829-b45e905df463 h1:hE3bRWtU6uceqlh4fhrSnUyjKHMKB9KrTLLG+bc0ddM=
-google.golang.org/genproto/googleapis/api v0.0.0-20250324211829-b45e905df463/go.mod h1:U90ffi8eUL9MwPcrJylN5+Mk2v3vuPDptd5yyNUiRR8=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 h1:e0AIkUUhxyBKh6ssZNrAMeqhA7RKUj42346d1y02i2g=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463/go.mod h1:qQ0YXyHHx3XkvlzUtpXDkS29lDSafHMZBAZDc03LQ3A=
+google.golang.org/genproto v0.0.0-20250404141209-ee84b53bf3d0 h1:wX+y2uwLyC73sX9zfiJW7E7m68+oxAQGzgCmoM0e/zs=
+google.golang.org/genproto v0.0.0-20250404141209-ee84b53bf3d0/go.mod h1:jwIveCnYVWLDIe0ZXnIrfMKNoy/rQRSRrepUPEruz0U=
+google.golang.org/genproto/googleapis/api v0.0.0-20250404141209-ee84b53bf3d0 h1:Qbb5RVn5xzI4naMJSpJ7lhvmos6UwZkbekd5Uz7rt9E=
+google.golang.org/genproto/googleapis/api v0.0.0-20250404141209-ee84b53bf3d0/go.mod h1:6T35kB3IPpdw7Wul09by0G/JuOuIFkXV6OOvt8IZeT8=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20250404141209-ee84b53bf3d0 h1:0K7wTWyzxZ7J+L47+LbFogJW1nn/gnnMCN0vGXNYtTI=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20250404141209-ee84b53bf3d0/go.mod h1:qQ0YXyHHx3XkvlzUtpXDkS29lDSafHMZBAZDc03LQ3A=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
 google.golang.org/grpc v1.21.1/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=

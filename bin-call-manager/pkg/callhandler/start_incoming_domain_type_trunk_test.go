@@ -89,19 +89,13 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 					Type: fmaction.TypeConnect,
 					Option: map[string]any{
 						"source": map[string]any{
-							"type":        "tel",
-							"target":      "+821100000002",
-							"detail":      "",
-							"name":        "",
-							"target_name": "",
+							"type":   "tel",
+							"target": "+821100000002",
 						},
 						"destinations": []map[string]any{
 							{
-								"type":        "tel",
-								"target":      "+821100000001",
-								"detail":      "",
-								"name":        "",
-								"target_name": "",
+								"type":   "tel",
+								"target": "+821100000001",
 							},
 						},
 						"early_media":  true,
