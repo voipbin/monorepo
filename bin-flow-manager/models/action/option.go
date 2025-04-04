@@ -1,6 +1,7 @@
 package action
 
 import (
+	"encoding/json"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
@@ -9,6 +10,32 @@ import (
 
 	"github.com/gofrs/uuid"
 )
+
+// ConvertOption converts the option struct to map[string]any.
+func ConvertOption(opt any) map[string]any {
+
+	var res map[string]any
+	tmp, err := json.Marshal(opt)
+	if err != nil {
+		return res
+	}
+
+	if errUnmarshal := json.Unmarshal(tmp, &res); errUnmarshal != nil {
+		return res
+	}
+
+	return res
+}
+
+// ParseOption parses the option map to the target option struct.
+func ParseOption(opt map[string]any, target any) error {
+	tmp, err := json.Marshal(opt)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(tmp, target)
+}
 
 // OptionAgentCall defines action agent_call's option.
 type OptionAgentCall struct {

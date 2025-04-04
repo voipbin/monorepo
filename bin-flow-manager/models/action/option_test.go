@@ -12,6 +12,111 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+func Test_ConvertOption(t *testing.T) {
+	type test struct {
+		name string
+
+		option any
+
+		expectedRes map[string]any
+	}
+
+	tests := []test{
+		{
+			name: "OptionAgentCall",
+
+			option: OptionAgentCall{
+				AgentID: uuid.FromStringOrNil("35b8c7b8-111b-11f0-93a9-7b24e0bd5cb6"),
+			},
+
+			expectedRes: map[string]any{
+				"agent_id": "35b8c7b8-111b-11f0-93a9-7b24e0bd5cb6",
+			},
+		},
+		{
+			name: "OptionAISummary",
+
+			option: OptionAISummary{
+				OnEndFlowID:   uuid.FromStringOrNil("355e3cda-111b-11f0-94b7-33070885b126"),
+				ReferenceType: amsummary.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("358acef8-111b-11f0-acd7-c7f3423f233f"),
+				Language:      "en-US",
+			},
+
+			expectedRes: map[string]any{
+				"on_end_flow_id": "355e3cda-111b-11f0-94b7-33070885b126",
+				"reference_type": "call",
+				"reference_id":   "358acef8-111b-11f0-acd7-c7f3423f233f",
+				"language":       "en-US",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := ConvertOption(tt.option)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
+
+func Test_ParseOption(t *testing.T) {
+	type test struct {
+		name string
+
+		option map[string]any
+		target any
+
+		expectRes any
+	}
+
+	tests := []test{
+		{
+			name: "OptionAgentCall",
+
+			option: map[string]any{
+				"agent_id": "d45f391c-111e-11f0-bfe0-cf4ad671ba02",
+			},
+			target: &OptionAgentCall{},
+
+			expectRes: &OptionAgentCall{
+				AgentID: uuid.FromStringOrNil("d45f391c-111e-11f0-bfe0-cf4ad671ba02"),
+			},
+		},
+		{
+			name: "OptionAISummary",
+
+			option: map[string]any{
+				"on_end_flow_id": "d48cf8f2-111e-11f0-9eff-634180905812",
+				"reference_type": "call",
+				"reference_id":   "d4bf1ae4-111e-11f0-bf3d-4bf8bc30c112",
+				"language":       "en-US",
+			},
+			target: &OptionAISummary{},
+
+			expectRes: &OptionAISummary{
+				OnEndFlowID:   uuid.FromStringOrNil("d48cf8f2-111e-11f0-9eff-634180905812"),
+				ReferenceType: amsummary.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("d4bf1ae4-111e-11f0-bf3d-4bf8bc30c112"),
+				Language:      "en-US",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			ParseOption(tt.option, &tt.target)
+			if !reflect.DeepEqual(tt.expectRes, tt.target) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, tt.target)
+			}
+		})
+	}
+}
+
 func Test_marshalOptionAgentCall(t *testing.T) {
 	type test struct {
 		name string

@@ -49,8 +49,10 @@ func Test_serviceInit(t *testing.T) {
 			},
 			expectActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"4acf5788-dc6c-11ed-b296-b72b7e4a360b"}`),
+					Type: fmaction.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "4acf5788-dc6c-11ed-b296-b72b7e4a360b",
+					},
 				},
 			},
 		},
@@ -119,8 +121,10 @@ func Test_createFlow(t *testing.T) {
 			},
 			expectActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"fa9ed858-dbb0-11ed-93b5-afd5429fc93c"}`),
+					Type: fmaction.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "fa9ed858-dbb0-11ed-93b5-afd5429fc93c",
+					},
 				},
 			},
 		},

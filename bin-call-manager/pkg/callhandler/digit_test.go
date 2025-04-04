@@ -107,8 +107,10 @@ func Test_DTMFReceived_action_digits_receive_continue(t *testing.T) {
 				},
 				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsReceive,
-					Option: []byte(`{"length": 3}`),
+					Type: fmaction.TypeDigitsReceive,
+					Option: map[string]any{
+						"length": 3,
+					},
 				},
 			},
 			&variable.Variable{
@@ -183,8 +185,11 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 				},
 				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsReceive,
-					Option: []byte(`{"length": 3, "key": "#*"}`),
+					Type: fmaction.TypeDigitsReceive,
+					Option: map[string]any{
+						"length": 3,
+						"key":    "#*",
+					},
 				},
 			},
 			&variable.Variable{
@@ -215,8 +220,11 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 				},
 				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsReceive,
-					Option: []byte(`{"length": 3, "key": "#*"}`),
+					Type: fmaction.TypeDigitsReceive,
+					Option: map[string]any{
+						"length": 3,
+						"key":    "#*",
+					},
 				},
 			},
 			&variable.Variable{
@@ -247,8 +255,10 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 				},
 				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsReceive,
-					Option: []byte(`{"length": 2}`),
+					Type: fmaction.TypeDigitsReceive,
+					Option: map[string]any{
+						"length": 2,
+					},
 				},
 			},
 			&variable.Variable{
@@ -323,8 +333,10 @@ func Test_DTMFReceived_action_talk_digits_handle_next(t *testing.T) {
 				},
 				ChannelID: "c0b5711e-a902-11ed-9f51-c74975f93e22",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeTalk,
-					Option: []byte(`{"digits_handle": "next"}`),
+					Type: fmaction.TypeTalk,
+					Option: map[string]any{
+						"digits_handle": "next",
+					},
 				},
 			},
 
@@ -389,8 +401,10 @@ func Test_DTMFReceived_action_talk_digits_handle_none(t *testing.T) {
 				},
 				ChannelID: "4f273ce6-a905-11ed-8509-2f79d7c536a1",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeTalk,
-					Option: []byte(`{"digits_handle": ""}`),
+					Type: fmaction.TypeTalk,
+					Option: map[string]any{
+						"digits_handle": "",
+					},
 				},
 			},
 

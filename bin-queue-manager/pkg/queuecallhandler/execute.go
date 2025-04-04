@@ -2,7 +2,6 @@ package queuecallhandler
 
 import (
 	"context"
-	"encoding/json"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
@@ -80,19 +79,13 @@ func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, custome
 		"confbridge_id": confbridgeID,
 	})
 
-	opt, err := json.Marshal(fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: confbridgeID,
-	})
-	if err != nil {
-		log.Errorf("Could not marshal the action. err: %v", err)
-		return nil, err
-	}
-
 	// create actions
 	actions := []fmaction.Action{
 		{
-			Type:   fmaction.TypeConfbridgeJoin,
-			Option: opt,
+			Type: fmaction.TypeConfbridgeJoin,
+			Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+				ConfbridgeID: confbridgeID,
+			}),
 		},
 	}
 

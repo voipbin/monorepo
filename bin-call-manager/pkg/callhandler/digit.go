@@ -2,13 +2,13 @@ package callhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/call"
@@ -50,9 +50,8 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 		}
 
 		var option fmaction.OptionDigitsReceive
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.WithField("action", c.Action).Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 
 		condition, err := h.checkDigitsCondition(ctx, c.ActiveflowID, &option)
@@ -86,9 +85,8 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 		}
 
 		var option fmaction.OptionTalk
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.WithField("action", c.Action).Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 
 		// send next action request
