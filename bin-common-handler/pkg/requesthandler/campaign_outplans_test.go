@@ -42,37 +42,37 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 		expectResult  *caoutplan.Outplan
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("6a9320a2-c513-11ec-8d26-bfc178781416"),
-			"test name",
-			"test detail",
-			&address.Address{
+			customerID:  uuid.FromStringOrNil("6a9320a2-c513-11ec-8d26-bfc178781416"),
+			outplanName: "test name",
+			detail:      "test detail",
+			source: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			30000,
-			600000,
-			5,
-			5,
-			5,
-			5,
-			5,
+			dialTimeout:  30000,
+			tryInterval:  600000,
+			maxTryCount0: 5,
+			maxTryCount1: 5,
+			maxTryCount2: 5,
+			maxTryCount3: 5,
+			maxTryCount4: 5,
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"99528bbc-c513-11ec-89b2-e3f0ee0792fc"}`),
 			},
 
-			"bin-manager.campaign-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.campaign-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/outplans",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"6a9320a2-c513-11ec-8d26-bfc178781416","name":"test name","detail":"test detail","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
+				Data:     []byte(`{"customer_id":"6a9320a2-c513-11ec-8d26-bfc178781416","name":"test name","detail":"test detail","source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
-			&caoutplan.Outplan{
+			expectResult: &caoutplan.Outplan{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("99528bbc-c513-11ec-89b2-e3f0ee0792fc"),
 				},
@@ -401,35 +401,35 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 		expectResult  *caoutplan.Outplan
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("e2b014d4-c516-11ec-a724-8bf87a1beb50"),
-			&address.Address{
+			outplanID: uuid.FromStringOrNil("e2b014d4-c516-11ec-a724-8bf87a1beb50"),
+			source: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			30000,
-			600000,
-			5,
-			5,
-			5,
-			5,
-			5,
+			dialTimeout:  30000,
+			tryInterval:  600000,
+			maxTryCount0: 5,
+			maxTryCount1: 5,
+			maxTryCount2: 5,
+			maxTryCount3: 5,
+			maxTryCount4: 5,
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e2b014d4-c516-11ec-a724-8bf87a1beb50"}`),
 			},
 
-			"bin-manager.campaign-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.campaign-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/outplans/e2b014d4-c516-11ec-a724-8bf87a1beb50/dials",
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
+				Data:     []byte(`{"source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
-			&caoutplan.Outplan{
+			expectResult: &caoutplan.Outplan{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("e2b014d4-c516-11ec-a724-8bf87a1beb50"),
 				},

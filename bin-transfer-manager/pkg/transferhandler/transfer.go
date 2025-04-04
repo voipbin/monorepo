@@ -2,7 +2,6 @@ package transferhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	cmcall "monorepo/bin-call-manager/models/call"
@@ -83,21 +82,13 @@ func (h *transferHandler) createFlow(ctx context.Context, transfererCall *cmcall
 		"transferer_call": transfererCall,
 	})
 
-	// create actions for temp flow
-	option := fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: transfererCall.ConfbridgeID,
-	}
-	opt, err := json.Marshal(option)
-	if err != nil {
-		log.Errorf("Could not marshal option")
-		return nil, fmt.Errorf("could not marshal option")
-	}
-
 	// create a new outgoing call with action
 	actions := []fmaction.Action{
 		{
-			Type:   fmaction.TypeConfbridgeJoin,
-			Option: opt,
+			Type: fmaction.TypeConfbridgeJoin,
+			Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+				ConfbridgeID: transfererCall.ConfbridgeID,
+			}),
 		},
 	}
 

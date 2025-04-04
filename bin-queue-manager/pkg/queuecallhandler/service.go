@@ -2,7 +2,6 @@ package queuecallhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	cmcall "monorepo/bin-call-manager/models/call"
@@ -123,20 +122,15 @@ func (h *queuecallHandler) getSource(c *cmcall.Call) commonaddress.Address {
 
 // createActions creates the actions for queue join service.
 func (h *queuecallHandler) createActions(ctx context.Context, q *queue.Queue, confbridgeID uuid.UUID) ([]fmaction.Action, uuid.UUID, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "createQueueFlowActions",
-			"queue_id":      q.ID,
-			"confbridge_id": confbridgeID,
-		})
-
 	res := []fmaction.Action{}
 	if len(q.WaitActions) == 0 {
 		// append the default wait actions for empty wait actions
 		act := fmaction.Action{
-			ID:     h.utilHandler.UUIDCreate(),
-			Type:   fmaction.TypeSleep,
-			Option: []byte(`{"duration": 10000}`),
+			ID:   h.utilHandler.UUIDCreate(),
+			Type: fmaction.TypeSleep,
+			Option: fmaction.ConvertOption(fmaction.OptionSleep{
+				Duration: 10000,
+			}),
 		}
 		res = append(res, act)
 	} else {
@@ -153,18 +147,12 @@ func (h *queuecallHandler) createActions(ctx context.Context, q *queue.Queue, co
 
 	// append the action confbridge_join
 	forwardActionID := h.utilHandler.UUIDCreate()
-	option := fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: confbridgeID,
-	}
-	opt, err := json.Marshal(option)
-	if err != nil {
-		log.Errorf("Could not marshal the option. err: %v", err)
-		return nil, uuid.Nil, err
-	}
 	act := fmaction.Action{
-		ID:     forwardActionID,
-		Type:   fmaction.TypeConfbridgeJoin,
-		Option: opt,
+		ID:   forwardActionID,
+		Type: fmaction.TypeConfbridgeJoin,
+		Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+			ConfbridgeID: confbridgeID,
+		}),
 	}
 	res = append(res, act)
 

@@ -44,9 +44,11 @@ func Test_ActionExecute_actionExecuteConfbridgeJoin(t *testing.T) {
 					ID: uuid.FromStringOrNil("ed1620aa-3e6e-11ec-902b-170b2849173a"),
 				},
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("012c12c8-7552-4ec9-85b7-d39d78fa789f"),
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"3f5ff42c-3e6e-11ec-8c17-039eb294368c"}`),
+					ID:   uuid.FromStringOrNil("012c12c8-7552-4ec9-85b7-d39d78fa789f"),
+					Type: fmaction.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "3f5ff42c-3e6e-11ec-8c17-039eb294368c",
+					},
 				},
 			},
 			uuid.FromStringOrNil("3f5ff42c-3e6e-11ec-8c17-039eb294368c"),
@@ -93,9 +95,8 @@ func Test_ActionExecute_actionExecuteStreamEcho(t *testing.T) {
 					ID: uuid.FromStringOrNil("741a0f32-6bb2-11ed-bf34-9b3f75da5e87"),
 				},
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("d5ab7c42-10dc-4363-8f06-89443f9a2c3b"),
-					Type:   fmaction.TypeStreamEcho,
-					Option: []byte(`{}`),
+					ID:   uuid.FromStringOrNil("d5ab7c42-10dc-4363-8f06-89443f9a2c3b"),
+					Type: fmaction.TypeStreamEcho,
 				},
 			},
 		},
@@ -143,9 +144,8 @@ func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 				},
 				ChannelID: "5b21353a-df48-11ea-8207-6fc0fa36a3fe",
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("87ea1d71-dd34-4c53-bd82-14082d5944aa"),
-					Type:   fmaction.TypeAnswer,
-					Option: []byte(`{}`),
+					ID:   uuid.FromStringOrNil("87ea1d71-dd34-4c53-bd82-14082d5944aa"),
+					Type: fmaction.TypeAnswer,
 				},
 			},
 		},
@@ -202,7 +202,6 @@ func Test_ActionTimeoutNext(t *testing.T) {
 			&fmaction.Action{
 				ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
 				Type:      fmaction.TypeAnswer,
-				Option:    []byte(`{}`),
 				TMExecute: "2020-04-18T03:22:17.995000",
 			},
 			&channel.Channel{
@@ -250,18 +249,19 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 	tests := []struct {
 		name string
 
-		call           *call.Call
+		call *call.Call
+
+		responseTTS *tmtts.TTS
+
 		expectSSML     string
 		expectGender   string
 		expectLanguage string
-
-		responseTTS *tmtts.TTS
-		expectURI   []string
+		expectURI      []string
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&call.Call{
+			call: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5e9f3946-2188-11eb-9d74-bf4bf1239da3"),
 				},
@@ -269,21 +269,25 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 				Action: fmaction.Action{
 					Type: fmaction.TypeTalk,
 					ID:   uuid.FromStringOrNil("5c9cd6be-2195-11eb-a9c9-bfc91ac88411"),
-
-					Option: []byte(`{"text":"hello world","gender":"male","language":"en-US"}`),
+					Option: map[string]any{
+						"text":     "hello world",
+						"gender":   "male",
+						"language": "en-US",
+					},
 				},
 			},
-			`hello world`,
-			"male",
-			"en-US",
 
-			&tmtts.TTS{
+			responseTTS: &tmtts.TTS{
 				Gender:        tmtts.GenderMale,
 				Text:          "hello world",
 				Language:      "en-US",
 				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
 			},
-			[]string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
+
+			expectSSML:     `hello world`,
+			expectGender:   "male",
+			expectLanguage: "en-US",
+			expectURI:      []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
 		},
 	}
 
@@ -338,9 +342,14 @@ func Test_ActionExecute_actionExecutePlay(t *testing.T) {
 				},
 				ChannelID: "23ae2630-70c0-4a6d-a41f-aea675c24e75",
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("2641f116-90d1-40a3-a817-e16b4f3325da"),
-					Type:   fmaction.TypePlay,
-					Option: []byte(`{"stream_urls":["https://test.com/e258dc64-edb1-4220-8245-16ddc4941f96.wav","https://test.com/84e3e1eb-4977-4ba3-bdf0-c56f35e24d57.wav"]}`),
+					ID:   uuid.FromStringOrNil("2641f116-90d1-40a3-a817-e16b4f3325da"),
+					Type: fmaction.TypePlay,
+					Option: map[string]any{
+						"stream_urls": []string{
+							"https://test.com/e258dc64-edb1-4220-8245-16ddc4941f96.wav",
+							"https://test.com/84e3e1eb-4977-4ba3-bdf0-c56f35e24d57.wav",
+						},
+					},
 				},
 			},
 
@@ -404,9 +413,15 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 				ChannelID:    "bfd0e668-2a77-11eb-9993-e72b323b1801",
 				Status:       call.StatusProgressing,
 				Action: fmaction.Action{
-					Type:   fmaction.TypeRecordingStart,
-					ID:     uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
-					Option: []byte(`{"format":"wav","end_of_silence":5,"end_of_key":"1","duration":600, "on_end_flow_id":"8af57a9a-0546-11f0-beb7-731fcb5a9acf"}`),
+					Type: fmaction.TypeRecordingStart,
+					ID:   uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
+					Option: map[string]any{
+						"format":         "wav",
+						"end_of_silence": 5,
+						"end_of_key":     "1",
+						"duration":       600,
+						"on_end_flow_id": "8af57a9a-0546-11f0-beb7-731fcb5a9acf",
+					},
 				},
 			},
 
@@ -544,9 +559,12 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 				},
 				ChannelID: "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsReceive,
-					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-					Option: []byte(`{"duration":1000, "length": 3}`),
+					Type: fmaction.TypeDigitsReceive,
+					ID:   uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: map[string]any{
+						"duration": 1000,
+						"length":   3,
+					},
 				},
 			},
 			1000,
@@ -562,9 +580,13 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 				},
 				ChannelID: "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsReceive,
-					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-					Option: []byte(`{"duration":1000, "length": 3, "key": "1234567"}`),
+					Type: fmaction.TypeDigitsReceive,
+					ID:   uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: map[string]any{
+						"duration": 1000,
+						"length":   3,
+						"key":      "1234567",
+					},
 				},
 			},
 			1000,
@@ -620,9 +642,12 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 				ActiveflowID: uuid.FromStringOrNil("8ab35caa-df01-11ec-a567-abb76662ef08"),
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsReceive,
-					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-					Option: []byte(`{"duration":1000, "length": 3}`),
+					Type: fmaction.TypeDigitsReceive,
+					ID:   uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: map[string]any{
+						"duration": 1000,
+						"length":   3,
+					},
 				},
 			},
 			&variable.Variable{
@@ -642,9 +667,13 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 				ActiveflowID: uuid.FromStringOrNil("bc06ef06-df01-11ec-ad88-074454252454"),
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsReceive,
-					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-					Option: []byte(`{"duration":1000, "length": 3, "key": "#"}`),
+					Type: fmaction.TypeDigitsReceive,
+					ID:   uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: map[string]any{
+						"duration": 1000,
+						"length":   3,
+						"key":      "#",
+					},
 				},
 			},
 			&variable.Variable{
@@ -664,9 +693,13 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 				ActiveflowID: uuid.FromStringOrNil("e28f7a44-df01-11ec-8eaf-47af6e21909e"),
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsReceive,
-					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-					Option: []byte(`{"duration":1000, "length": 3, "key": "1234567*"}`),
+					Type: fmaction.TypeDigitsReceive,
+					ID:   uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: map[string]any{
+						"duration": 1000,
+						"length":   3,
+						"key":      "*",
+					},
 				},
 			},
 			&variable.Variable{
@@ -723,9 +756,13 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 				},
 				ChannelID: "5daefc0e-69bf-11eb-9e3a-b7d9a5988373",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsSend,
-					ID:     uuid.FromStringOrNil("508063d8-69bf-11eb-a668-abdbd47ce266"),
-					Option: []byte(`{"digits":"12345", "duration": 500, "interval": 500}`),
+					Type: fmaction.TypeDigitsSend,
+					ID:   uuid.FromStringOrNil("508063d8-69bf-11eb-a668-abdbd47ce266"),
+					Option: map[string]any{
+						"digits":   "12345",
+						"duration": 500,
+						"interval": 500,
+					},
 				},
 			},
 
@@ -742,9 +779,13 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 				},
 				ChannelID: "49e625de-69c0-11eb-891d-db5407ae4982",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeDigitsSend,
-					ID:     uuid.FromStringOrNil("4a24912a-69c0-11eb-a334-6f8053ede87a"),
-					Option: []byte(`{"digits":"1", "duration": 500, "interval": 500}`),
+					Type: fmaction.TypeDigitsSend,
+					ID:   uuid.FromStringOrNil("4a24912a-69c0-11eb-a334-6f8053ede87a"),
+					Option: map[string]any{
+						"digits":   "1",
+						"duration": 500,
+						"interval": 500,
+					},
 				},
 			},
 
@@ -807,9 +848,17 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 				},
 				ChannelID: "4455e2f4-02f8-11ec-acf9-43a391fce607",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeExternalMediaStart,
-					ID:     uuid.FromStringOrNil("447f0d28-02f8-11ec-bfdb-4bb2407458ce"),
-					Option: []byte(`{"external_host":"example.com","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both","data":""}`),
+					Type: fmaction.TypeExternalMediaStart,
+					ID:   uuid.FromStringOrNil("447f0d28-02f8-11ec-bfdb-4bb2407458ce"),
+					Option: map[string]any{
+						"external_host":   "example.com",
+						"encapsulation":   "rtp",
+						"transport":       "udp",
+						"connection_type": "client",
+						"format":          "ulaw",
+						"direction":       "both",
+						"data":            "",
+					},
 				},
 			},
 
@@ -930,9 +979,11 @@ func Test_actionExecuteAMD(t *testing.T) {
 				},
 				ChannelID: "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeAMD,
-					ID:     uuid.FromStringOrNil("f681c108-19b6-11ec-bc57-635de4310a4b"),
-					Option: []byte(`{"machine_handle":"hangup"}`),
+					Type: fmaction.TypeAMD,
+					ID:   uuid.FromStringOrNil("f681c108-19b6-11ec-bc57-635de4310a4b"),
+					Option: map[string]any{
+						"machine_handle": "hangup",
+					},
 				},
 			},
 
@@ -949,9 +1000,12 @@ func Test_actionExecuteAMD(t *testing.T) {
 				},
 				ChannelID: "7da1b4fc-19b9-11ec-948e-7f9ca90957a1",
 				Action: fmaction.Action{
-					Type:   fmaction.TypeAMD,
-					ID:     uuid.FromStringOrNil("7dba7df2-19b9-11ec-b426-17e356fbf5e3"),
-					Option: []byte(`{"machine_handle":"hangup","sync":true}`),
+					Type: fmaction.TypeAMD,
+					ID:   uuid.FromStringOrNil("7dba7df2-19b9-11ec-b426-17e356fbf5e3"),
+					Option: map[string]any{
+						"machine_handle": "hangup",
+						"sync":           true,
+					},
 				},
 			},
 
@@ -1194,9 +1248,11 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 				ChannelID: "105567ee-61de-4eed-98d4-d6b0d2667f3a",
 				Status:    call.StatusDialing,
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("c2f794a4-0fa5-43b7-a47a-599edcde6b55"),
-					Type:   fmaction.TypeHangup,
-					Option: []byte(`{"reason":"busy"}`),
+					ID:   uuid.FromStringOrNil("c2f794a4-0fa5-43b7-a47a-599edcde6b55"),
+					Type: fmaction.TypeHangup,
+					Option: map[string]any{
+						"reason": "busy",
+					},
 				},
 			},
 
@@ -1207,9 +1263,11 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 				ChannelID: "105567ee-61de-4eed-98d4-d6b0d2667f3a",
 				Status:    call.StatusTerminating,
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("c2f794a4-0fa5-43b7-a47a-599edcde6b55"),
-					Type:   fmaction.TypeHangup,
-					Option: []byte(`{"reason":"busy"}`),
+					ID:   uuid.FromStringOrNil("c2f794a4-0fa5-43b7-a47a-599edcde6b55"),
+					Type: fmaction.TypeHangup,
+					Option: map[string]any{
+						"reason": "busy",
+					},
 				},
 			},
 			responseChannel: &channel.Channel{
@@ -1276,9 +1334,11 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 				ChannelID: "eeddbb76-4bd8-4aa7-a6fd-c18690474eb6",
 				Status:    call.StatusDialing,
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("324ef8af-508d-4622-8f1c-1df75efe70a6"),
-					Type:   fmaction.TypeHangup,
-					Option: []byte(`{"reference_id":"94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4"}`),
+					ID:   uuid.FromStringOrNil("324ef8af-508d-4622-8f1c-1df75efe70a6"),
+					Type: fmaction.TypeHangup,
+					Option: map[string]any{
+						"reference_id": "94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4",
+					},
 				},
 			},
 
@@ -1297,9 +1357,11 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 				ChannelID: "eeddbb76-4bd8-4aa7-a6fd-c18690474eb6",
 				Status:    call.StatusTerminating,
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("324ef8af-508d-4622-8f1c-1df75efe70a6"),
-					Type:   fmaction.TypeHangup,
-					Option: []byte(`{"reference_id":"94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4"}`),
+					ID:   uuid.FromStringOrNil("324ef8af-508d-4622-8f1c-1df75efe70a6"),
+					Type: fmaction.TypeHangup,
+					Option: map[string]any{
+						"reference_id": "94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4",
+					},
 				},
 			},
 			responseReferenceChannel: &channel.Channel{
@@ -1321,9 +1383,11 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 				ChannelID: "6997f17a-a3d2-11ed-a9db-ff2c89c38193",
 				Status:    call.StatusDialing,
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("69b5bb6a-a3d2-11ed-b24e-33e293af5d6d"),
-					Type:   fmaction.TypeHangup,
-					Option: []byte(`{"reference_id":"69d1ff28-a3d2-11ed-be5d-f3ea54e96121"}`),
+					ID:   uuid.FromStringOrNil("69b5bb6a-a3d2-11ed-b24e-33e293af5d6d"),
+					Type: fmaction.TypeHangup,
+					Option: map[string]any{
+						"reference_id": "69d1ff28-a3d2-11ed-be5d-f3ea54e96121",
+					},
 				},
 			},
 
@@ -1342,9 +1406,11 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 				ChannelID: "6997f17a-a3d2-11ed-a9db-ff2c89c38193",
 				Status:    call.StatusTerminating,
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("69b5bb6a-a3d2-11ed-b24e-33e293af5d6d"),
-					Type:   fmaction.TypeHangup,
-					Option: []byte(`{"reference_id":"69d1ff28-a3d2-11ed-be5d-f3ea54e96121"}`),
+					ID:   uuid.FromStringOrNil("69b5bb6a-a3d2-11ed-b24e-33e293af5d6d"),
+					Type: fmaction.TypeHangup,
+					Option: map[string]any{
+						"reference_id": "69d1ff28-a3d2-11ed-be5d-f3ea54e96121",
+					},
 				},
 			},
 			responseReferenceChannel: &channel.Channel{

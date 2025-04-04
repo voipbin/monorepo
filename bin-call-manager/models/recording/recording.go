@@ -12,25 +12,25 @@ type Recording struct {
 	commonidentity.Owner
 
 	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"`
-	Status        Status        `json:"status"`
-	Format        Format        `json:"format"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
+	Status        Status        `json:"status,omitempty"`
+	Format        Format        `json:"format,omitempty"`
 
-	OnEndFlowID uuid.UUID `json:"on_end_flow_id"` // executed when recording ends
+	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty"` // executed when recording ends
 
-	RecordingName string   `json:"recording_name"`
-	Filenames     []string `json:"filenames"`
+	RecordingName string   `json:"recording_name,omitempty"`
+	Filenames     []string `json:"filenames,omitempty"`
 
-	AsteriskID string   `json:"asterisk_id"`
-	ChannelIDs []string `json:"channel_ids"` // snoop channel ids for recording
+	AsteriskID string   `json:"asterisk_id,omitempty"`
+	ChannelIDs []string `json:"channel_ids,omitempty"` // snoop channel ids for recording
 
-	TMStart string `json:"tm_start"`
-	TMEnd   string `json:"tm_end"`
+	TMStart string `json:"tm_start,omitempty"`
+	TMEnd   string `json:"tm_end,omitempty"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ReferenceType type

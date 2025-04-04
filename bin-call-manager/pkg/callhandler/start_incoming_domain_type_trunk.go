@@ -2,7 +2,6 @@ package callhandler
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -64,25 +63,17 @@ func (h *callHandler) startIncomingDomainTypeTrunkDestinationTypeTel(
 		"destination": destination,
 	})
 
-	// create tmp flow for connect
-	option := fmaction.OptionConnect{
-		Source: *source,
-		Destinations: []commonaddress.Address{
-			*destination,
-		},
-		EarlyMedia:  true,
-		RelayReason: true,
-	}
-	optionData, err := json.Marshal(&option)
-	if err != nil {
-		log.Errorf("Could not marshal the action option. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
-		return nil
-	}
 	actions := []fmaction.Action{
 		{
-			Type:   fmaction.TypeConnect,
-			Option: optionData,
+			Type: fmaction.TypeConnect,
+			Option: fmaction.ConvertOption(fmaction.OptionConnect{
+				Source: *source,
+				Destinations: []commonaddress.Address{
+					*destination,
+				},
+				EarlyMedia:  true,
+				RelayReason: true,
+			}),
 		},
 	}
 

@@ -101,9 +101,11 @@ func Test_FlowCreate(t *testing.T) {
 				Detail: "test flow detail",
 				Actions: []action.Action{
 					{
-						ID:     uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
-						Type:   action.TypeEcho,
-						Option: []byte(`{"duration":180}`),
+						ID:   uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
+						Type: action.TypeEcho,
+						Option: map[string]any{
+							"duration": 180,
+						},
 					},
 				},
 			},
@@ -119,9 +121,11 @@ func Test_FlowCreate(t *testing.T) {
 				Persist: true,
 				Actions: []action.Action{
 					{
-						ID:     uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
-						Type:   action.TypeEcho,
-						Option: []byte(`{"duration":180}`),
+						ID:   uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
+						Type: action.TypeEcho,
+						Option: map[string]any{
+							"duration": float64(180),
+						},
 					},
 				},
 				TMCreate: "2020-04-18 03:22:17.995000",
@@ -158,7 +162,6 @@ func Test_FlowCreate(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-			t.Logf("Created flow. flow: %v", res)
 
 			if reflect.DeepEqual(tt.expectedRes, res) == false {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)

@@ -181,7 +181,7 @@ func Test_updateNextAction(t *testing.T) {
 			mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, &tt.responseActiveflow.CurrentAction, true).Return(tt.responseStackID, tt.responseAction)
 
 			mockVar.EXPECT().Get(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
-			mockVar.EXPECT().SubstituteByte(ctx, tt.responseAction.Option, tt.responseVariable).Return(tt.responseAction.Option)
+			mockVar.EXPECT().SubstituteOption(ctx, tt.responseAction.Option, tt.responseVariable)
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)

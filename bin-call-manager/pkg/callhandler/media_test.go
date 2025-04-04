@@ -52,9 +52,13 @@ func Test_Talk(t *testing.T) {
 				},
 				ChannelID: "2830d52e-a49c-11ed-b9df-ef7dbeaeaf09",
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("285a1c22-a49c-11ed-b48e-6f39f4fd59ff"),
-					Type:   fmaction.TypeTalk,
-					Option: []byte(`{"text":"hello world","gender":"male","language":"en-US"}`),
+					ID:   uuid.FromStringOrNil("285a1c22-a49c-11ed-b48e-6f39f4fd59ff"),
+					Type: fmaction.TypeTalk,
+					Option: map[string]any{
+						"text":     "hello world",
+						"gender":   "male",
+						"language": "en-US",
+					},
 				},
 			},
 
@@ -84,9 +88,13 @@ func Test_Talk(t *testing.T) {
 				},
 				ChannelID: "7218dd84-a49d-11ed-af2d-8f7a58f91a79",
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("285a1c22-a49c-11ed-b48e-6f39f4fd59ff"),
-					Type:   fmaction.TypeTalk,
-					Option: []byte(`{"text":"hello world","gender":"male","language":"en-US"}`),
+					ID:   uuid.FromStringOrNil("285a1c22-a49c-11ed-b48e-6f39f4fd59ff"),
+					Type: fmaction.TypeTalk,
+					Option: map[string]any{
+						"text":     "hello world",
+						"gender":   "male",
+						"language": "en-US",
+					},
 				},
 			},
 

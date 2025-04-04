@@ -2,7 +2,6 @@ package callhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -107,24 +106,17 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeAgent(
 	tmpDestination.TargetName = a.Name
 
 	// create tmp flow for connect
-	option := fmaction.OptionConnect{
-		Source: *source,
-		Destinations: []commonaddress.Address{
-			tmpDestination,
-		},
-		EarlyMedia:  false,
-		RelayReason: false,
-	}
-	optionData, err := json.Marshal(&option)
-	if err != nil {
-		log.Errorf("Could not marshal the action option. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
-		return nil
-	}
 	actions := []fmaction.Action{
 		{
-			Type:   fmaction.TypeConnect,
-			Option: optionData,
+			Type: fmaction.TypeConnect,
+			Option: fmaction.ConvertOption(fmaction.OptionConnect{
+				Source: *source,
+				Destinations: []commonaddress.Address{
+					tmpDestination,
+				},
+				EarlyMedia:  false,
+				RelayReason: false,
+			}),
 		},
 	}
 
@@ -184,20 +176,12 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeConference(
 		return nil
 	}
 
-	// create tmp flow for conference join
-	option := fmaction.OptionConferenceJoin{
-		ConferenceID: cf.ID,
-	}
-	optionData, err := json.Marshal(&option)
-	if err != nil {
-		log.Errorf("Could not marshal the action option. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
-		return nil
-	}
 	actions := []fmaction.Action{
 		{
-			Type:   fmaction.TypeConferenceJoin,
-			Option: optionData,
+			Type: fmaction.TypeConferenceJoin,
+			Option: fmaction.ConvertOption(fmaction.OptionConferenceJoin{
+				ConferenceID: cf.ID,
+			}),
 		},
 	}
 
@@ -240,25 +224,17 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeTel(
 		"destination": destination,
 	})
 
-	// create tmp flow for connect
-	option := fmaction.OptionConnect{
-		Source: *source,
-		Destinations: []commonaddress.Address{
-			*destination,
-		},
-		EarlyMedia:  true,
-		RelayReason: true,
-	}
-	optionData, err := json.Marshal(&option)
-	if err != nil {
-		log.Errorf("Could not marshal the action option. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
-		return nil
-	}
 	actions := []fmaction.Action{
 		{
-			Type:   fmaction.TypeConnect,
-			Option: optionData,
+			Type: fmaction.TypeConnect,
+			Option: fmaction.ConvertOption(fmaction.OptionConnect{
+				Source: *source,
+				Destinations: []commonaddress.Address{
+					*destination,
+				},
+				EarlyMedia:  true,
+				RelayReason: true,
+			}),
 		},
 	}
 
@@ -309,25 +285,17 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 		return nil
 	}
 
-	// create tmp flow for connect
-	option := fmaction.OptionConnect{
-		Source: *source,
-		Destinations: []commonaddress.Address{
-			*connectDestination,
-		},
-		EarlyMedia:  false,
-		RelayReason: false,
-	}
-	optionData, err := json.Marshal(&option)
-	if err != nil {
-		log.Errorf("Could not marshal the action option. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
-		return nil
-	}
 	actions := []fmaction.Action{
 		{
-			Type:   fmaction.TypeConnect,
-			Option: optionData,
+			Type: fmaction.TypeConnect,
+			Option: fmaction.ConvertOption(fmaction.OptionConnect{
+				Source: *source,
+				Destinations: []commonaddress.Address{
+					*connectDestination,
+				},
+				EarlyMedia:  false,
+				RelayReason: false,
+			}),
 		},
 	}
 

@@ -21,50 +21,50 @@ type Call struct {
 	commonidentity.Identity
 	commonidentity.Owner
 
-	ChannelID string `json:"channel_id"`
-	BridgeID  string `json:"bridge_id"` // call bridge id
+	ChannelID string `json:"channel_id,omitempty"`
+	BridgeID  string `json:"bridge_id,omitempty"` // call bridge id
 
-	FlowID       uuid.UUID `json:"flow_id"`       // flow id
-	ActiveflowID uuid.UUID `json:"activeflow_id"` // activeflow id
-	ConfbridgeID uuid.UUID `json:"confbridge_id"` // currently joined confbridge id.
+	FlowID       uuid.UUID `json:"flow_id,omitempty"`       // flow id
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"` // activeflow id
+	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty"` // currently joined confbridge id.
 
-	Type Type `json:"type"` // call type
+	Type Type `json:"type,omitempty"` // call type
 
 	// etc info
-	MasterCallID    uuid.UUID   `json:"master_call_id"`    // master call id
-	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids"`  // chained call ids
-	RecordingID     uuid.UUID   `json:"recording_id"`      // recording id(current)
-	RecordingIDs    []uuid.UUID `json:"recording_ids"`     // recording ids
-	ExternalMediaID uuid.UUID   `json:"external_media_id"` // external media id(current)
-	GroupcallID     uuid.UUID   `json:"groupcall_id"`      // groupcall id
+	MasterCallID    uuid.UUID   `json:"master_call_id,omitempty"`    // master call id
+	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids,omitempty"`  // chained call ids
+	RecordingID     uuid.UUID   `json:"recording_id,omitempty"`      // recording id(current)
+	RecordingIDs    []uuid.UUID `json:"recording_ids,omitempty"`     // recording ids
+	ExternalMediaID uuid.UUID   `json:"external_media_id,omitempty"` // external media id(current)
+	GroupcallID     uuid.UUID   `json:"groupcall_id,omitempty"`      // groupcall id
 
 	// source/destination
-	Source      commonaddress.Address `json:"source"`
-	Destination commonaddress.Address `json:"destination"`
+	Source      commonaddress.Address `json:"source,omitempty"`
+	Destination commonaddress.Address `json:"destination,omitempty"`
 
 	// info
-	Status         Status              `json:"status"`
-	Data           map[DataType]string `json:"data"`             //
-	Action         fmaction.Action     `json:"action"`           // call's current action.
-	ActionNextHold bool                `json:"action_next_hold"` // call's next action hold. if true, don't allow to go next action
-	Direction      Direction           `json:"direction"`        //  direction of call. incoming/outgoing
-	MuteDirection  MuteDirection       `json:"mute_direction"`   // mute direction
+	Status         Status              `json:"status,omitempty"`
+	Data           map[DataType]string `json:"data,omitempty"`             //
+	Action         fmaction.Action     `json:"action,omitempty"`           // call's current action.
+	ActionNextHold bool                `json:"action_next_hold,omitempty"` // call's next action hold. if true, don't allow to go next action
+	Direction      Direction           `json:"direction,omitempty"`        //  direction of call. incoming/outgoing
+	MuteDirection  MuteDirection       `json:"mute_direction,omitempty"`   // mute direction
 
-	HangupBy     HangupBy     `json:"hangup_by"`
-	HangupReason HangupReason `json:"hangup_reason"`
+	HangupBy     HangupBy     `json:"hangup_by,omitempty"`
+	HangupReason HangupReason `json:"hangup_reason,omitempty"`
 
 	// dialroute(valid only tel type outgoing call)
-	DialrouteID uuid.UUID       `json:"dialroute_id"` // dialroute id(current use)
-	Dialroutes  []rmroute.Route `json:"dialroutes"`   // list of dialroutes for dialing.
+	DialrouteID uuid.UUID       `json:"dialroute_id,omitempty"` // dialroute id(current use)
+	Dialroutes  []rmroute.Route `json:"dialroutes,omitempty"`   // list of dialroutes for dialing.
 
-	TMRinging     string `json:"tm_ringing"`
-	TMProgressing string `json:"tm_progressing"`
-	TMHangup      string `json:"tm_hangup"`
+	TMRinging     string `json:"tm_ringing,omitempty"`
+	TMProgressing string `json:"tm_progressing,omitempty"`
+	TMHangup      string `json:"tm_hangup,omitempty"`
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // Type type

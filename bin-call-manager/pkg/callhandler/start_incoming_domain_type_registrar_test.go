@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
@@ -86,8 +87,19 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 			expectAgentID:    uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
 			expectActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"","name":"","detail":""},"destinations":[{"type":"agent","target":"eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b","target_name":"","name":"","detail":""}],"early_media":false,"relay_reason":false}`),
+					Type: fmaction.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "extension",
+							"target": "test-exten",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "agent",
+								"target": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+							},
+						},
+					},
 				},
 			},
 		},
@@ -121,7 +133,41 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 
 			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.expectCustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(
+				ctx,
+				tt.expectCustomerID,
+				fmflow.TypeFlow,
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				false,
+			).DoAndReturn(func(
+				_ context.Context,
+				_ uuid.UUID,
+				_ fmflow.Type,
+				_ string,
+				_ string,
+				actions []fmaction.Action,
+				_ bool,
+			) (*fmflow.Flow, error) {
+				tmp, err := json.Marshal(actions)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+					return nil, err
+				}
+
+				tmp2, err := json.Marshal(tt.expectActions)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+					return nil, err
+				}
+
+				if !reflect.DeepEqual(tmp, tmp2) {
+					t.Errorf("unexpected actions:\nexpected: %#v\ngot: %#v", string(tmp2), string(tmp))
+				}
+
+				return tt.responseFlow, nil
+			})
 
 			// startCallTypeFlow
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
@@ -203,8 +249,10 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeConference(t *testing.
 			expectConferenceID: uuid.FromStringOrNil("99accfb7-c0dd-4a54-997d-dd18af7bc280"),
 			expectActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeConferenceJoin,
-					Option: []byte(`{"conference_id":"99accfb7-c0dd-4a54-997d-dd18af7bc280"}`),
+					Type: fmaction.TypeConferenceJoin,
+					Option: map[string]any{
+						"conference_id": "99accfb7-c0dd-4a54-997d-dd18af7bc280",
+					},
 				},
 			},
 		},
@@ -311,8 +359,21 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 			expectConferenceID: uuid.FromStringOrNil("99accfb7-c0dd-4a54-997d-dd18af7bc280"),
 			expectActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"early_media":true,"relay_reason":true}`),
+					Type: fmaction.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "extension",
+							"target": "test-exten",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000001",
+							},
+						},
+						"early_media":  true,
+						"relay_reason": true,
+					},
 				},
 			},
 		},
@@ -348,7 +409,41 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.expectCustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(
+				ctx,
+				tt.expectCustomerID,
+				fmflow.TypeFlow,
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				false,
+			).DoAndReturn(func(
+				_ context.Context,
+				_ uuid.UUID,
+				_ fmflow.Type,
+				_ string,
+				_ string,
+				actions []fmaction.Action,
+				_ bool,
+			) (*fmflow.Flow, error) {
+				tmp, err := json.Marshal(actions)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+					return nil, err
+				}
+
+				tmp2, err := json.Marshal(tt.expectActions)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+					return nil, err
+				}
+
+				if !reflect.DeepEqual(tmp, tmp2) {
+					t.Errorf("unexpected actions:\nexpected: %#v\ngot: %#v", string(tmp2), string(tmp))
+				}
+
+				return tt.responseFlow, nil
+			})
 
 			// startCallTypeFlow
 			// we don't go further. just return the error
@@ -426,8 +521,20 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 			},
 			expectActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"","name":"","detail":""},"destinations":[{"type":"extension","target":"eb145bae-2814-11ef-b5c9-fb53bd2bff02","target_name":"test-destination","name":"","detail":""}],"early_media":false,"relay_reason":false}`),
+					Type: fmaction.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "extension",
+							"target": "test-exten",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":        "extension",
+								"target":      "eb145bae-2814-11ef-b5c9-fb53bd2bff02",
+								"target_name": "test-destination",
+							},
+						},
+					},
 				},
 			},
 		},
@@ -463,7 +570,41 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 
 			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseExtensions, nil)
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.expectCustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(
+				ctx,
+				tt.expectCustomerID,
+				fmflow.TypeFlow,
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				false,
+			).DoAndReturn(func(
+				_ context.Context,
+				_ uuid.UUID,
+				_ fmflow.Type,
+				_ string,
+				_ string,
+				actions []fmaction.Action,
+				_ bool,
+			) (*fmflow.Flow, error) {
+				tmp, err := json.Marshal(actions)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+					return nil, err
+				}
+
+				tmp2, err := json.Marshal(tt.expectActions)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+					return nil, err
+				}
+
+				if !reflect.DeepEqual(tmp, tmp2) {
+					t.Errorf("unexpected actions:\nexpected: %#v\ngot: %#v", string(tmp2), string(tmp))
+				}
+
+				return tt.responseFlow, nil
+			})
 
 			// startCallTypeFlow
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)

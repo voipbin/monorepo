@@ -50,7 +50,7 @@ func Test_TransferV1TransferStart(t *testing.T) {
 				URI:      "/v1/transfers",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"type":"attended","transferer_call_id":"47ca8e80-dd35-11ed-8213-bf37002f55ef","transferee_addresses":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}]}`),
+				Data:     []byte(`{"type":"attended","transferer_call_id":"47ca8e80-dd35-11ed-8213-bf37002f55ef","transferee_addresses":[{"type":"tel","target":"+821100000001"}]}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,

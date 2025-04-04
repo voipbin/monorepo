@@ -1121,9 +1121,11 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Direction: call.DirectionIncoming,
 			},
 			&fmaction.Action{
-				ID:     uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
-				Type:   fmaction.TypeEcho,
-				Option: []byte(`{"duration":180}`),
+				ID:   uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
+				Type: fmaction.TypeEcho,
+				Option: map[string]any{
+					"duration": 180,
+				},
 			},
 			false,
 
@@ -1143,9 +1145,11 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Destination: commonaddress.Address{},
 
 				Action: fmaction.Action{
-					ID:     uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
-					Type:   fmaction.TypeEcho,
-					Option: []byte(`{"duration":180}`),
+					ID:   uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
+					Type: fmaction.TypeEcho,
+					Option: map[string]any{
+						"duration": float64(180),
+					},
 				},
 				ActionNextHold: false,
 				Status:         call.StatusRinging,

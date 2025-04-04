@@ -2,7 +2,6 @@ package callhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -281,18 +280,11 @@ func (h *callHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *fm
 
 // actionExecuteAnswer executes the action type answer
 func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "actionExecuteAnswer",
-		"call_id":     c.ID,
-		"action_id":   c.Action.ID,
-		"action_type": c.Action.Type,
-	})
 
 	var option fmaction.OptionAnswer
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 
@@ -301,8 +293,8 @@ func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call) err
 	}
 
 	// send next action request
-	if err := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); err != nil {
-		return fmt.Errorf("could not send the next action request. err: %v", err)
+	if errAction := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); errAction != nil {
+		return errors.Wrapf(errAction, "could not send the next action request. err: %v", errAction)
 	}
 
 	return nil
@@ -319,9 +311,8 @@ func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call) error
 
 	var option fmaction.OptionBeep
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 
@@ -329,13 +320,11 @@ func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call) error
 	medias := []string{
 		"sound:beep",
 	}
-	log.WithFields(
-		logrus.Fields{
-			"media": medias,
-		},
-	).Debugf("Sending a request to the asterisk for media playing.")
+	log.WithFields(logrus.Fields{
+		"media": medias,
+	}).Debugf("Sending a request to the asterisk for media playing.")
 
-	// play the
+	// play the beep.
 	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, c.Action.ID, medias, ""); errPlay != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, errPlay)
 		return fmt.Errorf("could not play the media. err: %v", errPlay)
@@ -346,17 +335,9 @@ func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call) error
 
 // actionExecuteEcho executes the action type echo
 func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "actionExecuteEcho",
-		"call_id":     c.ID,
-		"action_id":   c.Action.ID,
-		"action_type": c.Action.Type,
-	})
-
 	var option fmaction.OptionEcho
-	if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-		log.Errorf("could not parse the option. err: %v", err)
-		return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+	if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+		return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 	}
 
 	// set default duration if it is not set correctly
@@ -387,9 +368,8 @@ func (h *callHandler) actionExecuteConfbridgeJoin(ctx context.Context, c *call.C
 	})
 
 	var option fmaction.OptionConfbridgeJoin
-	if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-		log.Errorf("could not parse the option. err: %v", err)
-		return err
+	if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+		return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 	}
 
 	// join to the confbridge
@@ -411,9 +391,8 @@ func (h *callHandler) actionExecutePlay(ctx context.Context, c *call.Call) error
 	})
 
 	var option fmaction.OptionPlay
-	if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-		log.Errorf("could not parse the option. err: %v", err)
-		return errors.Wrapf(err, "could not parse the option. action: %v, err: %v", c.Action, err)
+	if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+		return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 	}
 
 	if errPlay := h.Play(ctx, c.ID, true, option.StreamURLs); errPlay != nil {
@@ -437,9 +416,8 @@ func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call)
 	log.Debug("Executing action.")
 
 	var option fmaction.OptionStreamEcho
-	if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-		log.Errorf("could not parse the option. err: %v", err)
-		return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+	if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+		return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 	}
 
 	// set default duration if it is not set correctly
@@ -472,9 +450,8 @@ func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call) err
 
 	var option fmaction.OptionHangup
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 
@@ -517,9 +494,8 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error
 
 	var option fmaction.OptionTalk
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 
@@ -543,9 +519,8 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 
 	var option fmaction.OptionRecordingStart
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 
@@ -584,9 +559,8 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 
 	var option fmaction.OptionRecordingStop
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 
@@ -617,9 +591,8 @@ func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Ca
 
 	var option fmaction.OptionDigitsReceive
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 
@@ -648,18 +621,10 @@ func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Ca
 // actionExecuteDigitsSend executes the action type dtmf_send.
 // It sends the DTMFs to the call.
 func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "actionExecuteDigitsSend",
-		"call_id":     c.ID,
-		"action_id":   c.Action.ID,
-		"action_type": c.Action.Type,
-	})
-
 	var option fmaction.OptionDigitsSend
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 
@@ -694,9 +659,8 @@ func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *ca
 
 	var option fmaction.OptionExternalMediaStart
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 
@@ -747,9 +711,8 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call) error 
 
 	var option fmaction.OptionAMD
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 	log.Debugf("Parsed option. option: %v", option)
@@ -802,9 +765,8 @@ func (h *callHandler) actionExecuteSleep(ctx context.Context, c *call.Call) erro
 
 	var option fmaction.OptionSleep
 	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		if errParse := fmaction.ParseOption(c.Action.Option, &option); errParse != nil {
+			return errors.Wrapf(errParse, "could not parse the option. action: %v, err: %v", c.Action, errParse)
 		}
 	}
 	log.Debugf("Parsed option. option: %v", option)

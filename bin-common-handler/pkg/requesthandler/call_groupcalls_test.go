@@ -181,7 +181,7 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 				URI:      "/v1/groupcalls",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"812e519b-bbf6-415f-9c49-b4db5c76f68d","customer_id":"2ac49ec8-bbae-11ed-b9cd-8f47fd0602b9","flow_id":"2b1f1682-bbae-11ed-b06b-3be413b33b07","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"master_call_id":"2b4f5b44-bbae-11ed-9629-dfffd3ac6a43","master_groupcall_id":"e6310999-eab1-48fc-b0ce-f5ee55743864","ring_method":"ring_all","answer_method":"hangup_others"}`),
+				Data:     []byte(`{"id":"812e519b-bbf6-415f-9c49-b4db5c76f68d","customer_id":"2ac49ec8-bbae-11ed-b9cd-8f47fd0602b9","flow_id":"2b1f1682-bbae-11ed-b06b-3be413b33b07","source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],"master_call_id":"2b4f5b44-bbae-11ed-9629-dfffd3ac6a43","master_groupcall_id":"e6310999-eab1-48fc-b0ce-f5ee55743864","ring_method":"ring_all","answer_method":"hangup_others"}`),
 			},
 			expectRes: &cmgroupcall.Groupcall{
 				Identity: commonidentity.Identity{

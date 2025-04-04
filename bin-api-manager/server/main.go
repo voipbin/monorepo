@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -52,20 +51,15 @@ func ConvertFlowManagerAction(fma openapi_server.FlowManagerAction) fmaction.Act
 		nextID = uuid.FromStringOrNil(*fma.NextId)
 	}
 
-	var option json.RawMessage
-	if fma.Option != nil {
-		optionBytes, err := json.Marshal(fma.Option)
-		if err == nil {
-			option = optionBytes
-		}
-	}
-
 	res := fmaction.Action{
 		ID:        id,
 		NextID:    nextID,
 		Type:      fmaction.Type(fma.Type),
-		Option:    option,
 		TMExecute: "",
+	}
+
+	if fma.Option != nil {
+		res.Option = *fma.Option
 	}
 
 	if fma.TmExecute != nil {

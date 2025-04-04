@@ -2,11 +2,11 @@ package address
 
 // Address contains source or destination detail info.
 type Address struct {
-	Type       Type   `json:"type"`        // type of address
-	Target     string `json:"target"`      // address endpoint
-	TargetName string `json:"target_name"` // address's name.
-	Name       string `json:"name"`        // name
-	Detail     string `json:"detail"`      // detail description.
+	Type       Type   `json:"type,omitempty"`        // type of address
+	Target     string `json:"target,omitempty"`      // address endpoint
+	TargetName string `json:"target_name,omitempty"` // address's name.
+	Name       string `json:"name,omitempty"`        // name
+	Detail     string `json:"detail,omitempty"`      // detail description.
 }
 
 // Type define

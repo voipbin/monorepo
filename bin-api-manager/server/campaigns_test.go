@@ -634,8 +634,11 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 				{
-					Type:   fmaction.TypeTalk,
-					Option: []byte(`{"text":"hello"}`),
+					Type: fmaction.TypeTalk,
+					Option: map[string]any{
+						"text": "hello",
+					},
+					// Option: []byte(`{"text":"hello"}`),
 				},
 			},
 			expectRes: `{"id":"79027712-c68c-11ec-b75e-27bce33a22a8","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`,

@@ -10,23 +10,25 @@ import (
 // WebhookMessage defines
 type WebhookMessage struct {
 	commonidentity.Identity
-	Type Type `json:"type"`
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Type Type `json:"type,omitempty"`
 
-	Actions []action.Action `json:"actions"`
+	Name   string `json:"name,omitempty"`
+	Detail string `json:"detail,omitempty"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	Actions []action.Action `json:"actions,omitempty"`
+
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event
 func (h *Flow) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		Identity: h.Identity,
-		Type:     h.Type,
+
+		Type: h.Type,
 
 		Name:   h.Name,
 		Detail: h.Detail,

@@ -45,8 +45,13 @@ func TestUnmarshalActionEcho(t *testing.T) {
 			}
 
 			if act.Option != nil {
+				tmp, err := json.Marshal(act.Option)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+
 				option := &action.OptionEcho{}
-				if err := json.Unmarshal(act.Option, &option); err != nil {
+				if err := json.Unmarshal(tmp, &option); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 
@@ -60,54 +65,42 @@ func TestUnmarshalActionEcho(t *testing.T) {
 
 func TestMarshalActionEcho(t *testing.T) {
 	type test struct {
-		name          string
-		action        *action.Action
-		option        *action.OptionEcho
-		expectMessage string
+		name      string
+		action    *action.Action
+		expectRes string
 	}
 
 	tests := []test{
 		{
-			"have no option",
-			&action.Action{
+			name: "have no option",
+			action: &action.Action{
 				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
 				Type: action.TypeEcho,
 			},
-			nil,
-			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}`,
+			expectRes: `{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}`,
 		},
 		{
-			"have option duration",
-			&action.Action{
+			name: "have option duration",
+			action: &action.Action{
 				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
 				Type: action.TypeEcho,
+				Option: map[string]any{
+					"duration": 180,
+				},
 			},
-			&action.OptionEcho{
-				Duration: 180,
-			},
-			`{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo","option":{"duration":180}}`,
+			expectRes: `{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo","option":{"duration":180}}`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			action := tt.action
-
-			if tt.option != nil {
-				option, err := json.Marshal(tt.option)
-				if err != nil {
-					t.Errorf("Wrong match. expect: ok, got: %v", err)
-				}
-				action.Option = option
-			}
-
-			message, err := json.Marshal(action)
+			res, err := json.Marshal(tt.action)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if string(message) != tt.expectMessage {
-				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectMessage, string(message))
+			if string(res) != tt.expectRes {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectRes, string(res))
 			}
 		})
 	}
