@@ -241,7 +241,7 @@ func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID u
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get variables. activeflow_id: %s", activeflowID)
 	}
-	resAct.Option = h.variableHandler.SubstituteByte(ctx, resAct.Option, v)
+	h.variableHandler.SubstituteOption(ctx, resAct.Option, v)
 
 	// update current action in activeflow
 	res, err := h.updateCurrentAction(ctx, activeflowID, resStackID, resAct)

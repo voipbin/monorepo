@@ -6,33 +6,26 @@ import (
 	"testing"
 	"time"
 
+	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amsummary "monorepo/bin-ai-manager/models/summary"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
+	conversationmedia "monorepo/bin-conversation-manager/models/media"
+	conversationmessage "monorepo/bin-conversation-manager/models/message"
+	ememail "monorepo/bin-email-manager/models/email"
+	mmmessage "monorepo/bin-message-manager/models/message"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	amaicall "monorepo/bin-ai-manager/models/aicall"
-	amsummary "monorepo/bin-ai-manager/models/summary"
-
-	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
-
-	conversationmedia "monorepo/bin-conversation-manager/models/media"
-	conversationmessage "monorepo/bin-conversation-manager/models/message"
-
-	ememail "monorepo/bin-email-manager/models/email"
-
-	mmmessage "monorepo/bin-message-manager/models/message"
-
 	commonservice "monorepo/bin-common-handler/models/service"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
-
-	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
-
-	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -82,18 +75,40 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 				ReferenceID: uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
-					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
+					ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+						},
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
+								ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -124,17 +139,21 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID: uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
 				Actions: []action.Action{
 					{
-						ID:     uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
-						Type:   action.TypeConfbridgeJoin,
-						Option: []byte(`{"confbridge_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
+						ID:   uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
+						Type: action.TypeConfbridgeJoin,
+						Option: map[string]any{
+							"confbridge_id": "363b4ae8-0a9b-11eb-9d08-436d6934a451",
+						},
 					},
 				},
 			},
 
 			expectFlowCreateActions: []action.Action{
 				{
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "363b4ae8-0a9b-11eb-9d08-436d6934a451",
+					},
 				},
 				{
 					Type: action.TypeHangup,
@@ -154,9 +173,11 @@ func Test_actionHandleConnect(t *testing.T) {
 			expectExecuteNextMasterOnHangup: true,
 			expectPushActions: []action.Action{
 				{
-					ID:     uuid.FromStringOrNil("b7181286-a256-11ed-bcab-8bfb6884800b"),
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
+					ID:   uuid.FromStringOrNil("b7181286-a256-11ed-bcab-8bfb6884800b"),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "363b4ae8-0a9b-11eb-9d08-436d6934a451",
+					},
 				},
 			},
 			expectUpdateActiveflow: &activeflow.Activeflow{
@@ -168,18 +189,40 @@ func Test_actionHandleConnect(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
 
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
-					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
+					ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+						},
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
+								ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -196,9 +239,24 @@ func Test_actionHandleConnect(t *testing.T) {
 				ReferenceID:    uuid.FromStringOrNil("cb4accf8-2710-11eb-8e49-e73409394bef"),
 				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
-					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
+					ID:   uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+							{
+								"type":   "tel",
+								"target": "+9876543210",
+							},
+						},
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -206,9 +264,24 @@ func Test_actionHandleConnect(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
+								ID:   uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+										{
+											"type":   "tel",
+											"target": "+9876543210",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -240,17 +313,21 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID: uuid.FromStringOrNil("73af2dfc-d4c2-11ec-a692-9b1eafe93075"),
 				Actions: []action.Action{
 					{
-						ID:     uuid.FromStringOrNil("845b566c-d4c2-11ec-ba4e-f739bb357410"),
-						Type:   action.TypeConfbridgeJoin,
-						Option: []byte(`{"confbridge_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
+						ID:   uuid.FromStringOrNil("845b566c-d4c2-11ec-ba4e-f739bb357410"),
+						Type: action.TypeConfbridgeJoin,
+						Option: map[string]any{
+							"confbridge_id": "cc131f96-2710-11eb-b3b2-1b43dc6ffa2f",
+						},
 					},
 				},
 			},
 
 			expectFlowCreateActions: []action.Action{
 				{
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "cc131f96-2710-11eb-b3b2-1b43dc6ffa2f",
+					},
 				},
 				{
 					Type: action.TypeHangup,
@@ -272,9 +349,11 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 			expectPushActions: []action.Action{
 				{
-					ID:     uuid.FromStringOrNil("8b138d81-5d06-44d0-b7fb-36dea3a00ded"),
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
+					ID:   uuid.FromStringOrNil("8b138d81-5d06-44d0-b7fb-36dea3a00ded"),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "cc131f96-2710-11eb-b3b2-1b43dc6ffa2f",
+					},
 				},
 			},
 			expectUpdateActiveflow: &activeflow.Activeflow{
@@ -286,9 +365,24 @@ func Test_actionHandleConnect(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("845b566c-d4c2-11ec-ba4e-f739bb357410"),
 				CurrentStackID:  stack.IDMain,
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
-					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
+					ID:   uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+							{
+								"type":   "tel",
+								"target": "+9876543210",
+							},
+						},
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -296,9 +390,24 @@ func Test_actionHandleConnect(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}]}`),
+								ID:   uuid.FromStringOrNil("cbe12fa4-2710-11eb-8959-87391e4bbc77"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+										{
+											"type":   "tel",
+											"target": "+9876543210",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -314,9 +423,25 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 				ReferenceID: uuid.FromStringOrNil("211a68fe-2712-11eb-ad71-97e2b1546a91"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
-					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "early_media": true}`),
+					ID:   uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+							{
+								"type":   "tel",
+								"target": "+9876543210",
+							},
+						},
+						"early_media": true,
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -324,9 +449,25 @@ func Test_actionHandleConnect(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "early_media": true}`),
+								ID:   uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+										{
+											"type":   "tel",
+											"target": "+9876543210",
+										},
+									},
+									"early_media": true,
+								},
 							},
 						},
 					},
@@ -358,17 +499,21 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID: uuid.FromStringOrNil("d913dcf6-d4c2-11ec-902b-37f50ff7b4b4"),
 				Actions: []action.Action{
 					{
-						ID:     uuid.FromStringOrNil("d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"),
-						Type:   action.TypeConfbridgeJoin,
-						Option: []byte(`{"confbridge_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
+						ID:   uuid.FromStringOrNil("d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"),
+						Type: action.TypeConfbridgeJoin,
+						Option: map[string]any{
+							"confbridge_id": "2266e688-2712-11eb-aab4-eb00b0a3efbe",
+						},
 					},
 				},
 			},
 
 			expectFlowCreateActions: []action.Action{
 				{
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "2266e688-2712-11eb-aab4-eb00b0a3efbe",
+					},
 				},
 				{
 					Type: action.TypeHangup,
@@ -392,9 +537,11 @@ func Test_actionHandleConnect(t *testing.T) {
 			expectExecuteNextMasterOnHangup: false,
 			expectPushActions: []action.Action{
 				{
-					ID:     uuid.FromStringOrNil("6f9adfc1-7d2e-49bc-b8b2-ca5123b013c3"),
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
+					ID:   uuid.FromStringOrNil("6f9adfc1-7d2e-49bc-b8b2-ca5123b013c3"),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "2266e688-2712-11eb-aab4-eb00b0a3efbe",
+					},
 				},
 			},
 			expectUpdateActiveflow: &activeflow.Activeflow{
@@ -405,9 +552,25 @@ func Test_actionHandleConnect(t *testing.T) {
 				ForwardStackID:  uuid.FromStringOrNil("d913dcf6-d4c2-11ec-902b-37f50ff7b4b4"),
 				ForwardActionID: uuid.FromStringOrNil("d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
-					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "early_media": true}`),
+					ID:   uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+							{
+								"type":   "tel",
+								"target": "+9876543210",
+							},
+						},
+						"early_media": true,
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -415,9 +578,25 @@ func Test_actionHandleConnect(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "early_media": true}`),
+								ID:   uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+										{
+											"type":   "tel",
+											"target": "+9876543210",
+										},
+									},
+									"early_media": true,
+								},
 							},
 						},
 					},
@@ -433,18 +612,42 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 				ReferenceID: uuid.FromStringOrNil("0bd920ac-a253-11ed-b372-371e3ba29e82"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
-					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}],"relay_reason":true}`),
+					ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+						},
+						"relay_reason": true,
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}],"relay_reason":true}`),
+								ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+									},
+									"relay_reason": true,
+								},
 							},
 						},
 					},
@@ -477,9 +680,11 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID: uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
 				Actions: []action.Action{
 					{
-						ID:     uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
-						Type:   action.TypeConfbridgeJoin,
-						Option: []byte(`{"confbridge_id":"d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"}`),
+						ID:   uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
+						Type: action.TypeConfbridgeJoin,
+						Option: map[string]any{
+							"confbridge_id": "0c3bd774-a253-11ed-b6f4-2b405333577e",
+						},
 					},
 				},
 			},
@@ -497,8 +702,10 @@ func Test_actionHandleConnect(t *testing.T) {
 			expectExecuteNextMasterOnHangup: true,
 			expectFlowCreateActions: []action.Action{
 				{
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"0c3bd774-a253-11ed-b6f4-2b405333577e"}`),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "0c3bd774-a253-11ed-b6f4-2b405333577e",
+					},
 				},
 				{
 					Type: action.TypeHangup,
@@ -506,14 +713,18 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 			expectPushActions: []action.Action{
 				{
-					ID:     uuid.FromStringOrNil("222a9d00-a257-11ed-8e79-5309100e27e4"),
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"0c3bd774-a253-11ed-b6f4-2b405333577e"}`),
+					ID:   uuid.FromStringOrNil("222a9d00-a257-11ed-8e79-5309100e27e4"),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "0c3bd774-a253-11ed-b6f4-2b405333577e",
+					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("2257c8e8-a257-11ed-b228-a38777d47451"),
-					Type:   action.TypeHangup,
-					Option: []byte(`{"reason":"","reference_id":"f7e05cb8-a253-11ed-9f37-0fef5e1b2aa9"}`),
+					ID:   uuid.FromStringOrNil("2257c8e8-a257-11ed-b228-a38777d47451"),
+					Type: action.TypeHangup,
+					Option: map[string]any{
+						"reference_id": "f7e05cb8-a253-11ed-9f37-0fef5e1b2aa9",
+					},
 				},
 			},
 			expectUpdateActiveflow: &activeflow.Activeflow{
@@ -525,18 +736,42 @@ func Test_actionHandleConnect(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
 
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
-					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}],"relay_reason":true}`),
+					ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+						},
+						"relay_reason": true,
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}],"relay_reason":true}`),
+								ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+									},
+									"relay_reason": true,
+								},
 							},
 						},
 					},
@@ -608,9 +843,12 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
+					ID:   uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type: action.TypeGoto,
+					Option: map[string]any{
+						"target_id":  "7dbc6998-410d-11ec-91b8-d722b27bb799",
+						"loop_count": 3,
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -621,9 +859,12 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 								Type: action.TypeAnswer,
 							},
 							{
-								ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-								Type:   action.TypeGoto,
-								Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
+								ID:   uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+								Type: action.TypeGoto,
+								Option: map[string]any{
+									"target_id":  "7dbc6998-410d-11ec-91b8-d722b27bb799",
+									"loop_count": 3,
+								},
 							},
 						},
 					},
@@ -633,9 +874,12 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
+					ID:   uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type: action.TypeGoto,
+					Option: map[string]any{
+						"target_id":  "7dbc6998-410d-11ec-91b8-d722b27bb799",
+						"loop_count": 3,
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -646,9 +890,12 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 								Type: action.TypeAnswer,
 							},
 							{
-								ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-								Type:   action.TypeGoto,
-								Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
+								ID:   uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+								Type: action.TypeGoto,
+								Option: map[string]any{
+									"target_id":  "7dbc6998-410d-11ec-91b8-d722b27bb799",
+									"loop_count": 3,
+								},
 							},
 						},
 					},
@@ -657,9 +904,12 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 
 			responseOrgStackID: stack.IDMain,
 			responseOrgAction: &action.Action{
-				ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-				Type:   action.TypeGoto,
-				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
+				ID:   uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+				Type: action.TypeGoto,
+				Option: map[string]any{
+					"target_id":  "7dbc6998-410d-11ec-91b8-d722b27bb799",
+					"loop_count": 3,
+				},
 			},
 			responseTargetStackID: stack.IDMain,
 			responseTargetAction: &action.Action{
@@ -714,9 +964,12 @@ func Test_actionHandleGotoLoopOver(t *testing.T) {
 			&activeflow.Activeflow{
 				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":0}`),
+					ID:   uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type: action.TypeGoto,
+					Option: map[string]any{
+						"target_id":  "7dbc6998-410d-11ec-91b8-d722b27bb799",
+						"loop_count": 0,
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -728,9 +981,12 @@ func Test_actionHandleGotoLoopOver(t *testing.T) {
 								Type: action.TypeAnswer,
 							},
 							{
-								ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-								Type:   action.TypeGoto,
-								Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":0}`),
+								ID:   uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+								Type: action.TypeGoto,
+								Option: map[string]any{
+									"target_id":  "7dbc6998-410d-11ec-91b8-d722b27bb799",
+									"loop_count": 0,
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("c299daf0-984c-11ec-9288-0b50517b314d"),
@@ -744,9 +1000,11 @@ func Test_actionHandleGotoLoopOver(t *testing.T) {
 			&activeflow.Activeflow{
 				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
+					ID:   uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+					Type: action.TypeGoto,
+					Option: map[string]any{
+						"target_id": "7dbc6998-410d-11ec-91b8-d722b27bb799",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -758,9 +1016,12 @@ func Test_actionHandleGotoLoopOver(t *testing.T) {
 								Type: action.TypeAnswer,
 							},
 							{
-								ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-								Type:   action.TypeGoto,
-								Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":0}`),
+								ID:   uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
+								Type: action.TypeGoto,
+								Option: map[string]any{
+									"target_id":  "7dbc6998-410d-11ec-91b8-d722b27bb799",
+									"loop_count": 0,
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("c299daf0-984c-11ec-9288-0b50517b314d"),
@@ -811,9 +1072,11 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 
 			activeflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
-					Type:   action.TypeQueueJoin,
-					Option: []byte(`{"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"}`),
+					ID:   uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
+					Type: action.TypeQueueJoin,
+					Option: map[string]any{
+						"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad",
+					},
 				},
 				ReferenceID: uuid.FromStringOrNil("3de1fb7a-adfb-11ec-8765-9bb130635c87"),
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -821,9 +1084,11 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
-								Type:   action.TypeQueueJoin,
-								Option: []byte(`{"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"}`),
+								ID:   uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
+								Type: action.TypeQueueJoin,
+								Option: map[string]any{
+									"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("cdd46f0e-6591-11ec-aff5-63bb1f2f2e5f"),
@@ -1032,9 +1297,11 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 			flowID: uuid.FromStringOrNil("a1d247b4-3cbf-11ec-8d08-970ce7001aaa"),
 			activeflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
-					Type:   action.TypeFetchFlow,
-					Option: []byte(`{"flow_id": "a1d247b4-3cbf-11ec-8d08-970ce7001aaa"}`),
+					ID:   uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
+					Type: action.TypeFetchFlow,
+					Option: map[string]any{
+						"flow_id": "a1d247b4-3cbf-11ec-8d08-970ce7001aaa",
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -1082,9 +1349,11 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 				ForwardStackID:  uuid.FromStringOrNil("ede4083a-d4e1-11ec-917f-7f730832f0d0"),
 				ForwardActionID: uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
-					Type:   action.TypeFetchFlow,
-					Option: []byte(`{"flow_id": "a1d247b4-3cbf-11ec-8d08-970ce7001aaa"}`),
+					ID:   uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
+					Type: action.TypeFetchFlow,
+					Option: map[string]any{
+						"flow_id": "a1d247b4-3cbf-11ec-8d08-970ce7001aaa",
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -1113,9 +1382,11 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 			flowID: uuid.FromStringOrNil("36e14dae-648f-11ec-b947-6f91a363d29e"),
 			activeflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
-					Type:   action.TypeFetchFlow,
-					Option: []byte(`{"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e"}`),
+					ID:   uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
+					Type: action.TypeFetchFlow,
+					Option: map[string]any{
+						"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e",
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -1167,9 +1438,11 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 				ForwardStackID:  uuid.FromStringOrNil("b0a90640-d4e2-11ec-ac01-878f8d902c0b"),
 				ForwardActionID: uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
-					Type:   action.TypeFetchFlow,
-					Option: []byte(`{"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e"}`),
+					ID:   uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
+					Type: action.TypeFetchFlow,
+					Option: map[string]any{
+						"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e",
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -1243,18 +1516,22 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 
 			activeflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-					Type:   action.TypeConferenceJoin,
-					Option: []byte(`{"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
+					ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+					Type: action.TypeConferenceJoin,
+					Option: map[string]any{
+						"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9",
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-								Type:   action.TypeConferenceJoin,
-								Option: []byte(`{"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
+								ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+								Type: action.TypeConferenceJoin,
+								Option: map[string]any{
+									"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9",
+								},
 							},
 						},
 					},
@@ -1286,18 +1563,22 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 				ForwardStackID:  uuid.FromStringOrNil("fd6d9b84-d4e3-11ec-a53b-879007c0bc0a"),
 				ForwardActionID: uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-					Type:   action.TypeConferenceJoin,
-					Option: []byte(`{"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
+					ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+					Type: action.TypeConferenceJoin,
+					Option: map[string]any{
+						"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9",
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
-								Type:   action.TypeConferenceJoin,
-								Option: []byte(`{"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
+								ID:   uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
+								Type: action.TypeConferenceJoin,
+								Option: map[string]any{
+									"conference_id": "b7c84d66-410b-11ec-ab21-23726c7dc3b9",
+								},
 							},
 						},
 					},
@@ -1360,18 +1641,30 @@ func Test_actionHandleBranch(t *testing.T) {
 			activeflow: &activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
-					Type:   action.TypeBranch,
-					Option: []byte(`{"variable":"voipbin.call.tmpdigits","default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					ID:   uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+					Type: action.TypeBranch,
+					Option: map[string]any{
+						"variable":          "voipbin.call.tmpdigits",
+						"default_target_id": "59e4a526-91a3-11ec-83a3-7373495be152",
+						"target_ids": map[string]string{
+							"1": "623e8e48-91a4-11ec-aab0-d741c6c9423c",
+						},
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
-								Type:   action.TypeBranch,
-								Option: []byte(`{"variable":"voipbin.call.tmpdigits","default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+								ID:   uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+								Type: action.TypeBranch,
+								Option: map[string]any{
+									"variable":          "voipbin.call.tmpdigits",
+									"default_target_id": "59e4a526-91a3-11ec-83a3-7373495be152",
+									"target_ids": map[string]string{
+										"1": "623e8e48-91a4-11ec-aab0-d741c6c9423c",
+									},
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1407,18 +1700,30 @@ func Test_actionHandleBranch(t *testing.T) {
 				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
-					Type:   action.TypeBranch,
-					Option: []byte(`{"variable":"voipbin.call.tmpdigits","default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					ID:   uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+					Type: action.TypeBranch,
+					Option: map[string]any{
+						"variable":          "voipbin.call.tmpdigits",
+						"default_target_id": "59e4a526-91a3-11ec-83a3-7373495be152",
+						"target_ids": map[string]string{
+							"1": "623e8e48-91a4-11ec-aab0-d741c6c9423c",
+						},
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
-								Type:   action.TypeBranch,
-								Option: []byte(`{"variable":"voipbin.call.tmpdigits","default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+								ID:   uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+								Type: action.TypeBranch,
+								Option: map[string]any{
+									"variable":          "voipbin.call.tmpdigits",
+									"default_target_id": "59e4a526-91a3-11ec-83a3-7373495be152",
+									"target_ids": map[string]string{
+										"1": "623e8e48-91a4-11ec-aab0-d741c6c9423c",
+									},
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1439,18 +1744,30 @@ func Test_actionHandleBranch(t *testing.T) {
 			activeflow: &activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
-					Type:   action.TypeBranch,
-					Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					ID:   uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+					Type: action.TypeBranch,
+					Option: map[string]any{
+						"variable":          "voipbin.call.digits",
+						"default_target_id": "59e4a526-91a3-11ec-83a3-7373495be152",
+						"target_ids": map[string]string{
+							"1": "623e8e48-91a4-11ec-aab0-d741c6c9423c",
+						},
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
-								Type:   action.TypeBranch,
-								Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+								ID:   uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+								Type: action.TypeBranch,
+								Option: map[string]any{
+									"variable":          "voipbin.call.digits",
+									"default_target_id": "59e4a526-91a3-11ec-83a3-7373495be152",
+									"target_ids": map[string]string{
+										"1": "623e8e48-91a4-11ec-aab0-d741c6c9423c",
+									},
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1486,18 +1803,30 @@ func Test_actionHandleBranch(t *testing.T) {
 				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
-					Type:   action.TypeBranch,
-					Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					ID:   uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+					Type: action.TypeBranch,
+					Option: map[string]any{
+						"variable":          "voipbin.call.digits",
+						"default_target_id": "59e4a526-91a3-11ec-83a3-7373495be152",
+						"target_ids": map[string]string{
+							"1": "623e8e48-91a4-11ec-aab0-d741c6c9423c",
+						},
+					},
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
-								Type:   action.TypeBranch,
-								Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+								ID:   uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
+								Type: action.TypeBranch,
+								Option: map[string]any{
+									"variable":          "voipbin.call.digits",
+									"default_target_id": "59e4a526-91a3-11ec-83a3-7373495be152",
+									"target_ids": map[string]string{
+										"1": "623e8e48-91a4-11ec-aab0-d741c6c9423c",
+									},
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1564,9 +1893,11 @@ func Test_actionHandleConditionCallDigits(t *testing.T) {
 			&activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("c2dbc228-92b4-11ec-8cc9-3358e0b8bbb5"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
-					Type:   action.TypeConditionCallDigits,
-					Option: []byte(`{"length": 1}`),
+					ID:   uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+					Type: action.TypeConditionCallDigits,
+					Option: map[string]any{
+						"length": 1,
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -1574,9 +1905,11 @@ func Test_actionHandleConditionCallDigits(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
-								Type:   action.TypeConditionCallDigits,
-								Option: []byte(`{"length": 1}`),
+								ID:   uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+								Type: action.TypeConditionCallDigits,
+								Option: map[string]any{
+									"length": 1,
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("c37492fa-92b4-11ec-94a0-1bfcaf781964"),
@@ -1597,9 +1930,11 @@ func Test_actionHandleConditionCallDigits(t *testing.T) {
 			&activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("6ef04e44-92b5-11ec-a70a-1b80e125f020"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
-					Type:   action.TypeConditionCallDigits,
-					Option: []byte(`{"key": "3"}`),
+					ID:   uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+					Type: action.TypeConditionCallDigits,
+					Option: map[string]any{
+						"key": "3",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -1607,9 +1942,11 @@ func Test_actionHandleConditionCallDigits(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
-								Type:   action.TypeConditionCallDigits,
-								Option: []byte(`{"key": "3"}`),
+								ID:   uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+								Type: action.TypeConditionCallDigits,
+								Option: map[string]any{
+									"key": "3",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("6f893f3c-92b5-11ec-9c9d-437fc938558b"),
@@ -1671,9 +2008,12 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 			&activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("c2dbc228-92b4-11ec-8cc9-3358e0b8bbb5"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
-					Type:   action.TypeConditionCallDigits,
-					Option: []byte(`{"length": 3, "false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964"}`),
+					ID:   uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+					Type: action.TypeConditionCallDigits,
+					Option: map[string]any{
+						"length":          3,
+						"false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -1681,9 +2021,12 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
-								Type:   action.TypeConditionCallDigits,
-								Option: []byte(`{"length": 3, "false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964"}`),
+								ID:   uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+								Type: action.TypeConditionCallDigits,
+								Option: map[string]any{
+									"length":          3,
+									"false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("7dac84b8-d58e-11ec-8b33-b76f5cf8651a"),
@@ -1707,9 +2050,12 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("c37492fa-92b4-11ec-94a0-1bfcaf781964"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
-					Type:   action.TypeConditionCallDigits,
-					Option: []byte(`{"length": 3, "false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964"}`),
+					ID:   uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+					Type: action.TypeConditionCallDigits,
+					Option: map[string]any{
+						"length":          3,
+						"false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -1717,9 +2063,12 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
-								Type:   action.TypeConditionCallDigits,
-								Option: []byte(`{"length": 3, "false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964"}`),
+								ID:   uuid.FromStringOrNil("c3434cae-92b4-11ec-aa8a-07d4fef0bef1"),
+								Type: action.TypeConditionCallDigits,
+								Option: map[string]any{
+									"length":          3,
+									"false_target_id": "c37492fa-92b4-11ec-94a0-1bfcaf781964",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("7dac84b8-d58e-11ec-8b33-b76f5cf8651a"),
@@ -1745,9 +2094,12 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 			&activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("6ef04e44-92b5-11ec-a70a-1b80e125f020"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
-					Type:   action.TypeConditionCallDigits,
-					Option: []byte(`{"key": "5", "false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b"}`),
+					ID:   uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+					Type: action.TypeConditionCallDigits,
+					Option: map[string]any{
+						"key":             "5",
+						"false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -1755,9 +2107,12 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
-								Type:   action.TypeConditionCallDigits,
-								Option: []byte(`{"key": "5", "false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b"}`),
+								ID:   uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+								Type: action.TypeConditionCallDigits,
+								Option: map[string]any{
+									"key":             "5",
+									"false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("a128f228-d58e-11ec-9a02-c70b96d93760"),
@@ -1781,9 +2136,12 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("6f893f3c-92b5-11ec-9c9d-437fc938558b"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
-					Type:   action.TypeConditionCallDigits,
-					Option: []byte(`{"key": "5", "false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b"}`),
+					ID:   uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+					Type: action.TypeConditionCallDigits,
+					Option: map[string]any{
+						"key":             "5",
+						"false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -1791,9 +2149,12 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
-								Type:   action.TypeConditionCallDigits,
-								Option: []byte(`{"key": "5", "false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b"}`),
+								ID:   uuid.FromStringOrNil("6f553cd2-92b5-11ec-a9cc-070ec1a9c665"),
+								Type: action.TypeConditionCallDigits,
+								Option: map[string]any{
+									"key":             "5",
+									"false_target_id": "6f893f3c-92b5-11ec-9c9d-437fc938558b",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("a128f228-d58e-11ec-9a02-c70b96d93760"),
@@ -1857,9 +2218,12 @@ func Test_actionHandleConditionCallStatus(t *testing.T) {
 			&activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("4980416e-9832-11ec-b189-5f96149e7ed8"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("49e01864-9832-11ec-a2de-8f0b27470613"),
-					Type:   action.TypeConditionCallStatus,
-					Option: []byte(`{"status": "ringing", "false_target_id": "52c1da9e-9832-11ec-9fc6-1b6bb10dc345"}`),
+					ID:   uuid.FromStringOrNil("49e01864-9832-11ec-a2de-8f0b27470613"),
+					Type: action.TypeConditionCallStatus,
+					Option: map[string]any{
+						"status":          "ringing",
+						"false_target_id": "52c1da9e-9832-11ec-9fc6-1b6bb10dc345",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -1867,9 +2231,12 @@ func Test_actionHandleConditionCallStatus(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("49e01864-9832-11ec-a2de-8f0b27470613"),
-								Type:   action.TypeConditionCallDigits,
-								Option: []byte(`{"status": "ringing", "false_target_id": "52c1da9e-9832-11ec-9fc6-1b6bb10dc345"}`),
+								ID:   uuid.FromStringOrNil("49e01864-9832-11ec-a2de-8f0b27470613"),
+								Type: action.TypeConditionCallDigits,
+								Option: map[string]any{
+									"status":          "ringing",
+									"false_target_id": "52c1da9e-9832-11ec-9fc6-1b6bb10dc345",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("5beb1950-9832-11ec-9c32-d7afb89fde90"),
@@ -1935,9 +2302,12 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 			&activeflow.Activeflow{
 				ReferenceID: uuid.FromStringOrNil("2a497210-9833-11ec-9c8c-6f81d7341b91"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
-					Type:   action.TypeConditionCallStatus,
-					Option: []byte(`{"status": "ringing", "false_target_id": "2afd89c6-9833-11ec-8e96-37a807af7aa9"}`),
+					ID:   uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
+					Type: action.TypeConditionCallStatus,
+					Option: map[string]any{
+						"status":          "ringing",
+						"false_target_id": "2afd89c6-9833-11ec-8e96-37a807af7aa9",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -1945,9 +2315,12 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
-								Type:   action.TypeConditionCallDigits,
-								Option: []byte(`{"status": "ringing", "false_target_id": "2afd89c6-9833-11ec-8e96-37a807af7aa9"}`),
+								ID:   uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
+								Type: action.TypeConditionCallDigits,
+								Option: map[string]any{
+									"status":          "ringing",
+									"false_target_id": "2afd89c6-9833-11ec-8e96-37a807af7aa9",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("2ad1f3ce-9833-11ec-9625-13a4b9bd21a0"),
@@ -1979,9 +2352,12 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("2afd89c6-9833-11ec-8e96-37a807af7aa9"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
-					Type:   action.TypeConditionCallStatus,
-					Option: []byte(`{"status": "ringing", "false_target_id": "2afd89c6-9833-11ec-8e96-37a807af7aa9"}`),
+					ID:   uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
+					Type: action.TypeConditionCallStatus,
+					Option: map[string]any{
+						"status":          "ringing",
+						"false_target_id": "2afd89c6-9833-11ec-8e96-37a807af7aa9",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -1989,9 +2365,12 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
-								Type:   action.TypeConditionCallDigits,
-								Option: []byte(`{"status": "ringing", "false_target_id": "2afd89c6-9833-11ec-8e96-37a807af7aa9"}`),
+								ID:   uuid.FromStringOrNil("2a9dcc20-9833-11ec-8c07-4f5b407e5cdd"),
+								Type: action.TypeConditionCallDigits,
+								Option: map[string]any{
+									"status":          "ringing",
+									"false_target_id": "2afd89c6-9833-11ec-8e96-37a807af7aa9",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("2ad1f3ce-9833-11ec-9625-13a4b9bd21a0"),
@@ -2154,7 +2533,9 @@ func Test_actionHandleConditionDatetime_match(t *testing.T) {
 			}
 
 			tmp, _ := json.Marshal(opt)
-			af.CurrentAction.Option = tmp
+			if errUnmarshal := json.Unmarshal(tmp, &af.CurrentAction.Option); errUnmarshal != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errUnmarshal)
+			}
 
 			if err := h.actionHandleConditionDatetime(ctx, af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -2281,7 +2662,9 @@ func Test_actionHandleConditionDatetime_unmatch(t *testing.T) {
 			}
 
 			tmp, _ := json.Marshal(opt)
-			af.CurrentAction.Option = tmp
+			if errUnmarshal := json.Unmarshal(tmp, &af.CurrentAction.Option); errUnmarshal != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errUnmarshal)
+			}
 
 			mockStack.EXPECT().GetAction(af.StackMap, af.CurrentStackID, gomock.Any(), false).Return(stack.IDMain, &action.Action{}, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, af).Return(nil)
@@ -2305,8 +2688,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "==", "variable": "test value", "value_type": "string", "value_string": "test value"}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "==",
+						"variable":     "test value",
+						"value_type":   "string",
+						"value_string": "test value",
+					},
 				},
 			},
 		},
@@ -2315,8 +2703,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "!=", "variable": "test value 1", "value_type": "string", "value_string": "test value 2"}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "!=",
+						"variable":     "test value 1",
+						"value_type":   "string",
+						"value_string": "test value 2",
+					},
 				},
 			},
 		},
@@ -2325,8 +2718,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": ">", "variable": "test value 123", "value_type": "string", "value_string": "test value 111"}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    ">",
+						"variable":     "test value 123",
+						"value_type":   "string",
+						"value_string": "test value 111",
+					},
 				},
 			},
 		},
@@ -2335,8 +2733,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": ">=", "variable": "test value 123", "value_type": "string", "value_string": "test value 123"}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    ">=",
+						"variable":     "test value 123",
+						"value_type":   "string",
+						"value_string": "test value 123",
+					},
 				},
 			},
 		},
@@ -2345,8 +2748,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "<", "variable": "test value 111", "value_type": "string", "value_string": "test value 123"}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "<",
+						"variable":     "test value 111",
+						"value_type":   "string",
+						"value_string": "test value 123",
+					},
 				},
 			},
 		},
@@ -2355,8 +2763,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "<=", "variable": "test value 111", "value_type": "string", "value_string": "test value 111"}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "<=",
+						"variable":     "test value 111",
+						"value_type":   "string",
+						"value_string": "test value 111",
+					},
 				},
 			},
 		},
@@ -2365,8 +2778,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "==", "variable": "123", "value_type": "number", "value_number": 123}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "==",
+						"variable":     "123",
+						"value_type":   "number",
+						"value_number": 123,
+					},
 				},
 			},
 		},
@@ -2375,8 +2793,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "!=", "variable": "123", "value_type": "number", "value_number": 456}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "!=",
+						"variable":     "123",
+						"value_type":   "number",
+						"value_number": 456,
+					},
 				},
 			},
 		},
@@ -2385,8 +2808,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": ">", "variable": "123.1", "value_type": "number", "value_number": 111.1}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    ">",
+						"variable":     "123.1",
+						"value_type":   "number",
+						"value_number": 111.1,
+					},
 				},
 			},
 		},
@@ -2395,8 +2823,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": ">=", "variable": "123.1", "value_type": "number", "value_number": 123.1}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    ">=",
+						"variable":     "123.1",
+						"value_type":   "number",
+						"value_number": 123.1,
+					},
 				},
 			},
 		},
@@ -2405,8 +2838,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "<", "variable": "111.1", "value_type": "number", "value_number": 123.1}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "<",
+						"variable":     "111.1",
+						"value_type":   "number",
+						"value_number": 123.1,
+					},
 				},
 			},
 		},
@@ -2415,8 +2853,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "<=", "variable": "111.1", "value_type": "number", "value_number": 111.1}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "<=",
+						"variable":     "111.1",
+						"value_type":   "number",
+						"value_number": 111.1,
+					},
 				},
 			},
 		},
@@ -2425,8 +2868,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "==", "variable": "test length", "value_type": "length", "value_length": 11}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "==",
+						"variable":     "test length",
+						"value_type":   "length",
+						"value_length": 11,
+					},
 				},
 			},
 		},
@@ -2435,8 +2883,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "!=", "variable": "test length", "value_type": "length", "value_length": 12}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "!=",
+						"variable":     "test length",
+						"value_type":   "length",
+						"value_length": 12,
+					},
 				},
 			},
 		},
@@ -2445,8 +2898,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": ">", "variable": "test length", "value_type": "length", "value_length": 10}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    ">",
+						"variable":     "test length",
+						"value_type":   "length",
+						"value_length": 10,
+					},
 				},
 			},
 		},
@@ -2455,8 +2913,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": ">=", "variable": "test length", "value_type": "length", "value_length": 11}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    ">=",
+						"variable":     "test length",
+						"value_type":   "length",
+						"value_length": 11,
+					},
 				},
 			},
 		},
@@ -2465,8 +2928,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "<", "variable": "test length", "value_type": "length", "value_length": 12}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "<",
+						"variable":     "test length",
+						"value_type":   "length",
+						"value_length": 12,
+					},
 				},
 			},
 		},
@@ -2475,8 +2943,13 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "<=", "variable": "test length", "value_type": "length", "value_length": 11}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "<=",
+						"variable":     "test length",
+						"value_type":   "length",
+						"value_length": 11,
+					},
 				},
 			},
 		},
@@ -2490,13 +2963,14 @@ func Test_actionHandleConditionVariable_match(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockVar := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
 
 			h := &activeflowHandler{
 				db:              mockDB,
 				reqHandler:      mockReq,
 				variableHandler: mockVar,
+				stackmapHandler: mockStack,
 			}
-
 			ctx := context.Background()
 
 			if err := h.actionHandleConditionVariable(ctx, tt.activeFlow); err != nil {
@@ -2518,8 +2992,13 @@ func Test_actionHandleConditionVariable_unmatch(t *testing.T) {
 
 			activeflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "==", "variable": "test value", "value_type": "string", "value_string": "test value unmatch"}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "==",
+						"variable":     "test value",
+						"value_type":   "string",
+						"value_string": "test value unmatch",
+					},
 				},
 			},
 		},
@@ -2528,8 +3007,13 @@ func Test_actionHandleConditionVariable_unmatch(t *testing.T) {
 
 			activeflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "==", "variable": "123", "value_type": "number", "value_number": 123.1}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "==",
+						"variable":     "123",
+						"value_type":   "number",
+						"value_number": 123.1,
+					},
 				},
 			},
 		},
@@ -2538,8 +3022,13 @@ func Test_actionHandleConditionVariable_unmatch(t *testing.T) {
 
 			activeflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					Type:   action.TypeConditionVariable,
-					Option: []byte(`{"condition": "==", "variable": "12345", "value_type": "length", "value_length": 6}`),
+					Type: action.TypeConditionVariable,
+					Option: map[string]any{
+						"condition":    "==",
+						"variable":     "12345",
+						"value_type":   "length",
+						"value_length": 6,
+					},
 				},
 			},
 		},
@@ -2598,9 +3087,25 @@ func Test_actionHandleMessageSend(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
 				},
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
-					Type:   action.TypeMessageSend,
-					Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "+821100000003"}], "text": "hello world. test variable: ttteeesssttt"}`),
+					ID:   uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
+					Type: action.TypeMessageSend,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000001",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000002",
+							},
+							{
+								"type":   "tel",
+								"target": "+821100000003",
+							},
+						},
+						"text": "hello world. test variable: ttteeesssttt",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -2608,9 +3113,25 @@ func Test_actionHandleMessageSend(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
-								Type:   action.TypeMessageSend,
-								Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "+821100000003"}], "text": "hello world. test variable: ttteeesssttt"}`),
+								ID:   uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
+								Type: action.TypeMessageSend,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+821100000001",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+821100000002",
+										},
+										{
+											"type":   "tel",
+											"target": "+821100000003",
+										},
+									},
+									"text": "hello world. test variable: ttteeesssttt",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("9c06bcfa-a2ce-11ec-bcc6-5bc0b10cd014"),
@@ -2650,9 +3171,21 @@ func Test_actionHandleMessageSend(t *testing.T) {
 			},
 			expectReqActiveFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
-					Type:   action.TypeMessageSend,
-					Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello world"}`),
+					ID:   uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
+					Type: action.TypeMessageSend,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000001",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000002",
+							},
+						},
+						"text": "hello world",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -2660,9 +3193,21 @@ func Test_actionHandleMessageSend(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
-								Type:   action.TypeMessageSend,
-								Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello world"}`),
+								ID:   uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
+								Type: action.TypeMessageSend,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+821100000001",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+821100000002",
+										},
+									},
+									"text": "hello world",
+								},
 							},
 							{
 								ID:   uuid.FromStringOrNil("9c06bcfa-a2ce-11ec-bcc6-5bc0b10cd014"),
@@ -2728,9 +3273,12 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
-					Type:   action.TypeTranscribeRecording,
-					Option: []byte(`{"language":"en-US","on_end_flow_id":"bf3dffbc-093c-11f0-9fb1-c767cd34606a"}`),
+					ID:   uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
+					Type: action.TypeTranscribeRecording,
+					Option: map[string]any{
+						"language":       "en-US",
+						"on_end_flow_id": "bf3dffbc-093c-11f0-9fb1-c767cd34606a",
+					},
 				},
 			},
 
@@ -2810,9 +3358,12 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
-					Type:   action.TypeTranscribeStart,
-					Option: []byte(`{"language":"en-US","on_end_flow_id":"bf629ef8-093c-11f0-a38e-73d3a32d02a6"}`),
+					ID:   uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
+					Type: action.TypeTranscribeStart,
+					Option: map[string]any{
+						"language":       "en-US",
+						"on_end_flow_id": "bf629ef8-093c-11f0-a38e-73d3a32d02a6",
+					},
 				},
 			},
 
@@ -2892,9 +3443,22 @@ func Test_actionHandleCall(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
 				},
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("4edb5840-a941-11ec-b674-93c2ef347891"),
-					Type:   action.TypeCall,
-					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "15df43ee-a941-11ec-a903-2b7266f49e4b", "early_execution": true}`),
+					ID:   uuid.FromStringOrNil("4edb5840-a941-11ec-b674-93c2ef347891"),
+					Type: action.TypeCall,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000001",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000002",
+							},
+						},
+						"flow_id":         "15df43ee-a941-11ec-a903-2b7266f49e4b",
+						"early_execution": true,
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -2902,9 +3466,21 @@ func Test_actionHandleCall(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("4edb5840-a941-11ec-b674-93c2ef347891"),
-								Type:   action.TypeCall,
-								Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "15df43ee-a941-11ec-a903-2b7266f49e4b"}`),
+								ID:   uuid.FromStringOrNil("4edb5840-a941-11ec-b674-93c2ef347891"),
+								Type: action.TypeCall,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+821100000001",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+821100000002",
+										},
+									},
+									"flow_id": "15df43ee-a941-11ec-a903-2b7266f49e4b",
+								},
 							},
 						},
 					},
@@ -2944,9 +3520,25 @@ func Test_actionHandleCall(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("fea0d30e-a941-11ec-a38a-478b19a5dfd2"),
 				},
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("fec56ebc-a941-11ec-8e4c-9fafab93ddcc"),
-					Type:   action.TypeCall,
-					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "+821100000003"}], "flow_id": "feedab34-a941-11ec-a6a8-1bbdada16b4d"}`),
+					ID:   uuid.FromStringOrNil("fec56ebc-a941-11ec-8e4c-9fafab93ddcc"),
+					Type: action.TypeCall,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000001",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000002",
+							},
+							{
+								"type":   "tel",
+								"target": "+821100000003",
+							},
+						},
+						"flow_id": "feedab34-a941-11ec-a6a8-1bbdada16b4d",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -2954,9 +3546,21 @@ func Test_actionHandleCall(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("fec56ebc-a941-11ec-8e4c-9fafab93ddcc"),
-								Type:   action.TypeCall,
-								Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [,{"type": "tel", "target": "+821100000003"}], "flow_id": "feedab34-a941-11ec-a6a8-1bbdada16b4d"}`),
+								ID:   uuid.FromStringOrNil("fec56ebc-a941-11ec-8e4c-9fafab93ddcc"),
+								Type: action.TypeCall,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+821100000001",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+821100000003",
+										},
+									},
+									"flow_id": "feedab34-a941-11ec-a6a8-1bbdada16b4d",
+								},
 							},
 						},
 					},
@@ -3005,9 +3609,31 @@ func Test_actionHandleCall(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("38d87102-a943-11ec-99aa-5fc910add207"),
 				},
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("39063286-a943-11ec-b54c-d3be23fdf738"),
-					Type:   action.TypeCall,
-					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+					ID:   uuid.FromStringOrNil("39063286-a943-11ec-b54c-d3be23fdf738"),
+					Type: action.TypeCall,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000001",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000002",
+							},
+						},
+						"actions": []map[string]any{
+							{
+								"type": action.TypeAnswer,
+							},
+							{
+								"type": action.TypeTalk,
+								"option": map[string]any{
+									"text": "hello world",
+								},
+							},
+						},
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3015,9 +3641,31 @@ func Test_actionHandleCall(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("39063286-a943-11ec-b54c-d3be23fdf738"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+								ID:   uuid.FromStringOrNil("39063286-a943-11ec-b54c-d3be23fdf738"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+821100000001",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+821100000002",
+										},
+									},
+									"actions": []map[string]any{
+										{
+											"type": action.TypeAnswer,
+										},
+										{
+											"type": action.TypeTalk,
+											"option": map[string]any{
+												"text": "hello world",
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -3040,8 +3688,10 @@ func Test_actionHandleCall(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text": "hello world"}`),
+					Type: action.TypeTalk,
+					Option: map[string]any{
+						"text": "hello world",
+					},
 				},
 			},
 			uuid.Nil,
@@ -3069,9 +3719,31 @@ func Test_actionHandleCall(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("f40e389e-a943-11ec-83a7-7f90e0c22e96"),
 				},
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("f43f85de-a943-11ec-9ba5-b3f019b002e7"),
-					Type:   action.TypeCall,
-					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+					ID:   uuid.FromStringOrNil("f43f85de-a943-11ec-9ba5-b3f019b002e7"),
+					Type: action.TypeCall,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000001",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000002",
+							},
+						},
+						"actions": []map[string]any{
+							{
+								"type": action.TypeAnswer,
+							},
+							{
+								"type": action.TypeTalk,
+								"option": map[string]any{
+									"text": "hello world",
+								},
+							},
+						},
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3079,9 +3751,31 @@ func Test_actionHandleCall(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("f43f85de-a943-11ec-9ba5-b3f019b002e7"),
-								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
+								ID:   uuid.FromStringOrNil("f43f85de-a943-11ec-9ba5-b3f019b002e7"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+821100000001",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+821100000002",
+										},
+									},
+									"actions": []map[string]any{
+										{
+											"type": action.TypeAnswer,
+										},
+										{
+											"type": action.TypeTalk,
+											"option": map[string]any{
+												"text": "hello world",
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -3104,8 +3798,10 @@ func Test_actionHandleCall(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text": "hello world"}`),
+					Type: action.TypeTalk,
+					Option: map[string]any{
+						"text": "hello world",
+					},
 				},
 			},
 			uuid.Nil,
@@ -3140,9 +3836,22 @@ func Test_actionHandleCall(t *testing.T) {
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("3f0cd396-a994-11ec-95db-e73c30df842c"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
-					Type:   action.TypeCall,
-					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "ecc964dc-a993-11ec-9c4c-13e5b3d40ea8", "chained": true}`),
+					ID:   uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
+					Type: action.TypeCall,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000001",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000002",
+							},
+						},
+						"flow_id": "ecc964dc-a993-11ec-9c4c-13e5b3d40ea8",
+						"chained": true,
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3150,9 +3859,22 @@ func Test_actionHandleCall(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
-								Type:   action.TypeCall,
-								Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "ecc964dc-a993-11ec-9c4c-13e5b3d40ea8", "chained": true}`),
+								ID:   uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
+								Type: action.TypeCall,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+821100000001",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+821100000002",
+										},
+									},
+									"flow_id": "ecc964dc-a993-11ec-9c4c-13e5b3d40ea8",
+									"chained": true,
+								},
 							},
 						},
 					},
@@ -3194,9 +3916,22 @@ func Test_actionHandleCall(t *testing.T) {
 				ReferenceType: activeflow.ReferenceTypeMessage,
 				ReferenceID:   uuid.FromStringOrNil("8819cf88-a996-11ec-bd8b-f3a7053103f1"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
-					Type:   action.TypeCall,
-					Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "88497954-a996-11ec-b194-a71b02fcb6a8", "chained": true}`),
+					ID:   uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
+					Type: action.TypeCall,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000001",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000002",
+							},
+						},
+						"flow_id": "88497954-a996-11ec-b194-a71b02fcb6a8",
+						"chained": true,
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3204,9 +3939,22 @@ func Test_actionHandleCall(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
-								Type:   action.TypeCall,
-								Option: []byte(`{"source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "flow_id": "88497954-a996-11ec-b194-a71b02fcb6a8", "chained": true}`),
+								ID:   uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
+								Type: action.TypeCall,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+821100000001",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+821100000002",
+										},
+									},
+									"flow_id": "88497954-a996-11ec-b194-a71b02fcb6a8",
+									"chained": true,
+								},
 							},
 						},
 					},
@@ -3293,9 +4041,12 @@ func Test_actionHandleVariableSet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
 				},
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("a6896cc8-ce47-11ec-8fff-1f2ab0d61b07"),
-					Type:   action.TypeVariableSet,
-					Option: []byte(`{"key": "key 1","value":"value 1"}`),
+					ID:   uuid.FromStringOrNil("a6896cc8-ce47-11ec-8fff-1f2ab0d61b07"),
+					Type: action.TypeVariableSet,
+					Option: map[string]any{
+						"key":   "key 1",
+						"value": "value 1",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3303,9 +4054,12 @@ func Test_actionHandleVariableSet(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("a6896cc8-ce47-11ec-8fff-1f2ab0d61b07"),
-								Type:   action.TypeVariableSet,
-								Option: []byte(`{"key": "key 1","value":"value 1"}`),
+								ID:   uuid.FromStringOrNil("a6896cc8-ce47-11ec-8fff-1f2ab0d61b07"),
+								Type: action.TypeVariableSet,
+								Option: map[string]any{
+									"key":   "key 1",
+									"value": "value 1",
+								},
 							},
 						},
 					},
@@ -3369,9 +4123,15 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
 				},
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
-					Type:   action.TypeWebhookSend,
-					Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"test message."}`),
+					ID:   uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
+					Type: action.TypeWebhookSend,
+					Option: map[string]any{
+						"sync":      false,
+						"uri":       "test.com",
+						"method":    "POST",
+						"data_type": "application/json",
+						"data":      "test message.",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3379,9 +4139,15 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
-								Type:   action.TypeWebhookSend,
-								Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"test message."}`),
+								ID:   uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
+								Type: action.TypeWebhookSend,
+								Option: map[string]any{
+									"sync":      false,
+									"uri":       "test.com",
+									"method":    "POST",
+									"data_type": "application/json",
+									"data":      "test message.",
+								},
 							},
 						},
 					},
@@ -3451,9 +4217,13 @@ func Test_actionHandleConversationSend(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
 				},
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("5ce765cc-f474-11ec-b2e9-eb0259d7bacf"),
-					Type:   action.TypeConversationSend,
-					Option: []byte(`{"conversation_id":"7e5116e2-f477-11ec-9c08-b343a05abaee","text":"test message.","sync":true}`),
+					ID:   uuid.FromStringOrNil("5ce765cc-f474-11ec-b2e9-eb0259d7bacf"),
+					Type: action.TypeConversationSend,
+					Option: map[string]any{
+						"conversation_id": "7e5116e2-f477-11ec-9c08-b343a05abaee",
+						"text":            "test message.",
+						"sync":            true,
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3461,9 +4231,13 @@ func Test_actionHandleConversationSend(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("5ce765cc-f474-11ec-b2e9-eb0259d7bacf"),
-								Type:   action.TypeConversationSend,
-								Option: []byte(`{"conversation_id":"7e5116e2-f477-11ec-9c08-b343a05abaee","text":"test message.","sync":true}`),
+								ID:   uuid.FromStringOrNil("5ce765cc-f474-11ec-b2e9-eb0259d7bacf"),
+								Type: action.TypeConversationSend,
+								Option: map[string]any{
+									"conversation_id": "7e5116e2-f477-11ec-9c08-b343a05abaee",
+									"text":            "test message.",
+									"sync":            true,
+								},
 							},
 						},
 					},
@@ -3540,9 +4314,14 @@ func Test_actionHandleAITalk(t *testing.T) {
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
-					Type:   action.TypeAITalk,
-					Option: []byte(`{"ai_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","resume":true,"gender":"female","language":"en-US"}`),
+					ID:   uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
+					Type: action.TypeAITalk,
+					Option: map[string]any{
+						"ai_id":    "bb17f504-a8f5-11ed-a974-2f810c03cbf8",
+						"resume":   true,
+						"gender":   "female",
+						"language": "en-US",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -3550,9 +4329,13 @@ func Test_actionHandleAITalk(t *testing.T) {
 						ID: stack.IDMain,
 						Actions: []action.Action{
 							{
-								ID:     uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
-								Type:   action.TypeAITalk,
-								Option: []byte(`{"ai_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","gender":"female","language":"en-US"}`),
+								ID:   uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
+								Type: action.TypeAITalk,
+								Option: map[string]any{
+									"ai_id":    "bb17f504-a8f5-11ed-a974-2f810c03cbf8",
+									"gender":   "female",
+									"language": "en-US",
+								},
 							},
 						},
 					},
@@ -3647,9 +4430,25 @@ func Test_actionHandleEmailSend(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("e4b325e4-00f2-11f0-8cc2-c36f5776f5b2"),
 				},
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("e4dc3eca-00f2-11f0-8a64-2b73140e49f0"),
-					Type:   action.TypeAITalk,
-					Option: []byte(`{"destinations":[{"type":"email","target":"test@voipbin.net","target_name":"test name"}],"subject":"test subject","content":"test content","attachments":[{"reference_type":"recording","reference_id":"e50a99e6-00f2-11f0-957d-d36fc32d6b0d"}]}`),
+					ID:   uuid.FromStringOrNil("e4dc3eca-00f2-11f0-8a64-2b73140e49f0"),
+					Type: action.TypeAITalk,
+					Option: map[string]any{
+						"destinations": []map[string]any{
+							{
+								"type":        "email",
+								"target":      "test@voipbin.net",
+								"target_name": "test name",
+							},
+						},
+						"subject": "test subject",
+						"content": "test content",
+						"attachments": []map[string]any{
+							{
+								"reference_type": "recording",
+								"reference_id":   "e50a99e6-00f2-11f0-957d-d36fc32d6b0d",
+							},
+						},
+					},
 				},
 			},
 
@@ -3735,9 +4534,14 @@ func Test_actionHandleAISummary(t *testing.T) {
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
 				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
-					Type:   action.TypeAITalk,
-					Option: []byte(`{"on_end_flow_id":"0628869e-0cc2-11f0-bc08-6b225f6732dd","reference_type":"call","reference_id":"064d04c4-0cc2-11f0-a507-2f44c43f911a","language":"en-US"}`),
+					ID:   uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
+					Type: action.TypeAITalk,
+					Option: map[string]any{
+						"on_end_flow_id": "0628869e-0cc2-11f0-bc08-6b225f6732dd",
+						"reference_type": "call",
+						"reference_id":   "064d04c4-0cc2-11f0-a507-2f44c43f911a",
+						"language":       "en-US",
+					},
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{},
@@ -3800,7 +4604,7 @@ func Test_actionHandleAISummary(t *testing.T) {
 				tt.expectedReferenceType,
 				tt.expectedReferenceID,
 				tt.expectedLanguage,
-				3000,
+				60000,
 			).Return(tt.responseService, nil)
 
 			// push stack

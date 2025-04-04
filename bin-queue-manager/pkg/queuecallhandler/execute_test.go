@@ -71,8 +71,10 @@ func Test_Execute(t *testing.T) {
 
 			expcetFlowActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"d7357136-5ee0-11ec-abd0-a7463d258061"}`),
+					Type: fmaction.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "d7357136-5ee0-11ec-abd0-a7463d258061",
+					},
 				},
 			},
 			expectDestinations: []commonaddress.Address{
@@ -144,8 +146,10 @@ func Test_generateFlowForAgentCall(t *testing.T) {
 
 			[]fmaction.Action{
 				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"f42361d2-d1b2-11ec-8303-5baaf068dbab"}`),
+					Type: fmaction.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "f42361d2-d1b2-11ec-8303-5baaf068dbab",
+					},
 				},
 			},
 

@@ -102,9 +102,11 @@ func Test_ServiceStart(t *testing.T) {
 				Type: commonservice.TypeAIcall,
 				PushActions: []fmaction.Action{
 					{
-						ID:     uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
-						Type:   fmaction.TypeConfbridgeJoin,
-						Option: []byte(`{"confbridge_id":"ec6d153d-dd5a-4eef-bc27-8fcebe100704"}`),
+						ID:   uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
+						Type: fmaction.TypeConfbridgeJoin,
+						Option: map[string]any{
+							"confbridge_id": "ec6d153d-dd5a-4eef-bc27-8fcebe100704",
+						},
 					},
 				},
 			},

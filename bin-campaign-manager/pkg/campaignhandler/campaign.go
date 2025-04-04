@@ -2,7 +2,6 @@ package campaignhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -400,18 +399,10 @@ func (h *campaignHandler) createFlowActions(ctx context.Context, actions []fmact
 
 	action := fmaction.Action{
 		Type: fmaction.TypeQueueJoin,
+		Option: fmaction.ConvertOption(fmaction.OptionQueueJoin{
+			QueueID: queueID,
+		}),
 	}
-
-	option := fmaction.OptionQueueJoin{
-		QueueID: queueID,
-	}
-
-	opt, err := json.Marshal(option)
-	if err != nil {
-		return nil, err
-	}
-
-	action.Option = opt
 	flowActions = append(flowActions, action)
 
 	return flowActions, nil

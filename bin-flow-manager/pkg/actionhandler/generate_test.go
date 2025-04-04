@@ -64,12 +64,16 @@ func Test_generateFlowActions(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world"}`),
+					Type: action.TypeTalk,
+					Option: map[string]any{
+						"text": "hello world",
+					},
 				},
 				{
-					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"4dfdd5e0-984a-11ec-ae86-efa09978823e"}`),
+					Type: action.TypeGoto,
+					Option: map[string]any{
+						"target_id": "4dfdd5e0-984a-11ec-ae86-efa09978823e",
+					},
 				},
 			},
 
@@ -84,14 +88,18 @@ func Test_generateFlowActions(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				{
-					ID:     uuid.FromStringOrNil("db7edc04-0294-11f0-b5b6-6ffa57e31a38"),
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world"}`),
+					ID:   uuid.FromStringOrNil("db7edc04-0294-11f0-b5b6-6ffa57e31a38"),
+					Type: action.TypeTalk,
+					Option: map[string]any{
+						"text": "hello world",
+					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("db9f162c-0294-11f0-863c-a312ed2977ed"),
-					Type:   action.TypeGoto,
-					Option: []byte(`{"target_id":"4dfdd5e0-984a-11ec-ae86-efa09978823e"}`),
+					ID:   uuid.FromStringOrNil("db9f162c-0294-11f0-863c-a312ed2977ed"),
+					Type: action.TypeGoto,
+					Option: map[string]any{
+						"target_id": "4dfdd5e0-984a-11ec-ae86-efa09978823e",
+					},
 				},
 			},
 		},
@@ -102,12 +110,19 @@ func Test_generateFlowActions(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				{
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world"}`),
+					Type: action.TypeTalk,
+					Option: map[string]any{
+						"text": "hello world",
+					},
 				},
 				{
-					Type:   action.TypeBranch,
-					Option: []byte(`{"default_target_id": "962de9f4-984a-11ec-a6b5-bba220315f29", "target_ids":{"1": "85f8a600-984a-11ec-b59a-dbe5b0c51dec"}}`),
+					Type: action.TypeBranch,
+					Option: map[string]any{
+						"default_target_id": "962de9f4-984a-11ec-a6b5-bba220315f29",
+						"target_ids": map[string]any{
+							"1": "85f8a600-984a-11ec-b59a-dbe5b0c51dec",
+						},
+					},
 				},
 			},
 
@@ -122,14 +137,21 @@ func Test_generateFlowActions(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				{
-					ID:     uuid.FromStringOrNil("dbf1a126-0294-11f0-92d9-a725d6d1f4e3"),
-					Type:   action.TypeTalk,
-					Option: []byte(`{"text":"hello world"}`),
+					ID:   uuid.FromStringOrNil("dbf1a126-0294-11f0-92d9-a725d6d1f4e3"),
+					Type: action.TypeTalk,
+					Option: map[string]any{
+						"text": "hello world",
+					},
 				},
 				{
-					ID:     uuid.FromStringOrNil("dc1f8320-0294-11f0-a64d-bbae5d48f057"),
-					Type:   action.TypeBranch,
-					Option: []byte(`{"default_target_id": "962de9f4-984a-11ec-a6b5-bba220315f29", "target_ids":{"1": "85f8a600-984a-11ec-b59a-dbe5b0c51dec"}}`),
+					ID:   uuid.FromStringOrNil("dc1f8320-0294-11f0-a64d-bbae5d48f057"),
+					Type: action.TypeBranch,
+					Option: map[string]any{
+						"default_target_id": "962de9f4-984a-11ec-a6b5-bba220315f29",
+						"target_ids": map[string]any{
+							"1": "85f8a600-984a-11ec-b59a-dbe5b0c51dec",
+						},
+					},
 				},
 			},
 		},
@@ -140,8 +162,15 @@ func Test_generateFlowActions(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				{
-					Type:   action.TypeBranch,
-					Option: []byte(`{"default_target_id":"ea4f362c-984b-11ec-9bf3-976297bf44b8","target_ids":{"1": "f12edd8a-984b-11ec-8d44-0fadbb919954", "2": "f151020c-984b-11ec-ac5d-238f01404820", "3": "f17129b0-984b-11ec-9174-3b062faf6b35"}}`),
+					Type: action.TypeBranch,
+					Option: map[string]any{
+						"default_target_id": "ea4f362c-984b-11ec-9bf3-976297bf44b8",
+						"target_ids": map[string]any{
+							"1": "f12edd8a-984b-11ec-8d44-0fadbb919954",
+							"2": "f151020c-984b-11ec-ac5d-238f01404820",
+							"3": "f17129b0-984b-11ec-9174-3b062faf6b35",
+						},
+					},
 				},
 			},
 
@@ -155,9 +184,16 @@ func Test_generateFlowActions(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				{
-					ID:     uuid.FromStringOrNil("dc712c02-0294-11f0-8adc-733b154c6b73"),
-					Type:   action.TypeBranch,
-					Option: []byte(`{"default_target_id":"ea4f362c-984b-11ec-9bf3-976297bf44b8","target_ids":{"1": "f12edd8a-984b-11ec-8d44-0fadbb919954", "2": "f151020c-984b-11ec-ac5d-238f01404820", "3": "f17129b0-984b-11ec-9174-3b062faf6b35"}}`),
+					ID:   uuid.FromStringOrNil("dc712c02-0294-11f0-8adc-733b154c6b73"),
+					Type: action.TypeBranch,
+					Option: map[string]any{
+						"default_target_id": "ea4f362c-984b-11ec-9bf3-976297bf44b8",
+						"target_ids": map[string]any{
+							"1": "f12edd8a-984b-11ec-8d44-0fadbb919954",
+							"2": "f151020c-984b-11ec-ac5d-238f01404820",
+							"3": "f17129b0-984b-11ec-9174-3b062faf6b35",
+						},
+					},
 				},
 			},
 		},

@@ -13,21 +13,21 @@ import (
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	FlowID uuid.UUID `json:"flow_id"`
-	Status Status    `json:"status"`
+	FlowID uuid.UUID `json:"flow_id,omitempty"`
+	Status Status    `json:"status,omitempty"`
 
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
-	CurrentAction action.Action `json:"current_action"`
+	CurrentAction action.Action `json:"current_action,omitempty"`
 
-	ForwardActionID uuid.UUID `json:"forward_action_id"`
+	ForwardActionID uuid.UUID `json:"forward_action_id,omitempty"`
 
-	ExecutedActions []action.Action `json:"executed_actions"` // list of executed actions
+	ExecutedActions []action.Action `json:"executed_actions,omitempty"` // list of executed actions
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event

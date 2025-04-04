@@ -52,7 +52,9 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 		return errors.Wrapf(err, "could not marshal the goto option. err: %v", err)
 	}
 
-	orgAction.Option = raw
+	if errUnmarshal := json.Unmarshal(raw, &orgAction.Option); errUnmarshal != nil {
+		return errors.Wrapf(errUnmarshal, "could not unmarshal the option. err: %v", errUnmarshal)
+	}
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
@@ -87,8 +89,13 @@ func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activ
 
 	act := &af.CurrentAction
 
+	tmp, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var option action.OptionFetchFlow
-	if err := json.Unmarshal(act.Option, &option); err != nil {
+	if err := json.Unmarshal(tmp, &option); err != nil {
 		return errors.Wrapf(err, "could not unmarshal the option. err: %v", err)
 	}
 
@@ -115,8 +122,13 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 	})
 	act := &af.CurrentAction
 
+	tmp, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionConditionCallDigits
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmp, &opt); err != nil {
 		return errors.Wrapf(err, "could not unmarshal the option. err: %v", err)
 	}
 	log.WithField("option", opt).Debugf("Detail option.")
@@ -162,8 +174,13 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 	})
 	act := &af.CurrentAction
 
+	tmp, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionConditionCallStatus
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmp, &opt); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return err
 	}
@@ -210,8 +227,13 @@ func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, a
 	})
 	act := &af.CurrentAction
 
+	tmp, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionConditionDatetime
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmp, &opt); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return err
 	}
@@ -331,8 +353,13 @@ func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, a
 	})
 	act := &af.CurrentAction
 
+	tmp, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionConditionVariable
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmp, &opt); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return err
 	}
@@ -390,8 +417,13 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 
 	log.Debugf("Action detail. action: %v", act)
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionConferenceJoin
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
 		return err
 	}
@@ -425,8 +457,13 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	})
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionConnect
-	if errMarshal := json.Unmarshal(act.Option, &opt); errMarshal != nil {
+	if errMarshal := json.Unmarshal(tmpOption, &opt); errMarshal != nil {
 		log.Errorf("Could not unmarshal the connect option. err: %v", errMarshal)
 		return fmt.Errorf("could not unmarshal the connect option. err: %v", errMarshal)
 	}
@@ -442,19 +479,12 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	})
 	log.WithField("confbridge", cb).Debug("Created confbridge for connect.")
 
-	// create a temp flow connect confbridge join
-	tmpOpt := action.OptionConfbridgeJoin{
-		ConfbridgeID: cb.ID,
-	}
-	tmpOptString, err := json.Marshal(tmpOpt)
-	if err != nil {
-		log.Errorf("Could not marshal the confbridge join option. err: %v", err)
-		return fmt.Errorf("could not marshal the confbridge join option. err: %v", err)
-	}
 	tmpActions := []action.Action{
 		{
-			Type:   action.TypeConfbridgeJoin,
-			Option: tmpOptString,
+			Type: action.TypeConfbridgeJoin,
+			Option: action.ConvertOption(action.OptionConfbridgeJoin{
+				ConfbridgeID: cb.ID,
+			}),
 		},
 		{
 			Type: action.TypeHangup,
@@ -507,9 +537,11 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	// put original call into the created conference
 	pushActions := []action.Action{
 		{
-			ID:     h.utilHandler.UUIDCreate(),
-			Type:   action.TypeConfbridgeJoin,
-			Option: tmpOptString,
+			ID:   h.utilHandler.UUIDCreate(),
+			Type: action.TypeConfbridgeJoin,
+			Option: action.ConvertOption(action.OptionConfbridgeJoin{
+				ConfbridgeID: cb.ID,
+			}),
 		},
 	}
 
@@ -529,10 +561,13 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		}
 
 		actionHangupRelay := action.Action{
-			ID:     h.utilHandler.UUIDCreate(),
-			Type:   action.TypeHangup,
-			Option: optStringHangup,
+			ID:   h.utilHandler.UUIDCreate(),
+			Type: action.TypeHangup,
 		}
+		if errUnmarshal := json.Unmarshal(optStringHangup, &actionHangupRelay.Option); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal the option. err: %v", errUnmarshal)
+		}
+
 		pushActions = append(pushActions, actionHangupRelay)
 	}
 
@@ -555,8 +590,13 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow
 
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionGoto
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not marshal the goto action's option. err: %v", err)
 		return err
 	}
@@ -579,11 +619,15 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 		"func":       "actionHandleTranscribeRecording",
 		"activeflow": af,
 	})
-
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionTranscribeRecording
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		return errors.Wrapf(err, "could not unmarshal the transcribe_recording option. err: %v", err)
 	}
 
@@ -626,7 +670,6 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 		"func":       "actionHandleTranscribeStart",
 		"activeflow": af,
 	})
-
 	act := &af.CurrentAction
 
 	if af.ReferenceType != activeflow.ReferenceTypeCall {
@@ -634,8 +677,13 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 		return nil
 	}
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionTranscribeStart
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
 		return err
 	}
@@ -669,8 +717,13 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	})
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionQueueJoin
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
 		return err
 	}
@@ -710,8 +763,13 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 	})
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionBranch
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the branch option. err: %v", err)
 		return err
 	}
@@ -770,8 +828,13 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 	})
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionMessageSend
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the message_send option. err: %v", err)
 		return err
 	}
@@ -797,8 +860,13 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionCall
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return fmt.Errorf("could not unmarshal the option. err: %v", err)
 	}
@@ -844,8 +912,13 @@ func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *act
 
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionVariableSet
-	if errUnmarshal := json.Unmarshal(act.Option, &opt); errUnmarshal != nil {
+	if errUnmarshal := json.Unmarshal(tmpOption, &opt); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", errUnmarshal)
 		return fmt.Errorf("could not unmarshal the option. err: %v", errUnmarshal)
 	}
@@ -870,8 +943,13 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionWebhookSend
-	if errUnmarshal := json.Unmarshal(act.Option, &opt); errUnmarshal != nil {
+	if errUnmarshal := json.Unmarshal(tmpOption, &opt); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", errUnmarshal)
 		return fmt.Errorf("could not unmarshal the option. err: %v", errUnmarshal)
 	}
@@ -900,8 +978,13 @@ func (h *activeflowHandler) actionHandleConversationSend(ctx context.Context, af
 	})
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionConversationSend
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the conversation_send option. err: %v", err)
 		return err
 	}
@@ -937,8 +1020,13 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 	})
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionAITalk
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
 		return err
 	}
@@ -992,8 +1080,13 @@ func (h *activeflowHandler) actionHandleEmailSend(ctx context.Context, af *activ
 	})
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionEmailSend
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return err
 	}
@@ -1018,8 +1111,13 @@ func (h *activeflowHandler) actionHandleAISummary(ctx context.Context, af *activ
 	})
 	act := &af.CurrentAction
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
 	var opt action.OptionAISummary
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		return errors.Wrapf(err, "Could not unmarshal the option. err: %v", err)
 	}
 
@@ -1032,7 +1130,7 @@ func (h *activeflowHandler) actionHandleAISummary(ctx context.Context, af *activ
 		opt.ReferenceType,
 		opt.ReferenceID,
 		opt.Language,
-		3000,
+		60000,
 	)
 	if err != nil {
 		return errors.Wrap(err, "Could not start the service.")

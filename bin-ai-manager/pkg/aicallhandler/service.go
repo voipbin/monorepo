@@ -2,7 +2,6 @@ package aicallhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	commonservice "monorepo/bin-common-handler/models/service"
@@ -47,20 +46,13 @@ func (h *aicallHandler) ServiceStart(
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)
 	}
 
-	// create push actions for service start
-	optJoin := fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: cc.ConfbridgeID,
-	}
-	optString, err := json.Marshal(optJoin)
-	if err != nil {
-		log.Errorf("Could not marshal the conference join option. err: %v", err)
-		return nil, errors.Wrap(err, "Could not marshal the conference join option.")
-	}
 	actions := []fmaction.Action{
 		{
-			ID:     h.utilHandler.UUIDCreate(),
-			Type:   fmaction.TypeConfbridgeJoin,
-			Option: optString,
+			ID:   h.utilHandler.UUIDCreate(),
+			Type: fmaction.TypeConfbridgeJoin,
+			Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+				ConfbridgeID: cc.ConfbridgeID,
+			}),
 		},
 	}
 

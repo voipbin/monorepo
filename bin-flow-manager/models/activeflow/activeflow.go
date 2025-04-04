@@ -15,31 +15,31 @@ import (
 type Activeflow struct {
 	commonidentity.Identity
 
-	FlowID uuid.UUID `json:"flow_id"`
-	Status Status    `json:"status"`
+	FlowID uuid.UUID `json:"flow_id,omitempty"`
+	Status Status    `json:"status,omitempty"`
 
-	ReferenceType         ReferenceType `json:"reference_type"`
-	ReferenceID           uuid.UUID     `json:"reference_id"`
+	ReferenceType         ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID           uuid.UUID     `json:"reference_id,omitempty"`
 	ReferenceActiveflowID uuid.UUID     `json:"reference_activeflow_id,omitempty"`
 
 	// stack
-	StackMap map[uuid.UUID]*stack.Stack `json:"stack_map"`
+	StackMap map[uuid.UUID]*stack.Stack `json:"stack_map,omitempty"`
 
 	// current info
-	CurrentStackID uuid.UUID     `json:"current_stack_id"`
-	CurrentAction  action.Action `json:"current_action"`
+	CurrentStackID uuid.UUID     `json:"current_stack_id,omitempty"`
+	CurrentAction  action.Action `json:"current_action,omitempty"`
 
 	// forward info
-	ForwardStackID  uuid.UUID `json:"forward_stack_id"`
-	ForwardActionID uuid.UUID `json:"forward_action_id"`
+	ForwardStackID  uuid.UUID `json:"forward_stack_id,omitempty"`
+	ForwardActionID uuid.UUID `json:"forward_action_id,omitempty"`
 
 	// execute
-	ExecuteCount    uint64          `json:"execute_count"`
-	ExecutedActions []action.Action `json:"executed_actions"` // list of executed actions
+	ExecuteCount    uint64          `json:"execute_count,omitempty"`
+	ExecutedActions []action.Action `json:"executed_actions,omitempty"` // list of executed actions
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // Status define

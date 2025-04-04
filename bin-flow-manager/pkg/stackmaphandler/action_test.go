@@ -1,7 +1,6 @@
 package stackmaphandler
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -337,7 +336,8 @@ func Test_GetActionReference(t *testing.T) {
 		currentStackID uuid.UUID
 		targetActionID uuid.UUID
 
-		updateOption json.RawMessage
+		// updateOption json.RawMessage
+		updateOption map[string]any
 
 		expectedResStackMap map[uuid.UUID]*stack.Stack
 	}{
@@ -349,9 +349,12 @@ func Test_GetActionReference(t *testing.T) {
 					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
-							ID:     uuid.FromStringOrNil("51e04796-d3b5-11ec-a41b-1fb38082327f"),
-							Type:   action.TypeGoto,
-							Option: []byte(`{"target_id":"6b4ecab6-d57e-11ec-9593-1b54970a3f8c","loop_count":3}`),
+							ID:   uuid.FromStringOrNil("51e04796-d3b5-11ec-a41b-1fb38082327f"),
+							Type: action.TypeGoto,
+							Option: map[string]any{
+								"target_id":  "6b4ecab6-d57e-11ec-9593-1b54970a3f8c",
+								"loop_count": 3,
+							},
 						},
 					},
 					ReturnStackID:  stack.IDEmpty,
@@ -361,16 +364,22 @@ func Test_GetActionReference(t *testing.T) {
 			currentStackID: stack.IDMain,
 			targetActionID: uuid.FromStringOrNil("51e04796-d3b5-11ec-a41b-1fb38082327f"),
 
-			updateOption: []byte(`{"target_id":"6b4ecab6-d57e-11ec-9593-1b54970a3f8c","loop_count":2}`),
+			updateOption: map[string]any{
+				"target_id":  "6b4ecab6-d57e-11ec-9593-1b54970a3f8c",
+				"loop_count": 2,
+			},
 
 			expectedResStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
 					ID: stack.IDMain,
 					Actions: []action.Action{
 						{
-							ID:     uuid.FromStringOrNil("51e04796-d3b5-11ec-a41b-1fb38082327f"),
-							Type:   action.TypeGoto,
-							Option: []byte(`{"target_id":"6b4ecab6-d57e-11ec-9593-1b54970a3f8c","loop_count":2}`),
+							ID:   uuid.FromStringOrNil("51e04796-d3b5-11ec-a41b-1fb38082327f"),
+							Type: action.TypeGoto,
+							Option: map[string]any{
+								"target_id":  "6b4ecab6-d57e-11ec-9593-1b54970a3f8c",
+								"loop_count": 2,
+							},
 						},
 					},
 					ReturnStackID:  stack.IDEmpty,

@@ -226,8 +226,10 @@ func Test_createConferenceFlowActions(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"3cc2ca6e-5b88-11ec-8e91-9f93e28a48df"}`),
+					Type: fmaction.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "3cc2ca6e-5b88-11ec-8e91-9f93e28a48df",
+					},
 				},
 				{
 					Type: fmaction.TypeTalk,

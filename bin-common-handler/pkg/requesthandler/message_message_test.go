@@ -253,85 +253,85 @@ func Test_MessageV1MessageSend(t *testing.T) {
 		expectRes     *mmmessage.Message
 	}{
 		{
-			"1 destination",
+			name: "1 destination",
 
-			uuid.FromStringOrNil("dde92b9a-f179-11ec-adc4-931faecc6a89"),
-			uuid.FromStringOrNil("96ed3008-a2b2-11ec-b585-bf3e19b7355a"),
-			&address.Address{
+			id:         uuid.FromStringOrNil("dde92b9a-f179-11ec-adc4-931faecc6a89"),
+			customerID: uuid.FromStringOrNil("96ed3008-a2b2-11ec-b585-bf3e19b7355a"),
+			source: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			[]address.Address{
+			destinations: []address.Address{
 				{
 					Type:   address.TypeTel,
 					Target: "+821100000002",
 				},
 			},
-			"hello world",
+			text: "hello world",
 
-			"bin-manager.message-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.message-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"dde92b9a-f179-11ec-adc4-931faecc6a89","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""}],"text":"hello world"}`),
+				Data:     []byte(`{"id":"dde92b9a-f179-11ec-adc4-931faecc6a89","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"}],"text":"hello world"}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"dde92b9a-f179-11ec-adc4-931faecc6a89"}`),
 			},
-			&mmmessage.Message{
+			expectRes: &mmmessage.Message{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("dde92b9a-f179-11ec-adc4-931faecc6a89"),
 				},
 			},
 		},
 		{
-			"has no id",
+			name: "has no id",
 
-			uuid.Nil,
-			uuid.FromStringOrNil("96ed3008-a2b2-11ec-b585-bf3e19b7355a"),
-			&address.Address{
+			id:         uuid.Nil,
+			customerID: uuid.FromStringOrNil("96ed3008-a2b2-11ec-b585-bf3e19b7355a"),
+			source: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			[]address.Address{
+			destinations: []address.Address{
 				{
 					Type:   address.TypeTel,
 					Target: "+821100000002",
 				},
 			},
-			"hello world",
+			text: "hello world",
 
-			"bin-manager.message-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.message-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""}],"text":"hello world"}`),
+				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"}],"text":"hello world"}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"283d6350-f17a-11ec-9277-436d6d821637"}`),
 			},
-			&mmmessage.Message{
+			expectRes: &mmmessage.Message{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("283d6350-f17a-11ec-9277-436d6d821637"),
 				},
 			},
 		},
 		{
-			"2 destinations",
+			name: "2 destinations",
 
-			uuid.FromStringOrNil("e930839a-f179-11ec-acb5-3f10a4a1c047"),
-			uuid.FromStringOrNil("333d1508-a2c3-11ec-872d-8796fdc672b5"),
-			&address.Address{
+			id:         uuid.FromStringOrNil("e930839a-f179-11ec-acb5-3f10a4a1c047"),
+			customerID: uuid.FromStringOrNil("333d1508-a2c3-11ec-872d-8796fdc672b5"),
+			source: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			[]address.Address{
+			destinations: []address.Address{
 				{
 					Type:   address.TypeTel,
 					Target: "+821100000002",
@@ -341,21 +341,21 @@ func Test_MessageV1MessageSend(t *testing.T) {
 					Target: "+821100000003",
 				},
 			},
-			"hello world",
+			text: "hello world",
 
-			"bin-manager.message-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.message-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"e930839a-f179-11ec-acb5-3f10a4a1c047","customer_id":"333d1508-a2c3-11ec-872d-8796fdc672b5","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"text":"hello world"}`),
+				Data:     []byte(`{"id":"e930839a-f179-11ec-acb5-3f10a4a1c047","customer_id":"333d1508-a2c3-11ec-872d-8796fdc672b5","source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],"text":"hello world"}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3378aa5a-a2c3-11ec-abb8-97d85696ccd9"}`),
 			},
-			&mmmessage.Message{
+			expectRes: &mmmessage.Message{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("3378aa5a-a2c3-11ec-abb8-97d85696ccd9"),
 				},

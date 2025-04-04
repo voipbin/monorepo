@@ -39,78 +39,78 @@ func Test_OutdialV1OutdialtargetCreate(t *testing.T) {
 		response *sock.Response
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("05378520-b656-11ec-b5e4-bb71e495d2b6"),
-			"test name",
-			"test detail",
-			"test data",
+			outdialID:         uuid.FromStringOrNil("05378520-b656-11ec-b5e4-bb71e495d2b6"),
+			outdialtargetName: "test name",
+			detail:            "test detail",
+			data:              "test data",
 
-			&address.Address{
+			destination0: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			&address.Address{
+			destination1: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000002",
 			},
-			&address.Address{
+			destination2: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000003",
 			},
-			&address.Address{
+			destination3: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000004",
 			},
-			&address.Address{
+			destination4: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000005",
 			},
 
-			"bin-manager.outdial-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.outdial-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/outdials/05378520-b656-11ec-b5e4-bb71e495d2b6/targets",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"test name","detail":"test detail","data":"test data","destination_0":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destination_1":{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},"destination_2":{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""},"destination_3":{"type":"tel","target":"+821100000004","target_name":"","name":"","detail":""},"destination_4":{"type":"tel","target":"+821100000005","target_name":"","name":"","detail":""}}`),
+				Data:     []byte(`{"name":"test name","detail":"test detail","data":"test data","destination_0":{"type":"tel","target":"+821100000001"},"destination_1":{"type":"tel","target":"+821100000002"},"destination_2":{"type":"tel","target":"+821100000003"},"destination_3":{"type":"tel","target":"+821100000004"},"destination_4":{"type":"tel","target":"+821100000005"}}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"86e32246-b656-11ec-b2f8-f7db504bdc2e"}`),
 			},
 		},
 		{
-			"3 addresses",
+			name: "3 addresses",
 
-			uuid.FromStringOrNil("05378520-b656-11ec-b5e4-bb71e495d2b6"),
-			"test name",
-			"test detail",
-			"test data",
+			outdialID:         uuid.FromStringOrNil("05378520-b656-11ec-b5e4-bb71e495d2b6"),
+			outdialtargetName: "test name",
+			detail:            "test detail",
+			data:              "test data",
 
-			&address.Address{
+			destination0: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			&address.Address{
+			destination1: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000002",
 			},
-			nil,
-			nil,
-			&address.Address{
+			destination2: nil,
+			destination3: nil,
+			destination4: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821100000005",
 			},
 
-			"bin-manager.outdial-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.outdial-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/outdials/05378520-b656-11ec-b5e4-bb71e495d2b6/targets",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"test name","detail":"test detail","data":"test data","destination_0":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destination_1":{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},"destination_4":{"type":"tel","target":"+821100000005","target_name":"","name":"","detail":""}}`),
+				Data:     []byte(`{"name":"test name","detail":"test detail","data":"test data","destination_0":{"type":"tel","target":"+821100000001"},"destination_1":{"type":"tel","target":"+821100000002"},"destination_4":{"type":"tel","target":"+821100000005"}}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"86e32246-b656-11ec-b2f8-f7db504bdc2e"}`),

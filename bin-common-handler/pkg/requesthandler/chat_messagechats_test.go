@@ -37,32 +37,32 @@ func Test_ChatV1MessagechatCreate(t *testing.T) {
 		expectResult  *chatmessagechat.Messagechat
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("e0a01384-369e-11ed-94ec-3f100d0d2c9f"),
-			uuid.FromStringOrNil("e0fbacbc-369e-11ed-9ba0-b3dcc584c182"),
-			commonaddress.Address{
+			customerID: uuid.FromStringOrNil("e0a01384-369e-11ed-94ec-3f100d0d2c9f"),
+			chatID:     uuid.FromStringOrNil("e0fbacbc-369e-11ed-9ba0-b3dcc584c182"),
+			source: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			chatmessagechat.TypeNormal,
-			"test message",
-			[]chatmedia.Media{},
+			messageType: chatmessagechat.TypeNormal,
+			text:        "test message",
+			medias:      []chatmedia.Media{},
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d50945c4-3697-11ed-9ffb-570b42b0ddd4"}`),
 			},
 
-			"bin-manager.chat-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.chat-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/messagechats",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"e0a01384-369e-11ed-94ec-3f100d0d2c9f","chat_id":"e0fbacbc-369e-11ed-9ba0-b3dcc584c182","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"message_type":"normal","text":"test message","medias":[]}`),
+				Data:     []byte(`{"customer_id":"e0a01384-369e-11ed-94ec-3f100d0d2c9f","chat_id":"e0fbacbc-369e-11ed-9ba0-b3dcc584c182","source":{"type":"tel","target":"+821100000001"},"message_type":"normal","text":"test message","medias":[]}`),
 			},
-			&chatmessagechat.Messagechat{
+			expectResult: &chatmessagechat.Messagechat{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d50945c4-3697-11ed-9ffb-570b42b0ddd4"),
 				},

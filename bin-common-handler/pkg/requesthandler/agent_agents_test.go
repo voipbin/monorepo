@@ -27,7 +27,7 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 		username   string
 		password   string
 		agentName  string
-		deail      string
+		detail     string
 		ringMethod amagent.RingMethod
 		permission amagent.Permission
 		tagIDs     []uuid.UUID
@@ -39,38 +39,38 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 		expectRes     *amagent.Agent
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
-			"test1",
-			"password1",
-			"test agent1",
-			"test agent1 detail",
-			amagent.RingMethodRingAll,
-			amagent.PermissionNone,
-			[]uuid.UUID{
+			customerID: uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
+			username:   "test1",
+			password:   "password1",
+			agentName:  "test agent1",
+			detail:     "test agent1 detail",
+			ringMethod: amagent.RingMethodRingAll,
+			permission: amagent.PermissionNone,
+			tagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"),
 			},
-			[]address.Address{
+			addresses: []address.Address{
 				{
 					Type:   address.TypeTel,
 					Target: "+821021656521",
 				},
 			},
 
-			"bin-manager.agent-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.agent-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/agents",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password":"password1","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","permission":0,"tag_ids":["ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}]}`),
+				Data:     []byte(`{"customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password":"password1","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","permission":0,"tag_ids":["ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"],"addresses":[{"type":"tel","target":"+821021656521"}]}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
-			&amagent.Agent{
+			expectRes: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 					CustomerID: uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
@@ -109,7 +109,7 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AgentV1AgentCreate(ctx, requestTimeoutDefault, tt.customerID, tt.username, tt.password, tt.agentName, tt.deail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
+			res, err := reqHandler.AgentV1AgentCreate(ctx, requestTimeoutDefault, tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -210,7 +210,7 @@ func Test_AgentV1AgentGetByCustomerIDAndAddress(t *testing.T) {
 				URI:      "/v1/agents/get_by_customer_id_address",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"f68aa290-2d96-11ef-8fda-2b4b95e0d496","address":{"type":"tel","target":"+123456789","target_name":"","name":"","detail":""}}`),
+				Data:     []byte(`{"customer_id":"f68aa290-2d96-11ef-8fda-2b4b95e0d496","address":{"type":"tel","target":"+123456789"}}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -633,30 +633,30 @@ func Test_AgentV1AgentUpdateAddresses(t *testing.T) {
 		expectRes *amagent.Agent
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
-			[]address.Address{
+			id: uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
+			addresses: []address.Address{
 				{
 					Type:   address.TypeTel,
 					Target: "+821021656521",
 				},
 			},
 
-			"bin-manager.agent-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.agent-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1/addresses",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}]}`),
+				Data:     []byte(`{"addresses":[{"type":"tel","target":"+821021656521"}]}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1e60cb12-4e7b-11ec-9d7b-532466c1faf1"}`),
 			},
 
-			&amagent.Agent{
+			expectRes: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
 				},

@@ -2,7 +2,6 @@ package activeflowhandler
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -18,19 +17,13 @@ func (h *activeflowHandler) generateFlowForAgentCall(ctx context.Context, custom
 		"confbridge_id": confbridgeID,
 	})
 
-	opt, err := json.Marshal(action.OptionConfbridgeJoin{
-		ConfbridgeID: confbridgeID,
-	})
-	if err != nil {
-		log.Errorf("Could not marshal the action. err: %v", err)
-		return nil, err
-	}
-
 	// create actions
 	actions := []action.Action{
 		{
-			Type:   action.TypeConfbridgeJoin,
-			Option: opt,
+			Type: action.TypeConfbridgeJoin,
+			Option: action.ConvertOption(action.OptionConfbridgeJoin{
+				ConfbridgeID: confbridgeID,
+			}),
 		},
 	}
 

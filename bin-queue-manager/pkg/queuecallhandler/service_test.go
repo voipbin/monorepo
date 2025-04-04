@@ -125,9 +125,11 @@ func Test_ServiceStart(t *testing.T) {
 						Type:   fmaction.TypeAnswer,
 					},
 					{
-						ID:     uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
-						Type:   fmaction.TypeConfbridgeJoin,
-						Option: []byte(`{"confbridge_id":"b0c77a26-acf0-11ed-8fd7-37de63b3d029"}`),
+						ID:   uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
+						Type: fmaction.TypeConfbridgeJoin,
+						Option: map[string]any{
+							"confbridge_id": "b0c77a26-acf0-11ed-8fd7-37de63b3d029",
+						},
 					},
 				},
 			},
@@ -224,9 +226,11 @@ func Test_createActions(t *testing.T) {
 					NextID: uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
 				},
 				{
-					ID:     uuid.FromStringOrNil("61d32f5a-60e3-11ec-943d-db1b16329a1c"),
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"9c758344-81a6-48b1-be2b-5128e2579a9c"}`),
+					ID:   uuid.FromStringOrNil("61d32f5a-60e3-11ec-943d-db1b16329a1c"),
+					Type: fmaction.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "9c758344-81a6-48b1-be2b-5128e2579a9c",
+					},
 				},
 			},
 		},

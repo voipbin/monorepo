@@ -30,8 +30,10 @@ func Test_ActionFetchGet(t *testing.T) {
 		{
 			name: "normal",
 			act: &action.Action{
-				ID:     uuid.FromStringOrNil("6e2a0cee-fba2-11ea-a469-a350f2dad844"),
-				Option: []byte(fmt.Sprintf(`{"event_url": "%s"}`, ts.URL)),
+				ID: uuid.FromStringOrNil("6e2a0cee-fba2-11ea-a469-a350f2dad844"),
+				Option: map[string]any{
+					"event_url": ts.URL,
+				},
 			},
 
 			activeflowID: uuid.FromStringOrNil("41712ed0-ce50-11ec-a29f-b3616bd154d6"),

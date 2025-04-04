@@ -2,7 +2,9 @@ package callhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"testing"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
@@ -84,8 +86,21 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 			expectAgentID:    uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
 			expectActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"early_media":true,"relay_reason":true}`),
+					Type: fmaction.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000002",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000001",
+							},
+						},
+						"early_media":  true,
+						"relay_reason": true,
+					},
 				},
 			},
 		},
@@ -118,7 +133,41 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
 			mockReq.EXPECT().RegistrarV1TrunkGetByDomainName(ctx, tt.expectDomainName).Return(tt.responseTrunk, nil)
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.expectCustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(
+				ctx,
+				tt.expectCustomerID,
+				fmflow.TypeFlow,
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				false,
+			).DoAndReturn(func(
+				_ context.Context,
+				_ uuid.UUID,
+				_ fmflow.Type,
+				_ string,
+				_ string,
+				actions []fmaction.Action,
+				_ bool,
+			) (*fmflow.Flow, error) {
+				tmp, err := json.Marshal(actions)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+					return nil, err
+				}
+
+				tmp2, err := json.Marshal(tt.expectActions)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+					return nil, err
+				}
+
+				if !reflect.DeepEqual(tmp, tmp2) {
+					t.Errorf("unexpected actions:\nexpected: %#v\ngot: %#v", string(tmp2), string(tmp))
+				}
+
+				return tt.responseFlow, nil
+			})
 
 			// startCallTypeFlow
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
