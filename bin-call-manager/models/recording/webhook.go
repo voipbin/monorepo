@@ -13,19 +13,19 @@ type WebhookMessage struct {
 	commonidentity.Owner
 
 	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"`
-	Status        Status        `json:"status"`
-	Format        Format        `json:"format"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
+	Status        Status        `json:"status,omitempty"`
+	Format        Format        `json:"format,omitempty"`
 
-	OnEndFlowID uuid.UUID `json:"on_end_flow_id"` // executed when recording ends
+	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty"` // executed when recording ends
 
-	TMStart string `json:"tm_start"`
-	TMEnd   string `json:"tm_end"`
+	TMStart string `json:"tm_start,omitempty"`
+	TMEnd   string `json:"tm_end,omitempty"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event
