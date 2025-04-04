@@ -654,8 +654,10 @@ func Test_UpdateActions(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 				{
-					Type:   fmaction.TypeQueueJoin,
-					Option: []byte(`{"queue_id":"0054fcf0-cbd1-11ec-978d-9b83e6ca7ad6"}`),
+					Type: fmaction.TypeQueueJoin,
+					Option: map[string]any{
+						"queue_id": "0054fcf0-cbd1-11ec-978d-9b83e6ca7ad6",
+					},
 				},
 			},
 		},
@@ -737,8 +739,10 @@ func Test_createFlowActions(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 				{
-					Type:   fmaction.TypeQueueJoin,
-					Option: []byte(`{"queue_id":"8de92286-c3f6-11ec-bade-ff667a1ea0af"}`),
+					Type: fmaction.TypeQueueJoin,
+					Option: map[string]any{
+						"queue_id": "8de92286-c3f6-11ec-bade-ff667a1ea0af",
+					},
 				},
 			},
 		},

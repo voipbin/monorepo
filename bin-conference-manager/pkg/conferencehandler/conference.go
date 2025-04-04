@@ -2,7 +2,6 @@ package conferencehandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
@@ -116,30 +115,16 @@ func (h *conferenceHandler) Create(
 
 // createConferenceFlowActions creates the actions for conference join.
 func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) ([]fmaction.Action, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "createConferenceFlowActions",
-		"confbridge_id": confbridgeID,
-		"pre_actions":   preActions,
-		"post_actions":  postActions,
-	})
 	actions := []fmaction.Action{}
 
 	// append the pre actions
 	actions = append(actions, preActions...)
 
-	// append the confbridge join
-	option := fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: confbridgeID,
-	}
-	opt, err := json.Marshal(option)
-	if err != nil {
-		log.Errorf("Could not marshal the option. err: %v", err)
-		return nil, err
-	}
-
 	confbridgeJoin := fmaction.Action{
-		Type:   fmaction.TypeConfbridgeJoin,
-		Option: opt,
+		Type: fmaction.TypeConfbridgeJoin,
+		Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+			ConfbridgeID: confbridgeID,
+		}),
 	}
 	actions = append(actions, confbridgeJoin)
 
