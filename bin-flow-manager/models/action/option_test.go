@@ -109,7 +109,10 @@ func Test_ParseOption(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			ParseOption(tt.option, &tt.target)
+			if errParse := ParseOption(tt.option, &tt.target); errParse != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errParse)
+			}
+
 			if !reflect.DeepEqual(tt.expectRes, tt.target) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, tt.target)
 			}

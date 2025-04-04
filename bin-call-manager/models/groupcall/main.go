@@ -18,7 +18,7 @@ type Groupcall struct {
 	Source       *commonaddress.Address  `json:"source,omitempty"`
 	Destinations []commonaddress.Address `json:"destinations,omitempty"`
 
-	MasterCallID      uuid.UUID `json:"master_call_id,omitempty,omitempty"`
+	MasterCallID      uuid.UUID `json:"master_call_id,omitempty"`
 	MasterGroupcallID uuid.UUID `json:"master_groupcall_id,omitempty"`
 
 	RingMethod   RingMethod   `json:"ring_method,omitempty"`

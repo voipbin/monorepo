@@ -479,27 +479,16 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	})
 	log.WithField("confbridge", cb).Debug("Created confbridge for connect.")
 
-	// create a temp flow connect confbridge join
-	tmpOpt := action.OptionConfbridgeJoin{
-		ConfbridgeID: cb.ID,
-	}
-	tmpOptString, err := json.Marshal(tmpOpt)
-	if err != nil {
-		log.Errorf("Could not marshal the confbridge join option. err: %v", err)
-		return fmt.Errorf("could not marshal the confbridge join option. err: %v", err)
-	}
-
 	tmpActions := []action.Action{
 		{
 			Type: action.TypeConfbridgeJoin,
+			Option: action.ConvertOption(action.OptionConfbridgeJoin{
+				ConfbridgeID: cb.ID,
+			}),
 		},
 		{
 			Type: action.TypeHangup,
 		},
-	}
-
-	if errUnmarshal := json.Unmarshal(tmpOptString, &tmpActions[0].Option); errUnmarshal != nil {
-		return errors.Wrapf(errUnmarshal, "could not unmarshal the option. err: %v", errUnmarshal)
 	}
 
 	// create a flow for connect call
@@ -550,11 +539,10 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		{
 			ID:   h.utilHandler.UUIDCreate(),
 			Type: action.TypeConfbridgeJoin,
+			Option: action.ConvertOption(action.OptionConfbridgeJoin{
+				ConfbridgeID: cb.ID,
+			}),
 		},
-	}
-
-	if errUnmarshal := json.Unmarshal(tmpOptString, &pushActions[0].Option); errUnmarshal != nil {
-		return errors.Wrapf(errUnmarshal, "could not unmarshal the option. err: %v", errUnmarshal)
 	}
 
 	if len(resGroupcalls) == 0 && opt.RelayReason {
