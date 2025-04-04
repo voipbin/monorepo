@@ -643,7 +643,7 @@ func Test_FlowV1ActiveflowAddActions(t *testing.T) {
 				URI:      "/v1/activeflows/6a5bb518-03f9-11f0-b284-bb23d250808c/add_actions",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"actions":[{"id":"6ac3888c-03f9-11f0-9cbc-0f40d578c119","next_id":"00000000-0000-0000-0000-000000000000","type":""},{"id":"6b03b7c2-03f9-11f0-af7d-dbc31d2927cc","next_id":"00000000-0000-0000-0000-000000000000","type":""}]}`),
+				Data:     []byte(`{"actions":[{"id":"6ac3888c-03f9-11f0-9cbc-0f40d578c119","next_id":"00000000-0000-0000-0000-000000000000"},{"id":"6b03b7c2-03f9-11f0-af7d-dbc31d2927cc","next_id":"00000000-0000-0000-0000-000000000000"}]}`),
 			},
 			expectRes: &fmactiveflow.Activeflow{
 				Identity: identity.Identity{

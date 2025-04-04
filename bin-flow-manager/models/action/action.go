@@ -6,9 +6,9 @@ import (
 
 // Action struct
 type Action struct {
-	ID     uuid.UUID      `json:"id"`
-	NextID uuid.UUID      `json:"next_id"` // represent next target action id. if it not set, just go to next action in the action array.
-	Type   Type           `json:"type"`
+	ID     uuid.UUID      `json:"id,omitempty"`
+	NextID uuid.UUID      `json:"next_id,omitempty"` // represent next target action id. if it not set, just go to next action in the action array.
+	Type   Type           `json:"type,omitempty"`
 	Option map[string]any `json:"option,omitempty"` // represent the action option. this is used in call-manager, flow-manager, ai-manager, email-manager, message-manager, conversation-manager, webhook-manager.
 
 	TMExecute string `json:"tm_execute,omitempty"` // represent when this action has executed. This is used in call-manager.

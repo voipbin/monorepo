@@ -85,7 +85,6 @@ func Test_actionHandleConnect(t *testing.T) {
 						"destinations": []map[string]any{
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+987654321",
 							},
 						},
@@ -106,7 +105,6 @@ func Test_actionHandleConnect(t *testing.T) {
 									"destinations": []map[string]any{
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+987654321",
 										},
 									},
@@ -201,7 +199,6 @@ func Test_actionHandleConnect(t *testing.T) {
 						"destinations": []map[string]any{
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+987654321",
 							},
 						},
@@ -222,7 +219,6 @@ func Test_actionHandleConnect(t *testing.T) {
 									"destinations": []map[string]any{
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+987654321",
 										},
 									},
@@ -253,12 +249,10 @@ func Test_actionHandleConnect(t *testing.T) {
 						"destinations": []map[string]any{
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+987654321",
 							},
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+9876543210",
 							},
 						},
@@ -280,12 +274,10 @@ func Test_actionHandleConnect(t *testing.T) {
 									"destinations": []map[string]any{
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+987654321",
 										},
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+9876543210",
 										},
 									},
@@ -383,12 +375,10 @@ func Test_actionHandleConnect(t *testing.T) {
 						"destinations": []map[string]any{
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+987654321",
 							},
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+9876543210",
 							},
 						},
@@ -410,12 +400,10 @@ func Test_actionHandleConnect(t *testing.T) {
 									"destinations": []map[string]any{
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+987654321",
 										},
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+9876543210",
 										},
 									},
@@ -445,12 +433,10 @@ func Test_actionHandleConnect(t *testing.T) {
 						"destinations": []map[string]any{
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+987654321",
 							},
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+9876543210",
 							},
 						},
@@ -473,12 +459,10 @@ func Test_actionHandleConnect(t *testing.T) {
 									"destinations": []map[string]any{
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+987654321",
 										},
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+9876543210",
 										},
 									},
@@ -578,12 +562,10 @@ func Test_actionHandleConnect(t *testing.T) {
 						"destinations": []map[string]any{
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+987654321",
 							},
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+9876543210",
 							},
 						},
@@ -606,12 +588,10 @@ func Test_actionHandleConnect(t *testing.T) {
 									"destinations": []map[string]any{
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+987654321",
 										},
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+9876543210",
 										},
 									},
@@ -642,7 +622,6 @@ func Test_actionHandleConnect(t *testing.T) {
 						"destinations": []map[string]any{
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+987654321",
 							},
 						},
@@ -664,7 +643,6 @@ func Test_actionHandleConnect(t *testing.T) {
 									"destinations": []map[string]any{
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+987654321",
 										},
 									},
@@ -745,7 +723,6 @@ func Test_actionHandleConnect(t *testing.T) {
 					ID:   uuid.FromStringOrNil("2257c8e8-a257-11ed-b228-a38777d47451"),
 					Type: action.TypeHangup,
 					Option: map[string]any{
-						"reason":       "",
 						"reference_id": "f7e05cb8-a253-11ed-9f37-0fef5e1b2aa9",
 					},
 				},
@@ -769,7 +746,6 @@ func Test_actionHandleConnect(t *testing.T) {
 						"destinations": []map[string]any{
 							{
 								"type":   "tel",
-								"name":   "",
 								"target": "+987654321",
 							},
 						},
@@ -791,7 +767,6 @@ func Test_actionHandleConnect(t *testing.T) {
 									"destinations": []map[string]any{
 										{
 											"type":   "tel",
-											"name":   "",
 											"target": "+987654321",
 										},
 									},
