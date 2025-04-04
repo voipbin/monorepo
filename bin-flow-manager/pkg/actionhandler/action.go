@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-flow-manager/models/action"
@@ -41,8 +42,13 @@ func (h *actionHandler) ActionFetchGet(act *action.Action, activeflowID uuid.UUI
 		"reference_id":  referenceID,
 	})
 
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal the option. action_id: %s", act.ID)
+	}
+
 	var option action.OptionFetch
-	if err := json.Unmarshal(act.Option, &option); err != nil {
+	if err := json.Unmarshal(tmpOption, &option); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return nil, err
 	}

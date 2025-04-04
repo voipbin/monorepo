@@ -51,3 +51,18 @@ func (h *variableHandler) SubstituteByte(ctx context.Context, data []byte, v *va
 	res := h.SubstituteString(ctx, tmp, v)
 	return []byte(res)
 }
+
+// Substitute substitutes the given data with variables
+func (h *variableHandler) SubstituteOption(ctx context.Context, data map[string]any, vars *variable.Variable) {
+
+	for k, v := range data {
+		switch v := v.(type) {
+		case string:
+			data[k] = h.SubstituteString(ctx, v, vars)
+		case []byte:
+			data[k] = h.SubstituteByte(ctx, v, vars)
+		default:
+			continue
+		}
+	}
+}

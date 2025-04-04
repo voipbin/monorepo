@@ -45,8 +45,10 @@ func TestGenerateFlowForAgentCall(t *testing.T) {
 
 			expectedReqActions: []action.Action{
 				{
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"e926b54c-8ca5-11ec-84bf-036e13d83721"}`),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "e926b54c-8ca5-11ec-84bf-036e13d83721",
+					},
 				},
 			},
 			expectedRes: &flow.Flow{

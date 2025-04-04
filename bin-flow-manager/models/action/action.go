@@ -1,33 +1,17 @@
 package action
 
 import (
-	"encoding/json"
-	"fmt"
-	"reflect"
-
 	"github.com/gofrs/uuid"
 )
 
 // Action struct
 type Action struct {
-	ID     uuid.UUID       `json:"id"`
-	NextID uuid.UUID       `json:"next_id"` // represent next target action id. if it not set, just go to next action in the action array.
-	Type   Type            `json:"type"`
-	Option json.RawMessage `json:"option,omitempty"`
+	ID     uuid.UUID      `json:"id"`
+	NextID uuid.UUID      `json:"next_id"` // represent next target action id. if it not set, just go to next action in the action array.
+	Type   Type           `json:"type"`
+	Option map[string]any `json:"option,omitempty"` // represent the action option. this is used in call-manager, flow-manager, ai-manager, email-manager, message-manager, conversation-manager, webhook-manager.
 
 	TMExecute string `json:"tm_execute,omitempty"` // represent when this action has executed. This is used in call-manager.
-}
-
-// Matches return true if the given items are the same
-func (a *Action) Matches(x interface{}) bool {
-	compAction := x.(*Action)
-	act := *a
-	act.TMExecute = compAction.TMExecute
-	return reflect.DeepEqual(&act, compAction)
-}
-
-func (a *Action) String() string {
-	return fmt.Sprintf("%v", *a)
 }
 
 // list of pre-defined ActionID

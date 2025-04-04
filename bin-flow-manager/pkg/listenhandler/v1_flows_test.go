@@ -47,12 +47,12 @@ func Test_v1FlowsPost(t *testing.T) {
 			expectedActions:    []action.Action{},
 		},
 		{
-			name: "has actions echo",
+			name: "normal",
 			request: &sock.Request{
 				URI:      "/v1/flows",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","actions":[{"type":"echo"}]}`),
+				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","actions":[{"type":"echo"},{"type":"talk","option":{"text":"hello world\nworld2"}}]}`),
 			},
 			expectedCustomerID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
 			expectedType:       flow.TypeFlow,
@@ -62,6 +62,12 @@ func Test_v1FlowsPost(t *testing.T) {
 			expectedActions: []action.Action{
 				{
 					Type: action.TypeEcho,
+				},
+				{
+					Type: action.TypeTalk,
+					Option: map[string]any{
+						"text": "hello world\nworld2",
+					},
 				},
 			},
 		},

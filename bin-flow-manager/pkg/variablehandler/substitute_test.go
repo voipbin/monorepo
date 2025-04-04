@@ -212,3 +212,99 @@ func Test_SubstituteByte(t *testing.T) {
 		})
 	}
 }
+
+func Test_SubstituteOption(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		data map[string]any
+		v    *variable.Variable
+
+		expectedRes map[string]any
+	}{
+		{
+			name: "normal",
+
+			data: map[string]any{
+				"conversation_id": "${voipbin.test.id}",
+				"text":            "test message. ${voipbin.test.name}.",
+				"sync":            true,
+			},
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("5072a680-dd54-11ec-aeff-7b54e7355667"),
+				Variables: map[string]string{
+					"voipbin.test.id":   "7e5116e2-f477-11ec-9c08-b343a05abaee",
+					"voipbin.test.name": "test name",
+				},
+			},
+
+			expectedRes: map[string]any{
+				"conversation_id": "7e5116e2-f477-11ec-9c08-b343a05abaee",
+				"text":            "test message. test name.",
+				"sync":            true,
+			},
+		},
+		{
+			name: "data has same variable",
+
+			data: map[string]any{
+				"test1": "${voipbin.test.name}",
+				"test2": "${voipbin.test.name}",
+			},
+
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("5072a680-dd54-11ec-aeff-7b54e7355667"),
+				Variables: map[string]string{
+					"voipbin.test.name": "test name",
+				},
+			},
+
+			expectedRes: map[string]any{
+				"test1": "test name",
+				"test2": "test name",
+			},
+		},
+		{
+			name: "data has same empty variable",
+
+			data: map[string]any{
+				"test1": "${voipbin.test.name}",
+				"test2": "${voipbin.test.name}",
+				"test3": "${voipbin.test.none}",
+			},
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("5072a680-dd54-11ec-aeff-7b54e7355667"),
+				Variables: map[string]string{
+					"voipbin.test.name": "test name",
+				},
+			},
+
+			expectedRes: map[string]any{
+				"test1": "test name",
+				"test2": "test name",
+				"test3": "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &variableHandler{
+				db: mockDB,
+			}
+
+			ctx := context.Background()
+
+			h.SubstituteOption(ctx, tt.data, tt.v)
+			if reflect.DeepEqual(tt.data, tt.expectedRes) != true {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, tt.data)
+			}
+
+		})
+	}
+}

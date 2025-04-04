@@ -28,6 +28,7 @@ type VariableHandler interface {
 	Substitute(ctx context.Context, id uuid.UUID, data string) (string, error)
 	SubstituteString(ctx context.Context, data string, v *variable.Variable) string
 	SubstituteByte(ctx context.Context, data []byte, v *variable.Variable) []byte
+	SubstituteOption(ctx context.Context, data map[string]any, vars *variable.Variable)
 }
 
 // NewVariableHandler return VariableHandler

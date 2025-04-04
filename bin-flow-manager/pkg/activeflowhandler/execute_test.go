@@ -94,7 +94,7 @@ func Test_Execute(t *testing.T) {
 			mockDB.EXPECT().ActiveflowGetWithLock(gomock.Any(), tt.id).Return(tt.responseActiveflow, nil)
 			mockStack.EXPECT().GetNextAction(gomock.Any(), gomock.Any(), gomock.Any(), true).Return(tt.responseStackID, tt.responseAction)
 			mockVar.EXPECT().Get(ctx, tt.id).Return(&variable.Variable{}, nil)
-			mockVar.EXPECT().SubstituteByte(ctx, tt.responseAction.Option, &variable.Variable{}).Return(tt.responseAction.Option)
+			mockVar.EXPECT().SubstituteOption(ctx, tt.responseAction.Option, &variable.Variable{})
 			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.id)
 
 			// executeAction
@@ -281,7 +281,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 			}
 
 			mockVar.EXPECT().Get(ctx, tt.id).Return(&variable.Variable{}, nil)
-			mockVar.EXPECT().SubstituteByte(ctx, tt.responseAction.Option, &variable.Variable{}).Return(tt.responseAction.Option)
+			mockVar.EXPECT().SubstituteOption(ctx, tt.responseAction.Option, &variable.Variable{})
 
 			// executeAction
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)

@@ -29,10 +29,10 @@ func (h *activeflowHandler) generateFlowForAgentCall(ctx context.Context, custom
 	// create actions
 	actions := []action.Action{
 		{
-			Type:   action.TypeConfbridgeJoin,
-			Option: opt,
+			Type: action.TypeConfbridgeJoin,
 		},
 	}
+	json.Unmarshal(opt, &actions[0].Option)
 
 	// create a flow for agent dial.
 	res, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, flow.TypeFlow, "automatically generated for the agent call", "", actions, false)

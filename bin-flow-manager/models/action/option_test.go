@@ -285,8 +285,10 @@ func Test_marshalOptionCall(t *testing.T) {
 						Type: TypeAnswer,
 					},
 					{
-						Type:   TypeTalk,
-						Option: []byte(`{"text": "hello world"}`),
+						Type: TypeTalk,
+						Option: map[string]any{
+							"text": "hello world",
+						},
 					},
 				},
 			},
