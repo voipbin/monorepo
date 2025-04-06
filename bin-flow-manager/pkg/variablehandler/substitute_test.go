@@ -229,7 +229,17 @@ func Test_SubstituteOption(t *testing.T) {
 			data: map[string]any{
 				"conversation_id": "${voipbin.test.id}",
 				"text":            "test message. ${voipbin.test.name}.",
+				"bytes":           []byte("test message. ${voipbin.test.name}."),
 				"sync":            true,
+				"list string": []string{
+					"${voipbin.test.id}",
+					"${voipbin.test.name}",
+				},
+				"list map": []map[string]any{
+					{
+						"key1": "${voipbin.test.id}",
+					},
+				},
 			},
 			v: &variable.Variable{
 				ID: uuid.FromStringOrNil("5072a680-dd54-11ec-aeff-7b54e7355667"),
@@ -242,7 +252,17 @@ func Test_SubstituteOption(t *testing.T) {
 			expectedRes: map[string]any{
 				"conversation_id": "7e5116e2-f477-11ec-9c08-b343a05abaee",
 				"text":            "test message. test name.",
+				"bytes":           []byte("test message. test name."),
 				"sync":            true,
+				"list string": []string{
+					"7e5116e2-f477-11ec-9c08-b343a05abaee",
+					"test name",
+				},
+				"list map": []map[string]any{
+					{
+						"key1": "7e5116e2-f477-11ec-9c08-b343a05abaee",
+					},
+				},
 			},
 		},
 		{
@@ -286,6 +306,95 @@ func Test_SubstituteOption(t *testing.T) {
 				"test3": "",
 			},
 		},
+		{
+			name: "nested data",
+
+			data: map[string]any{
+				"test1": "${voipbin.test.name}",
+				"test2": "${voipbin.test.name}",
+				"test3": "${voipbin.test.none}",
+				"nested": map[string]any{
+					"nested1": "${voipbin.test.name}",
+					"nested2": map[string]any{
+						"nested2-1": "${voipbin.test.name}",
+					},
+				},
+			},
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("5072a680-dd54-11ec-aeff-7b54e7355667"),
+				Variables: map[string]string{
+					"voipbin.test.name": "test name",
+				},
+			},
+
+			expectedRes: map[string]any{
+				"test1": "test name",
+				"test2": "test name",
+				"test3": "",
+				"nested": map[string]any{
+					"nested1": "test name",
+					"nested2": map[string]any{
+						"nested2-1": "test name",
+					},
+				},
+			},
+		},
+		{
+			name: "nested list of maps",
+
+			data: map[string]any{
+				"nestedMapList": []map[string]any{
+					{
+						"key1": "${voipbin.test.name}",
+					},
+					{
+						"key2": "${voipbin.test.id}",
+					},
+				},
+			},
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("5072a680-dd54-11ec-aeff-7b54e7355667"),
+				Variables: map[string]string{
+					"voipbin.test.name": "test name",
+					"voipbin.test.id":   "7e5116e2-f477-11ec-9c08-b343a05abaee",
+				},
+			},
+
+			expectedRes: map[string]any{
+				"nestedMapList": []map[string]any{
+					{
+						"key1": "test name",
+					},
+					{
+						"key2": "7e5116e2-f477-11ec-9c08-b343a05abaee",
+					},
+				},
+			},
+		},
+		{
+			name: "nested list of strings",
+
+			data: map[string]any{
+				"stringList": []string{
+					"${voipbin.test.name}",
+					"${voipbin.test.id}",
+				},
+			},
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("5072a680-dd54-11ec-aeff-7b54e7355667"),
+				Variables: map[string]string{
+					"voipbin.test.name": "test name",
+					"voipbin.test.id":   "7e5116e2-f477-11ec-9c08-b343a05abaee",
+				},
+			},
+
+			expectedRes: map[string]any{
+				"stringList": []string{
+					"test name",
+					"7e5116e2-f477-11ec-9c08-b343a05abaee",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -300,11 +409,13 @@ func Test_SubstituteOption(t *testing.T) {
 
 			ctx := context.Background()
 
+			// Run the substitute function
 			h.SubstituteOption(ctx, tt.data, tt.v)
-			if reflect.DeepEqual(tt.data, tt.expectedRes) != true {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, tt.data)
-			}
 
+			// Compare the results
+			if !reflect.DeepEqual(tt.data, tt.expectedRes) {
+				t.Errorf("Test %s failed: expected %v, got %v", tt.name, tt.expectedRes, tt.data)
+			}
 		})
 	}
 }
