@@ -110,6 +110,7 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the record")
 	}
+	log.WithField("recording", res).Debugf("Created the record. recording_id: %s", res.ID)
 
 	return res, nil
 }
@@ -185,6 +186,7 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the record")
 	}
+	log.WithField("recording", res).Debugf("Created the record. recording_id: %s", res.ID)
 
 	// send recording request
 	if errRecord := h.reqHandler.AstBridgeRecord(
