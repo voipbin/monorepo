@@ -229,6 +229,7 @@ func Test_SubstituteOption(t *testing.T) {
 			data: map[string]any{
 				"conversation_id": "${voipbin.test.id}",
 				"text":            "test message. ${voipbin.test.name}.",
+				"bytes":           []byte("test message. ${voipbin.test.name}."),
 				"sync":            true,
 			},
 			v: &variable.Variable{
@@ -242,6 +243,7 @@ func Test_SubstituteOption(t *testing.T) {
 			expectedRes: map[string]any{
 				"conversation_id": "7e5116e2-f477-11ec-9c08-b343a05abaee",
 				"text":            "test message. test name.",
+				"bytes":           []byte("test message. test name."),
 				"sync":            true,
 			},
 		},
@@ -295,6 +297,9 @@ func Test_SubstituteOption(t *testing.T) {
 				"test3": "${voipbin.test.none}",
 				"nested": map[string]any{
 					"nested1": "${voipbin.test.name}",
+					"nested2": map[string]any{
+						"nested2-1": "${voipbin.test.name}",
+					},
 				},
 			},
 			v: &variable.Variable{
@@ -310,6 +315,9 @@ func Test_SubstituteOption(t *testing.T) {
 				"test3": "",
 				"nested": map[string]any{
 					"nested1": "test name",
+					"nested2": map[string]any{
+						"nested2-1": "test name",
+					},
 				},
 			},
 		},

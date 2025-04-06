@@ -242,6 +242,11 @@ func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID u
 		return nil, errors.Wrapf(err, "could not get variables. activeflow_id: %s", activeflowID)
 	}
 
+	log.WithFields(logrus.Fields{
+		"variable": v,
+		"action":   resAct,
+	}).Debugf("Before Substituted the action option. action_id: %s, action_type: %s", resAct.ID, resAct.Type)
+
 	h.variableHandler.SubstituteOption(ctx, resAct.Option, v)
 	log.WithFields(logrus.Fields{
 		"variable": v,
