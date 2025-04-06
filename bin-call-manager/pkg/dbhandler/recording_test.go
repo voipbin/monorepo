@@ -25,13 +25,14 @@ func Test_RecordingCreate(t *testing.T) {
 
 		responseCurTime string
 
-		expectRes *recording.Recording
+		expectedRes *recording.Recording
 	}
 
 	tests := []test{
 		{
-			"have all",
-			&recording.Recording{
+			name: "have all",
+
+			recording: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
 					CustomerID: uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
@@ -41,6 +42,7 @@ func Test_RecordingCreate(t *testing.T) {
 					OwnerID:   uuid.FromStringOrNil("a19704ac-2bf9-11ef-9691-7768f2e4877f"),
 				},
 
+				ActiveflowID:  uuid.FromStringOrNil("48a3b6e2-12f8-11f0-91fe-5bd3c476e4f7"),
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:        recording.StatusRecording,
@@ -64,9 +66,9 @@ func Test_RecordingCreate(t *testing.T) {
 				TMEnd:   "2020-04-18 03:22:19.995000",
 			},
 
-			"2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18 03:22:17.995000",
 
-			&recording.Recording{
+			expectedRes: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
 					CustomerID: uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
@@ -76,6 +78,7 @@ func Test_RecordingCreate(t *testing.T) {
 					OwnerID:   uuid.FromStringOrNil("a19704ac-2bf9-11ef-9691-7768f2e4877f"),
 				},
 
+				ActiveflowID:  uuid.FromStringOrNil("48a3b6e2-12f8-11f0-91fe-5bd3c476e4f7"),
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:        recording.StatusRecording,
@@ -133,8 +136,8 @@ func Test_RecordingCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(tt.expectedRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 
 			resGetByRecordingName, err := h.RecordingGetByRecordingName(ctx, tt.recording.RecordingName)
@@ -142,8 +145,8 @@ func Test_RecordingCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectRes, resGetByRecordingName) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, resGetByRecordingName)
+			if reflect.DeepEqual(tt.expectedRes, resGetByRecordingName) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, resGetByRecordingName)
 			}
 		})
 	}
@@ -160,13 +163,13 @@ func Test_RecordingGets(t *testing.T) {
 
 		responseCurTime string
 
-		expectRes []*recording.Recording
+		expectedRes []*recording.Recording
 	}
 
 	tests := []test{
 		{
-			"normal",
-			[]*recording.Recording{
+			name: "normal",
+			recordings: []*recording.Recording{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
@@ -181,13 +184,13 @@ func Test_RecordingGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
+			filters: map[string]string{
 				"customer_id": "f15430d8-7f43-11ec-b82c-b7ffeefaf0b9",
 				"deleted":     "false",
 			},
-			"2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18 03:22:17.995000",
 
-			[]*recording.Recording{
+			expectedRes: []*recording.Recording{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
@@ -219,16 +222,16 @@ func Test_RecordingGets(t *testing.T) {
 			},
 		},
 		{
-			"empty",
+			name: "empty",
 
-			[]*recording.Recording{},
+			recordings: []*recording.Recording{},
 
-			map[string]string{
+			filters: map[string]string{
 				"customer_id": "08cb92b0-7f44-11ec-8753-6f51eae532cc",
 			},
-			"2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18 03:22:17.995000",
 
-			[]*recording.Recording{},
+			expectedRes: []*recording.Recording{},
 		},
 	}
 
@@ -257,8 +260,8 @@ func Test_RecordingGets(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectedRes, res)
 			}
 		})
 	}
@@ -274,22 +277,22 @@ func Test_RecordingDelete(t *testing.T) {
 
 		responseCurTime string
 
-		expectRes *recording.Recording
+		expectedRes *recording.Recording
 	}
 
 	tests := []test{
 		{
-			"normal",
-			&recording.Recording{
+			name: "normal",
+			recording: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
 				},
 			},
 
-			uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
-			"2020-04-18T03:22:18.995000",
+			id:              uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
+			responseCurTime: "2020-04-18T03:22:18.995000",
 
-			&recording.Recording{
+			expectedRes: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
 				},
@@ -337,8 +340,8 @@ func Test_RecordingDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
