@@ -21,6 +21,7 @@ const (
 		owner_type,
 		owner_id,
 
+		activeflow_id,
 		reference_type,
 		reference_id,
 		status,
@@ -58,6 +59,7 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 		&res.OwnerType,
 		&res.OwnerID,
 
+		&res.ActiveflowID,
 		&res.ReferenceType,
 		&res.ReferenceID,
 		&res.Status,
@@ -112,6 +114,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		owner_type,
 		owner_id,
 
+		activeflow_id,
 		reference_type,
 		reference_id,
 		status,
@@ -134,7 +137,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 
 	) values(
 		?, ?, ?, ?,
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?,
 		?,
 		?, ?,
 		?, ?,
@@ -158,6 +161,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		c.OwnerType,
 		c.OwnerID.Bytes(),
 
+		c.ActiveflowID.Bytes(),
 		c.ReferenceType,
 		c.ReferenceID.Bytes(),
 		c.Status,
