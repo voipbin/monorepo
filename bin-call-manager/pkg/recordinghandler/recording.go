@@ -27,6 +27,7 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 ) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "recordingReferenceTypeCall",
+		"activeflow_id":  activeflowID,
 		"reference_id":   referenceID,
 		"format":         format,
 		"endOfSilence":   endOfSilence,
