@@ -243,7 +243,11 @@ func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID u
 	}
 
 	h.variableHandler.SubstituteOption(ctx, resAct.Option, v)
-	log.WithField("action_option", resAct.Option).Debugf("Substituted the action option. action_id: %s, action_type: %s", resAct.ID, resAct.Type)
+	log.WithFields(logrus.Fields{
+		"variable": v,
+		"action":   resAct,
+	}).Debugf("Substituted the action option. action_id: %s, action_type: %s", resAct.ID, resAct.Type)
+	// log.WithField("action_option", resAct.Option).Debugf("Substituted the action option. action_id: %s, action_type: %s", resAct.ID, resAct.Type)
 
 	// update current action in activeflow
 	res, err := h.updateCurrentAction(ctx, activeflowID, resStackID, resAct)
