@@ -61,6 +61,8 @@ func (h *variableHandler) SubstituteOption(ctx context.Context, data map[string]
 			data[k] = h.SubstituteString(ctx, v, vars)
 		case []byte:
 			data[k] = h.SubstituteByte(ctx, v, vars)
+		case map[string]any:
+			h.SubstituteOption(ctx, v, vars)
 		default:
 			continue
 		}

@@ -286,6 +286,33 @@ func Test_SubstituteOption(t *testing.T) {
 				"test3": "",
 			},
 		},
+		{
+			name: "nested data",
+
+			data: map[string]any{
+				"test1": "${voipbin.test.name}",
+				"test2": "${voipbin.test.name}",
+				"test3": "${voipbin.test.none}",
+				"nested": map[string]any{
+					"nested1": "${voipbin.test.name}",
+				},
+			},
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("5072a680-dd54-11ec-aeff-7b54e7355667"),
+				Variables: map[string]string{
+					"voipbin.test.name": "test name",
+				},
+			},
+
+			expectedRes: map[string]any{
+				"test1": "test name",
+				"test2": "test name",
+				"test3": "",
+				"nested": map[string]any{
+					"nested1": "test name",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
