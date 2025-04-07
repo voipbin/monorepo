@@ -13,6 +13,10 @@ import (
 
 // RecordingGet returns given recording's bucketfile info.
 func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RecordingGet",
+		"recoding_id": id,
+	})
 
 	filters := map[string]string{
 		"deleted":      "false",
@@ -24,23 +28,19 @@ func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucke
 		return nil, errors.Wrapf(err, "could not get files. reference_id: %s", id)
 	}
 
-	// compose files
-	targetpaths := []string{}
-	for _, f := range files {
-		targetpaths = append(targetpaths, f.Filepath)
-	}
-
 	// create compress file
-	bucketName, filepath, err := h.fileHandler.CompressCreate(ctx, h.bucketNameMedia, targetpaths)
+	bucketName, filepath, err := h.fileHandler.CompressCreate(ctx, files)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not compress the files. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
+	log.Debugf("Created compress file. bucket_name: %s, filepath: %s", bucketName, filepath)
 
 	// get download uri
 	bucketURI, downloadURI, err := h.fileHandler.DownloadURIGet(ctx, bucketName, filepath, time.Hour*24)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get download link. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
+	log.Debugf("Created download uri. len: %d", len(downloadURI))
 
 	// create recording.Recording
 	tmExpire := h.utilHandler.TimeGetCurTimeAdd(24 * time.Hour)

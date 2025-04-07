@@ -20,9 +20,9 @@ type File struct {
 	Detail string `json:"detail"`
 
 	BucketName string `json:"bucket_name"` // bucket name for file storage
-	Filename   string `json:"filename"`
-	Filepath   string `json:"filepath"` // file path for file
-	Filesize   int64  `json:"filesize"` // file size in bytes
+	Filename   string `json:"filename"`    // filename for file. because we are storing the file in bucket with the file's id, this points out the original filename.
+	Filepath   string `json:"filepath"`    // filepath for file.
+	Filesize   int64  `json:"filesize"`    // file size in bytes
 
 	URIBucket   string `json:"uri_bucket"`   // uri for bucket
 	URIDownload string `json:"uri_download"` // uri for download
