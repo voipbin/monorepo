@@ -43,16 +43,20 @@ func Test_GetServiceAgentsFiles(t *testing.T) {
 
 			responseFiles: []*smfile.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("89f20424-c063-11ef-850f-ff10a10c813c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("89f20424-c063-11ef-850f-ff10a10c813c"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("8a56f320-c063-11ef-9e55-37bada852d90"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("8a56f320-c063-11ef-9e55-37bada852d90"),
+					},
 				},
 			},
 
 			expectPageToken: "2020-09-20 03:23:20.995000",
 			expectPageSize:  10,
-			expectRes:       `{"result":[{"id":"89f20424-c063-11ef-850f-ff10a10c813c","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"8a56f320-c063-11ef-9e55-37bada852d90","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"89f20424-c063-11ef-850f-ff10a10c813c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"8a56f320-c063-11ef-9e55-37bada852d90","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}
 
@@ -112,10 +116,12 @@ func Test_PostServiceAgentsFiles(t *testing.T) {
 			reqQuery: "/service_agents/files",
 			filename: "testfile.txt",
 			responseFile: &smfile.WebhookMessage{
-				ID: uuid.FromStringOrNil("8e4c6f0e-c064-11ef-bb56-1378d1beb8d3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8e4c6f0e-c064-11ef-bb56-1378d1beb8d3"),
+				},
 			},
 
-			expectRes: `{"id":"8e4c6f0e-c064-11ef-bb56-1378d1beb8d3","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes: `{"id":"8e4c6f0e-c064-11ef-bb56-1378d1beb8d3","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -178,22 +184,18 @@ func Test_PostServiceAgentsFiles_err(t *testing.T) {
 		reqQuery string
 		filename string
 		filesize int
-		resFile  *smfile.WebhookMessage
 	}{
 		{
-			"file size over max size",
-			amagent.Agent{
+			name: "file size over max size",
+			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("9a396eca-c064-11ef-80a5-83bf037694fc"),
 				},
 			},
 
-			"/service_agents/files",
-			"testfile.txt",
-			int(constMaxFileSize) + 1,
-			&smfile.WebhookMessage{
-				ID: uuid.FromStringOrNil("9a5e61e4-c064-11ef-8932-9f421638e787"),
-			},
+			reqQuery: "/service_agents/files",
+			filename: "testfile.txt",
+			filesize: int(constMaxFileSize) + 1,
 		},
 	}
 
@@ -266,11 +268,13 @@ func Test_GetServiceAgentsFilesId(t *testing.T) {
 
 			reqQuery: "/service_agents/files/b88b4e20-c064-11ef-87eb-97539ef68493",
 			responseFile: &smfile.WebhookMessage{
-				ID: uuid.FromStringOrNil("b88b4e20-c064-11ef-87eb-97539ef68493"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b88b4e20-c064-11ef-87eb-97539ef68493"),
+				},
 			},
 
 			expectFileID: uuid.FromStringOrNil("b88b4e20-c064-11ef-87eb-97539ef68493"),
-			expectRes:    `{"id":"b88b4e20-c064-11ef-87eb-97539ef68493","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:    `{"id":"b88b4e20-c064-11ef-87eb-97539ef68493","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -329,11 +333,13 @@ func Test_DeleteServiceAgentsFilesId(t *testing.T) {
 
 			reqQuery: "/service_agents/files/b92d7ca4-c064-11ef-92a7-93f60933d0ba",
 			responseFile: &smfile.WebhookMessage{
-				ID: uuid.FromStringOrNil("b92d7ca4-c064-11ef-92a7-93f60933d0ba"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b92d7ca4-c064-11ef-92a7-93f60933d0ba"),
+				},
 			},
 
 			expectFileID: uuid.FromStringOrNil("b92d7ca4-c064-11ef-92a7-93f60933d0ba"),
-			expectRes:    `{"id":"b92d7ca4-c064-11ef-92a7-93f60933d0ba","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:    `{"id":"b92d7ca4-c064-11ef-92a7-93f60933d0ba","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
