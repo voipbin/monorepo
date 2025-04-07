@@ -69,8 +69,8 @@ spec:
               scheme: HTTPS
           resources:
             limits:
-              cpu: "100m"
-              memory: "40M"
+              cpu: "200m"
+              memory: "100Mi"
           ports:
             - containerPort: 2112
               name: metrics

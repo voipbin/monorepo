@@ -40,11 +40,13 @@ func Test_filesPOST(t *testing.T) {
 			reqQuery: "/files",
 			filename: "testfile.txt",
 			responseFile: &smfile.WebhookMessage{
-				ID:          uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
+				},
 				URIDownload: "https://example.com/39ae35ca-1710-11ef-bae6-afeb7c57c901",
 			},
 
-			expectRes: `{"id":"39ae35ca-1710-11ef-bae6-afeb7c57c901","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"https://example.com/39ae35ca-1710-11ef-bae6-afeb7c57c901","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes: `{"id":"39ae35ca-1710-11ef-bae6-afeb7c57c901","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"https://example.com/39ae35ca-1710-11ef-bae6-afeb7c57c901","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -122,7 +124,9 @@ func Test_filesPOST_err(t *testing.T) {
 			"testfile.txt",
 			int(constMaxFileSize) + 1,
 			&smfile.WebhookMessage{
-				ID: uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
+				},
 			},
 		},
 	}
@@ -199,13 +203,15 @@ func Test_filesGET(t *testing.T) {
 			reqQuery: "/files?page_size=20&page_token=2020-09-20%2003:23:20.995000",
 			responseFile: []*smfile.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+					},
 				},
 			},
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"2fbb29c0-6fb0-11eb-b2ef-4303769ecba5","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"2fbb29c0-6fb0-11eb-b2ef-4303769ecba5","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}
 
@@ -270,11 +276,13 @@ func Test_filesIDGET(t *testing.T) {
 			reqQuery: "/files/e1eb02c2-1715-11ef-b15f-f3c445db0e34",
 
 			responseFile: &smfile.WebhookMessage{
-				ID: uuid.FromStringOrNil("e1eb02c2-1715-11ef-b15f-f3c445db0e34"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e1eb02c2-1715-11ef-b15f-f3c445db0e34"),
+				},
 			},
 
 			expectFileID: uuid.FromStringOrNil("e1eb02c2-1715-11ef-b15f-f3c445db0e34"),
-			expectRes:    `{"id":"e1eb02c2-1715-11ef-b15f-f3c445db0e34","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:    `{"id":"e1eb02c2-1715-11ef-b15f-f3c445db0e34","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -336,11 +344,13 @@ func Test_filesIDDELETE(t *testing.T) {
 			reqQuery: "/files/22bad83e-1718-11ef-8e93-63a03937356b",
 
 			responseFile: &smfile.WebhookMessage{
-				ID: uuid.FromStringOrNil("22bad83e-1718-11ef-8e93-63a03937356b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("22bad83e-1718-11ef-8e93-63a03937356b"),
+				},
 			},
 
 			expectFileID: uuid.FromStringOrNil("22bad83e-1718-11ef-8e93-63a03937356b"),
-			expectRes:    `{"id":"22bad83e-1718-11ef-8e93-63a03937356b","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:    `{"id":"22bad83e-1718-11ef-8e93-63a03937356b","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 

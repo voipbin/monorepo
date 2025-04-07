@@ -109,10 +109,14 @@ func Test_ServiceAgentFileDelete(t *testing.T) {
 				TMDelete: defaultTimestamp,
 			},
 			expectRes: &smfile.WebhookMessage{
-				ID:         uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
-				CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
-				OwnerID:    uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
+					CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -190,10 +194,14 @@ func Test_StorageFileGets(t *testing.T) {
 			},
 			expectRes: []*smfile.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("6a1a3db8-1bd8-11ef-bffb-8bab4b517f52"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6a1a3db8-1bd8-11ef-bffb-8bab4b517f52"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("6a5476cc-1bd8-11ef-9863-3b26eb47b0e0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6a5476cc-1bd8-11ef-9863-3b26eb47b0e0"),
+					},
 				},
 			},
 		},
@@ -227,72 +235,3 @@ func Test_StorageFileGets(t *testing.T) {
 		})
 	}
 }
-
-// func Test_StorageFileCreate(t *testing.T) {
-
-// 	tests := []struct {
-// 		name string
-
-// 		agent      *amagent.Agent
-// 		customerID uuid.UUID
-// 		filePart   multipart.File
-// 		fileName   string
-// 		detail     string
-// 		filename   string
-
-// 		responseStorageFile *smfile.File
-// 		expectRes           *smfile.WebhookMessage
-// 	}{
-// 		{
-// 			name: "normal",
-
-// 			agent: &amagent.Agent{
-// 				ID:         uuid.FromStringOrNil("f2295586-1bd8-11ef-8610-73602171ce63"),
-// 				CustomerID: uuid.FromStringOrNil("f24de752-1bd8-11ef-b438-4361eeff2690"),
-// 				Permission: amagent.PermissionProjectSuperAdmin,
-// 			},
-// 			customerID: uuid.FromStringOrNil("e9942acc-1bd8-11ef-9c19-33ff4d2cf1ae"),
-
-// 			fileName: "test name",
-// 			detail:   "test detail",
-// 			filename: "test.txt",
-
-// 			responseStorageFile: &smfile.File{
-// 				ID: uuid.FromStringOrNil("f27afcba-1bd8-11ef-a4b8-6f4d6a5ab550"),
-// 			},
-// 			expectRes: &smfile.WebhookMessage{
-// 				ID: uuid.FromStringOrNil("f27afcba-1bd8-11ef-a4b8-6f4d6a5ab550"),
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			h := serviceHandler{
-// 				utilHandler: mockUtil,
-// 				reqHandler:  mockReq,
-// 				dbHandler:   mockDB,
-// 			}
-// 			ctx := context.Background()
-
-// 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
-// 			mockReq.EXPECT().StorageV1FileCreate(ctx, tt.agent.CustomerID, tt.agent.ID, smfile.ReferenceTypeNone, uuid.Nil, tt.fileName, tt.detail, tt.filename, gomock.Any(), gomock.Any(), 60000).Return(tt.responseStorageFile, nil)
-
-// 			res, err := h.StorageFileCreate(ctx, tt.agent, nil, tt.fileName, tt.detail, tt.filename)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if !reflect.DeepEqual(tt.expectRes, res) {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
