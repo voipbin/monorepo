@@ -20,7 +20,7 @@ type File struct {
 	Detail string `json:"detail"`
 
 	BucketName string `json:"bucket_name"` // bucket name for file storage
-	Filename   string `json:"filename"`    // filename for file. because we are stroing the file in bucket with the file's id, this points out the original filename.
+	Filename   string `json:"filename"`    // filename for file. because we are storing the file in bucket with the file's id, this points out the original filename.
 	Filepath   string `json:"filepath"`    // filepath for file.
 	Filesize   int64  `json:"filesize"`    // file size in bytes
 
