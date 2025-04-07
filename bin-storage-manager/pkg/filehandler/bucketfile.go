@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"io"
+	"monorepo/bin-storage-manager/models/file"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -105,6 +106,63 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 		// add the filename to the result file
 		filename := getFilename(target)
 		fp, err := zw.Create(filename)
+		if err != nil {
+			return errors.Wrapf(err, "could not add the file to the res file. err: %v", err)
+		}
+
+		// copy
+		_, err = io.Copy(fp, reader)
+		if err != nil {
+			return errors.Wrapf(err, "could not copy the file. err: %v", err)
+		}
+	}
+
+	return nil
+}
+
+// BucketfileCompressFiles create a new compress file into the tmp bucket.
+func (h *fileHandler) BucketfileCompressFiles(ctx context.Context, dstFilepath string, files []*file.File) (resErr error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "BucketfileCompressFiles",
+		"dst_filepath": dstFilepath,
+		"files":        files,
+	})
+
+	// create zip filepath writer
+	fo := h.client.Bucket(h.bucketTmp).Object(dstFilepath)
+	defer func() {
+		if resErr != nil {
+			log.Errorf("Could not finish the create compress file correctly. Deleting the file. err: %v", resErr)
+			_ = fo.Delete(ctx)
+		}
+	}()
+
+	fw := fo.NewWriter(ctx)
+	defer fw.Close()
+
+	// create a zip
+	zw := zip.NewWriter(fw)
+	defer func() {
+		// close zip
+		if errClose := zw.Close(); errClose != nil {
+			log.Errorf("Could not close the zip writer. err: %v", errClose)
+			return
+		}
+	}()
+
+	for _, f := range files {
+		bucketFile := h.client.Bucket(f.BucketName).Object(f.Filepath)
+
+		// read open
+		reader, err := bucketFile.NewReader(ctx)
+		if err != nil {
+			log.Errorf("Could not create a reader. err: %v", err)
+			continue
+		}
+		defer reader.Close()
+
+		// add the filename to the result file
+		fp, err := zw.Create(f.Filename)
 		if err != nil {
 			return errors.Wrapf(err, "could not add the file to the res file. err: %v", err)
 		}

@@ -38,14 +38,15 @@ func (h *storageHandler) CompressfileCreate(ctx context.Context, referenceIDs []
 	}
 
 	targetFileIDs := []uuid.UUID{}
-	targetpaths := []string{}
+	// targetpaths := []string{}
 	for _, f := range targetFiles {
-		targetpaths = append(targetpaths, f.Filepath)
+		// targetpaths = append(targetpaths, f.Filepath)
 		targetFileIDs = append(targetFileIDs, f.ID)
 	}
 
 	// create compress file
-	bucketName, filepath, err := h.fileHandler.CompressCreate(ctx, h.bucketNameMedia, targetpaths)
+	// bucketName, filepath, err := h.fileHandler.CompressCreateRaw(ctx, h.bucketNameMedia, targetpaths)
+	bucketName, filepath, err := h.fileHandler.CompressCreate(ctx, targetFiles)
 	if err != nil {
 		log.Errorf("Could not compress the files. err: %v", err)
 		return nil, err

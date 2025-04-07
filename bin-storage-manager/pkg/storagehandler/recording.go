@@ -24,14 +24,15 @@ func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucke
 		return nil, errors.Wrapf(err, "could not get files. reference_id: %s", id)
 	}
 
-	// compose files
-	targetpaths := []string{}
-	for _, f := range files {
-		targetpaths = append(targetpaths, f.Filepath)
-	}
+	// // compose files
+	// targetpaths := []string{}
+	// for _, f := range files {
+	// 	targetpaths = append(targetpaths, f.Filepath)
+	// }
 
 	// create compress file
-	bucketName, filepath, err := h.fileHandler.CompressCreate(ctx, h.bucketNameMedia, targetpaths)
+	// bucketName, filepath, err := h.fileHandler.CompressCreateRaw(ctx, h.bucketNameMedia, targetpaths)
+	bucketName, filepath, err := h.fileHandler.CompressCreate(ctx, files)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not compress the files. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
