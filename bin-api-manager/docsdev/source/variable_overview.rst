@@ -2,32 +2,112 @@
 
 Overview
 ========
-VoIPBIN introduces a robust feature known as "Variables," providing users with the capability to define and employ dynamic values seamlessly throughout the execution of a flow. These variables, set by various applications, serve as adaptable elements that can be harnessed across different actions within the flow. By incorporating variables, users gain the ability to construct flows that are not only dynamic but also context-aware, allowing them to adapt to specific situations in real-time during execution.
+
+VoIPBIN provides a powerful feature called Variables, enabling users to define, manipulate, and reference dynamic values throughout the lifecycle of a flow execution. Variables act as flexible placeholders for data that may change over time—such as user input, call metadata, or results from other applications—and can be injected into any compatible action in the flow.
+
+This mechanism introduces contextual awareness and reactivity to flow logic, allowing users to build intelligent, data-driven call and messaging workflows that adapt in real time to current conditions and external inputs.
 
 .. _variable-overview-variable_use:
 
-Variable use
-------------
-Incorporating variables into a flow is a straightforward process for users. To use a variable within a specific action, simply include the variable using the following format:
+Using Variables in Flows
+========================
+
+Variables can be used within flow actions by referencing them using the following syntax:
 
 .. code::
 
-    ${voipbin.call.source.name}
+    Hello, ${voipbin.call.destination.name}.
 
-During the execution of the action, VoIPBIN dynamically evaluates the variable, replacing the placeholder with the actual value. This real-time evaluation empowers the flow to make informed decisions and execute actions based on the most up-to-date information, enhancing flexibility and adaptability in response to changing conditions.
+    -> Hello, Batman.
+
+At runtime, VoIPBIN resolves this placeholder and replaces it with the actual value stored in the variable. This process occurs at the time the action is executed, ensuring that the most up-to-date value is used—even if the variable was set earlier or modified by another action.
+
+.. image:: _static/images/variable_overview_substitute.png
+   :alt: Variable substitution
+   :width: 100%
+   :align: center
+
+Variables can be used in any field that supports templating. For example:
+
+* Setting dynamic text in TTS or message actions
+* Referencing phone numbers or user identifiers for routing or lookup
+* Embedding values in external API calls via webhooks
+* Controlling logic in conditional (branch) or fork actions
+
+VoIPBIN supports nested variables and safely resolves deep paths like:
+
+.. code::
+
+    Hello, ${voipbin.invalid.variable}.
+
+    -> Hello, .
+
+If a variable does not exist or is null, the placeholder will be replaced with an empty string unless otherwise specified.
 
 .. _variable-overview-dynamic_values:
 
-Capturing Dynamic Values
-------------------------
-Variables play a pivotal role in capturing and storing a diverse range of dynamic values throughout the flow execution. For instance, the active flow responsible for executing the call flow can set variables like the call's source address and destination address. Subsequently, these captured values become valuable assets that can be leveraged in various follow-up actions, such as sending messages, updating records, or making informed routing decisions. This strategic use of variables enhances the flow's adaptability and empowers users to tailor subsequent actions based on the specifics of each call scenario.
+Capturing and Setting Dynamic Values
+====================================
 
-.. _variable-overview-integration_with_applications:
+Variables can be populated in several ways:
+
+Automatically by the system 
+---------------------------
+
+VoIPBIN injects key metadata about the call or message, such as:
+
+* voipbin.call.source.name
+* voipbin.call.destination.number
+* voipbin.message.source.number
+
+By actions within the flow
+--------------------------
+
+Certain actions can store values as variables based on runtime results:
+
+* transcribe can store transcription results
+* recording can store the recording info
+* queueing can store the queueed call info.
+
+Manually via variable_set action
+--------------------------------
+
+Developers can explicitly define or override values in the flow.
+
+.. code::
+
+    {
+        "type": "variable_set",
+        "option": {
+            "key": "user_selected_option",
+            "value": "some_value"
+        }
+    }
+
+Variables set during execution are scoped to the current flow instance, meaning they persist only during the lifetime of that flow unless explicitly passed elsewhere.
 
 Integration with Applications
------------------------------
-In the VoIPBIN ecosystem, seamless integration with applications is pivotal for the effective utilization of variables. Each application assumes a crucial role in managing and providing access to specific variables pertinent to its functionality. For instance, the call application is responsible for setting variables related to the ongoing call, while other applications may establish variables based on user interactions, external data sources, or business logic.
+=============================
 
-By strategically integrating with diverse applications and harnessing the power of variables, users gain the capability to construct more intelligent and responsive flows. These flows are designed to adapt dynamically to changing conditions and user interactions.
+Each application in VoIPBIN can expose its own set of variables, which can be used by other parts of the flow. For example:
 
-In essence, the Variable feature in VoIPBIN injects a layer of dynamism and interactivity into the flow execution process. This capability empowers users to craft sophisticated communication workflows capable of leveraging real-time data and context, delivering a seamless and personalized experience for both callers and users.
+* Call Application: Sets variables like caller name, number, codec, and session info.
+* SMS Application: Sets sender/receiver numbers and message content.
+* AI and Chatbot Actions: Store extracted entities, intent, and raw responses.
+* Webhook Application: Allows injection of third-party data as variables.
+
+Email, Recording, or Summary Services: Can expose post-processing data such as email status or transcription content.
+
+Variables act as a shared communication layer between applications. This allows a webhook that receives CRM data to feed into an AI chatbot, or enables a transcription result to be emailed after a call ends—all within the same flow logic.
+
+.. _variable-overview-best_practices:
+
+Best Practices and Considerations
+=================================
+
+* Always validate input: Use branch or conditional logic to handle cases where variables may be missing or malformed.
+* Avoid name collisions: Prefer namespaced keys (e.g., user.profile.email) to reduce risk of overwriting important data.
+* Debugging: Use logging or flow monitoring to inspect variable states at different stages.
+* Data persistence: Variables do not persist beyond a single flow execution unless saved externally (e.g., via webhook or external DB).
+
+In conclusion, VoIPBIN's Variable system is a core feature that enables dynamic, data-aware flows. By using variables effectively, developers can create tailored communication experiences that respond intelligently to the context of each interaction—whether through voice, messaging, or external integrations.
