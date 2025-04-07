@@ -526,13 +526,12 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 				tt.referenceID,
 				tt.language,
 				tmtranscribe.DirectionBoth,
-				30000,
+				300000,
 			).Return(tt.responseTranscribe, nil)
 			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFiltersTranscripts).Return(tt.responseTranscripts, nil)
 
 			// getContent
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
-			// mockOpenai.EXPECT().Send(ctx, tt.expectedAIRequest).Return(tt.responseOpenai, nil)
 			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(tt.responseOpenai, nil)
 
 			// Create

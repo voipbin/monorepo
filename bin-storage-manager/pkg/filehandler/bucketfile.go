@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"io"
+	"monorepo/bin-storage-manager/models/file"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -61,12 +62,11 @@ func (h *fileHandler) bucketfileDelete(ctx context.Context, bucketName string, f
 }
 
 // bucketfileCompressFiles create a new compress file into the tmp bucket.
-func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath string, srcBucketName string, srcFilepaths []string) (resErr error) {
+func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath string, files []*file.File) (resErr error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "bucketfileCompressFiles",
-		"dst_filepath":    dstFilepath,
-		"src_bucket_name": srcBucketName,
-		"src_filepaths":   srcFilepaths,
+		"func":         "bucketfileCompressFiles",
+		"dst_filepath": dstFilepath,
+		"files":        files,
 	})
 
 	// create zip filepath writer
@@ -91,11 +91,11 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 		}
 	}()
 
-	for _, target := range srcFilepaths {
-		f := h.client.Bucket(srcBucketName).Object(target)
+	for _, f := range files {
+		bucketFile := h.client.Bucket(f.BucketName).Object(f.Filepath)
 
 		// read open
-		reader, err := f.NewReader(ctx)
+		reader, err := bucketFile.NewReader(ctx)
 		if err != nil {
 			log.Errorf("Could not create a reader. err: %v", err)
 			continue
@@ -103,8 +103,7 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 		defer reader.Close()
 
 		// add the filename to the result file
-		filename := getFilename(target)
-		fp, err := zw.Create(filename)
+		fp, err := zw.Create(f.Filename)
 		if err != nil {
 			return errors.Wrapf(err, "could not add the file to the res file. err: %v", err)
 		}

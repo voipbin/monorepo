@@ -51,7 +51,7 @@ type FileHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*file.File, error)
 	DeleteBucketfile(ctx context.Context, bucketName string, filepath string) error
 
-	CompressCreate(ctx context.Context, srcBucketName string, srcFilepaths []string) (string, string, error)
+	CompressCreate(ctx context.Context, files []*file.File) (string, string, error)
 	DownloadURIGet(ctx context.Context, bucketName string, filepath string, expire time.Duration) (string, string, error)
 
 	IsExist(ctx context.Context, bucketName string, filepath string) bool

@@ -45,9 +45,9 @@ func (m *MockFileHandler) EXPECT() *MockFileHandlerMockRecorder {
 }
 
 // CompressCreate mocks base method.
-func (m *MockFileHandler) CompressCreate(ctx context.Context, srcBucketName string, srcFilepaths []string) (string, string, error) {
+func (m *MockFileHandler) CompressCreate(ctx context.Context, files []*file.File) (string, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CompressCreate", ctx, srcBucketName, srcFilepaths)
+	ret := m.ctrl.Call(m, "CompressCreate", ctx, files)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -55,9 +55,9 @@ func (m *MockFileHandler) CompressCreate(ctx context.Context, srcBucketName stri
 }
 
 // CompressCreate indicates an expected call of CompressCreate.
-func (mr *MockFileHandlerMockRecorder) CompressCreate(ctx, srcBucketName, srcFilepaths any) *gomock.Call {
+func (mr *MockFileHandlerMockRecorder) CompressCreate(ctx, files any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompressCreate", reflect.TypeOf((*MockFileHandler)(nil).CompressCreate), ctx, srcBucketName, srcFilepaths)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompressCreate", reflect.TypeOf((*MockFileHandler)(nil).CompressCreate), ctx, files)
 }
 
 // Create mocks base method.

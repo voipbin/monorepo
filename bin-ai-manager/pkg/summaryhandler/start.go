@@ -253,7 +253,7 @@ func (h *summaryHandler) startReferenceTypeRecording(
 		referenceID,
 		language,
 		tmtranscribe.DirectionBoth,
-		30000,
+		300000,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start the transcribe")
