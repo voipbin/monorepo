@@ -105,7 +105,6 @@ func Test_RecordingGet(t *testing.T) {
 
 			mockFile.EXPECT().Gets(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseFiles, nil)
 
-			// mockFile.EXPECT().CompressCreateRaw(ctx, h.bucketNameMedia, tt.expectTargets).Return(tt.responseBucketName, tt.responseFilepath, nil)
 			mockFile.EXPECT().CompressCreate(ctx, tt.responseFiles).Return(tt.responseBucketName, tt.responseFilepath, nil)
 			mockFile.EXPECT().DownloadURIGet(ctx, tt.responseBucketName, tt.responseFilepath, time.Hour*24).Return(tt.responseBucketURI, tt.responseDownloadURI, nil)
 			mockUtil.EXPECT().TimeGetCurTimeAdd(gomock.Any()).Return("")

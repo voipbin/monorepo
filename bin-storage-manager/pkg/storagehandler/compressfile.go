@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,40 +24,34 @@ func (h *storageHandler) CompressfileCreate(ctx context.Context, referenceIDs []
 	if len(fileIDs) > 0 {
 		tmps, err := h.compressGetFilesByFileIDs(ctx, fileIDs)
 		if err != nil {
-			log.Errorf("Could not get file info. err: %v", err)
-			return nil, err
+			return nil, errors.Wrapf(err, "could not get files. file_ids: %v", fileIDs)
 		}
 		targetFiles = append(targetFiles, tmps...)
 	}
 	if len(referenceIDs) > 0 {
 		tmps, err := h.compressGetFilesByReferenceIDs(ctx, referenceIDs)
 		if err != nil {
-			log.Errorf("Could not get file info. err: %v", err)
-			return nil, err
+			return nil, errors.Wrapf(err, "could not get files. reference_ids: %v", referenceIDs)
 		}
 		targetFiles = append(targetFiles, tmps...)
 	}
 
 	targetFileIDs := []uuid.UUID{}
-	// targetpaths := []string{}
 	for _, f := range targetFiles {
-		// targetpaths = append(targetpaths, f.Filepath)
 		targetFileIDs = append(targetFileIDs, f.ID)
 	}
 
 	// create compress file
-	// bucketName, filepath, err := h.fileHandler.CompressCreateRaw(ctx, h.bucketNameMedia, targetpaths)
 	bucketName, filepath, err := h.fileHandler.CompressCreate(ctx, targetFiles)
 	if err != nil {
-		log.Errorf("Could not compress the files. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not compress the files. reference_ids: %v, file_ids: %v", referenceIDs, fileIDs)
 	}
+	log.Debugf("Created compress file. bucket_name: %s, filepath: %s", bucketName, filepath)
 
 	// get download uri
 	_, downloadURI, err := h.fileHandler.DownloadURIGet(ctx, bucketName, filepath, time.Hour*24)
 	if err != nil {
-		log.Errorf("Could not get download link. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get download link. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
 
 	// create compress file

@@ -2,15 +2,15 @@ package file
 
 import (
 	"encoding/json"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Identity
+	commonidentity.Owner
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
@@ -32,9 +32,8 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *File) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
-		OwnerID:    h.OwnerID,
+		Identity: h.Identity,
+		Owner:    h.Owner,
 
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
