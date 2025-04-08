@@ -3,7 +3,6 @@ package variablehandler
 import (
 	"context"
 	"fmt"
-	"regexp"
 
 	"monorepo/bin-flow-manager/models/variable"
 
@@ -25,10 +24,8 @@ func (h *variableHandler) Substitute(ctx context.Context, id uuid.UUID, data str
 
 // SubstituteString substitutes the given data string with variables
 func (h *variableHandler) SubstituteString(ctx context.Context, data string, v *variable.Variable) string {
-	re := regexp.MustCompile(`\${(.*?)}`) // Matches ${variableName}
-
-	return re.ReplaceAllStringFunc(data, func(match string) string {
-		submatches := re.FindStringSubmatch(match)
+	return regexVariable.ReplaceAllStringFunc(data, func(match string) string {
+		submatches := regexVariable.FindStringSubmatch(match)
 		if len(submatches) < 2 {
 			return ""
 		}

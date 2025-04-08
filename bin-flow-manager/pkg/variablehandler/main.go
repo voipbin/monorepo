@@ -1,15 +1,16 @@
 package variablehandler
 
+//go:generate mockgen -package variablehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
 import (
 	"context"
+	"regexp"
 
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
-
-//go:generate mockgen -package variablehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 // variableHandler struct
 type variableHandler struct {
@@ -41,3 +42,7 @@ func NewVariableHandler(
 
 	return h
 }
+
+var (
+	regexVariable = regexp.MustCompile(`\${(.*?)}`)
+)
