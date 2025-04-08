@@ -17,14 +17,6 @@ import (
 
 // PublishWebhookEvent publishs the given event type of notification to the webhook and event queue.
 func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "PublishWebhookEvent",
-		"evnet_type":  eventType,
-		"event":       data,
-		"customer_id": customerID,
-	})
-	log.Debugf("publishing the event to the webhook and event queue.. event_type: %s", eventType)
-
 	go h.PublishEvent(ctx, eventType, data)
 	go h.PublishWebhook(ctx, customerID, eventType, data)
 }
@@ -32,11 +24,11 @@ func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid
 // PublishWebhook publishes the webhook to the given customer.
 func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "PublishWebhook",
-		"data":       data,
-		"evnet_type": eventType,
+		"func":        "PublishWebhook",
+		"customer_id": customerID,
+		"data":        data,
+		"evnet_type":  eventType,
 	})
-	log.Debugf("Sending webhook event. event_type: %s, message: %s", eventType, data)
 
 	if customerID == uuid.Nil {
 		// no customer id given

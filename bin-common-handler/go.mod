@@ -54,16 +54,16 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
 	github.com/sirupsen/logrus v1.9.3
-	go.uber.org/mock v0.5.0
-	golang.org/x/sys v0.31.0 // indirect
+	go.uber.org/mock v0.5.1
+	golang.org/x/sys v0.32.0 // indirect
 )
 
 require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.21.1
+	github.com/prometheus/client_golang v1.22.0
 	github.com/rabbitmq/amqp091-go v1.10.0
-	golang.org/x/crypto v0.36.0
+	golang.org/x/crypto v0.37.0
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013
