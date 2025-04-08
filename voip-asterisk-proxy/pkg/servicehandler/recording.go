@@ -28,6 +28,11 @@ func (h *serviceHandler) RecordingFileMove(ctx context.Context, filenames []stri
 }
 
 func (h *serviceHandler) recordingFileUpload(ctx context.Context, filename string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "recordingFileUpload",
+		"filename": filename,
+	})
+
 	// Open the source file
 	sourceFilepath := fmt.Sprintf("%s/%s", h.recordingAsteriskDirectory, filename)
 	sourceFile, err := os.Open(sourceFilepath)
@@ -43,6 +48,7 @@ func (h *serviceHandler) recordingFileUpload(ctx context.Context, filename strin
 		return errors.Wrapf(err, "failed to copy data. source_filepath: %s, destination_filepath: %s", sourceFilepath, destinationFilepath)
 	}
 	defer wc.Close()
+	log.Debugf("Uploaded the file to bucket. source_filepath: %s, destination_filepath: %s", sourceFilepath, destinationFilepath)
 
 	// Remove the original file
 	if errRemove := os.Remove(sourceFilepath); errRemove != nil {
