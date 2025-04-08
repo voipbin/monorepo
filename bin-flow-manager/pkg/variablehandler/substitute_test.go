@@ -340,16 +340,17 @@ func Test_SubstituteOption(t *testing.T) {
 			},
 		},
 		{
-			name: "nested list of maps",
+			name: "nested structs",
 
 			data: map[string]any{
 				"nestedMapList": []map[string]any{
 					{
 						"key1": "${voipbin.test.name}",
 					},
-					{
-						"key2": "${voipbin.test.id}",
-					},
+				},
+				"stringList": []string{
+					"${voipbin.test.name}",
+					"${voipbin.test.id}",
 				},
 			},
 			v: &variable.Variable{
@@ -365,30 +366,7 @@ func Test_SubstituteOption(t *testing.T) {
 					{
 						"key1": "test name",
 					},
-					{
-						"key2": "7e5116e2-f477-11ec-9c08-b343a05abaee",
-					},
 				},
-			},
-		},
-		{
-			name: "nested list of strings",
-
-			data: map[string]any{
-				"stringList": []string{
-					"${voipbin.test.name}",
-					"${voipbin.test.id}",
-				},
-			},
-			v: &variable.Variable{
-				ID: uuid.FromStringOrNil("5072a680-dd54-11ec-aeff-7b54e7355667"),
-				Variables: map[string]string{
-					"voipbin.test.name": "test name",
-					"voipbin.test.id":   "7e5116e2-f477-11ec-9c08-b343a05abaee",
-				},
-			},
-
-			expectedRes: map[string]any{
 				"stringList": []string{
 					"test name",
 					"7e5116e2-f477-11ec-9c08-b343a05abaee",

@@ -1090,6 +1090,13 @@ func Test_marshal_OptionAISummary(t *testing.T) {
 				Language:      "en-US",
 			},
 		},
+		{
+			name: "empty",
+
+			option: []byte(`{}`),
+
+			expectedRes: OptionAISummary{},
+		},
 	}
 
 	for _, tt := range tests {
