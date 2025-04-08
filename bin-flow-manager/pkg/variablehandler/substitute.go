@@ -28,8 +28,11 @@ func (h *variableHandler) SubstituteString(ctx context.Context, data string, v *
 	re := regexp.MustCompile(`\${(.*?)}`) // Matches ${variableName}
 
 	return re.ReplaceAllStringFunc(data, func(match string) string {
-		// Extract the variable name from the match
-		variableName := re.FindStringSubmatch(match)[1] // Second submatch is the variable name
+		submatches := re.FindStringSubmatch(match)
+		if len(submatches) < 2 {
+			return ""
+		}
+		variableName := submatches[1] // Second submatch is the variable name
 
 		value, ok := v.Variables[variableName]
 		if ok {
