@@ -34,31 +34,37 @@ import (
 // actionHandleGotoLoop handles goto action's loop condition.
 // it updates the loop_count.
 func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *activeflow.Activeflow, act *action.Action, opt *action.OptionGoto) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "actionHandleGotoLoop",
+		"activeflow_id": af.ID,
+	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	// find action
 	_, orgAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, act.ID, false)
 	if err != nil {
-		return errors.Wrapf(err, "could not get the original action. err: %v", err)
+		return errors.Wrapf(err, "could not get the original action.")
 	}
 
 	// find goto action
 	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.TargetID, false)
 	if err != nil {
-		return errors.Wrapf(err, "could not find the goto target action. err: %v", err)
+		return errors.Wrapf(err, "could not find the goto target action.")
 	}
 
 	opt.LoopCount--
 	raw, err := json.Marshal(opt)
 	if err != nil {
-		return errors.Wrapf(err, "could not marshal the goto option. err: %v", err)
+		return errors.Wrapf(err, "could not marshal the goto option.")
 	}
 
 	if errUnmarshal := json.Unmarshal(raw, &orgAction.Option); errUnmarshal != nil {
-		return errors.Wrapf(errUnmarshal, "could not unmarshal the option. err: %v", errUnmarshal)
+		return errors.Wrapf(errUnmarshal, "could not unmarshal the option.")
 	}
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
-		return errors.Wrapf(err, "could not update the active flow after appended the patched actions. err: %v", err)
+		return errors.Wrapf(err, "could not update the active flow after appended the patched actions.")
 	}
 
 	return nil
@@ -67,17 +73,23 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 // actionHandleFetch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
 func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "actionHandleFetch",
+		"activeflow_id": af.ID,
+	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	// patch the actions from the remote
 	fetchedActions, err := h.actionHandler.ActionFetchGet(act, af.ID, af.ReferenceID)
 	if err != nil {
-		return errors.Wrapf(err, "could not fetch the actions from the remote. err: %v", err)
+		return errors.Wrapf(err, "could not fetch the actions from the remote.")
 	}
 
 	// push the actions
 	if errPush := h.PushStack(ctx, af, uuid.Nil, fetchedActions); errPush != nil {
-		return errors.Wrapf(errPush, "could not push the actions to the stack. err: %v", errPush)
+		return errors.Wrapf(errPush, "could not push the actions to the stack.")
 	}
 
 	return nil
@@ -86,17 +98,22 @@ func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflo
 // actionHandleFetchFlow handles action patch_flow with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
 func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "actionHandleFetchFlow",
+		"activeflow_id": af.ID,
+	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
 
 	act := &af.CurrentAction
 
 	tmp, err := json.Marshal(act.Option)
 	if err != nil {
-		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+		return errors.Wrapf(err, "could not marshal the option.")
 	}
 
 	var option action.OptionFetchFlow
 	if err := json.Unmarshal(tmp, &option); err != nil {
-		return errors.Wrapf(err, "could not unmarshal the option. err: %v", err)
+		return errors.Wrapf(err, "could not unmarshal the option.")
 	}
 
 	// patch the actions from the flow
@@ -117,26 +134,28 @@ func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activ
 // it checks the received digits and sets the forward action id.
 func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleConditionCallDigits",
-		"activeflow": af,
+		"func":          "actionHandleConditionCallDigits",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmp, err := json.Marshal(act.Option)
 	if err != nil {
-		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+		return errors.Wrapf(err, "could not marshal the option.")
 	}
 
 	var opt action.OptionConditionCallDigits
 	if err := json.Unmarshal(tmp, &opt); err != nil {
-		return errors.Wrapf(err, "could not unmarshal the option. err: %v", err)
+		return errors.Wrapf(err, "could not unmarshal the option.")
 	}
 	log.WithField("option", opt).Debugf("Detail option.")
 
 	// gets the received digits
 	digits, err := h.reqHandler.CallV1CallGetDigits(ctx, af.ReferenceID)
 	if err != nil {
-		return errors.Wrapf(err, "could not get digits. err: %v", err)
+		return errors.Wrapf(err, "could not get digits.")
 	}
 	log.Debugf("Received digits. digits: %s", digits)
 
@@ -151,7 +170,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 
 	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
 	if err != nil {
-		return errors.Wrapf(err, "could not find false target action. err: %v", err)
+		return errors.Wrapf(err, "could not find false target action.")
 	}
 
 	// failed
@@ -159,7 +178,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
-		return errors.Wrapf(err, "could not update the active flow after appended the patched actions. err: %v", err)
+		return errors.Wrapf(err, "could not update the active flow after appended the patched actions.")
 	}
 
 	return nil
@@ -169,28 +188,28 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 // it checks the call's status and sets the forward action id.
 func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleConditionCallStatus",
-		"activeflow": af,
+		"func":          "actionHandleConditionCallStatus",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmp, err := json.Marshal(act.Option)
 	if err != nil {
-		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+		return errors.Wrapf(err, "could not marshal the option.")
 	}
 
 	var opt action.OptionConditionCallStatus
 	if err := json.Unmarshal(tmp, &opt); err != nil {
-		log.Errorf("Could not unmarshal the option. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not unmarshal the option.")
 	}
 	log.WithField("option", opt).Debugf("Detail option.")
 
 	// gets the call
 	c, err := h.reqHandler.CallV1CallGet(ctx, af.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not get call. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not get call.")
 	}
 	log.WithField("call", c).Debugf("Received call info. call_id: %s", c.ID)
 
@@ -202,8 +221,7 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 
 	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
 	if err != nil {
-		log.Errorf("Could not find false target action. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not find false target action.")
 	}
 	log.Debugf("Could not match the condition. Forward to the false target. target_stack_id:%s, target_action_id: %s", targetStackID, targetAction.ID)
 
@@ -211,8 +229,7 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not update the activeflow after appended the patched actions.")
 	}
 
 	return nil
@@ -222,20 +239,21 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 // it checks the current datetime and sets the forward action id.
 func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleConditionDatetime",
-		"activeflow": af,
+		"func":          "actionHandleConditionDatetime",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmp, err := json.Marshal(act.Option)
 	if err != nil {
-		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+		return errors.Wrapf(err, "could not marshal the option.")
 	}
 
 	var opt action.OptionConditionDatetime
 	if err := json.Unmarshal(tmp, &opt); err != nil {
-		log.Errorf("Could not unmarshal the option. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not unmarshal the option.")
 	}
 	log.WithField("option", opt).Debugf("Detail option.")
 
@@ -328,8 +346,7 @@ func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, a
 	// gets the false target action
 	targetStackID, targetAction, err := h.stackmapHandler.GetAction(af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
 	if err != nil {
-		log.Errorf("Could not find false target action. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not find false target action.")
 	}
 
 	// sets the false target action
@@ -348,9 +365,11 @@ func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, a
 // it checks the given variable and sets the forward action id.
 func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleConditionVariable",
-		"activeflow": af,
+		"func":          "actionHandleConditionVariable",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmp, err := json.Marshal(act.Option)
@@ -410,9 +429,11 @@ func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, a
 // it gets the given conference's flow and replace it.
 func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleConferenceJoin",
-		"activeflow": af,
+		"func":          "actionHandleConferenceJoin",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	log.Debugf("Action detail. action: %v", act)
@@ -452,9 +473,11 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 // actionHandleConnect handles action connect with active flow.
 func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleConnect",
-		"activeflow": af,
+		"func":          "actionHandleConnect",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmpOption, err := json.Marshal(act.Option)
@@ -583,10 +606,10 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 // actionHandleGoto handles action goto with active flow.
 func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleGoto",
-		"activeflow": af,
+		"func":          "actionHandleGoto",
+		"activeflow_id": af.ID,
 	})
-	log.WithField("action", af.CurrentAction).Debug("Handle action goto.")
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
 
 	act := &af.CurrentAction
 
@@ -616,9 +639,11 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow
 // actionHandleTranscribeRecording handles transcribe_recording
 func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleTranscribeRecording",
-		"activeflow": af,
+		"func":          "actionHandleTranscribeRecording",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmpOption, err := json.Marshal(act.Option)
@@ -667,9 +692,11 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 // actionHandleTranscribeStart handles transcribe_start
 func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleTranscribeStart",
-		"activeflow": af,
+		"func":          "actionHandleTranscribeStart",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	if af.ReferenceType != activeflow.ReferenceTypeCall {
@@ -712,9 +739,11 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 // actionHandleQueueJoin handles queue_join action type.
 func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleQueueJoin",
-		"activeflow": af,
+		"func":          "actionHandleQueueJoin",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmpOption, err := json.Marshal(act.Option)
@@ -758,9 +787,11 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 // actionHandleBranch handles branch action type.
 func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleBranch",
-		"activeflow": af,
+		"func":          "actionHandleBranch",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmpOption, err := json.Marshal(act.Option)
@@ -823,9 +854,11 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 // actionHandleMessageSend handles message_send action type.
 func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleMessageSend",
-		"activeflow": af,
+		"func":          "actionHandleMessageSend",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmpOption, err := json.Marshal(act.Option)
@@ -853,10 +886,10 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 // actionHandleCall handles action call with active flow.
 func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleCall",
-		"activeflow": af,
+		"func":          "actionHandleCall",
+		"activeflow_id": af.ID,
 	})
-	log.Debugf("Executing the action call. reference_id: %s", af.ReferenceID)
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
 
 	act := &af.CurrentAction
 
@@ -905,10 +938,10 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 // actionHandleVariableSet handles action variable_set with active flow.
 func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleVariableSet",
-		"activeflow": af,
+		"func":          "actionHandleVariableSet",
+		"activeflow_id": af.ID,
 	})
-	log.Debugf("Executing the action variable_set. reference_id: %s", af.ReferenceID)
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
 
 	act := &af.CurrentAction
 
@@ -936,10 +969,10 @@ func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *act
 // actionHandleWebhookSend handles action webhook_send with active flow.
 func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleWebhookSend",
-		"activeflow": af,
+		"func":          "actionHandleWebhookSend",
+		"activeflow_id": af.ID,
 	})
-	log.Debugf("Executing the action webhook_send. reference_id: %s", af.ReferenceID)
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
 
 	act := &af.CurrentAction
 
@@ -973,9 +1006,11 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 // actionHandleConversationSend handles conversation_send action type.
 func (h *activeflowHandler) actionHandleConversationSend(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleConversationSend",
-		"activeflow": af,
+		"func":          "actionHandleConversationSend",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmpOption, err := json.Marshal(act.Option)
@@ -1015,9 +1050,11 @@ func (h *activeflowHandler) actionHandleConversationSend(ctx context.Context, af
 // it starts ai talk service.
 func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleAITalk",
-		"activeflow": af,
+		"func":          "actionHandleAITalk",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmpOption, err := json.Marshal(act.Option)
@@ -1054,10 +1091,10 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 // actionHandleStop handles action stop with activeflow.
 func (h *activeflowHandler) actionHandleStop(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleStop",
-		"activeflow": af,
+		"func":          "actionHandleStop",
+		"activeflow_id": af.ID,
 	})
-	log.WithField("action", af.CurrentAction).Debug("Handle action stop.")
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
 
 	actions := []action.Action{
 		action.ActionFinish,
@@ -1075,9 +1112,11 @@ func (h *activeflowHandler) actionHandleStop(ctx context.Context, af *activeflow
 // actionHandleEmailSend handles action email_send with activeflow.
 func (h *activeflowHandler) actionHandleEmailSend(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleEmailSend",
-		"activeflow": af,
+		"func":          "actionHandleEmailSend",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmpOption, err := json.Marshal(act.Option)
@@ -1106,9 +1145,11 @@ func (h *activeflowHandler) actionHandleEmailSend(ctx context.Context, af *activ
 // it starts ai summary service.
 func (h *activeflowHandler) actionHandleAISummary(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "actionHandleAISummary",
-		"activeflow": af,
+		"func":          "actionHandleAISummary",
+		"activeflow_id": af.ID,
 	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
 	act := &af.CurrentAction
 
 	tmpOption, err := json.Marshal(act.Option)
