@@ -16,8 +16,9 @@ type WebhookMessage struct {
 	FlowID uuid.UUID `json:"flow_id,omitempty"`
 	Status Status    `json:"status,omitempty"`
 
-	ReferenceType ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
+	ReferenceType         ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID           uuid.UUID     `json:"reference_id,omitempty"`
+	ReferenceActiveflowID uuid.UUID     `json:"reference_activeflow_id,omitempty"`
 
 	CurrentAction action.Action `json:"current_action,omitempty"`
 
@@ -38,8 +39,9 @@ func (h *Activeflow) ConvertWebhookMessage() *WebhookMessage {
 		FlowID: h.FlowID,
 		Status: h.Status,
 
-		ReferenceType: h.ReferenceType,
-		ReferenceID:   h.ReferenceID,
+		ReferenceType:         h.ReferenceType,
+		ReferenceID:           h.ReferenceID,
+		ReferenceActiveflowID: h.ReferenceActiveflowID,
 
 		CurrentAction: h.CurrentAction,
 

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-flow-manager/models/action"
@@ -12,7 +13,7 @@ import (
 )
 
 // Execute executes the actions.
-// This starts the active-flow.
+// This starts the activeflow.
 func (h *activeflowHandler) Execute(ctx context.Context, activeflowID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "Execute",
@@ -46,27 +47,27 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 	})
 	log.Debugf("Getting next action. activeflow_id: %s", activeflowID)
 
-	// get next action from the active
+	// get next action from the activeflow
 	af, err := h.updateNextAction(ctx, activeflowID, caID)
 	if err != nil {
 		log.Errorf("Could not get next action. Stopping activeflow. err: %v", err)
-		_, _ = h.Stop(ctx, activeflowID)
-		return nil, err
+		h.stopWithNoReturn(ctx, activeflowID)
+		return nil, errors.Wrapf(err, "could not get next action. activeflow_id: %s", activeflowID)
 	}
 	log.WithField("next_action", af.CurrentAction).Debugf("Found next action. action_type: %s", af.CurrentAction.Type)
 
 	if af.CurrentAction.ID == action.IDFinish {
 		log.Debugf("Next action is finish. Stop the flow execution. activeflow_id: %s", activeflowID)
-		_, _ = h.Delete(ctx, activeflowID)
+		h.stopWithNoReturn(ctx, activeflowID)
 		return &action.ActionFinish, nil
 	}
 
-	// execute the active action
+	// execute the current action
 	res, err := h.executeAction(ctx, af)
 	if err != nil {
 		log.Errorf("Could not execute the active action. Deleting activeflow. err: %v", err)
-		_, _ = h.Delete(ctx, activeflowID)
-		return nil, err
+		h.stopWithNoReturn(ctx, activeflowID)
+		return nil, errors.Wrapf(err, "could not execute the active action. activeflow_id: %s", activeflowID)
 	}
 
 	return res, nil
