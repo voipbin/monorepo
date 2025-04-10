@@ -65,10 +65,13 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 			return nil, errors.Wrapf(err, "could not execute the active action. activeflow_id: %s", activeflowID)
 		}
 
-		if res != nil {
-			log.WithField("action", res).Debugf("Found next action. action_type: %s", res.Type)
-			return res, nil
+		if res == &action.ActionNext {
+			log.Debugf("The current action is next. Continue the flow execution. activeflow_id: %s", activeflowID)
+			continue
 		}
+
+		log.WithField("action", res).Debugf("Found next action. action_type: %s", res.Type)
+		return res, nil
 	}
 
 	// if we reach here, it means we have looped too many times without finding a valid action
@@ -92,7 +95,7 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 	// verify the reference type and action type
 	if !h.verifyActionType(ctx, af) {
 		log.Infof("The action type and reference type are not valid. Move to the next action. action_type: %s, reference_type: %s", af.CurrentAction.Type, af.ReferenceType)
-		return nil, nil
+		return &action.ActionNext, nil
 	}
 
 	actionType := af.CurrentAction.Type
@@ -108,146 +111,146 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 			log.Errorf("Could not handle the ai summary action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeAITalk:
 		if errHandle := h.actionHandleAITalk(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the ai talk action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeBranch:
 		if errHandle := h.actionHandleBranch(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the branch action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeCall:
 		if errHandle := h.actionHandleCall(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the call action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeConditionCallDigits:
 		if errHandle := h.actionHandleConditionCallDigits(ctx, af); errHandle != nil {
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeConditionCallStatus:
 		if errHandle := h.actionHandleConditionCallStatus(ctx, af); errHandle != nil {
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeConditionDatetime:
 		if errHandle := h.actionHandleConditionDatetime(ctx, af); errHandle != nil {
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeConditionVariable:
 		if errHandle := h.actionHandleConditionVariable(ctx, af); errHandle != nil {
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeConferenceJoin:
 		if errHandle := h.actionHandleConferenceJoin(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the conference_join action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeConnect:
 		if errHandle := h.actionHandleConnect(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the connect action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeConversationSend:
 		if errHandle := h.actionHandleConversationSend(ctx, af); errHandle != nil {
 			log.Errorf("Could not send the conversation message correctly. err: %v", errHandle)
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeEmailSend:
 		if errHandle := h.actionHandleEmailSend(ctx, af); errHandle != nil {
 			log.Errorf("Could not send the email correctly. err: %v", errHandle)
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeGoto:
 		if errHandle := h.actionHandleGoto(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the goto action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeMessageSend:
 		if errHandle := h.actionHandleMessageSend(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the message_send action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeFetch:
 		if errHandle := h.actionHandleFetch(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the patch action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeFetchFlow:
 		if errHandle := h.actionHandleFetchFlow(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the patch_flow action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeQueueJoin:
 		if errHandle := h.actionHandleQueueJoin(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the queue_join action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeStop:
 		if errHandle := h.actionHandleStop(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the stop action correctly. err: %v", errHandle)
 			return nil, errHandle
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeTranscribeRecording:
 		if err := h.actionHandleTranscribeRecording(ctx, af); err != nil {
 			log.Errorf("Could not handle the recording_to_text action correctly. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeTranscribeStart:
 		if err := h.actionHandleTranscribeStart(ctx, af); err != nil {
 			log.Errorf("Could not start the transcribe. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeVariableSet:
 		if err := h.actionHandleVariableSet(ctx, af); err != nil {
 			log.Errorf("Could not handle the variable_set. err: %v", err)
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 
 	case action.TypeWebhookSend:
 		if err := h.actionHandleWebhookSend(ctx, af); err != nil {
 			log.Errorf("Could not handle the webhook_send. err: %v", err)
 		}
-		return nil, nil
+		return &action.ActionNext, nil
 	}
 
 	return &af.CurrentAction, nil
