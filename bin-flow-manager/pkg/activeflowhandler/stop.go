@@ -12,15 +12,10 @@ import (
 
 // Stop stops activeflow
 func (h *activeflowHandler) Stop(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "Stop",
-		"activeflow_id": id,
-	})
 
 	af, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get activeflow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get activeflow info. activeflow_id: %s", id)
 	}
 
 	if af.Status == activeflow.StatusEnded {
@@ -29,17 +24,30 @@ func (h *activeflowHandler) Stop(ctx context.Context, id uuid.UUID) (*activeflow
 	}
 
 	if errSet := h.db.ActiveflowSetStatus(ctx, id, activeflow.StatusEnded); errSet != nil {
-		log.Errorf("Could not set activeflow status. err: %v", errSet)
-		return nil, errors.Wrap(errSet, "Could not set activeflow status.")
+		return nil, errors.Wrapf(errSet, "Could not set activeflow status. status: %s", activeflow.StatusEnded)
 	}
 
-	// get deleted activeflow
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get activeflow. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get updated activeflow info. activeflow_id: %s", id)
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowUpdated, res)
 
 	return res, nil
+}
+
+// stopWithoutReturn stops the activeflow without returning the result.
+func (h *activeflowHandler) stopWithoutReturn(ctx context.Context, id uuid.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "stopWithoutReturn",
+		"activeflow_id": id,
+	})
+
+	tmp, err := h.Stop(ctx, id)
+	if err != nil {
+		log.Errorf("could not stop the activeflow. activeflow_id: %s, err: %v", id, err)
+		return
+	}
+
+	log.Debugf("stopped the activeflow. activeflow_id: %s", tmp.ID)
 }

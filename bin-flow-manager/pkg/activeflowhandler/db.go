@@ -26,12 +26,13 @@ func (h *activeflowHandler) Create(
 	flowID uuid.UUID,
 ) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Create",
-		"id":             id,
-		"customer_id":    customerID,
-		"reference_type": referenceType,
-		"reference_id":   referenceID,
-		"flow_id":        flowID,
+		"func":                    "Create",
+		"id":                      id,
+		"customer_id":             customerID,
+		"reference_type":          referenceType,
+		"reference_id":            referenceID,
+		"reference_activeflow_id": referenceActiveflowID,
+		"flow_id":                 flowID,
 	})
 
 	// check id is valid

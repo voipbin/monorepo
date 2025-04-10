@@ -2275,6 +2275,9 @@ components:
         reference_id:
           type: string
           description: ID of the reference object.
+        reference_activeflow_id:
+          type: string
+          description: ID of the referenced activeflow.
         current_action:
           $ref: '#/components/schemas/FlowManagerAction'
         forward_action_id:

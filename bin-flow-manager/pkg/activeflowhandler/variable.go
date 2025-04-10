@@ -13,6 +13,7 @@ import (
 
 func (h *activeflowHandler) variableCreate(ctx context.Context, af *activeflow.Activeflow) (*variable.Variable, error) {
 	log := logrus.WithFields(logrus.Fields{
+		"func":          "variableCreate",
 		"activeflow_id": af.ID,
 	})
 
