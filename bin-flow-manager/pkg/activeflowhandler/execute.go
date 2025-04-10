@@ -56,6 +56,7 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 			return nil, errors.Wrapf(err, "could not get next action. activeflow_id: %s", activeflowID)
 		}
 		log.WithField("next_action", af.CurrentAction).Debugf("Found next action. action_type: %s", af.CurrentAction.Type)
+		caID = af.CurrentAction.ID
 
 		if af.CurrentAction.ID == action.IDFinish {
 			log.Debugf("Next action is finish. Stop the flow execution. activeflow_id: %s", activeflowID)
