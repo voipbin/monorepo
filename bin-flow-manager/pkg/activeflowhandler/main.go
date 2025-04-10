@@ -49,6 +49,10 @@ const (
 	variableActiveflowFlowID                = "voipbin.activeflow.flow_id"
 )
 
+const (
+	maxNextActionLoopCount = 1000 // max loop count for next action
+)
+
 // ActiveflowHandler defines
 type ActiveflowHandler interface {
 	Create(

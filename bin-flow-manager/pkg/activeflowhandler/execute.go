@@ -40,7 +40,7 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 	})
 	log.Debugf("Getting next action. activeflow_id: %s", activeflowID)
 
-	for range 1000 {
+	for range maxNextActionLoopCount {
 		// get next action from the activeflow
 		af, err := h.updateNextAction(ctx, activeflowID, caID)
 		if err != nil {
