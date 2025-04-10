@@ -45,7 +45,7 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 		af, err := h.updateNextAction(ctx, activeflowID, caID)
 		if err != nil {
 			log.Errorf("Could not get next action. Stopping activeflow. err: %v", err)
-			h.stopWithNoReturn(ctx, activeflowID)
+			h.stopWithoutReturn(ctx, activeflowID)
 			return nil, errors.Wrapf(err, "could not get next action. activeflow_id: %s", activeflowID)
 		}
 		log.WithField("next_action", af.CurrentAction).Debugf("Found next action. action_type: %s", af.CurrentAction.Type)
@@ -53,7 +53,7 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 
 		if af.CurrentAction.ID == action.IDFinish {
 			log.Debugf("Next action is finish. Stop the flow execution. activeflow_id: %s", activeflowID)
-			h.stopWithNoReturn(ctx, activeflowID)
+			h.stopWithoutReturn(ctx, activeflowID)
 			return &action.ActionFinish, nil
 		}
 
@@ -61,7 +61,7 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 		res, err := h.executeAction(ctx, af)
 		if err != nil {
 			log.Errorf("Could not execute the active action. Deleting activeflow. err: %v", err)
-			h.stopWithNoReturn(ctx, activeflowID)
+			h.stopWithoutReturn(ctx, activeflowID)
 			return nil, errors.Wrapf(err, "could not execute the active action. activeflow_id: %s", activeflowID)
 		}
 
@@ -76,7 +76,7 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 
 	// if we reach here, it means we have looped too many times without finding a valid action
 	log.Errorf("Reached maximum loop iterations without finding a valid action. Stopping activeflow.")
-	h.stopWithNoReturn(ctx, activeflowID)
+	h.stopWithoutReturn(ctx, activeflowID)
 	return nil, fmt.Errorf("reached maximum loop iterations without finding a valid action")
 }
 

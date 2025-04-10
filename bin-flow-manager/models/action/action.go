@@ -24,9 +24,14 @@ var (
 
 // list of pre-defined actions.
 var (
+	// ActionFinish is used to represent the finish action.
+	// this is used withint the activeflow control to move the flow cursor to the finish action
 	ActionFinish Action = Action{
 		ID: IDFinish,
 	}
+
+	// ActionNext is used to represent the next action.
+	// this is used withint the activeflow control to move the flow cursor to the next action
 	ActionNext Action = Action{
 		ID: IDNext,
 	}

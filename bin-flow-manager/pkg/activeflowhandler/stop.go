@@ -36,9 +36,10 @@ func (h *activeflowHandler) Stop(ctx context.Context, id uuid.UUID) (*activeflow
 	return res, nil
 }
 
-func (h *activeflowHandler) stopWithNoReturn(ctx context.Context, id uuid.UUID) {
+// stopWithoutReturn stops the activeflow without returning the result.
+func (h *activeflowHandler) stopWithoutReturn(ctx context.Context, id uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "stopWithNoReturn",
+		"func":          "stopWithoutReturn",
 		"activeflow_id": id,
 	})
 
