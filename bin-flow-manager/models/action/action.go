@@ -19,7 +19,7 @@ var (
 	IDEmpty  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000") // empty action
 	IDStart  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001") // reserved action id for start.
 	IDFinish uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002") // reserved action id for finish
-	IDNext   uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000003") // reserved action id for finish
+	IDNext   uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000003") // reserved action id for move to next
 )
 
 // list of pre-defined actions.
