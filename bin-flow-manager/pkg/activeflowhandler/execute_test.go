@@ -90,7 +90,7 @@ func Test_Execute(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
 
-			// getNextAction
+			// updateNextAction
 			mockDB.EXPECT().ActiveflowGetWithLock(gomock.Any(), tt.id).Return(tt.responseActiveflow, nil)
 			mockStack.EXPECT().GetNextAction(gomock.Any(), gomock.Any(), gomock.Any(), true).Return(tt.responseStackID, tt.responseAction)
 			mockVar.EXPECT().Get(ctx, tt.id).Return(&variable.Variable{}, nil)

@@ -15,24 +15,31 @@ import (
 // Execute executes the actions.
 // This starts the activeflow.
 func (h *activeflowHandler) Execute(ctx context.Context, activeflowID uuid.UUID) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "Execute",
-		"activeflow_id": activeflowID,
-	})
+	// log := logrus.WithFields(logrus.Fields{
+	// 	"func":          "Execute",
+	// 	"activeflow_id": activeflowID,
+	// })
 
-	// get next action from the active
-	af, err := h.updateNextAction(ctx, activeflowID, action.IDStart)
-	if err != nil {
-		log.Errorf("Could not get next action. err: %v", err)
-		return err
-	}
-	log.WithField("next_action", af.CurrentAction).Debugf("Found next action. action_type: %v", &af.CurrentAction.Type)
+	// // get next action from the active
+	// af, err := h.updateNextAction(ctx, activeflowID, action.IDStart)
+	// if err != nil {
+	// 	return errors.Wrapf(err, "could not update the start action. activeflow_id: %s", activeflowID)
+	// 	// log.Errorf("Could not get next action. err: %v", err)
+	// 	// return err
+	// }
+	// log.WithField("next_action", af.CurrentAction).Debugf("Found next action. action_type: %v", &af.CurrentAction.Type)
 
-	// execute the active action
-	_, err = h.executeAction(ctx, af)
+	// // execute the active action
+	// _, err = h.executeAction(ctx, af)
+	// if err != nil {
+	// 	log.Errorf("Could not execute the active action. err: %v", err)
+	// 	return err
+	// }
+
+	// execute the next action
+	_, err := h.ExecuteNextAction(ctx, activeflowID, action.IDStart)
 	if err != nil {
-		log.Errorf("Could not execute the active action. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not execute the next action. activeflow_id: %s", activeflowID)
 	}
 
 	return nil
