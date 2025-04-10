@@ -1946,6 +1946,9 @@ type FlowManagerActiveflow struct {
 	// Id Unique identifier for the activeflow.
 	Id *string `json:"id,omitempty"`
 
+	// ReferenceActiveflowId ID of the referenced activeflow.
+	ReferenceActiveflowId *string `json:"reference_activeflow_id,omitempty"`
+
 	// ReferenceId ID of the reference object.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
