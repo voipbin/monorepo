@@ -64,7 +64,7 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
-		return errors.Wrapf(err, "could not update the active flow after appended the patched actions.")
+		return errors.Wrapf(err, "could not update the active flow after appending the patched actions.")
 	}
 
 	return nil
@@ -178,7 +178,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
-		return errors.Wrapf(err, "could not update the active flow after appended the patched actions.")
+		return errors.Wrapf(err, "could not update the active flow after appending the patched actions.")
 	}
 
 	return nil
@@ -354,8 +354,7 @@ func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, a
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not update the active flow after appending the patched actions.")
 	}
 
 	return nil
@@ -418,8 +417,7 @@ func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, a
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.update(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+		return errors.Wrapf(err, "could not update the active flow after appending the patched actions")
 	}
 
 	return nil
