@@ -2,9 +2,7 @@
 
 Welcome to the VoIPBin monorepo — the unified backend codebase that powers all VoIPBin services.
 
-VoIPBin is a cloud-native, scalable VoIP platform designed for modern voice communication. This repository provides all the backend components for managing users, routing calls, handling media, running chatbots, and more — all in a single place.
-
-**VoIPbin** is a powerful, modular platform for building modern VoIP applications. It enables developers and businesses to handle voice calls, messaging, conferencing, AI integrations, and more — all through a flexible and scalable backend architecture.
+VoIPBin is a cloud-native, scalable CPaaS platform designed for modern voice communication. This repository provides all the backend components for managing users, routing calls, handling media, running chatbots, and more — all in a single place.
 
 This repository is a **monorepo** for all VoIPbin backend services. It provides a unified development environment for managing the services that power the VoIPbin platform.
 
