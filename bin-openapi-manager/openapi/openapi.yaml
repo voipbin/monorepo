@@ -2131,12 +2131,13 @@ components:
       type: string
       description: Type of the action.
       enum:
+        - ai_talk
+        - ai_summary
         - amd
         - answer
         - beep
         - branch
         - call
-        - ai_talk
         - condition_call_digits
         - condition_call_status
         - condition_datetime
@@ -2148,6 +2149,7 @@ components:
         - digits_receive
         - digits_send
         - echo
+        - email_send
         - external_media_start
         - external_media_stop
         - fetch
@@ -2171,6 +2173,7 @@ components:
         - webhook_send
       x-enum-varnames:
         - FlowManagerActionTypeAITalk
+        - FlowManagerActionTypeAISummary
         - FlowManagerActionTypeAMD
         - FlowManagerActionTypeAnswer
         - FlowManagerActionTypeBeep
@@ -2187,6 +2190,7 @@ components:
         - FlowManagerActionTypeDigitsReceive
         - FlowManagerActionTypeDigitsSend
         - FlowManagerActionTypeEcho
+        - FlowManagerActionTypeEmailSend
         - FlowManagerActionTypeExternalMediaStart
         - FlowManagerActionTypeExternalMediaStop
         - FlowManagerActionTypeFetch
@@ -2209,6 +2213,434 @@ components:
         - FlowManagerActionTypeVariableSet
         - FlowManagerActionTypeWebhookSend
 
+    FlowManagerActionOptionAISummary:
+      type: object
+      properties:
+        on_end_flow_id:
+          type: string
+          description: The unique identifier for the flow to be executed on end.
+        reference_type:
+          $ref: '#/components/schemas/AIManagerSummaryReferenceType'
+        reference_id:
+          type: string
+          description: The identifier of the reference object
+        language:
+          type: string
+          description: Additional options
+
+    FlowManagerActionOptionAITalk:
+      type: object
+      properties:
+        ai_id:
+          type: string
+          description: The unique identifier for the flow to be executed on end.
+        resume:
+          type: boolean
+          description: Whether to resume the AI talk.
+        gender:
+          $ref: '#/components/schemas/AIManagerAIcallGender'
+        language:
+          type: string
+        duration:
+          type: integer
+
+    FlowManagerActionOptionAMD:
+      type: object
+      properties:
+        machine_handle:
+          type: string
+          enum: 
+            - hangup
+            - continue
+          x-enum-varnames:
+            - FlowManagerActionOptionAMDMachineHandleHangup
+            - FlowManagerActionOptionAMDMachineHandleContinue
+        async:
+          type: boolean
+          description: If false, the call flow will pause until AMD is complete.
+
+    FlowManagerActionOptionAnswer:
+      type: object
+      description: No options available for this action.
+
+    FlowManagerActionOptionBeep:
+      type: object
+      description: No options available for this action.
+
+    FlowManagerActionOptionBranch:
+      type: object
+      properties:
+        variable:
+          type: string
+          description: Variable name to evaluate for branching.
+        default_target_id:
+          type: string
+          description: Default target ID if input does not match any branch targets.
+        target_ids:
+          type: object
+          additionalProperties:
+            type: string
+          description: Mapping of input values to target IDs.
+
+    FlowManagerActionOptionCall:
+      type: object
+      properties:
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+        flow_id:
+          type: string
+          description: Identifier for the flow to be executed.
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlowManagerAction'
+        chained:
+          type: boolean
+          description: If true, created calls will hang up when the master call hangs up.
+        early_execution:
+          type: boolean
+          description: If true, the created call executes the flow before call answer.
+
+    FlowManagerActionOptionConfbridgeJoin:
+      type: object
+      properties:
+        confbridge_id:
+          type: string
+          description: Identifier for the conference bridge to join.
+
+    FlowManagerActionOptionConferenceJoin:
+      type: object
+      properties:
+        conference_id:
+          type: string
+
+    FlowManagerActionOptionConnect:
+      type: object
+      properties:
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+          description: Source address.
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+          description: Target destination addresses.
+        early_media:
+          type: boolean
+          description: |
+            If true, the call will get early media from the destination.
+        relay_reason:
+          type: boolean
+          description: |
+            If true, the master call will try to hang up with the same reason as the first destination call.
+            Valid only if the first destination call hangs up earlier than the master call.
+
+    FlowManagerActionOptionConversationSend:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+          description: Conversation's ID.
+        text:
+          type: string
+          description: Message text.
+        sync:
+          type: boolean
+
+    FlowManagerActionOptionDigitsReceive:
+      type: object
+      properties:
+        duration:
+          type: integer
+          description: DTMF receiving duration in milliseconds.
+        key:
+          type: string
+          description: |
+            If set, determines which DTMF key triggers the next step.
+            The end key is not included in the resulting variable.
+            If not set, no key will trigger the next step.
+        length:
+          type: integer
+          description: |
+            An optional limit to the number of DTMF events that should be gathered before continuing.
+
+    FlowManagerActionOptionDigitsSend:
+      type: object
+      properties:
+        digits:
+          type: string
+          maxLength: 100
+          pattern: "^[0-9ABCD#*]*$"
+          description: |
+            Keys to send. Allowed characters: 0-9, A-D, #, *. Max 100 keys.
+        duration:
+          type: integer
+          minimum: 100
+          maximum: 1000
+          description: Duration per DTMF tone (ms).
+        interval:
+          type: integer
+          minimum: 0
+          maximum: 5000
+          description: Interval between keys (ms).
+
+    FlowManagerActionOptionEcho:
+      type: object
+      properties:
+        duration:
+          type: integer
+
+
+    FlowManagerActionOptionEmailSend:
+      type: object
+      properties:
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+        subject:
+          type: string
+        content:
+          type: string
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailManagerEmailAttachment'
+
+    FlowManagerActionOptionExternalMediaStart:
+      type: object
+      properties:
+        external_host:
+          type: string
+          description: External media target host address.
+        encapsulation:
+          type: string
+          description: Encapsulation. Default value is rtp.
+        transport:
+          type: string
+          description: Transport. Default value is udp.
+        connection_type:
+          type: string
+          description: Connection type. Default value is client.
+        format:
+          type: string
+          description: Format. Default value is ulaw.
+        direction:
+          type: string
+          description: Direction. Default value is both.
+        data:
+          type: string
+
+    FlowManagerActionOptionExternalMediaStop:
+      type: object
+      description: No options required.
+
+    FlowManagerActionOptionFetch:
+      type: object
+      properties:
+        event_url:
+          type: string
+        event_method:
+          type: string
+
+    FlowManagerActionOptionFetchFlow:
+      type: object
+      properties:
+        flow_id:
+          type: string
+
+    FlowManagerActionOptionGoto:
+      type: object
+      properties:
+        target_id:
+          type: string
+          description: Target's action ID in the flow array to go to.
+        loop_count:
+          type: integer
+          description: Loop count.
+
+    FlowManagerActionOptionHangup:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Hangup reason code. See cmcall.HangupReason for details.
+        reference_id:
+          type: string
+          description: |
+            If set, hangs up the call with the same reason as the referenced call ID.
+            This will overwrite the `reason` option.
+
+    FlowManagerActionOptionMessageSend:
+      type: object
+      properties:
+        source:
+          type: object
+          $ref: '#/components/schemas/CommonAddress'
+          description: The source address for the message.
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+          description: List of destination addresses for the message.
+        text:
+          type: string
+          description: The text of the message to send.
+
+    FlowManagerActionOptionPlay:
+      type: object
+      properties:
+        stream_urls:
+          type: array
+          items:
+            type: string
+          description: List of stream URLs for media playback.
+
+    FlowManagerActionOptionQueueJoin:
+      type: object
+      properties:
+        queue_id:
+          type: string
+          description: The ID of the queue to join.
+
+    FlowManagerActionOptionRecordingStart:
+      type: object
+      properties:
+        format:
+          type: string
+          description: Format to encode audio in. Supported values are wav, mp3, ogg.
+        end_of_silence:
+          type: integer
+          description: Maximum duration of silence, in seconds. 0 for no limit.
+        end_of_key:
+          type: string
+          description: DTMF input to terminate recording. Supported values are none, any, *, #.
+        duration:
+          type: integer
+          description: Maximum duration of the recording, in seconds. 0 for no limit.
+        beep_start:
+          type: boolean
+          description: Play beep when recording begins.
+        on_end_flow_id:
+          type: string
+          description: Flow ID for the end of recording.
+
+    FlowManagerActionOptionRecordingStop:
+      type: object
+      description: No options for this action.
+
+    FlowManagerActionOptionSleep:
+      type: object
+      properties:
+        duration:
+          type: integer
+          description: Sleep duration in milliseconds.
+
+    FlowManagerActionOptionStreamEcho:
+      type: object
+      properties:
+        duration:
+          type: integer
+          description: Duration of the stream echo.
+
+    FlowManagerActionOptionTalk:
+      type: object
+      properties:
+        text:
+          type: string
+          description: The text to read, either in SSML format or plain text.
+        gender:
+          type: string
+          description: Gender of the voice. Supported values are male, female, neutral.
+        language:
+          type: string
+          description: IETF locale name (e.g., ko-KR, en-US).
+        digits_handle:
+          description: Defines the action when it receives digits.
+          type: string
+          enum: 
+            - ""
+            - next
+          x-enum-varnames:
+            - FlowManagerActionOptionTalkDigitsHandleNone
+            - FlowManagerActionOptionTalkDigitsHandleNext
+
+    FlowManagerActionOptionTranscribeStart:
+      type: object
+      properties:
+        language:
+          type: string
+          description: BCP47 format for the language (e.g., en-US).
+        on_end_flow_id:
+          type: string
+          description: Flow ID for the end of transcription.
+
+    FlowManagerActionOptionTranscribeStop:
+      type: object
+      description: No options for this action.
+
+    FlowManagerActionOptionTranscribeRecording:
+      type: object
+      properties:
+        language:
+          type: string
+          description: BCP47 format for the language (e.g., en-US).
+        on_end_flow_id:
+          type: string
+          description: Flow ID for the end of transcription.
+
+    FlowManagerActionOptionVariableSet:
+      type: object
+      properties:
+        key:
+          type: string
+          description: The key of the variable to set.
+        value:
+          type: string
+          description: The value of the variable to set.
+
+    FlowManagerActionOptionWebhookSend:
+      type: object
+      properties:
+        sync:
+          type: boolean
+          description: Indicates whether the webhook is synchronous.
+        uri:
+          type: string
+          description: The URI to which the webhook is sent.
+        method:
+          type: string
+          enum: 
+            - POST
+            - GET
+            - PUT
+            - DELETE
+          x-enum-varnames:
+            - FlowManagerActionOptionWebhookSendMethodPost
+            - FlowManagerActionOptionWebhookSendMethodGet
+            - FlowManagerActionOptionWebhookSendMethodPut
+            - FlowManagerActionOptionWebhookSendMethodDelete
+          description: The HTTP method to use for the webhook.
+        data_type:
+          type: string
+          description: The content type of the data being sent. Example `application/json`.
+        data:
+          type: string
+          description: The data to send in the webhook.
+
+
+
+
+
+
+
+
+
+
     FlowManagerAction:
       type: object
       properties:
@@ -2223,8 +2655,44 @@ components:
           $ref: '#/components/schemas/FlowManagerActionType'
         option:
           type: object
-          description: Additional options
           additionalProperties: true
+          description: |
+            Additional options based on the `type` field.
+            - For `FlowManagerActionTypeAISummary`: see `FlowManagerActionOptionAISummary`
+            - For `FlowManagerActionTypeAITalk`: see `FlowManagerActionOptionAITalk`
+            - For `FlowManagerActionTypeAMD`: see `FlowManagerActionOptionAMD`
+            - For `FlowManagerActionTypeAnswer`: see FlowManagerActionOptionAnswer
+            - For `FlowManagerActionTypeBeep`: see FlowManagerActionOptionBeep
+            - For `FlowManagerActionTypeBranch`: see FlowManagerActionOptionBranch
+            - For `FlowManagerActionTypeCall`: see FlowManagerActionOptionCall
+            - For `FlowManagerActionTypeConfbridgeJoin`: see FlowManagerActionOptionConfbridgeJoin
+            - For `FlowManagerActionTypeConferenceJoin`: see FlowManagerActionOptionConferenceJoin
+            - For `FlowManagerActionTypeConnect`: see FlowManagerActionOptionConnect
+            - For `FlowManagerActionTypeConversationSend`: see FlowManagerActionOptionConversationSend
+            - For `FlowManagerActionTypeDigitsReceive`: see FlowManagerActionOptionDigitsReceive
+            - For `FlowManagerActionTypeDigitsSend`: see FlowManagerActionOptionDigitsSend
+            - For `FlowManagerActionTypeEcho`: see FlowManagerActionOptionEcho
+            - For `FlowManagerActionTypeEmailSend`: see FlowManagerActionOptionEmailSend
+            - For `FlowManagerActionTypeExternalMediaStart`: see FlowManagerActionOptionExternalMediaStart
+            - For `FlowManagerActionTypeExternalMediaStop`: see FlowManagerActionOptionExternalMediaStop
+            - For `FlowManagerActionTypeFetch`: see FlowManagerActionOptionFetch
+            - For `FlowManagerActionTypeFetchFlow`: see FlowManagerActionOptionFetchFlow
+            - For `FlowManagerActionTypeGoto`: see FlowManagerActionOptionGoto
+            - For `FlowManagerActionTypeHangup`: see FlowManagerActionOptionHangup
+            - For `FlowManagerActionTypeMessageSend`: see FlowManagerActionOptionMessageSend
+            - For `FlowManagerActionTypePlay`: see FlowManagerActionOptionPlay
+            - For `FlowManagerActionTypeQueueJoin`: see FlowManagerActionOptionQueueJoin
+            - For `FlowManagerActionTypeRecordingStart`: see FlowManagerActionOptionRecordingStart
+            - For `FlowManagerActionTypeRecordingStop`: see FlowManagerActionOptionRecordingStop
+            - For `FlowManagerActionTypeSleep`: see FlowManagerActionOptionSleep
+            - For `FlowManagerActionTypeStreamEcho`: see FlowManagerActionOptionStreamEcho
+            - For `FlowManagerActionTypeTalk`: see FlowManagerActionOptionTalk
+            - For `FlowManagerActionTypeTranscribeStart`: see FlowManagerActionOptionTranscribeStart
+            - For `FlowManagerActionTypeTranscribeStop`: see FlowManagerActionOptionTranscribeStop
+            - For `FlowManagerActionTypeTranscribeRecording`: see FlowManagerActionOptionTranscribeRecording
+            - For `FlowManagerActionTypeVariableSet`: see FlowManagerActionOptionVariableSet
+            - For `FlowManagerActionTypeWebhookSend`: see FlowManagerActionOptionWebhookSend        
+            - ...
         tm_execute:
           type: string
           description: Timestamp or time to execute

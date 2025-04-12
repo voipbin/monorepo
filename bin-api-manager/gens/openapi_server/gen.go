@@ -434,14 +434,35 @@ const (
 	EmailManagerEmailStatusUnsubscribe EmailManagerEmailStatus = "unsubscribe"
 )
 
+// Defines values for FlowManagerActionOptionAMDMachineHandle.
+const (
+	FlowManagerActionOptionAMDMachineHandleContinue FlowManagerActionOptionAMDMachineHandle = "continue"
+	FlowManagerActionOptionAMDMachineHandleHangup   FlowManagerActionOptionAMDMachineHandle = "hangup"
+)
+
+// Defines values for FlowManagerActionOptionTalkDigitsHandle.
+const (
+	FlowManagerActionOptionTalkDigitsHandleNext FlowManagerActionOptionTalkDigitsHandle = "next"
+	FlowManagerActionOptionTalkDigitsHandleNone FlowManagerActionOptionTalkDigitsHandle = ""
+)
+
+// Defines values for FlowManagerActionOptionWebhookSendMethod.
+const (
+	FlowManagerActionOptionWebhookSendMethodDelete FlowManagerActionOptionWebhookSendMethod = "DELETE"
+	FlowManagerActionOptionWebhookSendMethodGet    FlowManagerActionOptionWebhookSendMethod = "GET"
+	FlowManagerActionOptionWebhookSendMethodPost   FlowManagerActionOptionWebhookSendMethod = "POST"
+	FlowManagerActionOptionWebhookSendMethodPut    FlowManagerActionOptionWebhookSendMethod = "PUT"
+)
+
 // Defines values for FlowManagerActionType.
 const (
-	FlowManagerActionTypeAITalk              FlowManagerActionType = "amd"
-	FlowManagerActionTypeAMD                 FlowManagerActionType = "answer"
-	FlowManagerActionTypeAnswer              FlowManagerActionType = "beep"
-	FlowManagerActionTypeBeep                FlowManagerActionType = "branch"
-	FlowManagerActionTypeBranch              FlowManagerActionType = "call"
-	FlowManagerActionTypeCall                FlowManagerActionType = "ai_talk"
+	FlowManagerActionTypeAISummary           FlowManagerActionType = "ai_summary"
+	FlowManagerActionTypeAITalk              FlowManagerActionType = "ai_talk"
+	FlowManagerActionTypeAMD                 FlowManagerActionType = "amd"
+	FlowManagerActionTypeAnswer              FlowManagerActionType = "answer"
+	FlowManagerActionTypeBeep                FlowManagerActionType = "beep"
+	FlowManagerActionTypeBranch              FlowManagerActionType = "branch"
+	FlowManagerActionTypeCall                FlowManagerActionType = "call"
 	FlowManagerActionTypeConditionCallDigits FlowManagerActionType = "condition_call_digits"
 	FlowManagerActionTypeConditionCallStatus FlowManagerActionType = "condition_call_status"
 	FlowManagerActionTypeConditionDatetime   FlowManagerActionType = "condition_datetime"
@@ -453,6 +474,7 @@ const (
 	FlowManagerActionTypeDigitsReceive       FlowManagerActionType = "digits_receive"
 	FlowManagerActionTypeDigitsSend          FlowManagerActionType = "digits_send"
 	FlowManagerActionTypeEcho                FlowManagerActionType = "echo"
+	FlowManagerActionTypeEmailSend           FlowManagerActionType = "email_send"
 	FlowManagerActionTypeExternalMediaStart  FlowManagerActionType = "external_media_start"
 	FlowManagerActionTypeExternalMediaStop   FlowManagerActionType = "external_media_stop"
 	FlowManagerActionTypeFetch               FlowManagerActionType = "fetch"
@@ -1914,7 +1936,42 @@ type FlowManagerAction struct {
 	// NextId The identifier of the next item
 	NextId *string `json:"next_id,omitempty"`
 
-	// Option Additional options
+	// Option Additional options based on the `type` field.
+	// - For `FlowManagerActionTypeAISummary`: see `FlowManagerActionOptionAISummary`
+	// - For `FlowManagerActionTypeAITalk`: see `FlowManagerActionOptionAITalk`
+	// - For `FlowManagerActionTypeAMD`: see `FlowManagerActionOptionAMD`
+	// - For `FlowManagerActionTypeAnswer`: see FlowManagerActionOptionAnswer
+	// - For `FlowManagerActionTypeBeep`: see FlowManagerActionOptionBeep
+	// - For `FlowManagerActionTypeBranch`: see FlowManagerActionOptionBranch
+	// - For `FlowManagerActionTypeCall`: see FlowManagerActionOptionCall
+	// - For `FlowManagerActionTypeConfbridgeJoin`: see FlowManagerActionOptionConfbridgeJoin
+	// - For `FlowManagerActionTypeConferenceJoin`: see FlowManagerActionOptionConferenceJoin
+	// - For `FlowManagerActionTypeConnect`: see FlowManagerActionOptionConnect
+	// - For `FlowManagerActionTypeConversationSend`: see FlowManagerActionOptionConversationSend
+	// - For `FlowManagerActionTypeDigitsReceive`: see FlowManagerActionOptionDigitsReceive
+	// - For `FlowManagerActionTypeDigitsSend`: see FlowManagerActionOptionDigitsSend
+	// - For `FlowManagerActionTypeEcho`: see FlowManagerActionOptionEcho
+	// - For `FlowManagerActionTypeEmailSend`: see FlowManagerActionOptionEmailSend
+	// - For `FlowManagerActionTypeExternalMediaStart`: see FlowManagerActionOptionExternalMediaStart
+	// - For `FlowManagerActionTypeExternalMediaStop`: see FlowManagerActionOptionExternalMediaStop
+	// - For `FlowManagerActionTypeFetch`: see FlowManagerActionOptionFetch
+	// - For `FlowManagerActionTypeFetchFlow`: see FlowManagerActionOptionFetchFlow
+	// - For `FlowManagerActionTypeGoto`: see FlowManagerActionOptionGoto
+	// - For `FlowManagerActionTypeHangup`: see FlowManagerActionOptionHangup
+	// - For `FlowManagerActionTypeMessageSend`: see FlowManagerActionOptionMessageSend
+	// - For `FlowManagerActionTypePlay`: see FlowManagerActionOptionPlay
+	// - For `FlowManagerActionTypeQueueJoin`: see FlowManagerActionOptionQueueJoin
+	// - For `FlowManagerActionTypeRecordingStart`: see FlowManagerActionOptionRecordingStart
+	// - For `FlowManagerActionTypeRecordingStop`: see FlowManagerActionOptionRecordingStop
+	// - For `FlowManagerActionTypeSleep`: see FlowManagerActionOptionSleep
+	// - For `FlowManagerActionTypeStreamEcho`: see FlowManagerActionOptionStreamEcho
+	// - For `FlowManagerActionTypeTalk`: see FlowManagerActionOptionTalk
+	// - For `FlowManagerActionTypeTranscribeStart`: see FlowManagerActionOptionTranscribeStart
+	// - For `FlowManagerActionTypeTranscribeStop`: see FlowManagerActionOptionTranscribeStop
+	// - For `FlowManagerActionTypeTranscribeRecording`: see FlowManagerActionOptionTranscribeRecording
+	// - For `FlowManagerActionTypeVariableSet`: see FlowManagerActionOptionVariableSet
+	// - For `FlowManagerActionTypeWebhookSend`: see FlowManagerActionOptionWebhookSend
+	// - ...
 	Option *map[string]interface{} `json:"option,omitempty"`
 
 	// TmExecute Timestamp or time to execute
@@ -1923,6 +1980,339 @@ type FlowManagerAction struct {
 	// Type Type of the action.
 	Type FlowManagerActionType `json:"type"`
 }
+
+// FlowManagerActionOptionAISummary defines model for FlowManagerActionOptionAISummary.
+type FlowManagerActionOptionAISummary struct {
+	// Language Additional options
+	Language *string `json:"language,omitempty"`
+
+	// OnEndFlowId The unique identifier for the flow to be executed on end.
+	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
+
+	// ReferenceId The identifier of the reference object
+	ReferenceId   *string                        `json:"reference_id,omitempty"`
+	ReferenceType *AIManagerSummaryReferenceType `json:"reference_type,omitempty"`
+}
+
+// FlowManagerActionOptionAITalk defines model for FlowManagerActionOptionAITalk.
+type FlowManagerActionOptionAITalk struct {
+	// AiId The unique identifier for the flow to be executed on end.
+	AiId     *string `json:"ai_id,omitempty"`
+	Duration *int    `json:"duration,omitempty"`
+
+	// Gender Gender associated with the ai call.
+	Gender   *AIManagerAIcallGender `json:"gender,omitempty"`
+	Language *string                `json:"language,omitempty"`
+
+	// Resume Whether to resume the AI talk.
+	Resume *bool `json:"resume,omitempty"`
+}
+
+// FlowManagerActionOptionAMD defines model for FlowManagerActionOptionAMD.
+type FlowManagerActionOptionAMD struct {
+	// Async If false, the call flow will pause until AMD is complete.
+	Async         *bool                                    `json:"async,omitempty"`
+	MachineHandle *FlowManagerActionOptionAMDMachineHandle `json:"machine_handle,omitempty"`
+}
+
+// FlowManagerActionOptionAMDMachineHandle defines model for FlowManagerActionOptionAMD.MachineHandle.
+type FlowManagerActionOptionAMDMachineHandle string
+
+// FlowManagerActionOptionAnswer No options available for this action.
+type FlowManagerActionOptionAnswer = map[string]interface{}
+
+// FlowManagerActionOptionBeep No options available for this action.
+type FlowManagerActionOptionBeep = map[string]interface{}
+
+// FlowManagerActionOptionBranch defines model for FlowManagerActionOptionBranch.
+type FlowManagerActionOptionBranch struct {
+	// DefaultTargetId Default target ID if input does not match any branch targets.
+	DefaultTargetId *string `json:"default_target_id,omitempty"`
+
+	// TargetIds Mapping of input values to target IDs.
+	TargetIds *map[string]string `json:"target_ids,omitempty"`
+
+	// Variable Variable name to evaluate for branching.
+	Variable *string `json:"variable,omitempty"`
+}
+
+// FlowManagerActionOptionCall defines model for FlowManagerActionOptionCall.
+type FlowManagerActionOptionCall struct {
+	Actions *[]FlowManagerAction `json:"actions,omitempty"`
+
+	// Chained If true, created calls will hang up when the master call hangs up.
+	Chained      *bool            `json:"chained,omitempty"`
+	Destinations *[]CommonAddress `json:"destinations,omitempty"`
+
+	// EarlyExecution If true, the created call executes the flow before call answer.
+	EarlyExecution *bool `json:"early_execution,omitempty"`
+
+	// FlowId Identifier for the flow to be executed.
+	FlowId *string `json:"flow_id,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+}
+
+// FlowManagerActionOptionConfbridgeJoin defines model for FlowManagerActionOptionConfbridgeJoin.
+type FlowManagerActionOptionConfbridgeJoin struct {
+	// ConfbridgeId Identifier for the conference bridge to join.
+	ConfbridgeId *string `json:"confbridge_id,omitempty"`
+}
+
+// FlowManagerActionOptionConferenceJoin defines model for FlowManagerActionOptionConferenceJoin.
+type FlowManagerActionOptionConferenceJoin struct {
+	ConferenceId *string `json:"conference_id,omitempty"`
+}
+
+// FlowManagerActionOptionConnect defines model for FlowManagerActionOptionConnect.
+type FlowManagerActionOptionConnect struct {
+	// Destinations Target destination addresses.
+	Destinations *[]CommonAddress `json:"destinations,omitempty"`
+
+	// EarlyMedia If true, the call will get early media from the destination.
+	EarlyMedia *bool `json:"early_media,omitempty"`
+
+	// RelayReason If true, the master call will try to hang up with the same reason as the first destination call.
+	// Valid only if the first destination call hangs up earlier than the master call.
+	RelayReason *bool `json:"relay_reason,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+}
+
+// FlowManagerActionOptionConversationSend defines model for FlowManagerActionOptionConversationSend.
+type FlowManagerActionOptionConversationSend struct {
+	// ConversationId Conversation's ID.
+	ConversationId *string `json:"conversation_id,omitempty"`
+	Sync           *bool   `json:"sync,omitempty"`
+
+	// Text Message text.
+	Text *string `json:"text,omitempty"`
+}
+
+// FlowManagerActionOptionDigitsReceive defines model for FlowManagerActionOptionDigitsReceive.
+type FlowManagerActionOptionDigitsReceive struct {
+	// Duration DTMF receiving duration in milliseconds.
+	Duration *int `json:"duration,omitempty"`
+
+	// Key If set, determines which DTMF key triggers the next step.
+	// The end key is not included in the resulting variable.
+	// If not set, no key will trigger the next step.
+	Key *string `json:"key,omitempty"`
+
+	// Length An optional limit to the number of DTMF events that should be gathered before continuing.
+	Length *int `json:"length,omitempty"`
+}
+
+// FlowManagerActionOptionDigitsSend defines model for FlowManagerActionOptionDigitsSend.
+type FlowManagerActionOptionDigitsSend struct {
+	// Digits Keys to send. Allowed characters: 0-9, A-D, #, *. Max 100 keys.
+	Digits *string `json:"digits,omitempty"`
+
+	// Duration Duration per DTMF tone (ms).
+	Duration *int `json:"duration,omitempty"`
+
+	// Interval Interval between keys (ms).
+	Interval *int `json:"interval,omitempty"`
+}
+
+// FlowManagerActionOptionEcho defines model for FlowManagerActionOptionEcho.
+type FlowManagerActionOptionEcho struct {
+	Duration *int `json:"duration,omitempty"`
+}
+
+// FlowManagerActionOptionEmailSend defines model for FlowManagerActionOptionEmailSend.
+type FlowManagerActionOptionEmailSend struct {
+	Attachments  *[]EmailManagerEmailAttachment `json:"attachments,omitempty"`
+	Content      *string                        `json:"content,omitempty"`
+	Destinations *[]CommonAddress               `json:"destinations,omitempty"`
+	Subject      *string                        `json:"subject,omitempty"`
+}
+
+// FlowManagerActionOptionExternalMediaStart defines model for FlowManagerActionOptionExternalMediaStart.
+type FlowManagerActionOptionExternalMediaStart struct {
+	// ConnectionType Connection type. Default value is client.
+	ConnectionType *string `json:"connection_type,omitempty"`
+	Data           *string `json:"data,omitempty"`
+
+	// Direction Direction. Default value is both.
+	Direction *string `json:"direction,omitempty"`
+
+	// Encapsulation Encapsulation. Default value is rtp.
+	Encapsulation *string `json:"encapsulation,omitempty"`
+
+	// ExternalHost External media target host address.
+	ExternalHost *string `json:"external_host,omitempty"`
+
+	// Format Format. Default value is ulaw.
+	Format *string `json:"format,omitempty"`
+
+	// Transport Transport. Default value is udp.
+	Transport *string `json:"transport,omitempty"`
+}
+
+// FlowManagerActionOptionExternalMediaStop No options required.
+type FlowManagerActionOptionExternalMediaStop = map[string]interface{}
+
+// FlowManagerActionOptionFetch defines model for FlowManagerActionOptionFetch.
+type FlowManagerActionOptionFetch struct {
+	EventMethod *string `json:"event_method,omitempty"`
+	EventUrl    *string `json:"event_url,omitempty"`
+}
+
+// FlowManagerActionOptionFetchFlow defines model for FlowManagerActionOptionFetchFlow.
+type FlowManagerActionOptionFetchFlow struct {
+	FlowId *string `json:"flow_id,omitempty"`
+}
+
+// FlowManagerActionOptionGoto defines model for FlowManagerActionOptionGoto.
+type FlowManagerActionOptionGoto struct {
+	// LoopCount Loop count.
+	LoopCount *int `json:"loop_count,omitempty"`
+
+	// TargetId Target's action ID in the flow array to go to.
+	TargetId *string `json:"target_id,omitempty"`
+}
+
+// FlowManagerActionOptionHangup defines model for FlowManagerActionOptionHangup.
+type FlowManagerActionOptionHangup struct {
+	// Reason Hangup reason code. See cmcall.HangupReason for details.
+	Reason *string `json:"reason,omitempty"`
+
+	// ReferenceId If set, hangs up the call with the same reason as the referenced call ID.
+	// This will overwrite the `reason` option.
+	ReferenceId *string `json:"reference_id,omitempty"`
+}
+
+// FlowManagerActionOptionMessageSend defines model for FlowManagerActionOptionMessageSend.
+type FlowManagerActionOptionMessageSend struct {
+	// Destinations List of destination addresses for the message.
+	Destinations *[]CommonAddress `json:"destinations,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// Text The text of the message to send.
+	Text *string `json:"text,omitempty"`
+}
+
+// FlowManagerActionOptionPlay defines model for FlowManagerActionOptionPlay.
+type FlowManagerActionOptionPlay struct {
+	// StreamUrls List of stream URLs for media playback.
+	StreamUrls *[]string `json:"stream_urls,omitempty"`
+}
+
+// FlowManagerActionOptionQueueJoin defines model for FlowManagerActionOptionQueueJoin.
+type FlowManagerActionOptionQueueJoin struct {
+	// QueueId The ID of the queue to join.
+	QueueId *string `json:"queue_id,omitempty"`
+}
+
+// FlowManagerActionOptionRecordingStart defines model for FlowManagerActionOptionRecordingStart.
+type FlowManagerActionOptionRecordingStart struct {
+	// BeepStart Play beep when recording begins.
+	BeepStart *bool `json:"beep_start,omitempty"`
+
+	// Duration Maximum duration of the recording, in seconds. 0 for no limit.
+	Duration *int `json:"duration,omitempty"`
+
+	// EndOfKey DTMF input to terminate recording. Supported values are none, any, *,
+	EndOfKey *string `json:"end_of_key,omitempty"`
+
+	// EndOfSilence Maximum duration of silence, in seconds. 0 for no limit.
+	EndOfSilence *int `json:"end_of_silence,omitempty"`
+
+	// Format Format to encode audio in. Supported values are wav, mp3, ogg.
+	Format *string `json:"format,omitempty"`
+
+	// OnEndFlowId Flow ID for the end of recording.
+	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
+}
+
+// FlowManagerActionOptionRecordingStop No options for this action.
+type FlowManagerActionOptionRecordingStop = map[string]interface{}
+
+// FlowManagerActionOptionSleep defines model for FlowManagerActionOptionSleep.
+type FlowManagerActionOptionSleep struct {
+	// Duration Sleep duration in milliseconds.
+	Duration *int `json:"duration,omitempty"`
+}
+
+// FlowManagerActionOptionStreamEcho defines model for FlowManagerActionOptionStreamEcho.
+type FlowManagerActionOptionStreamEcho struct {
+	// Duration Duration of the stream echo.
+	Duration *int `json:"duration,omitempty"`
+}
+
+// FlowManagerActionOptionTalk defines model for FlowManagerActionOptionTalk.
+type FlowManagerActionOptionTalk struct {
+	// DigitsHandle Defines the action when it receives digits.
+	DigitsHandle *FlowManagerActionOptionTalkDigitsHandle `json:"digits_handle,omitempty"`
+
+	// Gender Gender of the voice. Supported values are male, female, neutral.
+	Gender *string `json:"gender,omitempty"`
+
+	// Language IETF locale name (e.g., ko-KR, en-US).
+	Language *string `json:"language,omitempty"`
+
+	// Text The text to read, either in SSML format or plain text.
+	Text *string `json:"text,omitempty"`
+}
+
+// FlowManagerActionOptionTalkDigitsHandle Defines the action when it receives digits.
+type FlowManagerActionOptionTalkDigitsHandle string
+
+// FlowManagerActionOptionTranscribeRecording defines model for FlowManagerActionOptionTranscribeRecording.
+type FlowManagerActionOptionTranscribeRecording struct {
+	// Language BCP47 format for the language (e.g., en-US).
+	Language *string `json:"language,omitempty"`
+
+	// OnEndFlowId Flow ID for the end of transcription.
+	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
+}
+
+// FlowManagerActionOptionTranscribeStart defines model for FlowManagerActionOptionTranscribeStart.
+type FlowManagerActionOptionTranscribeStart struct {
+	// Language BCP47 format for the language (e.g., en-US).
+	Language *string `json:"language,omitempty"`
+
+	// OnEndFlowId Flow ID for the end of transcription.
+	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
+}
+
+// FlowManagerActionOptionTranscribeStop No options for this action.
+type FlowManagerActionOptionTranscribeStop = map[string]interface{}
+
+// FlowManagerActionOptionVariableSet defines model for FlowManagerActionOptionVariableSet.
+type FlowManagerActionOptionVariableSet struct {
+	// Key The key of the variable to set.
+	Key *string `json:"key,omitempty"`
+
+	// Value The value of the variable to set.
+	Value *string `json:"value,omitempty"`
+}
+
+// FlowManagerActionOptionWebhookSend defines model for FlowManagerActionOptionWebhookSend.
+type FlowManagerActionOptionWebhookSend struct {
+	// Data The data to send in the webhook.
+	Data *string `json:"data,omitempty"`
+
+	// DataType The content type of the data being sent. Example `application/json`.
+	DataType *string `json:"data_type,omitempty"`
+
+	// Method The HTTP method to use for the webhook.
+	Method *FlowManagerActionOptionWebhookSendMethod `json:"method,omitempty"`
+
+	// Sync Indicates whether the webhook is synchronous.
+	Sync *bool `json:"sync,omitempty"`
+
+	// Uri The URI to which the webhook is sent.
+	Uri *string `json:"uri,omitempty"`
+}
+
+// FlowManagerActionOptionWebhookSendMethod The HTTP method to use for the webhook.
+type FlowManagerActionOptionWebhookSendMethod string
 
 // FlowManagerActionType Type of the action.
 type FlowManagerActionType string
