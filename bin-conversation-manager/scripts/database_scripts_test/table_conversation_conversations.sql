@@ -16,7 +16,6 @@ create table conversation_conversations(
 
   self    json,
   peer    json,
-  participants  json,
 
   -- timestamps
   tm_create   datetime(6),  --
