@@ -69,7 +69,7 @@ func Test_Send(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.FromStringOrNil(tt.transactionID), tt.conversation.CustomerID, tt.conversation.Source, tt.expectDestinations, tt.text).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.FromStringOrNil(tt.transactionID), tt.conversation.CustomerID, tt.conversation.Self, tt.expectDestinations, tt.text).Return(tt.responseMessage, nil)
 
 			if err := h.Send(ctx, tt.conversation, tt.transactionID, tt.text); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

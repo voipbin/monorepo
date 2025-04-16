@@ -3,7 +3,6 @@ package messagehandler
 import (
 	"context"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -24,7 +23,8 @@ func (h *messageHandler) Create(
 	referenceType conversation.ReferenceType,
 	referenceID string,
 	transactionID string,
-	source *commonaddress.Address,
+	// source *commonaddress.Address,
+	// destination *commonaddress.Address,
 	text string,
 	medias []media.Media,
 ) (*message.Message, error) {
@@ -35,7 +35,7 @@ func (h *messageHandler) Create(
 		"reference_id":    referenceID,
 		"transaction_id":  transactionID,
 	})
-	log.Debugf("Creating a new message. reference_type: %s, reference_id: %s, source_target: %s", referenceType, referenceID, source.Target)
+	log.Debugf("Creating a new message. reference_type: %s, reference_id: %s", referenceType, referenceID)
 
 	// create a message
 	id := h.utilHandler.UUIDCreate()
@@ -51,8 +51,6 @@ func (h *messageHandler) Create(
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 		TransactionID: transactionID,
-
-		Source: source,
 
 		Text:   text,
 		Medias: medias,

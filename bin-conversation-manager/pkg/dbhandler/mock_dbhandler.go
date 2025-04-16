@@ -11,6 +11,7 @@ package dbhandler
 
 import (
 	context "context"
+	address "monorepo/bin-common-handler/models/address"
 	account "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media "monorepo/bin-conversation-manager/models/media"
@@ -159,6 +160,21 @@ func (m *MockDBHandler) ConversationGetByReferenceInfo(ctx context.Context, cust
 func (mr *MockDBHandlerMockRecorder) ConversationGetByReferenceInfo(ctx, customerID, referenceType, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetByReferenceInfo", reflect.TypeOf((*MockDBHandler)(nil).ConversationGetByReferenceInfo), ctx, customerID, referenceType, referenceID)
+}
+
+// ConversationGetBySelfAndPeer mocks base method.
+func (m *MockDBHandler) ConversationGetBySelfAndPeer(ctx context.Context, self, peer *address.Address) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationGetBySelfAndPeer", ctx, self, peer)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationGetBySelfAndPeer indicates an expected call of ConversationGetBySelfAndPeer.
+func (mr *MockDBHandlerMockRecorder) ConversationGetBySelfAndPeer(ctx, self, peer any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetBySelfAndPeer", reflect.TypeOf((*MockDBHandler)(nil).ConversationGetBySelfAndPeer), ctx, self, peer)
 }
 
 // ConversationGets mocks base method.

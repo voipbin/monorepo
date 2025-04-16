@@ -5,7 +5,6 @@ package messagehandler
 import (
 	"context"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -31,7 +30,6 @@ type MessageHandler interface {
 		referenceType conversation.ReferenceType,
 		referenceID string,
 		transactionID string,
-		source *commonaddress.Address,
 		text string,
 		medias []media.Media,
 	) (*message.Message, error)

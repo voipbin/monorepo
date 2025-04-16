@@ -22,6 +22,11 @@ func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, customerID
 	return h.db.ConversationGetByReferenceInfo(ctx, customerID, referenceType, referenceID)
 }
 
+// GetBySelfAndPeer returns conversation
+func (h *conversationHandler) GetBySelfAndPeer(ctx context.Context, self *commonaddress.Address, peer *commonaddress.Address) (*conversation.Conversation, error) {
+	return h.db.ConversationGetBySelfAndPeer(ctx, self, peer)
+}
+
 // Gets returns list of conversations
 func (h *conversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -48,7 +53,7 @@ func (h *conversationHandler) Create(
 	referenceType conversation.ReferenceType,
 	referenceID string,
 	source *commonaddress.Address,
-	participants []commonaddress.Address,
+	destination *commonaddress.Address,
 ) (*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Create",
@@ -69,8 +74,8 @@ func (h *conversationHandler) Create(
 		Detail:        detail,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
-		Source:        source,
-		Participants:  participants,
+		Self:          source,
+		Peer:          destination,
 	}
 
 	if errCreate := h.db.ConversationCreate(ctx, tmp); errCreate != nil {

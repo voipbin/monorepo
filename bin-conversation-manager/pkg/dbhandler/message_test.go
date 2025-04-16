@@ -6,7 +6,6 @@ import (
 	reflect "reflect"
 	"testing"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -43,12 +42,8 @@ func Test_MessageCreate(t *testing.T) {
 				ReferenceType:  conversation.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
-				Source: &commonaddress.Address{
-					Type:   commonaddress.TypeLine,
-					Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				},
-				Text:   "Hello world",
-				Medias: []media.Media{},
+				Text:           "Hello world",
+				Medias:         []media.Media{},
 			},
 
 			responseCurTime: "2022-04-18 03:22:17.995000",
@@ -63,15 +58,11 @@ func Test_MessageCreate(t *testing.T) {
 				ReferenceType:  conversation.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
-				Source: &commonaddress.Address{
-					Type:   commonaddress.TypeLine,
-					Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				},
-				Text:     "Hello world",
-				Medias:   []media.Media{},
-				TMCreate: "2022-04-18 03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				Text:           "Hello world",
+				Medias:         []media.Media{},
+				TMCreate:       "2022-04-18 03:22:17.995000",
+				TMUpdate:       DefaultTimeStamp,
+				TMDelete:       DefaultTimeStamp,
 			},
 		},
 	}
@@ -148,12 +139,8 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Source: &commonaddress.Address{
-						Type:   commonaddress.TypeLine,
-						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					},
-					Text:   "hello world",
-					Medias: []media.Media{},
+					Text:           "hello world",
+					Medias:         []media.Media{},
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -164,12 +151,8 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Source: &commonaddress.Address{
-						Type:   commonaddress.TypeLine,
-						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					},
-					Text:   "This is test",
-					Medias: []media.Media{},
+					Text:           "This is test",
+					Medias:         []media.Media{},
 				},
 			},
 
@@ -188,15 +171,11 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Source: &commonaddress.Address{
-						Type:   commonaddress.TypeLine,
-						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					},
-					Text:     "hello world",
-					Medias:   []media.Media{},
-					TMCreate: "2022-04-18 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					Text:           "hello world",
+					Medias:         []media.Media{},
+					TMCreate:       "2022-04-18 03:22:17.995000",
+					TMUpdate:       DefaultTimeStamp,
+					TMDelete:       DefaultTimeStamp,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -207,15 +186,11 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Source: &commonaddress.Address{
-						Type:   commonaddress.TypeLine,
-						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					},
-					Text:     "This is test",
-					Medias:   []media.Media{},
-					TMCreate: "2022-04-18 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					Text:           "This is test",
+					Medias:         []media.Media{},
+					TMCreate:       "2022-04-18 03:22:17.995000",
+					TMUpdate:       DefaultTimeStamp,
+					TMDelete:       DefaultTimeStamp,
 				},
 			},
 		},
@@ -356,12 +331,8 @@ func Test_MessageDelete(t *testing.T) {
 				ReferenceType:  conversation.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
-				Source: &commonaddress.Address{
-					Type:   commonaddress.TypeLine,
-					Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				},
-				Text:   "Hello world",
-				Medias: []media.Media{},
+				Text:           "Hello world",
+				Medias:         []media.Media{},
 			},
 
 			responseCurTime: "2021-02-26 18:26:49.000",
@@ -375,15 +346,11 @@ func Test_MessageDelete(t *testing.T) {
 				ReferenceType:  conversation.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
-				Source: &commonaddress.Address{
-					Type:   commonaddress.TypeLine,
-					Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				},
-				Text:     "Hello world",
-				Medias:   []media.Media{},
-				TMCreate: "2021-02-26 18:26:49.000",
-				TMUpdate: "2021-02-26 18:26:49.000",
-				TMDelete: DefaultTimeStamp,
+				Text:           "Hello world",
+				Medias:         []media.Media{},
+				TMCreate:       "2021-02-26 18:26:49.000",
+				TMUpdate:       "2021-02-26 18:26:49.000",
+				TMDelete:       DefaultTimeStamp,
 			},
 		},
 	}

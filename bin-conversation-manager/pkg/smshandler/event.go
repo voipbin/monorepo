@@ -62,8 +62,6 @@ func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message
 
 			TransactionID: m.ID.String(),
 
-			Source: m.Source,
-
 			Text: m.Text,
 		}
 

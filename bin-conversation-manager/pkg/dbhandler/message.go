@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-conversation-manager/models/media"
@@ -15,7 +13,6 @@ import (
 )
 
 const (
-	// select query for flow get
 	messageSelect = `
 	select
 		id,
@@ -30,9 +27,7 @@ const (
 
 		transaction_id,
 
-		source,
-
-		text,
+ 		text,
 		medias,
 
 		tm_create,
@@ -45,7 +40,6 @@ const (
 
 // conversationGetFromRow gets the conversation from the row.
 func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
-	var source sql.NullString
 	var medias sql.NullString
 
 	res := &message.Message{}
@@ -62,8 +56,6 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 
 		&res.TransactionID,
 
-		&source,
-
 		&res.Text,
 		&medias,
 
@@ -72,14 +64,6 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %v", err)
-	}
-
-	if !source.Valid {
-		res.Source = &commonaddress.Address{}
-	} else {
-		if errSource := json.Unmarshal([]byte(source.String), &res.Source); errSource != nil {
-			return nil, fmt.Errorf("could not unmarshal the Source. messageGetFromRow. err: %v", errSource)
-		}
 	}
 
 	if !medias.Valid {
@@ -109,9 +93,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 
 		transaction_id,
 
-		source,
-
-		text,
+ 		text,
 		medias,
 
 		tm_create,
@@ -122,8 +104,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		?, ?, ?,
 		?, ?,
 		?,
-		?,
-		?, ?,
+ 		?, ?,
 		?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -131,11 +112,6 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		return fmt.Errorf("could not prepare. MessageCreate. err: %v", err)
 	}
 	defer stmt.Close()
-
-	source, err := json.Marshal(m.Source)
-	if err != nil {
-		return fmt.Errorf("could not marshal the source. err: %v", err)
-	}
 
 	medias, err := json.Marshal(m.Medias)
 	if err != nil {
@@ -154,8 +130,6 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		m.ReferenceID,
 
 		m.TransactionID,
-
-		source,
 
 		m.Text,
 		medias,

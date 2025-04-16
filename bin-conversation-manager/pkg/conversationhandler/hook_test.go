@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -122,9 +123,22 @@ func Test_Hook(t *testing.T) {
 			}
 
 			// messages
-			for _, tmp := range tt.responseMessages {
-				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID).Return(&conversation.Conversation{}, nil)
-				mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), message.DirectionIncoming, message.StatusReceived, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&message.Message{}, nil)
+			for range tt.responseMessages {
+				mockLine.EXPECT().GetParticipant(ctx, gomock.Any(), gomock.Any()).Return(&commonaddress.Address{}, nil)
+				mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(&conversation.Conversation{}, nil)
+
+				mockMessage.EXPECT().Create(
+					ctx,
+					gomock.Any(),
+					gomock.Any(),
+					message.DirectionIncoming,
+					message.StatusDone,
+					gomock.Any(),
+					gomock.Any(),
+					gomock.Any(),
+					gomock.Any(),
+					gomock.Any(),
+				).Return(&message.Message{}, nil)
 			}
 
 			if err := h.Hook(ctx, tt.uri, tt.data); err != nil {
@@ -236,19 +250,21 @@ func Test_hookLine(t *testing.T) {
 
 			// messages
 			for _, tmp := range tt.responseMessages {
-				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID).Return(tt.responseConversation, nil)
+
+				mockLine.EXPECT().GetParticipant(ctx, gomock.Any(), gomock.Any()).Return(&commonaddress.Address{}, nil)
+				mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(tt.responseConversation, nil)
+
 				mockMessage.EXPECT().Create(
 					ctx,
 					tt.responseConversation.CustomerID,
 					tt.responseConversation.ID,
 					message.DirectionIncoming,
-					message.StatusReceived,
+					message.StatusDone,
 					tt.responseConversation.ReferenceType,
 					tt.responseConversation.ReferenceID,
 					"",
-					tmp.Source,
 					tmp.Text,
-					tmp.Medias,
+					nil,
 				).Return(&message.Message{}, nil)
 			}
 

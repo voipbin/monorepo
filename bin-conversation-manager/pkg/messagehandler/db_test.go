@@ -5,7 +5,6 @@ import (
 	reflect "reflect"
 	"testing"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -32,7 +31,6 @@ func Test_Create(t *testing.T) {
 		referenceType  conversation.ReferenceType
 		referenceID    string
 		transactionID  string
-		source         *commonaddress.Address
 		text           string
 		medias         []media.Media
 
@@ -51,12 +49,8 @@ func Test_Create(t *testing.T) {
 			referenceType:  conversation.ReferenceTypeLine,
 			referenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 			transactionID:  "59946c7c-f1d5-11ec-bdad-2323294b508e",
-			source: &commonaddress.Address{
-				Type:   commonaddress.TypeLine,
-				Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-			},
-			text:   "Hello world",
-			medias: []media.Media{},
+			text:           "Hello world",
+			medias:         []media.Media{},
 
 			responseUUID: uuid.FromStringOrNil("f6834112-0240-11ee-8146-2fb17ae9ef0a"),
 			responseMessage: &message.Message{
@@ -77,12 +71,8 @@ func Test_Create(t *testing.T) {
 				ReferenceType:  conversation.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "59946c7c-f1d5-11ec-bdad-2323294b508e",
-				Source: &commonaddress.Address{
-					Type:   commonaddress.TypeLine,
-					Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				},
-				Text:   "Hello world",
-				Medias: []media.Media{},
+				Text:           "Hello world",
+				Medias:         []media.Media{},
 			},
 		},
 	}
@@ -109,7 +99,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
-			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.direction, tt.status, tt.referenceType, tt.referenceID, tt.transactionID, tt.source, tt.text, tt.medias)
+			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.direction, tt.status, tt.referenceType, tt.referenceID, tt.transactionID, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -132,11 +122,11 @@ func Test_Delete(t *testing.T) {
 		responseMessage *message.Message
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("af7c3310-f1d8-11ec-a2f1-db31b43cade8"),
+			id: uuid.FromStringOrNil("af7c3310-f1d8-11ec-a2f1-db31b43cade8"),
 
-			&message.Message{
+			responseMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("af7c3310-f1d8-11ec-a2f1-db31b43cade8"),
 					CustomerID: uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
@@ -188,13 +178,13 @@ func Test_GetsByConversationID(t *testing.T) {
 		responseMessages []*message.Message
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
-			"2022-04-18 03:22:17.995000",
-			100,
+			conversationID: uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
+			pageToken:      "2022-04-18 03:22:17.995000",
+			pageSize:       100,
 
-			[]*message.Message{
+			responseMessages: []*message.Message{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
@@ -246,13 +236,13 @@ func Test_GetsByTransactionID(t *testing.T) {
 		responseMessages []*message.Message
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			"2c4b24a4-f2ac-11ec-979b-5f7a7f205308",
-			"2022-04-18 03:22:17.995000",
-			100,
+			transactionID: "2c4b24a4-f2ac-11ec-979b-5f7a7f205308",
+			pageToken:     "2022-04-18 03:22:17.995000",
+			pageSize:      100,
 
-			[]*message.Message{
+			responseMessages: []*message.Message{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),

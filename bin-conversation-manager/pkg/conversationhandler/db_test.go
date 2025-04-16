@@ -133,7 +133,7 @@ func Test_Create(t *testing.T) {
 		referenceType    conversation.ReferenceType
 		referenceID      string
 		source           *commonaddress.Address
-		participants     []commonaddress.Address
+		destination      *commonaddress.Address
 
 		responseUUID         uuid.UUID
 		responseConversation *conversation.Conversation
@@ -152,12 +152,10 @@ func Test_Create(t *testing.T) {
 				Type:   commonaddress.TypeLine,
 				Target: "2fcb542c-f113-11ec-a7de-6335ee489d7b",
 			},
-			participants: []commonaddress.Address{
-				{
-					Type:       commonaddress.TypeLine,
-					Target:     "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
-					TargetName: "test participant",
-				},
+			destination: &commonaddress.Address{
+				Type:       commonaddress.TypeLine,
+				Target:     "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
+				TargetName: "test participant",
 			},
 
 			responseUUID: uuid.FromStringOrNil("d2a852d8-0069-11ee-96b8-3fffef7f1833"),
@@ -177,16 +175,14 @@ func Test_Create(t *testing.T) {
 				Detail:        "test detail",
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "3dc385f8-e6e7-11ec-9250-5f6c3097570f",
-				Source: &commonaddress.Address{
+				Self: &commonaddress.Address{
 					Type:   commonaddress.TypeLine,
 					Target: "2fcb542c-f113-11ec-a7de-6335ee489d7b",
 				},
-				Participants: []commonaddress.Address{
-					{
-						Type:       commonaddress.TypeLine,
-						Target:     "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
-						TargetName: "test participant",
-					},
+				Peer: &commonaddress.Address{
+					Type:       commonaddress.TypeLine,
+					Target:     "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
+					TargetName: "test participant",
 				},
 			},
 		},
@@ -213,7 +209,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(tt.responseConversation, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConversation.CustomerID, conversation.EventTypeConversationCreated, tt.responseConversation)
 
-			_, err := h.Create(ctx, tt.customerID, tt.conversationName, tt.detail, tt.referenceType, tt.referenceID, tt.source, tt.participants)
+			_, err := h.Create(ctx, tt.customerID, tt.conversationName, tt.detail, tt.referenceType, tt.referenceID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

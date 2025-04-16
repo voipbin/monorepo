@@ -81,7 +81,7 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 
 	// conversations
 	for _, tmp := range conversations {
-		cv, err := h.Create(ctx, tmp.CustomerID, tmp.Name, tmp.Detail, tmp.ReferenceType, tmp.ReferenceID, tmp.Source, tmp.Participants)
+		cv, err := h.Create(ctx, tmp.CustomerID, tmp.Name, tmp.Detail, tmp.ReferenceType, tmp.ReferenceID, tmp.Self, tmp.Peer)
 		if err != nil {
 			log.Errorf("Could not create a new conversation. err: %v", err)
 			break
@@ -91,32 +91,38 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 
 	// messages
 	for _, tmp := range messages {
+		peer, err := h.lineHandler.GetParticipant(ctx, ac, tmp.ReferenceID)
+		if err != nil {
+			log.Errorf("Could not get participant info. err: %v", err)
+			peer = &commonaddress.Address{
+				Type:       commonaddress.TypeLine,
+				Target:     tmp.ReferenceID,
+				TargetName: "Unknown",
+			}
+		}
+
+		self := &commonaddress.Address{
+			Type:       commonaddress.TypeLine,
+			Target:     "",
+			TargetName: "me",
+		}
 
 		// get converstation
-		cv, err := h.GetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID)
+		cv, err := h.GetBySelfAndPeer(ctx, self, peer)
 		if err != nil {
 			log.Debugf("Could not find conversation. Create a new conversation.")
 
-			// get address
-			// get user info
-			p, err := h.lineHandler.GetParticipant(ctx, ac, tmp.ReferenceID)
-			if err != nil {
-				log.Errorf("Could not get participant info. err: %v", err)
-				p = &commonaddress.Address{
-					Type:       commonaddress.TypeLine,
-					Target:     tmp.ReferenceID,
-					TargetName: "Unknown",
-				}
-			}
-
-			me := &commonaddress.Address{
-				Type:       commonaddress.TypeLine,
-				Target:     "",
-				TargetName: "me",
-			}
-
 			// create a new conversation
-			cv, err = h.Create(ctx, tmp.CustomerID, "conversation", "conversation detail", conversation.ReferenceTypeLine, tmp.ReferenceID, me, []commonaddress.Address{*me, *p})
+			cv, err = h.Create(
+				ctx,
+				tmp.CustomerID,
+				"conversation",
+				"conversation detail",
+				conversation.ReferenceTypeLine,
+				tmp.ReferenceID,
+				self,
+				peer,
+			)
 			if err != nil {
 				log.Errorf("Could not create a new conversation. err: %v", err)
 				continue
@@ -125,7 +131,18 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 		}
 
 		// create a message
-		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.DirectionIncoming, message.StatusReceived, conversation.ReferenceTypeLine, tmp.ReferenceID, "", tmp.Source, tmp.Text, tmp.Medias)
+		m, err := h.messageHandler.Create(
+			ctx,
+			cv.CustomerID,
+			cv.ID,
+			message.DirectionIncoming,
+			message.StatusDone,
+			conversation.ReferenceTypeLine,
+			tmp.ReferenceID,
+			"",
+			tmp.Text,
+			tmp.Medias,
+		)
 		if err != nil {
 			log.Errorf("Could not create a message. err: %v", err)
 			continue

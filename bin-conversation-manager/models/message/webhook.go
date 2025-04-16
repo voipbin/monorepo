@@ -3,7 +3,6 @@ package message
 import (
 	"encoding/json"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -23,7 +22,7 @@ type WebhookMessage struct {
 	ReferenceType conversation.ReferenceType `json:"reference_type"`
 	ReferenceID   string                     `json:"reference_id"`
 
-	Source *commonaddress.Address `json:"source"` // source
+	// Source *commonaddress.Address `json:"source"` // source
 
 	Text   string        `json:"text"`
 	Medias []media.Media `json:"medias"`
@@ -45,7 +44,7 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 
-		Source: h.Source,
+		// Source: h.Source,
 
 		Text:   h.Text,
 		Medias: h.Medias,

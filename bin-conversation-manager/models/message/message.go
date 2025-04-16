@@ -1,7 +1,6 @@
 package message
 
 import (
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -18,12 +17,13 @@ type Message struct {
 	Direction      Direction `json:"direction"`
 	Status         Status    `json:"status"`
 
-	ReferenceType conversation.ReferenceType `json:"reference_type"` // used for find a conversation info(source info: group/room/user)
-	ReferenceID   string                     `json:"reference_id"`   // used for find a conversation info(source info: group_id, room_id, user_id)
+	ReferenceType conversation.ReferenceType `json:"reference_type"`
+	ReferenceID   string                     `json:"reference_id"`
 
 	TransactionID string `json:"transaction_id"` // uniq id for message's transaction
 
-	Source *commonaddress.Address `json:"source"` // source
+	// Source      *commonaddress.Address `json:"source"`      // source
+	// Destination *commonaddress.Address `json:"destination"` // destination
 
 	Text   string        `json:"text"`
 	Medias []media.Media `json:"medias"`
@@ -38,10 +38,12 @@ type Status string
 
 // list of Status
 const (
-	StatusSending  Status = "sending"
-	StatusSent     Status = "sent"
-	StatusFailed   Status = "failed"
-	StatusReceived Status = "received"
+	StatusSending     Status = "sending"
+	StatusSent        Status = "sent"
+	StatusFailed      Status = "failed"
+	StatusReceived    Status = "received"
+	StatusProgressing Status = "progressing"
+	StatusDone        Status = "done"
 )
 
 // Direction message's direction

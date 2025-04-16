@@ -45,16 +45,14 @@ func Test_ConversationCreate(t *testing.T) {
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				Source: &commonaddress.Address{
+				Self: &commonaddress.Address{
 					Type:   commonaddress.TypeLine,
 					Target: "9bf1d18c-f116-11ec-896c-636b8bfbe1a1",
 				},
-				Participants: []commonaddress.Address{
-					{
-						Type:       commonaddress.TypeLine,
-						Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
-						TargetName: "test user",
-					},
+				Peer: &commonaddress.Address{
+					Type:       commonaddress.TypeLine,
+					Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
+					TargetName: "test user",
 				},
 			},
 
@@ -73,16 +71,14 @@ func Test_ConversationCreate(t *testing.T) {
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				Source: &commonaddress.Address{
+				Self: &commonaddress.Address{
 					Type:   commonaddress.TypeLine,
 					Target: "9bf1d18c-f116-11ec-896c-636b8bfbe1a1",
 				},
-				Participants: []commonaddress.Address{
-					{
-						Type:       commonaddress.TypeLine,
-						Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
-						TargetName: "test user",
-					},
+				Peer: &commonaddress.Address{
+					Type:       commonaddress.TypeLine,
+					Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
+					TargetName: "test user",
 				},
 				TMCreate: "2022-04-18 03:22:17.995000",
 				TMUpdate: DefaultTimeStamp,
@@ -154,8 +150,8 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "612435d0-e429-11ec-845d-bba00000504b",
-				Source:        &commonaddress.Address{},
-				Participants:  []commonaddress.Address{},
+				Self:          &commonaddress.Address{},
+				Peer:          &commonaddress.Address{},
 			},
 
 			customerID:    uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
@@ -176,8 +172,8 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "612435d0-e429-11ec-845d-bba00000504b",
-				Source:        &commonaddress.Address{},
-				Participants:  []commonaddress.Address{},
+				Self:          &commonaddress.Address{},
+				Peer:          &commonaddress.Address{},
 				TMCreate:      "2022-04-18 03:22:17.995000",
 				TMUpdate:      DefaultTimeStamp,
 				TMDelete:      DefaultTimeStamp,
@@ -247,8 +243,8 @@ func Test_ConversationGets(t *testing.T) {
 					Detail:        "conversation detail",
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
-					Source:        &commonaddress.Address{},
-					Participants:  []commonaddress.Address{},
+					Self:          &commonaddress.Address{},
+					Peer:          &commonaddress.Address{},
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -263,8 +259,8 @@ func Test_ConversationGets(t *testing.T) {
 					Detail:        "conversation detail",
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "387f1afe-e42a-11ec-ad8f-1340414f9a51",
-					Source:        &commonaddress.Address{},
-					Participants:  []commonaddress.Address{},
+					Self:          &commonaddress.Address{},
+					Peer:          &commonaddress.Address{},
 				},
 			},
 
@@ -291,8 +287,8 @@ func Test_ConversationGets(t *testing.T) {
 					Detail:        "conversation detail",
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
-					Source:        &commonaddress.Address{},
-					Participants:  []commonaddress.Address{},
+					Self:          &commonaddress.Address{},
+					Peer:          &commonaddress.Address{},
 					TMCreate:      "2022-04-18 03:22:17.995000",
 					TMUpdate:      DefaultTimeStamp,
 					TMDelete:      DefaultTimeStamp,
@@ -311,8 +307,8 @@ func Test_ConversationGets(t *testing.T) {
 					Detail:        "conversation detail",
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "387f1afe-e42a-11ec-ad8f-1340414f9a51",
-					Source:        &commonaddress.Address{},
-					Participants:  []commonaddress.Address{},
+					Self:          &commonaddress.Address{},
+					Peer:          &commonaddress.Address{},
 					TMCreate:      "2022-04-18 03:22:17.995000",
 					TMUpdate:      DefaultTimeStamp,
 					TMDelete:      DefaultTimeStamp,
