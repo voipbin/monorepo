@@ -50,18 +50,18 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	var self *commonaddress.Address
-	var peer *commonaddress.Address
+	var self commonaddress.Address
+	var peer commonaddress.Address
 	var direction message.Direction
 
 	for _, target := range mm.Targets {
 		if mm.Direction == mmmessage.DirectionInbound {
-			self = &target.Destination
-			peer = mm.Source
+			self = target.Destination
+			peer = *mm.Source
 			direction = message.DirectionIncoming
 		} else {
-			self = mm.Source
-			peer = &target.Destination
+			self = *mm.Source
+			peer = target.Destination
 			direction = message.DirectionOutgoing
 		}
 
@@ -75,7 +75,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 				ctx,
 				mm.CustomerID,
 				"conversation",
-				"conversation detail",
+				"conversation with "+peer.TargetName,
 				conversation.TypeMessage,
 				mm.ID.String(),
 				self,
@@ -94,7 +94,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 			cv.ID,
 			direction,
 			message.StatusDone,
-			conversation.TypeMessage,
+			message.ReferenceTypeMessage,
 			mm.ID.String(),
 			"",
 			mm.Text,

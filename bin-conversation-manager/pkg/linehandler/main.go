@@ -6,28 +6,31 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
-	"monorepo/bin-conversation-manager/models/message"
 )
 
 // LineHandler defines
 type LineHandler interface {
 	Setup(ctx context.Context, ac *account.Account) error
 	Send(ctx context.Context, cv *conversation.Conversation, ac *account.Account, text string, medias []media.Media) error
-	Hook(ctx context.Context, ac *account.Account, data []byte) ([]*conversation.Conversation, []*message.Message, error)
+	Hook(ctx context.Context, ac *account.Account, data []byte) error
 
-	GetParticipant(ctx context.Context, ac *account.Account, id string) (*commonaddress.Address, error)
+	GetPeer(ctx context.Context, ac *account.Account, userID string) (*commonaddress.Address, error)
 }
 
 // lineHandler defines
 type lineHandler struct {
+	reqHandler requesthandler.RequestHandler
 }
 
 // NewLineHandler defines
-func NewLineHandler() LineHandler {
+func NewLineHandler(requestHandler requesthandler.RequestHandler) LineHandler {
 
-	return &lineHandler{}
+	return &lineHandler{
+		reqHandler: requestHandler,
+	}
 }

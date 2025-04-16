@@ -45,7 +45,7 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockMessageHandler) Create(ctx context.Context, customerID, conversationID uuid.UUID, direction message.Direction, status message.Status, referenceType conversation.Type, referenceID, transactionID, text string, medias []media.Media) (*message.Message, error) {
+func (m *MockMessageHandler) Create(ctx context.Context, customerID, conversationID uuid.UUID, direction message.Direction, status message.Status, referenceType message.ReferenceType, referenceID, transactionID, text string, medias []media.Media) (*message.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias)
 	ret0, _ := ret[0].(*message.Message)

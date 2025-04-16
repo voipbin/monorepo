@@ -24,8 +24,8 @@ type Conversation struct {
 
 	DialogID string `json:"dialog_id,omitempty"` // represent the id of referenced conversation transaction. for the Line could be chatroom id, for sms/mms, could be empty.
 
-	Self *commonaddress.Address `json:"self,omitempty"` // self address
-	Peer *commonaddress.Address `json:"peer,omitempty"` // peer address
+	Self commonaddress.Address `json:"self,omitempty"` // self address
+	Peer commonaddress.Address `json:"peer,omitempty"` // peer address
 
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`

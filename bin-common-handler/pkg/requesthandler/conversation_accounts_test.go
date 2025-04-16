@@ -171,11 +171,11 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 		secret      string
 		token       string
 
+		response *sock.Response
+
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *sock.Response
-
-		expectRes *cvaccount.Account
+		expectRes     *cvaccount.Account
 	}{
 		{
 			name: "normal",
@@ -187,6 +187,12 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 			secret:      "test secret",
 			token:       "test token",
 
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"22c10b42-003e-11ee-9d2b-5fc3b9f2d82a"}`),
+			},
+
 			expectTarget: "bin-manager.conversation-manager.request",
 			expectRequest: &sock.Request{
 				URI:      "/v1/accounts",
@@ -194,12 +200,6 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"2292b6c0-003e-11ee-9fb5-fff568769b60","type":"line","name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 			},
-			response: &sock.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"22c10b42-003e-11ee-9d2b-5fc3b9f2d82a"}`),
-			},
-
 			expectRes: &cvaccount.Account{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("22c10b42-003e-11ee-9d2b-5fc3b9f2d82a"),

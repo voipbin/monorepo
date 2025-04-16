@@ -8,7 +8,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
 )
@@ -20,7 +19,7 @@ func (h *messageHandler) Create(
 	conversationID uuid.UUID,
 	direction message.Direction,
 	status message.Status,
-	referenceType conversation.Type,
+	referenceType message.ReferenceType,
 	referenceID string,
 	transactionID string,
 	// source *commonaddress.Address,

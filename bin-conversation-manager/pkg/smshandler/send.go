@@ -29,7 +29,7 @@ func (h *smsHandler) Send(ctx context.Context, cv *conversation.Conversation, tr
 	id := uuid.FromStringOrNil(transactionID)
 
 	// send
-	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, id, cv.CustomerID, cv.Self, destinations, text)
+	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, id, cv.CustomerID, &cv.Self, destinations, text)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
 		return err

@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 )
 
@@ -19,8 +18,8 @@ type WebhookMessage struct {
 	Direction      Direction `json:"direction,omitempty"`
 	Status         Status    `json:"status,omitempty"`
 
-	ReferenceType conversation.Type `json:"reference_type,omitempty"`
-	ReferenceID   string            `json:"reference_id,omitempty"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   string        `json:"reference_id,omitempty"`
 
 	Text   string        `json:"text,omitempty"`
 	Medias []media.Media `json:"medias,omitempty"`

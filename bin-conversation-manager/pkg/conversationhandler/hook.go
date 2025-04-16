@@ -6,15 +6,11 @@ import (
 	"net/url"
 	"strings"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-conversation-manager/models/account"
-	"monorepo/bin-conversation-manager/models/conversation"
-	"monorepo/bin-conversation-manager/models/message"
 )
 
 // Hook handles hooked event
@@ -73,82 +69,71 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 	})
 
 	// parse a messages
-	conversations, messages, err := h.lineHandler.Hook(ctx, ac, data)
-	if err != nil {
-		log.Errorf("Could not parse the message. err: %v", err)
-		return err
+	if errHook := h.lineHandler.Hook(ctx, ac, data); errHook != nil {
+		log.Errorf("Could not parse the message. err: %v", errHook)
+		return errHook
 	}
 
-	// conversations
-	for _, tmp := range conversations {
-		cv, err := h.Create(ctx, tmp.CustomerID, tmp.Name, tmp.Detail, tmp.Type, tmp.DialogID, tmp.Self, tmp.Peer)
-		if err != nil {
-			log.Errorf("Could not create a new conversation. err: %v", err)
-			break
-		}
-		log.WithField("conversation", cv).Debugf("Created a new conversation. conversation_id: %s", cv.ID)
-	}
+	// // messages
+	// for _, tmp := range messages {
+	// 	peer, err := h.lineHandler.GetParticipant(ctx, ac, tmp.ReferenceID)
+	// 	if err != nil {
+	// 		log.Errorf("Could not get participant info. err: %v", err)
+	// 		peer = &commonaddress.Address{
+	// 			Type:       commonaddress.TypeLine,
+	// 			Target:     tmp.ReferenceID,
+	// 			TargetName: "Unknown",
+	// 		}
+	// 	}
 
-	// messages
-	for _, tmp := range messages {
-		peer, err := h.lineHandler.GetParticipant(ctx, ac, tmp.ReferenceID)
-		if err != nil {
-			log.Errorf("Could not get participant info. err: %v", err)
-			peer = &commonaddress.Address{
-				Type:       commonaddress.TypeLine,
-				Target:     tmp.ReferenceID,
-				TargetName: "Unknown",
-			}
-		}
+	// 	self := commonaddress.Address{
+	// 		Type:       commonaddress.TypeLine,
+	// 		Target:     "",
+	// 		TargetName: "me",
+	// 	}
 
-		self := &commonaddress.Address{
-			Type:       commonaddress.TypeLine,
-			Target:     "",
-			TargetName: "me",
-		}
+	// 	// get converstation
+	// 	cv, err := h.GetBySelfAndPeer(ctx, self, *peer)
+	// 	if err != nil {
+	// 		log.Debugf("Could not find conversation. Create a new conversation.")
 
-		// get converstation
-		cv, err := h.GetBySelfAndPeer(ctx, self, peer)
-		if err != nil {
-			log.Debugf("Could not find conversation. Create a new conversation.")
+	// 		// create a new conversation
+	// 		cv, err = h.Create(
+	// 			ctx,
+	// 			tmp.CustomerID,
+	// 			"conversation",
+	// 			"conversation detail",
+	// 			conversation.TypeLine,
+	// 			tmp.ReferenceID,
+	// 			self,
+	// 			*peer,
+	// 		)
+	// 		if err != nil {
+	// 			log.Errorf("Could not create a new conversation. err: %v", err)
+	// 			continue
+	// 		}
+	// 		log.WithField("conversation", cv).Debugf("Created a new conversation. conversation_id: %s", cv.ID)
+	// 	}
 
-			// create a new conversation
-			cv, err = h.Create(
-				ctx,
-				tmp.CustomerID,
-				"conversation",
-				"conversation detail",
-				conversation.TypeLine,
-				tmp.ReferenceID,
-				self,
-				peer,
-			)
-			if err != nil {
-				log.Errorf("Could not create a new conversation. err: %v", err)
-				continue
-			}
-			log.WithField("conversation", cv).Debugf("Created a new conversation. conversation_id: %s", cv.ID)
-		}
-
-		// create a message
-		m, err := h.messageHandler.Create(
-			ctx,
-			cv.CustomerID,
-			cv.ID,
-			message.DirectionIncoming,
-			message.StatusDone,
-			conversation.TypeLine,
-			tmp.ReferenceID,
-			"",
-			tmp.Text,
-			tmp.Medias,
-		)
-		if err != nil {
-			log.Errorf("Could not create a message. err: %v", err)
-			continue
-		}
-		log.WithField("message", m).Debugf("Create a message. message_id: %s", m.ID)
-	}
+	// 	// create a message
+	// 	m, err := h.messageHandler.Create(
+	// 		ctx,
+	// 		cv.CustomerID,
+	// 		cv.ID,
+	// 		message.DirectionIncoming,
+	// 		message.StatusDone,
+	// 		message.ReferenceTypeLine,
+	// 		tmp.ReferenceID,
+	// 		"",
+	// 		tmp.Text,
+	// 		tmp.Medias,
+	// 	)
+	// 	if err != nil {
+	// 		log.Errorf("Could not create a message. err: %v", err)
+	// 		continue
+	// 	}
+	// 	log.WithField("message", m).Debugf("Create a message. message_id: %s", m.ID)
+	// }
 
 	return nil
 }

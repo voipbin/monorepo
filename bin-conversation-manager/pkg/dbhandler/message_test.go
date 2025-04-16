@@ -12,7 +12,6 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
-	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-conversation-manager/pkg/cachehandler"
@@ -39,7 +38,7 @@ func Test_MessageCreate(t *testing.T) {
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Direction:      message.DirectionIncoming,
 				Status:         message.StatusDone,
-				ReferenceType:  conversation.TypeLine,
+				ReferenceType:  message.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
 				Text:           "Hello world",
@@ -55,7 +54,7 @@ func Test_MessageCreate(t *testing.T) {
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Direction:      message.DirectionIncoming,
 				Status:         message.StatusDone,
-				ReferenceType:  conversation.TypeLine,
+				ReferenceType:  message.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
 				Text:           "Hello world",
@@ -137,7 +136,7 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					},
 					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
 					Status:         message.StatusDone,
-					ReferenceType:  conversation.TypeLine,
+					ReferenceType:  message.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 					Text:           "hello world",
 					Medias:         []media.Media{},
@@ -149,7 +148,7 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					},
 					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
 					Status:         message.StatusDone,
-					ReferenceType:  conversation.TypeLine,
+					ReferenceType:  message.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 					Text:           "This is test",
 					Medias:         []media.Media{},
@@ -169,7 +168,7 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					},
 					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
 					Status:         message.StatusDone,
-					ReferenceType:  conversation.TypeLine,
+					ReferenceType:  message.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 					Text:           "hello world",
 					Medias:         []media.Media{},
@@ -184,7 +183,7 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					},
 					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
 					Status:         message.StatusDone,
-					ReferenceType:  conversation.TypeLine,
+					ReferenceType:  message.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 					Text:           "This is test",
 					Medias:         []media.Media{},
@@ -328,7 +327,7 @@ func Test_MessageDelete(t *testing.T) {
 				},
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Status:         message.StatusDone,
-				ReferenceType:  conversation.TypeLine,
+				ReferenceType:  message.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
 				Text:           "Hello world",
@@ -343,7 +342,7 @@ func Test_MessageDelete(t *testing.T) {
 				},
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Status:         message.StatusDone,
-				ReferenceType:  conversation.TypeLine,
+				ReferenceType:  message.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
 				Text:           "Hello world",

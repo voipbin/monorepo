@@ -47,7 +47,7 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 				AccountID: uuid.FromStringOrNil("086b4920-fe3f-11ed-b570-bf801ec89642"),
 				Type:      conversation.TypeLine,
 				DialogID:  "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
-				Self: &commonaddress.Address{
+				Self: commonaddress.Address{
 					Target: "75a20d08-f1de-11ec-8eb1-97f517197fe2",
 				},
 			},
@@ -69,7 +69,7 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 				ConversationID: uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
 				Direction:      message.DirectionOutgoing,
 				Status:         message.StatusProgressing,
-				ReferenceType:  conversation.TypeLine,
+				ReferenceType:  message.ReferenceTypeLine,
 				ReferenceID:    "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
 				TransactionID:  "",
 				Text:           "hello, this is test message.",

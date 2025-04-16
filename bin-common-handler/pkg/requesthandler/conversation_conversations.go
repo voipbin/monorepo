@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
@@ -63,6 +64,55 @@ func (r *requestHandler) ConversationV1ConversationGets(ctx context.Context, pag
 	}
 
 	return res, nil
+}
+
+// ConversationV1ConversationCreate sends a request to conversation-manager
+// to create a conversation.
+// it returns created conversation info if it succeed.
+func (r *requestHandler) ConversationV1ConversationCreate(
+	ctx context.Context,
+	customerID uuid.UUID,
+	name string,
+	detail string,
+	conversationType cvconversation.Type,
+	dialogID string,
+	self address.Address,
+	peer address.Address,
+) (*cvconversation.Conversation, error) {
+	uri := "/v1/conversations"
+
+	data := &cvrequest.V1DataConversationsPost{
+		CustomerID: customerID,
+		Name:       name,
+		Detail:     detail,
+		Type:       conversationType,
+		DialogID:   dialogID,
+		Self:       self,
+		Peer:       peer,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPost, "conversation/conversations", 3000, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cvconversation.Conversation
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // ConversationV1ConversationUpdate sends a request to conversation-manager

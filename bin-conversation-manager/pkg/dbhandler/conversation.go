@@ -73,7 +73,7 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 	}
 
 	if !self.Valid {
-		res.Self = &commonaddress.Address{}
+		res.Self = commonaddress.Address{}
 	} else {
 		if err := json.Unmarshal([]byte(self.String), &res.Self); err != nil {
 			return nil, fmt.Errorf("could not unmarshal the Source. conversationGetFromRow. err: %v", err)
@@ -81,7 +81,7 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 	}
 
 	if !peer.Valid {
-		res.Peer = &commonaddress.Address{}
+		res.Peer = commonaddress.Address{}
 	} else {
 		if err := json.Unmarshal([]byte(peer.String), &res.Peer); err != nil {
 			return nil, fmt.Errorf("could not unmarshal the Destination. conversationGetFromRow. err: %v", err)
@@ -237,19 +237,18 @@ func (h *handler) conversationGetFromCache(ctx context.Context, id uuid.UUID) (*
 }
 
 // ConversationGetByTypeAndDialogID returns conversation by the reference.
-func (h *handler) ConversationGetByTypeAndDialogID(ctx context.Context, customerID uuid.UUID, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
+func (h *handler) ConversationGetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
 			tm_delete >= ?
-			and customer_id = ?
 			and type = ?
 			and dialog_id = ?
 	`, conversationSelect)
 
-	row, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), conversationType, dialogID)
+	row, err := h.db.Query(q, DefaultTimeStamp, conversationType, dialogID)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConversationGetByReferenceInfo. err: %v", err)
 	}
@@ -286,7 +285,7 @@ func (h *handler) ConversationGet(ctx context.Context, id uuid.UUID) (*conversat
 }
 
 // ConversationGetBySelfAndPeer returns conversation.
-func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self *commonaddress.Address, peer *commonaddress.Address) (*conversation.Conversation, error) {
+func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s

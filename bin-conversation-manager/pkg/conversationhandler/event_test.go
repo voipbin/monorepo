@@ -113,8 +113,8 @@ func Test_eventSMS_single_target(t *testing.T) {
 
 		responseUUID uuid.UUID
 
-		expectedSelf               *commonaddress.Address
-		expectedPeer               *commonaddress.Address
+		expectedSelf               commonaddress.Address
+		expectedPeer               commonaddress.Address
 		expectedConversation       *conversation.Conversation
 		expectedMessageDirection   message.Direction
 		expectedMessageReferenceID string
@@ -127,11 +127,11 @@ func Test_eventSMS_single_target(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("2aa9bc18-1a82-11f0-acbf-1fa64c8c8586"),
 
-			expectedSelf: &commonaddress.Address{
+			expectedSelf: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+886987654321",
 			},
-			expectedPeer: &commonaddress.Address{
+			expectedPeer: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+886912345678",
 			},
@@ -141,14 +141,14 @@ func Test_eventSMS_single_target(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("7aba87f6-1a81-11f0-9dd4-9f991300dc23"),
 				},
 				Name:     "conversation",
-				Detail:   "conversation detail",
+				Detail:   "conversation with ",
 				Type:     conversation.TypeMessage,
 				DialogID: "1fe68e20-f12f-11ec-84fe-03665484eeb6",
-				Self: &commonaddress.Address{
+				Self: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+886987654321",
 				},
-				Peer: &commonaddress.Address{
+				Peer: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+886912345678",
 				},
@@ -192,7 +192,7 @@ func Test_eventSMS_single_target(t *testing.T) {
 				tt.expectedConversation.ID,
 				tt.expectedMessageDirection,
 				message.StatusDone,
-				conversation.TypeMessage,
+				message.ReferenceTypeMessage,
 				tt.expectedMessageReferenceID,
 				"",
 				tt.expectedMessageText,

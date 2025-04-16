@@ -12,7 +12,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/message"
 )
 
@@ -57,7 +56,7 @@ func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message
 			ConversationID: uuid.Nil,
 			Status:         status,
 
-			ReferenceType: conversation.TypeMessage,
+			ReferenceType: message.ReferenceTypeMessage,
 			ReferenceID:   referenceID,
 
 			TransactionID: m.ID.String(),

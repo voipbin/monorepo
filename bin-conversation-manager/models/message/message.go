@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 )
 
@@ -17,8 +16,8 @@ type Message struct {
 	Direction      Direction `json:"direction,omitempty"`
 	Status         Status    `json:"status,omitempty"`
 
-	ReferenceType conversation.Type `json:"reference_type,omitempty"`
-	ReferenceID   string            `json:"reference_id,omitempty"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   string        `json:"reference_id,omitempty"`
 
 	TransactionID string `json:"transaction_id,omitempty"` // uniq id for message's transaction
 
@@ -48,4 +47,12 @@ const (
 	DirectionNond     Direction = ""
 	DirectionOutgoing Direction = "outgoing"
 	DirectionIncoming Direction = "incoming"
+)
+
+type ReferenceType string
+
+const (
+	ReferenceTypeNone    ReferenceType = ""
+	ReferenceTypeMessage ReferenceType = "message" // sms, mms
+	ReferenceTypeLine    ReferenceType = "line"
 )

@@ -22,8 +22,8 @@ type WebhookMessage struct {
 	Type     Type   `json:"type,omitempty"`
 	DialogID string `json:"dialog_id,omitempty"`
 
-	Self *commonaddress.Address `json:"self,omitempty"`
-	Peer *commonaddress.Address `json:"peer,omitempty"`
+	Self commonaddress.Address `json:"self,omitempty"`
+	Peer commonaddress.Address `json:"peer,omitempty"`
 
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`

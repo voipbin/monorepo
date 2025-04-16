@@ -15,7 +15,6 @@ import (
 	account "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media "monorepo/bin-conversation-manager/models/media"
-	message "monorepo/bin-conversation-manager/models/message"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -45,29 +44,27 @@ func (m *MockLineHandler) EXPECT() *MockLineHandlerMockRecorder {
 	return m.recorder
 }
 
-// GetParticipant mocks base method.
-func (m *MockLineHandler) GetParticipant(ctx context.Context, ac *account.Account, id string) (*address.Address, error) {
+// GetPeer mocks base method.
+func (m *MockLineHandler) GetPeer(ctx context.Context, ac *account.Account, userID string) (*address.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetParticipant", ctx, ac, id)
+	ret := m.ctrl.Call(m, "GetPeer", ctx, ac, userID)
 	ret0, _ := ret[0].(*address.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetParticipant indicates an expected call of GetParticipant.
-func (mr *MockLineHandlerMockRecorder) GetParticipant(ctx, ac, id any) *gomock.Call {
+// GetPeer indicates an expected call of GetPeer.
+func (mr *MockLineHandlerMockRecorder) GetPeer(ctx, ac, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipant", reflect.TypeOf((*MockLineHandler)(nil).GetParticipant), ctx, ac, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPeer", reflect.TypeOf((*MockLineHandler)(nil).GetPeer), ctx, ac, userID)
 }
 
 // Hook mocks base method.
-func (m *MockLineHandler) Hook(ctx context.Context, ac *account.Account, data []byte) ([]*conversation.Conversation, []*message.Message, error) {
+func (m *MockLineHandler) Hook(ctx context.Context, ac *account.Account, data []byte) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Hook", ctx, ac, data)
-	ret0, _ := ret[0].([]*conversation.Conversation)
-	ret1, _ := ret[1].([]*message.Message)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Hook indicates an expected call of Hook.

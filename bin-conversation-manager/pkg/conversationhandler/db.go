@@ -17,13 +17,13 @@ func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversat
 	return h.db.ConversationGet(ctx, id)
 }
 
-// GetByReferenceInfo returns conversation
-func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.Type, referenceID string) (*conversation.Conversation, error) {
-	return h.db.ConversationGetByTypeAndDialogID(ctx, customerID, referenceType, referenceID)
+// GetByTypeAndDialogID returns conversation
+func (h *conversationHandler) GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
+	return h.db.ConversationGetByTypeAndDialogID(ctx, conversationType, dialogID)
 }
 
 // GetBySelfAndPeer returns conversation
-func (h *conversationHandler) GetBySelfAndPeer(ctx context.Context, self *commonaddress.Address, peer *commonaddress.Address) (*conversation.Conversation, error) {
+func (h *conversationHandler) GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
 	return h.db.ConversationGetBySelfAndPeer(ctx, self, peer)
 }
 
@@ -52,8 +52,8 @@ func (h *conversationHandler) Create(
 	detail string,
 	referenceType conversation.Type,
 	referenceID string,
-	self *commonaddress.Address,
-	peer *commonaddress.Address,
+	self commonaddress.Address,
+	peer commonaddress.Address,
 ) (*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Create",

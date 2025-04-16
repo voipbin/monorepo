@@ -97,7 +97,7 @@ func run(dbHandler dbhandler.DBHandler) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConversationEvent, serviceName)
 
-	lineHandler := linehandler.NewLineHandler()
+	lineHandler := linehandler.NewLineHandler(reqHandler)
 	accountHandler := accounthandler.NewAccountHandler(dbHandler, reqHandler, notifyHandler, lineHandler)
 	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 

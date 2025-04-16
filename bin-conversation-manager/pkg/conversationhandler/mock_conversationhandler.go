@@ -46,32 +46,32 @@ func (m *MockConversationHandler) EXPECT() *MockConversationHandlerMockRecorder 
 }
 
 // Create mocks base method.
-func (m *MockConversationHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, referenceType conversation.Type, referenceID string, self, peer *address.Address) (*conversation.Conversation, error) {
+func (m *MockConversationHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, conversationType conversation.Type, dialogID string, self, peer address.Address) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, referenceType, referenceID, self, peer)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, conversationType, dialogID, self, peer)
 	ret0, _ := ret[0].(*conversation.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockConversationHandlerMockRecorder) Create(ctx, customerID, name, detail, referenceType, referenceID, self, peer any) *gomock.Call {
+func (mr *MockConversationHandlerMockRecorder) Create(ctx, customerID, name, detail, conversationType, dialogID, self, peer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConversationHandler)(nil).Create), ctx, customerID, name, detail, referenceType, referenceID, self, peer)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConversationHandler)(nil).Create), ctx, customerID, name, detail, conversationType, dialogID, self, peer)
 }
 
 // Event mocks base method.
-func (m *MockConversationHandler) Event(ctx context.Context, referenceType conversation.Type, data []byte) error {
+func (m *MockConversationHandler) Event(ctx context.Context, conversationType conversation.Type, data []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Event", ctx, referenceType, data)
+	ret := m.ctrl.Call(m, "Event", ctx, conversationType, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Event indicates an expected call of Event.
-func (mr *MockConversationHandlerMockRecorder) Event(ctx, referenceType, data any) *gomock.Call {
+func (mr *MockConversationHandlerMockRecorder) Event(ctx, conversationType, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockConversationHandler)(nil).Event), ctx, referenceType, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockConversationHandler)(nil).Event), ctx, conversationType, data)
 }
 
 // Get mocks base method.
@@ -89,19 +89,19 @@ func (mr *MockConversationHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConversationHandler)(nil).Get), ctx, id)
 }
 
-// GetByReferenceInfo mocks base method.
-func (m *MockConversationHandler) GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.Type, referenceID string) (*conversation.Conversation, error) {
+// GetByTypeAndDialogID mocks base method.
+func (m *MockConversationHandler) GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByReferenceInfo", ctx, customerID, referenceType, referenceID)
+	ret := m.ctrl.Call(m, "GetByTypeAndDialogID", ctx, conversationType, dialogID)
 	ret0, _ := ret[0].(*conversation.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetByReferenceInfo indicates an expected call of GetByReferenceInfo.
-func (mr *MockConversationHandlerMockRecorder) GetByReferenceInfo(ctx, customerID, referenceType, referenceID any) *gomock.Call {
+// GetByTypeAndDialogID indicates an expected call of GetByTypeAndDialogID.
+func (mr *MockConversationHandlerMockRecorder) GetByTypeAndDialogID(ctx, conversationType, dialogID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceInfo", reflect.TypeOf((*MockConversationHandler)(nil).GetByReferenceInfo), ctx, customerID, referenceType, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTypeAndDialogID", reflect.TypeOf((*MockConversationHandler)(nil).GetByTypeAndDialogID), ctx, conversationType, dialogID)
 }
 
 // Gets mocks base method.

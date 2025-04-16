@@ -45,6 +45,7 @@ var (
 
 	// conversations
 	regV1ConversationsGet           = regexp.MustCompile(`/v1/conversations\?`)
+	regV1Conversations              = regexp.MustCompile(`/v1/conversations$`)
 	regV1ConversationsID            = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
 	regV1ConversationsIDMessagesGet = regexp.MustCompile("/v1/conversations/" + regUUID + `/messages\?`)
 	regV1ConversationsIDMessages    = regexp.MustCompile("/v1/conversations/" + regUUID + "/messages$")
@@ -53,7 +54,8 @@ var (
 	regV1Hooks = regexp.MustCompile(`/v1/hooks$`)
 
 	// messages
-	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
+	regV1MessagesGet    = regexp.MustCompile(`/v1/messages\?`)
+	regV1MessagesCreate = regexp.MustCompile(`/v1/messages/create$`)
 )
 
 var (
@@ -190,6 +192,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1ConversationsGet(ctx, m)
 		requestType = "/v1/conversations"
 
+	// POST /conversations
+	case regV1Conversations.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ConversationsPost(ctx, m)
+		requestType = "/v1/conversations"
+
 	// GET /conversations/<conversation-id>
 	case regV1ConversationsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ConversationsIDGet(ctx, m)
@@ -225,6 +232,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1MessagesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1MessagesGet(ctx, m)
 		requestType = "/messages"
+
+	// POST /messages/create
+	case regV1MessagesCreate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1MessagesCreatePost(ctx, m)
+		requestType = "/messages/create"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

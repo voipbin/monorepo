@@ -47,7 +47,7 @@ func (h *messageHandler) sendSMS(ctx context.Context, cv *conversation.Conversat
 
 	// create a sent message
 	transactionID := uuid.Must(uuid.NewV4()).String()
-	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, cv.Type, cv.DialogID, transactionID, text, medias)
+	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, message.ReferenceTypeMessage, cv.DialogID, transactionID, text, medias)
 	if err != nil {
 		log.Errorf("Could not create a message. err: %v", err)
 		return nil, err
@@ -85,7 +85,7 @@ func (h *messageHandler) sendLine(ctx context.Context, cv *conversation.Conversa
 	}
 
 	// create a sent message
-	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, cv.Type, cv.DialogID, "", text, medias)
+	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, message.ReferenceTypeLine, cv.DialogID, "", text, medias)
 	if err != nil {
 		log.Errorf("Could not create a message. err: %v", err)
 		return nil, err
