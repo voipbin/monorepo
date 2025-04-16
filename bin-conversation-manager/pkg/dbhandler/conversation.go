@@ -298,7 +298,7 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self *common
 
 	row, err := h.db.Query(q, self.Type, self.Target, peer.Type, peer.Target)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConversationGetBySourceAndDestination. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConversationGetBySelfAndPeer. err: %v", err)
 	}
 	defer row.Close()
 
@@ -308,7 +308,7 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self *common
 
 	res, err := h.conversationGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get conversation. ConversationGetBySourceAndDestination. err: %v", err)
+		return nil, fmt.Errorf("could not get conversation. ConversationGetBySelfAndPeer. err: %v", err)
 	}
 
 	return res, nil
