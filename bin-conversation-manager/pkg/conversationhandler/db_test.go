@@ -73,20 +73,18 @@ func Test_GetByReferenceInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID    uuid.UUID
-		referenceType conversation.ReferenceType
-		referenceID   string
+		conversationType conversation.Type
+		dialogID         string
 
 		responseConversation *conversation.Conversation
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
-			conversation.ReferenceTypeLine,
-			"a481fe6c-e6e9-11ec-92f7-6366decbd9e8",
+			conversationType: conversation.TypeLine,
+			dialogID:         "a481fe6c-e6e9-11ec-92f7-6366decbd9e8",
 
-			&conversation.Conversation{
+			responseConversation: &conversation.Conversation{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a9341b0c-e6e9-11ec-a3a2-0b511930bae5"),
 					CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
@@ -108,9 +106,9 @@ func Test_GetByReferenceInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tt.customerID, tt.referenceType, tt.referenceID).Return(tt.responseConversation, nil)
+			mockDB.EXPECT().ConversationGetByTypeAndDialogID(ctx, tt.conversationType, tt.dialogID).Return(tt.responseConversation, nil)
 
-			res, err := h.GetByReferenceInfo(ctx, tt.customerID, tt.referenceType, tt.referenceID)
+			res, err := h.GetByTypeAndDialogID(ctx, tt.conversationType, tt.dialogID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -130,10 +128,10 @@ func Test_Create(t *testing.T) {
 		customerID       uuid.UUID
 		conversationName string
 		detail           string
-		referenceType    conversation.ReferenceType
+		referenceType    conversation.Type
 		referenceID      string
-		source           *commonaddress.Address
-		participants     []commonaddress.Address
+		self             commonaddress.Address
+		peer             commonaddress.Address
 
 		responseUUID         uuid.UUID
 		responseConversation *conversation.Conversation
@@ -146,18 +144,16 @@ func Test_Create(t *testing.T) {
 			customerID:       uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
 			conversationName: "test conversation",
 			detail:           "test detail",
-			referenceType:    conversation.ReferenceTypeLine,
+			referenceType:    conversation.TypeLine,
 			referenceID:      "3dc385f8-e6e7-11ec-9250-5f6c3097570f",
-			source: &commonaddress.Address{
+			self: commonaddress.Address{
 				Type:   commonaddress.TypeLine,
 				Target: "2fcb542c-f113-11ec-a7de-6335ee489d7b",
 			},
-			participants: []commonaddress.Address{
-				{
-					Type:       commonaddress.TypeLine,
-					Target:     "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
-					TargetName: "test participant",
-				},
+			peer: commonaddress.Address{
+				Type:       commonaddress.TypeLine,
+				Target:     "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
+				TargetName: "test participant",
 			},
 
 			responseUUID: uuid.FromStringOrNil("d2a852d8-0069-11ee-96b8-3fffef7f1833"),
@@ -173,20 +169,18 @@ func Test_Create(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d2a852d8-0069-11ee-96b8-3fffef7f1833"),
 					CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
 				},
-				Name:          "test conversation",
-				Detail:        "test detail",
-				ReferenceType: conversation.ReferenceTypeLine,
-				ReferenceID:   "3dc385f8-e6e7-11ec-9250-5f6c3097570f",
-				Source: &commonaddress.Address{
+				Name:     "test conversation",
+				Detail:   "test detail",
+				Type:     conversation.TypeLine,
+				DialogID: "3dc385f8-e6e7-11ec-9250-5f6c3097570f",
+				Self: commonaddress.Address{
 					Type:   commonaddress.TypeLine,
 					Target: "2fcb542c-f113-11ec-a7de-6335ee489d7b",
 				},
-				Participants: []commonaddress.Address{
-					{
-						Type:       commonaddress.TypeLine,
-						Target:     "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
-						TargetName: "test participant",
-					},
+				Peer: commonaddress.Address{
+					Type:       commonaddress.TypeLine,
+					Target:     "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
+					TargetName: "test participant",
 				},
 			},
 		},
@@ -213,7 +207,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(tt.responseConversation, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConversation.CustomerID, conversation.EventTypeConversationCreated, tt.responseConversation)
 
-			_, err := h.Create(ctx, tt.customerID, tt.conversationName, tt.detail, tt.referenceType, tt.referenceID, tt.source, tt.participants)
+			_, err := h.Create(ctx, tt.customerID, tt.conversationName, tt.detail, tt.referenceType, tt.referenceID, tt.self, tt.peer)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -12,7 +12,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/message"
 )
 
@@ -36,9 +35,9 @@ func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message
 		localAddr = &m.Targets[0].Destination
 	}
 
-	status := message.StatusReceived
+	status := message.StatusDone
 	if m.Direction == mmmessage.DirectionOutbound {
-		status = message.StatusSent
+		status = message.StatusDone
 	}
 
 	res := []*message.Message{}
@@ -57,12 +56,10 @@ func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message
 			ConversationID: uuid.Nil,
 			Status:         status,
 
-			ReferenceType: conversation.ReferenceTypeMessage,
+			ReferenceType: message.ReferenceTypeMessage,
 			ReferenceID:   referenceID,
 
 			TransactionID: m.ID.String(),
-
-			Source: m.Source,
 
 			Text: m.Text,
 		}

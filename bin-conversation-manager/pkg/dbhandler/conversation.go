@@ -28,12 +28,12 @@ const (
 		name,
 		detail,
 
-		reference_type,
-		reference_id,
+		type,
+		dialog_id,
 
-		source,
-		participants,
-
+		self,
+		peer,
+ 
 		tm_create,
 		tm_update,
 		tm_delete
@@ -44,8 +44,8 @@ const (
 
 // conversationGetFromRow gets the conversation from the row.
 func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversation, error) {
-	var source sql.NullString
-	var participants sql.NullString
+	var self sql.NullString
+	var peer sql.NullString
 
 	res := &conversation.Conversation{}
 	if err := row.Scan(
@@ -59,11 +59,11 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 		&res.Name,
 		&res.Detail,
 
-		&res.ReferenceType,
-		&res.ReferenceID,
+		&res.Type,
+		&res.DialogID,
 
-		&source,
-		&participants,
+		&self,
+		&peer,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -72,19 +72,19 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 		return nil, fmt.Errorf("could not scan the row. conversationGetFromRow. err: %v", err)
 	}
 
-	if !source.Valid {
-		res.Source = &commonaddress.Address{}
+	if !self.Valid {
+		res.Self = commonaddress.Address{}
 	} else {
-		if err := json.Unmarshal([]byte(source.String), &res.Source); err != nil {
+		if err := json.Unmarshal([]byte(self.String), &res.Self); err != nil {
 			return nil, fmt.Errorf("could not unmarshal the Source. conversationGetFromRow. err: %v", err)
 		}
 	}
 
-	if !participants.Valid {
-		res.Participants = []commonaddress.Address{}
+	if !peer.Valid {
+		res.Peer = commonaddress.Address{}
 	} else {
-		if err := json.Unmarshal([]byte(participants.String), &res.Participants); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the Participants. conversationGetFromRow. err: %v", err)
+		if err := json.Unmarshal([]byte(peer.String), &res.Peer); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the Destination. conversationGetFromRow. err: %v", err)
 		}
 	}
 
@@ -105,12 +105,13 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		name,
 		detail,
 
-		reference_type,
-		reference_id,
+		type,
 
-		source,
-		participants,
+		dialog_id,
 
+		self,
+		peer,
+ 
 		tm_create,
 		tm_update,
 		tm_delete
@@ -128,14 +129,14 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 	}
 	defer stmt.Close()
 
-	source, err := json.Marshal(cv.Source)
+	self, err := json.Marshal(cv.Self)
 	if err != nil {
 		return fmt.Errorf("could not marshal source. ConversationCreate. err: %v", err)
 	}
 
-	participants, err := json.Marshal(cv.Participants)
+	peer, err := json.Marshal(cv.Peer)
 	if err != nil {
-		return fmt.Errorf("could not marshal current_actions. ConversationCreate. err: %v", err)
+		return fmt.Errorf("could not marshal destination. ConversationCreate. err: %v", err)
 	}
 
 	_, err = stmt.ExecContext(ctx,
@@ -149,11 +150,11 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		cv.Name,
 		cv.Detail,
 
-		cv.ReferenceType,
-		cv.ReferenceID,
+		cv.Type,
+		cv.DialogID,
 
-		source,
-		participants,
+		self,
+		peer,
 
 		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
@@ -235,20 +236,19 @@ func (h *handler) conversationGetFromCache(ctx context.Context, id uuid.UUID) (*
 	return res, nil
 }
 
-// ConversationGetByReferenceInfo returns conversation by the reference.
-func (h *handler) ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, ReferenceType conversation.ReferenceType, ReferenceID string) (*conversation.Conversation, error) {
+// ConversationGetByTypeAndDialogID returns conversation by the reference.
+func (h *handler) ConversationGetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
 			tm_delete >= ?
-			and customer_id = ?
-			and reference_type = ?
-			and reference_id = ?
+			and type = ?
+			and dialog_id = ?
 	`, conversationSelect)
 
-	row, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), ReferenceType, ReferenceID)
+	row, err := h.db.Query(q, DefaultTimeStamp, conversationType, dialogID)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConversationGetByReferenceInfo. err: %v", err)
 	}
@@ -280,6 +280,36 @@ func (h *handler) ConversationGet(ctx context.Context, id uuid.UUID) (*conversat
 	}
 
 	_ = h.conversationSetToCache(ctx, res)
+
+	return res, nil
+}
+
+// ConversationGetBySelfAndPeer returns conversation.
+func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
+
+	// prepare
+	q := fmt.Sprintf(`%s
+	where
+		JSON_UNQUOTE(JSON_EXTRACT(self, '$.type')) = '?'
+		AND JSON_UNQUOTE(JSON_EXTRACT(self, '$.target')) = '?'
+		AND JSON_UNQUOTE(JSON_EXTRACT(peer, '$.type')) = '?'
+		AND JSON_UNQUOTE(JSON_EXTRACT(peer, '$.target')) = '?'
+	`, conversationSelect)
+
+	row, err := h.db.Query(q, self.Type, self.Target, peer.Type, peer.Target)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ConversationGetBySelfAndPeer. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.conversationGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get conversation. ConversationGetBySelfAndPeer. err: %v", err)
+	}
 
 	return res, nil
 }

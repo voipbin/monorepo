@@ -17,9 +17,14 @@ func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversat
 	return h.db.ConversationGet(ctx, id)
 }
 
-// GetByReferenceInfo returns conversation
-func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error) {
-	return h.db.ConversationGetByReferenceInfo(ctx, customerID, referenceType, referenceID)
+// GetByTypeAndDialogID returns conversation
+func (h *conversationHandler) GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
+	return h.db.ConversationGetByTypeAndDialogID(ctx, conversationType, dialogID)
+}
+
+// GetBySelfAndPeer returns conversation
+func (h *conversationHandler) GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
+	return h.db.ConversationGetBySelfAndPeer(ctx, self, peer)
 }
 
 // Gets returns list of conversations
@@ -45,10 +50,10 @@ func (h *conversationHandler) Create(
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	referenceType conversation.ReferenceType,
+	referenceType conversation.Type,
 	referenceID string,
-	source *commonaddress.Address,
-	participants []commonaddress.Address,
+	self commonaddress.Address,
+	peer commonaddress.Address,
 ) (*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Create",
@@ -65,12 +70,12 @@ func (h *conversationHandler) Create(
 			OwnerID:   uuid.Nil,
 		},
 
-		Name:          name,
-		Detail:        detail,
-		ReferenceType: referenceType,
-		ReferenceID:   referenceID,
-		Source:        source,
-		Participants:  participants,
+		Name:     name,
+		Detail:   detail,
+		Type:     referenceType,
+		DialogID: referenceID,
+		Self:     self,
+		Peer:     peer,
 	}
 
 	if errCreate := h.db.ConversationCreate(ctx, tmp); errCreate != nil {

@@ -12,8 +12,6 @@ create table conversation_messages(
 
   transaction_id  varchar(255),
 
-  source  json,
-
   text    text,
   medias  json,
 

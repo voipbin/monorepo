@@ -6,10 +6,9 @@ import (
 	"fmt"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 
-	"github.com/gofrs/uuid"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-conversation-manager/models/account"
@@ -19,7 +18,7 @@ import (
 )
 
 // Hook handles received line message
-func (h *lineHandler) Hook(ctx context.Context, ac *account.Account, data []byte) ([]*conversation.Conversation, []*message.Message, error) {
+func (h *lineHandler) Hook(ctx context.Context, ac *account.Account, data []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "Hook",
 		"account_id": ac.ID,
@@ -32,131 +31,121 @@ func (h *lineHandler) Hook(ctx context.Context, ac *account.Account, data []byte
 
 	if errUnmarshal := json.Unmarshal(data, tmp); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
-		return nil, nil, errUnmarshal
+		return errUnmarshal
 	}
 
-	resConversations := []*conversation.Conversation{}
-	resMessages := []*message.Message{}
 	for _, e := range tmp.Events {
-
-		// parse the message
-		cv, m, err := h.handleHook(ctx, ac, e)
-		if err != nil {
-			log.Errorf("Could not parse the message. err: %v", err)
+		if errHook := h.hookEventHandle(ctx, ac, e); errHook != nil {
+			log.Errorf("Could not handle the message. err: %v", errHook)
 			continue
 		}
-
-		if cv != nil {
-			resConversations = append(resConversations, cv)
-		} else if m != nil {
-			resMessages = append(resMessages, m)
-		}
 	}
 
-	return resConversations, resMessages, nil
+	return nil
 }
 
-// handleHook handles the received message.
-func (h *lineHandler) handleHook(ctx context.Context, ac *account.Account, e *linebot.Event) (*conversation.Conversation, *message.Message, error) {
+// hookEventHandle handles the received line event.
+func (h *lineHandler) hookEventHandle(ctx context.Context, ac *account.Account, e *linebot.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "handleEvent",
+		"func":        "hookEventHandle",
 		"customer_id": ac,
 		"event":       e,
 	})
 
 	switch e.Type {
 	case linebot.EventTypeFollow:
-		res, err := h.hookHandleFollow(ctx, ac, e)
-		if err != nil {
-			log.Errorf("Could not handle the line event follow. err: %v", err)
-			return nil, nil, err
+		if errHook := h.hookEventTypeFollow(ctx, ac, e); errHook != nil {
+			log.Errorf("Could not handle the line event follow. err: %v", errHook)
+			return errHook
 		}
-		return res, nil, nil
+		return nil
 
 	case linebot.EventTypeMessage:
-		res, err := h.hookHandleMessage(ctx, ac, e)
-		if err != nil {
-			log.Errorf("Could not handle the line event message. err: %v", err)
-			return nil, nil, err
+		if errHook := h.hookEventTypeMessage(ctx, ac, e); errHook != nil {
+			log.Errorf("Could not handle the line event message. err: %v", errHook)
+			return errHook
 		}
-		return nil, res, nil
+		return nil
 
 	default:
 		log.Errorf("Unsupported event type. event_type: %s", e.Type)
-		return nil, nil, fmt.Errorf("unsupported event type. event_type: %s", e.Type)
+		return fmt.Errorf("unsupported event type. event_type: %s", e.Type)
 	}
 }
 
-// hookHandleFollow handles line's follow event.
-func (h *lineHandler) hookHandleFollow(ctx context.Context, ac *account.Account, e *linebot.Event) (*conversation.Conversation, error) {
+// hookEventTypeFollow handles line's follow event.
+func (h *lineHandler) hookEventTypeFollow(ctx context.Context, ac *account.Account, e *linebot.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "eventHandleFollow",
+		"func":        "hookEventTypeFollow",
 		"customer_id": ac,
 		"event":       e,
 	})
 	log.Debugf("Handleing the Line follow.")
 
-	// get reference id
-	referenceID := h.getReferenceID(e)
-	if referenceID == "" {
-		log.Errorf("Could not get reference id. reference_id: %s", referenceID)
-		return nil, fmt.Errorf("could not get reference id")
+	// get dialog id
+	dialogID := h.getDialogID(e)
+	if dialogID == "" {
+		return fmt.Errorf("could not get dialog id. dialog_id: %s", dialogID)
 	}
 
-	// get user info
-	p, err := h.GetParticipant(ctx, ac, e.Source.UserID)
+	// get peer info
+	peer, err := h.GetPeer(ctx, ac, e.Source.UserID)
 	if err != nil {
-		log.Errorf("Could not get participant info. err: %v", err)
-		return nil, err
+		return errors.Wrapf(err, "Could not get participant info")
 	}
 
-	me := &commonaddress.Address{
+	self := commonaddress.Address{
 		Type:       commonaddress.TypeLine,
 		Target:     "",
 		TargetName: "Me",
 	}
 
-	// create a conversation
-	res := &conversation.Conversation{
-		Identity: commonidentity.Identity{
-			ID:         uuid.Nil,
-			CustomerID: ac.CustomerID,
-		},
-		Owner: commonidentity.Owner{
-			OwnerType: commonidentity.OwnerTypeNone,
-			OwnerID:   uuid.Nil,
-		},
-		AccountID:     ac.ID,
-		Name:          p.TargetName,
-		Detail:        "Conversation with " + p.TargetName,
-		ReferenceType: conversation.ReferenceTypeLine,
-		ReferenceID:   referenceID,
-
-		Source: me,
-		Participants: []commonaddress.Address{
-			*me,
-			*p,
-		},
+	res, err := h.reqHandler.ConversationV1ConversationCreate(
+		ctx,
+		ac.CustomerID,
+		peer.TargetName,
+		"Conversation with "+peer.TargetName,
+		conversation.TypeLine,
+		dialogID,
+		self,
+		*peer,
+	)
+	if err != nil {
+		return errors.Wrapf(err, "Could not create a conversation")
 	}
+	log.WithField("conversation", res).Debugf("Created a new conversation. conversation_id: %s", res.ID)
 
-	return res, nil
+	return nil
 }
 
-// hookHandleMessage handles line's message type event.
-func (h *lineHandler) hookHandleMessage(ctx context.Context, ac *account.Account, e *linebot.Event) (*message.Message, error) {
+// hookEventTypeMessage handles line's message type event.
+func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Account, e *linebot.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "eventHandleMessage",
+		"func":        "hookEventTypeMessage",
 		"customer_id": ac,
 		"event":       e,
 	})
 	log.WithField("event", e).Debugf("Handleing the Line message.")
 
 	// get reference id
-	referenceID := h.getReferenceID(e)
-	if referenceID == "" {
-		log.Errorf("Could not get reference id. reference_id: %s", referenceID)
-		return nil, fmt.Errorf("could not get reference id")
+	dialogID := h.getDialogID(e)
+	if dialogID == "" {
+		return fmt.Errorf("could not get reference id. dialog_id: %s", dialogID)
 	}
+
+	// get conversation
+	filters := map[string]string{
+		"deleted":   "false",
+		"type":      string(conversation.TypeLine),
+		"dialog_id": dialogID,
+	}
+	cvs, err := h.reqHandler.ConversationV1ConversationGets(ctx, "", 1, filters)
+	if err != nil {
+		return errors.Wrapf(err, "Could not get conversations")
+	} else if len(cvs) == 0 {
+		return fmt.Errorf("could not find conversation. dialog_id: %s", dialogID)
+	}
+	cv := cvs[0]
 
 	// get datatype and data
 	text := ""
@@ -170,36 +159,28 @@ func (h *lineHandler) hookHandleMessage(ctx context.Context, ac *account.Account
 		log.Errorf("Unsupported messate type. message_type: %s", e.Message.Type())
 	}
 
-	source := &commonaddress.Address{
-		Type:   commonaddress.TypeLine,
-		Target: e.Source.UserID,
+	m, err := h.reqHandler.ConversationV1MessageCreate(
+		ctx,
+		cv.CustomerID,
+		cv.ID,
+		message.DirectionIncoming,
+		message.StatusDone,
+		message.ReferenceTypeLine,
+		"",
+		"",
+		text,
+		medias,
+	)
+	if err != nil {
+		return errors.Wrapf(err, "Could not create a message")
 	}
+	log.WithField("message", m).Debugf("Created a new message. message_id: %s", m.ID)
 
-	// create a message
-	m := &message.Message{
-		Identity: commonidentity.Identity{
-			ID:         uuid.Nil,
-			CustomerID: ac.CustomerID,
-		},
-
-		ConversationID: uuid.Nil,
-		Status:         message.StatusReceived,
-
-		ReferenceType: conversation.ReferenceTypeLine,
-		ReferenceID:   referenceID,
-
-		Source: source,
-
-		Text:   text,
-		Medias: medias,
-	}
-
-	return m, nil
-
+	return nil
 }
 
-// getReferenceID returns a reference id
-func (h *lineHandler) getReferenceID(e *linebot.Event) string {
+// getDialogID returns a reference id
+func (h *lineHandler) getDialogID(e *linebot.Event) string {
 
 	switch e.Source.Type {
 	case linebot.EventSourceTypeUser:
@@ -213,36 +194,33 @@ func (h *lineHandler) getReferenceID(e *linebot.Event) string {
 	return ""
 }
 
-// GetParticipant returns a participant
-func (h *lineHandler) GetParticipant(ctx context.Context, ac *account.Account, id string) (*commonaddress.Address, error) {
+// GetPeer returns a participant
+func (h *lineHandler) GetPeer(ctx context.Context, ac *account.Account, userID string) (*commonaddress.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "getParticipant",
 		"customer_id": ac,
-		"id":          id,
+		"user_id":     userID,
 	})
 	log.Debug("Getting the participant info.")
 
 	c, err := h.getClient(ctx, ac)
 	if err != nil {
-		log.Errorf("Could not get client. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Could not get client")
 	}
 
-	profile := c.GetProfile(id)
+	profile := c.GetProfile(userID)
 	if profile == nil {
-		log.Errorf("Could not get initiate profile.")
-		return nil, fmt.Errorf("could not initiate profile")
+		return nil, errors.Wrapf(err, "Could not get profile")
 	}
 
 	tmp, err := profile.Do()
 	if err != nil {
-		log.Errorf("Could not get profile info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Could not get profile info")
 	}
 
 	res := &commonaddress.Address{
 		Type:       commonaddress.TypeLine,
-		Target:     id,
+		Target:     userID,
 		TargetName: tmp.DisplayName,
 	}
 

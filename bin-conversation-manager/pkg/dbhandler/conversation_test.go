@@ -40,21 +40,19 @@ func Test_ConversationCreate(t *testing.T) {
 					OwnerID:   uuid.FromStringOrNil("9a0591de-3d35-11ef-9856-8ffd2949633a"),
 				},
 
-				AccountID:     uuid.FromStringOrNil("5d634a2a-fdec-11ed-b49e-07e9ef4b45cf"),
-				Name:          "conversation name",
-				Detail:        "conversation detail",
-				ReferenceType: conversation.ReferenceTypeLine,
-				ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				Source: &commonaddress.Address{
+				AccountID: uuid.FromStringOrNil("5d634a2a-fdec-11ed-b49e-07e9ef4b45cf"),
+				Name:      "conversation name",
+				Detail:    "conversation detail",
+				Type:      conversation.TypeLine,
+				DialogID:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+				Self: commonaddress.Address{
 					Type:   commonaddress.TypeLine,
 					Target: "9bf1d18c-f116-11ec-896c-636b8bfbe1a1",
 				},
-				Participants: []commonaddress.Address{
-					{
-						Type:       commonaddress.TypeLine,
-						Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
-						TargetName: "test user",
-					},
+				Peer: commonaddress.Address{
+					Type:       commonaddress.TypeLine,
+					Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
+					TargetName: "test user",
 				},
 			},
 
@@ -68,21 +66,19 @@ func Test_ConversationCreate(t *testing.T) {
 					OwnerType: commonidentity.OwnerTypeAgent,
 					OwnerID:   uuid.FromStringOrNil("9a0591de-3d35-11ef-9856-8ffd2949633a"),
 				},
-				AccountID:     uuid.FromStringOrNil("5d634a2a-fdec-11ed-b49e-07e9ef4b45cf"),
-				Name:          "conversation name",
-				Detail:        "conversation detail",
-				ReferenceType: conversation.ReferenceTypeLine,
-				ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				Source: &commonaddress.Address{
+				AccountID: uuid.FromStringOrNil("5d634a2a-fdec-11ed-b49e-07e9ef4b45cf"),
+				Name:      "conversation name",
+				Detail:    "conversation detail",
+				Type:      conversation.TypeLine,
+				DialogID:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+				Self: commonaddress.Address{
 					Type:   commonaddress.TypeLine,
 					Target: "9bf1d18c-f116-11ec-896c-636b8bfbe1a1",
 				},
-				Participants: []commonaddress.Address{
-					{
-						Type:       commonaddress.TypeLine,
-						Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
-						TargetName: "test user",
-					},
+				Peer: commonaddress.Address{
+					Type:       commonaddress.TypeLine,
+					Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
+					TargetName: "test user",
 				},
 				TMCreate: "2022-04-18 03:22:17.995000",
 				TMUpdate: DefaultTimeStamp,
@@ -126,15 +122,14 @@ func Test_ConversationCreate(t *testing.T) {
 	}
 }
 
-func Test_ConversationGetByReferenceInfo(t *testing.T) {
+func Test_ConversationGetByTypeAndDialogID(t *testing.T) {
 
 	tests := []struct {
 		name         string
 		conversation *conversation.Conversation
 
-		customerID    uuid.UUID
-		referenceType conversation.ReferenceType
-		referenceID   string
+		conversationType conversation.Type
+		dialogID         string
 
 		responseCurTime string
 		expectRes       *conversation.Conversation
@@ -150,17 +145,16 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 					OwnerType: commonidentity.OwnerTypeAgent,
 					OwnerID:   uuid.FromStringOrNil("ca332f60-3d35-11ef-99f7-cb2ec1550dae"),
 				},
-				Name:          "conversation name",
-				Detail:        "conversation detail",
-				ReferenceType: conversation.ReferenceTypeLine,
-				ReferenceID:   "612435d0-e429-11ec-845d-bba00000504b",
-				Source:        &commonaddress.Address{},
-				Participants:  []commonaddress.Address{},
+				Name:     "conversation name",
+				Detail:   "conversation detail",
+				Type:     conversation.TypeLine,
+				DialogID: "612435d0-e429-11ec-845d-bba00000504b",
+				Self:     commonaddress.Address{},
+				Peer:     commonaddress.Address{},
 			},
 
-			customerID:    uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
-			referenceType: conversation.ReferenceTypeLine,
-			referenceID:   "612435d0-e429-11ec-845d-bba00000504b",
+			conversationType: conversation.TypeLine,
+			dialogID:         "612435d0-e429-11ec-845d-bba00000504b",
 
 			responseCurTime: "2022-04-18 03:22:17.995000",
 			expectRes: &conversation.Conversation{
@@ -172,15 +166,15 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 					OwnerType: commonidentity.OwnerTypeAgent,
 					OwnerID:   uuid.FromStringOrNil("ca332f60-3d35-11ef-99f7-cb2ec1550dae"),
 				},
-				Name:          "conversation name",
-				Detail:        "conversation detail",
-				ReferenceType: conversation.ReferenceTypeLine,
-				ReferenceID:   "612435d0-e429-11ec-845d-bba00000504b",
-				Source:        &commonaddress.Address{},
-				Participants:  []commonaddress.Address{},
-				TMCreate:      "2022-04-18 03:22:17.995000",
-				TMUpdate:      DefaultTimeStamp,
-				TMDelete:      DefaultTimeStamp,
+				Name:     "conversation name",
+				Detail:   "conversation detail",
+				Type:     conversation.TypeLine,
+				DialogID: "612435d0-e429-11ec-845d-bba00000504b",
+				Self:     commonaddress.Address{},
+				Peer:     commonaddress.Address{},
+				TMCreate: "2022-04-18 03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -206,7 +200,7 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.ConversationGetByReferenceInfo(ctx, tt.customerID, tt.referenceType, tt.referenceID)
+			res, err := h.ConversationGetByTypeAndDialogID(ctx, tt.conversationType, tt.dialogID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -243,12 +237,12 @@ func Test_ConversationGets(t *testing.T) {
 						OwnerType: commonidentity.OwnerTypeAgent,
 						OwnerID:   uuid.FromStringOrNil("a5932312-3e12-11ef-ba41-3720b253edff"),
 					},
-					Name:          "conversation name",
-					Detail:        "conversation detail",
-					ReferenceType: conversation.ReferenceTypeLine,
-					ReferenceID:   "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
-					Source:        &commonaddress.Address{},
-					Participants:  []commonaddress.Address{},
+					Name:     "conversation name",
+					Detail:   "conversation detail",
+					Type:     conversation.TypeLine,
+					DialogID: "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
+					Self:     commonaddress.Address{},
+					Peer:     commonaddress.Address{},
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -259,12 +253,12 @@ func Test_ConversationGets(t *testing.T) {
 						OwnerType: commonidentity.OwnerTypeAgent,
 						OwnerID:   uuid.FromStringOrNil("a5932312-3e12-11ef-ba41-3720b253edff"),
 					},
-					Name:          "conversation name",
-					Detail:        "conversation detail",
-					ReferenceType: conversation.ReferenceTypeLine,
-					ReferenceID:   "387f1afe-e42a-11ec-ad8f-1340414f9a51",
-					Source:        &commonaddress.Address{},
-					Participants:  []commonaddress.Address{},
+					Name:     "conversation name",
+					Detail:   "conversation detail",
+					Type:     conversation.TypeLine,
+					DialogID: "387f1afe-e42a-11ec-ad8f-1340414f9a51",
+					Self:     commonaddress.Address{},
+					Peer:     commonaddress.Address{},
 				},
 			},
 
@@ -287,15 +281,15 @@ func Test_ConversationGets(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("a5932312-3e12-11ef-ba41-3720b253edff"),
 					},
 
-					Name:          "conversation name",
-					Detail:        "conversation detail",
-					ReferenceType: conversation.ReferenceTypeLine,
-					ReferenceID:   "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
-					Source:        &commonaddress.Address{},
-					Participants:  []commonaddress.Address{},
-					TMCreate:      "2022-04-18 03:22:17.995000",
-					TMUpdate:      DefaultTimeStamp,
-					TMDelete:      DefaultTimeStamp,
+					Name:     "conversation name",
+					Detail:   "conversation detail",
+					Type:     conversation.TypeLine,
+					DialogID: "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
+					Self:     commonaddress.Address{},
+					Peer:     commonaddress.Address{},
+					TMCreate: "2022-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -307,15 +301,15 @@ func Test_ConversationGets(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("a5932312-3e12-11ef-ba41-3720b253edff"),
 					},
 
-					Name:          "conversation name",
-					Detail:        "conversation detail",
-					ReferenceType: conversation.ReferenceTypeLine,
-					ReferenceID:   "387f1afe-e42a-11ec-ad8f-1340414f9a51",
-					Source:        &commonaddress.Address{},
-					Participants:  []commonaddress.Address{},
-					TMCreate:      "2022-04-18 03:22:17.995000",
-					TMUpdate:      DefaultTimeStamp,
-					TMDelete:      DefaultTimeStamp,
+					Name:     "conversation name",
+					Detail:   "conversation detail",
+					Type:     conversation.TypeLine,
+					DialogID: "387f1afe-e42a-11ec-ad8f-1340414f9a51",
+					Self:     commonaddress.Address{},
+					Peer:     commonaddress.Address{},
+					TMCreate: "2022-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},

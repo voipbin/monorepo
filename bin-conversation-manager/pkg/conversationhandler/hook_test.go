@@ -30,10 +30,9 @@ func Test_Hook(t *testing.T) {
 
 		expectAccountID uuid.UUID
 
-		responseAccount       *account.Account
-		responseConversations []*conversation.Conversation
-		responseUUIDs         []uuid.UUID
-		responseMessages      []*message.Message
+		responseAccount  *account.Account
+		responseUUIDs    []uuid.UUID
+		responseMessages []*message.Message
 	}{
 		{
 			name: "normal",
@@ -72,13 +71,6 @@ func Test_Hook(t *testing.T) {
 				},
 				Type: account.TypeLine,
 			},
-			responseConversations: []*conversation.Conversation{
-				{
-					Identity: commonidentity.Identity{
-						CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
-					},
-				},
-			},
 			responseUUIDs: []uuid.UUID{
 				uuid.FromStringOrNil("cb285f42-0075-11ee-ad73-0fae8c027ffc"),
 			},
@@ -111,21 +103,26 @@ func Test_Hook(t *testing.T) {
 
 			mockAccount.EXPECT().Get(ctx, tt.expectAccountID).Return(tt.responseAccount, nil)
 
-			mockLine.EXPECT().Hook(ctx, tt.responseAccount, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
+			mockLine.EXPECT().Hook(ctx, tt.responseAccount, tt.data).Return(nil)
 
-			// conversations
-			for i := 0; i < len(tt.responseConversations); i++ {
-				mocKUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
-				mockDB.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
-				mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(&conversation.Conversation{}, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), conversation.EventTypeConversationCreated, gomock.Any())
-			}
+			// // messages
+			// for range tt.responseMessages {
+			// 	mockLine.EXPECT().GetParticipant(ctx, gomock.Any(), gomock.Any()).Return(&commonaddress.Address{}, nil)
+			// 	mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(&conversation.Conversation{}, nil)
 
-			// messages
-			for _, tmp := range tt.responseMessages {
-				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID).Return(&conversation.Conversation{}, nil)
-				mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), message.DirectionIncoming, message.StatusReceived, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&message.Message{}, nil)
-			}
+			// 	mockMessage.EXPECT().Create(
+			// 		ctx,
+			// 		gomock.Any(),
+			// 		gomock.Any(),
+			// 		message.DirectionIncoming,
+			// 		message.StatusDone,
+			// 		gomock.Any(),
+			// 		gomock.Any(),
+			// 		gomock.Any(),
+			// 		gomock.Any(),
+			// 		gomock.Any(),
+			// 	).Return(&message.Message{}, nil)
+			// }
 
 			if err := h.Hook(ctx, tt.uri, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -144,9 +141,8 @@ func Test_hookLine(t *testing.T) {
 
 		responseConversation *conversation.Conversation
 
-		responseUUIDs         []uuid.UUID
-		responseConversations []*conversation.Conversation
-		responseMessages      []*message.Message
+		responseUUIDs    []uuid.UUID
+		responseMessages []*message.Message
 	}{
 		{
 			name: "normal",
@@ -185,18 +181,11 @@ func Test_hookLine(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
 				},
-				ReferenceType: conversation.ReferenceTypeLine,
+				Type: conversation.TypeLine,
 			},
 
 			responseUUIDs: []uuid.UUID{
 				uuid.FromStringOrNil("4d94b5ca-0076-11ee-8c59-6fff2eb90055"),
-			},
-			responseConversations: []*conversation.Conversation{
-				{
-					Identity: commonidentity.Identity{
-						CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
-					},
-				},
 			},
 			responseMessages: []*message.Message{
 				{},
@@ -224,33 +213,27 @@ func Test_hookLine(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockLine.EXPECT().Hook(ctx, tt.account, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
+			mockLine.EXPECT().Hook(ctx, tt.account, tt.data).Return(nil)
 
-			// conversations
-			for i := range tt.responseConversations {
-				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
-				mockDB.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
-				mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(&conversation.Conversation{}, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), conversation.EventTypeConversationCreated, gomock.Any())
-			}
+			// // messages
+			// for _, tmp := range tt.responseMessages {
 
-			// messages
-			for _, tmp := range tt.responseMessages {
-				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID).Return(tt.responseConversation, nil)
-				mockMessage.EXPECT().Create(
-					ctx,
-					tt.responseConversation.CustomerID,
-					tt.responseConversation.ID,
-					message.DirectionIncoming,
-					message.StatusReceived,
-					tt.responseConversation.ReferenceType,
-					tt.responseConversation.ReferenceID,
-					"",
-					tmp.Source,
-					tmp.Text,
-					tmp.Medias,
-				).Return(&message.Message{}, nil)
-			}
+			// 	mockLine.EXPECT().GetParticipant(ctx, gomock.Any(), gomock.Any()).Return(&commonaddress.Address{}, nil)
+			// 	mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(tt.responseConversation, nil)
+
+			// 	mockMessage.EXPECT().Create(
+			// 		ctx,
+			// 		tt.responseConversation.CustomerID,
+			// 		tt.responseConversation.ID,
+			// 		message.DirectionIncoming,
+			// 		message.StatusDone,
+			// 		message.ReferenceTypeLine,
+			// 		tt.responseConversation.DialogID,
+			// 		"",
+			// 		tmp.Text,
+			// 		nil,
+			// 	).Return(&message.Message{}, nil)
+			// }
 
 			if err := h.hookLine(ctx, tt.account, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -3,12 +3,10 @@ package message
 import (
 	"encoding/json"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 )
 
@@ -16,21 +14,19 @@ import (
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	ConversationID uuid.UUID `json:"conversation_id"`
-	Direction      Direction `json:"direction"`
-	Status         Status    `json:"status"`
+	ConversationID uuid.UUID `json:"conversation_id,omitempty"`
+	Direction      Direction `json:"direction,omitempty"`
+	Status         Status    `json:"status,omitempty"`
 
-	ReferenceType conversation.ReferenceType `json:"reference_type"`
-	ReferenceID   string                     `json:"reference_id"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   string        `json:"reference_id,omitempty"`
 
-	Source *commonaddress.Address `json:"source"` // source
+	Text   string        `json:"text,omitempty"`
+	Medias []media.Media `json:"medias,omitempty"`
 
-	Text   string        `json:"text"`
-	Medias []media.Media `json:"medias"`
-
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event
@@ -44,8 +40,6 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
-
-		Source: h.Source,
 
 		Text:   h.Text,
 		Medias: h.Medias,

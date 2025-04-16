@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/pkg/cachehandler"
 )
@@ -24,13 +25,16 @@ func Test_MediaCreate(t *testing.T) {
 			"normal",
 
 			&media.Media{
-				ID:         uuid.FromStringOrNil("77f3825a-eb9c-11ec-9fa6-ef743d81dea8"),
-				CustomerID: uuid.FromStringOrNil("7a4fe890-eb9c-11ec-b171-cf5dc7a96ec5"),
-				Type:       media.TypeAudio,
-				Filename:   "testfilename.wav",
-				TMCreate:   "2022-04-18 03:22:17.995000",
-				TMUpdate:   "2022-04-18 03:22:17.995000",
-				TMDelete:   DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("77f3825a-eb9c-11ec-9fa6-ef743d81dea8"),
+					CustomerID: uuid.FromStringOrNil("7a4fe890-eb9c-11ec-b171-cf5dc7a96ec5"),
+				},
+
+				Type:     media.TypeAudio,
+				Filename: "testfilename.wav",
+				TMCreate: "2022-04-18 03:22:17.995000",
+				TMUpdate: "2022-04-18 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}

@@ -1,12 +1,10 @@
 package message
 
 import (
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 )
 
@@ -14,23 +12,21 @@ import (
 type Message struct {
 	commonidentity.Identity
 
-	ConversationID uuid.UUID `json:"conversation_id"`
-	Direction      Direction `json:"direction"`
-	Status         Status    `json:"status"`
+	ConversationID uuid.UUID `json:"conversation_id,omitempty"`
+	Direction      Direction `json:"direction,omitempty"`
+	Status         Status    `json:"status,omitempty"`
 
-	ReferenceType conversation.ReferenceType `json:"reference_type"` // used for find a conversation info(source info: group/room/user)
-	ReferenceID   string                     `json:"reference_id"`   // used for find a conversation info(source info: group_id, room_id, user_id)
+	ReferenceType ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   string        `json:"reference_id,omitempty"`
 
-	TransactionID string `json:"transaction_id"` // uniq id for message's transaction
+	TransactionID string `json:"transaction_id,omitempty"` // uniq id for message's transaction
 
-	Source *commonaddress.Address `json:"source"` // source
+	Text   string        `json:"text,omitempty"`
+	Medias []media.Media `json:"medias,omitempty"`
 
-	Text   string        `json:"text"`
-	Medias []media.Media `json:"medias"`
-
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // Status defines
@@ -38,10 +34,9 @@ type Status string
 
 // list of Status
 const (
-	StatusSending  Status = "sending"
-	StatusSent     Status = "sent"
-	StatusFailed   Status = "failed"
-	StatusReceived Status = "received"
+	StatusFailed      Status = "failed"
+	StatusProgressing Status = "progressing"
+	StatusDone        Status = "done"
 )
 
 // Direction message's direction
@@ -52,4 +47,12 @@ const (
 	DirectionNond     Direction = ""
 	DirectionOutgoing Direction = "outgoing"
 	DirectionIncoming Direction = "incoming"
+)
+
+type ReferenceType string
+
+const (
+	ReferenceTypeNone    ReferenceType = ""
+	ReferenceTypeMessage ReferenceType = "message" // sms, mms
+	ReferenceTypeLine    ReferenceType = "line"
 )

@@ -1,11 +1,12 @@
 package media
 
-import "github.com/gofrs/uuid"
+import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+)
 
 // Media defines
 type Media struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	Type     Type   `json:"type"`
 	Filename string `json:"filename"`

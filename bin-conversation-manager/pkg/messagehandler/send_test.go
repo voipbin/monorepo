@@ -44,10 +44,10 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 					ID:         uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
 					CustomerID: uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
 				},
-				AccountID:     uuid.FromStringOrNil("086b4920-fe3f-11ed-b570-bf801ec89642"),
-				ReferenceType: conversation.ReferenceTypeLine,
-				ReferenceID:   "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
-				Source: &commonaddress.Address{
+				AccountID: uuid.FromStringOrNil("086b4920-fe3f-11ed-b570-bf801ec89642"),
+				Type:      conversation.TypeLine,
+				DialogID:  "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
+				Self: commonaddress.Address{
 					Target: "75a20d08-f1de-11ec-8eb1-97f517197fe2",
 				},
 			},
@@ -68,15 +68,12 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 				},
 				ConversationID: uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
 				Direction:      message.DirectionOutgoing,
-				Status:         message.StatusSending,
-				ReferenceType:  conversation.ReferenceTypeLine,
+				Status:         message.StatusProgressing,
+				ReferenceType:  message.ReferenceTypeLine,
 				ReferenceID:    "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
 				TransactionID:  "",
-				Source: &commonaddress.Address{
-					Target: "75a20d08-f1de-11ec-8eb1-97f517197fe2",
-				},
-				Text:   "hello, this is test message.",
-				Medias: []media.Media{},
+				Text:           "hello, this is test message.",
+				Medias:         []media.Media{},
 			},
 		},
 	}
@@ -111,7 +108,7 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 			mockLine.EXPECT().Send(ctx, tt.conversation, tt.responseAccount, tt.text, tt.medias).Return(nil)
 
 			// update
-			mockDB.EXPECT().MessageUpdateStatus(ctx, tt.expectMessage.ID, message.StatusSent).Return(nil)
+			mockDB.EXPECT().MessageUpdateStatus(ctx, tt.expectMessage.ID, message.StatusDone).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageUpdated, tt.expectMessage)
 

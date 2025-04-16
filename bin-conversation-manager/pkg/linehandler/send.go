@@ -42,7 +42,7 @@ func (h *lineHandler) Send(ctx context.Context, cv *conversation.Conversation, a
 
 	for _, tmp := range messages {
 		// send a message to the destination
-		res, err := c.PushMessage(cv.ReferenceID, tmp).Do()
+		res, err := c.PushMessage(cv.DialogID, tmp).Do()
 		if err != nil {
 			log.Errorf("Could not send the message. err: %v", err)
 			return err

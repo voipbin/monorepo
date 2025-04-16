@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -44,6 +45,52 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1MessagesCreatePost handles
+// POST /v1/messages/create request
+func (h *listenHandler) processV1MessagesCreatePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1MessagesCreatePost",
+		"request": m,
+	})
+
+	var req request.V1DataMessagesCreatePost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.messageHandler.Create(
+		ctx,
+		req.CustomerID,
+		req.ConversationID,
+		req.Direction,
+		req.Status,
+		req.ReferenceType,
+		req.ReferenceID,
+		req.TransactionID,
+		req.Text,
+		req.Medias,
+	)
+	if err != nil {
+		log.Errorf("Could not create the message. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
