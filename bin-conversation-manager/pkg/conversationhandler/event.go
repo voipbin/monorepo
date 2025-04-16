@@ -17,7 +17,7 @@ import (
 )
 
 // Event returns list of messages of the given conversation
-func (h *conversationHandler) Event(ctx context.Context, referenceType conversation.Type, data []byte) error {
+func (h *conversationHandler) Event(ctx context.Context, referenceType conversation.ReferenceType, data []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Event",
 		"reference_type": referenceType,
@@ -25,7 +25,7 @@ func (h *conversationHandler) Event(ctx context.Context, referenceType conversat
 	})
 
 	switch referenceType {
-	case conversation.TypeMessage:
+	case conversation.ReferenceTypeMessage:
 		if err := h.eventSMS(ctx, data); err != nil {
 			log.Errorf("Could not handle the sms type event. err: %v", err)
 			return err
@@ -76,7 +76,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 				mm.CustomerID,
 				"conversation",
 				"conversation detail",
-				conversation.TypeMessage,
+				conversation.ReferenceTypeMessage,
 				mm.ID.String(),
 				self,
 				peer,
@@ -94,7 +94,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 			cv.ID,
 			direction,
 			message.StatusDone,
-			conversation.TypeMessage,
+			conversation.ReferenceTypeMessage,
 			mm.ID.String(),
 			"",
 			mm.Text,

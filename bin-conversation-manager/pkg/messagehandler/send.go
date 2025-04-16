@@ -21,18 +21,18 @@ func (h *messageHandler) Send(ctx context.Context, cv *conversation.Conversation
 		"text":         text,
 		"medias":       medias,
 	})
-	log.Debugf("Sending a message to the conversation. conversation_id: %s, reference_type: %s", cv.ID, cv.Type)
+	log.Debugf("Sending a message to the conversation. conversation_id: %s, reference_type: %s", cv.ID, cv.ReferenceType)
 
-	switch cv.Type {
-	case conversation.TypeLine:
+	switch cv.ReferenceType {
+	case conversation.ReferenceTypeLine:
 		return h.sendLine(ctx, cv, text, medias)
 
-	case conversation.TypeMessage:
+	case conversation.ReferenceTypeMessage:
 		return h.sendSMS(ctx, cv, text, medias)
 
 	default:
-		log.Errorf("Unsupported reference type. reference_type: %s", cv.Type)
-		return nil, fmt.Errorf("unsupported reference type. reference_type: %s", cv.Type)
+		log.Errorf("Unsupported reference type. reference_type: %s", cv.ReferenceType)
+		return nil, fmt.Errorf("unsupported reference type. reference_type: %s", cv.ReferenceType)
 	}
 }
 
@@ -47,7 +47,7 @@ func (h *messageHandler) sendSMS(ctx context.Context, cv *conversation.Conversat
 
 	// create a sent message
 	transactionID := uuid.Must(uuid.NewV4()).String()
-	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, cv.Type, cv.ReferenceID, transactionID, text, medias)
+	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, cv.ReferenceType, cv.ReferenceID, transactionID, text, medias)
 	if err != nil {
 		log.Errorf("Could not create a message. err: %v", err)
 		return nil, err
@@ -85,7 +85,7 @@ func (h *messageHandler) sendLine(ctx context.Context, cv *conversation.Conversa
 	}
 
 	// create a sent message
-	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, cv.Type, cv.ReferenceID, "", text, medias)
+	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, cv.ReferenceType, cv.ReferenceID, "", text, medias)
 	if err != nil {
 		log.Errorf("Could not create a message. err: %v", err)
 		return nil, err

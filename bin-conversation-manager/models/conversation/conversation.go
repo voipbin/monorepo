@@ -20,8 +20,8 @@ type Conversation struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	Type        Type   `json:"type,omitempty"`
-	ReferenceID string `json:"reference_id,omitempty"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty"` // represent the type of referenced conversation type
+	ReferenceID   string        `json:"reference_id,omitempty"`   // represent the id of referenced conversation transaction. for the Line could be chatroom id, for sms/mms, could be empty.
 
 	Self *commonaddress.Address `json:"self,omitempty"` // self address
 	Peer *commonaddress.Address `json:"peer,omitempty"` // peer address
@@ -31,12 +31,12 @@ type Conversation struct {
 	TMDelete string `json:"tm_delete,omitempty"`
 }
 
-// Type defines
-type Type string
+// ReferenceType defines
+type ReferenceType string
 
 // list of reference types
 const (
-	TypeNone    Type = ""
-	TypeMessage Type = "message" // sms, mms
-	TypeLine    Type = "line"
+	ReferenceTypeNone                  = ""
+	ReferenceTypeMessage ReferenceType = "message" // sms, mms
+	ReferenceTypeLine    ReferenceType = "line"
 )

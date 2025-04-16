@@ -28,7 +28,7 @@ func Test_Create(t *testing.T) {
 		conversationID uuid.UUID
 		direction      message.Direction
 		status         message.Status
-		referenceType  conversation.Type
+		referenceType  conversation.ReferenceType
 		referenceID    string
 		transactionID  string
 		text           string
@@ -46,7 +46,7 @@ func Test_Create(t *testing.T) {
 			conversationID: uuid.FromStringOrNil("8e0e1dce-e86e-11ec-9537-77df0d80af26"),
 			direction:      message.DirectionIncoming,
 			status:         message.StatusDone,
-			referenceType:  conversation.TypeLine,
+			referenceType:  conversation.ReferenceTypeLine,
 			referenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 			transactionID:  "59946c7c-f1d5-11ec-bdad-2323294b508e",
 			text:           "Hello world",
@@ -68,7 +68,7 @@ func Test_Create(t *testing.T) {
 				ConversationID: uuid.FromStringOrNil("8e0e1dce-e86e-11ec-9537-77df0d80af26"),
 				Direction:      message.DirectionIncoming,
 				Status:         message.StatusDone,
-				ReferenceType:  conversation.TypeLine,
+				ReferenceType:  conversation.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				TransactionID:  "59946c7c-f1d5-11ec-bdad-2323294b508e",
 				Text:           "Hello world",

@@ -44,7 +44,7 @@ func Test_Event(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
 					},
 					Status:        message.StatusDone,
-					ReferenceType: conversation.TypeMessage,
+					ReferenceType: conversation.ReferenceTypeMessage,
 					ReferenceID:   "+821100000001",
 					TransactionID: "eeafd418-7a4e-11eb-8750-9bb0ca1d7926",
 				},

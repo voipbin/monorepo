@@ -20,7 +20,7 @@ func (h *messageHandler) Create(
 	conversationID uuid.UUID,
 	direction message.Direction,
 	status message.Status,
-	referenceType conversation.Type,
+	referenceType conversation.ReferenceType,
 	referenceID string,
 	transactionID string,
 	// source *commonaddress.Address,

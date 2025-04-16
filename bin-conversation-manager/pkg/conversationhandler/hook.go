@@ -81,7 +81,7 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 
 	// conversations
 	for _, tmp := range conversations {
-		cv, err := h.Create(ctx, tmp.CustomerID, tmp.Name, tmp.Detail, tmp.Type, tmp.ReferenceID, tmp.Self, tmp.Peer)
+		cv, err := h.Create(ctx, tmp.CustomerID, tmp.Name, tmp.Detail, tmp.ReferenceType, tmp.ReferenceID, tmp.Self, tmp.Peer)
 		if err != nil {
 			log.Errorf("Could not create a new conversation. err: %v", err)
 			break
@@ -118,7 +118,7 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 				tmp.CustomerID,
 				"conversation",
 				"conversation detail",
-				conversation.TypeLine,
+				conversation.ReferenceTypeLine,
 				tmp.ReferenceID,
 				self,
 				peer,
@@ -137,7 +137,7 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 			cv.ID,
 			message.DirectionIncoming,
 			message.StatusDone,
-			conversation.TypeLine,
+			conversation.ReferenceTypeLine,
 			tmp.ReferenceID,
 			"",
 			tmp.Text,

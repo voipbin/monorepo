@@ -18,7 +18,7 @@ func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversat
 }
 
 // GetByReferenceInfo returns conversation
-func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.Type, referenceID string) (*conversation.Conversation, error) {
+func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error) {
 	return h.db.ConversationGetByReferenceInfo(ctx, customerID, referenceType, referenceID)
 }
 
@@ -50,7 +50,7 @@ func (h *conversationHandler) Create(
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	referenceType conversation.Type,
+	referenceType conversation.ReferenceType,
 	referenceID string,
 	self *commonaddress.Address,
 	peer *commonaddress.Address,
@@ -70,12 +70,12 @@ func (h *conversationHandler) Create(
 			OwnerID:   uuid.Nil,
 		},
 
-		Name:        name,
-		Detail:      detail,
-		Type:        referenceType,
-		ReferenceID: referenceID,
-		Self:        self,
-		Peer:        peer,
+		Name:          name,
+		Detail:        detail,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+		Self:          self,
+		Peer:          peer,
 	}
 
 	if errCreate := h.db.ConversationCreate(ctx, tmp); errCreate != nil {
