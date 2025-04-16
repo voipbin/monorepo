@@ -199,7 +199,7 @@ func Test_hookLine(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
 				},
-				ReferenceType: conversation.ReferenceTypeLine,
+				Type: conversation.TypeLine,
 			},
 
 			responseUUIDs: []uuid.UUID{
@@ -260,7 +260,7 @@ func Test_hookLine(t *testing.T) {
 					tt.responseConversation.ID,
 					message.DirectionIncoming,
 					message.StatusDone,
-					tt.responseConversation.ReferenceType,
+					tt.responseConversation.Type,
 					tt.responseConversation.ReferenceID,
 					"",
 					tmp.Text,

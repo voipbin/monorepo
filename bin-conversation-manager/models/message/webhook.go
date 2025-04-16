@@ -19,8 +19,8 @@ type WebhookMessage struct {
 	Direction      Direction `json:"direction"`
 	Status         Status    `json:"status"`
 
-	ReferenceType conversation.ReferenceType `json:"reference_type"`
-	ReferenceID   string                     `json:"reference_id"`
+	ReferenceType conversation.Type `json:"reference_type"`
+	ReferenceID   string            `json:"reference_id"`
 
 	// Source *commonaddress.Address `json:"source"` // source
 

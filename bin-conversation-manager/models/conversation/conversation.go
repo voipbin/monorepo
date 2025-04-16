@@ -20,8 +20,8 @@ type Conversation struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	ReferenceType ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID   string        `json:"reference_id,omitempty"`
+	Type        Type   `json:"type,omitempty"`
+	ReferenceID string `json:"reference_id,omitempty"`
 
 	Self *commonaddress.Address `json:"self,omitempty"` // self address
 	Peer *commonaddress.Address `json:"peer,omitempty"` // peer address
@@ -31,12 +31,12 @@ type Conversation struct {
 	TMDelete string `json:"tm_delete,omitempty"`
 }
 
-// ReferenceType defines
-type ReferenceType string
+// Type defines
+type Type string
 
 // list of reference types
 const (
-	ReferenceTypeNone                  = ""
-	ReferenceTypeMessage ReferenceType = "message" // sms, mms
-	ReferenceTypeLine    ReferenceType = "line"
+	TypeNone    Type = ""
+	TypeMessage Type = "message" // sms, mms
+	TypeLine    Type = "line"
 )

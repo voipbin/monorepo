@@ -43,8 +43,8 @@ func Test_MessageSend(t *testing.T) {
 					ID:         uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
 					CustomerID: uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
 				},
-				ReferenceType: conversation.ReferenceTypeLine,
-				ReferenceID:   "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
+				Type:        conversation.TypeLine,
+				ReferenceID: "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
 			},
 
 			&message.Message{

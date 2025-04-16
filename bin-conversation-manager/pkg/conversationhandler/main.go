@@ -28,18 +28,18 @@ type ConversationHandler interface {
 		customerID uuid.UUID,
 		name string,
 		detail string,
-		referenceType conversation.ReferenceType,
+		referenceType conversation.Type,
 		referenceID string,
 		self *commonaddress.Address,
 		peer *commonaddress.Address,
 	) (*conversation.Conversation, error)
 	Get(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
 	Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*conversation.Conversation, error)
-	GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error)
+	GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.Type, referenceID string) (*conversation.Conversation, error)
 	Update(ctx context.Context, id uuid.UUID, name string, detail string) (*conversation.Conversation, error)
 
 	Hook(ctx context.Context, uri string, data []byte) error
-	Event(ctx context.Context, referenceType conversation.ReferenceType, data []byte) error
+	Event(ctx context.Context, referenceType conversation.Type, data []byte) error
 
 	MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media.Media) (*message.Message, error)
 }

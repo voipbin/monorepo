@@ -19,8 +19,8 @@ type WebhookMessage struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	ReferenceType ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID   string        `json:"reference_id,omitempty"`
+	ReferenceType Type   `json:"reference_type,omitempty"`
+	ReferenceID   string `json:"reference_id,omitempty"`
 
 	Self *commonaddress.Address `json:"self,omitempty"`
 	Peer *commonaddress.Address `json:"peer,omitempty"`
@@ -41,7 +41,7 @@ func (h *Conversation) ConvertWebhookMessage() *WebhookMessage {
 		Name:   h.Name,
 		Detail: h.Detail,
 
-		ReferenceType: h.ReferenceType,
+		ReferenceType: h.Type,
 		ReferenceID:   h.ReferenceID,
 
 		Self: h.Self,

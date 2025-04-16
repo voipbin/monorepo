@@ -148,7 +148,7 @@ func (mr *MockDBHandlerMockRecorder) ConversationGet(ctx, id any) *gomock.Call {
 }
 
 // ConversationGetByReferenceInfo mocks base method.
-func (m *MockDBHandler) ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error) {
+func (m *MockDBHandler) ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.Type, referenceID string) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationGetByReferenceInfo", ctx, customerID, referenceType, referenceID)
 	ret0, _ := ret[0].(*conversation.Conversation)

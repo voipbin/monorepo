@@ -59,7 +59,7 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 		&res.Name,
 		&res.Detail,
 
-		&res.ReferenceType,
+		&res.Type,
 		&res.ReferenceID,
 
 		&self,
@@ -149,7 +149,7 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		cv.Name,
 		cv.Detail,
 
-		cv.ReferenceType,
+		cv.Type,
 		cv.ReferenceID,
 
 		self,
@@ -236,7 +236,7 @@ func (h *handler) conversationGetFromCache(ctx context.Context, id uuid.UUID) (*
 }
 
 // ConversationGetByReferenceInfo returns conversation by the reference.
-func (h *handler) ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, ReferenceType conversation.ReferenceType, ReferenceID string) (*conversation.Conversation, error) {
+func (h *handler) ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, ReferenceType conversation.Type, ReferenceID string) (*conversation.Conversation, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
