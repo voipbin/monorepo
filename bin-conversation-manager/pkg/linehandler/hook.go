@@ -173,7 +173,7 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 		},
 
 		ConversationID: uuid.Nil,
-		Status:         message.StatusReceived,
+		Status:         message.StatusDone,
 
 		ReferenceType: conversation.ReferenceTypeLine,
 		ReferenceID:   referenceID,

@@ -13,24 +13,21 @@ import (
 type Message struct {
 	commonidentity.Identity
 
-	ConversationID uuid.UUID `json:"conversation_id"`
-	Direction      Direction `json:"direction"`
-	Status         Status    `json:"status"`
+	ConversationID uuid.UUID `json:"conversation_id,omitempty"`
+	Direction      Direction `json:"direction,omitempty"`
+	Status         Status    `json:"status,omitempty"`
 
-	ReferenceType conversation.ReferenceType `json:"reference_type"`
-	ReferenceID   string                     `json:"reference_id"`
+	ReferenceType conversation.ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   string                     `json:"reference_id,omitempty"`
 
-	TransactionID string `json:"transaction_id"` // uniq id for message's transaction
+	TransactionID string `json:"transaction_id,omitempty"` // uniq id for message's transaction
 
-	// Source      *commonaddress.Address `json:"source"`      // source
-	// Destination *commonaddress.Address `json:"destination"` // destination
+	Text   string        `json:"text,omitempty"`
+	Medias []media.Media `json:"medias,omitempty"`
 
-	Text   string        `json:"text"`
-	Medias []media.Media `json:"medias"`
-
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // Status defines
@@ -38,10 +35,7 @@ type Status string
 
 // list of Status
 const (
-	StatusSending     Status = "sending"
-	StatusSent        Status = "sent"
 	StatusFailed      Status = "failed"
-	StatusReceived    Status = "received"
 	StatusProgressing Status = "progressing"
 	StatusDone        Status = "done"
 )

@@ -229,7 +229,7 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","conversation_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 		{
@@ -260,7 +260,7 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"d373f1e8-e866-11ec-91ef-7711453397a7","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"d3a1f9f8-e866-11ec-a403-07ca24d89997","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"d373f1e8-e866-11ec-91ef-7711453397a7","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000"},{"id":"d3a1f9f8-e866-11ec-a403-07ca24d89997","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 	}
@@ -329,7 +329,7 @@ func Test_processV1ConversationsIDMessagesPost(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bb509f64-ec56-11ec-aa8b-374ae78e9b98","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bb509f64-ec56-11ec-aa8b-374ae78e9b98","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}

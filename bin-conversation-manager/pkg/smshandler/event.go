@@ -36,9 +36,9 @@ func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message
 		localAddr = &m.Targets[0].Destination
 	}
 
-	status := message.StatusReceived
+	status := message.StatusDone
 	if m.Direction == mmmessage.DirectionOutbound {
-		status = message.StatusSent
+		status = message.StatusDone
 	}
 
 	res := []*message.Message{}

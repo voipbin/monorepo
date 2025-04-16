@@ -52,8 +52,8 @@ func (h *conversationHandler) Create(
 	detail string,
 	referenceType conversation.ReferenceType,
 	referenceID string,
-	source *commonaddress.Address,
-	destination *commonaddress.Address,
+	self *commonaddress.Address,
+	peer *commonaddress.Address,
 ) (*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Create",
@@ -74,8 +74,8 @@ func (h *conversationHandler) Create(
 		Detail:        detail,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
-		Self:          source,
-		Peer:          destination,
+		Self:          self,
+		Peer:          peer,
 	}
 
 	if errCreate := h.db.ConversationCreate(ctx, tmp); errCreate != nil {

@@ -68,7 +68,7 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 				},
 				ConversationID: uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
 				Direction:      message.DirectionOutgoing,
-				Status:         message.StatusSending,
+				Status:         message.StatusProgressing,
 				ReferenceType:  conversation.ReferenceTypeLine,
 				ReferenceID:    "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
 				TransactionID:  "",
@@ -108,7 +108,7 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 			mockLine.EXPECT().Send(ctx, tt.conversation, tt.responseAccount, tt.text, tt.medias).Return(nil)
 
 			// update
-			mockDB.EXPECT().MessageUpdateStatus(ctx, tt.expectMessage.ID, message.StatusSent).Return(nil)
+			mockDB.EXPECT().MessageUpdateStatus(ctx, tt.expectMessage.ID, message.StatusDone).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageUpdated, tt.expectMessage)
 

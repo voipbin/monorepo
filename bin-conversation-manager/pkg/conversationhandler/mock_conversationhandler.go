@@ -11,6 +11,7 @@ package conversationhandler
 
 import (
 	context "context"
+	address "monorepo/bin-common-handler/models/address"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media "monorepo/bin-conversation-manager/models/media"
 	message "monorepo/bin-conversation-manager/models/message"
@@ -42,6 +43,21 @@ func NewMockConversationHandler(ctrl *gomock.Controller) *MockConversationHandle
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockConversationHandler) EXPECT() *MockConversationHandlerMockRecorder {
 	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockConversationHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, referenceType conversation.ReferenceType, referenceID string, self, peer *address.Address) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, referenceType, referenceID, self, peer)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockConversationHandlerMockRecorder) Create(ctx, customerID, name, detail, referenceType, referenceID, self, peer any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConversationHandler)(nil).Create), ctx, customerID, name, detail, referenceType, referenceID, self, peer)
 }
 
 // Event mocks base method.
