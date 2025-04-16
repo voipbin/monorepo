@@ -25,8 +25,7 @@ def upgrade():
             CHANGE COLUMN participants peer json;
     """)
     op.execute("""
-        ALTER TABLE conversation_messages
-            DROP COLUMN source;
+        ALTER TABLE conversation_messages DROP COLUMN source;
     """)
 
 
@@ -39,6 +38,5 @@ def downgrade():
             CHANGE COLUMN peer participants json;
     """)
     op.execute("""
-        ALTER TABLE conversation_messages
-            ADD COLUMN source json;
+        ALTER TABLE conversation_messages ADD COLUMN source json;
     """)
