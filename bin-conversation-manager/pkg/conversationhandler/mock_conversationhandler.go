@@ -46,7 +46,7 @@ func (m *MockConversationHandler) EXPECT() *MockConversationHandlerMockRecorder 
 }
 
 // Create mocks base method.
-func (m *MockConversationHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, referenceType conversation.ReferenceType, referenceID string, self, peer *address.Address) (*conversation.Conversation, error) {
+func (m *MockConversationHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, referenceType conversation.Type, referenceID string, self, peer *address.Address) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, referenceType, referenceID, self, peer)
 	ret0, _ := ret[0].(*conversation.Conversation)
@@ -61,7 +61,7 @@ func (mr *MockConversationHandlerMockRecorder) Create(ctx, customerID, name, det
 }
 
 // Event mocks base method.
-func (m *MockConversationHandler) Event(ctx context.Context, referenceType conversation.ReferenceType, data []byte) error {
+func (m *MockConversationHandler) Event(ctx context.Context, referenceType conversation.Type, data []byte) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Event", ctx, referenceType, data)
 	ret0, _ := ret[0].(error)
@@ -90,7 +90,7 @@ func (mr *MockConversationHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // GetByReferenceInfo mocks base method.
-func (m *MockConversationHandler) GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error) {
+func (m *MockConversationHandler) GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.Type, referenceID string) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByReferenceInfo", ctx, customerID, referenceType, referenceID)
 	ret0, _ := ret[0].(*conversation.Conversation)

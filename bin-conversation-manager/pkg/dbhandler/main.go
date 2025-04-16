@@ -29,7 +29,7 @@ type DBHandler interface {
 
 	ConversationCreate(ctx context.Context, cv *conversation.Conversation) error
 	ConversationGet(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
-	ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error)
+	ConversationGetByTypeAndDialogID(ctx context.Context, customerID uuid.UUID, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error)
 	ConversationGetBySelfAndPeer(ctx context.Context, self *commonaddress.Address, peer *commonaddress.Address) (*conversation.Conversation, error)
 	ConversationGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conversation.Conversation, error)
 	ConversationSet(ctx context.Context, id uuid.UUID, name string, detail string) error

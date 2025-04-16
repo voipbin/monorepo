@@ -27,7 +27,7 @@ type MessageHandler interface {
 		conversationID uuid.UUID,
 		direction message.Direction,
 		status message.Status,
-		referenceType conversation.ReferenceType,
+		referenceType conversation.Type,
 		referenceID string,
 		transactionID string,
 		text string,

@@ -73,9 +73,9 @@ func Test_GetByReferenceInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID    uuid.UUID
-		referenceType conversation.ReferenceType
-		referenceID   string
+		customerID       uuid.UUID
+		conversationType conversation.Type
+		dialogID         string
 
 		responseConversation *conversation.Conversation
 	}{
@@ -83,7 +83,7 @@ func Test_GetByReferenceInfo(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
-			conversation.ReferenceTypeLine,
+			conversation.TypeLine,
 			"a481fe6c-e6e9-11ec-92f7-6366decbd9e8",
 
 			&conversation.Conversation{
@@ -108,9 +108,9 @@ func Test_GetByReferenceInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tt.customerID, tt.referenceType, tt.referenceID).Return(tt.responseConversation, nil)
+			mockDB.EXPECT().ConversationGetByTypeAndDialogID(ctx, tt.customerID, tt.conversationType, tt.dialogID).Return(tt.responseConversation, nil)
 
-			res, err := h.GetByReferenceInfo(ctx, tt.customerID, tt.referenceType, tt.referenceID)
+			res, err := h.GetByReferenceInfo(ctx, tt.customerID, tt.conversationType, tt.dialogID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -130,7 +130,7 @@ func Test_Create(t *testing.T) {
 		customerID       uuid.UUID
 		conversationName string
 		detail           string
-		referenceType    conversation.ReferenceType
+		referenceType    conversation.Type
 		referenceID      string
 		source           *commonaddress.Address
 		destination      *commonaddress.Address
@@ -146,7 +146,7 @@ func Test_Create(t *testing.T) {
 			customerID:       uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
 			conversationName: "test conversation",
 			detail:           "test detail",
-			referenceType:    conversation.ReferenceTypeLine,
+			referenceType:    conversation.TypeLine,
 			referenceID:      "3dc385f8-e6e7-11ec-9250-5f6c3097570f",
 			source: &commonaddress.Address{
 				Type:   commonaddress.TypeLine,
@@ -171,10 +171,10 @@ func Test_Create(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d2a852d8-0069-11ee-96b8-3fffef7f1833"),
 					CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
 				},
-				Name:          "test conversation",
-				Detail:        "test detail",
-				ReferenceType: conversation.ReferenceTypeLine,
-				ReferenceID:   "3dc385f8-e6e7-11ec-9250-5f6c3097570f",
+				Name:     "test conversation",
+				Detail:   "test detail",
+				Type:     conversation.TypeLine,
+				DialogID: "3dc385f8-e6e7-11ec-9250-5f6c3097570f",
 				Self: &commonaddress.Address{
 					Type:   commonaddress.TypeLine,
 					Target: "2fcb542c-f113-11ec-a7de-6335ee489d7b",

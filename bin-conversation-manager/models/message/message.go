@@ -17,8 +17,8 @@ type Message struct {
 	Direction      Direction `json:"direction,omitempty"`
 	Status         Status    `json:"status,omitempty"`
 
-	ReferenceType conversation.ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID   string                     `json:"reference_id,omitempty"`
+	ReferenceType conversation.Type `json:"reference_type,omitempty"`
+	ReferenceID   string            `json:"reference_id,omitempty"`
 
 	TransactionID string `json:"transaction_id,omitempty"` // uniq id for message's transaction
 

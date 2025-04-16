@@ -25,7 +25,7 @@ func (h *subscribeHandler) processEventMessageMessageCreated(ctx context.Context
 		return err
 	}
 
-	if errEvent := h.conversationHandler.Event(ctx, conversation.ReferenceTypeMessage, m.Data); errEvent != nil {
+	if errEvent := h.conversationHandler.Event(ctx, conversation.TypeMessage, m.Data); errEvent != nil {
 		log.Errorf("Could not handle the event correctly. err: %v", errEvent)
 		return errEvent
 	}

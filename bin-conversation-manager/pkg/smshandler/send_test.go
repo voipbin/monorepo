@@ -37,7 +37,7 @@ func Test_Send(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b3181e20-ffd4-11ed-aa4e-37a91163c788"),
 				},
-				ReferenceID: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
+				DialogID: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
 			},
 			transactionID: "b37322e8-ffd4-11ed-a984-7b6db99c07e8",
 			text:          "test message.",

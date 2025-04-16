@@ -28,8 +28,8 @@ const (
 		name,
 		detail,
 
-		reference_type,
-		reference_id,
+		type,
+		dialog_id,
 
 		self,
 		peer,
@@ -59,8 +59,8 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 		&res.Name,
 		&res.Detail,
 
-		&res.ReferenceType,
-		&res.ReferenceID,
+		&res.Type,
+		&res.DialogID,
 
 		&self,
 		&peer,
@@ -105,8 +105,9 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		name,
 		detail,
 
-		reference_type,
-		reference_id,
+		type,
+
+		dialog_id,
 
 		self,
 		peer,
@@ -149,8 +150,8 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		cv.Name,
 		cv.Detail,
 
-		cv.ReferenceType,
-		cv.ReferenceID,
+		cv.Type,
+		cv.DialogID,
 
 		self,
 		peer,
@@ -235,8 +236,8 @@ func (h *handler) conversationGetFromCache(ctx context.Context, id uuid.UUID) (*
 	return res, nil
 }
 
-// ConversationGetByReferenceInfo returns conversation by the reference.
-func (h *handler) ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, ReferenceType conversation.ReferenceType, ReferenceID string) (*conversation.Conversation, error) {
+// ConversationGetByTypeAndDialogID returns conversation by the reference.
+func (h *handler) ConversationGetByTypeAndDialogID(ctx context.Context, customerID uuid.UUID, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
@@ -244,11 +245,11 @@ func (h *handler) ConversationGetByReferenceInfo(ctx context.Context, customerID
 		where
 			tm_delete >= ?
 			and customer_id = ?
-			and reference_type = ?
-			and reference_id = ?
+			and type = ?
+			and dialog_id = ?
 	`, conversationSelect)
 
-	row, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), ReferenceType, ReferenceID)
+	row, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), conversationType, dialogID)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConversationGetByReferenceInfo. err: %v", err)
 	}

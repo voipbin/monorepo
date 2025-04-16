@@ -147,21 +147,6 @@ func (mr *MockDBHandlerMockRecorder) ConversationGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGet", reflect.TypeOf((*MockDBHandler)(nil).ConversationGet), ctx, id)
 }
 
-// ConversationGetByReferenceInfo mocks base method.
-func (m *MockDBHandler) ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationGetByReferenceInfo", ctx, customerID, referenceType, referenceID)
-	ret0, _ := ret[0].(*conversation.Conversation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConversationGetByReferenceInfo indicates an expected call of ConversationGetByReferenceInfo.
-func (mr *MockDBHandlerMockRecorder) ConversationGetByReferenceInfo(ctx, customerID, referenceType, referenceID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetByReferenceInfo", reflect.TypeOf((*MockDBHandler)(nil).ConversationGetByReferenceInfo), ctx, customerID, referenceType, referenceID)
-}
-
 // ConversationGetBySelfAndPeer mocks base method.
 func (m *MockDBHandler) ConversationGetBySelfAndPeer(ctx context.Context, self, peer *address.Address) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
@@ -175,6 +160,21 @@ func (m *MockDBHandler) ConversationGetBySelfAndPeer(ctx context.Context, self, 
 func (mr *MockDBHandlerMockRecorder) ConversationGetBySelfAndPeer(ctx, self, peer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetBySelfAndPeer", reflect.TypeOf((*MockDBHandler)(nil).ConversationGetBySelfAndPeer), ctx, self, peer)
+}
+
+// ConversationGetByTypeAndDialogID mocks base method.
+func (m *MockDBHandler) ConversationGetByTypeAndDialogID(ctx context.Context, customerID uuid.UUID, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationGetByTypeAndDialogID", ctx, customerID, conversationType, dialogID)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationGetByTypeAndDialogID indicates an expected call of ConversationGetByTypeAndDialogID.
+func (mr *MockDBHandlerMockRecorder) ConversationGetByTypeAndDialogID(ctx, customerID, conversationType, dialogID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetByTypeAndDialogID", reflect.TypeOf((*MockDBHandler)(nil).ConversationGetByTypeAndDialogID), ctx, customerID, conversationType, dialogID)
 }
 
 // ConversationGets mocks base method.

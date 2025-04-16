@@ -23,7 +23,7 @@ func (h *smsHandler) Send(ctx context.Context, cv *conversation.Conversation, tr
 
 	destinations := []commonaddress.Address{
 		{
-			Target: cv.ReferenceID,
+			Target: cv.DialogID,
 		},
 	}
 	id := uuid.FromStringOrNil(transactionID)

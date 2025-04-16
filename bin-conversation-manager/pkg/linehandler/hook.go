@@ -125,11 +125,11 @@ func (h *lineHandler) hookEventTypeFollow(ctx context.Context, ac *account.Accou
 			OwnerType: commonidentity.OwnerTypeNone,
 			OwnerID:   uuid.Nil,
 		},
-		AccountID:     ac.ID,
-		Name:          peer.TargetName,
-		Detail:        "Conversation with " + peer.TargetName,
-		ReferenceType: conversation.ReferenceTypeLine,
-		ReferenceID:   referenceID,
+		AccountID: ac.ID,
+		Name:      peer.TargetName,
+		Detail:    "Conversation with " + peer.TargetName,
+		Type:      conversation.TypeLine,
+		DialogID:  referenceID,
 
 		Self: self,
 		Peer: peer,
@@ -175,7 +175,7 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 		ConversationID: uuid.Nil,
 		Status:         message.StatusDone,
 
-		ReferenceType: conversation.ReferenceTypeLine,
+		ReferenceType: conversation.TypeLine,
 		ReferenceID:   referenceID,
 
 		Text:   text,

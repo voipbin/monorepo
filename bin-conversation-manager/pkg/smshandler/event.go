@@ -57,7 +57,7 @@ func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message
 			ConversationID: uuid.Nil,
 			Status:         status,
 
-			ReferenceType: conversation.ReferenceTypeMessage,
+			ReferenceType: conversation.TypeMessage,
 			ReferenceID:   referenceID,
 
 			TransactionID: m.ID.String(),
