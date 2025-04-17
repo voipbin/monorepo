@@ -15,7 +15,7 @@ func Test_messageUnmarshal(t *testing.T) {
 		name string
 
 		data      []byte
-		expectRes Message
+		expectRes MessageEvent
 	}{
 		{
 			"normal",
@@ -68,7 +68,7 @@ func Test_messageUnmarshal(t *testing.T) {
 					"delivered_to": "https://en7evajwhmqbt.x.pipedream.net"
 				}
 			}`),
-			Message{
+			MessageEvent{
 				Data: Data{
 					EventType:  "message.received",
 					ID:         "19539336-11ba-4792-abd8-26d4f8745c4c",
@@ -111,7 +111,7 @@ func Test_messageUnmarshal(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res := Message{}
+			res := MessageEvent{}
 			if err := json.Unmarshal(tt.data, &res); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -226,14 +226,14 @@ func Test_GetSource(t *testing.T) {
 	tests := []struct {
 		name string
 
-		message Message
+		message MessageEvent
 
 		expectRes *commonaddress.Address
 	}{
 		{
 			"normal",
 
-			Message{
+			MessageEvent{
 				Data: Data{
 					EventType:  "message.received",
 					ID:         "19539336-11ba-4792-abd8-26d4f8745c4c",
@@ -293,14 +293,14 @@ func Test_GetTargets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		message Message
+		message MessageEvent
 
 		expectRes []target.Target
 	}{
 		{
 			"normal",
 
-			Message{
+			MessageEvent{
 				Data: Data{
 					EventType:  "message.received",
 					ID:         "19539336-11ba-4792-abd8-26d4f8745c4c",
@@ -367,13 +367,13 @@ func Test_GetText(t *testing.T) {
 	tests := []struct {
 		name string
 
-		message   Message
+		message   MessageEvent
 		expectRes string
 	}{
 		{
 			name: "normal",
 
-			message: Message{
+			message: MessageEvent{
 				Data: Data{
 					EventType:  "message.received",
 					ID:         "19539336-11ba-4792-abd8-26d4f8745c4c",

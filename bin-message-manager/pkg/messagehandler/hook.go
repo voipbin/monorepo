@@ -59,7 +59,7 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 		"data": data,
 	})
 
-	hm := telnyx.Message{}
+	hm := telnyx.MessageEvent{}
 	if errUnmarshal := json.Unmarshal(data, &hm); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
 		return nil, nil, errUnmarshal

@@ -1,154 +1,64 @@
 package telnyx
 
-import (
-	commonaddress "monorepo/bin-common-handler/models/address"
+import "time"
 
-	"monorepo/bin-message-manager/models/target"
-)
-
-// Message defines
-//
-//	{
-//		"data": {
-//			"event_type": "message.received",
-//			"id": "19539336-11ba-4792-abd8-26d4f8745c4c",
-//			"occurred_at": "2022-03-15T16:16:24.073+00:00",
-//			"payload": {
-//				"cc": [],
-//				"completed_at": null,
-//				"cost": null,
-//				"direction": "inbound",
-//				"encoding": "GSM-7",
-//				"errors": [],
-//				"from": {
-//					"carrier": "",
-//					"line_type": "",
-//					"phone_number": "+75973"
-//				},
-//				"id": "5d7f9c50-330a-4d7a-9ca8-4157d7a09047",
-//				"media": [],
-//				"messaging_profile_id": "40017f8e-49bd-4f16-9e3d-ef103f916228",
-//				"organization_id": "a506eae0-f72c-449c-bbe5-19ce35f82e0b",
-//				"parts": 1,
-//				"received_at": "2022-03-15T16:16:23.466+00:00",
-//				"record_type": "message",
-//				"sent_at": null,
-//				"subject": "",
-//				"tags": [],
-//				"text": "pchero21:\nTest message from skype.",
-//				"to": [
-//					{
-//					"carrier": "Telnyx",
-//					"line_type": "Wireless",
-//					"phone_number": "+15734531118",
-//					"status": "webhook_delivered"
-//					}
-//				],
-//				"type": "SMS",
-//				"valid_until": null,
-//				"webhook_failover_url": null,
-//				"webhook_url": "https://en7evajwhmqbt.x.pipedream.net"
-//			},
-//			"record_type": "event"
-//		},
-//		"meta": {
-//			"attempt": 1,
-//			"delivered_to": "https://en7evajwhmqbt.x.pipedream.net"
-//		}
-//	}
-type Message struct {
-	Data Data `json:"data"`
-	Meta Meta `json:"meta"`
+type MessageResponse struct {
+	Data MessageData `json:"data"`
 }
 
-// Meta defines
-type Meta struct {
-	Attempt     int    `json:"attempt"`
-	DeliveredTo string `json:"delivered_to"`
+type MessageData struct {
+	RecordType            string        `json:"record_type"`
+	Direction             string        `json:"direction"`
+	ID                    string        `json:"id"`
+	Type                  string        `json:"type"`
+	OrganizationID        string        `json:"organization_id"`
+	MessagingProfileID    string        `json:"messaging_profile_id"`
+	From                  FromInfo      `json:"from"`
+	To                    []ToInfo      `json:"to"`
+	Cc                    []interface{} `json:"cc"` // Assuming it's always an empty array, use []string if it can contain strings
+	Text                  string        `json:"text"`
+	Media                 []interface{} `json:"media"` // Assuming it's always an empty array, use []string if it can contain strings
+	WebhookURL            string        `json:"webhook_url"`
+	WebhookFailoverURL    string        `json:"webhook_failover_url"`
+	Encoding              string        `json:"encoding"`
+	Parts                 int           `json:"parts"`
+	Tags                  []string      `json:"tags"`
+	Cost                  CostInfo      `json:"cost"`
+	TcrCampaignID         interface{}   `json:"tcr_campaign_id"` // Assuming this can be null (empty), so using interface{}
+	TcrCampaignBillable   bool          `json:"tcr_campaign_billable"`
+	TcrCampaignRegistered interface{}   `json:"tcr_campaign_registered"` // Assuming this can be null
+	ReceivedAt            time.Time     `json:"received_at"`
+	SentAt                interface{}   `json:"sent_at"`      // Assuming this can be null
+	CompletedAt           interface{}   `json:"completed_at"` // Assuming this can be null
+	ValidUntil            time.Time     `json:"valid_until"`
+	Errors                []interface{} `json:"errors"` // Assuming it's always an empty array, use []string if it can contain strings
+	CostBreakdown         CostBreakdown `json:"cost_breakdown"`
 }
 
-// Data defines
-type Data struct {
-	EventType  string  `json:"event_type"`
-	ID         string  `json:"id"`
-	OccurredAt string  `json:"occurred_at"`
-	Payload    Payload `json:"payload"`
-	RecordType string  `json:"record_type"`
-}
-
-// FromTo defines
-type FromTo struct {
+type FromInfo struct {
+	PhoneNumber string `json:"phone_number"`
 	Carrier     string `json:"carrier"`
 	LineType    string `json:"line_type"`
+}
+
+type ToInfo struct {
 	PhoneNumber string `json:"phone_number"`
 	Status      string `json:"status"`
+	Carrier     string `json:"carrier"`
+	LineType    string `json:"line_type"`
 }
 
-// ConvertAddress returns converted commonaddress.Address
-func (h *FromTo) ConvertAddress() *commonaddress.Address {
-	return &commonaddress.Address{
-		Type:   commonaddress.TypeTel,
-		Target: h.PhoneNumber,
-	}
+type CostInfo struct {
+	Amount   string `json:"amount"`
+	Currency string `json:"currency"`
 }
 
-// GetSource returns converted messate source.
-func (h *Message) GetSource() *commonaddress.Address {
-	res := h.Data.Payload.From.ConvertAddress()
-
-	return res
+type CostBreakdown struct {
+	Rate       RateInfo `json:"rate"`
+	CarrierFee RateInfo `json:"carrier_fee"`
 }
 
-// GetTargets returns converted messate targets.
-func (h *Message) GetTargets() []target.Target {
-	// convert the to to the res
-	res := []target.Target{}
-	for _, to := range h.Data.Payload.To {
-		destination := to.ConvertAddress()
-		target := target.Target{
-			Destination: *destination,
-			Status:      target.StatusReceived,
-			Parts:       h.Data.Payload.Parts,
-		}
-		res = append(res, target)
-	}
-
-	return res
+type RateInfo struct {
+	Amount   string `json:"amount"`
+	Currency string `json:"currency"`
 }
-
-// GetText returns converted messate text.
-func (h *Message) GetText() string {
-	res := h.Data.Payload.Text
-	return res
-}
-
-// // ConvertMessage returns converted message.Message
-// func (h *Message) ConvertMessage(id uuid.UUID, customerID uuid.UUID) *message.Message {
-// 	source := h.Data.Payload.From.ConvertAddress()
-
-// 	// convert the to to the targets
-// 	targets := []target.Target{}
-// 	for _, to := range h.Data.Payload.To {
-// 		destination := to.ConvertAddress()
-// 		target := target.Target{
-// 			Destination: *destination,
-// 			Status:      target.StatusReceived,
-// 			Parts:       h.Data.Payload.Parts,
-// 		}
-// 		targets = append(targets, target)
-// 	}
-
-// 	return &message.Message{
-// 		ID:         id,
-// 		CustomerID: customerID,
-// 		Type:       message.Type(strings.ToLower(h.Data.Payload.Type)),
-// 		Source:     source,
-// 		Targets:    targets,
-
-// 		ProviderName:        message.ProviderNameTelnyx,
-// 		ProviderReferenceID: h.Data.Payload.ID,
-// 		Text:                h.Data.Payload.Text,
-// 		Medias:              []string{},
-// 		Direction:           message.DirectionInbound,
-// 	}
-// }

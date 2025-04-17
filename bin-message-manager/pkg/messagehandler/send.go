@@ -60,46 +60,62 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 
 	// send the message
 	go func() {
-		tmp, err := h.sendMessage(context.Background(), provider, res.ID, res.CustomerID, res.Source, res.Targets, res.Text)
-		if err != nil {
-			log.Errorf("Could not send the message correctly. err: %v", err)
+
+		handlers := []func(context.Context, uuid.UUID, *commonaddress.Address, []target.Target, string) ([]target.Target, error){
+			h.messageHandlerMessagebird.SendMessage,
+			h.messageHandlerTelnyx.SendMessage,
+		}
+
+		for _, handler := range handlers {
+			tmp, err := handler(ctx, res.ID, source, targets, text)
+			if err != nil {
+				log.Errorf("Could not send the message correctly. err: %v", err)
+				continue
+			}
+
+			updatedTmp, err := h.dbUpdateTargets(ctx, res.ID, tmp)
+			if err != nil {
+				log.Errorf("Could not update the message targets. err: %v", err)
+				return
+			}
+
+			log.WithField("message", updatedTmp).Debugf("Sent the message correctly. message_id: %s", updatedTmp.ID)
 			return
 		}
-		log.WithField("message", tmp).Debugf("Sent the message send request correctly. message_id: %s", id)
 	}()
 
 	return res, nil
 }
 
-// sendMessage sends the message to the destinations
-func (h *messageHandler) sendMessage(ctx context.Context, providerName message.ProviderName, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string) (*message.Message, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "sendMessage",
-		"id":          id,
-		"customer_id": customerID,
-		"source":      source,
-		"targets":     targets,
-	})
+// // sendMessage sends the message to the destinations
+// func (h *messageHandler) sendMessage(ctx context.Context, providerName message.ProviderName, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string) (*message.Message, error) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":        "sendMessage",
+// 		"id":          id,
+// 		"customer_id": customerID,
+// 		"source":      source,
+// 		"targets":     targets,
+// 	})
 
-	if providerName != message.ProviderNameMessagebird {
-		log.Errorf("Unsupported provider. provider: %s", providerName)
-		return nil, fmt.Errorf("unsupported provider")
-	}
+// 	if providerName != message.ProviderNameMessagebird {
+// 		log.Errorf("Unsupported provider. provider: %s", providerName)
+// 		return nil, fmt.Errorf("unsupported provider")
+// 	}
 
-	// send the message
-	tmp, err := h.messageHandlerMessagebird.SendMessage(id, customerID, source, targets, text)
-	if err != nil {
-		log.Errorf("Could not send the message correctly. err: %v", err)
-		return nil, err
-	}
-	log.WithField("result", tmp).Debugf("Sent the message correctly.")
+// 	// send the message
+// 	tmp, err := h.messageHandlerMessagebird.SendMessage(ctx, id, source, targets, text)
+// 	if err != nil {
+// 		log.Errorf("Could not send the message correctly. err: %v", err)
+// 		return nil, err
+// 	}
+// 	log.WithField("result", tmp).Debugf("Sent the message correctly.")
 
-	// update the targets
-	res, err := h.dbUpdateTargets(ctx, id, tmp)
-	if err != nil {
-		log.Errorf("Could not update the message targets. err: %v", err)
-		return nil, err
-	}
+// 	// update the targets
+// 	res, err := h.dbUpdateTargets(ctx, id, tmp)
+// 	if err != nil {
+// 		log.Errorf("Could not update the message targets. err: %v", err)
+// 		return nil, err
+// 	}
 
-	return res, nil
-}
+// 	return res, nil
+// }

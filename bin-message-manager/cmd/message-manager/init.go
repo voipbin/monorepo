@@ -23,6 +23,7 @@ const (
 	defaultRedisPassword           = ""
 
 	defaultAuthtokenMessageBird = ""
+	defaultAuthtokenTelnyx      = ""
 )
 
 // proces init
@@ -53,6 +54,7 @@ func initVariable() {
 	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
 	pflag.String("authtoken_messagebird", defaultAuthtokenMessageBird, "The authtoken for the messagebird.")
+	pflag.String("authtoken_telnyx", defaultAuthtokenTelnyx, "The authtoken for the telnyx.")
 	pflag.Parse()
 
 	// rabbitmq_address
@@ -142,6 +144,17 @@ func initVariable() {
 		panic(errEnv)
 	}
 	authtokenMessagebird = viper.GetString("authtoken_messagebird")
+
+	// authtoken_telnyx
+	if errFlag := viper.BindPFlag("authtoken_telnyx", pflag.Lookup("authtoken_telnyx")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("authtoken_telnyx", "AUTHTOKEN_TELNYX"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	authtokenTelnyx = viper.GetString("authtoken_telnyx")
 
 }
 

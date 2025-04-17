@@ -10,7 +10,9 @@
 package requestexternal
 
 import (
+	context "context"
 	messagebird "monorepo/bin-message-manager/models/messagebird"
+	telnyx "monorepo/bin-message-manager/models/telnyx"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -41,16 +43,31 @@ func (m *MockRequestExternal) EXPECT() *MockRequestExternalMockRecorder {
 }
 
 // MessagebirdSendMessage mocks base method.
-func (m *MockRequestExternal) MessagebirdSendMessage(sender string, destinations []string, text string) (*messagebird.Message, error) {
+func (m *MockRequestExternal) MessagebirdSendMessage(ctx context.Context, sender string, destinations []string, text string) (*messagebird.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessagebirdSendMessage", sender, destinations, text)
+	ret := m.ctrl.Call(m, "MessagebirdSendMessage", ctx, sender, destinations, text)
 	ret0, _ := ret[0].(*messagebird.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MessagebirdSendMessage indicates an expected call of MessagebirdSendMessage.
-func (mr *MockRequestExternalMockRecorder) MessagebirdSendMessage(sender, destinations, text any) *gomock.Call {
+func (mr *MockRequestExternalMockRecorder) MessagebirdSendMessage(ctx, sender, destinations, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagebirdSendMessage", reflect.TypeOf((*MockRequestExternal)(nil).MessagebirdSendMessage), sender, destinations, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagebirdSendMessage", reflect.TypeOf((*MockRequestExternal)(nil).MessagebirdSendMessage), ctx, sender, destinations, text)
+}
+
+// TelnyxSendMessage mocks base method.
+func (m *MockRequestExternal) TelnyxSendMessage(ctx context.Context, source, destination, text string) (*telnyx.MessageResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TelnyxSendMessage", ctx, source, destination, text)
+	ret0, _ := ret[0].(*telnyx.MessageResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TelnyxSendMessage indicates an expected call of TelnyxSendMessage.
+func (mr *MockRequestExternalMockRecorder) TelnyxSendMessage(ctx, source, destination, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxSendMessage", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxSendMessage), ctx, source, destination, text)
 }
