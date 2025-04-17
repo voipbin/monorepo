@@ -38,6 +38,10 @@ func Test_Send(t *testing.T) {
 					ID: uuid.FromStringOrNil("b3181e20-ffd4-11ed-aa4e-37a91163c788"),
 				},
 				DialogID: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
+				Peer: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+1234567890",
+				},
 			},
 			transactionID: "b37322e8-ffd4-11ed-a984-7b6db99c07e8",
 			text:          "test message.",
@@ -49,7 +53,8 @@ func Test_Send(t *testing.T) {
 			},
 			expectDestinations: []commonaddress.Address{
 				{
-					Target: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
+					Type:   commonaddress.TypeTel,
+					Target: "+1234567890",
 				},
 			},
 		},
