@@ -62,8 +62,8 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	go func() {
 
 		handlers := []func(context.Context, uuid.UUID, *commonaddress.Address, []target.Target, string) ([]target.Target, error){
-			h.messageHandlerMessagebird.SendMessage,
 			h.messageHandlerTelnyx.SendMessage,
+			h.messageHandlerMessagebird.SendMessage,
 		}
 
 		for _, handler := range handlers {
