@@ -18,9 +18,12 @@ import (
 // Send sends the message.
 func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Send",
-		"customer_id": customerID,
+		"func":         "Send",
+		"customer_id":  customerID,
+		"source":       source,
+		"destinations": destinations,
 	})
+	log.Debugf("Sending the message. message_len: %d", len(text))
 
 	// create targets
 	targets := []target.Target{}
