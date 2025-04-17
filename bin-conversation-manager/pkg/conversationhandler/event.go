@@ -70,7 +70,10 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 		// get conversation
 		cv, err := h.GetBySelfAndPeer(ctx, self, peer)
 		if err != nil {
-			log.Debugf("Could not find conversation. Create a new conversation.")
+			log.WithFields(logrus.Fields{
+				"self": self,
+				"peer": peer,
+			}).Debugf("Could not find conversation. Create a new conversation.")
 
 			// create a new conversation
 			cv, err = h.Create(
