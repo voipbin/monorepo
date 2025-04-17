@@ -62,7 +62,7 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 				Name:     "conversation",
 				Detail:   "conversation with ",
 				Type:     conversation.TypeMessage,
-				DialogID: "1fe68e20-f12f-11ec-84fe-03665484eeb6",
+				DialogID: "",
 				Self: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+886987654321",

@@ -8,7 +8,7 @@ create table conversation_messages(
   status          varchar(16),
 
   reference_type  varchar(255),
-  reference_id    varchar(16),
+  reference_id    binary(16),
 
   transaction_id  varchar(255),
 

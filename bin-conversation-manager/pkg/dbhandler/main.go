@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

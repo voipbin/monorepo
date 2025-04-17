@@ -82,7 +82,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 				"conversation",
 				"conversation with "+peer.TargetName,
 				conversation.TypeMessage,
-				mm.ID.String(),
+				"", // because it's sms conversation, there is no dialog id
 				self,
 				peer,
 			)

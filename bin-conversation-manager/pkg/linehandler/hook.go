@@ -104,8 +104,8 @@ func (h *lineHandler) hookEventTypeFollow(ctx context.Context, ac *account.Accou
 	res, err := h.reqHandler.ConversationV1ConversationCreate(
 		ctx,
 		ac.CustomerID,
-		peer.TargetName,
 		"Conversation with "+peer.TargetName,
+		"Auto generated conversation",
 		conversation.TypeLine,
 		dialogID,
 		self,
