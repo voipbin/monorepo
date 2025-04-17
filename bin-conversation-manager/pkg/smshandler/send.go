@@ -22,9 +22,7 @@ func (h *smsHandler) Send(ctx context.Context, cv *conversation.Conversation, tr
 	log.Debug("Sending an sms.")
 
 	destinations := []commonaddress.Address{
-		{
-			Target: cv.DialogID,
-		},
+		cv.Peer,
 	}
 	id := uuid.FromStringOrNil(transactionID)
 
