@@ -1,81 +1,66 @@
 package smshandler
 
-import (
-	"context"
-	"encoding/json"
+// // Event handles received sms/mms message
+// func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message, *commonaddress.Address, error) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func": "Event",
+// 		"data": data,
+// 	})
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-	commonidentity "monorepo/bin-common-handler/models/identity"
+// 	// parse the message
+// 	var m mmmessage.Message
+// 	if errUnmarshal := json.Unmarshal(data, &m); errUnmarshal != nil {
+// 		log.Errorf("Could not handle the event message. err: %v", errUnmarshal)
+// 		return nil, nil, errUnmarshal
+// 	}
 
-	mmmessage "monorepo/bin-message-manager/models/message"
+// 	// get local address
+// 	localAddr := m.Source
+// 	if m.Direction == mmmessage.DirectionInbound {
+// 		localAddr = &m.Targets[0].Destination
+// 	}
 
-	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
+// 	status := message.StatusDone
+// 	if m.Direction == mmmessage.DirectionOutbound {
+// 		status = message.StatusDone
+// 	}
 
-	"monorepo/bin-conversation-manager/models/message"
-)
+// 	res := []*message.Message{}
+// 	for range m.Targets {
 
-// Event handles received sms/mms message
-func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message, *commonaddress.Address, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "Event",
-		"data": data,
-	})
+// 		// referenceID := h.getReferenceID(&m, i)
+// 		// log.Debugf("Found reference id. reference_id: %s", referenceID)
 
-	// parse the message
-	var m mmmessage.Message
-	if errUnmarshal := json.Unmarshal(data, &m); errUnmarshal != nil {
-		log.Errorf("Could not handle the event message. err: %v", errUnmarshal)
-		return nil, nil, errUnmarshal
-	}
+// 		// create a message
+// 		tmp := &message.Message{
+// 			Identity: commonidentity.Identity{
+// 				ID:         uuid.Nil,
+// 				CustomerID: m.CustomerID,
+// 			},
 
-	// get local address
-	localAddr := m.Source
-	if m.Direction == mmmessage.DirectionInbound {
-		localAddr = &m.Targets[0].Destination
-	}
+// 			ConversationID: uuid.Nil,
+// 			Status:         status,
 
-	status := message.StatusDone
-	if m.Direction == mmmessage.DirectionOutbound {
-		status = message.StatusDone
-	}
+// 			ReferenceType: message.ReferenceTypeMessage,
+// 			ReferenceID:   m.ID,
 
-	res := []*message.Message{}
-	for i := range m.Targets {
+// 			TransactionID: m.ID.String(),
 
-		referenceID := h.getReferenceID(&m, i)
-		log.Debugf("Found reference id. reference_id: %s", referenceID)
+// 			Text: m.Text,
+// 		}
 
-		// create a message
-		tmp := &message.Message{
-			Identity: commonidentity.Identity{
-				ID:         uuid.Nil,
-				CustomerID: m.CustomerID,
-			},
+// 		res = append(res, tmp)
+// 	}
 
-			ConversationID: uuid.Nil,
-			Status:         status,
+// 	return res, localAddr, nil
+// }
 
-			ReferenceType: message.ReferenceTypeMessage,
-			ReferenceID:   referenceID,
+// // getReferenceID returns a reference id
+// func (h *smsHandler) getReferenceID(m *mmmessage.Message, idx int) string {
 
-			TransactionID: m.ID.String(),
+// 	if m.Direction == mmmessage.DirectionInbound {
+// 		return m.Source.Target
+// 	}
 
-			Text: m.Text,
-		}
-
-		res = append(res, tmp)
-	}
-
-	return res, localAddr, nil
-}
-
-// getReferenceID returns a reference id
-func (h *smsHandler) getReferenceID(m *mmmessage.Message, idx int) string {
-
-	if m.Direction == mmmessage.DirectionInbound {
-		return m.Source.Target
-	}
-
-	return m.Targets[idx].Destination.Target
-}
+// 	return m.Targets[idx].Destination.Target
+// }

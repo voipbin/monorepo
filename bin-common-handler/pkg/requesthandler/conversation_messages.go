@@ -36,6 +36,42 @@ func (r *requestHandler) ConversationV1MessageGet(ctx context.Context, messageID
 	return &res, nil
 }
 
+// ConversationV1MessageSend sends a request to conversation-manager
+// to send a message to the given conversation.
+// it returns detail list of conversation info if it succeed.
+func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []cvmedia.Media) (*cvmessage.Message, error) {
+	uri := "/v1/messages"
+
+	req := &cvrequest.V1DataMessagesPost{
+		ConversationID: conversationID,
+		Text:           text,
+		Medias:         medias,
+	}
+
+	m, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPost, "conversation/messages", 30000, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cvmessage.Message
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 // ConversationV1MessageGets sends a request to conversation-manager
 // to getting a list of message info.
 // it returns detail list of message info if it succeed.
@@ -69,12 +105,13 @@ func (r *requestHandler) ConversationV1MessageGets(ctx context.Context, pageToke
 // it returns created message info if it succeed.
 func (r *requestHandler) ConversationV1MessageCreate(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	conversationID uuid.UUID,
 	direction cvmessage.Direction,
 	status cvmessage.Status,
 	referenceType cvmessage.ReferenceType,
-	referenceID string,
+	referenceID uuid.UUID,
 	transactionID string,
 	text string,
 	medias []cvmedia.Media,
@@ -82,6 +119,7 @@ func (r *requestHandler) ConversationV1MessageCreate(
 	uri := "/v1/messages/create"
 
 	data := &cvrequest.V1DataMessagesCreatePost{
+		ID:             id,
 		CustomerID:     customerID,
 		ConversationID: conversationID,
 		Direction:      direction,

@@ -5,18 +5,17 @@ package smshandler
 import (
 	"context"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"monorepo/bin-conversation-manager/models/conversation"
-	"monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
+
+	"github.com/gofrs/uuid"
 )
 
 // SMSHandler defines
 type SMSHandler interface {
-	Send(ctx context.Context, cv *conversation.Conversation, transactionID string, text string) error
-	Event(ctx context.Context, data []byte) ([]*message.Message, *commonaddress.Address, error)
+	Send(ctx context.Context, cv *conversation.Conversation, messageID uuid.UUID, text string) error
 }
 
 // smsHandler defines

@@ -9,8 +9,6 @@ import (
 	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
-	cvmedia "monorepo/bin-conversation-manager/models/media"
-	cvmessage "monorepo/bin-conversation-manager/models/message"
 	cvrequest "monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
@@ -147,64 +145,4 @@ func (r *requestHandler) ConversationV1ConversationUpdate(ctx context.Context, c
 	}
 
 	return &res, nil
-}
-
-// ConversationV1MessageSend sends a request to conversation-manager
-// to send a message to the given conversation.
-// it returns detail list of conversation info if it succeed.
-func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []cvmedia.Media) (*cvmessage.Message, error) {
-	uri := fmt.Sprintf("/v1/conversations/%s/messages", conversationID)
-
-	req := &cvrequest.V1DataConversationsIDMessagesPost{
-		Text:   text,
-		Medias: medias,
-	}
-
-	m, err := json.Marshal(req)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPost, "conversation/conversations/<conversation-id>/messages", 30000, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var res cvmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// ConversationV1ConversationMessageGetsByConversationID sends a request to conversation-manager
-// to getting a list of conversation's messages.
-// it returns detail list of messages info if it succeed.
-func (r *requestHandler) ConversationV1ConversationMessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]cvmessage.Message, error) {
-	uri := fmt.Sprintf("/v1/conversations/%s/messages?page_token=%s&page_size=%d", conversationID, url.QueryEscape(pageToken), pageSize)
-
-	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/conversations/<conversation-id>/messages", 30000, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var res []cvmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return res, nil
 }

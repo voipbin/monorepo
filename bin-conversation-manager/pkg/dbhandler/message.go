@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -127,7 +128,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		m.Status,
 
 		m.ReferenceType,
-		m.ReferenceID,
+		m.ReferenceID.Bytes(),
 
 		m.TransactionID,
 
@@ -232,6 +233,62 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 	return res, nil
 }
 
+// MessageGets returns messages.
+func (h *handler) MessageGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*message.Message, error) {
+	// prepare
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
+	`, messageSelect)
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		case "customer_id", "conversation_id", "reference_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+	rows, err := h.db.Query(q, values...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. MessageGets. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*message.Message{}
+	for rows.Next() {
+		u, err := h.messageGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. MessageGets. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // MessageGetsByTransactionID returns message by the transaction_id.
 func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID string, token string, limit uint64) ([]*message.Message, error) {
 
@@ -258,40 +315,6 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 		u, err := h.messageGetFromRow(rows)
 		if err != nil {
 			return nil, fmt.Errorf("dbhandler: Could not scan the row. MessageGetsByTransactionID. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
-// MessageGetsByConversationID returns list of messages.
-func (h *handler) MessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, token string, limit uint64) ([]*message.Message, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and conversation_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, messageSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, conversationID.Bytes(), token, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. MessageGetsByConversationID. err: %v", err)
-	}
-	defer rows.Close()
-
-	var res []*message.Message
-	for rows.Next() {
-		u, err := h.messageGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. MessageGetsByConversationID. err: %v", err)
 		}
 
 		res = append(res, u)

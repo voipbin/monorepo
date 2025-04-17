@@ -278,19 +278,19 @@ func (mr *MockDBHandlerMockRecorder) MessageGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGet", reflect.TypeOf((*MockDBHandler)(nil).MessageGet), ctx, id)
 }
 
-// MessageGetsByConversationID mocks base method.
-func (m *MockDBHandler) MessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, token string, limit uint64) ([]*message.Message, error) {
+// MessageGets mocks base method.
+func (m *MockDBHandler) MessageGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageGetsByConversationID", ctx, conversationID, token, limit)
+	ret := m.ctrl.Call(m, "MessageGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// MessageGetsByConversationID indicates an expected call of MessageGetsByConversationID.
-func (mr *MockDBHandlerMockRecorder) MessageGetsByConversationID(ctx, conversationID, token, limit any) *gomock.Call {
+// MessageGets indicates an expected call of MessageGets.
+func (mr *MockDBHandlerMockRecorder) MessageGets(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGetsByConversationID", reflect.TypeOf((*MockDBHandler)(nil).MessageGetsByConversationID), ctx, conversationID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockDBHandler)(nil).MessageGets), ctx, token, size, filters)
 }
 
 // MessageGetsByTransactionID mocks base method.

@@ -40,7 +40,7 @@ type DBHandler interface {
 	MessageCreate(ctx context.Context, m *message.Message) error
 	MessageDelete(ctx context.Context, id uuid.UUID) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
-	MessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, token string, limit uint64) ([]*message.Message, error)
+	MessageGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*message.Message, error)
 	MessageGetsByTransactionID(ctx context.Context, transactionID string, token string, limit uint64) ([]*message.Message, error)
 	MessageUpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) error
 }

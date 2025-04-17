@@ -7,6 +7,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
+	"github.com/gofrs/uuid"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -166,7 +167,7 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 		message.DirectionIncoming,
 		message.StatusDone,
 		message.ReferenceTypeLine,
-		"",
+		uuid.Nil,
 		"",
 		text,
 		medias,

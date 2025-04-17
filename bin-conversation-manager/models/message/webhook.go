@@ -19,7 +19,7 @@ type WebhookMessage struct {
 	Status         Status    `json:"status,omitempty"`
 
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID   string        `json:"reference_id,omitempty"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
 	Text   string        `json:"text,omitempty"`
 	Medias []media.Media `json:"medias,omitempty"`

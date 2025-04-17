@@ -8,12 +8,12 @@ import (
 type Media struct {
 	commonidentity.Identity
 
-	Type     Type   `json:"type"`
-	Filename string `json:"filename"`
+	Type     Type   `json:"type,omitempty"`
+	Filename string `json:"filename,omitempty"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // Type defines

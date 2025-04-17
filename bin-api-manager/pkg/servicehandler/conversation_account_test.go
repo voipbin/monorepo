@@ -18,7 +18,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_ConversationAccount(t *testing.T) {
+func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -31,18 +31,18 @@ func Test_ConversationAccount(t *testing.T) {
 		expectRes        []*cvaccount.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			"2020-10-20T01:00:00.995000",
-			10,
+			pageToken: "2020-10-20T01:00:00.995000",
+			pageSize:  10,
 
-			[]cvaccount.Account{
+			responseAccounts: []cvaccount.Account{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("e7c38e4c-0048-11ee-b366-4bc7a645f6fb"),
@@ -54,11 +54,11 @@ func Test_ConversationAccount(t *testing.T) {
 					},
 				},
 			},
-			map[string]string{
+			expectFilters: map[string]string{
 				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
 				"deleted":     "false",
 			},
-			[]*cvaccount.WebhookMessage{
+			expectRes: []*cvaccount.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("e7c38e4c-0048-11ee-b366-4bc7a645f6fb"),

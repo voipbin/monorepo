@@ -39,8 +39,8 @@ func Test_MessageCreate(t *testing.T) {
 				Direction:      message.DirectionIncoming,
 				Status:         message.StatusDone,
 				ReferenceType:  message.ReferenceTypeLine,
-				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
+				ReferenceID:    uuid.FromStringOrNil("207b7274-f175-11ec-acf9-73a933332479"),
+				TransactionID:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				Text:           "Hello world",
 				Medias:         []media.Media{},
 			},
@@ -55,8 +55,8 @@ func Test_MessageCreate(t *testing.T) {
 				Direction:      message.DirectionIncoming,
 				Status:         message.StatusDone,
 				ReferenceType:  message.ReferenceTypeLine,
-				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
+				ReferenceID:    uuid.FromStringOrNil("207b7274-f175-11ec-acf9-73a933332479"),
+				TransactionID:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				Text:           "Hello world",
 				Medias:         []media.Media{},
 				TMCreate:       "2022-04-18 03:22:17.995000",
@@ -111,65 +111,65 @@ func Test_MessageCreate(t *testing.T) {
 	}
 }
 
-func Test_MessageGetsByConversationID(t *testing.T) {
+func Test_MessageGets(t *testing.T) {
 
 	tests := []struct {
-		name string
-
+		name     string
 		messages []*message.Message
 
-		conversationID uuid.UUID
-		token          string
-		limit          uint64
+		token   string
+		limit   uint64
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*message.Message
 	}{
 		{
 			name: "normal",
-
 			messages: []*message.Message{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("b0f40ae2-e4a4-11ec-b2f2-9f29af0582dc"),
-						CustomerID: uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+						ID:         uuid.FromStringOrNil("c4b65d46-1bce-11f0-aecf-6f12ebb97849"),
+						CustomerID: uuid.FromStringOrNil("c4f26c14-1bce-11f0-8e0c-13f9ca3df39e"),
 					},
-					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
+					ConversationID: uuid.FromStringOrNil("c51b50ca-1bce-11f0-8c4c-db38779c786d"),
 					Status:         message.StatusDone,
 					ReferenceType:  message.ReferenceTypeLine,
-					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+					ReferenceID:    uuid.FromStringOrNil("c548ef9e-1bce-11f0-801c-1f5a90192b72"),
 					Text:           "hello world",
 					Medias:         []media.Media{},
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("1f4dc5fa-e4a5-11ec-9ee3-1f32b34259d3"),
-						CustomerID: uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+						CustomerID: uuid.FromStringOrNil("c4f26c14-1bce-11f0-8e0c-13f9ca3df39e"),
 					},
-					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
+					ConversationID: uuid.FromStringOrNil("c51b50ca-1bce-11f0-8c4c-db38779c786d"),
 					Status:         message.StatusDone,
 					ReferenceType:  message.ReferenceTypeLine,
-					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+					ReferenceID:    uuid.FromStringOrNil("c57b83be-1bce-11f0-904e-171ea4fa9d1b"),
 					Text:           "This is test",
 					Medias:         []media.Media{},
 				},
 			},
 
-			conversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
-			token:          "2022-05-18 04:22:17.995000",
-			limit:          100,
+			token: "2022-05-18 04:22:17.995000",
+			limit: 100,
+			filters: map[string]string{
+				"conversation_id": "c51b50ca-1bce-11f0-8c4c-db38779c786d",
+			},
 
 			responseCurTime: "2022-04-18 03:22:17.995000",
 			expectRes: []*message.Message{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("b0f40ae2-e4a4-11ec-b2f2-9f29af0582dc"),
-						CustomerID: uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+						ID:         uuid.FromStringOrNil("c4b65d46-1bce-11f0-aecf-6f12ebb97849"),
+						CustomerID: uuid.FromStringOrNil("c4f26c14-1bce-11f0-8e0c-13f9ca3df39e"),
 					},
-					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
+					ConversationID: uuid.FromStringOrNil("c51b50ca-1bce-11f0-8c4c-db38779c786d"),
 					Status:         message.StatusDone,
 					ReferenceType:  message.ReferenceTypeLine,
-					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+					ReferenceID:    uuid.FromStringOrNil("c548ef9e-1bce-11f0-801c-1f5a90192b72"),
 					Text:           "hello world",
 					Medias:         []media.Media{},
 					TMCreate:       "2022-04-18 03:22:17.995000",
@@ -179,12 +179,12 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("1f4dc5fa-e4a5-11ec-9ee3-1f32b34259d3"),
-						CustomerID: uuid.FromStringOrNil("b11b373e-e4a4-11ec-b28e-0f4453fab505"),
+						CustomerID: uuid.FromStringOrNil("c4f26c14-1bce-11f0-8e0c-13f9ca3df39e"),
 					},
-					ConversationID: uuid.FromStringOrNil("b29dd422-e4a4-11ec-a381-37d969f9b237"),
+					ConversationID: uuid.FromStringOrNil("c51b50ca-1bce-11f0-8c4c-db38779c786d"),
 					Status:         message.StatusDone,
 					ReferenceType:  message.ReferenceTypeLine,
-					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+					ReferenceID:    uuid.FromStringOrNil("c57b83be-1bce-11f0-904e-171ea4fa9d1b"),
 					Text:           "This is test",
 					Medias:         []media.Media{},
 					TMCreate:       "2022-04-18 03:22:17.995000",
@@ -218,7 +218,7 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 				}
 			}
 
-			res, err := h.MessageGetsByConversationID(ctx, tt.conversationID, tt.token, tt.limit)
+			res, err := h.MessageGets(ctx, tt.token, tt.limit, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -328,7 +328,7 @@ func Test_MessageDelete(t *testing.T) {
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Status:         message.StatusDone,
 				ReferenceType:  message.ReferenceTypeLine,
-				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+				ReferenceID:    uuid.FromStringOrNil("3ce6f9e2-1bc5-11f0-8436-4b1f0f60ddf5"),
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
 				Text:           "Hello world",
 				Medias:         []media.Media{},
@@ -343,7 +343,7 @@ func Test_MessageDelete(t *testing.T) {
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
 				Status:         message.StatusDone,
 				ReferenceType:  message.ReferenceTypeLine,
-				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+				ReferenceID:    uuid.FromStringOrNil("3ce6f9e2-1bc5-11f0-8436-4b1f0f60ddf5"),
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
 				Text:           "Hello world",
 				Medias:         []media.Media{},

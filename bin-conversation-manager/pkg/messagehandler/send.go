@@ -46,23 +46,29 @@ func (h *messageHandler) sendSMS(ctx context.Context, cv *conversation.Conversat
 	})
 
 	// create a sent message
-	transactionID := uuid.Must(uuid.NewV4()).String()
-	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, message.ReferenceTypeMessage, cv.DialogID, transactionID, text, medias)
+	messageID := h.utilHandler.UUIDCreate()
+	res, err := h.Create(
+		ctx,
+		messageID,
+		cv.CustomerID,
+		cv.ID,
+		message.DirectionOutgoing,
+		message.StatusProgressing,
+		message.ReferenceTypeMessage,
+		messageID,
+		"",
+		text,
+		medias,
+	)
 	if err != nil {
 		log.Errorf("Could not create a message. err: %v", err)
 		return nil, err
 	}
 
-	if errSend := h.smsHandler.Send(ctx, cv, transactionID, text); errSend != nil {
+	if errSend := h.smsHandler.Send(ctx, cv, messageID, text); errSend != nil {
 		log.Errorf("Could not send the message. err: %v", errSend)
-		_, _ = h.UpdateStatus(ctx, tmp.ID, message.StatusFailed)
+		_, _ = h.UpdateStatus(ctx, res.ID, message.StatusFailed)
 		return nil, errSend
-	}
-
-	res, err := h.UpdateStatus(ctx, tmp.ID, message.StatusDone)
-	if err != nil {
-		log.Errorf("Could not update the message status. err: %v", err)
-		return nil, err
 	}
 
 	return res, nil
@@ -84,8 +90,19 @@ func (h *messageHandler) sendLine(ctx context.Context, cv *conversation.Conversa
 		return nil, errors.Wrap(err, "could not get account")
 	}
 
-	// create a sent message
-	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusProgressing, message.ReferenceTypeLine, cv.DialogID, "", text, medias)
+	tmp, err := h.Create(
+		ctx,
+		uuid.Nil,
+		cv.CustomerID,
+		cv.ID,
+		message.DirectionOutgoing,
+		message.StatusProgressing,
+		message.ReferenceTypeLine,
+		uuid.Nil,
+		"",
+		text,
+		medias,
+	)
 	if err != nil {
 		log.Errorf("Could not create a message. err: %v", err)
 		return nil, err

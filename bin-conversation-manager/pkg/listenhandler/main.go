@@ -44,17 +44,16 @@ var (
 	regV1AccountsID  = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 
 	// conversations
-	regV1ConversationsGet           = regexp.MustCompile(`/v1/conversations\?`)
-	regV1Conversations              = regexp.MustCompile(`/v1/conversations$`)
-	regV1ConversationsID            = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
-	regV1ConversationsIDMessagesGet = regexp.MustCompile("/v1/conversations/" + regUUID + `/messages\?`)
-	regV1ConversationsIDMessages    = regexp.MustCompile("/v1/conversations/" + regUUID + "/messages$")
+	regV1ConversationsGet = regexp.MustCompile(`/v1/conversations\?`)
+	regV1Conversations    = regexp.MustCompile(`/v1/conversations$`)
+	regV1ConversationsID  = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
 
 	// hooks
 	regV1Hooks = regexp.MustCompile(`/v1/hooks$`)
 
 	// messages
 	regV1MessagesGet    = regexp.MustCompile(`/v1/messages\?`)
+	regV1Messages       = regexp.MustCompile(`/v1/messages$`)
 	regV1MessagesCreate = regexp.MustCompile(`/v1/messages/create$`)
 )
 
@@ -204,16 +203,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1ConversationsIDPut(ctx, m)
 		requestType = "/v1/conversations/<conversation-id>"
 
-	// GET /conversations/<conversation-id>/messages
-	case regV1ConversationsIDMessagesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1ConversationsIDMessagesGet(ctx, m)
-		requestType = "/v1/conversations/<conversation-id>/messages"
-
-	// POST /conversations/<conversation-id>/messages
-	case regV1ConversationsIDMessages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1ConversationsIDMessagesPost(ctx, m)
-		requestType = "/v1/conversations/<conversation-id>/messages"
-
 	////////////////////
 	// hooks
 	////////////////////
@@ -228,6 +217,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// GET /messages
 	case regV1MessagesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1MessagesGet(ctx, m)
+		requestType = "/messages"
+
+	// POST /messages
+	case regV1Messages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1MessagesPost(ctx, m)
 		requestType = "/messages"
 
 	// POST /messages/create
