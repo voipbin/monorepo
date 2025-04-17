@@ -43,7 +43,9 @@ func (h *conversationHandler) Event(ctx context.Context, referenceType conversat
 func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "eventSMS",
+		"data": data,
 	})
+	log.Debugf("Received message.")
 
 	mm := mmmessage.Message{}
 	if err := json.Unmarshal(data, &mm); err != nil {

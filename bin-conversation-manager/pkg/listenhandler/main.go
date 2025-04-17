@@ -136,19 +136,16 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 // processRequest handles all of requests of the listen queue.
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processRequest",
+		"request": m,
+	})
 
 	var requestType string
 	var err error
 	var response *sock.Response
 
 	ctx := context.Background()
-	logrus.WithFields(
-		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {
@@ -242,7 +239,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		logrus.WithFields(
+		log.WithFields(
 			logrus.Fields{
 				"uri":    m.URI,
 				"method": m.Method,
@@ -256,7 +253,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 
 	// default error handler
 	if err != nil {
-		logrus.WithFields(
+		log.WithFields(
 			logrus.Fields{
 				"uri":    m.URI,
 				"method": m.Method,
@@ -265,12 +262,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response = simpleResponse(400)
 		err = nil
 	}
-
-	logrus.WithFields(
-		logrus.Fields{
-			"response": response,
-		},
-	).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }
