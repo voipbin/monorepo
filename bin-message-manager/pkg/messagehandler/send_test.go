@@ -154,10 +154,9 @@ func Test_Send(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
 
-			mockBird.EXPECT().SendMessage(ctx, tt.id, tt.responseMessage.Source, tt.expectTargets, tt.text).Return(tt.responseSend, nil).AnyTimes()
 			mockTelnyx.EXPECT().SendMessage(ctx, tt.id, tt.responseMessage.Source, tt.expectTargets, tt.text).Return(tt.responseSend, nil).AnyTimes()
 
-			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, tt.responseSend).Return(nil)
+			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, gomock.AnyOf(message.ProviderNameTelnyx, message.ProviderNameMessagebird), tt.responseSend).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageUpdated, tt.responseMessage)
 

@@ -239,14 +239,15 @@ func Test_MessageUpdateTargets(t *testing.T) {
 		name    string
 		message *message.Message
 
-		targets []target.Target
+		providerName message.ProviderName
+		targets      []target.Target
 
 		responseCurTime string
 		expectRes       *message.Message
 	}{
 		{
-			"test normal",
-			&message.Message{
+			name: "test normal",
+			message: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("4757235a-a226-11ec-9834-f70b08e3860f"),
 					CustomerID: uuid.FromStringOrNil("502469b6-a226-11ec-aedf-9fd7c533e572"),
@@ -272,7 +273,8 @@ func Test_MessageUpdateTargets(t *testing.T) {
 				Direction:           message.DirectionOutbound,
 			},
 
-			[]target.Target{
+			providerName: message.ProviderNameMessagebird,
+			targets: []target.Target{
 				{
 					Destination: commonaddress.Address{
 						Type:   commonaddress.TypeTel,
@@ -282,8 +284,8 @@ func Test_MessageUpdateTargets(t *testing.T) {
 				},
 			},
 
-			"2021-02-26 18:26:49.000",
-			&message.Message{
+			responseCurTime: "2021-02-26 18:26:49.000",
+			expectRes: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("4757235a-a226-11ec-9834-f70b08e3860f"),
 					CustomerID: uuid.FromStringOrNil("502469b6-a226-11ec-aedf-9fd7c533e572"),
@@ -338,7 +340,7 @@ func Test_MessageUpdateTargets(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any()).Return(nil)
-			if errTargets := h.MessageUpdateTargets(ctx, tt.message.ID, tt.targets); errTargets != nil {
+			if errTargets := h.MessageUpdateTargets(ctx, tt.message.ID, tt.providerName, tt.targets); errTargets != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errTargets)
 			}
 

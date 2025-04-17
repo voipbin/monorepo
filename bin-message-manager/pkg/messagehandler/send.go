@@ -61,25 +61,25 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	// send the message
 	go func() {
 
-		handlers := []func(context.Context, uuid.UUID, *commonaddress.Address, []target.Target, string) ([]target.Target, error){
-			h.messageHandlerTelnyx.SendMessage,
-			h.messageHandlerMessagebird.SendMessage,
+		handlers := map[message.ProviderName]func(context.Context, uuid.UUID, *commonaddress.Address, []target.Target, string) ([]target.Target, error){
+			message.ProviderNameTelnyx:      h.messageHandlerTelnyx.SendMessage,
+			message.ProviderNameMessagebird: h.messageHandlerMessagebird.SendMessage,
 		}
 
-		for _, handler := range handlers {
+		for providerName, handler := range handlers {
 			tmp, err := handler(ctx, res.ID, source, targets, text)
 			if err != nil {
-				log.Errorf("Could not send the message correctly. err: %v", err)
+				log.Errorf("Could not send the message correctly. handler: %s, err: %v", providerName, err)
 				continue
 			}
 
-			updatedTmp, err := h.dbUpdateTargets(ctx, res.ID, tmp)
+			updatedTmp, err := h.dbUpdateTargets(ctx, res.ID, providerName, tmp)
 			if err != nil {
-				log.Errorf("Could not update the message targets. err: %v", err)
+				log.Errorf("Could not update the message targets. handler: %s, err: %v", providerName, err)
 				return
 			}
 
-			log.WithField("message", updatedTmp).Debugf("Sent the message correctly. message_id: %s", updatedTmp.ID)
+			log.Debugf("Sent the message correctly. provider_name: %s, message_id: %s", providerName, updatedTmp.ID)
 			return
 		}
 	}()
