@@ -699,8 +699,6 @@ type RequestHandler interface {
 	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)
 	ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cvconversation.Conversation, error)
-	ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []cvmedia.Media) (*cvmessage.Message, error)
-	ConversationV1ConversationMessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]cvmessage.Message, error)
 	ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, name string, detail string) (*cvconversation.Conversation, error)
 
 	// conversation-manager hook
@@ -711,16 +709,18 @@ type RequestHandler interface {
 	ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cvmessage.Message, error)
 	ConversationV1MessageCreate(
 		ctx context.Context,
+		id uuid.UUID,
 		customerID uuid.UUID,
 		conversationID uuid.UUID,
 		direction cvmessage.Direction,
 		status cvmessage.Status,
 		referenceType cvmessage.ReferenceType,
-		referenceID string,
+		referenceID uuid.UUID,
 		transactionID string,
 		text string,
 		medias []cvmedia.Media,
 	) (*cvmessage.Message, error)
+	ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []cvmedia.Media) (*cvmessage.Message, error)
 
 	// email-manager email
 	EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]ememail.Email, error)

@@ -28,7 +28,7 @@ func Test_Create(t *testing.T) {
 		direction      message.Direction
 		status         message.Status
 		referenceType  message.ReferenceType
-		referenceID    string
+		referenceID    uuid.UUID
 		transactionID  string
 		text           string
 		medias         []media.Media
@@ -46,8 +46,8 @@ func Test_Create(t *testing.T) {
 			direction:      message.DirectionIncoming,
 			status:         message.StatusDone,
 			referenceType:  message.ReferenceTypeLine,
-			referenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-			transactionID:  "59946c7c-f1d5-11ec-bdad-2323294b508e",
+			referenceID:    uuid.FromStringOrNil("59946c7c-f1d5-11ec-bdad-2323294b508e"),
+			transactionID:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 			text:           "Hello world",
 			medias:         []media.Media{},
 
@@ -68,8 +68,8 @@ func Test_Create(t *testing.T) {
 				Direction:      message.DirectionIncoming,
 				Status:         message.StatusDone,
 				ReferenceType:  message.ReferenceTypeLine,
-				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				TransactionID:  "59946c7c-f1d5-11ec-bdad-2323294b508e",
+				ReferenceID:    uuid.FromStringOrNil("59946c7c-f1d5-11ec-bdad-2323294b508e"),
+				TransactionID:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				Text:           "Hello world",
 				Medias:         []media.Media{},
 			},
@@ -98,7 +98,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
-			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.direction, tt.status, tt.referenceType, tt.referenceID, tt.transactionID, tt.text, tt.medias)
+			res, err := h.Create(ctx, uuid.Nil, tt.customerID, tt.conversationID, tt.direction, tt.status, tt.referenceType, tt.referenceID, tt.transactionID, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -165,28 +165,30 @@ func Test_Delete(t *testing.T) {
 	}
 }
 
-func Test_GetsByConversationID(t *testing.T) {
+func Test_Gets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		conversationID uuid.UUID
-		pageToken      string
-		pageSize       uint64
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		responseMessages []*message.Message
 	}{
 		{
 			name: "normal",
 
-			conversationID: uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
-			pageToken:      "2022-04-18 03:22:17.995000",
-			pageSize:       100,
+			pageToken: "2022-04-18 03:22:17.995000",
+			pageSize:  100,
+			filters: map[string]string{
+				"customer_id": "853f266e-1bda-11f0-b63c-43ea1644089b",
+			},
 
 			responseMessages: []*message.Message{
 				{
 					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
+						ID: uuid.FromStringOrNil("a6b8ac2a-1bda-11f0-a905-cbf684282511"),
 					},
 				},
 			},
@@ -208,9 +210,9 @@ func Test_GetsByConversationID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().MessageGets(ctx, tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseMessages, nil)
 
-			res, err := h.GetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize)
+			res, err := h.Gets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -218,65 +220,6 @@ func Test_GetsByConversationID(t *testing.T) {
 			if !reflect.DeepEqual(res, tt.responseMessages) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessages, res)
 			}
-
-		})
-	}
-}
-
-func Test_GetsByTransactionID(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		transactionID string
-		pageToken     string
-		pageSize      uint64
-
-		responseMessages []*message.Message
-	}{
-		{
-			name: "normal",
-
-			transactionID: "2c4b24a4-f2ac-11ec-979b-5f7a7f205308",
-			pageToken:     "2022-04-18 03:22:17.995000",
-			pageSize:      100,
-
-			responseMessages: []*message.Message{
-				{
-					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
-					},
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockLine := linehandler.NewMockLineHandler(mc)
-			h := &messageHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				lineHandler:   mockLine,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().MessageGetsByTransactionID(ctx, tt.transactionID, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
-
-			res, err := h.GetsByTransactionID(ctx, tt.transactionID, tt.pageToken, tt.pageSize)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.responseMessages) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessages, res)
-			}
-
 		})
 	}
 }

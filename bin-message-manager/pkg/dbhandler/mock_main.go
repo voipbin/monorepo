@@ -102,15 +102,15 @@ func (mr *MockDBHandlerMockRecorder) MessageGets(ctx, customerID, size, token an
 }
 
 // MessageUpdateTargets mocks base method.
-func (m *MockDBHandler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, targets []target.Target) error {
+func (m *MockDBHandler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, provider message.ProviderName, targets []target.Target) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageUpdateTargets", ctx, id, targets)
+	ret := m.ctrl.Call(m, "MessageUpdateTargets", ctx, id, provider, targets)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MessageUpdateTargets indicates an expected call of MessageUpdateTargets.
-func (mr *MockDBHandlerMockRecorder) MessageUpdateTargets(ctx, id, targets any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) MessageUpdateTargets(ctx, id, provider, targets any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageUpdateTargets", reflect.TypeOf((*MockDBHandler)(nil).MessageUpdateTargets), ctx, id, targets)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageUpdateTargets", reflect.TypeOf((*MockDBHandler)(nil).MessageUpdateTargets), ctx, id, provider, targets)
 }

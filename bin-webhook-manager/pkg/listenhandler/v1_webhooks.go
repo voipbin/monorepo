@@ -14,12 +14,10 @@ import (
 
 // processV1WebhooksPost handles POST /v1/webhooks request
 func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1WebhooksPost",
-		},
-	)
-	log.WithField("request", m).Debugf("Sending a webhook message.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1WebhooksPost",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 3 {
@@ -28,18 +26,18 @@ func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *sock.Reque
 
 	var req request.V1DataWebhooksPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 
 	d, err := json.Marshal(req.Data)
 	if err != nil {
-		logrus.Errorf("Could not marshal the message. message: %v, err: %v", req.Data, err)
+		log.Errorf("Could not marshal the message. message: %v, err: %v", req.Data, err)
 		return simpleResponse(400), nil
 	}
 
 	if err := h.whHandler.SendWebhookToCustomer(ctx, req.CustomerID, req.DataType, d); err != nil {
-		logrus.Debugf("Could not send the webhook correctly. err: %v", err)
+		log.Debugf("Could not send the webhook correctly. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -53,12 +51,10 @@ func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *sock.Reque
 
 // processV1WebhookDestinationsPost handles POST /v1/webhook_destinations request
 func (h *listenHandler) processV1WebhookDestinationsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1WebhookDestinationsPost",
-		},
-	)
-	log.WithField("request", m).Debugf("Sending a webhook message.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1WebhookDestinationsPost",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 3 {

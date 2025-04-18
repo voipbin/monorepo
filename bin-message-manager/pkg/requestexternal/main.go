@@ -3,9 +3,12 @@ package requestexternal
 //go:generate mockgen -package requestexternal -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
+
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-message-manager/models/messagebird"
+	"monorepo/bin-message-manager/models/telnyx"
 )
 
 var (
@@ -34,17 +37,22 @@ func init() {
 type RequestExternal interface {
 
 	// messagebird
-	MessagebirdSendMessage(sender string, destinations []string, text string) (*messagebird.Message, error)
+	MessagebirdSendMessage(ctx context.Context, sender string, destinations []string, text string) (*messagebird.Message, error)
+
+	// telnyx
+	TelnyxSendMessage(ctx context.Context, source string, destination string, text string) (*telnyx.MessageResponse, error)
 }
 
 type requestExternal struct {
 	authtokenMessagebird string // authentication token for messagebird
+	authtokenTelnyx      string // authentication token for telnyx
 }
 
 // NewRequestExternal create RequestExternal
-func NewRequestExternal(authtokenMessagebird string) RequestExternal {
+func NewRequestExternal(authtokenMessagebird string, authtokenTelnyx string) RequestExternal {
 	h := &requestExternal{
 		authtokenMessagebird: authtokenMessagebird,
+		authtokenTelnyx:      authtokenTelnyx,
 	}
 
 	return h

@@ -17,7 +17,7 @@ type Message struct {
 	Status         Status    `json:"status,omitempty"`
 
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID   string        `json:"reference_id,omitempty"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
 	TransactionID string `json:"transaction_id,omitempty"` // uniq id for message's transaction
 

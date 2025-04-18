@@ -11,10 +11,12 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/pkg/dbhandler"
 	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
+	"monorepo/bin-message-manager/pkg/requestexternal"
 )
 
 // list of hook suffix types
@@ -41,6 +43,7 @@ type messageHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 
 	messageHandlerMessagebird messagehandlermessagebird.MessageHandlerMessagebird
+	messageHandlerTelnyx      MessageHandlerTelnyx
 }
 
 // list of variables
@@ -63,7 +66,7 @@ const (
 )
 
 // NewMessageHandler returns a new MessageHandler
-func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, messageHandlerMessagebird messagehandlermessagebird.MessageHandlerMessagebird) MessageHandler {
+func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, requestExternal requestexternal.RequestExternal) MessageHandler {
 
 	return &messageHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -71,6 +74,36 @@ func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHa
 		reqHandler:    r,
 		notifyHandler: n,
 
-		messageHandlerMessagebird: messageHandlerMessagebird,
+		messageHandlerMessagebird: NewMessageHandlerMessagebird(requestExternal),
+		messageHandlerTelnyx:      NewMessageHandlerTelnyx(requestExternal),
 	}
+}
+
+var (
+	metricsNamespace = "message_manager"
+
+	promTelnyxSendTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "telnyx_number_send_total",
+			Help:      "Total number of send message by type.",
+		},
+		[]string{"type"},
+	)
+
+	promMessagebirdSendTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "messagebird_number_send_total",
+			Help:      "Total number of send message by type.",
+		},
+		[]string{"type"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promTelnyxSendTotal,
+		promMessagebirdSendTotal,
+	)
 }

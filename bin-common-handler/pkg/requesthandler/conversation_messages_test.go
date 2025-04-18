@@ -85,6 +85,74 @@ func Test_ConversationV1MessageGet(t *testing.T) {
 	}
 }
 
+func Test_ConversationV1MessageSend(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conversationID uuid.UUID
+		text           string
+		medias         []cvmedia.Media
+
+		expectTarget  string
+		expectRequest *sock.Request
+		response      *sock.Response
+
+		expectRes *cvmessage.Message
+	}{
+		{
+			name: "normal",
+
+			conversationID: uuid.FromStringOrNil("e8b821ba-ec61-11ec-a892-ffa25490c095"),
+			text:           "hello world.",
+			medias:         []cvmedia.Media{},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"6d5ed26a-ec62-11ec-9aaa-7b9dc8a28675"}`),
+			},
+
+			expectTarget: "bin-manager.conversation-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/messages",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"conversation_id":"e8b821ba-ec61-11ec-a892-ffa25490c095","text":"hello world."}`),
+			},
+			expectRes: &cvmessage.Message{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("6d5ed26a-ec62-11ec-9aaa-7b9dc8a28675"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ConversationV1MessageSend(ctx, tt.conversationID, tt.text, tt.medias)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_ConversationV1MessageGets(t *testing.T) {
 
 	tests := []struct {
@@ -171,12 +239,13 @@ func Test_ConversationV1MessageCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id             uuid.UUID
 		customerID     uuid.UUID
 		conversationID uuid.UUID
 		direction      cvmessage.Direction
 		status         cvmessage.Status
 		referenceType  cvmessage.ReferenceType
-		referenceID    string
+		referenceID    uuid.UUID
 		transactionID  string
 		text           string
 		medias         []cvmedia.Media
@@ -190,12 +259,13 @@ func Test_ConversationV1MessageCreate(t *testing.T) {
 		{
 			name: "normal",
 
+			id:             uuid.FromStringOrNil("3edc5b3c-1bd6-11f0-8371-6725df99009d"),
 			customerID:     uuid.FromStringOrNil("8c9e3e90-1acc-11f0-8112-a7bddc5a51fd"),
 			conversationID: uuid.FromStringOrNil("55653a04-1ae1-11f0-82c9-473cc412083c"),
 			direction:      cvmessage.DirectionIncoming,
 			status:         cvmessage.StatusDone,
 			referenceType:  cvmessage.ReferenceTypeMessage,
-			referenceID:    "559292e2-1ae1-11f0-85f9-1fe5ad4a6e8b",
+			referenceID:    uuid.FromStringOrNil("559292e2-1ae1-11f0-85f9-1fe5ad4a6e8b"),
 			transactionID:  "55ee8b88-1ae1-11f0-9d84-33e1b1016fc7",
 			text:           "hello world",
 			medias:         []cvmedia.Media{},
@@ -211,7 +281,7 @@ func Test_ConversationV1MessageCreate(t *testing.T) {
 				URI:      "/v1/messages/create",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"8c9e3e90-1acc-11f0-8112-a7bddc5a51fd","conversation_id":"55653a04-1ae1-11f0-82c9-473cc412083c","direction":"incoming","status":"done","reference_type":"message","reference_id":"559292e2-1ae1-11f0-85f9-1fe5ad4a6e8b","transaction_id":"55ee8b88-1ae1-11f0-9d84-33e1b1016fc7","text":"hello world"}`),
+				Data:     []byte(`{"id":"3edc5b3c-1bd6-11f0-8371-6725df99009d","customer_id":"8c9e3e90-1acc-11f0-8112-a7bddc5a51fd","conversation_id":"55653a04-1ae1-11f0-82c9-473cc412083c","direction":"incoming","status":"done","reference_type":"message","reference_id":"559292e2-1ae1-11f0-85f9-1fe5ad4a6e8b","transaction_id":"55ee8b88-1ae1-11f0-9d84-33e1b1016fc7","text":"hello world"}`),
 			},
 			expectRes: &cvmessage.Message{
 				Identity: identity.Identity{
@@ -236,6 +306,7 @@ func Test_ConversationV1MessageCreate(t *testing.T) {
 
 			res, err := reqHandler.ConversationV1MessageCreate(
 				ctx,
+				tt.id,
 				tt.customerID,
 				tt.conversationID,
 				tt.direction,

@@ -22,7 +22,7 @@ type DBHandler interface {
 	MessageDelete(ctx context.Context, id uuid.UUID) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*message.Message, error)
-	MessageUpdateTargets(ctx context.Context, id uuid.UUID, targets []target.Target) error
+	MessageUpdateTargets(ctx context.Context, id uuid.UUID, provider message.ProviderName, targets []target.Target) error
 }
 
 // handler database handler

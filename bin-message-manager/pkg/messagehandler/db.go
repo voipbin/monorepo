@@ -53,14 +53,14 @@ func (h *messageHandler) dbCreate(ctx context.Context, m *message.Message) (*mes
 }
 
 // dbUpdateTargets updates the targets.
-func (h *messageHandler) dbUpdateTargets(ctx context.Context, id uuid.UUID, targets []target.Target) (*message.Message, error) {
+func (h *messageHandler) dbUpdateTargets(ctx context.Context, id uuid.UUID, providerName message.ProviderName, targets []target.Target) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "dbUpdateTargets",
 		"id":      id,
 		"targets": targets,
 	})
 
-	if errCreate := h.db.MessageUpdateTargets(ctx, id, targets); errCreate != nil {
+	if errCreate := h.db.MessageUpdateTargets(ctx, id, providerName, targets); errCreate != nil {
 		log.Errorf("Could not update the message targets. err: %v", errCreate)
 		return nil, errCreate
 	}

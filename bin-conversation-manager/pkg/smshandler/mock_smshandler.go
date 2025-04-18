@@ -11,11 +11,10 @@ package smshandler
 
 import (
 	context "context"
-	address "monorepo/bin-common-handler/models/address"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
-	message "monorepo/bin-conversation-manager/models/message"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,32 +42,16 @@ func (m *MockSMSHandler) EXPECT() *MockSMSHandlerMockRecorder {
 	return m.recorder
 }
 
-// Event mocks base method.
-func (m *MockSMSHandler) Event(ctx context.Context, data []byte) ([]*message.Message, *address.Address, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Event", ctx, data)
-	ret0, _ := ret[0].([]*message.Message)
-	ret1, _ := ret[1].(*address.Address)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// Event indicates an expected call of Event.
-func (mr *MockSMSHandlerMockRecorder) Event(ctx, data any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockSMSHandler)(nil).Event), ctx, data)
-}
-
 // Send mocks base method.
-func (m *MockSMSHandler) Send(ctx context.Context, cv *conversation.Conversation, transactionID, text string) error {
+func (m *MockSMSHandler) Send(ctx context.Context, cv *conversation.Conversation, messageID uuid.UUID, text string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", ctx, cv, transactionID, text)
+	ret := m.ctrl.Call(m, "Send", ctx, cv, messageID, text)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockSMSHandlerMockRecorder) Send(ctx, cv, transactionID, text any) *gomock.Call {
+func (mr *MockSMSHandlerMockRecorder) Send(ctx, cv, messageID, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockSMSHandler)(nil).Send), ctx, cv, transactionID, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockSMSHandler)(nil).Send), ctx, cv, messageID, text)
 }

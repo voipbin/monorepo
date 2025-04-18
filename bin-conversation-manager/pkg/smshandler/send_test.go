@@ -22,9 +22,9 @@ func Test_Send(t *testing.T) {
 	tests := []struct {
 		name string
 
-		conversation  *conversation.Conversation
-		transactionID string
-		text          string
+		conversation *conversation.Conversation
+		messageID    uuid.UUID
+		text         string
 
 		responseMessage *mmmessage.Message
 
@@ -38,9 +38,13 @@ func Test_Send(t *testing.T) {
 					ID: uuid.FromStringOrNil("b3181e20-ffd4-11ed-aa4e-37a91163c788"),
 				},
 				DialogID: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
+				Peer: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+1234567890",
+				},
 			},
-			transactionID: "b37322e8-ffd4-11ed-a984-7b6db99c07e8",
-			text:          "test message.",
+			messageID: uuid.FromStringOrNil("b37322e8-ffd4-11ed-a984-7b6db99c07e8"),
+			text:      "test message.",
 
 			responseMessage: &mmmessage.Message{
 				Identity: commonidentity.Identity{
@@ -49,7 +53,8 @@ func Test_Send(t *testing.T) {
 			},
 			expectDestinations: []commonaddress.Address{
 				{
-					Target: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
+					Type:   commonaddress.TypeTel,
+					Target: "+1234567890",
 				},
 			},
 		},
@@ -69,9 +74,9 @@ func Test_Send(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.FromStringOrNil(tt.transactionID), tt.conversation.CustomerID, &tt.conversation.Self, tt.expectDestinations, tt.text).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().MessageV1MessageSend(ctx, tt.messageID, tt.conversation.CustomerID, &tt.conversation.Self, tt.expectDestinations, tt.text).Return(tt.responseMessage, nil)
 
-			if err := h.Send(ctx, tt.conversation, tt.transactionID, tt.text); err != nil {
+			if err := h.Send(ctx, tt.conversation, tt.messageID, tt.text); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

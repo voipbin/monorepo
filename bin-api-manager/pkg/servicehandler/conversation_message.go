@@ -83,8 +83,12 @@ func (h *serviceHandler) conversationMessageGetsByConversationID(
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// get tmp
-	tmps, err := h.reqHandler.ConversationV1ConversationMessageGetsByConversationID(ctx, conversationID, token, size)
+	filters := map[string]string{
+		"deleted":         "false",
+		"conversation_id": conversationID.String(),
+	}
+
+	tmps, err := h.reqHandler.ConversationV1MessageGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get conversation messages info from the conversation-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get conversation messages info. err: %v", err)

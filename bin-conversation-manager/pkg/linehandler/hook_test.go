@@ -244,7 +244,7 @@ package linehandler
 // 	}
 // }
 
-// func Test_getParticipant(t *testing.T) {
+// func Test_GetPeer(t *testing.T) {
 
 // 	tests := []struct {
 // 		name string
@@ -258,9 +258,11 @@ package linehandler
 // 			name: "normal",
 
 // 			account: &account.Account{
-// 				ID:         uuid.FromStringOrNil("59e02406-ff16-11ed-ae5e-87a8da5c72e4"),
-// 				CustomerID: uuid.FromStringOrNil("5a1ccef6-ff16-11ed-9538-eb049dc1f23e"),
-// 				Secret:     "ba5f0575d826d5b4a052a43145ef1391",
+// 				Identity: commonidentity.Identity{
+// 					ID:         uuid.FromStringOrNil("59e02406-ff16-11ed-ae5e-87a8da5c72e4"),
+// 					CustomerID: uuid.FromStringOrNil("5a1ccef6-ff16-11ed-9538-eb049dc1f23e"),
+// 				},
+// 				Secret: "ba5f0575d826d5b4a052a43145ef1391",
 // 				// Token:      "<your line token>",
 // 			},
 // 			id: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
@@ -283,7 +285,7 @@ package linehandler
 
 // 			ctx := context.Background()
 
-// 			res, err := h.GetParticipant(ctx, tt.account, tt.id)
+// 			res, err := h.GetPeer(ctx, tt.account, tt.id)
 // 			if err != nil {
 // 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 // 			}

@@ -50,8 +50,8 @@ func (h *conversationHandler) Create(
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	referenceType conversation.Type,
-	referenceID string,
+	conversationType conversation.Type,
+	dialogID string,
 	self commonaddress.Address,
 	peer commonaddress.Address,
 ) (*conversation.Conversation, error) {
@@ -72,8 +72,8 @@ func (h *conversationHandler) Create(
 
 		Name:     name,
 		Detail:   detail,
-		Type:     referenceType,
-		DialogID: referenceID,
+		Type:     conversationType,
+		DialogID: dialogID,
 		Self:     self,
 		Peer:     peer,
 	}

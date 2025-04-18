@@ -18,7 +18,6 @@ import (
 	"monorepo/bin-message-manager/pkg/dbhandler"
 	"monorepo/bin-message-manager/pkg/listenhandler"
 	"monorepo/bin-message-manager/pkg/messagehandler"
-	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 )
 
 const serviceName = commonoutline.ServiceNameMessageManager
@@ -36,6 +35,7 @@ var (
 	redisDatabase           = 0
 	redisPassword           = ""
 	authtokenMessagebird    = ""
+	authtokenTelnyx         = ""
 )
 
 func main() {
@@ -96,10 +96,9 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName)
 
-	requestExternal := requestexternal.NewRequestExternal(authtokenMessagebird)
-	messagehandlerMessagebird := messagehandlermessagebird.NewMessageHandlerMessagebird(reqHandler, db, requestExternal)
+	requestExternal := requestexternal.NewRequestExternal(authtokenMessagebird, authtokenTelnyx)
 
-	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, messagehandlerMessagebird)
+	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal)
 	listenHandler := listenhandler.NewListenHandler(sockHandler, messageHandler)
 
 	// run

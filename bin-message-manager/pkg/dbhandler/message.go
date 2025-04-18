@@ -246,11 +246,12 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 }
 
 // NumberUpdateBasicInfo updates flow id.
-func (h *handler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, targets []target.Target) error {
+func (h *handler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, provider message.ProviderName, targets []target.Target) error {
 
 	q := `
 	update message_messages set
 		targets = ?,
+		provider_name = ?,
 		tm_update = ?
 	where
 		id = ?
@@ -263,6 +264,7 @@ func (h *handler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, target
 
 	_, err = h.db.Exec(q,
 		tmpTargets,
+		provider,
 		h.utilHandler.TimeGetCurTime(),
 		id.Bytes(),
 	)

@@ -1,6 +1,7 @@
 package requestexternal
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,7 +19,7 @@ import (
 )
 
 // MessagebirdSendMessage sends request to the messagebird to send the message.
-func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []string, text string) (*messagebird.Message, error) {
+func (h *requestExternal) MessagebirdSendMessage(ctx context.Context, sender string, destinations []string, text string) (*messagebird.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "MessagebirdSendMessage",
 		"sender":       sender,

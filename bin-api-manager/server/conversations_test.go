@@ -168,7 +168,7 @@ func Test_conversationsIDGet(t *testing.T) {
 	}
 }
 
-func Test_conversationsIDMessagesGet(t *testing.T) {
+func Test_GetConversationsIdMessages(t *testing.T) {
 
 	type test struct {
 		name  string
@@ -206,7 +206,7 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 			expectConversationID: uuid.FromStringOrNil("a09b01e0-ed2e-11ec-bdf1-8fa58d1092ad"),
 			expectPageSize:       20,
 			expectPageToken:      "2020-09-20 03:23:20.995000",
-			expectRes:            `{"result":[{"id":"120bc6da-ed2e-11ec-839d-cb324c315bf3","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
+			expectRes:            `{"result":[{"id":"120bc6da-ed2e-11ec-839d-cb324c315bf3","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
 		},
 	}
 
@@ -246,7 +246,7 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 	}
 }
 
-func Test_conversationsIDMessagesPost(t *testing.T) {
+func Test_PostConversationsIdMessages(t *testing.T) {
 
 	type test struct {
 		name  string
@@ -282,7 +282,7 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 
 			expectConversationID: uuid.FromStringOrNil("5950b02c-ed2f-11ec-9093-d3dcc91a72fa"),
 			expectText:           "hello world.",
-			expectRes:            `{"id":"44757534-ed2f-11ec-b41b-b36583f1d5a7","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:            `{"id":"44757534-ed2f-11ec-b41b-b36583f1d5a7","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 

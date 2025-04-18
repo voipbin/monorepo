@@ -1,6 +1,7 @@
 package requestexternal
 
 import (
+	"context"
 	reflect "reflect"
 	"testing"
 
@@ -61,8 +62,9 @@ func Test_MessagebirdSendMessage(t *testing.T) {
 			h := &requestExternal{
 				authtokenMessagebird: "4wuGDgAYlgYqB8RoYWbQ4HlwL", // test api key. does not send actual message
 			}
+			ctx := context.Background()
 
-			res, err := h.MessagebirdSendMessage(tt.sender, tt.destinations, tt.text)
+			res, err := h.MessagebirdSendMessage(ctx, tt.sender, tt.destinations, tt.text)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -16,72 +16,68 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_ServiceAgentConversationMessageGets(t *testing.T) {
+func Test_ConversationMessageGetsByConversationID(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name string
 
-		agent          *amagent.Agent
+		customer       *amagent.Agent
 		conversationID uuid.UUID
-		size           uint64
-		token          string
+		pageToken      string
+		pageSize       uint64
 
 		responseConversation *cvconversation.Conversation
 		responseMessages     []cvmessage.Message
 
 		expectFilters map[string]string
 		expectRes     []*cvmessage.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			customer: &amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
-					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				Permission: amagent.PermissionCustomerAgent,
+				Permission: amagent.PermissionCustomerAdmin,
 			},
-			conversationID: uuid.FromStringOrNil("d186a8c4-3ed3-11ef-8ff9-931b5d4f8461"),
-			size:           100,
-			token:          "2021-03-01 01:00:00.995000",
+			conversationID: uuid.FromStringOrNil("ee26103a-ed24-11ec-bfa1-7b247ecf7e93"),
+			pageToken:      "2020-10-20T01:00:00.995000",
+			pageSize:       10,
 
 			responseConversation: &cvconversation.Conversation{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("d186a8c4-3ed3-11ef-8ff9-931b5d4f8461"),
-				},
-				Owner: commonidentity.Owner{
-					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+					ID:         uuid.FromStringOrNil("ee26103a-ed24-11ec-bfa1-7b247ecf7e93"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
 			responseMessages: []cvmessage.Message{
 				{
 					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("25d8503a-3ed4-11ef-b8a8-2b447608d9c5"),
+						ID: uuid.FromStringOrNil("13c78e5e-ed25-11ec-b924-b319c14e0209"),
 					},
 				},
 				{
 					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("25febbda-3ed4-11ef-86de-272011cf8e77"),
+						ID: uuid.FromStringOrNil("13e8436a-ed25-11ec-ba44-8b0716e4b2f0"),
 					},
 				},
 			},
 
 			expectFilters: map[string]string{
 				"deleted":         "false",
-				"conversation_id": "d186a8c4-3ed3-11ef-8ff9-931b5d4f8461",
+				"conversation_id": "ee26103a-ed24-11ec-bfa1-7b247ecf7e93",
 			},
 			expectRes: []*cvmessage.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("25d8503a-3ed4-11ef-b8a8-2b447608d9c5"),
+						ID: uuid.FromStringOrNil("13c78e5e-ed25-11ec-b924-b319c14e0209"),
 					},
 				},
 				{
 					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("25febbda-3ed4-11ef-86de-272011cf8e77"),
+						ID: uuid.FromStringOrNil("13e8436a-ed25-11ec-ba44-8b0716e4b2f0"),
 					},
 				},
 			},
@@ -100,71 +96,68 @@ func Test_ServiceAgentConversationMessageGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
-			mockReq.EXPECT().ConversationV1MessageGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseMessages, nil)
+			mockReq.EXPECT().ConversationV1MessageGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseMessages, nil)
 
-			res, err := h.ServiceAgentConversationMessageGets(ctx, tt.agent, tt.conversationID, tt.size, tt.token)
+			res, err := h.ConversationMessageGetsByConversationID(ctx, tt.customer, tt.conversationID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
 		})
 	}
 }
 
-func Test_ServiceAgentConversationMessageSend(t *testing.T) {
+func Test_ConversationMessageSend(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name string
 
-		agent          *amagent.Agent
+		customer       *amagent.Agent
 		conversationID uuid.UUID
 		text           string
 		medias         []cvmedia.Media
 
-		responseConversation        *cvconversation.Conversation
-		responseConversationMessage *cvmessage.Message
+		responseConversation *cvconversation.Conversation
+		responseMessage      *cvmessage.Message
 
 		expectRes *cvmessage.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
-			name: "normal",
+			name: "simple text message",
 
-			agent: &amagent.Agent{
+			customer: &amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
-					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				Permission: amagent.PermissionCustomerAgent,
+				Permission: amagent.PermissionCustomerAdmin,
 			},
-			conversationID: uuid.FromStringOrNil("d186a8c4-3ed3-11ef-8ff9-931b5d4f8461"),
-			text:           "test message",
+			conversationID: uuid.FromStringOrNil("8dd8eda0-ed25-11ec-9b1a-07913127a65a"),
+			text:           "hello world",
 			medias:         []cvmedia.Media{},
 
 			responseConversation: &cvconversation.Conversation{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("d186a8c4-3ed3-11ef-8ff9-931b5d4f8461"),
-				},
-				Owner: commonidentity.Owner{
-					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+					ID:         uuid.FromStringOrNil("8dd8eda0-ed25-11ec-9b1a-07913127a65a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			responseConversationMessage: &cvmessage.Message{
+			responseMessage: &cvmessage.Message{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("25d8503a-3ed4-11ef-b8a8-2b447608d9c5"),
+					ID: uuid.FromStringOrNil("c9bd73a4-ed25-11ec-8283-43aafea65e87"),
 				},
 			},
 
 			expectRes: &cvmessage.WebhookMessage{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("25d8503a-3ed4-11ef-b8a8-2b447608d9c5"),
+					ID: uuid.FromStringOrNil("c9bd73a4-ed25-11ec-8283-43aafea65e87"),
 				},
 			},
 		},
@@ -182,18 +175,19 @@ func Test_ServiceAgentConversationMessageSend(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
-			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.conversationID, tt.text, tt.medias).Return(tt.responseConversationMessage, nil)
+			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.conversationID, tt.text, tt.medias).Return(tt.responseMessage, nil)
 
-			res, err := h.ServiceAgentConversationMessageSend(ctx, tt.agent, tt.conversationID, tt.text, tt.medias)
+			res, err := h.ConversationMessageSend(ctx, tt.customer, tt.conversationID, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(*res, *tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
 		})
 	}

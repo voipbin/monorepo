@@ -16,7 +16,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/cachehandler"
 )
 
-func Test_CallCreate(t *testing.T) {
+func Test_AccountCreate(t *testing.T) {
 
 	type test struct {
 		name            string
@@ -28,8 +28,8 @@ func Test_CallCreate(t *testing.T) {
 
 	tests := []test{
 		{
-			"have all",
-			&account.Account{
+			name: "have all",
+			account: &account.Account{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ec5d6fba-fdf3-11ed-9329-5b12d37e3b82"),
 					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
@@ -40,9 +40,9 @@ func Test_CallCreate(t *testing.T) {
 				Secret: "test secret",
 				Token:  "test token",
 			},
-			"2020-04-18T03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000",
 
-			&account.Account{
+			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ec5d6fba-fdf3-11ed-9329-5b12d37e3b82"),
 					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
@@ -59,16 +59,16 @@ func Test_CallCreate(t *testing.T) {
 			},
 		},
 		{
-			"empty",
+			name: "empty",
 
-			&account.Account{
+			account: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
 				},
 			},
-			"2020-04-18T03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000",
 
-			&account.Account{
+			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
 				},
@@ -341,6 +341,86 @@ func Test_AccountGets(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AccountDelete(t *testing.T) {
+
+	type test struct {
+		name    string
+		account *account.Account
+
+		id uuid.UUID
+
+		responseCurTime string
+
+		expectRes *account.Account
+	}
+
+	tests := []test{
+		{
+			name: "have all",
+			account: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fe975e76-1bdc-11f0-9f72-b3f86287ed78"),
+					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
+				},
+			},
+
+			id:              uuid.FromStringOrNil("fe975e76-1bdc-11f0-9f72-b3f86287ed78"),
+			responseCurTime: "2020-04-18T03:22:17.995000",
+
+			expectRes: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fe975e76-1bdc-11f0-9f72-b3f86287ed78"),
+					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
+				},
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			if err := h.AccountCreate(ctx, tt.account); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			if errDelete := h.AccountDelete(ctx, tt.account.ID); errDelete != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errDelete)
+			}
+
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			res, err := h.AccountGet(ctx, tt.account.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})

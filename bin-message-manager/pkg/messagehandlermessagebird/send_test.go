@@ -1,6 +1,7 @@
 package messagehandlermessagebird
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -21,11 +22,10 @@ func Test_marshal(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id         uuid.UUID
-		customerID uuid.UUID
-		sender     *commonaddress.Address
-		targets    []target.Target
-		text       string
+		id      uuid.UUID
+		sender  *commonaddress.Address
+		targets []target.Target
+		text    string
 
 		expectSender    string
 		expectReceivers []string
@@ -36,8 +36,7 @@ func Test_marshal(t *testing.T) {
 		{
 			name: "normal",
 
-			id:         uuid.FromStringOrNil("883112b8-a0f1-11ec-a2da-efa31b2f00ae"),
-			customerID: uuid.FromStringOrNil("88b74356-a0f1-11ec-bbfc-f3ae56ab6783"),
+			id: uuid.FromStringOrNil("883112b8-a0f1-11ec-a2da-efa31b2f00ae"),
 			sender: &commonaddress.Address{
 				Target: "+821100000001",
 			},
@@ -127,10 +126,11 @@ func Test_marshal(t *testing.T) {
 				db:              mockDB,
 				requestExternal: mockExternalReq,
 			}
+			ctx := context.Background()
 
-			mockExternalReq.EXPECT().MessagebirdSendMessage(tt.expectSender, tt.expectReceivers, tt.text).Return(tt.responseSend, nil)
+			mockExternalReq.EXPECT().MessagebirdSendMessage(ctx, tt.expectSender, tt.expectReceivers, tt.text).Return(tt.responseSend, nil)
 
-			res, err := h.SendMessage(tt.id, tt.customerID, tt.sender, tt.targets, tt.text)
+			res, err := h.SendMessage(ctx, tt.id, tt.sender, tt.targets, tt.text)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

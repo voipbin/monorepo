@@ -44,17 +44,16 @@ var (
 	regV1AccountsID  = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 
 	// conversations
-	regV1ConversationsGet           = regexp.MustCompile(`/v1/conversations\?`)
-	regV1Conversations              = regexp.MustCompile(`/v1/conversations$`)
-	regV1ConversationsID            = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
-	regV1ConversationsIDMessagesGet = regexp.MustCompile("/v1/conversations/" + regUUID + `/messages\?`)
-	regV1ConversationsIDMessages    = regexp.MustCompile("/v1/conversations/" + regUUID + "/messages$")
+	regV1ConversationsGet = regexp.MustCompile(`/v1/conversations\?`)
+	regV1Conversations    = regexp.MustCompile(`/v1/conversations$`)
+	regV1ConversationsID  = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
 
 	// hooks
 	regV1Hooks = regexp.MustCompile(`/v1/hooks$`)
 
 	// messages
 	regV1MessagesGet    = regexp.MustCompile(`/v1/messages\?`)
+	regV1Messages       = regexp.MustCompile(`/v1/messages$`)
 	regV1MessagesCreate = regexp.MustCompile(`/v1/messages/create$`)
 )
 
@@ -136,19 +135,16 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 // processRequest handles all of requests of the listen queue.
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processRequest",
+		"request": m,
+	})
 
 	var requestType string
 	var err error
 	var response *sock.Response
 
 	ctx := context.Background()
-	logrus.WithFields(
-		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {
@@ -207,16 +203,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1ConversationsIDPut(ctx, m)
 		requestType = "/v1/conversations/<conversation-id>"
 
-	// GET /conversations/<conversation-id>/messages
-	case regV1ConversationsIDMessagesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1ConversationsIDMessagesGet(ctx, m)
-		requestType = "/v1/conversations/<conversation-id>/messages"
-
-	// POST /conversations/<conversation-id>/messages
-	case regV1ConversationsIDMessages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1ConversationsIDMessagesPost(ctx, m)
-		requestType = "/v1/conversations/<conversation-id>/messages"
-
 	////////////////////
 	// hooks
 	////////////////////
@@ -233,6 +219,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1MessagesGet(ctx, m)
 		requestType = "/messages"
 
+	// POST /messages
+	case regV1Messages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1MessagesPost(ctx, m)
+		requestType = "/messages"
+
 	// POST /messages/create
 	case regV1MessagesCreate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1MessagesCreatePost(ctx, m)
@@ -242,7 +233,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		logrus.WithFields(
+		log.WithFields(
 			logrus.Fields{
 				"uri":    m.URI,
 				"method": m.Method,
@@ -256,7 +247,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 
 	// default error handler
 	if err != nil {
-		logrus.WithFields(
+		log.WithFields(
 			logrus.Fields{
 				"uri":    m.URI,
 				"method": m.Method,
@@ -265,12 +256,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response = simpleResponse(400)
 		err = nil
 	}
-
-	logrus.WithFields(
-		logrus.Fields{
-			"response": response,
-		},
-	).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }

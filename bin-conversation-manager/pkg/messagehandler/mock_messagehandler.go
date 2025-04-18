@@ -45,18 +45,18 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockMessageHandler) Create(ctx context.Context, customerID, conversationID uuid.UUID, direction message.Direction, status message.Status, referenceType message.ReferenceType, referenceID, transactionID, text string, medias []media.Media) (*message.Message, error) {
+func (m *MockMessageHandler) Create(ctx context.Context, id, customerID, conversationID uuid.UUID, direction message.Direction, status message.Status, referenceType message.ReferenceType, referenceID uuid.UUID, transactionID, text string, medias []media.Media) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias)
+	ret := m.ctrl.Call(m, "Create", ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockMessageHandlerMockRecorder) Create(ctx, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias any) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Create(ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias)
 }
 
 // Delete mocks base method.
@@ -74,34 +74,34 @@ func (mr *MockMessageHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMessageHandler)(nil).Delete), ctx, id)
 }
 
-// GetsByConversationID mocks base method.
-func (m *MockMessageHandler) GetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]*message.Message, error) {
+// Get mocks base method.
+func (m *MockMessageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByConversationID", ctx, conversationID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockMessageHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMessageHandler)(nil).Get), ctx, id)
+}
+
+// Gets mocks base method.
+func (m *MockMessageHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByConversationID indicates an expected call of GetsByConversationID.
-func (mr *MockMessageHandlerMockRecorder) GetsByConversationID(ctx, conversationID, pageToken, pageSize any) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockMessageHandlerMockRecorder) Gets(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByConversationID", reflect.TypeOf((*MockMessageHandler)(nil).GetsByConversationID), ctx, conversationID, pageToken, pageSize)
-}
-
-// GetsByTransactionID mocks base method.
-func (m *MockMessageHandler) GetsByTransactionID(ctx context.Context, transactionID, pageToken string, pageSize uint64) ([]*message.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByTransactionID", ctx, transactionID, pageToken, pageSize)
-	ret0, _ := ret[0].([]*message.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetsByTransactionID indicates an expected call of GetsByTransactionID.
-func (mr *MockMessageHandlerMockRecorder) GetsByTransactionID(ctx, transactionID, pageToken, pageSize any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByTransactionID", reflect.TypeOf((*MockMessageHandler)(nil).GetsByTransactionID), ctx, transactionID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, pageToken, pageSize, filters)
 }
 
 // Send mocks base method.

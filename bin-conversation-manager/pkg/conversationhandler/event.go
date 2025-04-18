@@ -43,7 +43,9 @@ func (h *conversationHandler) Event(ctx context.Context, referenceType conversat
 func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "eventSMS",
+		"data": data,
 	})
+	log.Debugf("Received message.")
 
 	mm := mmmessage.Message{}
 	if err := json.Unmarshal(data, &mm); err != nil {
@@ -68,7 +70,10 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 		// get conversation
 		cv, err := h.GetBySelfAndPeer(ctx, self, peer)
 		if err != nil {
-			log.Debugf("Could not find conversation. Create a new conversation.")
+			log.WithFields(logrus.Fields{
+				"self": self,
+				"peer": peer,
+			}).Debugf("Could not find conversation. Create a new conversation.")
 
 			// create a new conversation
 			cv, err = h.Create(
@@ -77,7 +82,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 				"conversation",
 				"conversation with "+peer.TargetName,
 				conversation.TypeMessage,
-				mm.ID.String(),
+				"", // because it's sms conversation, there is no dialog id
 				self,
 				peer,
 			)
@@ -88,22 +93,36 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 		}
 		log.WithField("conversation", cv).Debugf("Found conversation. conversation_id: %s", cv.ID)
 
-		m, err := h.messageHandler.Create(
-			ctx,
-			cv.CustomerID,
-			cv.ID,
-			direction,
-			message.StatusDone,
-			message.ReferenceTypeMessage,
-			mm.ID.String(),
-			"",
-			mm.Text,
-			[]media.Media{},
-		)
+		tmp, err := h.messageHandler.Get(ctx, mm.ID)
 		if err != nil {
-			return errors.Wrapf(err, "Could not create a message")
+			log.Debugf("Could not find the message. Create a new message.")
+
+			m, err := h.messageHandler.Create(
+				ctx,
+				mm.ID,
+				cv.CustomerID,
+				cv.ID,
+				direction,
+				message.StatusDone,
+				message.ReferenceTypeMessage,
+				mm.ID,
+				"",
+				mm.Text,
+				[]media.Media{},
+			)
+			if err != nil {
+				return errors.Wrapf(err, "Could not create a message")
+			}
+			log.WithField("message", m).Debugf("Create a message. message_id: %s", m.ID)
+		} else {
+			log.WithField("message", tmp).Debugf("Found message. Updating the message status. message_id: %s", tmp.ID)
+			updated, err := h.messageHandler.UpdateStatus(ctx, tmp.ID, message.StatusDone)
+			if err != nil {
+				return errors.Wrapf(err, "Could not update the message")
+			}
+
+			log.WithField("message", updated).Debugf("Updated message. message_id: %s", updated.ID)
 		}
-		log.WithField("message", m).Debugf("Create a message. message_id: %s", m.ID)
 	}
 
 	return nil

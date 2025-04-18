@@ -86,17 +86,19 @@ func Test_UpdateTargets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id      uuid.UUID
-		targets []target.Target
+		id           uuid.UUID
+		providerName message.ProviderName
+		targets      []target.Target
 
 		responseGet *message.Message
 		expectRes   *message.Message
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("ca37640c-a225-11ec-8cbf-fbf3ceb420d5"),
-			[]target.Target{
+			id:           uuid.FromStringOrNil("ca37640c-a225-11ec-8cbf-fbf3ceb420d5"),
+			providerName: message.ProviderNameTelnyx,
+			targets: []target.Target{
 				{
 					Destination: commonaddress.Address{
 						Type:   commonaddress.TypeTel,
@@ -106,12 +108,12 @@ func Test_UpdateTargets(t *testing.T) {
 				},
 			},
 
-			&message.Message{
+			responseGet: &message.Message{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
 				},
 			},
-			&message.Message{
+			expectRes: &message.Message{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
 				},
@@ -136,11 +138,11 @@ func Test_UpdateTargets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, tt.targets).Return(nil)
+			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, tt.providerName, tt.targets).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseGet, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, message.EventTypeMessageUpdated, tt.responseGet)
 
-			res, err := h.dbUpdateTargets(ctx, tt.id, tt.targets)
+			res, err := h.dbUpdateTargets(ctx, tt.id, tt.providerName, tt.targets)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

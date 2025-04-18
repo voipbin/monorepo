@@ -40,6 +40,8 @@ spec:
               value: "1"
             - name: AUTHTOKEN_MESSAGEBIRD
               value: ${AUTHTOKEN_MESSAGEBIRD}
+            - name: AUTHTOKEN_TELNYX
+              value: ${TELNYX_TOKEN}
           ports:
             - name: metrics
               protocol: "TCP"

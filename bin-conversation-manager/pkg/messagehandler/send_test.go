@@ -20,9 +20,10 @@ import (
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
 	"monorepo/bin-conversation-manager/pkg/linehandler"
+	"monorepo/bin-conversation-manager/pkg/smshandler"
 )
 
-func Test_SendToConversation_sendToConversationLine(t *testing.T) {
+func Test_Send_sendLine(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -70,7 +71,7 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 				Direction:      message.DirectionOutgoing,
 				Status:         message.StatusProgressing,
 				ReferenceType:  message.ReferenceTypeLine,
-				ReferenceID:    "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
+				ReferenceID:    uuid.Nil,
 				TransactionID:  "",
 				Text:           "hello, this is test message.",
 				Medias:         []media.Media{},
@@ -111,6 +112,99 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 			mockDB.EXPECT().MessageUpdateStatus(ctx, tt.expectMessage.ID, message.StatusDone).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageUpdated, tt.expectMessage)
+
+			res, err := h.Send(ctx, tt.conversation, tt.text, tt.medias)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectMessage) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectMessage, res)
+			}
+		})
+	}
+}
+
+func Test_Send_sendSMS(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conversation *conversation.Conversation
+		text         string
+		medias       []media.Media
+
+		responseUUIDSmsID uuid.UUID
+
+		expectMessage *message.Message
+	}{
+		{
+			name: "line text type",
+
+			conversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("063e96aa-1bc2-11f0-bf97-6b63f3f47bbd"),
+					CustomerID: uuid.FromStringOrNil("06706478-1bc2-11f0-963f-67d210800b88"),
+				},
+				Type: conversation.TypeMessage,
+				Self: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+123456789",
+				},
+				Peer: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+987654321",
+				},
+			},
+			text:   "hello, this is test message.",
+			medias: []media.Media{},
+
+			responseUUIDSmsID: uuid.FromStringOrNil("06d11af2-1bc2-11f0-bf96-2f9dcd281889"),
+
+			expectMessage: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("06d11af2-1bc2-11f0-bf96-2f9dcd281889"),
+					CustomerID: uuid.FromStringOrNil("06706478-1bc2-11f0-963f-67d210800b88"),
+				},
+				ConversationID: uuid.FromStringOrNil("063e96aa-1bc2-11f0-bf97-6b63f3f47bbd"),
+				Direction:      message.DirectionOutgoing,
+				Status:         message.StatusProgressing,
+				ReferenceType:  message.ReferenceTypeMessage,
+				ReferenceID:    uuid.FromStringOrNil("06d11af2-1bc2-11f0-bf96-2f9dcd281889"),
+				TransactionID:  "",
+				Text:           "hello, this is test message.",
+				Medias:         []media.Media{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			mockSms := smshandler.NewMockSMSHandler(mc)
+			h := &messageHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+				lineHandler:    mockLine,
+				smsHandler:     mockSms,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDSmsID)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
+
+			mockSms.EXPECT().Send(ctx, tt.conversation, tt.responseUUIDSmsID, tt.text).Return(nil)
 
 			res, err := h.Send(ctx, tt.conversation, tt.text, tt.medias)
 			if err != nil {

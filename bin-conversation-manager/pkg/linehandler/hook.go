@@ -7,6 +7,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
+	"github.com/gofrs/uuid"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -103,8 +104,8 @@ func (h *lineHandler) hookEventTypeFollow(ctx context.Context, ac *account.Accou
 	res, err := h.reqHandler.ConversationV1ConversationCreate(
 		ctx,
 		ac.CustomerID,
-		peer.TargetName,
 		"Conversation with "+peer.TargetName,
+		"Auto generated conversation",
 		conversation.TypeLine,
 		dialogID,
 		self,
@@ -161,12 +162,13 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 
 	m, err := h.reqHandler.ConversationV1MessageCreate(
 		ctx,
+		uuid.Nil,
 		cv.CustomerID,
 		cv.ID,
 		message.DirectionIncoming,
 		message.StatusDone,
 		message.ReferenceTypeLine,
-		"",
+		uuid.Nil,
 		"",
 		text,
 		medias,

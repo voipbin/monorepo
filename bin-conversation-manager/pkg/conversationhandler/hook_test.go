@@ -102,27 +102,7 @@ func Test_Hook(t *testing.T) {
 			ctx := context.Background()
 
 			mockAccount.EXPECT().Get(ctx, tt.expectAccountID).Return(tt.responseAccount, nil)
-
 			mockLine.EXPECT().Hook(ctx, tt.responseAccount, tt.data).Return(nil)
-
-			// // messages
-			// for range tt.responseMessages {
-			// 	mockLine.EXPECT().GetParticipant(ctx, gomock.Any(), gomock.Any()).Return(&commonaddress.Address{}, nil)
-			// 	mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(&conversation.Conversation{}, nil)
-
-			// 	mockMessage.EXPECT().Create(
-			// 		ctx,
-			// 		gomock.Any(),
-			// 		gomock.Any(),
-			// 		message.DirectionIncoming,
-			// 		message.StatusDone,
-			// 		gomock.Any(),
-			// 		gomock.Any(),
-			// 		gomock.Any(),
-			// 		gomock.Any(),
-			// 		gomock.Any(),
-			// 	).Return(&message.Message{}, nil)
-			// }
 
 			if err := h.Hook(ctx, tt.uri, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -210,30 +190,9 @@ func Test_hookLine(t *testing.T) {
 				messageHandler: mockMessage,
 				lineHandler:    mockLine,
 			}
-
 			ctx := context.Background()
 
 			mockLine.EXPECT().Hook(ctx, tt.account, tt.data).Return(nil)
-
-			// // messages
-			// for _, tmp := range tt.responseMessages {
-
-			// 	mockLine.EXPECT().GetParticipant(ctx, gomock.Any(), gomock.Any()).Return(&commonaddress.Address{}, nil)
-			// 	mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(tt.responseConversation, nil)
-
-			// 	mockMessage.EXPECT().Create(
-			// 		ctx,
-			// 		tt.responseConversation.CustomerID,
-			// 		tt.responseConversation.ID,
-			// 		message.DirectionIncoming,
-			// 		message.StatusDone,
-			// 		message.ReferenceTypeLine,
-			// 		tt.responseConversation.DialogID,
-			// 		"",
-			// 		tmp.Text,
-			// 		nil,
-			// 	).Return(&message.Message{}, nil)
-			// }
 
 			if err := h.hookLine(ctx, tt.account, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
