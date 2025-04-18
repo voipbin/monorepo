@@ -62,20 +62,20 @@ func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte) erro
 func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.Message, *nmnumber.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "hookTelnyx",
-		"data": data,
 	})
 
 	hm := telnyx.MessageEvent{}
 	if errUnmarshal := json.Unmarshal(data, &hm); errUnmarshal != nil {
 		return nil, nil, errors.Wrapf(errUnmarshal, "Could not unmarshal the data. data: %s", string(data))
 	}
-	log.WithField("hook_message", hm).Debugf("Unmarshalled hook message. event_type: %s", hm.Data.EventType)
+	log = log.WithField("hook_message", hm)
+	log.Debugf("Unmarshalled hook message. event_type: %s", hm.Data.EventType)
 
 	if len(hm.Data.Payload.To) == 0 {
 		return nil, nil, fmt.Errorf("destination address is empty")
 	}
 
-	if hm.Data.EventType == "message.sent" {
+	if hm.Data.EventType == "message.sent" || hm.Data.EventType == "message.finalized" {
 		log.Debugf("Received message sent event. event_type: %s", hm.Data.EventType)
 		return nil, nil, nil
 	}
