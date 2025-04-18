@@ -40,6 +40,11 @@ func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte) erro
 		return fmt.Errorf("unknown hook uri. uri: %s", uri)
 	}
 
+	if m == nil || num == nil {
+		// nothing to do.
+		return nil
+	}
+
 	// execute messageflow
 	af, err := h.executeMessageFlow(ctx, m, num)
 	if err != nil {
@@ -67,6 +72,11 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 
 	if len(hm.Data.Payload.To) == 0 {
 		return nil, nil, fmt.Errorf("destination address is empty")
+	}
+
+	if hm.Data.EventType == "message.sent" {
+		log.Debugf("Received message sent event. event_type: %s", hm.Data.EventType)
+		return nil, nil, nil
 	}
 
 	destinationNumber := hm.Data.Payload.To[0].PhoneNumber
