@@ -85,8 +85,7 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	}
 
 	if len(numbs) == 0 {
-		log.Errorf("No number info found. len: %d", len(numbs))
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("no number info found. len: %d", len(numbs))
 	}
 
 	num := numbs[0]
