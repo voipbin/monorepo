@@ -21,7 +21,9 @@ def upgrade():
         ALTER TABLE conversation_messages ADD tmp_reference_id BINARY(16);
     """)
     op.execute("""
-        UPDATE conversation_messages SET tmp_reference_id = UNHEX(REPLACE(reference_id, '-', ''));
+        UPDATE conversation_messages
+            SET tmp_reference_id = UNHEX(REPLACE(reference_id, '-', ''))
+            WHERE reference_id REGEXP '^[0-9A-Fa-f-]{36}$';
     """)
     op.execute("""
         ALTER TABLE conversation_messages DROP COLUMN reference_id;
