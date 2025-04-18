@@ -290,10 +290,10 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commona
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		JSON_UNQUOTE(JSON_EXTRACT(self, '$.type')) = '?'
-		AND JSON_UNQUOTE(JSON_EXTRACT(self, '$.target')) = '?'
-		AND JSON_UNQUOTE(JSON_EXTRACT(peer, '$.type')) = '?'
-		AND JSON_UNQUOTE(JSON_EXTRACT(peer, '$.target')) = '?'
+		JSON_UNQUOTE(JSON_EXTRACT(self, '$.type')) = ?
+		AND JSON_UNQUOTE(JSON_EXTRACT(self, '$.target')) = ?
+		AND JSON_UNQUOTE(JSON_EXTRACT(peer, '$.type')) = ?
+		AND JSON_UNQUOTE(JSON_EXTRACT(peer, '$.target')) = ?
 	`, conversationSelect)
 
 	row, err := h.db.Query(q, self.Type, self.Target, peer.Type, peer.Target)

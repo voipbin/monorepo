@@ -73,7 +73,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 			log.WithFields(logrus.Fields{
 				"self": self,
 				"peer": peer,
-			}).Debugf("Could not find conversation. Create a new conversation.")
+			}).Debugf("Could not find conversation. Create a new conversation. err: %v", err)
 
 			// create a new conversation
 			cv, err = h.Create(
