@@ -29,20 +29,21 @@ func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte) erro
 	var m *message.Message
 	var num *nmnumber.Number
 	var err error
-
-	if strings.HasSuffix(uri, hookTelnyx) {
+	switch {
+	case strings.HasSuffix(uri, hookTelnyx):
 		m, num, err = h.hookTelnyx(ctx, data)
-	}
-	if err != nil {
-		log.Errorf("Could not handle the hook message correctly. err: %v", err)
-		return err
+		if err != nil {
+			return errors.Wrapf(err, "Could not handle the hook message. uri: %s", uri)
+		}
+
+	default:
+		return fmt.Errorf("unknown hook uri. uri: %s", uri)
 	}
 
 	// execute messageflow
-	af, errExecute := h.executeMessageFlow(ctx, m, num)
-	if errExecute != nil {
-		log.Errorf("Could not execute the messageflow correctly. err: %v", errExecute)
-		return errExecute
+	af, err := h.executeMessageFlow(ctx, m, num)
+	if err != nil {
+		return errors.Wrapf(err, "Could not execute the messageflow. message_id: %s, number_id: %s", m.ID, num.ID)
 	} else if af == nil {
 		// no activeflow created
 		return nil
@@ -61,12 +62,10 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 
 	hm := telnyx.MessageEvent{}
 	if errUnmarshal := json.Unmarshal(data, &hm); errUnmarshal != nil {
-		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
-		return nil, nil, errUnmarshal
+		return nil, nil, errors.Wrapf(errUnmarshal, "Could not unmarshal the data. data: %s", string(data))
 	}
 
 	if len(hm.Data.Payload.To) == 0 {
-		log.Errorf("Destination address is empty.")
 		return nil, nil, fmt.Errorf("destination address is empty")
 	}
 
@@ -80,8 +79,7 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	}
 	numbs, err := h.reqHandler.NumberV1NumberGets(ctx, "", 1, filters)
 	if err != nil {
-		log.Errorf("Could not get numbers info. err: %v", err)
-		return nil, nil, err
+		return nil, nil, errors.Wrapf(err, "Could not get number info. number: %s", destinationNumber)
 	}
 
 	if len(numbs) == 0 {
@@ -97,12 +95,10 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	text := hm.GetText()
 	res, err := h.Create(ctx, uuid.Nil, num.CustomerID, source, targets, message.ProviderNameTelnyx, text, message.DirectionInbound)
 	if err != nil {
-		log.Errorf("Could not create a message record. err: %v", err)
-		return nil, nil, err
+		return nil, nil, errors.Wrapf(err, "Could not create a message. number_id: %s, number: %s", num.ID, num.Number)
 	}
 
 	log.WithField("message", res).Debugf("Created message. message_id: %s", res.ID)
-
 	return res, &num, nil
 }
 
