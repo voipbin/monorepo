@@ -69,6 +69,7 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	if errUnmarshal := json.Unmarshal(data, &hm); errUnmarshal != nil {
 		return nil, nil, errors.Wrapf(errUnmarshal, "Could not unmarshal the data. data: %s", string(data))
 	}
+	log.WithField("hook_message", hm).Debugf("Unmarshalled hook message. event_type: %s", hm.Data.EventType)
 
 	if len(hm.Data.Payload.To) == 0 {
 		return nil, nil, fmt.Errorf("destination address is empty")
