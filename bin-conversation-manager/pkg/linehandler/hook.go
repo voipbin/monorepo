@@ -162,6 +162,7 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 
 	m, err := h.reqHandler.ConversationV1MessageCreate(
 		ctx,
+		uuid.Nil,
 		cv.CustomerID,
 		cv.ID,
 		message.DirectionIncoming,
