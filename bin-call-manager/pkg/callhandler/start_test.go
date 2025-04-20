@@ -13,9 +13,11 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	cfconference "monorepo/bin-conference-manager/models/conference"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	"monorepo/bin-number-manager/models/number"
 
@@ -84,16 +86,18 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 		responseBridge      *bridge.Bridge
 		responseCall        *call.Call
 		responseConference  *cfconference.Conference
+		responseFlow        *fmflow.Flow
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseCurTime     string
 
+		expectActions    []fmaction.Action
 		expectBridgeName string
 		expectCall       *call.Call
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&channel.Channel{
+			channel: &channel.Channel{
 				AsteriskID:        "80:fa:5b:5e:da:81",
 				ID:                "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
 				Name:              "PJSIP/in-voipbin-00000999",
@@ -105,19 +109,19 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				},
 			},
 
-			&commonaddress.Address{
+			responseSource: &commonaddress.Address{
 				Type: commonaddress.TypeTel,
 			},
-			&commonaddress.Address{
+			responseDestination: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "bad943d8-9b59-11ea-b409-4ba263721f17",
 			},
-			uuid.FromStringOrNil("666ae678-5e55-11ed-8bbd-bbd66d73cbaf"),
-			uuid.FromStringOrNil("56b24806-5e56-11ed-9b77-cf2a442594d7"),
-			&bridge.Bridge{
+			responseUUIDCall:   uuid.FromStringOrNil("666ae678-5e55-11ed-8bbd-bbd66d73cbaf"),
+			responseUUIDBridge: uuid.FromStringOrNil("56b24806-5e56-11ed-9b77-cf2a442594d7"),
+			responseBridge: &bridge.Bridge{
 				ID: "56b24806-5e56-11ed-9b77-cf2a442594d7",
 			},
-			&call.Call{
+			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
 				},
@@ -130,15 +134,19 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 					ID: fmaction.IDStart,
 				},
 			},
-			&cfconference.Conference{
+			responseConference: &cfconference.Conference{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("bad943d8-9b59-11ea-b409-4ba263721f17"),
 					CustomerID: uuid.FromStringOrNil("2d6e83b0-5e56-11ed-9fcc-db15249e4a66"),
 				},
-				Type:   cfconference.TypeConference,
-				FlowID: uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
+				Type: cfconference.TypeConference,
 			},
-			&fmactiveflow.Activeflow{
+			responseFlow: &fmflow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a5618d88-1e23-11f0-9604-1b52d14557cb"),
+				},
+			},
+			responseActiveflow: &fmactiveflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
 				},
@@ -149,10 +157,18 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
 				},
 			},
-			"2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18 03:22:17.995000",
 
-			"reference_type=call,reference_id=666ae678-5e55-11ed-8bbd-bbd66d73cbaf",
-			&call.Call{
+			expectActions: []fmaction.Action{
+				{
+					Type: fmaction.TypeConferenceJoin,
+					Option: fmaction.ConvertOption(fmaction.OptionConferenceJoin{
+						ConferenceID: uuid.FromStringOrNil("bad943d8-9b59-11ea-b409-4ba263721f17"),
+					}),
+				},
+			},
+			expectBridgeName: "reference_type=call,reference_id=666ae678-5e55-11ed-8bbd-bbd66d73cbaf",
+			expectCall: &call.Call{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("666ae678-5e55-11ed-8bbd-bbd66d73cbaf"),
 					CustomerID: uuid.FromStringOrNil("2d6e83b0-5e56-11ed-9fcc-db15249e4a66"),
@@ -161,7 +177,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				ChannelID: "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
 				BridgeID:  "56b24806-5e56-11ed-9b77-cf2a442594d7",
 
-				FlowID:       uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
+				FlowID:       uuid.FromStringOrNil("a5618d88-1e23-11f0-9604-1b52d14557cb"),
 				ActiveflowID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
 				Type:         call.TypeFlow,
 
@@ -232,7 +248,9 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseConference.CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseConference.CustomerID, tt.responseConference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, cmcustomer.IDCallManager, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
+
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseConference.CustomerID, tt.responseFlow.ID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
 
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.responseCall, nil)

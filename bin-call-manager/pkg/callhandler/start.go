@@ -10,7 +10,10 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	rmroute "monorepo/bin-route-manager/models/route"
 
@@ -423,8 +426,34 @@ func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn 
 		return nil
 	}
 
+	// create temp flow for conference join
+	actions := []fmaction.Action{
+		{
+			Type: fmaction.TypeConferenceJoin,
+			Option: fmaction.ConvertOption(fmaction.OptionConferenceJoin{
+				ConferenceID: cf.ID,
+			}),
+		},
+	}
+
+	// create flow
+	tmpFlow, err := h.reqHandler.FlowV1FlowCreate(
+		ctx,
+		cmcustomer.IDCallManager,
+		fmflow.TypeFlow,
+		"conference incoming handle",
+		"auto-generated temp flow for conference joining incoming call",
+		actions,
+		false,
+	)
+	if err != nil {
+		log.Errorf("Could not create a temp flow. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
+	}
+
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, cf.CustomerID, cf.FlowID, source, destination)
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, tmpFlow.ID, source, destination)
 
 	return nil
 }
@@ -499,8 +528,6 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 		return
 	}
 
-	// ownerType := call.OwnerTypeNone
-	// ownerID := uuid.Nil
 	ownerType, ownerID, err := h.getAddressOwner(ctx, customerID, source)
 	if err != nil {
 		log.Errorf("Could not get the address owner. err: %v", err)
