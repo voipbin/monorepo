@@ -8,7 +8,6 @@ import (
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	cfconference "monorepo/bin-conference-manager/models/conference"
-	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"net/http"
 	"net/http/httptest"
@@ -30,14 +29,15 @@ func Test_conferencesPOST(t *testing.T) {
 
 		responseConference *cfconference.WebhookMessage
 
-		expectType        cfconference.Type
-		expectName        string
-		expectDetail      string
-		expectData        map[string]interface{}
-		expectTimeout     int
-		expectPreActions  []fmaction.Action
-		expectPostActions []fmaction.Action
-		expectRes         string
+		expectedID         uuid.UUID
+		expectedType       cfconference.Type
+		expectedName       string
+		expectedDetail     string
+		expectedData       map[string]interface{}
+		expectedTimeout    int
+		expectedPreFlowID  uuid.UUID
+		expectedPostFlowID uuid.UUID
+		expectedRes        string
 	}{
 		{
 			name: "all data",
@@ -48,7 +48,7 @@ func Test_conferencesPOST(t *testing.T) {
 			},
 
 			reqQuery: "/conferences",
-			reqBody:  []byte(`{"type": "conference", "name": "test name", "detail": "test detail", "data":{"key1": "val1", "key2": 2.1}, "timeout": 86400, "pre_actions": [{"type": "answer"}], "post_actions":[{"type": "hangup"}]}`),
+			reqBody:  []byte(`{"id": "3371da98-1e1e-11f0-a1ac-938c84c82aeb", "type": "conference", "name": "test name", "detail": "test detail", "data":{"key1": "val1", "key2": 2.1}, "timeout": 86400, "pre_flow_id": "3aa67eb8-1e1e-11f0-b497-8fc31b393da4", "post_flow_id": "3acff27a-1e1e-11f0-ad92-03d48bf8463a"}`),
 
 			responseConference: &cfconference.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -56,25 +56,18 @@ func Test_conferencesPOST(t *testing.T) {
 				},
 			},
 
-			expectType:   cfconference.TypeConference,
-			expectName:   "test name",
-			expectDetail: "test detail",
-			expectData: map[string]interface{}{
+			expectedID:     uuid.FromStringOrNil("3371da98-1e1e-11f0-a1ac-938c84c82aeb"),
+			expectedType:   cfconference.TypeConference,
+			expectedName:   "test name",
+			expectedDetail: "test detail",
+			expectedData: map[string]interface{}{
 				"key1": "val1",
 				"key2": 2.1,
 			},
-			expectTimeout: 86400,
-			expectPreActions: []fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			expectPostActions: []fmaction.Action{
-				{
-					Type: fmaction.TypeHangup,
-				},
-			},
-			expectRes: `{"id":"ee1e90cc-ac7a-11ea-8474-e740530b4266","customer_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectedTimeout:    86400,
+			expectedPreFlowID:  uuid.FromStringOrNil("3aa67eb8-1e1e-11f0-b497-8fc31b393da4"),
+			expectedPostFlowID: uuid.FromStringOrNil("3acff27a-1e1e-11f0-ad92-03d48bf8463a"),
+			expectedRes:        `{"id":"ee1e90cc-ac7a-11ea-8474-e740530b4266","customer_id":"00000000-0000-0000-0000-000000000000","pre_flow_id":"00000000-0000-0000-0000-000000000000","post_flow_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 		{
 			name: "empty data",
@@ -93,9 +86,9 @@ func Test_conferencesPOST(t *testing.T) {
 				},
 			},
 
-			expectPreActions:  []fmaction.Action{},
-			expectPostActions: []fmaction.Action{},
-			expectRes:         `{"id":"62fc88ba-3fe9-11ec-8ebb-8f1ee591edec","customer_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectedPreFlowID:  uuid.Nil,
+			expectedPostFlowID: uuid.Nil,
+			expectedRes:        `{"id":"62fc88ba-3fe9-11ec-8ebb-8f1ee591edec","customer_id":"00000000-0000-0000-0000-000000000000","pre_flow_id":"00000000-0000-0000-0000-000000000000","post_flow_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -123,13 +116,14 @@ func Test_conferencesPOST(t *testing.T) {
 			mockSvc.EXPECT().ConferenceCreate(
 				req.Context(),
 				&tt.agent,
-				tt.expectType,
-				tt.expectName,
-				tt.expectDetail,
-				tt.expectTimeout,
-				tt.expectData,
-				tt.expectPreActions,
-				tt.expectPostActions,
+				tt.expectedID,
+				tt.expectedType,
+				tt.expectedName,
+				tt.expectedDetail,
+				tt.expectedData,
+				tt.expectedTimeout,
+				tt.expectedPreFlowID,
+				tt.expectedPostFlowID,
 			).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
@@ -137,8 +131,8 @@ func Test_conferencesPOST(t *testing.T) {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
 
-			if w.Body.String() != tt.expectRes {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			if w.Body.String() != tt.expectedRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
 			}
 		})
 	}
@@ -277,12 +271,13 @@ func Test_conferencesIDPUT(t *testing.T) {
 
 		responseConference *cfconference.WebhookMessage
 
-		expectConferenceID uuid.UUID
-		expectName         string
-		expectDetail       string
-		expectTimeout      int
-		expectPreActions   []fmaction.Action
-		expectPostActions  []fmaction.Action
+		expectedConferenceID uuid.UUID
+		expectedName         string
+		expectedDetail       string
+		expectedData         map[string]any
+		expectedTimeout      int
+		expectedPreFlowID    uuid.UUID
+		expectedPostFlowID   uuid.UUID
 	}{
 		{
 			name: "normal",
@@ -293,7 +288,7 @@ func Test_conferencesIDPUT(t *testing.T) {
 			},
 
 			reqQuery: "/conferences/4363587a-92ff-11ed-8a2f-930de2e9aeae",
-			reqBody:  []byte(`{"name": "update name", "detail": "update detail", "timeout": 86400, "pre_actions": [{"type": "answer"}], "post_actions":[{"type": "hangup"}]}`),
+			reqBody:  []byte(`{"name": "update name", "detail": "update detail", "data": {"key1": "val1", "key2": 2.1}, "timeout": 86400, "pre_flow_id": "00000000-0000-0000-0000-000000000000", "post_flow_id": "00000000-0000-0000-0000-000000000000"}`),
 
 			responseConference: &cfconference.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -301,20 +296,16 @@ func Test_conferencesIDPUT(t *testing.T) {
 				},
 			},
 
-			expectConferenceID: uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
-			expectName:         "update name",
-			expectDetail:       "update detail",
-			expectTimeout:      86400,
-			expectPreActions: []fmaction.Action{
-				{
-					Type: "answer",
-				},
+			expectedConferenceID: uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
+			expectedName:         "update name",
+			expectedDetail:       "update detail",
+			expectedData: map[string]any{
+				"key1": "val1",
+				"key2": 2.1,
 			},
-			expectPostActions: []fmaction.Action{
-				{
-					Type: "hangup",
-				},
-			},
+			expectedTimeout:    86400,
+			expectedPreFlowID:  uuid.Nil,
+			expectedPostFlowID: uuid.Nil,
 		},
 	}
 
@@ -339,7 +330,17 @@ func Test_conferencesIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().ConferenceUpdate(req.Context(), &tt.agent, tt.expectConferenceID, tt.expectName, tt.expectDetail, tt.expectTimeout, tt.expectPreActions, tt.expectPostActions).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceUpdate(
+				req.Context(),
+				&tt.agent,
+				tt.expectedConferenceID,
+				tt.expectedName,
+				tt.expectedDetail,
+				tt.expectedData,
+				tt.expectedTimeout,
+				tt.expectedPreFlowID,
+				tt.expectedPostFlowID,
+			).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

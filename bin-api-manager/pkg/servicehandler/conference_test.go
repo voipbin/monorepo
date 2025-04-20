@@ -14,8 +14,6 @@ import (
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
@@ -30,55 +28,48 @@ func Test_ConferenceCreate(t *testing.T) {
 	tests := []struct {
 		name             string
 		agent            *amagent.Agent
+		id               uuid.UUID
 		confType         cfconference.Type
 		confName         string
 		confDetail       string
 		timeout          int
-		data             map[string]interface{}
-		preActions       []fmaction.Action
-		postActions      []fmaction.Action
+		data             map[string]any
+		preFlowID        uuid.UUID
+		postFlowID       uuid.UUID
 		cfConference     *cfconference.Conference
 		expectConference *cfconference.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			cfconference.TypeConference,
-			"test name",
-			"test detail",
-			100,
-			map[string]interface{}{
+			id:         uuid.FromStringOrNil("b6573ab8-1e1c-11f0-9350-cb7934970eb4"),
+			confType:   cfconference.TypeConference,
+			confName:   "test name",
+			confDetail: "test detail",
+			timeout:    100,
+			data: map[string]any{
 				"key1": "hello",
-				"kwy2": 300,
+				"kwy2": float64(300),
 			},
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeHangup,
-				},
-			},
-			&cfconference.Conference{
+			preFlowID:  uuid.FromStringOrNil("b5f74aea-1e1c-11f0-9686-3b0ba2b0b81f"),
+			postFlowID: uuid.FromStringOrNil("b62ea512-1e1c-11f0-ab82-ff2f37918a3b"),
+			cfConference: &cfconference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cea799a4-efce-11ea-9115-03d321ec6ff8"),
 				},
-				Type:   cfconference.TypeConference,
-				FlowID: uuid.FromStringOrNil("77b380ae-3feb-11ec-95c1-133259cb9432"),
+				Type: cfconference.TypeConference,
 
 				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
 			},
-			&cfconference.WebhookMessage{
+			expectConference: &cfconference.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cea799a4-efce-11ea-9115-03d321ec6ff8"),
 				},
@@ -90,44 +81,24 @@ func Test_ConferenceCreate(t *testing.T) {
 			},
 		},
 		{
-			"empty",
-			&amagent.Agent{
+			name: "empty",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			cfconference.TypeConference,
-			"",
-			"",
-			0,
-			map[string]interface{}{},
-			[]fmaction.Action{},
-			[]fmaction.Action{},
-			&cfconference.Conference{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("f63e863e-3fe7-11ec-9713-33d614df6067"),
-				},
-				Type:   cfconference.TypeConference,
-				FlowID: uuid.FromStringOrNil("3cd76cd8-3fec-11ec-a100-6f2e9597c4f2"),
 
-				Status: cfconference.StatusProgressing,
-				Name:   "test name",
-				Detail: "test detail",
-
-				PreActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
-				PostActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeHangup,
-					},
-				},
-			},
-			&cfconference.WebhookMessage{
+			id:         uuid.Nil,
+			confType:   cfconference.TypeConference,
+			confName:   "",
+			confDetail: "",
+			timeout:    0,
+			data:       map[string]any{},
+			preFlowID:  uuid.Nil,
+			postFlowID: uuid.Nil,
+			cfConference: &cfconference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f63e863e-3fe7-11ec-9713-33d614df6067"),
 				},
@@ -136,17 +107,16 @@ func Test_ConferenceCreate(t *testing.T) {
 				Status: cfconference.StatusProgressing,
 				Name:   "test name",
 				Detail: "test detail",
+			},
+			expectConference: &cfconference.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f63e863e-3fe7-11ec-9713-33d614df6067"),
+				},
+				Type: cfconference.TypeConference,
 
-				PreActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
-				PostActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeHangup,
-					},
-				},
+				Status: cfconference.StatusProgressing,
+				Name:   "test name",
+				Detail: "test detail",
 			},
 		},
 	}
@@ -167,25 +137,27 @@ func Test_ConferenceCreate(t *testing.T) {
 
 			mockReq.EXPECT().ConferenceV1ConferenceCreate(
 				ctx,
+				tt.id,
 				tt.agent.CustomerID,
 				tt.confType,
 				tt.confName,
 				tt.confDetail,
-				tt.timeout,
 				tt.data,
-				tt.preActions,
-				tt.postActions,
+				tt.timeout,
+				tt.preFlowID,
+				tt.postFlowID,
 			).Return(tt.cfConference, nil)
 			res, err := h.ConferenceCreate(
 				ctx,
 				tt.agent,
+				tt.id,
 				tt.confType,
 				tt.confName,
 				tt.confDetail,
-				tt.timeout,
 				tt.data,
-				tt.preActions,
-				tt.postActions,
+				tt.timeout,
+				tt.preFlowID,
+				tt.postFlowID,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -403,49 +375,42 @@ func Test_ConferenceGet(t *testing.T) {
 func Test_ConferenceUpdate(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		agent       *amagent.Agent
-		id          uuid.UUID
-		updateName  string
-		detail      string
-		timeout     int
-		preActions  []fmaction.Action
-		postActions []fmaction.Action
+		name       string
+		agent      *amagent.Agent
+		id         uuid.UUID
+		updateName string
+		detail     string
+		data       map[string]any
+		timeout    int
+		preFlowID  uuid.UUID
+		postFlowID uuid.UUID
 
 		response  *cfconference.Conference
 		expectRes *cfconference.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
-			"update name",
-			"update detail",
-			86400,
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeHangup,
-				},
-			},
+			id:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
+			updateName: "update name",
+			detail:     "update detail",
+			timeout:    86400,
+			preFlowID:  uuid.FromStringOrNil("3c9c8bc8-1e1d-11f0-a370-03530069d812"),
+			postFlowID: uuid.FromStringOrNil("3cc09626-1e1d-11f0-ab8a-6be43ca1e9e9"),
 
-			&cfconference.Conference{
+			response: &cfconference.Conference{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			&cfconference.WebhookMessage{
+			expectRes: &cfconference.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -468,8 +433,8 @@ func Test_ConferenceUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceUpdate(ctx, tt.id, tt.updateName, tt.detail, tt.timeout, tt.preActions, tt.postActions).Return(tt.response, nil)
-			res, err := h.ConferenceUpdate(ctx, tt.agent, tt.id, tt.updateName, tt.detail, tt.timeout, tt.preActions, tt.postActions)
+			mockReq.EXPECT().ConferenceV1ConferenceUpdate(ctx, tt.id, tt.updateName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID).Return(tt.response, nil)
+			res, err := h.ConferenceUpdate(ctx, tt.agent, tt.id, tt.updateName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

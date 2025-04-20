@@ -5,7 +5,6 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	cfconference "monorepo/bin-conference-manager/models/conference"
-	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -83,26 +82,24 @@ func (h *server) PostConferences(c *gin.Context) {
 		return
 	}
 
-	preActions := []fmaction.Action{}
-	for _, v := range req.PreActions {
-		preActions = append(preActions, ConvertFlowManagerAction(v))
+	id := uuid.Nil
+	if req.Id != nil {
+		id = uuid.FromStringOrNil(*req.Id)
 	}
-
-	postActions := []fmaction.Action{}
-	for _, v := range req.PostActions {
-		postActions = append(postActions, ConvertFlowManagerAction(v))
-	}
+	preFlowID := uuid.FromStringOrNil(req.PreFlowId)
+	postFlowID := uuid.FromStringOrNil(req.PostFlowId)
 
 	res, err := h.serviceHandler.ConferenceCreate(
 		c.Request.Context(),
 		&a,
+		id,
 		cfconference.Type(req.Type),
 		req.Name,
 		req.Detail,
-		req.Timeout,
 		req.Data,
-		preActions,
-		postActions,
+		req.Timeout,
+		preFlowID,
+		postFlowID,
 	)
 	if err != nil || res == nil {
 		log.Errorf("Could not create the conference. err: %v", err)
@@ -180,17 +177,10 @@ func (h *server) PutConferencesId(c *gin.Context, id string) {
 		return
 	}
 
-	preActions := []fmaction.Action{}
-	for _, v := range req.PreActions {
-		preActions = append(preActions, ConvertFlowManagerAction(v))
-	}
+	preFlowID := uuid.FromStringOrNil(req.PreFlowId)
+	postFlowID := uuid.FromStringOrNil(req.PostFlowId)
 
-	postActions := []fmaction.Action{}
-	for _, v := range req.PostActions {
-		postActions = append(postActions, ConvertFlowManagerAction(v))
-	}
-
-	res, err := h.serviceHandler.ConferenceUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, req.Timeout, preActions, postActions)
+	res, err := h.serviceHandler.ConferenceUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, req.Data, req.Timeout, preFlowID, postFlowID)
 	if err != nil || res == nil {
 		log.Errorf("Could not update the conference. err: %v", err)
 		c.AbortWithStatus(400)

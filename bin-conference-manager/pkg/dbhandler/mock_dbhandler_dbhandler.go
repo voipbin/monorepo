@@ -13,7 +13,6 @@ import (
 	context "context"
 	conference "monorepo/bin-conference-manager/models/conference"
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
-	action "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -188,17 +187,17 @@ func (mr *MockDBHandlerMockRecorder) ConferenceRemoveConferencecallID(ctx, id, c
 }
 
 // ConferenceSet mocks base method.
-func (m *MockDBHandler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []action.Action) error {
+func (m *MockDBHandler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceSet", ctx, id, name, detail, timeout, preActions, postActions)
+	ret := m.ctrl.Call(m, "ConferenceSet", ctx, id, name, detail, data, timeout, preFlowID, postFlowID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConferenceSet indicates an expected call of ConferenceSet.
-func (mr *MockDBHandlerMockRecorder) ConferenceSet(ctx, id, name, detail, timeout, preActions, postActions any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ConferenceSet(ctx, id, name, detail, data, timeout, preFlowID, postFlowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSet), ctx, id, name, detail, timeout, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSet", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSet), ctx, id, name, detail, data, timeout, preFlowID, postFlowID)
 }
 
 // ConferenceSetData mocks base method.

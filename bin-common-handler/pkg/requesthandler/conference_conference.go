@@ -11,8 +11,6 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfrequest "monorepo/bin-conference-manager/pkg/listenhandler/models/request"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	"github.com/gofrs/uuid"
 )
 
@@ -143,26 +141,28 @@ func (r *requestHandler) ConferenceV1ConferenceStop(ctx context.Context, confere
 // it the timeout set to 0 means no timeout.
 func (r *requestHandler) ConferenceV1ConferenceCreate(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	conferenceType cfconference.Type,
 	name string,
 	detail string,
-	timeout int,
 	data map[string]interface{},
-	preActions []fmaction.Action,
-	postActions []fmaction.Action,
+	timeout int,
+	preFlowID uuid.UUID,
+	postFlowID uuid.UUID,
 ) (*cfconference.Conference, error) {
 	uri := "/v1/conferences"
 
 	d := &cfrequest.V1DataConferencesPost{
-		Type:        conferenceType,
-		CustomerID:  customerID,
-		Name:        name,
-		Detail:      detail,
-		Timeout:     timeout,
-		Data:        data,
-		PreActions:  preActions,
-		PostActions: postActions,
+		ID:         id,
+		CustomerID: customerID,
+		Type:       conferenceType,
+		Name:       name,
+		Detail:     detail,
+		Data:       data,
+		Timeout:    timeout,
+		PreFlowID:  preFlowID,
+		PostFlowID: postFlowID,
 	}
 
 	m, err := json.Marshal(d)
@@ -192,18 +192,28 @@ func (r *requestHandler) ConferenceV1ConferenceCreate(
 // ConferenceV1ConferenceUpdate sends a request to conference-manager
 // to update the conference.
 // it returns updated conference if it succeed.
-func (r *requestHandler) ConferenceV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error) {
+func (r *requestHandler) ConferenceV1ConferenceUpdate(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	data map[string]any,
+	timeout int,
+	preFlowID uuid.UUID,
+	postFlowID uuid.UUID,
+) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", id.String())
 
-	data := &cfrequest.V1DataConferencesIDPut{
-		Name:        name,
-		Detail:      detail,
-		Timeout:     timeout,
-		PreActions:  preActions,
-		PostActions: postActions,
+	reqData := &cfrequest.V1DataConferencesIDPut{
+		Name:       name,
+		Detail:     detail,
+		Data:       data,
+		Timeout:    timeout,
+		PreFlowID:  preFlowID,
+		PostFlowID: postFlowID,
 	}
 
-	m, err := json.Marshal(data)
+	m, err := json.Marshal(reqData)
 	if err != nil {
 		return nil, err
 	}

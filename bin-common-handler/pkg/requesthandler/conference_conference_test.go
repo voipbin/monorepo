@@ -32,25 +32,24 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			uuid.FromStringOrNil("c337c4de-4132-11ec-b076-ab42296b65d5"),
+			name:         "normal",
+			conferenceID: uuid.FromStringOrNil("c337c4de-4132-11ec-b076-ab42296b65d5"),
 
-			"bin-manager.conference-manager.request",
-			&sock.Request{
+			expectQueue: "bin-manager.conference-manager.request",
+			expectRequest: &sock.Request{
 				URI:    "/v1/conferences/c337c4de-4132-11ec-b076-ab42296b65d5",
 				Method: sock.RequestMethodGet,
 			},
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"c337c4de-4132-11ec-b076-ab42296b65d5","flow_id":"e0e5c2ba-4132-11ec-a38b-c7c6ccec4af6"}`),
+				Data:       []byte(`{"id":"c337c4de-4132-11ec-b076-ab42296b65d5"}`),
 			},
-			&cfconference.Conference{
+			expectRes: &cfconference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c337c4de-4132-11ec-b076-ab42296b65d5"),
 				},
-				FlowID: uuid.FromStringOrNil("e0e5c2ba-4132-11ec-a38b-c7c6ccec4af6"),
 			},
 		},
 	}
@@ -316,34 +315,52 @@ func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		response         *sock.Response
-		expectTarget     string
-		expectRequest    *sock.Request
-		expectConference *cfconference.Conference
+		id             uuid.UUID
+		customerID     uuid.UUID
+		conferenceType cfconference.Type
+		conferenceName string
+		detail         string
+		data           map[string]any
+		timeout        int
+		preFlowID      uuid.UUID
+		postFlowID     uuid.UUID
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *cfconference.Conference
 	}{
 		{
-			"normal",
-			&sock.Response{
+			name: "normal",
+
+			id:             uuid.FromStringOrNil("356d3738-1e15-11f0-b30f-7316bf9e4453"),
+			customerID:     uuid.FromStringOrNil("9d27750e-7f4f-11ec-b98f-839769cdfb25"),
+			conferenceType: cfconference.TypeConnect,
+			conferenceName: "test",
+			detail:         "test detail",
+			data:           map[string]any{"key1": "val1"},
+			timeout:        86400000,
+			preFlowID:      uuid.FromStringOrNil("35dfdb9e-1e15-11f0-9c43-a7aa985a8d9e"),
+			postFlowID:     uuid.FromStringOrNil("3611cafa-1e15-11f0-9d4e-9fb24b4c8272"),
+
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"04432fd6-3d19-11ec-8ad9-43e6162f0953","name":"test","detail":"test detail","customer_id":"9d27750e-7f4f-11ec-b98f-839769cdfb25","timeout":86400000,"type":"connect"}`),
+				Data:       []byte(`{"id":"04432fd6-3d19-11ec-8ad9-43e6162f0953"}`),
 			},
-			"bin-manager.conference-manager.request",
-			&sock.Request{
+
+			expectTarget: "bin-manager.conference-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/conferences",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type":"connect","customer_id":"9d27750e-7f4f-11ec-b98f-839769cdfb25","name":"test","detail":"test detail","timeout":86400000,"data":null,"pre_actions":null,"post_actions":null}`),
+				Data:     []byte(`{"id":"356d3738-1e15-11f0-b30f-7316bf9e4453","customer_id":"9d27750e-7f4f-11ec-b98f-839769cdfb25","type":"connect","name":"test","detail":"test detail","data":{"key1":"val1"},"timeout":86400000,"pre_flow_id":"35dfdb9e-1e15-11f0-9c43-a7aa985a8d9e","post_flow_id":"3611cafa-1e15-11f0-9d4e-9fb24b4c8272"}`),
 			},
-			&cfconference.Conference{
+			expectRes: &cfconference.Conference{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("04432fd6-3d19-11ec-8ad9-43e6162f0953"),
-					CustomerID: uuid.FromStringOrNil("9d27750e-7f4f-11ec-b98f-839769cdfb25"),
+					ID: uuid.FromStringOrNil("04432fd6-3d19-11ec-8ad9-43e6162f0953"),
 				},
-				Type:    cfconference.TypeConnect,
-				Name:    "test",
-				Detail:  "test detail",
-				Timeout: 86400000,
 			},
 		},
 	}
@@ -361,13 +378,98 @@ func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ConferenceV1ConferenceCreate(ctx, tt.expectConference.CustomerID, tt.expectConference.Type, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, nil, nil, nil)
+			cf, err := reqHandler.ConferenceV1ConferenceCreate(
+				ctx,
+				tt.id,
+				tt.customerID,
+				tt.conferenceType,
+				tt.conferenceName,
+				tt.detail,
+				tt.data,
+				tt.timeout,
+				tt.preFlowID,
+				tt.postFlowID,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(cf, tt.expectConference) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectConference, cf)
+			if !reflect.DeepEqual(cf, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, cf)
+			}
+		})
+	}
+}
+
+func Test_ConferenceV1ConferenceUpdate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id             uuid.UUID
+		conferenceName string
+		detail         string
+		data           map[string]any
+		timeout        int
+		preFlowID      uuid.UUID
+		postFlowID     uuid.UUID
+
+		response      *sock.Response
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *cfconference.Conference
+	}{
+		{
+			name: "normal",
+
+			id:             uuid.FromStringOrNil("77ebcd6c-1e16-11f0-9bb7-c3dbf388b8ac"),
+			conferenceName: "test",
+			detail:         "test detail",
+			data:           map[string]any{"key1": "val1"},
+			timeout:        86400000,
+			preFlowID:      uuid.FromStringOrNil("781eb272-1e16-11f0-9cb8-9b794114fb25"),
+			postFlowID:     uuid.FromStringOrNil("7847a3da-1e16-11f0-8549-9f04e3676942"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"77ebcd6c-1e16-11f0-9bb7-c3dbf388b8ac"}`),
+			},
+			expectTarget: "bin-manager.conference-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/conferences/77ebcd6c-1e16-11f0-9bb7-c3dbf388b8ac",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"test","detail":"test detail","data":{"key1":"val1"},"timeout":86400000,"pre_flow_id":"781eb272-1e16-11f0-9cb8-9b794114fb25","post_flow_id":"7847a3da-1e16-11f0-8549-9f04e3676942"}`),
+			},
+			expectRes: &cfconference.Conference{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("77ebcd6c-1e16-11f0-9bb7-c3dbf388b8ac"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ConferenceV1ConferenceUpdate(ctx, tt.id, tt.conferenceName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -387,24 +489,24 @@ func Test_ConferenceV1ConferenceUpdateRecordingID(t *testing.T) {
 		expectRes     *cfconference.Conference
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("6a8bb630-909e-11ed-8e51-4ba49096d3f7"),
-			uuid.FromStringOrNil("6ad3b3cc-909e-11ed-b6de-bb34ce55e617"),
+			id:          uuid.FromStringOrNil("6a8bb630-909e-11ed-8e51-4ba49096d3f7"),
+			recordingID: uuid.FromStringOrNil("6ad3b3cc-909e-11ed-b6de-bb34ce55e617"),
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"6a8bb630-909e-11ed-8e51-4ba49096d3f7"}`),
 			},
-			"bin-manager.conference-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.conference-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/conferences/6a8bb630-909e-11ed-8e51-4ba49096d3f7/recording_id",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"recording_id":"6ad3b3cc-909e-11ed-b6de-bb34ce55e617"}`),
 			},
-			&cfconference.Conference{
+			expectRes: &cfconference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("6a8bb630-909e-11ed-8e51-4ba49096d3f7"),
 				},

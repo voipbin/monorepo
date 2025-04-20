@@ -64,23 +64,34 @@ func (h *listenHandler) processV1ConferencesPost(ctx context.Context, m *sock.Re
 		"request": m,
 	})
 
-	var data request.V1DataConferencesPost
-	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+	var req request.V1DataConferencesPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	// create conference
-	cf, err := h.conferenceHandler.Create(ctx, conference.Type(data.Type), data.CustomerID, data.Name, data.Detail, data.Timeout, data.PreActions, data.PostActions)
+	cf, err := h.conferenceHandler.Create(
+		ctx,
+		req.ID,
+		req.CustomerID,
+		conference.Type(req.Type),
+		req.Name,
+		req.Detail,
+		req.Data,
+		req.Timeout,
+		req.PreFlowID,
+		req.PostFlowID,
+	)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	tmp, err := json.Marshal(cf)
 	if err != nil {
 		log.Errorf("Could not marshal the conference. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -141,13 +152,22 @@ func (h *listenHandler) processV1ConferencesIDPut(ctx context.Context, m *sock.R
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	var data request.V1DataConferencesIDPut
-	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+	var req request.V1DataConferencesIDPut
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
 		return nil, err
 	}
 
-	cf, err := h.conferenceHandler.Update(ctx, id, data.Name, data.Detail, data.Timeout, data.PreActions, data.PostActions)
+	cf, err := h.conferenceHandler.Update(
+		ctx,
+		id,
+		req.Name,
+		req.Detail,
+		req.Data,
+		req.Timeout,
+		req.PreFlowID,
+		req.PostFlowID,
+	)
 	if err != nil {
 		log.Errorf("Could not update the conference. err: %v", err)
 		return simpleResponse(400), nil

@@ -40,22 +40,23 @@ put:
               type: string
             detail:
               type: string
+            data:
+              type: object
+              description: Custom data associated with the conference.
+              additionalProperties: true
             timeout:
               type: integer
-            pre_actions:
-              type: array
-              items:
-                $ref: '#/components/schemas/FlowManagerAction'
-            post_actions:
-              type: array
-              items:
-                $ref: '#/components/schemas/FlowManagerAction'
+            pre_flow_id:
+              type: string
+            post_flow_id:
+              type: string
           required:
             - name
             - detail
+            - data
             - timeout
-            - pre_actions
-            - post_actions
+            - pre_flow_id
+            - post_flow_id
   responses:
     '200':
       content:

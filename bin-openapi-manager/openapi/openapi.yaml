@@ -1620,16 +1620,12 @@ components:
           type: integer
           description: Timeout for the conference in seconds.
           format: int32
-        pre_actions:
-          type: array
-          description: Pre-actions to execute before the conference starts.
-          items:
-            $ref: '#/components/schemas/FlowManagerAction'
-        post_actions:
-          type: array
-          description: Post-actions to execute after the conference ends.
-          items:
-            $ref: '#/components/schemas/FlowManagerAction'
+        pre_flow_id:
+          type: string
+          description: ID of the pre-flow to execute before the conference starts.
+        post_flow_id:
+          type: string
+          description: ID of the post-flow to execute after the conference ends.
         conferencecall_ids:
           type: array
           description: List of associated conference call IDs.

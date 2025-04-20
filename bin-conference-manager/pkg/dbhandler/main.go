@@ -9,8 +9,6 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	uuid "github.com/gofrs/uuid"
 
 	"monorepo/bin-conference-manager/models/conference"
@@ -31,7 +29,16 @@ type DBHandler interface {
 	ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error)
 	ConferenceGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conference.Conference, error)
 	ConferenceRemoveConferencecallID(ctx context.Context, id, callID uuid.UUID) error
-	ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []fmaction.Action) error
+	ConferenceSet(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		data map[string]interface{},
+		timeout int,
+		preFlowID uuid.UUID,
+		postFlowID uuid.UUID,
+	) error
 	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
 	ConferenceSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error

@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	fmaction "monorepo/bin-flow-manager/models/action"
 
 	uuid "github.com/gofrs/uuid"
 )
@@ -14,37 +13,36 @@ import (
 type Conference struct {
 	commonidentity.Identity
 
-	ConfbridgeID uuid.UUID `json:"confbridge_id"` // confbridge id(call-manager)
-	FlowID       uuid.UUID `json:"flow_id"`       // flow id(flow-manager)
-	Type         Type      `json:"type"`
+	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty"` // confbridge id(call-manager)
+	Type         Type      `json:"type,omitempty"`
 
-	Status Status `json:"status"`
+	Status Status `json:"status,omitempty"`
 
-	Name    string                 `json:"name"`
-	Detail  string                 `json:"detail"`
-	Data    map[string]interface{} `json:"data"`
-	Timeout int                    `json:"timeout"` // timeout. second
+	Name    string         `json:"name,omitempty"`
+	Detail  string         `json:"detail,omitempty"`
+	Data    map[string]any `json:"data,omitempty"`
+	Timeout int            `json:"timeout,omitempty"` // timeout. second
 
-	PreActions  []fmaction.Action `json:"pre_actions"`  // pre actions
-	PostActions []fmaction.Action `json:"post_actions"` // post actions
+	PreFlowID  uuid.UUID `json:"pre_flow_id,omitempty"`  // pre flow id
+	PostFlowID uuid.UUID `json:"post_flow_id,omitempty"` // post flow id
 
-	ConferencecallIDs []uuid.UUID `json:"conferencecall_ids"` // list of conferencecall ids of the conference
+	ConferencecallIDs []uuid.UUID `json:"conferencecall_ids,omitempty"` // list of conferencecall ids of the conference
 
-	RecordingID  uuid.UUID   `json:"recording_id"`
-	RecordingIDs []uuid.UUID `json:"recording_ids"`
+	RecordingID  uuid.UUID   `json:"recording_id,omitempty"`
+	RecordingIDs []uuid.UUID `json:"recording_ids,omitempty"`
 
-	TranscribeID  uuid.UUID   `json:"transcribe_id"`
-	TranscribeIDs []uuid.UUID `json:"transcribe_ids"`
+	TranscribeID  uuid.UUID   `json:"transcribe_id,omitempty"`
+	TranscribeIDs []uuid.UUID `json:"transcribe_ids,omitempty"`
 
-	TMEnd string `json:"tm_end"` // represent the timestamp for conference ended.
+	TMEnd string `json:"tm_end,omitempty"` // represent the timestamp for conference ended.
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // Matches return true if the given items are the same
-func (a *Conference) Matches(x interface{}) bool {
+func (a *Conference) Matches(x any) bool {
 	comp := x.(*Conference)
 	c := *a
 

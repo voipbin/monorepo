@@ -336,13 +336,14 @@ type ServiceHandler interface {
 	ConferenceCreate(
 		ctx context.Context,
 		a *amagent.Agent,
+		conferenceID uuid.UUID,
 		confType cfconference.Type,
 		name string,
 		detail string,
+		data map[string]any,
 		timeout int,
-		data map[string]interface{},
-		preActions []fmaction.Action,
-		postActions []fmaction.Action,
+		preFlowID uuid.UUID,
+		postFlowID uuid.UUID,
 	) (*cfconference.WebhookMessage, error)
 	ConferenceDelete(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconference.WebhookMessage, error)
@@ -362,12 +363,13 @@ type ServiceHandler interface {
 	ConferenceUpdate(
 		ctx context.Context,
 		a *amagent.Agent,
-		cfID uuid.UUID,
+		conferenceID uuid.UUID,
 		name string,
 		detail string,
+		data map[string]any,
 		timeout int,
-		preActions []fmaction.Action,
-		postActions []fmaction.Action,
+		preFlowID uuid.UUID,
+		postFlowID uuid.UUID,
 	) (*cfconference.WebhookMessage, error)
 
 	// conferencecall handlers

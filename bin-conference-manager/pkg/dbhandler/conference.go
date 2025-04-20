@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"strconv"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	uuid "github.com/gofrs/uuid"
 
 	"monorepo/bin-conference-manager/models/conference"
@@ -20,8 +18,7 @@ const (
 		id,
 		customer_id,
 		type,
-		flow_id,
-		confbridge_id,
+ 		confbridge_id,
 
 		status,
 		name,
@@ -29,8 +26,8 @@ const (
 		data,
 		timeout,
 
-		pre_actions,
-		post_actions,
+		pre_flow_id,
+		post_flow_id,
 
 		conferencecall_ids,
 
@@ -54,8 +51,6 @@ const (
 // conferenceGetFromRow gets the conference from the row.
 func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, error) {
 
-	var preActions string
-	var postActions string
 	var data string
 	var conferencecallIDs sql.NullString
 	var recordingIDs sql.NullString
@@ -66,7 +61,6 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		&res.ID,
 		&res.CustomerID,
 		&res.Type,
-		&res.FlowID,
 		&res.ConfbridgeID,
 
 		&res.Status,
@@ -75,8 +69,8 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		&data,
 		&res.Timeout,
 
-		&preActions,
-		&postActions,
+		&res.PreFlowID,
+		&res.PostFlowID,
 
 		&conferencecallIDs,
 
@@ -93,20 +87,6 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. conferenceGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(preActions), &res.PreActions); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the pre-actions. conferenceGetFromRow. err: %v", err)
-	}
-	if res.PreActions == nil {
-		res.PreActions = []fmaction.Action{}
-	}
-
-	if err := json.Unmarshal([]byte(postActions), &res.PostActions); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the post-actions. conferenceGetFromRow. err: %v", err)
-	}
-	if res.PostActions == nil {
-		res.PostActions = []fmaction.Action{}
 	}
 
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
@@ -154,8 +134,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		id,
 		customer_id,
 		type,
-		flow_id,
-		confbridge_id,
+ 		confbridge_id,
 
 		status,
 		name,
@@ -163,8 +142,8 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		data,
 		timeout,
 
-		pre_actions,
-		post_actions,
+		pre_flow_id,
+		post_flow_id,
 
 		conferencecall_ids,
 
@@ -180,7 +159,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?, ?, ?,
+		?, ?, ?, ?,
 		?, ?, ?, ?, ?,
 		?, ?,
 		?,
@@ -190,16 +169,6 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		?, ?, ?
 		)
 	`
-
-	preActions, err := json.Marshal(cf.PreActions)
-	if err != nil {
-		return fmt.Errorf("could not marshal the preActions. ConferenceCreate. err: %v", err)
-	}
-
-	postActions, err := json.Marshal(cf.PostActions)
-	if err != nil {
-		return fmt.Errorf("could not marshal the postActions. ConferenceCreate. err: %v", err)
-	}
 
 	data, err := json.Marshal(cf.Data)
 	if err != nil {
@@ -225,7 +194,6 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		cf.ID.Bytes(),
 		cf.CustomerID.Bytes(),
 		cf.Type,
-		cf.FlowID.Bytes(),
 		cf.ConfbridgeID.Bytes(),
 
 		cf.Status,
@@ -234,8 +202,8 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		data,
 		cf.Timeout,
 
-		preActions,
-		postActions,
+		cf.PreFlowID.Bytes(),
+		cf.PostFlowID.Bytes(),
 
 		conferencecallIDs,
 
@@ -356,7 +324,7 @@ func (h *handler) ConferenceGets(ctx context.Context, size uint64, token string,
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "confbridge_id", "flow_id", "recording_id", "transcribe_id":
+		case "customer_id", "confbridge_id", "pre_flow_id", "post_flow_id", "recording_id", "transcribe_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())
@@ -501,31 +469,36 @@ func (h *handler) ConferenceDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // ConferenceSet sets the status
-func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []fmaction.Action) error {
+func (h *handler) ConferenceSet(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	data map[string]interface{},
+	timeout int,
+	preFlowID uuid.UUID,
+	postFlowID uuid.UUID,
+) error {
 	//prepare
 	q := `
 	update conference_conferences set
 		name = ?,
 		detail = ?,
+		data = ?,
 		timeout = ?,
-		pre_actions = ?,
-		post_actions = ?,
+		pre_flow_id = ?,
+		post_flow_id = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	tmpPreActions, err := json.Marshal(preActions)
+	tmpData, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("could not marshal the preActions. ConferenceSet. err: %v", err)
+		return fmt.Errorf("dbhandler: Could not marshal. ConferenceSetData. err: %v", err)
 	}
 
-	tmpPostActions, err := json.Marshal(postActions)
-	if err != nil {
-		return fmt.Errorf("could not marshal the postActions. ConferenceSet. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q, name, detail, timeout, tmpPreActions, tmpPostActions, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, name, detail, tmpData, timeout, preFlowID.Bytes(), postFlowID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSet. err: %v", err)
 	}
