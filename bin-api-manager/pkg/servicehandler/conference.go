@@ -10,8 +10,6 @@ import (
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
@@ -111,37 +109,36 @@ func (h *serviceHandler) ConferenceGets(ctx context.Context, a *amagent.Agent, s
 func (h *serviceHandler) ConferenceCreate(
 	ctx context.Context,
 	a *amagent.Agent,
+	conferenceID uuid.UUID,
 	confType cfconference.Type,
 	name string,
 	detail string,
+	data map[string]any,
 	timeout int,
-	data map[string]interface{},
-	preActions []fmaction.Action,
-	postActions []fmaction.Action,
+	preFlowID uuid.UUID,
+	postFlowID uuid.UUID,
 ) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "ConferenceCreate",
-		"customer_id":  a.CustomerID,
-		"username":     a.Username,
-		"type":         confType,
-		"name":         name,
-		"detail":       detail,
-		"timeout":      timeout,
-		"data":         data,
-		"pre_actions":  preActions,
-		"post_actions": postActions,
+		"func":          "ConferenceCreate",
+		"agent":         a,
+		"conference_id": conferenceID,
+		"type":          confType,
+		"name":          name,
+		"detail":        detail,
+		"data":          data,
+		"timeout":       timeout,
+		"pre_flow_id":   preFlowID,
+		"post_flow_id":  postFlowID,
 	})
 	log.Debugf("Creating a conference.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, a.CustomerID, confType, name, detail, timeout, data, preActions, postActions)
+	tmp, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, conferenceID, a.CustomerID, confType, name, detail, data, timeout, preFlowID, postFlowID)
 	if err != nil {
-		log.Errorf("Could not create a conference. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create conference")
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -184,22 +181,29 @@ func (h *serviceHandler) ConferenceDelete(ctx context.Context, a *amagent.Agent,
 func (h *serviceHandler) ConferenceUpdate(
 	ctx context.Context,
 	a *amagent.Agent,
-	cfID uuid.UUID,
+	conferenceID uuid.UUID,
 	name string,
 	detail string,
+	data map[string]any,
 	timeout int,
-	preActions []fmaction.Action,
-	postActions []fmaction.Action,
+	preFlowID uuid.UUID,
+	postFlowID uuid.UUID,
 ) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ConferenceUpdate",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-		"conference":  cfID,
+		"func":          "ConferenceUpdate",
+		"agent":         a,
+		"conference_id": conferenceID,
+		"name":          name,
+		"detail":        detail,
+		"data":          data,
+		"timeout":       timeout,
+		"pre_flow_id":   preFlowID,
+		"post_flow_id":  postFlowID,
 	})
+	log.Debugf("Updating conference. conference_id: %s", conferenceID)
 
 	// get conference for ownership check
-	c, err := h.conferenceGet(ctx, cfID)
+	c, err := h.conferenceGet(ctx, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
@@ -212,12 +216,13 @@ func (h *serviceHandler) ConferenceUpdate(
 
 	tmp, err := h.reqHandler.ConferenceV1ConferenceUpdate(
 		ctx,
-		cfID,
+		conferenceID,
 		name,
 		detail,
+		data,
 		timeout,
-		preActions,
-		postActions,
+		preFlowID,
+		postFlowID,
 	)
 	if err != nil {
 		log.Errorf("Could not update the conference info. err: %v", err)

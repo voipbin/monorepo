@@ -11,8 +11,6 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	fmflow "monorepo/bin-flow-manager/models/flow"
-
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -138,7 +136,6 @@ func Test_removeConferencecallIDTypeConference(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.conference.Status == conference.StatusTerminating && len(tt.conference.ConferencecallIDs) == 0 {
-				mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.conference.FlowID).Return(&fmflow.Flow{}, nil)
 				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID).Return(&confbridge.Confbridge{}, nil)
 				mockDB.EXPECT().ConferenceEnd(ctx, tt.conference.ID).Return(nil)
 				mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)

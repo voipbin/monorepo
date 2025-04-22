@@ -45,23 +45,20 @@ func (h *conferencecallHandler) ServiceStart(
 	}
 	log.WithField("conferencecall", cc).Debugf("Created conferencecall. conferencecall_id: %s", cc.ID)
 
-	// // create push actions for service start
-	// optJoin := fmaction.OptionFetchFlow{
-	// 	FlowID: cf.FlowID,
-	// }
-	// optString, err := json.Marshal(optJoin)
-	// if err != nil {
-	// 	log.Errorf("Could not marshal the conference join option. err: %v", err)
-	// 	return nil, errors.Wrap(err, "Could not marshal the conference join option.")
-	// }
 	actions := []fmaction.Action{
 		{
 			ID:   h.utilHandler.UUIDCreate(),
 			Type: fmaction.TypeFetchFlow,
 			Option: fmaction.ConvertOption(fmaction.OptionFetchFlow{
-				FlowID: cf.FlowID,
+				FlowID: cf.PreFlowID,
 			}),
-			// Option: optString,
+		},
+		{
+			ID:   h.utilHandler.UUIDCreate(),
+			Type: fmaction.TypeConfbridgeJoin,
+			Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+				ConfbridgeID: cf.ConfbridgeID,
+			}),
 		},
 	}
 

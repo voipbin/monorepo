@@ -1572,11 +1572,11 @@ type ConferenceManagerConference struct {
 	// Name Name of the conference.
 	Name *string `json:"name,omitempty"`
 
-	// PostActions Post-actions to execute after the conference ends.
-	PostActions *[]FlowManagerAction `json:"post_actions,omitempty"`
+	// PostFlowId ID of the post-flow to execute after the conference ends.
+	PostFlowId *string `json:"post_flow_id,omitempty"`
 
-	// PreActions Pre-actions to execute before the conference starts.
-	PreActions *[]FlowManagerAction `json:"pre_actions,omitempty"`
+	// PreFlowId ID of the pre-flow to execute before the conference starts.
+	PreFlowId *string `json:"pre_flow_id,omitempty"`
 
 	// RecordingId ID of the main recording associated with the conference.
 	RecordingId *string `json:"recording_id,omitempty"`
@@ -3600,12 +3600,14 @@ type GetConferencesParams struct {
 
 // PostConferencesJSONBody defines parameters for PostConferences.
 type PostConferencesJSONBody struct {
-	Data        map[string]interface{} `json:"data"`
-	Detail      string                 `json:"detail"`
-	Name        string                 `json:"name"`
-	PostActions []FlowManagerAction    `json:"post_actions"`
-	PreActions  []FlowManagerAction    `json:"pre_actions"`
-	Timeout     int                    `json:"timeout"`
+	// Data Custom data associated with the conference.
+	Data       map[string]interface{} `json:"data"`
+	Detail     string                 `json:"detail"`
+	Id         *string                `json:"id,omitempty"`
+	Name       string                 `json:"name"`
+	PostFlowId string                 `json:"post_flow_id"`
+	PreFlowId  string                 `json:"pre_flow_id"`
+	Timeout    int                    `json:"timeout"`
 
 	// Type Types of conferences.
 	Type ConferenceManagerConferenceType `json:"type"`
@@ -3613,11 +3615,13 @@ type PostConferencesJSONBody struct {
 
 // PutConferencesIdJSONBody defines parameters for PutConferencesId.
 type PutConferencesIdJSONBody struct {
-	Detail      string              `json:"detail"`
-	Name        string              `json:"name"`
-	PostActions []FlowManagerAction `json:"post_actions"`
-	PreActions  []FlowManagerAction `json:"pre_actions"`
-	Timeout     int                 `json:"timeout"`
+	// Data Custom data associated with the conference.
+	Data       map[string]interface{} `json:"data"`
+	Detail     string                 `json:"detail"`
+	Name       string                 `json:"name"`
+	PostFlowId string                 `json:"post_flow_id"`
+	PreFlowId  string                 `json:"pre_flow_id"`
+	Timeout    int                    `json:"timeout"`
 }
 
 // GetConferencesIdMediaStreamParams defines parameters for GetConferencesIdMediaStream.

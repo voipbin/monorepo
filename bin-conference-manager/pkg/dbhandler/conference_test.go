@@ -9,8 +9,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -37,7 +35,6 @@ func Test_ConferenceCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
 				},
 				ConfbridgeID: uuid.FromStringOrNil("6a8ea5c6-98b8-11ed-87e2-33728f9ec79e"),
-				FlowID:       uuid.FromStringOrNil("6ad5c136-98b8-11ed-84cb-07e86f64e72c"),
 				Type:         conference.TypeConference,
 				Status:       conference.StatusProgressing,
 				Name:         "test type conference",
@@ -46,17 +43,9 @@ func Test_ConferenceCreate(t *testing.T) {
 					"key1": "string value",
 					"key2": "string value",
 				},
-				Timeout: 100,
-				PreActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
-				PostActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeHangup,
-					},
-				},
+				Timeout:    100,
+				PreFlowID:  uuid.FromStringOrNil("83894532-1e07-11f0-a8d1-1fa5e177dd4b"),
+				PostFlowID: uuid.FromStringOrNil("83b9adda-1e07-11f0-a265-37149ee71b54"),
 				ConferencecallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("6b00d1c8-98b8-11ed-86cf-13921488e8d1"),
 					uuid.FromStringOrNil("6b28b4d6-98b8-11ed-a21b-7fb97887cf8c"),
@@ -80,7 +69,6 @@ func Test_ConferenceCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
 				},
 				ConfbridgeID: uuid.FromStringOrNil("6a8ea5c6-98b8-11ed-87e2-33728f9ec79e"),
-				FlowID:       uuid.FromStringOrNil("6ad5c136-98b8-11ed-84cb-07e86f64e72c"),
 				Type:         conference.TypeConference,
 				Status:       conference.StatusProgressing,
 				Name:         "test type conference",
@@ -89,17 +77,9 @@ func Test_ConferenceCreate(t *testing.T) {
 					"key1": "string value",
 					"key2": "string value",
 				},
-				Timeout: 100,
-				PreActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
-				PostActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeHangup,
-					},
-				},
+				Timeout:    100,
+				PreFlowID:  uuid.FromStringOrNil("83894532-1e07-11f0-a8d1-1fa5e177dd4b"),
+				PostFlowID: uuid.FromStringOrNil("83b9adda-1e07-11f0-a265-37149ee71b54"),
 				ConferencecallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("6b00d1c8-98b8-11ed-86cf-13921488e8d1"),
 					uuid.FromStringOrNil("6b28b4d6-98b8-11ed-a21b-7fb97887cf8c"),
@@ -134,8 +114,6 @@ func Test_ConferenceCreate(t *testing.T) {
 					ID: uuid.FromStringOrNil("a9f69592-98b9-11ed-947e-0f7ac40639b6"),
 				},
 				Data:              map[string]interface{}{},
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
@@ -217,8 +195,6 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 				Name:              "test type conference",
 				Detail:            "test type conference detail",
 				Data:              map[string]interface{}{},
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
@@ -263,6 +239,107 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 	}
 }
 
+func Test_ConferenceSet(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		conference *conference.Conference
+
+		id             uuid.UUID
+		conferenceName string
+		detail         string
+		data           map[string]interface{}
+		timeout        int
+		preFlowID      uuid.UUID
+		postFlowID     uuid.UUID
+
+		responseCurTime string
+		expectRes       *conference.Conference
+	}{
+		{
+			name: "test normal",
+			conference: &conference.Conference{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("90d83f46-1e0b-11f0-881e-db8cc51c453b"),
+				},
+			},
+
+			id:             uuid.FromStringOrNil("90d83f46-1e0b-11f0-881e-db8cc51c453b"),
+			conferenceName: "update name",
+			detail:         "update detail",
+			data: map[string]interface{}{
+				"key1": "string value",
+			},
+			timeout:    100,
+			preFlowID:  uuid.FromStringOrNil("910adef6-1e0b-11f0-be96-9b8635c520c0"),
+			postFlowID: uuid.FromStringOrNil("91345970-1e0b-11f0-a446-bf10e1f783b5"),
+
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes: &conference.Conference{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("90d83f46-1e0b-11f0-881e-db8cc51c453b"),
+				},
+				Name:   "update name",
+				Detail: "update detail",
+				Data: map[string]interface{}{
+					"key1": "string value",
+				},
+				Timeout:           100,
+				ConferencecallIDs: []uuid.UUID{},
+				PreFlowID:         uuid.FromStringOrNil("910adef6-1e0b-11f0-be96-9b8635c520c0"),
+				PostFlowID:        uuid.FromStringOrNil("91345970-1e0b-11f0-a446-bf10e1f783b5"),
+				RecordingIDs:      []uuid.UUID{},
+				TranscribeIDs:     []uuid.UUID{},
+				TMEnd:             DefaultTimeStamp,
+				TMCreate:          "2023-01-03 21:35:02.809",
+				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMDelete:          DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			if err := h.ConferenceSet(ctx, tt.conference.ID, tt.conferenceName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			res, err := h.ConferenceGet(ctx, tt.conference.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_ConferenceSetRecordingID(t *testing.T) {
 
 	tests := []struct {
@@ -288,8 +365,6 @@ func Test_ConferenceSetRecordingID(t *testing.T) {
 					ID: uuid.FromStringOrNil("2f7b0ee4-2834-11eb-9a6d-5beea5795ea6"),
 				},
 				Data:              map[string]interface{}{},
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingID:       uuid.FromStringOrNil("2fb4b446-2834-11eb-b864-1fdb13777d08"),
 				RecordingIDs:      []uuid.UUID{},
@@ -375,8 +450,6 @@ func Test_ConferenceSetData(t *testing.T) {
 				Data: map[string]interface{}{
 					"key1": "string value",
 				},
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
@@ -407,8 +480,6 @@ func Test_ConferenceSetData(t *testing.T) {
 					"key1": "string value",
 					"key2": "string value",
 				},
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
@@ -439,8 +510,6 @@ func Test_ConferenceSetData(t *testing.T) {
 					"key1": "string value",
 					"key2": float64(123),
 				},
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
@@ -537,8 +606,6 @@ func Test_ConferenceGets(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
 					},
 					Data:              map[string]interface{}{},
-					PreActions:        []fmaction.Action{},
-					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
 					RecordingIDs:      []uuid.UUID{},
 					TranscribeIDs:     []uuid.UUID{},
@@ -553,8 +620,6 @@ func Test_ConferenceGets(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
 					},
 					Data:              map[string]interface{}{},
-					PreActions:        []fmaction.Action{},
-					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
 					RecordingIDs:      []uuid.UUID{},
 					TranscribeIDs:     []uuid.UUID{},
@@ -608,8 +673,6 @@ func Test_ConferenceGets(t *testing.T) {
 					},
 					Type:              conference.TypeConference,
 					Data:              map[string]interface{}{},
-					PreActions:        []fmaction.Action{},
-					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
 					RecordingIDs:      []uuid.UUID{},
 					TranscribeIDs:     []uuid.UUID{},
@@ -625,8 +688,6 @@ func Test_ConferenceGets(t *testing.T) {
 					},
 					Type:              conference.TypeConference,
 					Data:              map[string]interface{}{},
-					PreActions:        []fmaction.Action{},
-					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
 					RecordingIDs:      []uuid.UUID{},
 					TranscribeIDs:     []uuid.UUID{},
@@ -716,8 +777,6 @@ func Test_ConferenceEnd(t *testing.T) {
 				},
 				Status:            conference.StatusTerminated,
 				Data:              map[string]interface{}{},
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
@@ -798,8 +857,6 @@ func Test_ConferenceDelete(t *testing.T) {
 					ID: uuid.FromStringOrNil("7a23bfa0-94e2-11ed-8dd9-0b374780e823"),
 				},
 				Data:              map[string]interface{}{},
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
@@ -878,8 +935,6 @@ func Test_ConferenceSetTranscribeID(t *testing.T) {
 					ID: uuid.FromStringOrNil("000ca104-98c1-11ed-bde2-9badb79a7365"),
 				},
 				Data:              map[string]interface{}{},
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeID:      uuid.FromStringOrNil("003eb216-98c1-11ed-9789-ff71dbeab66e"),

@@ -638,18 +638,28 @@ type RequestHandler interface {
 	ConferenceV1ConferenceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cfconference.Conference, error)
 	ConferenceV1ConferenceCreate(
 		ctx context.Context,
+		id uuid.UUID,
 		customerID uuid.UUID,
 		conferenceType cfconference.Type,
 		name string,
 		detail string,
-		timeout int,
 		data map[string]interface{},
-		preActions []fmaction.Action,
-		postActions []fmaction.Action,
+		timeout int,
+		preFlowID uuid.UUID,
+		postFlowID uuid.UUID,
 	) (*cfconference.Conference, error)
 	ConferenceV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error
-	ConferenceV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
+	ConferenceV1ConferenceUpdate(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		data map[string]any,
+		timeout int,
+		preFlowID uuid.UUID,
+		postFlowID uuid.UUID,
+	) (*cfconference.Conference, error)
 	ConferenceV1ConferenceUpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceRecordingStart(
 		ctx context.Context,

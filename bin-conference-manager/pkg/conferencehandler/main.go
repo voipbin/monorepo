@@ -10,8 +10,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"monorepo/bin-flow-manager/models/action"
-
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -23,13 +21,15 @@ import (
 type ConferenceHandler interface {
 	Create(
 		ctx context.Context,
-		conferenceType conference.Type,
+		id uuid.UUID,
 		customerID uuid.UUID,
+		conferenceType conference.Type,
 		name string,
 		detail string,
+		data map[string]interface{},
 		timeout int,
-		preActions []action.Action,
-		postActions []action.Action,
+		preFlowID uuid.UUID,
+		postFlowID uuid.UUID,
 	) (*conference.Conference, error)
 	Delete(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
@@ -40,9 +40,10 @@ type ConferenceHandler interface {
 		id uuid.UUID,
 		name string,
 		detail string,
+		data map[string]interface{},
 		timeout int,
-		preActions []action.Action,
-		postActions []action.Action,
+		preFlowID uuid.UUID,
+		postFlowID uuid.UUID,
 	) (*conference.Conference, error)
 	UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*conference.Conference, error)
 	AddConferencecallID(ctx context.Context, id uuid.UUID, conferencecallID uuid.UUID) (*conference.Conference, error)

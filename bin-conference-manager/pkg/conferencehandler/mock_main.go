@@ -13,7 +13,6 @@ import (
 	context "context"
 	recording "monorepo/bin-call-manager/models/recording"
 	conference "monorepo/bin-conference-manager/models/conference"
-	action "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -60,18 +59,18 @@ func (mr *MockConferenceHandlerMockRecorder) AddConferencecallID(ctx, id, confer
 }
 
 // Create mocks base method.
-func (m *MockConferenceHandler) Create(ctx context.Context, conferenceType conference.Type, customerID uuid.UUID, name, detail string, timeout int, preActions, postActions []action.Action) (*conference.Conference, error) {
+func (m *MockConferenceHandler) Create(ctx context.Context, id, customerID uuid.UUID, conferenceType conference.Type, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, conferenceType, customerID, name, detail, timeout, preActions, postActions)
+	ret := m.ctrl.Call(m, "Create", ctx, id, customerID, conferenceType, name, detail, data, timeout, preFlowID, postFlowID)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockConferenceHandlerMockRecorder) Create(ctx, conferenceType, customerID, name, detail, timeout, preActions, postActions any) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Create(ctx, id, customerID, conferenceType, name, detail, data, timeout, preFlowID, postFlowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferenceHandler)(nil).Create), ctx, conferenceType, customerID, name, detail, timeout, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferenceHandler)(nil).Create), ctx, id, customerID, conferenceType, name, detail, data, timeout, preFlowID, postFlowID)
 }
 
 // Delete mocks base method.
@@ -225,18 +224,18 @@ func (mr *MockConferenceHandlerMockRecorder) TranscribeStop(ctx, id any) *gomock
 }
 
 // Update mocks base method.
-func (m *MockConferenceHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []action.Action) (*conference.Conference, error) {
+func (m *MockConferenceHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, timeout, preActions, postActions)
+	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, data, timeout, preFlowID, postFlowID)
 	ret0, _ := ret[0].(*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockConferenceHandlerMockRecorder) Update(ctx, id, name, detail, timeout, preActions, postActions any) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Update(ctx, id, name, detail, data, timeout, preFlowID, postFlowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConferenceHandler)(nil).Update), ctx, id, name, detail, timeout, preActions, postActions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConferenceHandler)(nil).Update), ctx, id, name, detail, data, timeout, preFlowID, postFlowID)
 }
 
 // UpdateRecordingID mocks base method.

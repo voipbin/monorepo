@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	fmaction "monorepo/bin-flow-manager/models/action"
 
 	uuid "github.com/gofrs/uuid"
 )
@@ -13,31 +12,31 @@ import (
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	Type Type `json:"type"`
+	Type Type `json:"type,omitempty"`
 
-	Status Status `json:"status"`
+	Status Status `json:"status,omitempty"`
 
-	Name    string                 `json:"name"`
-	Detail  string                 `json:"detail"`
-	Data    map[string]interface{} `json:"data"`
-	Timeout int                    `json:"timeout"` // timeout. second
+	Name    string         `json:"name,omitempty"`
+	Detail  string         `json:"detail,omitempty"`
+	Data    map[string]any `json:"data,omitempty"`
+	Timeout int            `json:"timeout,omitempty"` // timeout. second
 
-	PreActions  []fmaction.Action `json:"pre_actions"`  // pre actions
-	PostActions []fmaction.Action `json:"post_actions"` // post actions
+	PreFlowID  uuid.UUID `json:"pre_flow_id,omitempty"`  // pre flow id
+	PostFlowID uuid.UUID `json:"post_flow_id,omitempty"` // post flow id
 
-	ConferencecallIDs []uuid.UUID `json:"conferencecall_ids"`
+	ConferencecallIDs []uuid.UUID `json:"conferencecall_ids,omitempty"`
 
-	RecordingID  uuid.UUID   `json:"recording_id"`
-	RecordingIDs []uuid.UUID `json:"recording_ids"`
+	RecordingID  uuid.UUID   `json:"recording_id,omitempty"`
+	RecordingIDs []uuid.UUID `json:"recording_ids,omitempty"`
 
-	TranscribeID  uuid.UUID   `json:"transcribe_id"`
-	TranscribeIDs []uuid.UUID `json:"transcribe_ids"`
+	TranscribeID  uuid.UUID   `json:"transcribe_id,omitempty"`
+	TranscribeIDs []uuid.UUID `json:"transcribe_ids,omitempty"`
 
-	TMEnd string `json:"tm_end"`
+	TMEnd string `json:"tm_end,omitempty"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event
@@ -54,8 +53,8 @@ func (h *Conference) ConvertWebhookMessage() *WebhookMessage {
 		Data:    h.Data,
 		Timeout: h.Timeout,
 
-		PreActions:  h.PreActions,
-		PostActions: h.PostActions,
+		PreFlowID:  h.PreFlowID,
+		PostFlowID: h.PostFlowID,
 
 		ConferencecallIDs: h.ConferencecallIDs,
 

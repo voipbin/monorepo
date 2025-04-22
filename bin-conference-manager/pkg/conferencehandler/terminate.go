@@ -54,13 +54,6 @@ func (h *conferenceHandler) Destroy(ctx context.Context, cf *conference.Conferen
 	})
 	log.WithField("conference", cf).Debug("Destroying the conference.")
 
-	// remove flow
-	log.WithField("flow_id", cf.FlowID).Debug("Deleting the flow.")
-	_, err := h.reqHandler.FlowV1FlowDelete(ctx, cf.FlowID)
-	if err != nil {
-		log.WithField("flow_id", cf.FlowID).Errorf("Could not delete the conference. But keep moving on. err: %v", err)
-	}
-
 	// delete confbridge
 	tmp, err := h.reqHandler.CallV1ConfbridgeDelete(ctx, cf.ConfbridgeID)
 	if err != nil {

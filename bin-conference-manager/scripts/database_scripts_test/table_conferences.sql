@@ -13,8 +13,8 @@ create table conference_conferences(
   data    json,           -- additional data
   timeout int,            -- timeout. second
 
-  pre_actions   json,     -- action set for before conference join(enter)
-  post_actions  json,     -- action set for after conference join(enter)
+  pre_flow_id  binary(16),   -- pre flow id
+  post_flow_id binary(16),   -- post flow id
 
   conferencecall_ids json, -- conferencecalls in the conference
 

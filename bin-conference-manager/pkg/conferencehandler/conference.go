@@ -2,13 +2,9 @@ package conferencehandler
 
 import (
 	"context"
-	"fmt"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-
-	fmaction "monorepo/bin-flow-manager/models/action"
-	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -23,22 +19,34 @@ const defaultConferenceTimeout = 86400
 // it increases corresponded counter
 func (h *conferenceHandler) Create(
 	ctx context.Context,
-	conferenceType conference.Type,
+	id uuid.UUID,
 	customerID uuid.UUID,
+	conferenceType conference.Type,
 	name string,
 	detail string,
+	data map[string]interface{},
 	timeout int,
-	preActions []fmaction.Action,
-	postActions []fmaction.Action,
+	preFlowID uuid.UUID,
+	postFlowID uuid.UUID,
 ) (*conference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "Create",
 		"customer_id":     customerID,
 		"conference_type": conferenceType,
+		"name":            name,
+		"detail":          detail,
+		"data":            data,
+		"timeout":         timeout,
+		"pre_flow_id":     preFlowID,
+		"post_flow_id":    postFlowID,
 	})
 
-	id := h.utilHandler.UUIDCreate()
+	if id == uuid.Nil {
+		id = h.utilHandler.UUIDCreate()
+		log.Debugf("The conference id is not set. Creating a new one. conference_id: %s", id.String())
+	}
 	log = log.WithField("conference_id", id.String())
+	log.Debugf("Creating a new conference. conference_id: %s", id.String())
 
 	// send confbridge create request
 	confbridgeType := cmconfbridge.TypeConnect
@@ -53,14 +61,6 @@ func (h *conferenceHandler) Create(
 	}
 	log.Debugf("Created confbridge. confbridge_id: %s", cb.ID)
 
-	// create flow
-	f, err := h.createConferenceFlow(ctx, customerID, id, cb.ID, preActions, postActions)
-	if err != nil {
-		log.Errorf("Could not create conference flow. err: %v", err)
-		return nil, err
-	}
-	log.Debugf("Created flow. flow_id: %s", f.ID)
-
 	if timeout > 0 && timeout < 60 {
 		timeout = defaultConferenceTimeout
 	}
@@ -72,19 +72,19 @@ func (h *conferenceHandler) Create(
 			CustomerID: customerID,
 		},
 		ConfbridgeID: cb.ID,
-		FlowID:       f.ID,
 		Type:         conferenceType,
 		Status:       conference.StatusProgressing,
 		Name:         name,
 		Detail:       detail,
-		Data:         map[string]interface{}{},
+		Data:         data,
 		Timeout:      timeout,
 
-		PreActions:  preActions,
-		PostActions: postActions,
+		PreFlowID:  preFlowID,
+		PostFlowID: postFlowID,
 
 		ConferencecallIDs: []uuid.UUID{},
 		RecordingIDs:      []uuid.UUID{},
+		TranscribeIDs:     []uuid.UUID{},
 	}
 
 	// create a conference record
@@ -111,60 +111,6 @@ func (h *conferenceHandler) Create(
 	}
 
 	return res, nil
-}
-
-// createConferenceFlowActions creates the actions for conference join.
-func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) ([]fmaction.Action, error) {
-	actions := []fmaction.Action{}
-
-	// append the pre actions
-	actions = append(actions, preActions...)
-
-	confbridgeJoin := fmaction.Action{
-		Type: fmaction.TypeConfbridgeJoin,
-		Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
-			ConfbridgeID: confbridgeID,
-		}),
-	}
-	actions = append(actions, confbridgeJoin)
-
-	// append the post actions
-	actions = append(actions, postActions...)
-
-	return actions, nil
-}
-
-// createConferenceFlow creates a conference flow and returns created flow.
-func (h *conferenceHandler) createConferenceFlow(ctx context.Context, customerID uuid.UUID, conferenceID uuid.UUID, confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) (*fmflow.Flow, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "createConferenceFlow",
-		"customer_id":   customerID,
-		"conference_id": conferenceID,
-		"confbridge_id": confbridgeID,
-		"pre_actions":   preActions,
-		"post_actions":  postActions,
-	})
-
-	// create flow actions
-	actions, err := h.createConferenceFlowActions(confbridgeID, preActions, postActions)
-	if err != nil {
-		log.Errorf("Could not create actions. err: %v", err)
-		return nil, err
-	}
-	log.Debugf("Created flow actions. actions: %v", actions)
-
-	// create flow name
-	flowName := fmt.Sprintf("conference-%s", conferenceID.String())
-
-	// create flow
-	resFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeConference, flowName, "generated for conference by conference-manager.", actions, true)
-	if err != nil {
-		log.Errorf("Could not create a conference flow. err: %v", err)
-		return nil, err
-	}
-	log.Debugf("Created a conference flow. res: %v", resFlow)
-
-	return resFlow, nil
 }
 
 // Gets returns list of conferences.
@@ -232,69 +178,42 @@ func (h *conferenceHandler) Update(
 	id uuid.UUID,
 	name string,
 	detail string,
+	data map[string]any,
 	timeout int,
-	preActions []fmaction.Action,
-	postActions []fmaction.Action,
+	preFlowID uuid.UUID,
+	postFlowID uuid.UUID,
 ) (*conference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "Update",
 		"conference_id": id,
+		"name":          name,
+		"detail":        detail,
+		"data":          data,
+		"timeout":       timeout,
+		"pre_flow_id":   preFlowID,
+		"post_flow_id":  postFlowID,
 	})
-	log.Debugf("Updating the conference. name: %s, detail: %s, timeout: %d, pre_actions: %v, post_actions: %v",
-		name, detail, timeout, preActions, postActions)
-
-	// get conference
-	cf, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get conference info. err: %v", err)
-		return nil, err
-	}
-
-	// create flow actions
-	actions, err := h.createConferenceFlowActions(cf.ConfbridgeID, preActions, postActions)
-	if err != nil {
-		log.Errorf("Could not create actions. err: %v", err)
-		return nil, err
-	}
-	log.Debugf("Created flow actions. actions: %v", actions)
-
-	// get flow
-	f, err := h.reqHandler.FlowV1FlowGet(ctx, cf.FlowID)
-	if err != nil {
-		log.Errorf("Could not get flow. err: %v", err)
-		return nil, err
-	}
-	f.Actions = actions
-
-	// update flow
-	newFlow, err := h.reqHandler.FlowV1FlowUpdate(ctx, f)
-	if err != nil {
-		log.Errorf("Could not update the flow. err: %v", err)
-		return nil, err
-	}
-	log.WithField("flow", newFlow).Debugf("Updated the flow.")
+	log.Debugf("Updating the conference. conference_id: %s", id)
 
 	if timeout > 0 && timeout < 60 {
 		timeout = defaultConferenceTimeout
 	}
 
 	// update conference
-	if errSet := h.db.ConferenceSet(ctx, id, name, detail, timeout, preActions, postActions); errSet != nil {
-		log.Errorf("Could not update the conference. err: %v", errSet)
-		return nil, err
+	if errSet := h.db.ConferenceSet(ctx, id, name, detail, data, timeout, preFlowID, postFlowID); errSet != nil {
+		return nil, errors.Wrapf(errSet, "Could not update the conference. conference_id: %s", id)
 	}
 
 	// get updated conference and notify
 	res, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated conference. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Could not get updated conference. conference_id: %s", id)
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceUpdated, res)
 
 	// set the timeout if it was set
-	if cf.Timeout > 0 {
-		if err := h.reqHandler.ConferenceV1ConferenceDeleteDelay(ctx, id, cf.Timeout*1000); err != nil {
+	if res.Timeout > 0 {
+		if err := h.reqHandler.ConferenceV1ConferenceDeleteDelay(ctx, id, res.Timeout*1000); err != nil {
 			log.Errorf("Could not start conference timeout. err: %v", err)
 		}
 	}

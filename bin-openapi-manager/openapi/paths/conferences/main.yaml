@@ -35,6 +35,8 @@ post:
           properties:
             type:
               $ref: '#/components/schemas/ConferenceManagerConferenceType'
+            id:
+              type: string
             name:
               type: string
             detail:
@@ -43,22 +45,20 @@ post:
               type: integer
             data:
               type: object
-            pre_actions:
-              type: array
-              items:
-                $ref: '#/components/schemas/FlowManagerAction'
-            post_actions:
-              type: array
-              items:
-                $ref: '#/components/schemas/FlowManagerAction'
+              description: Custom data associated with the conference.
+              additionalProperties: true
+            pre_flow_id:
+              type: string
+            post_flow_id:
+              type: string
           required:
             - type
             - name
             - detail
             - timeout
             - data
-            - pre_actions
-            - post_actions
+            - pre_flow_id
+            - post_flow_id
   responses:
     '200':
       content:
