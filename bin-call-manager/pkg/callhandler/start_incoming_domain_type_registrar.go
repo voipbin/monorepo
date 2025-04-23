@@ -190,8 +190,8 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeConference(
 		ctx,
 		customerID,
 		fmflow.TypeFlow,
-		"tmp",
-		"tmp flow for conference join",
+		"conference incoming handle",
+		"auto-generated temp flow for conference joining incoming call",
 		actions,
 		false,
 	)
