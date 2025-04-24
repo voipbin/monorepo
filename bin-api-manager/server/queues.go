@@ -2,7 +2,6 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
-	fmaction "monorepo/bin-flow-manager/models/action"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
@@ -88,10 +87,7 @@ func (h *server) PostQueues(c *gin.Context) {
 		tagIDs = append(tagIDs, uuid.FromStringOrNil(v))
 	}
 
-	waitActions := []fmaction.Action{}
-	for _, v := range req.WaitActions {
-		waitActions = append(waitActions, ConvertFlowManagerAction(v))
-	}
+	waitFlowID := uuid.FromStringOrNil(req.WaitFlowId)
 
 	res, err := h.serviceHandler.QueueCreate(
 		c.Request.Context(),
@@ -100,7 +96,7 @@ func (h *server) PostQueues(c *gin.Context) {
 		req.Detail,
 		qmqueue.RoutingMethod(req.RoutingMethod),
 		tagIDs,
-		waitActions,
+		waitFlowID,
 		req.WaitTimeout,
 		req.ServiceTimeout,
 	)
@@ -220,12 +216,9 @@ func (h *server) PutQueuesId(c *gin.Context, id string) {
 		tagIDs = append(tagIDs, uuid.FromStringOrNil(v))
 	}
 
-	waitActions := []fmaction.Action{}
-	for _, v := range req.WaitActions {
-		waitActions = append(waitActions, ConvertFlowManagerAction(v))
-	}
+	waitFlowID := uuid.FromStringOrNil(req.WaitFlowId)
 
-	res, err := h.serviceHandler.QueueUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, qmqueue.RoutingMethod(req.RoutingMethod), tagIDs, waitActions, req.WaitTimeout, req.ServiceTimeout)
+	res, err := h.serviceHandler.QueueUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, qmqueue.RoutingMethod(req.RoutingMethod), tagIDs, waitFlowID, req.WaitTimeout, req.ServiceTimeout)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		c.AbortWithStatus(400)
@@ -317,53 +310,6 @@ func (h *server) PutQueuesIdRoutingMethod(c *gin.Context, id string) {
 	res, err := h.serviceHandler.QueueUpdateRoutingMethod(c.Request.Context(), &a, target, qmqueue.RoutingMethod(req.RoutingMethod))
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) PutQueuesIdActions(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "queuesIDActionsPUT",
-		"request_address": c.ClientIP,
-		"queue_id":        id,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	var req openapi_server.PutQueuesIdActionsJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	waitActions := []fmaction.Action{}
-	for _, v := range req.WaitActions {
-		waitActions = append(waitActions, ConvertFlowManagerAction(v))
-	}
-
-	res, err := h.serviceHandler.QueueUpdateActions(c.Request.Context(), &a, target, waitActions, req.TimeoutWait, req.TimeoutService)
-	if err != nil {
-		log.Errorf("Could not update the queue's action handle. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

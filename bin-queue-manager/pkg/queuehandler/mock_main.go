@@ -13,7 +13,6 @@ import (
 	context "context"
 	agent "monorepo/bin-agent-manager/models/agent"
 	customer "monorepo/bin-customer-manager/models/customer"
-	action "monorepo/bin-flow-manager/models/action"
 	queue "monorepo/bin-queue-manager/models/queue"
 	reflect "reflect"
 
@@ -76,18 +75,18 @@ func (mr *MockQueueHandlerMockRecorder) AddWaitQueueCallID(ctx, id, queuecallID 
 }
 
 // Create mocks base method.
-func (m *MockQueueHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
+func (m *MockQueueHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
 	ret0, _ := ret[0].(*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockQueueHandlerMockRecorder) Create(ctx, customerID, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout any) *gomock.Call {
+func (mr *MockQueueHandlerMockRecorder) Create(ctx, customerID, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueueHandler)(nil).Create), ctx, customerID, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueueHandler)(nil).Create), ctx, customerID, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
 }
 
 // Delete mocks base method.
@@ -207,18 +206,18 @@ func (mr *MockQueueHandlerMockRecorder) RemoveServiceQueuecallID(ctx, id, queuec
 }
 
 // UpdateBasicInfo mocks base method.
-func (m *MockQueueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
+func (m *MockQueueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
+	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
 	ret0, _ := ret[0].(*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateBasicInfo indicates an expected call of UpdateBasicInfo.
-func (mr *MockQueueHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout any) *gomock.Call {
+func (mr *MockQueueHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockQueueHandler)(nil).UpdateBasicInfo), ctx, id, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockQueueHandler)(nil).UpdateBasicInfo), ctx, id, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
 }
 
 // UpdateExecute mocks base method.
@@ -264,19 +263,4 @@ func (m *MockQueueHandler) UpdateTagIDs(ctx context.Context, id uuid.UUID, tagID
 func (mr *MockQueueHandlerMockRecorder) UpdateTagIDs(ctx, id, tagIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTagIDs", reflect.TypeOf((*MockQueueHandler)(nil).UpdateTagIDs), ctx, id, tagIDs)
-}
-
-// UpdateWaitActionsAndTimeouts mocks base method.
-func (m *MockQueueHandler) UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateWaitActionsAndTimeouts", ctx, id, waitActions, waitTimeout, serviceTimeout)
-	ret0, _ := ret[0].(*queue.Queue)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateWaitActionsAndTimeouts indicates an expected call of UpdateWaitActionsAndTimeouts.
-func (mr *MockQueueHandlerMockRecorder) UpdateWaitActionsAndTimeouts(ctx, id, waitActions, waitTimeout, serviceTimeout any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWaitActionsAndTimeouts", reflect.TypeOf((*MockQueueHandler)(nil).UpdateWaitActionsAndTimeouts), ctx, id, waitActions, waitTimeout, serviceTimeout)
 }

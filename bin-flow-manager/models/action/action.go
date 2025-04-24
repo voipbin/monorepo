@@ -137,6 +137,11 @@ const (
 	// required media: none
 	TypeEmailSend Type = "email_send"
 
+	// TypeEmpty is used to represent the empty action.
+	// this is used within the activeflow control to move the flow cursor to the empty action
+	// required media: none
+	TypeEmpty Type = "empty"
+
 	// TypeExternalMediaStart starts the external media.
 	// call-manager
 	// required media: call

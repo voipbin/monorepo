@@ -12,28 +12,28 @@ import (
 // v1 data type request struct for
 // /v1/queues POST
 type V1DataQueuesPost struct {
-	CustomerID uuid.UUID `json:"customer_id"`
+	CustomerID uuid.UUID `json:"customer_id,omitempty"`
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name   string `json:"name,omitempty"`
+	Detail string `json:"detail,omitempty"`
 
-	RoutingMethod string      `json:"routing_method"`
-	TagIDs        []uuid.UUID `json:"tag_ids"`
+	RoutingMethod string      `json:"routing_method,omitempty"`
+	TagIDs        []uuid.UUID `json:"tag_ids,omitempty"`
 
-	WaitActions    []fmaction.Action `json:"wait_actions"`
-	WaitTimeout    int               `json:"wait_timeout"`    // wait timeout(ms)
-	ServiceTimeout int               `json:"service_timeout"` // service timeout(ms)
+	WaitFlowID     uuid.UUID `json:"wait_flow_id,omitempty"`
+	WaitTimeout    int       `json:"wait_timeout,omitempty"`    // wait timeout(ms)
+	ServiceTimeout int       `json:"service_timeout,omitempty"` // service timeout(ms)
 }
 
 // V1DataQueuesIDPut is
 // v1 data type request struct for
 // /v1/queues/<queue-id> PUT
 type V1DataQueuesIDPut struct {
-	Name           string              `json:"name"`
-	Detail         string              `json:"detail"`
+	Name           string              `json:"name,omitempty"`
+	Detail         string              `json:"detail,omitempty"`
 	RoutingMethod  queue.RoutingMethod `json:"routing_method,omitempty"`
 	TagIDs         []uuid.UUID         `json:"tag_ids,omitempty"`
-	WaitActions    []fmaction.Action   `json:"wait_actions,omitempty"`
+	WaitFlowID     uuid.UUID           `json:"wait_flow_id,omitempty"`
 	WaitTimeout    int                 `json:"wait_timeout,omitempty"`
 	ServiceTimeout int                 `json:"service_timeout,omitempty"`
 }

@@ -9,8 +9,6 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -197,7 +195,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 		detail         string
 		routingMethod  queue.RoutingMethod
 		tagIDs         []uuid.UUID
-		waitActions    []fmaction.Action
+		waitFlowID     uuid.UUID
 		waitTimeout    int
 		serviceTimeout int
 
@@ -214,11 +212,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 				uuid.FromStringOrNil("7fe4d988-4a77-11ee-a4b5-b36894ae13e5"),
 				uuid.FromStringOrNil("803c38ae-4a77-11ee-927d-cf749540055f"),
 			},
-			waitActions: []fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
+			waitFlowID:     uuid.FromStringOrNil("2b2e6744-2066-11f0-97c2-eb5e7f20e844"),
 			waitTimeout:    60000,
 			serviceTimeout: 6000000,
 
@@ -254,7 +248,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 				tt.detail,
 				tt.routingMethod,
 				tt.tagIDs,
-				tt.waitActions,
+				tt.waitFlowID,
 				tt.waitTimeout,
 				tt.serviceTimeout,
 			).Return(nil)
@@ -268,7 +262,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 				tt.detail,
 				tt.routingMethod,
 				tt.tagIDs,
-				tt.waitActions,
+				tt.waitFlowID,
 				tt.waitTimeout,
 				tt.serviceTimeout,
 			)
@@ -399,70 +393,70 @@ func Test_UpdateRoutingMethod(t *testing.T) {
 	}
 }
 
-func Test_UpdateWaitActionsAndTimeouts(t *testing.T) {
+// func Test_UpdateWaitActionsAndTimeouts(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		queueID        uuid.UUID
-		waitActions    []fmaction.Action
-		waitTimeout    int
-		serviceTimeout int
+// 		queueID        uuid.UUID
+// 		waitActions    []fmaction.Action
+// 		waitTimeout    int
+// 		serviceTimeout int
 
-		responseQueue *queue.Queue
-	}{
-		{
-			"normal",
+// 		responseQueue *queue.Queue
+// 	}{
+// 		{
+// 			"normal",
 
-			uuid.FromStringOrNil("bbd57b08-d25c-11ec-9ac2-97f8bfe533ea"),
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			600000,
-			6000000,
+// 			uuid.FromStringOrNil("bbd57b08-d25c-11ec-9ac2-97f8bfe533ea"),
+// 			[]fmaction.Action{
+// 				{
+// 					Type: fmaction.TypeAnswer,
+// 				},
+// 			},
+// 			600000,
+// 			6000000,
 
-			&queue.Queue{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("bbd57b08-d25c-11ec-9ac2-97f8bfe533ea"),
-				},
-			},
-		},
-	}
+// 			&queue.Queue{
+// 				Identity: commonidentity.Identity{
+// 					ID: uuid.FromStringOrNil("bbd57b08-d25c-11ec-9ac2-97f8bfe533ea"),
+// 				},
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockReq := requesthandler.NewMockRequestHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := &queueHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyhandler: mockNotify,
-			}
+// 			h := &queueHandler{
+// 				db:            mockDB,
+// 				reqHandler:    mockReq,
+// 				notifyhandler: mockNotify,
+// 			}
 
-			ctx := context.Background()
+// 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueSetWaitActionsAndTimeouts(ctx, tt.queueID, tt.waitActions, tt.waitTimeout, tt.serviceTimeout).Return(nil)
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
+// 			mockDB.EXPECT().QueueSetWaitActionsAndTimeouts(ctx, tt.queueID, tt.waitActions, tt.waitTimeout, tt.serviceTimeout).Return(nil)
+// 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+// 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 
-			res, err := h.UpdateWaitActionsAndTimeouts(ctx, tt.queueID, tt.waitActions, tt.waitTimeout, tt.serviceTimeout)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			res, err := h.UpdateWaitActionsAndTimeouts(ctx, tt.queueID, tt.waitActions, tt.waitTimeout, tt.serviceTimeout)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if !reflect.DeepEqual(tt.responseQueue, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueue, res)
-			}
-		})
-	}
-}
+// 			if !reflect.DeepEqual(tt.responseQueue, res) {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueue, res)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_UpdateExecute(t *testing.T) {
 

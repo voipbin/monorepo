@@ -49,7 +49,6 @@ var (
 	reqV1QueuesID              = regexp.MustCompile("/v1/queues/" + regUUID + "$")
 	reqV1QueuesIDTagIDs        = regexp.MustCompile("/v1/queues/" + regUUID + "/tag_ids$")
 	reqV1QueuesIDRoutingMethod = regexp.MustCompile("/v1/queues/" + regUUID + "/routing_method$")
-	reqV1QueuesIDWaitActions   = regexp.MustCompile("/v1/queues/" + regUUID + "/wait_actions$")
 	reqV1QueuesIDAgentsGet     = regexp.MustCompile("/v1/queues/" + regUUID + `/agents\?`)
 	reqV1QueuesIDExecute       = regexp.MustCompile("/v1/queues/" + regUUID + "/execute$")
 	reqV1QueuesIDExecuteRun    = regexp.MustCompile("/v1/queues/" + regUUID + "/execute_run$")
@@ -194,11 +193,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case reqV1QueuesIDRoutingMethod.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1QueuesIDRoutingMethodPut(ctx, m)
 		requestType = "/v1/queues/<queue-id>/routing_method"
-
-	// PUT /queues/<queue-id>/wait_actions
-	case reqV1QueuesIDWaitActions.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
-		response, err = h.processV1QueuesIDWaitActionsPut(ctx, m)
-		requestType = "/v1/queues/<queue-id>/wait_actions"
 
 	// GET /queues/<queue-id>/agents
 	case reqV1QueuesIDAgentsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

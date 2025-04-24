@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -111,7 +109,7 @@ func (h *serviceHandler) QueueCreate(
 	detail string,
 	routingMethod qmqueue.RoutingMethod,
 	tagIDs []uuid.UUID,
-	waitActions []fmaction.Action,
+	waitFlowID uuid.UUID,
 	timeoutWait int,
 	timeoutService int,
 ) (*qmqueue.WebhookMessage, error) {
@@ -134,7 +132,7 @@ func (h *serviceHandler) QueueCreate(
 		detail,
 		qmqueue.RoutingMethod(routingMethod),
 		tagIDs,
-		waitActions,
+		waitFlowID,
 		timeoutWait,
 		timeoutService,
 	)
@@ -192,7 +190,7 @@ func (h *serviceHandler) QueueUpdate(
 	detail string,
 	routingMethod qmqueue.RoutingMethod,
 	tagIDs []uuid.UUID,
-	waitActions []fmaction.Action,
+	waitFlowID uuid.UUID,
 	timeoutWait int,
 	serviceTimeout int,
 ) (*qmqueue.WebhookMessage, error) {
@@ -203,7 +201,7 @@ func (h *serviceHandler) QueueUpdate(
 		"name":            name,
 		"detail":          detail,
 		"routing_method":  routingMethod,
-		"wait_actions":    waitActions,
+		"wait_flow_id":    waitFlowID,
 		"wait_timeout":    timeoutWait,
 		"service_timeout": serviceTimeout,
 	})
@@ -220,7 +218,7 @@ func (h *serviceHandler) QueueUpdate(
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.QueueV1QueueUpdate(ctx, queueID, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, serviceTimeout)
+	tmp, err := h.reqHandler.QueueV1QueueUpdate(ctx, queueID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, serviceTimeout)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		return nil, err
@@ -287,39 +285,6 @@ func (h *serviceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *amagen
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueueUpdateRoutingMethod(ctx, queueID, routingMethod)
-	if err != nil {
-		log.Errorf("Could not update the queue. err: %v", err)
-		return nil, err
-	}
-	log.WithField("queue", tmp).Debugf("Updated queue. queue_id: %s", tmp.ID)
-
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
-// QueueUpdateActions sends a request to queue-manager
-// to updating the queue's action settings.
-// it returns error if it failed.
-func (h *serviceHandler) QueueUpdateActions(ctx context.Context, a *amagent.Agent, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "QueueUpdateActions",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-	})
-
-	q, err := h.queueGet(ctx, queueID)
-	if err != nil {
-		log.Errorf("Could not get queue. err: %v", err)
-		return nil, err
-	}
-
-	// permission check
-	if !h.hasPermission(ctx, a, q.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	tmp, err := h.reqHandler.QueueV1QueueUpdateActions(ctx, queueID, waitActions, timeoutWait, timeoutService)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		return nil, err

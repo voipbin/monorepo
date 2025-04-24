@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
 )
@@ -14,29 +13,29 @@ type WebhookMessage struct {
 	commonidentity.Identity
 
 	// basic info
-	Name   string `json:"name"`   // queue's name
-	Detail string `json:"detail"` // queue's detail
+	Name   string `json:"name,omitempty"`   // queue's name
+	Detail string `json:"detail,omitempty"` // queue's detail
 
 	// operation info
-	RoutingMethod RoutingMethod `json:"routing_method"` // queue's routing method
-	TagIDs        []uuid.UUID   `json:"tag_ids"`        // queue's tag ids
+	RoutingMethod RoutingMethod `json:"routing_method,omitempty"` // queue's routing method
+	TagIDs        []uuid.UUID   `json:"tag_ids,omitempty"`        // queue's tag ids
 
 	// wait/service info
-	WaitActions    []fmaction.Action `json:"wait_actions"`    // actions for queue waiting
-	WaitTimeout    int               `json:"wait_timeout"`    // wait queue timeout.(ms)
-	ServiceTimeout int               `json:"service_timeout"` // service queue timeout(ms).
+	WaitFlowID     uuid.UUID `json:"wait_flow_id,omitempty"`    // flow id for queue waiting
+	WaitTimeout    int       `json:"wait_timeout,omitempty"`    // wait queue timeout.(ms)
+	ServiceTimeout int       `json:"service_timeout,omitempty"` // service queue timeout(ms).
 
 	// queuecall info
-	WaitQueuecallIDs    []uuid.UUID `json:"wait_queuecall_ids"`    // waiting queue call ids.
-	ServiceQueuecallIDs []uuid.UUID `json:"service_queuecall_ids"` // service queue call ids(ms).
+	WaitQueuecallIDs    []uuid.UUID `json:"wait_queuecall_ids,omitempty"`    // waiting queue call ids.
+	ServiceQueuecallIDs []uuid.UUID `json:"service_queuecall_ids,omitempty"` // service queue call ids(ms).
 
-	TotalIncomingCount  int `json:"total_incoming_count"`  // total incoming call count
-	TotalServicedCount  int `json:"total_serviced_count"`  // total serviced call count
-	TotalAbandonedCount int `json:"total_abandoned_count"` // total abandoned call count
+	TotalIncomingCount  int `json:"total_incoming_count,omitempty"`  // total incoming call count
+	TotalServicedCount  int `json:"total_serviced_count,omitempty"`  // total serviced call count
+	TotalAbandonedCount int `json:"total_abandoned_count,omitempty"` // total abandoned call count
 
-	TMCreate string `json:"tm_create"` // Created timestamp.
-	TMUpdate string `json:"tm_update"` // Updated timestamp.
-	TMDelete string `json:"tm_delete"` // Deleted timestamp.
+	TMCreate string `json:"tm_create,omitempty"` // Created timestamp.
+	TMUpdate string `json:"tm_update,omitempty"` // Updated timestamp.
+	TMDelete string `json:"tm_delete,omitempty"` // Deleted timestamp.
 }
 
 // ConvertWebhookMessage Convert to the publishable message.
@@ -49,7 +48,7 @@ func (h *Queue) ConvertWebhookMessage() *WebhookMessage {
 		RoutingMethod: h.RoutingMethod,
 		TagIDs:        h.TagIDs,
 
-		WaitActions:    h.WaitActions,
+		WaitFlowID:     h.WaitFlowID,
 		WaitTimeout:    h.WaitTimeout,
 		ServiceTimeout: h.ServiceTimeout,
 

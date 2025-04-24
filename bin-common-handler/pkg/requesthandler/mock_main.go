@@ -4228,18 +4228,18 @@ func (mr *MockRequestHandlerMockRecorder) OutdialV1OutdialtargetUpdateStatusProg
 }
 
 // QueueV1QueueCreate mocks base method.
-func (m *MockRequestHandler) QueueV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.Queue, error) {
+func (m *MockRequestHandler) QueueV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, timeoutWait, timeoutService int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueueCreate", ctx, customerID, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
+	ret := m.ctrl.Call(m, "QueueV1QueueCreate", ctx, customerID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueueV1QueueCreate indicates an expected call of QueueV1QueueCreate.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueueCreate(ctx, customerID, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueueCreate(ctx, customerID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueCreate", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueCreate), ctx, customerID, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueCreate", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueCreate), ctx, customerID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService)
 }
 
 // QueueV1QueueCreateQueuecall mocks base method.
@@ -4332,33 +4332,18 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueueGets(ctx, pageToken, pageS
 }
 
 // QueueV1QueueUpdate mocks base method.
-func (m *MockRequestHandler) QueueV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
+func (m *MockRequestHandler) QueueV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueueUpdate", ctx, queueID, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
+	ret := m.ctrl.Call(m, "QueueV1QueueUpdate", ctx, queueID, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
 	ret0, _ := ret[0].(*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueueV1QueueUpdate indicates an expected call of QueueV1QueueUpdate.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueueUpdate(ctx, queueID, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueueUpdate(ctx, queueID, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueUpdate", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueUpdate), ctx, queueID, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
-}
-
-// QueueV1QueueUpdateActions mocks base method.
-func (m *MockRequestHandler) QueueV1QueueUpdateActions(ctx context.Context, queueID uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.Queue, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueueUpdateActions", ctx, queueID, waitActions, timeoutWait, timeoutService)
-	ret0, _ := ret[0].(*queue.Queue)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueueV1QueueUpdateActions indicates an expected call of QueueV1QueueUpdateActions.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueueUpdateActions(ctx, queueID, waitActions, timeoutWait, timeoutService any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueUpdateActions", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueUpdateActions), ctx, queueID, waitActions, timeoutWait, timeoutService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueUpdate", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueUpdate), ctx, queueID, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
 }
 
 // QueueV1QueueUpdateExecute mocks base method.

@@ -10,8 +10,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -29,7 +27,7 @@ func Test_Create(t *testing.T) {
 		detail         string
 		routingMethod  queue.RoutingMethod
 		tagIDs         []uuid.UUID
-		waitActions    []fmaction.Action
+		waitFlowID     uuid.UUID
 		waitTimeout    int
 		serviceTimeout int
 
@@ -40,31 +38,27 @@ func Test_Create(t *testing.T) {
 		expectRes   *queue.Queue
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("1ed812a6-7f56-11ec-82c1-8bb47b0f9d98"),
-			"test name",
-			"tes detail",
-			queue.RoutingMethodRandom,
-			[]uuid.UUID{
+			customerID:    uuid.FromStringOrNil("1ed812a6-7f56-11ec-82c1-8bb47b0f9d98"),
+			queueName:     "test name",
+			detail:        "tes detail",
+			routingMethod: queue.RoutingMethodRandom,
+			tagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("074b6e1e-60e6-11ec-9dc5-4bc92b81a572"),
 			},
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			100000,
-			1000000,
+			waitFlowID:     uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30"),
+			waitTimeout:    100000,
+			serviceTimeout: 1000000,
 
-			uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
-			&queue.Queue{
+			responseUUID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
+			responseQueue: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
 				},
 			},
 
-			&queue.Queue{
+			expectQueue: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
 					CustomerID: uuid.FromStringOrNil("1ed812a6-7f56-11ec-82c1-8bb47b0f9d98"),
@@ -75,12 +69,8 @@ func Test_Create(t *testing.T) {
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("074b6e1e-60e6-11ec-9dc5-4bc92b81a572"),
 				},
-				Execute: queue.ExecuteStop,
-				WaitActions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				Execute:             queue.ExecuteStop,
+				WaitFlowID:          uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30"),
 				WaitTimeout:         100000,
 				ServiceTimeout:      1000000,
 				WaitQueuecallIDs:    []uuid.UUID{},
@@ -89,7 +79,7 @@ func Test_Create(t *testing.T) {
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
 			},
-			&queue.Queue{
+			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
 				},
@@ -126,7 +116,7 @@ func Test_Create(t *testing.T) {
 				tt.detail,
 				tt.routingMethod,
 				tt.tagIDs,
-				tt.waitActions,
+				tt.waitFlowID,
 				tt.waitTimeout,
 				tt.serviceTimeout,
 			)

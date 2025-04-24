@@ -7,7 +7,6 @@ import (
 	"net/url"
 
 	"monorepo/bin-common-handler/models/sock"
-	fmaction "monorepo/bin-flow-manager/models/action"
 
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
@@ -71,7 +70,17 @@ func (r *requestHandler) QueueV1QueueGet(ctx context.Context, queueID uuid.UUID)
 }
 
 // QueueV1QueueCreate sends the request to create the queue.
-func (r *requestHandler) QueueV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error) {
+func (r *requestHandler) QueueV1QueueCreate(
+	ctx context.Context,
+	customerID uuid.UUID,
+	name string,
+	detail string,
+	routingMethod qmqueue.RoutingMethod,
+	tagIDs []uuid.UUID,
+	waitFlowID uuid.UUID,
+	timeoutWait int,
+	timeoutService int,
+) (*qmqueue.Queue, error) {
 	uri := "/v1/queues"
 
 	data := &qmrequest.V1DataQueuesPost{
@@ -80,7 +89,7 @@ func (r *requestHandler) QueueV1QueueCreate(ctx context.Context, customerID uuid
 		Detail:         detail,
 		RoutingMethod:  string(routingMethod),
 		TagIDs:         tagIDs,
-		WaitActions:    waitActions,
+		WaitFlowID:     waitFlowID,
 		WaitTimeout:    timeoutWait,
 		ServiceTimeout: timeoutService,
 	}
@@ -140,7 +149,7 @@ func (r *requestHandler) QueueV1QueueUpdate(
 	detail string,
 	routingMethod qmqueue.RoutingMethod,
 	tagIDs []uuid.UUID,
-	waitActions []fmaction.Action,
+	waitFlowID uuid.UUID,
 	waitTimeout int,
 	serviceTimeout int,
 ) (*qmqueue.Queue, error) {
@@ -151,7 +160,7 @@ func (r *requestHandler) QueueV1QueueUpdate(
 		Detail:         detail,
 		RoutingMethod:  routingMethod,
 		TagIDs:         tagIDs,
-		WaitActions:    waitActions,
+		WaitFlowID:     waitFlowID,
 		WaitTimeout:    waitTimeout,
 		ServiceTimeout: serviceTimeout,
 	}
@@ -238,39 +247,6 @@ func (r *requestHandler) QueueV1QueueUpdateRoutingMethod(ctx context.Context, qu
 
 	data := &qmrequest.V1DataQueuesIDRoutingMethodPut{
 		RoutingMethod: string(routingMethod),
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var res qmqueue.Queue
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// QueueV1QueueUpdateActions sends the request to update the queue's action handles.
-func (r *requestHandler) QueueV1QueueUpdateActions(ctx context.Context, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error) {
-	uri := fmt.Sprintf("/v1/queues/%s/wait_actions", queueID)
-
-	data := &qmrequest.V1DataQueuesIDWaitActionsPut{
-		WaitActions:    waitActions,
-		WaitTimeout:    timeoutWait,
-		ServiceTimeout: timeoutService,
 	}
 
 	m, err := json.Marshal(data)

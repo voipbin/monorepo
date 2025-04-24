@@ -11,19 +11,19 @@ import (
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	ReferenceType string    `json:"reference_type"`
-	ReferenceID   uuid.UUID `json:"reference_id"`
+	ReferenceType string    `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID `json:"reference_id,omitempty"`
 
-	Status         string    `json:"status"`
-	ServiceAgentID uuid.UUID `json:"service_agent_id"`
+	Status         string    `json:"status,omitempty"`
+	ServiceAgentID uuid.UUID `json:"service_agent_id,omitempty"`
 
-	DurationWaiting int `json:"duration_waiting"` // duration for waiting(ms)
-	DurationService int `json:"duration_service"` // duration for service(ms)
+	DurationWaiting int `json:"duration_waiting,omitempty"` // duration for waiting(ms)
+	DurationService int `json:"duration_service,omitempty"` // duration for service(ms)
 
-	TMCreate  string `json:"tm_create"`
-	TMService string `json:"tm_service"`
-	TMUpdate  string `json:"tm_update"`
-	TMDelete  string `json:"tm_delete"`
+	TMCreate  string `json:"tm_create,omitempty"`
+	TMService string `json:"tm_service,omitempty"`
+	TMUpdate  string `json:"tm_update,omitempty"`
+	TMDelete  string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage defines

@@ -3,8 +3,6 @@ package queuehandler
 import (
 	"context"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -69,7 +67,7 @@ func (h *queueHandler) UpdateBasicInfo(
 	detail string,
 	routingMethod queue.RoutingMethod,
 	tagIDs []uuid.UUID,
-	waitActions []fmaction.Action,
+	waitFlowID uuid.UUID,
 	waitTimeout int,
 	serviceTimeout int,
 ) (*queue.Queue, error) {
@@ -88,7 +86,7 @@ func (h *queueHandler) UpdateBasicInfo(
 		detail,
 		routingMethod,
 		tagIDs,
-		waitActions,
+		waitFlowID,
 		waitTimeout,
 		serviceTimeout,
 	)
@@ -153,28 +151,28 @@ func (h *queueHandler) UpdateRoutingMethod(ctx context.Context, id uuid.UUID, ro
 	return res, nil
 }
 
-// UpdateWaitActionsAndTimeouts updates the queue's wait/service info.
-func (h *queueHandler) UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":     "UpdateWaitActionsAndTimeouts",
-		"queue_id": id,
-	})
-	log.Debug("Updating the queue's wait actions and timeouts.")
+// // UpdateWaitActionsAndTimeouts updates the queue's wait/service info.
+// func (h *queueHandler) UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":     "UpdateWaitActionsAndTimeouts",
+// 		"queue_id": id,
+// 	})
+// 	log.Debug("Updating the queue's wait actions and timeouts.")
 
-	if err := h.db.QueueSetWaitActionsAndTimeouts(ctx, id, waitActions, waitTimeout, serviceTimeout); err != nil {
-		log.Errorf("Could not set the status. err: %v", err)
-		return nil, err
-	}
+// 	if err := h.db.QueueSetWaitActionsAndTimeouts(ctx, id, waitActions, waitTimeout, serviceTimeout); err != nil {
+// 		log.Errorf("Could not set the status. err: %v", err)
+// 		return nil, err
+// 	}
 
-	res, err := h.db.QueueGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated queue. err: %v", err)
-		return nil, err
-	}
-	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
+// 	res, err := h.db.QueueGet(ctx, id)
+// 	if err != nil {
+// 		log.Errorf("Could not get updated queue. err: %v", err)
+// 		return nil, err
+// 	}
+// 	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
 // UpdateExecute updates the queue's execute.
 func (h *queueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error) {
