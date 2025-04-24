@@ -593,7 +593,7 @@ type ServiceHandler interface {
 		detail string,
 		routingMethod qmqueue.RoutingMethod,
 		tagIDs []uuid.UUID,
-		waitActions []fmaction.Action,
+		waitFlowID uuid.UUID,
 		timeoutWait int,
 		timeoutService int,
 	) (*qmqueue.WebhookMessage, error)
@@ -606,13 +606,12 @@ type ServiceHandler interface {
 		detail string,
 		routingMethod qmqueue.RoutingMethod,
 		tagIDs []uuid.UUID,
-		waitActions []fmaction.Action,
+		waitFlowID uuid.UUID,
 		timeoutWait int,
 		timeoutService int,
 	) (*qmqueue.WebhookMessage, error)
 	QueueUpdateTagIDs(ctx context.Context, a *amagent.Agent, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error)
 	QueueUpdateRoutingMethod(ctx context.Context, a *amagent.Agent, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error)
-	QueueUpdateActions(ctx context.Context, a *amagent.Agent, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.WebhookMessage, error)
 
 	// queuecall handlers
 	QueuecallGet(ctx context.Context, a *amagent.Agent, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error)

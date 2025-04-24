@@ -1,6 +1,6 @@
 module monorepo/bin-registrar-manager
 
-go 1.23.2
+go 1.24.2
 
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
@@ -64,7 +64,7 @@ require (
 	github.com/smotes/purse v1.0.1
 	go.uber.org/mock v0.5.1
 	golang.org/x/sys v0.32.0 // indirect
-	google.golang.org/genproto v0.0.0-20250414145226-207652e42e2e // indirect
+	google.golang.org/genproto v0.0.0-20250422160041-2d3770c4ea7f // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )

@@ -2858,18 +2858,18 @@ func (mr *MockServiceHandlerMockRecorder) ProviderUpdate(ctx, a, providerID, pro
 }
 
 // QueueCreate mocks base method.
-func (m *MockServiceHandler) QueueCreate(ctx context.Context, a *agent.Agent, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueCreate(ctx context.Context, a *agent.Agent, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueCreate", ctx, a, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
+	ret := m.ctrl.Call(m, "QueueCreate", ctx, a, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueueCreate indicates an expected call of QueueCreate.
-func (mr *MockServiceHandlerMockRecorder) QueueCreate(ctx, a, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) QueueCreate(ctx, a, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueCreate", reflect.TypeOf((*MockServiceHandler)(nil).QueueCreate), ctx, a, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueCreate", reflect.TypeOf((*MockServiceHandler)(nil).QueueCreate), ctx, a, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService)
 }
 
 // QueueDelete mocks base method.
@@ -2918,33 +2918,18 @@ func (mr *MockServiceHandlerMockRecorder) QueueGets(ctx, a, size, token any) *go
 }
 
 // QueueUpdate mocks base method.
-func (m *MockServiceHandler) QueueUpdate(ctx context.Context, a *agent.Agent, queueID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueUpdate(ctx context.Context, a *agent.Agent, queueID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueUpdate", ctx, a, queueID, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
+	ret := m.ctrl.Call(m, "QueueUpdate", ctx, a, queueID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueueUpdate indicates an expected call of QueueUpdate.
-func (mr *MockServiceHandlerMockRecorder) QueueUpdate(ctx, a, queueID, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) QueueUpdate(ctx, a, queueID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUpdate", reflect.TypeOf((*MockServiceHandler)(nil).QueueUpdate), ctx, a, queueID, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, timeoutService)
-}
-
-// QueueUpdateActions mocks base method.
-func (m *MockServiceHandler) QueueUpdateActions(ctx context.Context, a *agent.Agent, queueID uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueUpdateActions", ctx, a, queueID, waitActions, timeoutWait, timeoutService)
-	ret0, _ := ret[0].(*queue.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueueUpdateActions indicates an expected call of QueueUpdateActions.
-func (mr *MockServiceHandlerMockRecorder) QueueUpdateActions(ctx, a, queueID, waitActions, timeoutWait, timeoutService any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUpdateActions", reflect.TypeOf((*MockServiceHandler)(nil).QueueUpdateActions), ctx, a, queueID, waitActions, timeoutWait, timeoutService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUpdate", reflect.TypeOf((*MockServiceHandler)(nil).QueueUpdate), ctx, a, queueID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService)
 }
 
 // QueueUpdateRoutingMethod mocks base method.

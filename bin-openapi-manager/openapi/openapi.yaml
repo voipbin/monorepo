@@ -3157,10 +3157,9 @@ components:
           type: array
           items:
             type: string
-        wait_actions:
-          type: array
-          items:
-            $ref: '#/components/schemas/FlowManagerAction'
+        wait_flow_id:
+          type: string
+          description: "Flow ID for the wait queue."
         wait_timeout:
           type: integer
           description: "Wait queue timeout in milliseconds."
@@ -3935,8 +3934,6 @@ paths:
   /queuecalls/reference_id/{id}/kick:
     $ref: './paths/queuecalls/reference_id_id_kick.yaml'
 
-  /queues/{id}/actions:
-    $ref: './paths/queues/id_actions.yaml'
   /queues/{id}/routing_method:
     $ref: './paths/queues/id_routing_method.yaml'
   /queues/{id}/tag_ids:

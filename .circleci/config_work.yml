@@ -661,7 +661,7 @@ jobs:
   # bin-agent-manager
   bin-agent-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-agent-manager
@@ -687,7 +687,7 @@ jobs:
   # bin-api-manager
   bin-api-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test-api-manager:
           source-directory: bin-api-manager
@@ -713,7 +713,7 @@ jobs:
   # bin-billing-manager
   bin-billing-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-billing-manager
@@ -739,7 +739,7 @@ jobs:
   # bin-call-manager
   bin-call-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-call-manager
@@ -766,7 +766,7 @@ jobs:
   # bin-campaign-manager
   bin-campaign-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-campaign-manager
@@ -793,7 +793,7 @@ jobs:
   # bin-chat-manager
   bin-chat-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-chat-manager
@@ -819,7 +819,7 @@ jobs:
   # bin-ai-manager
   bin-ai-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-ai-manager
@@ -845,7 +845,7 @@ jobs:
   # bin-common-handler
   bin-common-handler-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-common-handler
@@ -853,7 +853,7 @@ jobs:
   # bin-conference-manager
   bin-conference-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-conference-manager
@@ -879,7 +879,7 @@ jobs:
   # bin-conversation-manager
   bin-conversation-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-conversation-manager
@@ -905,7 +905,7 @@ jobs:
   # bin-customer-manager
   bin-customer-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-customer-manager
@@ -931,7 +931,7 @@ jobs:
   # # bin-dbscheme-manager
   # bin-dbscheme-manager-test:
   #   docker:
-  #     - image: cimg/go:1.22
+  #     - image: cimg/go:1.24
   #   steps:
   #     - go-test:
   #         source-directory: bin-dbscheme-manager
@@ -955,7 +955,7 @@ jobs:
   # bin-email-manager
   bin-email-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-email-manager
@@ -981,7 +981,7 @@ jobs:
   # bin-flow-manager
   bin-flow-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-flow-manager
@@ -1007,7 +1007,7 @@ jobs:
   # bin-hook-manager
   bin-hook-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-hook-manager
@@ -1033,7 +1033,7 @@ jobs:
   # bin-message-manager
   bin-message-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-message-manager
@@ -1059,7 +1059,7 @@ jobs:
   # bin-number-manager
   bin-number-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-number-manager
@@ -1085,7 +1085,7 @@ jobs:
   # bin-outdial-manager
   bin-outdial-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-outdial-manager
@@ -1111,7 +1111,7 @@ jobs:
   # bin-queue-manager
   bin-queue-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-queue-manager
@@ -1137,7 +1137,7 @@ jobs:
   # bin-registrar-manager
   bin-registrar-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-registrar-manager
@@ -1163,7 +1163,7 @@ jobs:
   # bin-route-manager
   bin-route-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-route-manager
@@ -1189,7 +1189,7 @@ jobs:
   # bin-storage-manager
   bin-storage-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-storage-manager
@@ -1215,7 +1215,7 @@ jobs:
   # bin-tag-manager
   bin-tag-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-tag-manager
@@ -1241,7 +1241,7 @@ jobs:
   # bin-transcribe-manager
   bin-transcribe-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-transcribe-manager
@@ -1267,7 +1267,7 @@ jobs:
   # bin-transfer-manager
   bin-transfer-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-transfer-manager
@@ -1293,7 +1293,7 @@ jobs:
   # bin-tts-manager
   bin-tts-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-tts-manager
@@ -1319,7 +1319,7 @@ jobs:
   # bin-webhook-manager
   bin-webhook-manager-test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     steps:
       - go-test:
           source-directory: bin-webhook-manager

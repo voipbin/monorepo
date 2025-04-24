@@ -8,8 +8,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -165,7 +163,7 @@ func Test_QueueGet(t *testing.T) {
 
 func Test_QueueCreate(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		agent          *amagent.Agent
@@ -173,46 +171,40 @@ func Test_QueueCreate(t *testing.T) {
 		detail         string
 		routingMethod  qmqueue.RoutingMethod
 		tagIDs         []uuid.UUID
-		waitActions    []fmaction.Action
+		waitFlowID     uuid.UUID
 		timeoutWait    int
 		timeoutService int
 
 		response  *qmqueue.Queue
 		expectRes *qmqueue.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
-			"normal",
+			name: "normal",
 
-			&amagent.Agent{
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			"name",
-			"detail",
-			qmqueue.RoutingMethodRandom,
-			[]uuid.UUID{
+			queueName:     "name",
+			detail:        "detail",
+			routingMethod: qmqueue.RoutingMethodRandom,
+			tagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("2a743344-6316-11ec-b247-af52c2375309"),
 			},
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			100000,
-			1000000,
+			waitFlowID:     uuid.FromStringOrNil("97e8e800-2110-11f0-850f-ef838fd72f0d"),
+			timeoutWait:    100000,
+			timeoutService: 1000000,
 
-			&qmqueue.Queue{
+			response: &qmqueue.Queue{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			&qmqueue.WebhookMessage{
+			expectRes: &qmqueue.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -242,7 +234,7 @@ func Test_QueueCreate(t *testing.T) {
 				tt.detail,
 				tt.routingMethod,
 				tt.tagIDs,
-				tt.waitActions,
+				tt.waitFlowID,
 				tt.timeoutWait,
 				tt.timeoutService,
 			).Return(tt.response, nil)
@@ -254,7 +246,7 @@ func Test_QueueCreate(t *testing.T) {
 				tt.detail,
 				tt.routingMethod,
 				tt.tagIDs,
-				tt.waitActions,
+				tt.waitFlowID,
 				tt.timeoutWait,
 				tt.timeoutService,
 			)
@@ -341,7 +333,7 @@ func Test_QueueDelete(t *testing.T) {
 
 func Test_QueueUpdate(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		agent          *amagent.Agent
@@ -350,48 +342,42 @@ func Test_QueueUpdate(t *testing.T) {
 		detail         string
 		routingMethod  qmqueue.RoutingMethod
 		tagIDs         []uuid.UUID
-		waitActions    []fmaction.Action
+		waitFlowID     uuid.UUID
 		timeoutWait    int
 		timeoutService int
 
 		response  *qmqueue.Queue
 		expectRes *qmqueue.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
-			"normal",
+			name: "normal",
 
-			&amagent.Agent{
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
-			"name",
-			"detail",
-			qmqueue.RoutingMethodRandom,
-			[]uuid.UUID{
+			queueID:       uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
+			queueName:     "name",
+			detail:        "detail",
+			routingMethod: qmqueue.RoutingMethodRandom,
+			tagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("4927aacc-4a88-11ee-bc5c-2f5cbe9c7d73"),
 				uuid.FromStringOrNil("497d6b06-4a88-11ee-acb4-4b2f731fa7bb"),
 			},
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			60000,
-			6000000,
+			waitFlowID:     uuid.FromStringOrNil("cb12cea8-2110-11f0-9e7a-db9570c76160"),
+			timeoutWait:    60000,
+			timeoutService: 6000000,
 
-			&qmqueue.Queue{
+			response: &qmqueue.Queue{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			&qmqueue.WebhookMessage{
+			expectRes: &qmqueue.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -422,7 +408,7 @@ func Test_QueueUpdate(t *testing.T) {
 				tt.detail,
 				tt.routingMethod,
 				tt.tagIDs,
-				tt.waitActions,
+				tt.waitFlowID,
 				tt.timeoutWait,
 				tt.timeoutService,
 			).Return(tt.response, nil)
@@ -435,7 +421,7 @@ func Test_QueueUpdate(t *testing.T) {
 				tt.detail,
 				tt.routingMethod,
 				tt.tagIDs,
-				tt.waitActions,
+				tt.waitFlowID,
 				tt.timeoutWait,
 				tt.timeoutService,
 			)
@@ -646,86 +632,6 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
-		})
-	}
-}
-
-func Test_QueueUpdateActions(t *testing.T) {
-
-	type test struct {
-		name string
-
-		agent          *amagent.Agent
-		queueID        uuid.UUID
-		waitActions    []fmaction.Action
-		timeoutWait    int
-		timeoutService int
-
-		response  *qmqueue.Queue
-		expectRes *qmqueue.WebhookMessage
-	}
-
-	tests := []test{
-		{
-			"routing method random",
-
-			&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				Permission: amagent.PermissionCustomerAdmin,
-			},
-			uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			10000,
-			100000,
-
-			&qmqueue.Queue{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-			},
-			&qmqueue.WebhookMessage{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-			ctx := context.Background()
-
-			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueUpdateActions(ctx, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(tt.response, nil)
-
-			res, err := h.QueueUpdateActions(ctx, tt.agent, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-
 		})
 	}
 }

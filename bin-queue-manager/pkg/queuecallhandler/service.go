@@ -122,39 +122,80 @@ func (h *queuecallHandler) getSource(c *cmcall.Call) commonaddress.Address {
 
 // createActions creates the actions for queue join service.
 func (h *queuecallHandler) createActions(ctx context.Context, q *queue.Queue, confbridgeID uuid.UUID) ([]fmaction.Action, uuid.UUID, error) {
-	res := []fmaction.Action{}
-	if len(q.WaitActions) == 0 {
-		// append the default wait actions for empty wait actions
-		act := fmaction.Action{
-			ID:   h.utilHandler.UUIDCreate(),
-			Type: fmaction.TypeSleep,
-			Option: fmaction.ConvertOption(fmaction.OptionSleep{
-				Duration: 10000,
-			}),
-		}
-		res = append(res, act)
-	} else {
-		for _, act := range q.WaitActions {
-			if act.ID == uuid.Nil {
-				act.ID = h.utilHandler.UUIDCreate()
-			}
-			res = append(res, act)
-		}
-	}
-
-	// set next id for loop
-	res[len(res)-1].NextID = res[0].ID
-
-	// append the action confbridge_join
+	targetID := h.utilHandler.UUIDCreate()
+	loopID := h.utilHandler.UUIDCreate()
 	forwardActionID := h.utilHandler.UUIDCreate()
-	act := fmaction.Action{
-		ID:   forwardActionID,
-		Type: fmaction.TypeConfbridgeJoin,
-		Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
-			ConfbridgeID: confbridgeID,
-		}),
-	}
-	res = append(res, act)
 
+	res := []fmaction.Action{
+		{
+			ID:   targetID,
+			Type: fmaction.TypeFetchFlow,
+			Option: fmaction.ConvertOption(fmaction.OptionFetchFlow{
+				FlowID: q.WaitFlowID,
+			}),
+		},
+		{
+			ID:     loopID,
+			Type:   fmaction.TypeEmpty,
+			Option: fmaction.ConvertOption(fmaction.OptionEmpty{}),
+			NextID: targetID,
+		},
+		{
+			ID:   forwardActionID,
+			Type: fmaction.TypeConfbridgeJoin,
+			Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+				ConfbridgeID: confbridgeID,
+			}),
+		},
+	}
 	return res, forwardActionID, nil
+
+	// // append the action confbridge_join
+	// act := fmaction.Action{
+	// 	ID:   forwardActionID,
+	// 	Type: fmaction.TypeConfbridgeJoin,
+	// 	Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+	// 		ConfbridgeID: confbridgeID,
+	// 	}),
+	// }
+	// res = append(res, act)
+
+	// return res, forwardActionID, nil
+
+	// fmaction.TypeFetchFlow
+
+	// if len(q.WaitActions) == 0 {
+	// 	// append the default wait actions for empty wait actions
+	// 	act := fmaction.Action{
+	// 		ID:   h.utilHandler.UUIDCreate(),
+	// 		Type: fmaction.TypeSleep,
+	// 		Option: fmaction.ConvertOption(fmaction.OptionSleep{
+	// 			Duration: 10000,
+	// 		}),
+	// 	}
+	// 	res = append(res, act)
+	// } else {
+	// 	for _, act := range q.WaitActions {
+	// 		if act.ID == uuid.Nil {
+	// 			act.ID = h.utilHandler.UUIDCreate()
+	// 		}
+	// 		res = append(res, act)
+	// 	}
+	// }
+
+	// // set next id for loop
+	// res[len(res)-1].NextID = res[0].ID
+
+	// // append the action confbridge_join
+	// forwardActionID := h.utilHandler.UUIDCreate()
+	// act := fmaction.Action{
+	// 	ID:   forwardActionID,
+	// 	Type: fmaction.TypeConfbridgeJoin,
+	// 	Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+	// 		ConfbridgeID: confbridgeID,
+	// 	}),
+	// }
+	// res = append(res, act)
+
+	// return res, forwardActionID, nil
 }

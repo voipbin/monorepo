@@ -64,10 +64,9 @@ put:
               type: array
               items:
                 type: string
-            wait_actions:
-              type: array
-              items:
-                $ref: '#/components/schemas/FlowManagerAction'
+            wait_flow_id:
+              type: string
+              description: "Flow ID for the wait queue."
             wait_timeout:
               type: integer
             service_timeout:
@@ -77,7 +76,7 @@ put:
             - detail
             - routing_method
             - tag_ids
-            - wait_actions
+            - wait_flow_id
             - wait_timeout
             - service_timeout
   responses:

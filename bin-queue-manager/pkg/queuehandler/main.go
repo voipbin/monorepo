@@ -10,7 +10,6 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
-	fmaction "monorepo/bin-flow-manager/models/action"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -35,7 +34,7 @@ type QueueHandler interface {
 		detail string,
 		routingMethod queue.RoutingMethod,
 		tagIDs []uuid.UUID,
-		waitActions []fmaction.Action,
+		waitFlowID uuid.UUID,
 		waitTimeout int,
 		serviceTimeout int,
 	) (*queue.Queue, error)
@@ -50,13 +49,13 @@ type QueueHandler interface {
 		detail string,
 		routingMethod queue.RoutingMethod,
 		tagIDs []uuid.UUID,
-		waitActions []fmaction.Action,
+		waitFlowID uuid.UUID,
 		waitTimeout int,
 		serviceTimeout int,
 	) (*queue.Queue, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*queue.Queue, error)
 	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error)
-	UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error)
+	// UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error)
 	UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error)
 
 	AddWaitQueueCallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)

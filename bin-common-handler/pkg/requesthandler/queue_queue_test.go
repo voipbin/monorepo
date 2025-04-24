@@ -5,8 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
@@ -291,7 +289,7 @@ func Test_QueueV1QueueCreate(t *testing.T) {
 		detail         string
 		routingMethod  qmqueue.RoutingMethod
 		tagIDs         []uuid.UUID
-		waitActions    []fmaction.Action
+		waitFlowID     uuid.UUID
 		timeoutWait    int
 		timeoutService int
 
@@ -301,36 +299,32 @@ func Test_QueueV1QueueCreate(t *testing.T) {
 		expectRes     *qmqueue.Queue
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("6cf22a94-7ff1-11ec-9254-5371564adf91"),
-			"name",
-			"detail",
-			qmqueue.RoutingMethodRandom,
-			[]uuid.UUID{
+			customerID:    uuid.FromStringOrNil("6cf22a94-7ff1-11ec-9254-5371564adf91"),
+			queueName:     "name",
+			detail:        "detail",
+			routingMethod: qmqueue.RoutingMethodRandom,
+			tagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("fdbf3fdc-6159-11ec-9263-734d393b9759"),
 			},
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			10000,
-			100000,
+			waitFlowID:     uuid.FromStringOrNil("f4e6c374-2066-11f0-99fe-73d349835ba0"),
+			timeoutWait:    10000,
+			timeoutService: 100000,
 
-			"bin-manager.queue-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.queue-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/queues",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"6cf22a94-7ff1-11ec-9254-5371564adf91","name":"name","detail":"detail","routing_method":"random","tag_ids":["fdbf3fdc-6159-11ec-9263-734d393b9759"],"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
+				Data:     []byte(`{"customer_id":"6cf22a94-7ff1-11ec-9254-5371564adf91","name":"name","detail":"detail","routing_method":"random","tag_ids":["fdbf3fdc-6159-11ec-9263-734d393b9759"],"wait_flow_id":"f4e6c374-2066-11f0-99fe-73d349835ba0","wait_timeout":10000,"service_timeout":100000}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"}`),
 			},
-			&qmqueue.Queue{
+			expectRes: &qmqueue.Queue{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 				},
@@ -344,14 +338,24 @@ func Test_QueueV1QueueCreate(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			reqHandler := requestHandler{
+			h := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QueueV1QueueCreate(ctx, tt.customerID, tt.queueName, tt.detail, tt.routingMethod, tt.tagIDs, tt.waitActions, tt.timeoutWait, tt.timeoutService)
+			res, err := h.QueueV1QueueCreate(
+				ctx,
+				tt.customerID,
+				tt.queueName,
+				tt.detail,
+				tt.routingMethod,
+				tt.tagIDs,
+				tt.waitFlowID,
+				tt.timeoutWait,
+				tt.timeoutService,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -437,7 +441,7 @@ func Test_QueueV1QueueUpdate(t *testing.T) {
 		detail         string
 		routingMethod  qmqueue.RoutingMethod
 		tagIDs         []uuid.UUID
-		waitActions    []fmaction.Action
+		waitFlowID     uuid.UUID
 		waitTimeout    int
 		serviceTimeout int
 
@@ -448,38 +452,34 @@ func Test_QueueV1QueueUpdate(t *testing.T) {
 		expectRes *qmqueue.Queue
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("bacc13d4-615a-11ec-a73d-ff4194d49ef7"),
-			"name",
-			"detail",
-			qmqueue.RoutingMethodRandom,
-			[]uuid.UUID{
+			id:            uuid.FromStringOrNil("bacc13d4-615a-11ec-a73d-ff4194d49ef7"),
+			queueName:     "name",
+			detail:        "detail",
+			routingMethod: qmqueue.RoutingMethodRandom,
+			tagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("5c4085f4-4a81-11ee-a137-b7953610070d"),
 				uuid.FromStringOrNil("5ca5f42a-4a81-11ee-b6ba-7b5ab1c95600"),
 			},
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			60000,
-			6000000,
+			waitFlowID:     uuid.FromStringOrNil("7f3bfe40-2067-11f0-ab87-cb53bd94634b"),
+			waitTimeout:    60000,
+			serviceTimeout: 6000000,
 
-			"bin-manager.queue-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.queue-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/queues/bacc13d4-615a-11ec-a73d-ff4194d49ef7",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"name","detail":"detail","routing_method":"random","tag_ids":["5c4085f4-4a81-11ee-a137-b7953610070d","5ca5f42a-4a81-11ee-b6ba-7b5ab1c95600"],"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":60000,"service_timeout":6000000}`),
+				Data:     []byte(`{"name":"name","detail":"detail","routing_method":"random","tag_ids":["5c4085f4-4a81-11ee-a137-b7953610070d","5ca5f42a-4a81-11ee-b6ba-7b5ab1c95600"],"wait_flow_id":"7f3bfe40-2067-11f0-ab87-cb53bd94634b","wait_timeout":60000,"service_timeout":6000000}`),
 			},
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bacc13d4-615a-11ec-a73d-ff4194d49ef7"}`),
 			},
-			&qmqueue.Queue{
+			expectRes: &qmqueue.Queue{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("bacc13d4-615a-11ec-a73d-ff4194d49ef7"),
 				},
@@ -500,7 +500,7 @@ func Test_QueueV1QueueUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QueueV1QueueUpdate(ctx, tt.id, tt.queueName, tt.detail, tt.routingMethod, tt.tagIDs, tt.waitActions, tt.waitTimeout, tt.serviceTimeout)
+			res, err := reqHandler.QueueV1QueueUpdate(ctx, tt.id, tt.queueName, tt.detail, tt.routingMethod, tt.tagIDs, tt.waitFlowID, tt.waitTimeout, tt.serviceTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -636,81 +636,6 @@ func Test_QueueV1QueueUpdateRoutingMethod(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.QueueV1QueueUpdateRoutingMethod(ctx, tt.id, tt.routingMethod)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-
-		})
-	}
-}
-
-func Test_QueueV1QueueUpdateActions(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id             uuid.UUID
-		waitActions    []fmaction.Action
-		timeoutWait    int
-		timeoutService int
-
-		expectTarget  string
-		expectRequest *sock.Request
-
-		response  *sock.Response
-		expectRes *qmqueue.Queue
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			10000,
-			100000,
-
-			"bin-manager.queue-manager.request",
-			&sock.Request{
-				URI:      "/v1/queues/2bdd3418-615b-11ec-80a9-a73788a62c03/wait_actions",
-				Method:   sock.RequestMethodPut,
-				DataType: "application/json",
-				Data:     []byte(`{"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
-			},
-
-			&sock.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
-			},
-			&qmqueue.Queue{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("2bdd3418-615b-11ec-80a9-a73788a62c03"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := sockhandler.NewMockSockHandler(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
-			}
-
-			ctx := context.Background()
-			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			res, err := reqHandler.QueueV1QueueUpdateActions(ctx, tt.id, tt.waitActions, tt.timeoutWait, tt.timeoutService)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

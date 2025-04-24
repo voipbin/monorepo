@@ -193,6 +193,10 @@ type OptionEmailSend struct {
 	Attachments  []ememail.Attachment    `json:"attachments,omitempty"`
 }
 
+// OptionEmpty defines action empty's option.
+type OptionEmpty struct {
+}
+
 // OptionExternalMediaStart defines action OptionExternalMediaStart's option.
 type OptionExternalMediaStart struct {
 	ExternalHost   string `json:"external_host,omitempty"`   // external media target host address

@@ -11,7 +11,6 @@ package dbhandler
 
 import (
 	context "context"
-	action "monorepo/bin-flow-manager/models/action"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
 	reflect "reflect"
@@ -173,17 +172,17 @@ func (mr *MockDBHandlerMockRecorder) QueueRemoveWaitQueueCall(ctx, id, queueCall
 }
 
 // QueueSetBasicInfo mocks base method.
-func (m *MockDBHandler) QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) error {
+func (m *MockDBHandler) QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, waitTimeout, serviceTimeout int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueSetBasicInfo", ctx, id, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
+	ret := m.ctrl.Call(m, "QueueSetBasicInfo", ctx, id, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // QueueSetBasicInfo indicates an expected call of QueueSetBasicInfo.
-func (mr *MockDBHandlerMockRecorder) QueueSetBasicInfo(ctx, id, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) QueueSetBasicInfo(ctx, id, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSetBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).QueueSetBasicInfo), ctx, id, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSetBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).QueueSetBasicInfo), ctx, id, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
 }
 
 // QueueSetExecute mocks base method.
@@ -226,20 +225,6 @@ func (m *MockDBHandler) QueueSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs
 func (mr *MockDBHandlerMockRecorder) QueueSetTagIDs(ctx, id, tagIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSetTagIDs", reflect.TypeOf((*MockDBHandler)(nil).QueueSetTagIDs), ctx, id, tagIDs)
-}
-
-// QueueSetWaitActionsAndTimeouts mocks base method.
-func (m *MockDBHandler) QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueSetWaitActionsAndTimeouts", ctx, id, waitActions, waitTimeout, serviceTimeout)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueueSetWaitActionsAndTimeouts indicates an expected call of QueueSetWaitActionsAndTimeouts.
-func (mr *MockDBHandlerMockRecorder) QueueSetWaitActionsAndTimeouts(ctx, id, waitActions, waitTimeout, serviceTimeout any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSetWaitActionsAndTimeouts", reflect.TypeOf((*MockDBHandler)(nil).QueueSetWaitActionsAndTimeouts), ctx, id, waitActions, waitTimeout, serviceTimeout)
 }
 
 // QueuecallCreate mocks base method.

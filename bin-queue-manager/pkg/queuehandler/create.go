@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -23,13 +22,20 @@ func (h *queueHandler) Create(
 	detail string,
 	routingMethod queue.RoutingMethod,
 	tagIDs []uuid.UUID,
-	waitActions []fmaction.Action,
+	waitFlowID uuid.UUID,
 	waitTimeout int,
 	serviceTimeout int,
 ) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Create",
-		"customer_id": customerID,
+		"func":            "Create",
+		"customer_id":     customerID,
+		"name":            name,
+		"detail":          detail,
+		"routing_method":  routingMethod,
+		"tag_ids":         tagIDs,
+		"wait_flow_id":    waitFlowID,
+		"wait_timeout":    waitTimeout,
+		"service_timeout": serviceTimeout,
 	})
 	log.Debug("Creating a new queue.")
 
@@ -38,8 +44,7 @@ func (h *queueHandler) Create(
 	log = log.WithField("queue_id", id)
 
 	if routingMethod != queue.RoutingMethodRandom {
-		log.Errorf("Unsupported routing method. Currently, support random only. routingMethod: %s", routingMethod)
-		return nil, fmt.Errorf("wrong routing_method")
+		return nil, fmt.Errorf("wrong routing_method. routing_method: %s", routingMethod)
 	}
 
 	// create a new queue
@@ -57,7 +62,7 @@ func (h *queueHandler) Create(
 
 		Execute: queue.ExecuteStop,
 
-		WaitActions:         waitActions,
+		WaitFlowID:          waitFlowID,
 		WaitQueuecallIDs:    []uuid.UUID{},
 		WaitTimeout:         waitTimeout,
 		ServiceQueuecallIDs: []uuid.UUID{},

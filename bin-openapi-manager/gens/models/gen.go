@@ -2639,9 +2639,11 @@ type QueueManagerQueue struct {
 	TotalIncomingCount *int `json:"total_incoming_count,omitempty"`
 
 	// TotalServicedCount Total serviced call count.
-	TotalServicedCount *int                 `json:"total_serviced_count,omitempty"`
-	WaitActions        *[]FlowManagerAction `json:"wait_actions,omitempty"`
-	WaitQueuecallIds   *[]string            `json:"wait_queuecall_ids,omitempty"`
+	TotalServicedCount *int `json:"total_serviced_count,omitempty"`
+
+	// WaitFlowId Flow ID for the wait queue.
+	WaitFlowId       *string   `json:"wait_flow_id,omitempty"`
+	WaitQueuecallIds *[]string `json:"wait_queuecall_ids,omitempty"`
 
 	// WaitTimeout Wait queue timeout in milliseconds.
 	WaitTimeout *int `json:"wait_timeout,omitempty"`
@@ -4182,8 +4184,10 @@ type PostQueuesJSONBody struct {
 	RoutingMethod  QueueManagerQueueRoutingMethod `json:"routing_method"`
 	ServiceTimeout int                            `json:"service_timeout"`
 	TagIds         []string                       `json:"tag_ids"`
-	WaitActions    []FlowManagerAction            `json:"wait_actions"`
-	WaitTimeout    int                            `json:"wait_timeout"`
+
+	// WaitFlowId Flow ID for the wait queue.
+	WaitFlowId  string `json:"wait_flow_id"`
+	WaitTimeout int    `json:"wait_timeout"`
 }
 
 // PutQueuesIdJSONBody defines parameters for PutQueuesId.
@@ -4193,15 +4197,10 @@ type PutQueuesIdJSONBody struct {
 	RoutingMethod  QueueManagerQueueRoutingMethod `json:"routing_method"`
 	ServiceTimeout int                            `json:"service_timeout"`
 	TagIds         []string                       `json:"tag_ids"`
-	WaitActions    []FlowManagerAction            `json:"wait_actions"`
-	WaitTimeout    int                            `json:"wait_timeout"`
-}
 
-// PutQueuesIdActionsJSONBody defines parameters for PutQueuesIdActions.
-type PutQueuesIdActionsJSONBody struct {
-	TimeoutService int                 `json:"timeout_service"`
-	TimeoutWait    int                 `json:"timeout_wait"`
-	WaitActions    []FlowManagerAction `json:"wait_actions"`
+	// WaitFlowId Flow ID for the wait queue.
+	WaitFlowId  string `json:"wait_flow_id"`
+	WaitTimeout int    `json:"wait_timeout"`
 }
 
 // PutQueuesIdRoutingMethodJSONBody defines parameters for PutQueuesIdRoutingMethod.
@@ -4767,9 +4766,6 @@ type PostQueuesJSONRequestBody PostQueuesJSONBody
 
 // PutQueuesIdJSONRequestBody defines body for PutQueuesId for application/json ContentType.
 type PutQueuesIdJSONRequestBody PutQueuesIdJSONBody
-
-// PutQueuesIdActionsJSONRequestBody defines body for PutQueuesIdActions for application/json ContentType.
-type PutQueuesIdActionsJSONRequestBody PutQueuesIdActionsJSONBody
 
 // PutQueuesIdRoutingMethodJSONRequestBody defines body for PutQueuesIdRoutingMethod for application/json ContentType.
 type PutQueuesIdRoutingMethodJSONRequestBody PutQueuesIdRoutingMethodJSONBody

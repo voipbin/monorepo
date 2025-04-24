@@ -852,7 +852,17 @@ type RequestHandler interface {
 	QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]qmqueue.Queue, error)
 	QueueV1QueueGet(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error)
 	QueueV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
-	QueueV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error)
+	QueueV1QueueCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		routingMethod qmqueue.RoutingMethod,
+		tagIDs []uuid.UUID,
+		waitFlowID uuid.UUID,
+		timeoutWait int,
+		timeoutService int,
+	) (*qmqueue.Queue, error)
 	QueueV1QueueDelete(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error)
 	QueueV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error
 	QueueV1QueueUpdate(
@@ -862,13 +872,12 @@ type RequestHandler interface {
 		detail string,
 		routingMethod qmqueue.RoutingMethod,
 		tagIDs []uuid.UUID,
-		waitActions []fmaction.Action,
+		waitFlowID uuid.UUID,
 		waitTimeout int,
 		serviceTimeout int,
 	) (*qmqueue.Queue, error)
 	QueueV1QueueUpdateTagIDs(ctx context.Context, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.Queue, error)
 	QueueV1QueueUpdateRoutingMethod(ctx context.Context, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.Queue, error)
-	QueueV1QueueUpdateActions(ctx context.Context, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error)
 	QueueV1QueueUpdateExecute(ctx context.Context, queueID uuid.UUID, execute qmqueue.Execute) (*qmqueue.Queue, error)
 	QueueV1QueueCreateQueuecall(ctx context.Context, queueID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID, referenceActiveflowID, exitActionID uuid.UUID) (*qmqueuecall.Queuecall, error)
 

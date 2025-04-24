@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"strconv"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-queue-manager/models/queue"
@@ -29,7 +27,7 @@ const (
 
 		execute,
 
-		wait_actions,
+ 		wait_flow_id,
 		coalesce(wait_queue_call_ids, "[]"),
 		wait_timeout,
 		coalesce(service_queue_call_ids, "[]"),
@@ -51,7 +49,6 @@ const (
 func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 
 	tagIDs := ""
-	waitActions := ""
 	waitQueuecallIDs := ""
 	serviceQueuecallIDs := ""
 
@@ -68,7 +65,7 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 
 		&res.Execute,
 
-		&waitActions,
+		&res.WaitFlowID,
 		&waitQueuecallIDs,
 		&res.WaitTimeout,
 		&serviceQueuecallIDs,
@@ -90,13 +87,6 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 	}
 	if res.TagIDs == nil {
 		res.TagIDs = []uuid.UUID{}
-	}
-
-	if err := json.Unmarshal([]byte(waitActions), &res.WaitActions); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the tag_ids. queueGetFromRow. err: %v", err)
-	}
-	if res.WaitActions == nil {
-		res.WaitActions = []fmaction.Action{}
 	}
 
 	if err := json.Unmarshal([]byte(waitQueuecallIDs), &res.WaitQueuecallIDs); err != nil {
@@ -130,7 +120,7 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 
 		execute,
 
-		wait_actions,
+		wait_flow_id,
 		wait_queue_call_ids,
 		wait_timeout,
 		service_queue_call_ids,
@@ -158,10 +148,6 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 	if err != nil {
 		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
 	}
-	waitActions, err := json.Marshal(a.WaitActions)
-	if err != nil {
-		return fmt.Errorf("could not marshal the wait_actions. err: %v", err)
-	}
 	waitQueueCallIDs, err := json.Marshal(a.WaitQueuecallIDs)
 	if err != nil {
 		return fmt.Errorf("could not marshal the queue_call_ids. err: %v", err)
@@ -183,7 +169,7 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 
 		a.Execute,
 
-		waitActions,
+		a.WaitFlowID.Bytes(),
 		waitQueueCallIDs,
 		a.WaitTimeout,
 		serviceQueueCallIDs,
@@ -303,7 +289,7 @@ func (h *handler) QueueGets(ctx context.Context, size uint64, token string, filt
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id":
+		case "customer_id", "wait_flow_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())
@@ -376,7 +362,7 @@ func (h *handler) QueueSetBasicInfo(
 	detail string,
 	routingMethod queue.RoutingMethod,
 	tagIDs []uuid.UUID,
-	waitActions []fmaction.Action,
+	waitFlowID uuid.UUID,
 	waitTimeout int,
 	serviceTimeout int,
 ) error {
@@ -389,7 +375,7 @@ func (h *handler) QueueSetBasicInfo(
 		detail = ?,
 		routing_method = ?,
 		tag_ids = ?,
-		wait_actions = ?,
+		wait_flow_id = ?,
 		wait_timeout = ?,
 		service_timeout = ?,
 		tm_update = ?
@@ -402,17 +388,12 @@ func (h *handler) QueueSetBasicInfo(
 		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
 	}
 
-	tmpWaitActions, err := json.Marshal(waitActions)
-	if err != nil {
-		return fmt.Errorf("could not marshal the wait_actions. err: %v", err)
-	}
-
 	_, err = h.db.Exec(q,
 		name,
 		detail,
 		routingMethod,
 		tmpTagIDs,
-		tmpWaitActions,
+		waitFlowID.Bytes(),
 		waitTimeout,
 		serviceTimeout,
 		h.utilHandler.TimeGetCurTime(),
@@ -503,36 +484,36 @@ func (h *handler) QueueSetExecute(ctx context.Context, id uuid.UUID, execute que
 	return nil
 }
 
-// QueueSetWaitActionsAndTimeouts sets the queue's wait_actions.
-func (h *handler) QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) error {
-	// prepare
-	q := `
-	update
-		queue_queues
-	set
-		wait_actions = ?,
-		wait_timeout = ?,
-		service_timeout = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+// // QueueSetWaitActionsAndTimeouts sets the queue's wait_actions.
+// func (h *handler) QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) error {
+// 	// prepare
+// 	q := `
+// 	update
+// 		queue_queues
+// 	set
+// 		wait_actions = ?,
+// 		wait_timeout = ?,
+// 		service_timeout = ?,
+// 		tm_update = ?
+// 	where
+// 		id = ?
+// 	`
 
-	t, err := json.Marshal(waitActions)
-	if err != nil {
-		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
-	}
+// 	t, err := json.Marshal(waitActions)
+// 	if err != nil {
+// 		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
+// 	}
 
-	_, err = h.db.Exec(q, t, waitTimeout, serviceTimeout, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueueSetWaitActionsAndTimeouts. err: %v", err)
-	}
+// 	_, err = h.db.Exec(q, t, waitTimeout, serviceTimeout, h.utilHandler.TimeGetCurTime(), id.Bytes())
+// 	if err != nil {
+// 		return fmt.Errorf("could not execute. QueueSetWaitActionsAndTimeouts. err: %v", err)
+// 	}
 
-	// update the cache
-	_ = h.queueUpdateToCache(ctx, id)
+// 	// update the cache
+// 	_ = h.queueUpdateToCache(ctx, id)
 
-	return nil
-}
+// 	return nil
+// }
 
 // QueueAddWaitQueueCallID adds the queue call id to the queue.
 // it increases the total_incoming_count + 1

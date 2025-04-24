@@ -2648,9 +2648,11 @@ type QueueManagerQueue struct {
 	TotalIncomingCount *int `json:"total_incoming_count,omitempty"`
 
 	// TotalServicedCount Total serviced call count.
-	TotalServicedCount *int                 `json:"total_serviced_count,omitempty"`
-	WaitActions        *[]FlowManagerAction `json:"wait_actions,omitempty"`
-	WaitQueuecallIds   *[]string            `json:"wait_queuecall_ids,omitempty"`
+	TotalServicedCount *int `json:"total_serviced_count,omitempty"`
+
+	// WaitFlowId Flow ID for the wait queue.
+	WaitFlowId       *string   `json:"wait_flow_id,omitempty"`
+	WaitQueuecallIds *[]string `json:"wait_queuecall_ids,omitempty"`
 
 	// WaitTimeout Wait queue timeout in milliseconds.
 	WaitTimeout *int `json:"wait_timeout,omitempty"`
@@ -4191,8 +4193,10 @@ type PostQueuesJSONBody struct {
 	RoutingMethod  QueueManagerQueueRoutingMethod `json:"routing_method"`
 	ServiceTimeout int                            `json:"service_timeout"`
 	TagIds         []string                       `json:"tag_ids"`
-	WaitActions    []FlowManagerAction            `json:"wait_actions"`
-	WaitTimeout    int                            `json:"wait_timeout"`
+
+	// WaitFlowId Flow ID for the wait queue.
+	WaitFlowId  string `json:"wait_flow_id"`
+	WaitTimeout int    `json:"wait_timeout"`
 }
 
 // PutQueuesIdJSONBody defines parameters for PutQueuesId.
@@ -4202,15 +4206,10 @@ type PutQueuesIdJSONBody struct {
 	RoutingMethod  QueueManagerQueueRoutingMethod `json:"routing_method"`
 	ServiceTimeout int                            `json:"service_timeout"`
 	TagIds         []string                       `json:"tag_ids"`
-	WaitActions    []FlowManagerAction            `json:"wait_actions"`
-	WaitTimeout    int                            `json:"wait_timeout"`
-}
 
-// PutQueuesIdActionsJSONBody defines parameters for PutQueuesIdActions.
-type PutQueuesIdActionsJSONBody struct {
-	TimeoutService int                 `json:"timeout_service"`
-	TimeoutWait    int                 `json:"timeout_wait"`
-	WaitActions    []FlowManagerAction `json:"wait_actions"`
+	// WaitFlowId Flow ID for the wait queue.
+	WaitFlowId  string `json:"wait_flow_id"`
+	WaitTimeout int    `json:"wait_timeout"`
 }
 
 // PutQueuesIdRoutingMethodJSONBody defines parameters for PutQueuesIdRoutingMethod.
@@ -4776,9 +4775,6 @@ type PostQueuesJSONRequestBody PostQueuesJSONBody
 
 // PutQueuesIdJSONRequestBody defines body for PutQueuesId for application/json ContentType.
 type PutQueuesIdJSONRequestBody PutQueuesIdJSONBody
-
-// PutQueuesIdActionsJSONRequestBody defines body for PutQueuesIdActions for application/json ContentType.
-type PutQueuesIdActionsJSONRequestBody PutQueuesIdActionsJSONBody
 
 // PutQueuesIdRoutingMethodJSONRequestBody defines body for PutQueuesIdRoutingMethod for application/json ContentType.
 type PutQueuesIdRoutingMethodJSONRequestBody PutQueuesIdRoutingMethodJSONBody
@@ -5439,9 +5435,6 @@ type ServerInterface interface {
 	// Update the queue details
 	// (PUT /queues/{id})
 	PutQueuesId(c *gin.Context, id string)
-	// Update the queue's action handle
-	// (PUT /queues/{id}/actions)
-	PutQueuesIdActions(c *gin.Context, id string)
 	// Update the queue's routing method
 	// (PUT /queues/{id}/routing_method)
 	PutQueuesIdRoutingMethod(c *gin.Context, id string)
@@ -10575,30 +10568,6 @@ func (siw *ServerInterfaceWrapper) PutQueuesId(c *gin.Context) {
 	siw.Handler.PutQueuesId(c, id)
 }
 
-// PutQueuesIdActions operation middleware
-func (siw *ServerInterfaceWrapper) PutQueuesIdActions(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PutQueuesIdActions(c, id)
-}
-
 // PutQueuesIdRoutingMethod operation middleware
 func (siw *ServerInterfaceWrapper) PutQueuesIdRoutingMethod(c *gin.Context) {
 
@@ -12454,7 +12423,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/queues/:id", wrapper.DeleteQueuesId)
 	router.GET(options.BaseURL+"/queues/:id", wrapper.GetQueuesId)
 	router.PUT(options.BaseURL+"/queues/:id", wrapper.PutQueuesId)
-	router.PUT(options.BaseURL+"/queues/:id/actions", wrapper.PutQueuesIdActions)
 	router.PUT(options.BaseURL+"/queues/:id/routing_method", wrapper.PutQueuesIdRoutingMethod)
 	router.PUT(options.BaseURL+"/queues/:id/tag_ids", wrapper.PutQueuesIdTagIds)
 	router.GET(options.BaseURL+"/recordingfiles/:id", wrapper.GetRecordingfilesId)
@@ -16155,24 +16123,6 @@ func (response PutQueuesId200JSONResponse) VisitPutQueuesIdResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PutQueuesIdActionsRequestObject struct {
-	Id   string `json:"id"`
-	Body *PutQueuesIdActionsJSONRequestBody
-}
-
-type PutQueuesIdActionsResponseObject interface {
-	VisitPutQueuesIdActionsResponse(w http.ResponseWriter) error
-}
-
-type PutQueuesIdActions200JSONResponse QueueManagerQueue
-
-func (response PutQueuesIdActions200JSONResponse) VisitPutQueuesIdActionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 type PutQueuesIdRoutingMethodRequestObject struct {
 	Id   string `json:"id"`
 	Body *PutQueuesIdRoutingMethodJSONRequestBody
@@ -18020,9 +17970,6 @@ type StrictServerInterface interface {
 	// Update the queue details
 	// (PUT /queues/{id})
 	PutQueuesId(ctx context.Context, request PutQueuesIdRequestObject) (PutQueuesIdResponseObject, error)
-	// Update the queue's action handle
-	// (PUT /queues/{id}/actions)
-	PutQueuesIdActions(ctx context.Context, request PutQueuesIdActionsRequestObject) (PutQueuesIdActionsResponseObject, error)
 	// Update the queue's routing method
 	// (PUT /queues/{id}/routing_method)
 	PutQueuesIdRoutingMethod(ctx context.Context, request PutQueuesIdRoutingMethodRequestObject) (PutQueuesIdRoutingMethodResponseObject, error)
@@ -24137,41 +24084,6 @@ func (sh *strictHandler) PutQueuesId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutQueuesIdResponseObject); ok {
 		if err := validResponse.VisitPutQueuesIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PutQueuesIdActions operation middleware
-func (sh *strictHandler) PutQueuesIdActions(ctx *gin.Context, id string) {
-	var request PutQueuesIdActionsRequestObject
-
-	request.Id = id
-
-	var body PutQueuesIdActionsJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PutQueuesIdActions(ctx, request.(PutQueuesIdActionsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PutQueuesIdActions")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PutQueuesIdActionsResponseObject); ok {
-		if err := validResponse.VisitPutQueuesIdActionsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

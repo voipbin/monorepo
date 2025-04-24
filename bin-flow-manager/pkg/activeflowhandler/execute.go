@@ -184,6 +184,10 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 		}
 		return &action.ActionNext, nil
 
+	case action.TypeEmpty:
+		log.Debugf("The action is empty. Move to the next action. action_id: %s", af.CurrentAction.ID)
+		return &action.ActionNext, nil
+
 	case action.TypeGoto:
 		if errHandle := h.actionHandleGoto(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the goto action correctly. err: %v", errHandle)

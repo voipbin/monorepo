@@ -14,7 +14,7 @@ create table queue_queues(
   execute varchar(255),
 
   -- wait/service info
-  wait_actions            json,
+  wait_flow_id            binary(16),
   wait_queue_call_ids     json,
   wait_timeout            integer,  -- wait timeout(ms)
   service_queue_call_ids  json,

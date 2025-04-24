@@ -9,8 +9,6 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	uuid "github.com/gofrs/uuid"
 
 	queue "monorepo/bin-queue-manager/models/queue"
@@ -41,19 +39,17 @@ type DBHandler interface {
 		detail string,
 		routingMethod queue.RoutingMethod,
 		tagIDs []uuid.UUID,
-		waitActions []fmaction.Action,
+		waitFlowID uuid.UUID,
 		waitTimeout int,
 		serviceTimeout int,
 	) error
 	QueueSetRoutingMethod(ctx context.Context, id uuid.UUID, routingMethod queue.RoutingMethod) error
 	QueueSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error
 	QueueSetExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) error
-	QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) error
 
 	QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error)
-	// QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error)
 	QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error
 	QueuecallDelete(ctx context.Context, id uuid.UUID) error
 	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error

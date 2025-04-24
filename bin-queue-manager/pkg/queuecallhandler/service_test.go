@@ -39,7 +39,9 @@ func Test_ServiceStart(t *testing.T) {
 		responseQueue         *queue.Queue
 		responseCall          *cmcall.Call
 		responseConfbridge    *cmconfbridge.Confbridge
-		responseUUIDActionID  uuid.UUID
+		responseUUIDTargetID  uuid.UUID
+		responseUUIDLoopID    uuid.UUID
+		responseUUIDForwardID uuid.UUID
 		responseUUIDQueuecall uuid.UUID
 		responseQueuecall     *queuecall.Queuecall
 
@@ -61,16 +63,7 @@ func Test_ServiceStart(t *testing.T) {
 				},
 				RoutingMethod: queue.RoutingMethodRandom,
 				TagIDs:        []uuid.UUID{},
-				WaitActions: []fmaction.Action{
-					{
-						ID:   uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
-						Type: fmaction.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("4260dce2-6a03-4226-a223-fed308e08591"),
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				WaitFlowID:    uuid.FromStringOrNil("eef35a2a-20c2-11f0-8352-4b8bc8a17a09"),
 			},
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
@@ -83,7 +76,9 @@ func Test_ServiceStart(t *testing.T) {
 					ID: uuid.FromStringOrNil("b0c77a26-acf0-11ed-8fd7-37de63b3d029"),
 				},
 			},
-			responseUUIDActionID: uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
+			responseUUIDTargetID:  uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
+			responseUUIDLoopID:    uuid.FromStringOrNil("8dc3047c-20c6-11f0-9d4a-8787d9e080b9"),
+			responseUUIDForwardID: uuid.FromStringOrNil("8e22e766-20c6-11f0-8e98-2b6dd89c825c"),
 			responseQueuecall: &queuecall.Queuecall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b0fd8d1e-acf0-11ed-9430-6f880d5c9104"),
@@ -99,7 +94,7 @@ func Test_ServiceStart(t *testing.T) {
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("e82487ee-acef-11ed-b6a0-d375ffdc940c"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("e8004cda-acef-11ed-8af6-1f155a5daa45"),
-				ForwardActionID:       uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
+				ForwardActionID:       uuid.FromStringOrNil("8e22e766-20c6-11f0-8e98-2b6dd89c825c"),
 				ConfbridgeID:          uuid.FromStringOrNil("b0c77a26-acf0-11ed-8fd7-37de63b3d029"),
 				Source:                commonaddress.Address{},
 				RoutingMethod:         queue.RoutingMethodRandom,
@@ -116,20 +111,24 @@ func Test_ServiceStart(t *testing.T) {
 				Type: commonservice.TypeQueuecall,
 				PushActions: []fmaction.Action{
 					{
-						ID:   uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
-						Type: fmaction.TypeAnswer,
-					},
-					{
-						ID:     uuid.FromStringOrNil("4260dce2-6a03-4226-a223-fed308e08591"),
-						NextID: uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
-						Type:   fmaction.TypeAnswer,
-					},
-					{
 						ID:   uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
+						Type: fmaction.TypeFetchFlow,
+						Option: fmaction.ConvertOption(fmaction.OptionFetchFlow{
+							FlowID: uuid.FromStringOrNil("eef35a2a-20c2-11f0-8352-4b8bc8a17a09"),
+						}),
+					},
+					{
+						ID:     uuid.FromStringOrNil("8dc3047c-20c6-11f0-9d4a-8787d9e080b9"),
+						Type:   fmaction.TypeEmpty,
+						Option: fmaction.ConvertOption(fmaction.OptionEmpty{}),
+						NextID: uuid.FromStringOrNil("239d5d9e-acf2-11ed-96d1-8b6af7ef84bd"),
+					},
+					{
+						ID:   uuid.FromStringOrNil("8e22e766-20c6-11f0-8e98-2b6dd89c825c"),
 						Type: fmaction.TypeConfbridgeJoin,
-						Option: map[string]any{
-							"confbridge_id": "b0c77a26-acf0-11ed-8fd7-37de63b3d029",
-						},
+						Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+							ConfbridgeID: uuid.FromStringOrNil("b0c77a26-acf0-11ed-8fd7-37de63b3d029"),
+						}),
 					},
 				},
 			},
@@ -162,7 +161,9 @@ func Test_ServiceStart(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDQueuecall)
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.responseQueue.CustomerID, tt.activeflowID, cmconfbridge.ReferenceTypeQueue, tt.responseUUIDQueuecall, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDTargetID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDLoopID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDForwardID)
 			mockDB.EXPECT().QueuecallCreate(ctx, tt.expectQueuecall).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseUUIDQueuecall).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.responseQueuecall)
@@ -189,48 +190,47 @@ func Test_createActions(t *testing.T) {
 		queue        *queue.Queue
 		confbridgeID uuid.UUID
 
-		responseUUID uuid.UUID
+		responseUUIDTargetID  uuid.UUID
+		responseUUIDLoopID    uuid.UUID
+		responseUUIDForwardID uuid.UUID
 
 		expectRes []fmaction.Action
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&queue.Queue{
+			queue: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("61a4651c-60e3-11ec-86ff-efca21ef8707"),
 				},
-				WaitActions: []fmaction.Action{
-					{
-						ID:   uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
-						Type: fmaction.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("4260dce2-6a03-4226-a223-fed308e08591"),
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				WaitFlowID: uuid.FromStringOrNil("f5701776-20c2-11f0-9c76-2342e18ec235"),
 			},
-			uuid.FromStringOrNil("9c758344-81a6-48b1-be2b-5128e2579a9c"),
+			confbridgeID: uuid.FromStringOrNil("9c758344-81a6-48b1-be2b-5128e2579a9c"),
 
-			uuid.FromStringOrNil("61d32f5a-60e3-11ec-943d-db1b16329a1c"),
+			responseUUIDTargetID:  uuid.FromStringOrNil("61d32f5a-60e3-11ec-943d-db1b16329a1c"),
+			responseUUIDLoopID:    uuid.FromStringOrNil("f5953d3a-20c2-11f0-9fcb-63111e54a3c4"),
+			responseUUIDForwardID: uuid.FromStringOrNil("f5b7281e-20c2-11f0-afb6-736645327c60"),
 
-			[]fmaction.Action{
-				{
-					ID:   uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
-					Type: fmaction.TypeAnswer,
-				},
-				{
-					ID:     uuid.FromStringOrNil("4260dce2-6a03-4226-a223-fed308e08591"),
-					Type:   fmaction.TypeAnswer,
-					NextID: uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
-				},
+			expectRes: []fmaction.Action{
 				{
 					ID:   uuid.FromStringOrNil("61d32f5a-60e3-11ec-943d-db1b16329a1c"),
+					Type: fmaction.TypeFetchFlow,
+					Option: fmaction.ConvertOption(fmaction.OptionFetchFlow{
+						FlowID: uuid.FromStringOrNil("f5701776-20c2-11f0-9c76-2342e18ec235"),
+					}),
+				},
+				{
+					ID:     uuid.FromStringOrNil("f5953d3a-20c2-11f0-9fcb-63111e54a3c4"),
+					Type:   fmaction.TypeEmpty,
+					Option: fmaction.ConvertOption(fmaction.OptionEmpty{}),
+					NextID: uuid.FromStringOrNil("61d32f5a-60e3-11ec-943d-db1b16329a1c"),
+				},
+				{
+					ID:   uuid.FromStringOrNil("f5b7281e-20c2-11f0-afb6-736645327c60"),
 					Type: fmaction.TypeConfbridgeJoin,
-					Option: map[string]any{
-						"confbridge_id": "9c758344-81a6-48b1-be2b-5128e2579a9c",
-					},
+					Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+						ConfbridgeID: uuid.FromStringOrNil("9c758344-81a6-48b1-be2b-5128e2579a9c"),
+					}),
 				},
 			},
 		},
@@ -255,7 +255,9 @@ func Test_createActions(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDTargetID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDLoopID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDForwardID)
 
 			res, resForward, err := h.createActions(ctx, tt.queue, tt.confbridgeID)
 			if err != nil {
@@ -266,8 +268,8 @@ func Test_createActions(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
-			if resForward != tt.responseUUID {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseUUID, resForward)
+			if resForward != tt.responseUUIDForwardID {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseUUIDForwardID, resForward)
 			}
 		})
 	}
