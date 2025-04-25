@@ -89,23 +89,8 @@ func (mr *MockConversationHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConversationHandler)(nil).Get), ctx, id)
 }
 
-// GetByTypeAndDialogID mocks base method.
-func (m *MockConversationHandler) GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByTypeAndDialogID", ctx, conversationType, dialogID)
-	ret0, _ := ret[0].(*conversation.Conversation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByTypeAndDialogID indicates an expected call of GetByTypeAndDialogID.
-func (mr *MockConversationHandlerMockRecorder) GetByTypeAndDialogID(ctx, conversationType, dialogID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTypeAndDialogID", reflect.TypeOf((*MockConversationHandler)(nil).GetByTypeAndDialogID), ctx, conversationType, dialogID)
-}
-
 // Gets mocks base method.
-func (m *MockConversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*conversation.Conversation, error) {
+func (m *MockConversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]*conversation.Conversation)
@@ -149,16 +134,16 @@ func (mr *MockConversationHandlerMockRecorder) MessageSend(ctx, conversationID, 
 }
 
 // Update mocks base method.
-func (m *MockConversationHandler) Update(ctx context.Context, id uuid.UUID, name, detail string) (*conversation.Conversation, error) {
+func (m *MockConversationHandler) Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail)
+	ret := m.ctrl.Call(m, "Update", ctx, id, fields)
 	ret0, _ := ret[0].(*conversation.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockConversationHandlerMockRecorder) Update(ctx, id, name, detail any) *gomock.Call {
+func (mr *MockConversationHandlerMockRecorder) Update(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConversationHandler)(nil).Update), ctx, id, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConversationHandler)(nil).Update), ctx, id, fields)
 }

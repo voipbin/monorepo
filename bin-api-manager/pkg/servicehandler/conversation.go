@@ -52,9 +52,9 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *am
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	filters := map[string]string{
-		"deleted":     "false",
-		"customer_id": a.CustomerID.String(),
+	filters := map[cvconversation.Field]any{
+		cvconversation.FieldDeleted:    false,
+		cvconversation.FieldCustomerID: a.CustomerID,
 	}
 
 	tmps, err := h.conversationGets(ctx, a, size, token, filters)
@@ -75,7 +75,7 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *am
 
 // conversationGets gets the list of conversations.
 // It returns list of conversations if it succeed.
-func (h *serviceHandler) conversationGets(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]cvconversation.Conversation, error) {
+func (h *serviceHandler) conversationGets(ctx context.Context, a *amagent.Agent, size uint64, token string, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "ConversationGetsByCustomerID",
 		"agent": a,
@@ -89,7 +89,7 @@ func (h *serviceHandler) conversationGets(ctx context.Context, a *amagent.Agent,
 	}
 
 	// gets
-	res, err := h.reqHandler.ConversationV1ConversationGets(ctx, token, size, filters)
+	res, err := h.reqHandler.ConversationV1ConversationGets(ctx, token, size, fields)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
@@ -127,7 +127,7 @@ func (h *serviceHandler) ConversationGet(ctx context.Context, a *amagent.Agent, 
 
 // ConversationUpdate update the conversation of the given id.
 // It returns updated conversation if it succeed.
-func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, name string, detail string) (*cvconversation.WebhookMessage, error) {
+func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "ConversationUpdate",
 		"customer_id":     a.CustomerID,
@@ -148,7 +148,7 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *amagent.Agen
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ConversationV1ConversationUpdate(ctx, conversationID, name, detail)
+	tmp, err := h.reqHandler.ConversationV1ConversationUpdate(ctx, conversationID, fields)
 	if err != nil {
 		log.Errorf("Could not update the conversation. err: %v", err)
 		return nil, errors.Wrap(err, "could not update the conversation")

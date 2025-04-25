@@ -92,7 +92,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		fields    map[cvconversation.Field]any
 
 		response *sock.Response
 
@@ -106,8 +106,9 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 
 			pageToken: "2021-03-02 03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"deleted": "false",
+			fields: map[cvconversation.Field]any{
+				cvconversation.FieldDeleted:    false,
+				cvconversation.FieldCustomerID: uuid.FromStringOrNil("84b4b554-21ef-11f0-a5bb-e33bf5a5a345"),
 			},
 
 			response: &sock.Response{
@@ -119,9 +120,10 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 			expectURL:    "/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.conversation-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				URI:      "/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"84b4b554-21ef-11f0-a5bb-e33bf5a5a345","deleted":false}`),
 			},
 			expectRes: []cvconversation.Conversation{
 				{
@@ -151,10 +153,9 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.fields)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -266,6 +267,7 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 		conversationID   uuid.UUID
 		conversationName string
 		detail           string
+		fields           map[cvconversation.Field]any
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -279,13 +281,17 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 			conversationID:   uuid.FromStringOrNil("1397bde6-007a-11ee-903f-4b1fc025c9a9"),
 			conversationName: "test name",
 			detail:           "test detail",
+			fields: map[cvconversation.Field]any{
+				cvconversation.FieldName:   "test name",
+				cvconversation.FieldDetail: "test detail",
+			},
 
 			expectTarget: "bin-manager.conversation-manager.request",
 			expectRequest: &sock.Request{
 				URI:      "/v1/conversations/1397bde6-007a-11ee-903f-4b1fc025c9a9",
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
+				Data:     []byte(`{"detail":"test detail","name":"test name"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -315,7 +321,7 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.conversationName, tt.detail)
+			res, err := reqHandler.ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.fields)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

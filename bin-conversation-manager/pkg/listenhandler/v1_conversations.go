@@ -34,10 +34,19 @@ func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *sock.R
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get filters
-	filters := h.utilHandler.URLParseFilters(u)
+	var req map[string]any
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
 
-	tmps, err := h.conversationHandler.Gets(ctx, pageToken, pageSize, filters)
+	fields, err := conversation.ConvertSringMapToFieldMap(req)
+	if err != nil {
+		log.Errorf("Could not convert the filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmps, err := h.conversationHandler.Gets(ctx, pageToken, pageSize, fields)
 	if err != nil {
 		log.Debugf("Could not get conversations. err: %v", err)
 		return simpleResponse(500), nil
@@ -153,14 +162,40 @@ func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *sock
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	var req request.V1DataConversationsIDPut
+	var req map[string]any
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
 	log.Debugf("Executing processV1ConversationsIDPut. message_id: %s", id)
 
-	tmp, err := h.conversationHandler.Update(ctx, id, req.Name, req.Detail)
+	allowedKeys := map[string]bool{
+		string(conversation.FieldOwnerType): true,
+		string(conversation.FieldOwnerID):   true,
+
+		string(conversation.FieldName):   true,
+		string(conversation.FieldDetail): true,
+	}
+
+	filtered := make(map[string]any)
+	for key, val := range req {
+		if allowedKeys[key] {
+			filtered[key] = val
+		}
+	}
+
+	if len(filtered) == 0 {
+		log.Debugf("No allowed fields provided for update. Skipping.")
+		return simpleResponse(200), nil
+	}
+
+	tmpFields, err := conversation.ConvertSringMapToFieldMap(req)
+	if err != nil {
+		log.Errorf("Could not convert field map. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.conversationHandler.Update(ctx, id, tmpFields)
 	if err != nil {
 		log.Debugf("Could not get a conversation. conversation_id: %s, err: %v", id, err)
 		return simpleResponse(500), nil

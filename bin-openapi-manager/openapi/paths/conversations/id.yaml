@@ -36,13 +36,14 @@ put:
         schema:
           type: object
           properties:
+            owner_type:
+              type: string
+            owner_id:
+              type: string
             name:
               type: string
             detail:
               type: string
-          required:
-            - name
-            - detail
   responses:
     '200':
       content:

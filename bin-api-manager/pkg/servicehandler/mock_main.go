@@ -1973,18 +1973,18 @@ func (mr *MockServiceHandlerMockRecorder) ConversationMessageSend(ctx, a, conver
 }
 
 // ConversationUpdate mocks base method.
-func (m *MockServiceHandler) ConversationUpdate(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, name, detail string) (*conversation.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationUpdate(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, fields map[conversation.Field]any) (*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationUpdate", ctx, a, conversationID, name, detail)
+	ret := m.ctrl.Call(m, "ConversationUpdate", ctx, a, conversationID, fields)
 	ret0, _ := ret[0].(*conversation.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConversationUpdate indicates an expected call of ConversationUpdate.
-func (mr *MockServiceHandlerMockRecorder) ConversationUpdate(ctx, a, conversationID, name, detail any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ConversationUpdate(ctx, a, conversationID, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ConversationUpdate), ctx, a, conversationID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ConversationUpdate), ctx, a, conversationID, fields)
 }
 
 // CustomerCreate mocks base method.

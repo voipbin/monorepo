@@ -122,96 +122,6 @@ func Test_ConversationCreate(t *testing.T) {
 	}
 }
 
-// func Test_ConversationGetByTypeAndDialogID(t *testing.T) {
-
-// 	tests := []struct {
-// 		name         string
-// 		conversation *conversation.Conversation
-
-// 		conversationType conversation.Type
-// 		dialogID         string
-
-// 		responseCurTime string
-// 		expectRes       *conversation.Conversation
-// 	}{
-// 		{
-// 			name: "normal",
-// 			conversation: &conversation.Conversation{
-// 				Identity: commonidentity.Identity{
-// 					ID:         uuid.FromStringOrNil("400d2aaa-e429-11ec-92ee-9779b9418690"),
-// 					CustomerID: uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
-// 				},
-// 				Owner: commonidentity.Owner{
-// 					OwnerType: commonidentity.OwnerTypeAgent,
-// 					OwnerID:   uuid.FromStringOrNil("ca332f60-3d35-11ef-99f7-cb2ec1550dae"),
-// 				},
-// 				Name:     "conversation name",
-// 				Detail:   "conversation detail",
-// 				Type:     conversation.TypeLine,
-// 				DialogID: "612435d0-e429-11ec-845d-bba00000504b",
-// 				Self:     commonaddress.Address{},
-// 				Peer:     commonaddress.Address{},
-// 			},
-
-// 			conversationType: conversation.TypeLine,
-// 			dialogID:         "612435d0-e429-11ec-845d-bba00000504b",
-
-// 			responseCurTime: "2022-04-18 03:22:17.995000",
-// 			expectRes: &conversation.Conversation{
-// 				Identity: commonidentity.Identity{
-// 					ID:         uuid.FromStringOrNil("400d2aaa-e429-11ec-92ee-9779b9418690"),
-// 					CustomerID: uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
-// 				},
-// 				Owner: commonidentity.Owner{
-// 					OwnerType: commonidentity.OwnerTypeAgent,
-// 					OwnerID:   uuid.FromStringOrNil("ca332f60-3d35-11ef-99f7-cb2ec1550dae"),
-// 				},
-// 				Name:     "conversation name",
-// 				Detail:   "conversation detail",
-// 				Type:     conversation.TypeLine,
-// 				DialogID: "612435d0-e429-11ec-845d-bba00000504b",
-// 				Self:     commonaddress.Address{},
-// 				Peer:     commonaddress.Address{},
-// 				TMCreate: "2022-04-18 03:22:17.995000",
-// 				TMUpdate: DefaultTimeStamp,
-// 				TMDelete: DefaultTimeStamp,
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockCache := cachehandler.NewMockCacheHandler(mc)
-// 			h := handler{
-// 				utilHandler: mockUtil,
-// 				db:          dbTest,
-// 				cache:       mockCache,
-// 			}
-// 			ctx := context.Background()
-
-// 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-// 			mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any())
-// 			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			res, err := h.ConversationGetByTypeAndDialogID(ctx, tt.conversationType, tt.dialogID)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if reflect.DeepEqual(res, tt.expectRes) != true {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
-
 func Test_ConversationGets(t *testing.T) {
 
 	tests := []struct {
@@ -220,7 +130,7 @@ func Test_ConversationGets(t *testing.T) {
 
 		token   string
 		limit   uint64
-		filters map[string]any
+		filters map[conversation.Field]any
 
 		responseCurTime string
 		expectRes       []*conversation.Conversation
@@ -264,9 +174,9 @@ func Test_ConversationGets(t *testing.T) {
 
 			token: "2022-06-18 03:22:17.995000",
 			limit: 100,
-			filters: map[string]any{
-				"deleted":     false,
-				"customer_id": uuid.FromStringOrNil("a55f730a-3e12-11ef-adec-df6b60fe6b19"),
+			filters: map[conversation.Field]any{
+				conversation.FieldDeleted:    false,
+				conversation.FieldCustomerID: uuid.FromStringOrNil("a55f730a-3e12-11ef-adec-df6b60fe6b19"),
 			},
 
 			responseCurTime: "2022-04-18 03:22:17.995000",
@@ -350,94 +260,13 @@ func Test_ConversationGets(t *testing.T) {
 	}
 }
 
-func Test_ConversationSet(t *testing.T) {
-	tests := []struct {
-		name         string
-		conversation *conversation.Conversation
-
-		id               uuid.UUID
-		conversationName string
-		detail           string
-
-		responseCurTime string
-		expectRes       *conversation.Conversation
-	}{
-		{
-			name: "normal",
-			conversation: &conversation.Conversation{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("fbb24a9a-0068-11ee-985d-fffb84d2b682"),
-					CustomerID: uuid.FromStringOrNil("fbdb45f8-0068-11ee-9984-63f5b1d1e1c4"),
-				},
-			},
-
-			id:               uuid.FromStringOrNil("fbb24a9a-0068-11ee-985d-fffb84d2b682"),
-			conversationName: "test name",
-			detail:           "test detail",
-
-			responseCurTime: "2020-04-18T03:22:17.995000",
-			expectRes: &conversation.Conversation{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("fbb24a9a-0068-11ee-985d-fffb84d2b682"),
-					CustomerID: uuid.FromStringOrNil("fbdb45f8-0068-11ee-9984-63f5b1d1e1c4"),
-				},
-
-				Name:     "test name",
-				Detail:   "test detail",
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
-			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any()).Return(nil)
-			if err := h.ConversationSet(ctx, tt.id, tt.conversationName, tt.detail); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().ConversationGet(ctx, tt.conversation.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
-			res, err := h.ConversationGet(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_ConversationUpdate(t *testing.T) {
 	tests := []struct {
 		name         string
 		conversation *conversation.Conversation
 
 		id    uuid.UUID
-		field map[string]any
+		field map[conversation.Field]any
 
 		responseCurTime string
 		expectRes       *conversation.Conversation
@@ -452,13 +281,13 @@ func Test_ConversationUpdate(t *testing.T) {
 			},
 
 			id: uuid.FromStringOrNil("00f151ba-2199-11f0-85be-9b26b400d0c2"),
-			field: map[string]any{
-				"owner_type": "agent",
-				"owner_id":   uuid.FromStringOrNil("f74ef31a-2198-11f0-8a23-0b555d83cce8"),
-				"account_id": uuid.FromStringOrNil("012c01ac-2199-11f0-a5e5-7f1895af8640"),
-				"name":       "update name",
-				"detail":     "update detail",
-				"self": commonaddress.Address{
+			field: map[conversation.Field]any{
+				conversation.FieldOwnerType: "agent",
+				conversation.FieldOwnerID:   uuid.FromStringOrNil("f74ef31a-2198-11f0-8a23-0b555d83cce8"),
+				conversation.FieldAccountID: uuid.FromStringOrNil("012c01ac-2199-11f0-a5e5-7f1895af8640"),
+				conversation.FieldName:      "update name",
+				conversation.FieldDetail:    "update detail",
+				conversation.FieldSelf: commonaddress.Address{
 					Target: "+123456789",
 				},
 			},

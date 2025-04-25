@@ -162,23 +162,8 @@ func (mr *MockDBHandlerMockRecorder) ConversationGetBySelfAndPeer(ctx, self, pee
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetBySelfAndPeer", reflect.TypeOf((*MockDBHandler)(nil).ConversationGetBySelfAndPeer), ctx, self, peer)
 }
 
-// ConversationGetByTypeAndDialogID mocks base method.
-func (m *MockDBHandler) ConversationGetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationGetByTypeAndDialogID", ctx, conversationType, dialogID)
-	ret0, _ := ret[0].(*conversation.Conversation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConversationGetByTypeAndDialogID indicates an expected call of ConversationGetByTypeAndDialogID.
-func (mr *MockDBHandlerMockRecorder) ConversationGetByTypeAndDialogID(ctx, conversationType, dialogID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetByTypeAndDialogID", reflect.TypeOf((*MockDBHandler)(nil).ConversationGetByTypeAndDialogID), ctx, conversationType, dialogID)
-}
-
 // ConversationGets mocks base method.
-func (m *MockDBHandler) ConversationGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conversation.Conversation, error) {
+func (m *MockDBHandler) ConversationGets(ctx context.Context, size uint64, token string, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*conversation.Conversation)
@@ -192,18 +177,18 @@ func (mr *MockDBHandlerMockRecorder) ConversationGets(ctx, size, token, filters 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGets", reflect.TypeOf((*MockDBHandler)(nil).ConversationGets), ctx, size, token, filters)
 }
 
-// ConversationSet mocks base method.
-func (m *MockDBHandler) ConversationSet(ctx context.Context, id uuid.UUID, name, detail string) error {
+// ConversationUpdate mocks base method.
+func (m *MockDBHandler) ConversationUpdate(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationSet", ctx, id, name, detail)
+	ret := m.ctrl.Call(m, "ConversationUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ConversationSet indicates an expected call of ConversationSet.
-func (mr *MockDBHandlerMockRecorder) ConversationSet(ctx, id, name, detail any) *gomock.Call {
+// ConversationUpdate indicates an expected call of ConversationUpdate.
+func (mr *MockDBHandlerMockRecorder) ConversationUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationSet", reflect.TypeOf((*MockDBHandler)(nil).ConversationSet), ctx, id, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationUpdate", reflect.TypeOf((*MockDBHandler)(nil).ConversationUpdate), ctx, id, fields)
 }
 
 // MediaCreate mocks base method.

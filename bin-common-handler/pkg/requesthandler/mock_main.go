@@ -3111,33 +3111,33 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGet(ctx, con
 }
 
 // ConversationV1ConversationGets mocks base method.
-func (m *MockRequestHandler) ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]conversation.Conversation, error) {
+func (m *MockRequestHandler) ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, fields map[conversation.Field]any) ([]conversation.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1ConversationGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "ConversationV1ConversationGets", ctx, pageToken, pageSize, fields)
 	ret0, _ := ret[0].([]conversation.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConversationV1ConversationGets indicates an expected call of ConversationV1ConversationGets.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGets(ctx, pageToken, pageSize, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGets), ctx, pageToken, pageSize, fields)
 }
 
 // ConversationV1ConversationUpdate mocks base method.
-func (m *MockRequestHandler) ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, name, detail string) (*conversation.Conversation, error) {
+func (m *MockRequestHandler) ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1ConversationUpdate", ctx, conversationID, name, detail)
+	ret := m.ctrl.Call(m, "ConversationV1ConversationUpdate", ctx, conversationID, fields)
 	ret0, _ := ret[0].(*conversation.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConversationV1ConversationUpdate indicates an expected call of ConversationV1ConversationUpdate.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationUpdate(ctx, conversationID, name, detail any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationUpdate(ctx, conversationID, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationUpdate), ctx, conversationID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationUpdate), ctx, conversationID, fields)
 }
 
 // ConversationV1Hook mocks base method.

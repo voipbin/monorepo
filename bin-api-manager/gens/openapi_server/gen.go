@@ -1714,7 +1714,9 @@ type ConversationManagerConversation struct {
 	Id *string `json:"id,omitempty"`
 
 	// Name Name of the conversation.
-	Name *string `json:"name,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	OwnerId   *string `json:"owner_id,omitempty"`
+	OwnerType *string `json:"owner_type,omitempty"`
 
 	// Participants List of participants in the conversation.
 	Participants *[]CommonAddress `json:"participants,omitempty"`
@@ -3701,8 +3703,10 @@ type GetConversationsParams struct {
 
 // PutConversationsIdJSONBody defines parameters for PutConversationsId.
 type PutConversationsIdJSONBody struct {
-	Detail string `json:"detail"`
-	Name   string `json:"name"`
+	Detail    *string `json:"detail,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	OwnerId   *string `json:"owner_id,omitempty"`
+	OwnerType *string `json:"owner_type,omitempty"`
 }
 
 // GetConversationsIdMessagesParams defines parameters for GetConversationsIdMessages.

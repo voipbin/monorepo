@@ -380,7 +380,7 @@ type ServiceHandler interface {
 	// conversation handlers
 	ConversationGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cvconversation.WebhookMessage, error)
 	ConversationGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cvconversation.WebhookMessage, error)
-	ConversationUpdate(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, name string, detail string) (*cvconversation.WebhookMessage, error)
+	ConversationUpdate(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.WebhookMessage, error)
 	ConversationMessageGetsByConversationID(
 		ctx context.Context,
 		a *amagent.Agent,

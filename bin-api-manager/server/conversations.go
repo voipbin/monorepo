@@ -3,6 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 
 	"github.com/gin-gonic/gin"
@@ -124,7 +125,21 @@ func (h *server) PutConversationsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConversationUpdate(c.Request.Context(), &a, target, req.Name, req.Detail)
+	raw, err := structToFilteredMap(req)
+	if err != nil {
+		log.Errorf("Could not convert fields. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	fields, err := cvconversation.ConvertSringMapToFieldMap(raw)
+	if err != nil {
+		log.Errorf("Could not convert fields. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.ConversationUpdate(c.Request.Context(), &a, target, fields)
 	if err != nil {
 		log.Errorf("Could not update the conversation. err: %v", err)
 		c.AbortWithStatus(400)

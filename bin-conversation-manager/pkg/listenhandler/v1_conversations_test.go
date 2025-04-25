@@ -10,6 +10,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
 	"monorepo/bin-conversation-manager/pkg/conversationhandler"
@@ -27,28 +28,30 @@ func Test_processV1ConversationsGet(t *testing.T) {
 
 		expectPageSize  uint64
 		expectPageToken string
+		expectFields    map[conversation.Field]any
 
-		responseFilters       map[string]string
 		responseConversations []*conversation.Conversation
 
 		response *sock.Response
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&sock.Request{
-				URI:    "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=64a3cbd8-e863-11ec-85de-1bcd09d3872e&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+			request: &sock.Request{
+				URI:      "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				Method:   sock.RequestMethodGet,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","deleted":false}`),
 			},
 
-			10,
-			"2021-03-01 03:30:17.000000",
-
-			map[string]string{
-				"customer_id": "ac03d4ea-7f50-11ec-908d-d39407ab524d",
-				"deleted":     "false",
+			expectPageSize:  10,
+			expectPageToken: "2021-03-01 03:30:17.000000",
+			expectFields: map[conversation.Field]any{
+				conversation.FieldCustomerID: uuid.FromStringOrNil("64a3cbd8-e863-11ec-85de-1bcd09d3872e"),
+				conversation.FieldDeleted:    false,
 			},
-			[]*conversation.Conversation{
+
+			responseConversations: []*conversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("645891fe-e863-11ec-b291-9f454e92f1bb"),
@@ -57,28 +60,30 @@ func Test_processV1ConversationsGet(t *testing.T) {
 				},
 			},
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{}}]`),
 			},
 		},
 		{
-			"2 results",
+			name: "2 results",
 
-			&sock.Request{
-				URI:    "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=b77be746-e863-11ec-97b0-bb06bbb7db0e&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+			request: &sock.Request{
+				URI:      "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				Method:   sock.RequestMethodGet,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","deleted":false}`),
 			},
 
-			10,
-			"2021-03-01 03:30:17.000000",
-
-			map[string]string{
-				"customer_id": "b77be746-e863-11ec-97b0-bb06bbb7db0e",
-				"deleted":     "false",
+			expectPageSize:  10,
+			expectPageToken: "2021-03-01 03:30:17.000000",
+			expectFields: map[conversation.Field]any{
+				conversation.FieldCustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+				conversation.FieldDeleted:    false,
 			},
-			[]*conversation.Conversation{
+
+			responseConversations: []*conversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("b7ac843c-e863-11ec-9652-0ff162b38a15"),
@@ -92,7 +97,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 					},
 				},
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"b7ac843c-e863-11ec-9652-0ff162b38a15","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{}},{"id":"c45aec8c-e863-11ec-9bae-4fcfe883444a","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{}}]`),
@@ -115,8 +120,8 @@ func Test_processV1ConversationsGet(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockConversation.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.responseFilters).Return(tt.responseConversations, nil)
+			// mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockConversation.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.expectFields).Return(tt.responseConversations, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -293,10 +298,12 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 
 		responseConversation *conversation.Conversation
 
-		expectConversationID uuid.UUID
-		expectName           string
-		expectDetail         string
-		expectRes            *sock.Response
+		expectedConversationID uuid.UUID
+		expectedFields         map[conversation.Field]any
+
+		expectName   string
+		expectDetail string
+		expectRes    *sock.Response
 	}{
 		{
 			name: "normal",
@@ -305,7 +312,7 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 				URI:      "/v1/conversations/8d8ab6ae-0074-11ee-80d0-df60c15605d7",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"test name", "detail":"test detail"}`),
+				Data:     []byte(`{"name":"test name", "detail":"test detail", "account_id": "a3f340b4-21ec-11f0-9b2a-f70f3bf0b3be"}`),
 			},
 
 			responseConversation: &conversation.Conversation{
@@ -314,9 +321,14 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 				},
 			},
 
-			expectConversationID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
-			expectName:           "test name",
-			expectDetail:         "test detail",
+			expectedConversationID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
+			expectedFields: map[conversation.Field]any{
+				conversation.FieldName:      "test name",
+				conversation.FieldDetail:    "test detail",
+				conversation.FieldAccountID: uuid.FromStringOrNil("a3f340b4-21ec-11f0-9b2a-f70f3bf0b3be"),
+			},
+			expectName:   "test name",
+			expectDetail: "test detail",
 
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -337,7 +349,7 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().Update(gomock.Any(), tt.expectConversationID, tt.expectName, tt.expectDetail).Return(tt.responseConversation, nil)
+			mockConversation.EXPECT().Update(gomock.Any(), tt.expectedConversationID, tt.expectedFields).Return(tt.responseConversation, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
