@@ -141,16 +141,17 @@ func (h *listenHandler) processV1ConversationsIDGet(ctx context.Context, req *so
 // processV1ConversationsIDPut handles
 // /v1/conversations/{id} PUT
 func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConversationsIDPut",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "processV1ConversationsIDPut",
-		"conversation_id": id,
-	})
 
 	var req request.V1DataConversationsIDPut
 	if err := json.Unmarshal(m.Data, &req); err != nil {
