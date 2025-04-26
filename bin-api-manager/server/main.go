@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -194,4 +195,18 @@ func GenerateListResponse[T any](tmps []*T, nextTokenValue string) struct {
 			NextPageToken: &nextToken,
 		},
 	}
+}
+
+func structToFilteredMap(v any) (map[string]any, error) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+
+	var res map[string]any
+	if err := json.Unmarshal(data, &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

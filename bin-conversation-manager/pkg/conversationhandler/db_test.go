@@ -68,58 +68,6 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_GetByReferenceInfo(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		conversationType conversation.Type
-		dialogID         string
-
-		responseConversation *conversation.Conversation
-	}{
-		{
-			name: "normal",
-
-			conversationType: conversation.TypeLine,
-			dialogID:         "a481fe6c-e6e9-11ec-92f7-6366decbd9e8",
-
-			responseConversation: &conversation.Conversation{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("a9341b0c-e6e9-11ec-a3a2-0b511930bae5"),
-					CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			h := &conversationHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().ConversationGetByTypeAndDialogID(ctx, tt.conversationType, tt.dialogID).Return(tt.responseConversation, nil)
-
-			res, err := h.GetByTypeAndDialogID(ctx, tt.conversationType, tt.dialogID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.responseConversation) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseConversation, res)
-			}
-		})
-	}
-}
-
 func Test_Create(t *testing.T) {
 
 	tests := []struct {
@@ -222,7 +170,7 @@ func Test_Gets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[conversation.Field]any
 
 		responseConversations []*conversation.Conversation
 	}{
@@ -231,8 +179,9 @@ func Test_Gets(t *testing.T) {
 
 			pageToken: "2022-04-18 03:22:17.995000",
 			pageSize:  100,
-			filters: map[string]string{
-				"customer_id": "62fe906c-3e13-11ef-9a64-270aea3013c5",
+			filters: map[conversation.Field]any{
+				conversation.FieldCustomerID: uuid.FromStringOrNil("62fe906c-3e13-11ef-9a64-270aea3013c5"),
+				conversation.FieldDeleted:    false,
 			},
 
 			responseConversations: []*conversation.Conversation{
@@ -280,18 +229,18 @@ func Test_Update(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id               uuid.UUID
-		conversationName string
-		detail           string
+		id     uuid.UUID
+		fields map[conversation.Field]any
 
 		responseConversation *conversation.Conversation
 	}{
 		{
 			name: "normal",
 
-			id:               uuid.FromStringOrNil("4455607e-006a-11ee-bfbb-032b6e5d2c44"),
-			conversationName: "test name",
-			detail:           "test detail",
+			id: uuid.FromStringOrNil("4455607e-006a-11ee-bfbb-032b6e5d2c44"),
+			fields: map[conversation.Field]any{
+				conversation.FieldName: "update name",
+			},
 
 			responseConversation: &conversation.Conversation{
 				Identity: commonidentity.Identity{
@@ -316,11 +265,11 @@ func Test_Update(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationSet(ctx, tt.id, tt.conversationName, tt.detail).Return(nil)
+			mockDB.EXPECT().ConversationUpdate(ctx, tt.id, tt.fields).Return(nil)
 			mockDB.EXPECT().ConversationGet(ctx, tt.id).Return(tt.responseConversation, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConversation.CustomerID, conversation.EventTypeConversationUpdated, tt.responseConversation)
 
-			res, err := h.Update(ctx, tt.id, tt.conversationName, tt.detail)
+			res, err := h.Update(ctx, tt.id, tt.fields)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

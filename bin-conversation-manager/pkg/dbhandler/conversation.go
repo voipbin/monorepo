@@ -5,9 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"strconv"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 
@@ -15,9 +18,8 @@ import (
 )
 
 const (
-	// select query for conversation get
-	conversationSelect = `
-	select
+	conversationsTable  = "conversation_conversations"
+	conversationsFields = `
 		id,
 		customer_id,
 		owner_type,
@@ -37,8 +39,6 @@ const (
 		tm_create,
 		tm_update,
 		tm_delete
-	from
-		conversation_conversations
 	`
 )
 
@@ -91,76 +91,46 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 	return res, nil
 }
 
-// ConversationCreate creates a new conversation record
 func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conversation) error {
-
-	q := `insert into conversation_conversations(
-		id,
-		customer_id,
-		owner_type,
-		owner_id,
-
-		account_id,
-
-		name,
-		detail,
-
-		type,
-
-		dialog_id,
-
-		self,
-		peer,
- 
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?, ?,
-		?,
-		?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ConversationCreate. err: %v", err)
-	}
-	defer stmt.Close()
-
 	self, err := json.Marshal(cv.Self)
 	if err != nil {
-		return fmt.Errorf("could not marshal source. ConversationCreate. err: %v", err)
+		return fmt.Errorf("could not marshal self. ConversationCreate. err: %v", err)
 	}
 
 	peer, err := json.Marshal(cv.Peer)
 	if err != nil {
-		return fmt.Errorf("could not marshal destination. ConversationCreate. err: %v", err)
+		return fmt.Errorf("could not marshal peer. ConversationCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
-		cv.ID.Bytes(),
-		cv.CustomerID.Bytes(),
-		cv.OwnerType,
-		cv.OwnerID.Bytes(),
+	now := h.utilHandler.TimeGetCurTime()
 
-		cv.AccountID.Bytes(),
+	sb := squirrel.
+		Insert(conversationsTable).
+		Columns(conversationsFields).
+		Values(
+			cv.ID.Bytes(),
+			cv.CustomerID.Bytes(),
+			cv.OwnerType,
+			cv.OwnerID.Bytes(),
+			cv.AccountID.Bytes(),
+			cv.Name,
+			cv.Detail,
+			cv.Type,
+			cv.DialogID,
+			self,
+			peer,
+			now,
+			commondatabasehandler.DefaultTimeStamp,
+			commondatabasehandler.DefaultTimeStamp,
+		).
+		PlaceholderFormat(squirrel.Question)
 
-		cv.Name,
-		cv.Detail,
-
-		cv.Type,
-		cv.DialogID,
-
-		self,
-		peer,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ConversationCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. ConversationCreate. err: %v", err)
 	}
 
@@ -171,20 +141,19 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 
 // conversationGetFromDB gets the conversation info from the db.
 func (h *handler) conversationGetFromDB(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", conversationSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	query, args, err := squirrel.
+		Select(conversationsFields).
+		From(conversationsTable).
+		Where(squirrel.Eq{"id": id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. conversationGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. conversationGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. conversationGetFromDB. err: %v", err)
+		return nil, err
 	}
 	defer row.Close()
 
@@ -194,7 +163,7 @@ func (h *handler) conversationGetFromDB(ctx context.Context, id uuid.UUID) (*con
 
 	res, err := h.conversationGetFromRow(row)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get conversation. conversationGetFromDB. err: %v", err)
 	}
 
 	return res, nil
@@ -236,36 +205,6 @@ func (h *handler) conversationGetFromCache(ctx context.Context, id uuid.UUID) (*
 	return res, nil
 }
 
-// ConversationGetByTypeAndDialogID returns conversation by the reference.
-func (h *handler) ConversationGetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and type = ?
-			and dialog_id = ?
-	`, conversationSelect)
-
-	row, err := h.db.Query(q, DefaultTimeStamp, conversationType, dialogID)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ConversationGetByReferenceInfo. err: %v", err)
-	}
-	defer row.Close()
-
-	if !row.Next() {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.conversationGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not get conversation. ConversationGetByReferenceInfo. err: %v", err)
-	}
-
-	return res, nil
-}
-
 // ConversationGet returns conversation.
 func (h *handler) ConversationGet(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error) {
 
@@ -284,29 +223,32 @@ func (h *handler) ConversationGet(ctx context.Context, id uuid.UUID) (*conversat
 	return res, nil
 }
 
-// ConversationGetBySelfAndPeer returns conversation.
 func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
+	sb := squirrel.
+		Select(conversationsFields).
+		From(conversationsTable).
+		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(self, '$.type')) = ?", self.Type)).
+		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(self, '$.target')) = ?", self.Target)).
+		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(peer, '$.type')) = ?", peer.Type)).
+		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(peer, '$.target')) = ?", peer.Target)).
+		PlaceholderFormat(squirrel.Question)
 
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		JSON_UNQUOTE(JSON_EXTRACT(self, '$.type')) = ?
-		AND JSON_UNQUOTE(JSON_EXTRACT(self, '$.target')) = ?
-		AND JSON_UNQUOTE(JSON_EXTRACT(peer, '$.type')) = ?
-		AND JSON_UNQUOTE(JSON_EXTRACT(peer, '$.target')) = ?
-	`, conversationSelect)
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ConversationGetBySelfAndPeer. err: %v", err)
+	}
 
-	row, err := h.db.Query(q, self.Type, self.Target, peer.Type, peer.Target)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConversationGetBySelfAndPeer. err: %v", err)
 	}
-	defer row.Close()
+	defer rows.Close()
 
-	if !row.Next() {
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.conversationGetFromRow(row)
+	res, err := h.conversationGetFromRow(rows)
 	if err != nil {
 		return nil, fmt.Errorf("could not get conversation. ConversationGetBySelfAndPeer. err: %v", err)
 	}
@@ -314,47 +256,31 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commona
 	return res, nil
 }
 
-// ConversationGets returns a list of conversations.
-func (h *handler) ConversationGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conversation.Conversation, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, conversationSelect)
-
+func (h *handler) ConversationGets(ctx context.Context, size uint64, token string, fiedls map[conversation.Field]any) ([]*conversation.Conversation, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	sb := squirrel.
+		Select(conversationsFields).
+		From(conversationsTable).
+		Where(squirrel.Lt{"tm_create": token}).
+		OrderBy("tm_create DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	var err error
+	sb, err = commondatabasehandler.ApplyFields(sb, fiedls)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. ConversationGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		case "customer_id", "owner_id", "account_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ConversationGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConversationGets. err: %v", err)
 	}
@@ -366,34 +292,34 @@ func (h *handler) ConversationGets(ctx context.Context, size uint64, token strin
 		if err != nil {
 			return nil, fmt.Errorf("could not get data. ConversationGets, err: %v", err)
 		}
-
 		res = append(res, u)
 	}
 
 	return res, nil
 }
 
-// ConversationSet returns sets the conversation info
-func (h *handler) ConversationSet(ctx context.Context, id uuid.UUID, name string, detail string) error {
-
-	// prepare
-	q := `
-	update conversation_conversations set
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, name, detail, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConversationSet. err: %v", err)
+// ConversationUpdate updates the conversation info.
+func (h *handler) ConversationUpdate(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// update the cache
-	_ = h.conversationUpdateToCache(ctx, id)
+	fields["tm_update"] = h.utilHandler.TimeGetCurTime()
 
+	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	q := squirrel.Update(conversationsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{"id": id.Bytes()})
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("ConversationUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+		return fmt.Errorf("ConversationUpdate: exec failed: %w", err)
+	}
+
+	_ = h.conversationUpdateToCache(ctx, id)
 	return nil
 }

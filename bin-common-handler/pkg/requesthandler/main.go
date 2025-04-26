@@ -708,8 +708,8 @@ type RequestHandler interface {
 		peer address.Address,
 	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)
-	ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cvconversation.Conversation, error)
-	ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, name string, detail string) (*cvconversation.Conversation, error)
+	ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error)
+	ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.Conversation, error)
 
 	// conversation-manager hook
 	ConversationV1Hook(ctx context.Context, hm *hmhook.Hook) error

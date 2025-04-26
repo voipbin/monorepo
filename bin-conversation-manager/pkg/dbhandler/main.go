@@ -29,10 +29,9 @@ type DBHandler interface {
 
 	ConversationCreate(ctx context.Context, cv *conversation.Conversation) error
 	ConversationGet(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
-	ConversationGetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error)
 	ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error)
-	ConversationGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conversation.Conversation, error)
-	ConversationSet(ctx context.Context, id uuid.UUID, name string, detail string) error
+	ConversationGets(ctx context.Context, size uint64, token string, filters map[conversation.Field]any) ([]*conversation.Conversation, error)
+	ConversationUpdate(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) error
 
 	MediaCreate(ctx context.Context, m *media.Media) error
 	MediaGet(ctx context.Context, id uuid.UUID) (*media.Media, error)

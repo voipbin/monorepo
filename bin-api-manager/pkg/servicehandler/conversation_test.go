@@ -28,22 +28,22 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 
 		responseConversations []cvconversation.Conversation
 
-		expectFilters map[string]string
+		expectFilters map[cvconversation.Field]any
 		expectRes     []*cvconversation.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			"2020-10-20T01:00:00.995000",
-			10,
+			pageToken: "2020-10-20T01:00:00.995000",
+			pageSize:  10,
 
-			[]cvconversation.Conversation{
+			responseConversations: []cvconversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("18965a18-ed21-11ec-89d2-b7e541377482"),
@@ -55,11 +55,11 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 					},
 				},
 			},
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			expectFilters: map[cvconversation.Field]any{
+				cvconversation.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				cvconversation.FieldDeleted:    false,
 			},
-			[]*cvconversation.WebhookMessage{
+			expectRes: []*cvconversation.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("18965a18-ed21-11ec-89d2-b7e541377482"),
@@ -173,9 +173,8 @@ func Test_ConversationUpdate(t *testing.T) {
 		name     string
 		customer *amagent.Agent
 
-		conversationID   uuid.UUID
-		conversationName string
-		detail           string
+		conversationID uuid.UUID
+		fileds         map[cvconversation.Field]any
 
 		responseConversation *cvconversation.Conversation
 		expectRes            *cvconversation.WebhookMessage
@@ -190,9 +189,11 @@ func Test_ConversationUpdate(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
-			conversationID:   uuid.FromStringOrNil("50fbe844-007d-11ee-a616-0fe1db6961e5"),
-			conversationName: "test name",
-			detail:           "test detail",
+			conversationID: uuid.FromStringOrNil("50fbe844-007d-11ee-a616-0fe1db6961e5"),
+			fileds: map[cvconversation.Field]any{
+				cvconversation.FieldName:   "test name",
+				cvconversation.FieldDetail: "test detail",
+			},
 
 			responseConversation: &cvconversation.Conversation{
 				Identity: commonidentity.Identity{
@@ -225,8 +226,8 @@ func Test_ConversationUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
-			mockReq.EXPECT().ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.conversationName, tt.detail).Return(tt.responseConversation, nil)
-			res, err := h.ConversationUpdate(ctx, tt.customer, tt.conversationID, tt.conversationName, tt.detail)
+			mockReq.EXPECT().ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.fileds).Return(tt.responseConversation, nil)
+			res, err := h.ConversationUpdate(ctx, tt.customer, tt.conversationID, tt.fileds)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

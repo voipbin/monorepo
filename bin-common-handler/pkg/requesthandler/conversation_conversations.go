@@ -12,6 +12,7 @@ import (
 	cvrequest "monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // ConversationV1ConversationGet gets the conversation
@@ -39,13 +40,15 @@ func (r *requestHandler) ConversationV1ConversationGet(ctx context.Context, conv
 // ConversationV1ConversationGets sends a request to conversation-manager
 // to getting a list of conversation info.
 // it returns detail list of conversation info if it succeed.
-func (r *requestHandler) ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cvconversation.Conversation, error) {
+func (r *requestHandler) ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error) {
 	uri := fmt.Sprintf("/v1/conversations?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(fields)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/conversations", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/conversations", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -116,16 +119,12 @@ func (r *requestHandler) ConversationV1ConversationCreate(
 // ConversationV1ConversationUpdate sends a request to conversation-manager
 // to update the conversation info.
 // it returns updated conversation info if it succeed.
-func (r *requestHandler) ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, name string, detail string) (*cvconversation.Conversation, error) {
+func (r *requestHandler) ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.Conversation, error) {
 	uri := fmt.Sprintf("/v1/conversations/%s", conversationID)
 
-	data := &cvrequest.V1DataConversationsIDPut{
-		Name:   name,
-		Detail: detail,
-	}
-	m, err := json.Marshal(data)
+	m, err := json.Marshal(fields)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not marshal filters")
 	}
 
 	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPut, "conversation/conversations/<conversation_id>", 30000, 0, ContentTypeJSON, m)

@@ -97,7 +97,7 @@ func Test_ServiceAgentConversationGets(t *testing.T) {
 
 		responseConversations []cvconversation.Conversation
 
-		expectFilters map[string]string
+		expectFilters map[cvconversation.Field]any
 		expectRes     []*cvconversation.WebhookMessage
 	}
 
@@ -128,9 +128,9 @@ func Test_ServiceAgentConversationGets(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"owner_id": "5cd8c836-3b9f-11ef-98ac-db226570f09a",
-				"deleted":  "false",
+			expectFilters: map[cvconversation.Field]any{
+				cvconversation.FieldOwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				cvconversation.FieldDeleted: false,
 			},
 			expectRes: []*cvconversation.WebhookMessage{
 				{

@@ -32,6 +32,34 @@ type Conversation struct {
 	TMDelete string `json:"tm_delete,omitempty"`
 }
 
+type Field string
+
+const (
+	FieldDeleted Field = "deleted"
+
+	FieldID         Field = "id"
+	FieldCustomerID Field = "customer_id"
+
+	FieldOwnerType Field = "owner_type"
+	FieldOwnerID   Field = "owner_id"
+
+	FieldAccountID Field = "account_id"
+
+	FieldName   Field = "name"
+	FieldDetail Field = "detail"
+
+	FieldType Field = "type"
+
+	FieldDialogID Field = "dialog_id"
+
+	FieldSelf Field = "self"
+	FieldPeer Field = "peer"
+
+	FieldTMCreate Field = "tm_create"
+	FieldTMUpdate Field = "tm_update"
+	FieldTMDelete Field = "tm_delete"
+)
+
 // Type defines
 type Type string
 

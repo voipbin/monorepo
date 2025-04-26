@@ -135,12 +135,13 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 	}
 
 	// get conversation
-	filters := map[string]string{
-		"deleted":   "false",
-		"type":      string(conversation.TypeLine),
-		"dialog_id": dialogID,
+	fields := map[conversation.Field]any{
+		conversation.FieldDeleted:  false,
+		conversation.FieldType:     conversation.TypeLine,
+		conversation.FieldDialogID: dialogID,
 	}
-	cvs, err := h.reqHandler.ConversationV1ConversationGets(ctx, "", 1, filters)
+
+	cvs, err := h.reqHandler.ConversationV1ConversationGets(ctx, "", 1, fields)
 	if err != nil {
 		return errors.Wrapf(err, "Could not get conversations")
 	} else if len(cvs) == 0 {

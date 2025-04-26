@@ -7,6 +7,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-conversation-manager/models/conversation"
@@ -17,25 +18,20 @@ func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversat
 	return h.db.ConversationGet(ctx, id)
 }
 
-// GetByTypeAndDialogID returns conversation
-func (h *conversationHandler) GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error) {
-	return h.db.ConversationGetByTypeAndDialogID(ctx, conversationType, dialogID)
-}
-
 // GetBySelfAndPeer returns conversation
 func (h *conversationHandler) GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
 	return h.db.ConversationGetBySelfAndPeer(ctx, self, peer)
 }
 
 // Gets returns list of conversations
-func (h *conversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*conversation.Conversation, error) {
+func (h *conversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, fields map[conversation.Field]any) ([]*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
-		"filters": filters,
+		"func":   "Gets",
+		"fields": fields,
 	})
 	log.Debugf("Getting a list of conversations.")
 
-	res, err := h.db.ConversationGets(ctx, pageSize, pageToken, filters)
+	res, err := h.db.ConversationGets(ctx, pageSize, pageToken, fields)
 	if err != nil {
 		log.Errorf("Could not get conversations. err: %v", err)
 		return nil, err
@@ -94,23 +90,21 @@ func (h *conversationHandler) Create(
 }
 
 // Update updates conversation and return a updated conversation.
-func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string) (*conversation.Conversation, error) {
+func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "Update",
 		"id":     id,
-		"name":   name,
-		"detail": detail,
+		"fields": fields,
 	})
+	log.Debugf("Updating conversation. conversation_id: %s", id)
 
-	if errSet := h.db.ConversationSet(ctx, id, name, detail); errSet != nil {
-		log.Errorf("Could not set conversation. err: %v", errSet)
-		return nil, errSet
+	if errUpdate := h.db.ConversationUpdate(ctx, id, fields); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "Could not update conversation. err: %v", errUpdate)
 	}
 
 	res, err := h.db.ConversationGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated conversation. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Could not get updated conversation. err: %v", err)
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conversation.EventTypeConversationUpdated, res)
 

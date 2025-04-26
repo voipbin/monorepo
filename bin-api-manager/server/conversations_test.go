@@ -334,8 +334,7 @@ func Test_conversationsIDPut(t *testing.T) {
 		responseConversation *cvconversation.WebhookMessage
 
 		expectConversationID uuid.UUID
-		expectName           string
-		expectDetail         string
+		expectFields         map[cvconversation.Field]any
 		expectRes            string
 	}
 
@@ -358,9 +357,11 @@ func Test_conversationsIDPut(t *testing.T) {
 			},
 
 			expectConversationID: uuid.FromStringOrNil("0e288b58-007d-11ee-b0ac-8be49d249ca9"),
-			expectName:           "test name",
-			expectDetail:         "test detail",
-			expectRes:            `{"id":"0e288b58-007d-11ee-b0ac-8be49d249ca9","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{}}`,
+			expectFields: map[cvconversation.Field]any{
+				cvconversation.FieldName:   "test name",
+				cvconversation.FieldDetail: "test detail",
+			},
+			expectRes: `{"id":"0e288b58-007d-11ee-b0ac-8be49d249ca9","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{}}`,
 		},
 	}
 
@@ -386,7 +387,7 @@ func Test_conversationsIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationUpdate(req.Context(), &tt.agent, tt.expectConversationID, tt.expectName, tt.expectDetail).Return(tt.responseConversation, nil)
+			mockSvc.EXPECT().ConversationUpdate(req.Context(), &tt.agent, tt.expectConversationID, tt.expectFields).Return(tt.responseConversation, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

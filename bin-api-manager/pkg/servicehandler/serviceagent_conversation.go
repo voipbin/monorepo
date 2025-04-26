@@ -36,9 +36,9 @@ func (h *serviceHandler) ServiceAgentConversationGets(ctx context.Context, a *am
 	}
 
 	// filters
-	filters := map[string]string{
-		"owner_id": a.ID.String(),
-		"deleted":  "false", // we don't need deleted items
+	filters := map[cvconversation.Field]any{
+		cvconversation.FieldDeleted: false,
+		cvconversation.FieldOwnerID: a.ID,
 	}
 
 	tmps, err := h.conversationGets(ctx, a, size, token, filters)
