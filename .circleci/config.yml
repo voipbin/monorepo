@@ -12,6 +12,7 @@ workflows:
           name: check-updated-files
           base-revision: main
           config-path: .circleci/config_work.yml
+          tag: "3.9"
           mapping: |
             bin-agent-manager/.*        run-bin-agent-manager true
             bin-ai-manager/.*           run-bin-ai-manager true
