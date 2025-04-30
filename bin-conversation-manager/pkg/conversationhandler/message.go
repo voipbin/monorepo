@@ -7,8 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
 	mmmessage "monorepo/bin-message-manager/models/message"
@@ -41,43 +39,43 @@ func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uu
 	return m, nil
 }
 
-func (h *conversationHandler) GetBySelfAndPeerOrCreate(
-	ctx context.Context,
-	customerID uuid.UUID,
-	self commonaddress.Address,
-	peer commonaddress.Address,
-) (*conversation.Conversation, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "GetBySelfAndPeerOrCreate",
-		"self": self,
-		"peer": peer,
-	})
+// func (h *conversationHandler) GetOrCreateBySelfAndPeer(
+// 	ctx context.Context,
+// 	customerID uuid.UUID,
+// 	self commonaddress.Address,
+// 	peer commonaddress.Address,
+// ) (*conversation.Conversation, error) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func": "GetOrCreateBySelfAndPeer",
+// 		"self": self,
+// 		"peer": peer,
+// 	})
 
-	res, err := h.GetBySelfAndPeer(ctx, self, peer)
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"self": self,
-			"peer": peer,
-		}).Debugf("Could not find conversation. Create a new conversation. err: %v", err)
+// 	res, err := h.GetBySelfAndPeer(ctx, self, peer)
+// 	if err != nil {
+// 		log.WithFields(logrus.Fields{
+// 			"self": self,
+// 			"peer": peer,
+// 		}).Debugf("Could not find conversation. Create a new conversation. err: %v", err)
 
-		res, err = h.Create(
-			ctx,
-			customerID,
-			"conversation with "+peer.TargetName,
-			"conversation with "+peer.TargetName,
-			conversation.TypeMessage,
-			"", // because it's sms conversation, there is no dialog id
-			self,
-			peer,
-		)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Could not create a new conversation")
-		}
-		log.WithField("conversation", res).Debugf("Created a new conversation. conversation_id: %s", res.ID)
-	}
+// 		res, err = h.Create(
+// 			ctx,
+// 			customerID,
+// 			"conversation with "+peer.TargetName,
+// 			"conversation with "+peer.TargetName,
+// 			conversation.TypeMessage,
+// 			"", // because it's sms conversation, there is no dialog id
+// 			self,
+// 			peer,
+// 		)
+// 		if err != nil {
+// 			return nil, errors.Wrapf(err, "Could not create a new conversation")
+// 		}
+// 		log.WithField("conversation", res).Debugf("Created a new conversation. conversation_id: %s", res.ID)
+// 	}
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
 // MessageSend sends the message
 func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmessage.Message) error {
@@ -91,7 +89,7 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		peer := *m.Source
 
 		// get conversation
-		cv, err := h.GetBySelfAndPeerOrCreate(ctx, m.CustomerID, self, peer)
+		cv, err := h.GetOrCreateBySelfAndPeer(ctx, m.CustomerID, self, peer)
 		if err != nil {
 			return errors.Wrapf(err, "Could not get conversation")
 		}
@@ -132,7 +130,7 @@ func (h *conversationHandler) MessageEventSent(ctx context.Context, m *mmmessage
 		peer := target.Destination
 
 		// get conversation
-		cv, err := h.GetBySelfAndPeerOrCreate(ctx, m.CustomerID, self, peer)
+		cv, err := h.GetOrCreateBySelfAndPeer(ctx, m.CustomerID, self, peer)
 		if err != nil {
 			return errors.Wrapf(err, "Could not get conversation")
 		}
