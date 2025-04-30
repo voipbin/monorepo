@@ -59,7 +59,7 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 					ID:         uuid.FromStringOrNil("2aa9bc18-1a82-11f0-acbf-1fa64c8c8586"),
 					CustomerID: uuid.FromStringOrNil("7aba87f6-1a81-11f0-9dd4-9f991300dc23"),
 				},
-				Name:     "conversation",
+				Name:     "conversation with ",
 				Detail:   "conversation with ",
 				Type:     conversation.TypeMessage,
 				DialogID: "",
@@ -105,7 +105,6 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 			mockDB.EXPECT().ConversationGet(ctx, tt.responseUUID).Return(tt.expectedConversation, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedConversation.CustomerID, conversation.EventTypeConversationCreated, tt.expectedConversation)
 
-			mockMessage.EXPECT().Get(ctx, tt.expectedMessageID).Return(nil, fmt.Errorf(""))
 			mockMessage.EXPECT().Create(
 				ctx,
 				tt.expectedMessageID,

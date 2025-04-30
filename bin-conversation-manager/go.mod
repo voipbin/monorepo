@@ -66,7 +66,7 @@ require (
 	github.com/smotes/purse v1.0.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.20.1
-	go.uber.org/mock v0.5.1
+	go.uber.org/mock v0.5.2
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268
@@ -98,7 +98,7 @@ require (
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
-	google.golang.org/genproto v0.0.0-20250425173222-7b384671a197 // indirect
+	google.golang.org/genproto v0.0.0-20250428153025-10db94c68c34 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
