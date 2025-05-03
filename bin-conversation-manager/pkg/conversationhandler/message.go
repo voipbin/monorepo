@@ -131,7 +131,7 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		log.WithField("message", m).Debugf("Create a message. message_id: %s", m.ID)
 
 		// check the number info
-		num, err := h.NumberGet(ctx, cv.Peer.Target)
+		num, err := h.NumberGet(ctx, cv.Self.Target)
 		if err != nil {
 			return errors.Wrapf(err, "Could not get number info. number: %s", cv.Peer.Target)
 		}
