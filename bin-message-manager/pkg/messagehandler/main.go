@@ -46,25 +46,6 @@ type messageHandler struct {
 	messageHandlerTelnyx      MessageHandlerTelnyx
 }
 
-// list of variables
-const (
-	variableMessageSourceName       = "voipbin.message.source.name"
-	variableMessageSourceDetail     = "voipbin.message.source.detail"
-	variableMessageSourceTarget     = "voipbin.message.source.target"
-	variableMessageSourceTargetName = "voipbin.message.source.target_name"
-	variableMessageSourceType       = "voipbin.message.source.type"
-
-	variableMessageTargetDestinationName       = "voipbin.message.target.destination.name"
-	variableMessageTargetDestinationDetail     = "voipbin.message.target.destination.detail"
-	variableMessageTargetDestinationTarget     = "voipbin.message.target.destination.target"
-	variableMessageTargetDestinationTargetName = "voipbin.message.target.destination.target_name"
-	variableMessageTargetDestinationType       = "voipbin.message.target.destination.type"
-
-	variableMessageID        = "voipbin.message.id"
-	variableMessageText      = "voipbin.message.text"
-	variableMessageDirection = "voipbin.message.direction"
-)
-
 // NewMessageHandler returns a new MessageHandler
 func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, requestExternal requestexternal.RequestExternal) MessageHandler {
 

@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
-
 	nmnumber "monorepo/bin-number-manager/models/number"
 
 	"github.com/gofrs/uuid"
@@ -20,12 +18,6 @@ import (
 
 // Hook handles hook message
 func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "Hook",
-		"uri":  uri,
-		"data": data,
-	})
-
 	var m *message.Message
 	var num *nmnumber.Number
 	var err error
@@ -44,16 +36,6 @@ func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte) erro
 		// nothing to do.
 		return nil
 	}
-
-	// execute messageflow
-	af, err := h.executeMessageFlow(ctx, m, num)
-	if err != nil {
-		return errors.Wrapf(err, "Could not execute the messageflow. message_id: %s, number_id: %s", m.ID, num.ID)
-	} else if af == nil {
-		// no activeflow created
-		return nil
-	}
-	log.WithField("activeflow", af).Debugf("Executed messageflow. activeflow_id: %s", af.ID)
 
 	return nil
 }
@@ -111,46 +93,4 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 
 	log.WithField("message", res).Debugf("Created message. message_id: %s", res.ID)
 	return res, &num, nil
-}
-
-// executeMessageFlow executes the given number's messageflow with message.
-func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Message, num *nmnumber.Number) (*fmactiveflow.Activeflow, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "executeMessageFlow",
-		"message": m,
-		"number":  num,
-	})
-
-	if num.MessageFlowID == uuid.Nil {
-		// nothing to do. has no message flow id
-		return nil, nil
-	}
-
-	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(
-		ctx,
-		uuid.Nil,
-		m.CustomerID,
-		num.MessageFlowID,
-		fmactiveflow.ReferenceTypeMessage,
-		m.ID,
-		uuid.Nil,
-	)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Could not create an activeflow. message_id: %s, number_id: %s", m.ID, num.ID)
-	}
-	log.WithField("activeflow", af).Debugf("Created activeflow. activeflow_id: %s", af.ID)
-
-	// set variables
-	if errVariable := h.setVariables(ctx, af.ID, m); errVariable != nil {
-		return nil, errors.Wrapf(errVariable, "Could not set the variables. activeflow_id: %s", af.ID)
-	}
-
-	// execute the activeflow
-	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
-		return nil, errors.Wrapf(errExecute, "Could not execute the activeflow. activeflow_id: %s", af.ID)
-	}
-	log.Debugf("Executed activeflow. activeflow_id: %s", af.ID)
-
-	return af, nil
 }

@@ -2,16 +2,12 @@ package messagehandler
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
-
-	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	nmnumber "monorepo/bin-number-manager/models/number"
 
@@ -19,7 +15,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-message-manager/models/message"
-	"monorepo/bin-message-manager/models/target"
 	"monorepo/bin-message-manager/pkg/dbhandler"
 	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 )
@@ -144,91 +139,6 @@ func Test_Hook(t *testing.T) {
 
 			if errHook := h.Hook(ctx, tt.uri, tt.data); errHook != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errHook)
-			}
-		})
-	}
-}
-
-func Test_executeMessageFlow(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		message *message.Message
-		num     *nmnumber.Number
-
-		expectRes *fmactiveflow.Activeflow
-	}{
-		{
-			"normal",
-
-			&message.Message{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("1491e9e4-a8b8-11ec-bbe9-4b9389eaa6f7"),
-					CustomerID: uuid.FromStringOrNil("bcfd19f8-049c-11f0-a50b-875a0cb13468"),
-				},
-				Source: &commonaddress.Address{},
-				Targets: []target.Target{
-					{
-						Destination: commonaddress.Address{},
-					},
-				},
-			},
-			&nmnumber.Number{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("1f2db1da-a8b8-11ec-82b1-2bb474596df1"),
-				},
-				MessageFlowID: uuid.FromStringOrNil("275a692a-a8b8-11ec-9de7-d39f5b03faec"),
-			},
-
-			&fmactiveflow.Activeflow{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("64447c9a-a8b8-11ec-a544-0b44fb74dc28"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-			h := &messageHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				reqHandler:    mockReq,
-
-				messageHandlerMessagebird: mockMessagebird,
-			}
-
-			ctx := context.Background()
-
-			mockReq.EXPECT().FlowV1ActiveflowCreate(
-				ctx,
-				uuid.Nil,
-				tt.message.CustomerID,
-				tt.num.MessageFlowID,
-				fmactiveflow.ReferenceTypeMessage,
-				tt.message.ID,
-				uuid.Nil,
-			).Return(tt.expectRes, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectRes.ID, gomock.Any()).Return(nil)
-			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.expectRes.ID).Return(nil)
-
-			res, err := h.executeMessageFlow(ctx, tt.message, tt.num)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

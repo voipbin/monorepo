@@ -19,8 +19,41 @@ func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversat
 }
 
 // GetBySelfAndPeer returns conversation
-func (h *conversationHandler) GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
-	return h.db.ConversationGetBySelfAndPeer(ctx, self, peer)
+func (h *conversationHandler) GetOrCreateBySelfAndPeer(
+	ctx context.Context,
+	customerID uuid.UUID,
+	conversationType conversation.Type,
+	dialogID string,
+	self commonaddress.Address,
+	peer commonaddress.Address,
+) (*conversation.Conversation, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "GetOrCreateBySelfAndPeer",
+		"self": self,
+		"peer": peer,
+	})
+
+	res, err := h.db.ConversationGetBySelfAndPeer(ctx, self, peer)
+	if err != nil {
+		log.Debugf("Could not find conversation. Create a new conversation. err: %v", err)
+
+		res, err = h.Create(
+			ctx,
+			customerID,
+			"conversation with "+peer.TargetName,
+			"conversation with "+peer.TargetName,
+			conversation.TypeMessage,
+			dialogID, // because it's sms conversation, there is no dialog id
+			self,
+			peer,
+		)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Could not create a new conversation")
+		}
+		log.WithField("conversation", res).Debugf("Created a new conversation. conversation_id: %s", res.ID)
+	}
+
+	return res, nil
 }
 
 // Gets returns list of conversations

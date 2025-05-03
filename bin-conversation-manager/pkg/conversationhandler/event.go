@@ -5,15 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-conversation-manager/models/conversation"
-	"monorepo/bin-conversation-manager/models/media"
-	"monorepo/bin-conversation-manager/models/message"
 )
 
 // Event returns list of messages of the given conversation
@@ -52,78 +49,20 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	var self commonaddress.Address
-	var peer commonaddress.Address
-	var direction message.Direction
-
-	for _, target := range mm.Targets {
-		if mm.Direction == mmmessage.DirectionInbound {
-			self = target.Destination
-			peer = *mm.Source
-			direction = message.DirectionIncoming
-		} else {
-			self = *mm.Source
-			peer = target.Destination
-			direction = message.DirectionOutgoing
+	switch mm.Direction {
+	case mmmessage.DirectionInbound:
+		if errEvent := h.MessageEventReceived(ctx, &mm); errEvent != nil {
+			return errors.Wrapf(errEvent, "Could not handle the event correctly")
 		}
+		return nil
 
-		// get conversation
-		cv, err := h.GetBySelfAndPeer(ctx, self, peer)
-		if err != nil {
-			log.WithFields(logrus.Fields{
-				"self": self,
-				"peer": peer,
-			}).Debugf("Could not find conversation. Create a new conversation. err: %v", err)
-
-			// create a new conversation
-			cv, err = h.Create(
-				ctx,
-				mm.CustomerID,
-				"conversation",
-				"conversation with "+peer.TargetName,
-				conversation.TypeMessage,
-				"", // because it's sms conversation, there is no dialog id
-				self,
-				peer,
-			)
-			if err != nil {
-				return errors.Wrapf(err, "Could not create a new conversation")
-			}
-			log.WithField("conversation", cv).Debugf("Created a new conversation. conversation_id: %s", cv.ID)
+	case mmmessage.DirectionOutbound:
+		if errEvent := h.MessageEventSent(ctx, &mm); errEvent != nil {
+			return errors.Wrapf(errEvent, "Could not handle the event correctly")
 		}
-		log.WithField("conversation", cv).Debugf("Found conversation. conversation_id: %s", cv.ID)
+		return nil
 
-		tmp, err := h.messageHandler.Get(ctx, mm.ID)
-		if err != nil {
-			log.Debugf("Could not find the message. Create a new message.")
-
-			m, err := h.messageHandler.Create(
-				ctx,
-				mm.ID,
-				cv.CustomerID,
-				cv.ID,
-				direction,
-				message.StatusDone,
-				message.ReferenceTypeMessage,
-				mm.ID,
-				"",
-				mm.Text,
-				[]media.Media{},
-			)
-			if err != nil {
-				return errors.Wrapf(err, "Could not create a message")
-			}
-			log.WithField("message", m).Debugf("Create a message. message_id: %s", m.ID)
-		} else {
-			log.WithField("message", tmp).Debugf("Found message. Updating the message status. message_id: %s", tmp.ID)
-			updated, err := h.messageHandler.UpdateStatus(ctx, tmp.ID, message.StatusDone)
-			if err != nil {
-				return errors.Wrapf(err, "Could not update the message")
-			}
-
-			log.WithField("message", updated).Debugf("Updated message. message_id: %s", updated.ID)
-		}
+	default:
+		return errors.Errorf("could not find the direction. direction: %s", mm.Direction)
 	}
-
-	return nil
 }
