@@ -102,7 +102,7 @@ func run(dbHandler dbhandler.DBHandler) {
 	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 
 	messageHandler := messagehandler.NewMessageHandler(dbHandler, notifyHandler, accountHandler, lineHandler, smsHandler)
-	conversationHandler := conversationhandler.NewConversationHandler(dbHandler, notifyHandler, accountHandler, messageHandler, lineHandler, smsHandler)
+	conversationHandler := conversationhandler.NewConversationHandler(dbHandler, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler)
 
 	// run listen
 	if errListen := runListen(sockHandler, accountHandler, conversationHandler, messageHandler); errListen != nil {

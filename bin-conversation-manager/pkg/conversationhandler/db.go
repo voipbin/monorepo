@@ -22,6 +22,8 @@ func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversat
 func (h *conversationHandler) GetOrCreateBySelfAndPeer(
 	ctx context.Context,
 	customerID uuid.UUID,
+	conversationType conversation.Type,
+	dialogID string,
 	self commonaddress.Address,
 	peer commonaddress.Address,
 ) (*conversation.Conversation, error) {
@@ -41,7 +43,7 @@ func (h *conversationHandler) GetOrCreateBySelfAndPeer(
 			"conversation with "+peer.TargetName,
 			"conversation with "+peer.TargetName,
 			conversation.TypeMessage,
-			"", // because it's sms conversation, there is no dialog id
+			dialogID, // because it's sms conversation, there is no dialog id
 			self,
 			peer,
 		)

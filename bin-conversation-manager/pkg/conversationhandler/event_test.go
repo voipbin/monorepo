@@ -8,7 +8,9 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	nmnumber "monorepo/bin-number-manager/models/number"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -28,7 +30,8 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 
 		data []byte
 
-		responseUUID uuid.UUID
+		responseUUID    uuid.UUID
+		responseNumbers []nmnumber.Number
 
 		expectedMessageID          uuid.UUID
 		expectedSelf               commonaddress.Address
@@ -44,6 +47,11 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 			data: []byte(`{"id":"1fe68e20-f12f-11ec-84fe-03665484eeb6","customer_id":"7aba87f6-1a81-11f0-9dd4-9f991300dc23","source":{"type":"tel","target":"+886912345678"},"targets":[{"destination":{"type":"tel","target":"+886987654321"}}],"text":"hello, this is test message.","direction":"inbound"}`),
 
 			responseUUID: uuid.FromStringOrNil("2aa9bc18-1a82-11f0-acbf-1fa64c8c8586"),
+			responseNumbers: []nmnumber.Number{
+				{
+					MessageFlowID: uuid.Nil,
+				},
+			},
 
 			expectedMessageID: uuid.FromStringOrNil("1fe68e20-f12f-11ec-84fe-03665484eeb6"),
 			expectedSelf: commonaddress.Address{
@@ -83,12 +91,14 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockSMS := smshandler.NewMockSMSHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			h := &conversationHandler{
+				reqHandler:    mockReq,
 				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
@@ -118,6 +128,7 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 				tt.expectedMessageText,
 				[]media.Media{},
 			).Return(&message.Message{}, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseNumbers, nil)
 
 			if err := h.Event(ctx, conversation.TypeMessage, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

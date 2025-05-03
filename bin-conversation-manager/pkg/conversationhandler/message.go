@@ -7,9 +7,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	mmmessage "monorepo/bin-message-manager/models/message"
+	nmnumber "monorepo/bin-number-manager/models/number"
 )
 
 // MessageSend sends the message
@@ -39,43 +42,41 @@ func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uu
 	return m, nil
 }
 
-// func (h *conversationHandler) GetOrCreateBySelfAndPeer(
-// 	ctx context.Context,
-// 	customerID uuid.UUID,
-// 	self commonaddress.Address,
-// 	peer commonaddress.Address,
-// ) (*conversation.Conversation, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func": "GetOrCreateBySelfAndPeer",
-// 		"self": self,
-// 		"peer": peer,
-// 	})
+// MessageSend sends the message
+func (h *conversationHandler) MessageExecuteActiveflow(ctx context.Context, cv *conversation.Conversation, m *message.Message, num *nmnumber.Number) (*fmactiveflow.Activeflow, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "MessageExecuteActiveflow",
+		"conversation": cv,
+		"message":      m,
+	})
 
-// 	res, err := h.GetBySelfAndPeer(ctx, self, peer)
-// 	if err != nil {
-// 		log.WithFields(logrus.Fields{
-// 			"self": self,
-// 			"peer": peer,
-// 		}).Debugf("Could not find conversation. Create a new conversation. err: %v", err)
+	// create activeflow
+	res, err := h.reqHandler.FlowV1ActiveflowCreate(
+		ctx,
+		uuid.Nil,
+		m.CustomerID,
+		num.MessageFlowID,
+		fmactiveflow.ReferenceTypeMessage,
+		m.ID,
+		uuid.Nil,
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not create an activeflow. message_id: %s, number_id: %s", m.ID, num.ID)
+	}
+	log.WithField("activeflow", res).Debugf("Created activeflow. activeflow_id: %s", res.ID)
 
-// 		res, err = h.Create(
-// 			ctx,
-// 			customerID,
-// 			"conversation with "+peer.TargetName,
-// 			"conversation with "+peer.TargetName,
-// 			conversation.TypeMessage,
-// 			"", // because it's sms conversation, there is no dialog id
-// 			self,
-// 			peer,
-// 		)
-// 		if err != nil {
-// 			return nil, errors.Wrapf(err, "Could not create a new conversation")
-// 		}
-// 		log.WithField("conversation", res).Debugf("Created a new conversation. conversation_id: %s", res.ID)
-// 	}
+	// set variables
+	if errVariable := h.setVariables(ctx, res.ID, cv, m); errVariable != nil {
+		return nil, errors.Wrapf(errVariable, "Could not set the variables. activeflow_id: %s", res.ID)
+	}
 
-// 	return res, nil
-// }
+	// execute the activeflow
+	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, res.ID); errExecute != nil {
+		return nil, errors.Wrapf(errExecute, "Could not execute the activeflow. activeflow_id: %s", res.ID)
+	}
+
+	return res, nil
+}
 
 // MessageSend sends the message
 func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmessage.Message) error {
@@ -84,12 +85,27 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		"message": m,
 	})
 
+	if len(m.Targets) > 1 {
+		// something's wrong. but just log it
+		log.Warnf("Received message with multiple targets. targets: %v", m.Targets)
+	}
+
+	// this is received message event handler
+	// it's hard to imagine that the message is sent to multiple targets
+	// but we need to handle it
 	for _, target := range m.Targets {
 		self := target.Destination
 		peer := *m.Source
 
-		// get conversation
-		cv, err := h.GetOrCreateBySelfAndPeer(ctx, m.CustomerID, self, peer)
+		// get or create a conversation
+		cv, err := h.GetOrCreateBySelfAndPeer(
+			ctx,
+			m.CustomerID,
+			conversation.TypeMessage,
+			"", // because it's sms conversation, there is no dialog id
+			self,
+			peer,
+		)
 		if err != nil {
 			return errors.Wrapf(err, "Could not get conversation")
 		}
@@ -113,6 +129,25 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 			return errors.Wrapf(err, "Could not create a message")
 		}
 		log.WithField("message", m).Debugf("Create a message. message_id: %s", m.ID)
+
+		// check the number info
+		num, err := h.NumberGet(ctx, cv.Peer.Target)
+		if err != nil {
+			return errors.Wrapf(err, "Could not get number info. number: %s", cv.Peer.Target)
+		}
+		log.WithField("number", num).Infof("Found number info. number_id: %s", num.ID)
+
+		if num.MessageFlowID == uuid.Nil {
+			// nothing to do. has no message flow id
+			return nil
+		}
+		log.Debugf("The number has message flow id. number_id: %s, message_flow_id: %s", num.ID, num.MessageFlowID)
+
+		af, err := h.MessageExecuteActiveflow(ctx, cv, m, num)
+		if err != nil {
+			return errors.Wrapf(err, "Could not execute the activeflow. message_id: %s, number_id: %s", m.ID, num.ID)
+		}
+		log.WithField("activeflow", af).Debugf("Executed activeflow. activeflow_id: %s", af.ID)
 	}
 
 	return nil
@@ -129,8 +164,15 @@ func (h *conversationHandler) MessageEventSent(ctx context.Context, m *mmmessage
 		self := *m.Source
 		peer := target.Destination
 
-		// get conversation
-		cv, err := h.GetOrCreateBySelfAndPeer(ctx, m.CustomerID, self, peer)
+		// get or create a conversation
+		cv, err := h.GetOrCreateBySelfAndPeer(
+			ctx,
+			m.CustomerID,
+			conversation.TypeMessage,
+			"", // because it's sms conversation, there is no dialog id
+			self,
+			peer,
+		)
 		if err != nil {
 			return errors.Wrapf(err, "Could not get conversation")
 		}

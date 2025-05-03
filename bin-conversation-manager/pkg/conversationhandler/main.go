@@ -7,6 +7,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -49,6 +50,7 @@ type conversationHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+	reqHandler    requesthandler.RequestHandler
 
 	accountHandler accounthandler.AccountHandler
 	messageHandler messagehandler.MessageHandler
@@ -60,15 +62,18 @@ type conversationHandler struct {
 func NewConversationHandler(
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+	reqHandler requesthandler.RequestHandler,
 	accountHandler accounthandler.AccountHandler,
 	messageHandler messagehandler.MessageHandler,
 	lineHandler linehandler.LineHandler,
 	smsHandler smshandler.SMSHandler,
 ) ConversationHandler {
 	return &conversationHandler{
-		utilHandler:    utilhandler.NewUtilHandler(),
-		db:             db,
-		notifyHandler:  notifyHandler,
+		utilHandler:   utilhandler.NewUtilHandler(),
+		db:            db,
+		notifyHandler: notifyHandler,
+		reqHandler:    reqHandler,
+
 		accountHandler: accountHandler,
 		messageHandler: messageHandler,
 
@@ -76,3 +81,26 @@ func NewConversationHandler(
 		smsHandler:  smsHandler,
 	}
 }
+
+// list of variables
+const (
+	variableConversationSelfName       = "voipbin.conversation.self.name"
+	variableConversationSelfDetail     = "voipbin.conversation.self.detail"
+	variableConversationSelfTarget     = "voipbin.conversation.self.target"
+	variableConversationSelfTargetName = "voipbin.conversation.self.target_name"
+	variableConversationSelfType       = "voipbin.conversation.self.type"
+
+	variableConversationPeerName       = "voipbin.conversation.peer.name"
+	variableConversationPeerDetail     = "voipbin.conversation.peer.detail"
+	variableConversationPeerTarget     = "voipbin.conversation.peer.target"
+	variableConversationPeerTargetName = "voipbin.conversation.peer.target_name"
+	variableConversationPeerType       = "voipbin.conversation.peer.type"
+
+	variableConversationID      = "voipbin.conversation.id"
+	variableConversationOwnerID = "voipbin.conversation.owner_id"
+
+	// conversation_message
+	variableConversationMessageID        = "voipbin.conversation_message.id"
+	variableConversationMessageText      = "voipbin.conversation_message.text"
+	variableConversationMessageDirection = "voipbin.conversation_message.direction"
+)
