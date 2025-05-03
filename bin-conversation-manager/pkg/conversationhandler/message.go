@@ -42,7 +42,7 @@ func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uu
 	return m, nil
 }
 
-// MessageSend sends the message
+// MessageExecuteActiveflow creates and executes an activeflow for the given conversation.
 func (h *conversationHandler) MessageExecuteActiveflow(ctx context.Context, cv *conversation.Conversation, m *message.Message, num *nmnumber.Number) (*fmactiveflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "MessageExecuteActiveflow",
@@ -78,7 +78,7 @@ func (h *conversationHandler) MessageExecuteActiveflow(ctx context.Context, cv *
 	return res, nil
 }
 
-// MessageSend sends the message
+// MessageEventReceived is the handler for the received message event
 func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmessage.Message) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "MessageEventReceived",
