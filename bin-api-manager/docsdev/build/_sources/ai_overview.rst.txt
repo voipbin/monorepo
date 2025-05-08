@@ -35,14 +35,14 @@ VoIPBin's AI supports context saving. During a conversation, the AI remembers pr
 
 Multilingual support
 --------------------
-VoIPBin's AI now supports multiple languages. See details at here: :ref:`here <transcribe-overview-supported_languages>`.
+VoIPBin's AI supports multiple languages. See supported languages: :ref:`supported languages <transcribe-overview-supported_languages>`.
 
 External AI Agent Integration
 -----------------------------
 For users who prefer to use external AI services, VoIPBin offers media stream access via MCP (Media Control Protocol). This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
 
 MCP Server
-+++++++++++++++++++++
+----------
 A recommended open-source implementation is available here:
 
 * https://github.com/nrjchnd/voipbin-mcp
