@@ -156,13 +156,13 @@
                         <main role="main" id="main">
     <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>VoIPBin’s  AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBin’s flow, the AI utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.</p>
+<p>VoIPBin’s AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBin’s flow, the AI utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.</p>
 </section>
 <section id="how-it-works">
 <h1>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h1>
 <section id="action-component">
 <h2>Action component<a class="headerlink" href="#action-component" title="Link to this heading"></a></h2>
-<p>The AI is integrated as one of the configurable components within a VoIPBin flow. When a call reaches a AI action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBin executes the defined actions accordingly.</p>
+<p>The AI is integrated as one of the configurable components within a VoIPBin flow. When a call reaches an AI action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBin executes the defined actions accordingly.</p>
 <img alt="AI component in action builder" class="align-center" src="_images/ai_overview_overview.png" />
 </section>
 <section id="tts-stt-ai-engine">
@@ -174,28 +174,31 @@
 <h2>Voice Detection and Play Interruption:<a class="headerlink" href="#voice-detection-and-play-interruption" title="Link to this heading"></a></h2>
 <p>In addition to basic TTS and STT functionalities, VoIPBin incorporates voice detection to create a more natural conversational flow. While the AI is speaking (i.e., playing TTS media), if the system detects the caller’s voice, it immediately stops the TTS playback and routes the caller’s speech (via STT) to the AI engine. This play interruption feature ensures that if the user starts talking, their input is prioritized, enabling a dynamic interaction that more closely resembles a real conversation.</p>
 </section>
+<section id="context-retention">
+<h2>Context Retention<a class="headerlink" href="#context-retention" title="Link to this heading"></a></h2>
+<p>VoIPBin’s AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.</p>
+</section>
+<section id="multilingual-support">
+<h2>Multilingual support<a class="headerlink" href="#multilingual-support" title="Link to this heading"></a></h2>
+<p>VoIPBin’s AI now supports multiple languages. See details at here: <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">here</span></a>.</p>
+</section>
 <section id="external-ai-agent-integration">
 <h2>External AI Agent Integration<a class="headerlink" href="#external-ai-agent-integration" title="Link to this heading"></a></h2>
-<p>For users who prefer to use external AI services, such as VAPI or other AI agent service providers, VoIPBin offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.</p>
-</section>
-<section id="multiple-ai-actions-in-a-flow">
-<h2>Multiple AI Actions in a Flow<a class="headerlink" href="#multiple-ai-actions-in-a-flow" title="Link to this heading"></a></h2>
-<p>VoIPBin allows multiple AI actions within a single flow. Developers can configure different AI interactions at various points, enabling flexible and context-aware automation.</p>
-</section>
-<section id="handling-responses">
-<h2>Handling Responses<a class="headerlink" href="#handling-responses" title="Link to this heading"></a></h2>
+<p>For users who prefer to use external AI services, VoIPBin offers media stream access via MCP (Media Control Protocol). This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.</p>
+<section id="mcp-server">
+<h3>MCP Server<a class="headerlink" href="#mcp-server" title="Link to this heading"></a></h3>
+<p>A recommended open-source implementation is available here:</p>
 <ul class="simple">
-<li><p>Text String Response: The AI’s response is played as speech using TTS.</p></li>
-<li><p>JSON Response: The AI returns a structured JSON array of action objects, which VoIPBin executes accordingly.</p></li>
-<li><p>Error Handling: If the AI generates an invalid JSON response, VoIPBin treats it as a normal text response and plays it via TTS.</p></li>
+<li><p><a class="reference external" href="https://github.com/nrjchnd/voipbin-mcp">https://github.com/nrjchnd/voipbin-mcp</a></p></li>
 </ul>
+</section>
 </section>
 </section>
 <section id="using-the-ai">
 <h1>Using the AI<a class="headerlink" href="#using-the-ai" title="Link to this heading"></a></h1>
 <section id="initial-prompt">
 <h2>Initial Prompt<a class="headerlink" href="#initial-prompt" title="Link to this heading"></a></h2>
-<p>The initial prompt serves as the foundation for the AI’s behavior. A well-crafted prompt ensures accurate and relevant responses. There is no limit to prompt length, but this should remain confidential for future considerations.</p>
+<p>The initial prompt serves as the foundation for the AI’s behavior. A well-crafted prompt ensures accurate and relevant responses. There is no enforced limit to prompt length, but we recommend keeping this confidential to ensure consistent performance and security.</p>
 <section id="example-prompt">
 <h3>Example Prompt:<a class="headerlink" href="#example-prompt" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pretend</span> <span class="n">you</span> <span class="n">are</span> <span class="n">an</span> <span class="n">expert</span> <span class="n">customer</span> <span class="n">service</span> <span class="n">agent</span><span class="o">.</span>
@@ -227,6 +230,18 @@
 </div>
 </section>
 </section>
+<section id="handling-responses">
+<h2>Handling Responses<a class="headerlink" href="#handling-responses" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Text String Response: The AI’s response is played as speech using TTS.</p></li>
+<li><p>JSON Response: The AI returns a structured JSON array of action objects, which VoIPBin executes accordingly.</p></li>
+<li><p>Error Handling: If the AI generates an invalid JSON response, VoIPBin treats it as a normal text response and plays it via TTS.</p></li>
+</ul>
+</section>
+<section id="multiple-ai-actions-in-a-flow">
+<h2>Multiple AI Actions in a Flow<a class="headerlink" href="#multiple-ai-actions-in-a-flow" title="Link to this heading"></a></h2>
+<p>VoIPBin allows multiple AI actions within a single flow. Developers can configure different AI interactions at various points, enabling flexible and context-aware automation.</p>
+</section>
 <section id="action-object-structure">
 <h2>Action Object Structure<a class="headerlink" href="#action-object-structure" title="Link to this heading"></a></h2>
 <p>See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p>
@@ -241,16 +256,7 @@
 </section>
 <section id="logging-debugging">
 <h2>Logging &amp; Debugging<a class="headerlink" href="#logging-debugging" title="Link to this heading"></a></h2>
-<p>Developers can debug AI interactions through VoIPBin’s transcription logs, which capture AI responses and interactions.</p>
-</section>
-<section id="current-limitations-future-enhancements">
-<h2>Current Limitations &amp; Future Enhancements<a class="headerlink" href="#current-limitations-future-enhancements" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>TTS Customization: Currently, voice, language, and speed customization are not available but will be added in future updates.</p></li>
-<li><p>Multilingual Support: The AI currently supports only English, but additional language support is planned.</p></li>
-<li><p>Context Retention: Each AI request is processed independently, meaning there is no built-in conversation memory.</p></li>
-</ul>
-<p>VoIPBin’s AI feature offers a flexible and intelligent way to automate voice interactions within flows. By leveraging AI-powered responses and structured action execution, developers can enhance call experiences with minimal effort. As VoIPBin continues to evolve, future updates will introduce greater customization options and multilingual capabilities.</p>
+<p>Developers can debug AI interactions using VoIPBin’s transcription logs, which include STT output and AI responses.</p>
 </section>
 </section>
 <section id="ai-summary">
@@ -328,9 +334,12 @@
 <li><a class="reference internal" href="#action-component">Action component</a></li>
 <li><a class="reference internal" href="#tts-stt-ai-engine">TTS/STT + AI Engine</a></li>
 <li><a class="reference internal" href="#voice-detection-and-play-interruption">Voice Detection and Play Interruption:</a></li>
-<li><a class="reference internal" href="#external-ai-agent-integration">External AI Agent Integration</a></li>
-<li><a class="reference internal" href="#multiple-ai-actions-in-a-flow">Multiple AI Actions in a Flow</a></li>
-<li><a class="reference internal" href="#handling-responses">Handling Responses</a></li>
+<li><a class="reference internal" href="#context-retention">Context Retention</a></li>
+<li><a class="reference internal" href="#multilingual-support">Multilingual support</a></li>
+<li><a class="reference internal" href="#external-ai-agent-integration">External AI Agent Integration</a><ul>
+<li><a class="reference internal" href="#mcp-server">MCP Server</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#using-the-ai">Using the AI</a><ul>
@@ -338,13 +347,14 @@
 <li><a class="reference internal" href="#example-prompt">Example Prompt:</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#handling-responses">Handling Responses</a></li>
+<li><a class="reference internal" href="#multiple-ai-actions-in-a-flow">Multiple AI Actions in a Flow</a></li>
 <li><a class="reference internal" href="#action-object-structure">Action Object Structure</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#technical-considerations">Technical Considerations</a><ul>
 <li><a class="reference internal" href="#escalation-to-live-agents">Escalation to Live Agents</a></li>
 <li><a class="reference internal" href="#logging-debugging">Logging &amp; Debugging</a></li>
-<li><a class="reference internal" href="#current-limitations-future-enhancements">Current Limitations &amp; Future Enhancements</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ai-summary">AI Summary</a><ul>
