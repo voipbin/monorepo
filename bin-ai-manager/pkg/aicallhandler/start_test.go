@@ -21,16 +21,18 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_startReferenceTypeCall(t *testing.T) {
+func Test_startReferenceTypeCall_new(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai           *ai.AI
+		aiID         uuid.UUID
 		activeflowID uuid.UUID
 		referenceID  uuid.UUID
 		gender       aicall.Gender
 		language     string
+		resume       bool
 
+		responseAI         *ai.AI
 		responseConfbridge *cmconfbridge.Confbridge
 		responseUUIDAIcall uuid.UUID
 		responseAIcall     *aicall.AIcall
@@ -42,8 +44,15 @@ func Test_startReferenceTypeCall(t *testing.T) {
 		expectRes            *aicall.AIcall
 	}{
 		{
-			name: "normal",
-			ai: &ai.AI{
+			name:         "normal",
+			aiID:         uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+			activeflowID: uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+			referenceID:  uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+			gender:       aicall.GenderFemale,
+			language:     "en-US",
+			resume:       false,
+
+			responseAI: &ai.AI{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
@@ -51,11 +60,6 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				EngineType: ai.EngineTypeNone,
 				InitPrompt: "hello, this is init prompt message.",
 			},
-			activeflowID: uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
-			referenceID:  uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
-			gender:       aicall.GenderFemale,
-			language:     "en-US",
-
 			responseConfbridge: &cmconfbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
@@ -126,9 +130,10 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				db:            mockDB,
 				aiHandler:     mockAI,
 			}
-
 			ctx := context.Background()
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.ai.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
+
+			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.responseAI.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
 
 			// create
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
@@ -136,10 +141,10 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, 30000).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt, 30000).Return(tt.responseMessage, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.responseAIcall.ReferenceID, tt.responseMessage.Content, string(tt.responseAIcall.Gender), tt.responseAIcall.Language, 10000).Return(nil)
 
-			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
+			res, err := h.startReferenceTypeCall(ctx, tt.aiID, tt.activeflowID, tt.referenceID, tt.gender, tt.language, tt.resume)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -155,10 +160,11 @@ func Test_startReferenceTypeNone(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai       *ai.AI
+		aiID     uuid.UUID
 		gender   aicall.Gender
 		language string
 
+		responseAI         *ai.AI
 		responseUUIDAIcall uuid.UUID
 		responseAIcall     *aicall.AIcall
 		responseMessage    *message.Message
@@ -168,7 +174,12 @@ func Test_startReferenceTypeNone(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			ai: &ai.AI{
+
+			aiID:     uuid.FromStringOrNil("1d758ff0-f06f-11ef-bcb1-1ff1f3691915"),
+			gender:   aicall.GenderFemale,
+			language: "en-US",
+
+			responseAI: &ai.AI{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1d758ff0-f06f-11ef-bcb1-1ff1f3691915"),
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
@@ -176,9 +187,6 @@ func Test_startReferenceTypeNone(t *testing.T) {
 				EngineType: ai.EngineTypeNone,
 				InitPrompt: "hello, this is init prompt message.",
 			},
-			gender:   aicall.GenderFemale,
-			language: "en-US",
-
 			responseUUIDAIcall: uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
 			responseAIcall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
@@ -228,8 +236,9 @@ func Test_startReferenceTypeNone(t *testing.T) {
 				db:            mockDB,
 				aiHandler:     mockAI,
 			}
-
 			ctx := context.Background()
+
+			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
 
 			// create
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
@@ -237,13 +246,13 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, 30000).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt, 30000).Return(tt.responseMessage, nil)
 
 			mockDB.EXPECT().AIcallUpdateStatusProgressing(ctx, tt.responseAIcall.ID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
-			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.gender, tt.language)
+			res, err := h.startReferenceTypeNone(ctx, tt.aiID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

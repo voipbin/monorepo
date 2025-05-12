@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -27,6 +28,7 @@ type messageHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
+	reqHandler    requesthandler.RequestHandler
 
 	aicallHandler aicallhandler.AIcallHandler
 
@@ -66,20 +68,17 @@ func init() {
 }
 
 func NewMessageHandler(
+	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
 	aicallHandler aicallhandler.AIcallHandler,
 
 	engineOpenaiHandler engine_openai_handler.EngineOpenaiHandler,
 	engineDialogflowHandler engine_dialogflow_handler.EngineDialogflowHandler,
-
-	// engineKeyChatgpt string,
 ) MessageHandler {
 
-	// engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(engineKeyChatgpt)
-	// engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
-
 	return &messageHandler{
+		reqHandler:    reqHandler,
 		utilHandler:   utilhandler.NewUtilHandler(),
 		notifyHandler: notifyHandler,
 		db:            db,

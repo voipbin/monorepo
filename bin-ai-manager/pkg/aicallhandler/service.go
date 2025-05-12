@@ -26,21 +26,59 @@ func (h *aicallHandler) ServiceStart(
 	language string,
 	resume bool,
 ) (*commonservice.Service, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "ServiceStart",
-		"ai_id":          aiID,
-		"activeflow_id":  activeflowID,
-		"reference_type": referenceType,
-		"reference_id":   referenceID,
-		"gender":         gender,
-		"language":       language,
-	})
-
 	if referenceType == aicall.ReferenceTypeNone {
 		return nil, errors.New("unsupported reference type")
 	}
 
-	cc, err := h.Start(ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resume)
+	switch referenceType {
+	case aicall.ReferenceTypeCall:
+		return h.serviceStartReferenceTypeCall(
+			ctx,
+			aiID,
+			activeflowID,
+			referenceID,
+			gender,
+			language,
+			resume,
+		)
+
+	case aicall.ReferenceTypeConversation:
+		return h.serviceStartReferenceTypeConversation(
+			ctx,
+			aiID,
+			activeflowID,
+			referenceID,
+			gender,
+			language,
+			resume,
+		)
+
+	default:
+		return nil, errors.New("unsupported reference type")
+	}
+}
+
+// serviceStartReferenceTypeCall is creating a new aicall.
+// it increases corresponded counter
+func (h *aicallHandler) serviceStartReferenceTypeCall(
+	ctx context.Context,
+	aiID uuid.UUID,
+	activeflowID uuid.UUID,
+	referenceID uuid.UUID,
+	gender aicall.Gender,
+	language string,
+	resume bool,
+) (*commonservice.Service, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "serviceStartReferenceTypeCall",
+		"ai_id":         aiID,
+		"activeflow_id": activeflowID,
+		"reference_id":  referenceID,
+		"gender":        gender,
+		"language":      language,
+	})
+
+	cc, err := h.Start(ctx, aiID, activeflowID, aicall.ReferenceTypeCall, referenceID, gender, language, resume)
 	if err != nil {
 		log.Errorf("Could not start aicall. err: %v", err)
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)
@@ -60,6 +98,41 @@ func (h *aicallHandler) ServiceStart(
 		ID:          cc.ID,
 		Type:        commonservice.TypeAIcall,
 		PushActions: actions,
+	}
+
+	return res, nil
+}
+
+// serviceStartReferenceTypeConversation is creating a new aicall.
+// it increases corresponded counter
+func (h *aicallHandler) serviceStartReferenceTypeConversation(
+	ctx context.Context,
+	aiID uuid.UUID,
+	activeflowID uuid.UUID,
+	referenceID uuid.UUID,
+	gender aicall.Gender,
+	language string,
+	resume bool,
+) (*commonservice.Service, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "serviceStartReferenceTypeConversation",
+		"ai_id":         aiID,
+		"activeflow_id": activeflowID,
+		"reference_id":  referenceID,
+		"gender":        gender,
+		"language":      language,
+	})
+
+	cc, err := h.Start(ctx, aiID, activeflowID, aicall.ReferenceTypeConversation, referenceID, gender, language, resume)
+	if err != nil {
+		log.Errorf("Could not start aicall. err: %v", err)
+		return nil, fmt.Errorf("could not start aicall. err: %v", err)
+	}
+
+	res := &commonservice.Service{
+		ID:          cc.ID,
+		Type:        commonservice.TypeAIcall,
+		PushActions: []fmaction.Action{},
 	}
 
 	return res, nil

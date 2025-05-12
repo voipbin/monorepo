@@ -9,11 +9,14 @@ import (
 	"slices"
 	"time"
 
+	cmmessage "monorepo/bin-conversation-manager/models/message"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
+// Send sends a message to the ai engine and returns the sent message.
 func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "Send",
@@ -72,10 +75,40 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 		return nil, errors.Wrapf(err, "could not create the recevied message correctly")
 	}
 
+	if cc.ReferenceType == aicall.ReferenceTypeConversation {
+		// send it to the conversation
+		cm, err := h.reqHandler.ConversationV1MessageSend(ctx, cc.ReferenceID, tmpMessage.Content, nil)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not send the message to the conversation correctly")
+		}
+		log.WithField("conversation_message_id", cm.ID).Debugf("Sent the message to the conversation. conversation_id: %s", cc.ReferenceID)
+	}
+
 	return res, nil
 }
 
 func (h *messageHandler) sendOpenai(ctx context.Context, cc *aicall.AIcall) (*message.Message, error) {
+
+	switch cc.ReferenceType {
+	case aicall.ReferenceTypeCall:
+		return h.sendOpenaiReferenceTypeCall(ctx, cc)
+
+	case aicall.ReferenceTypeConversation:
+		return h.sendOpenaiReferenceTypeConversation(ctx, cc)
+
+	case aicall.ReferenceTypeNone:
+		return h.sendOpenaiReferenceTypeNone(ctx, cc)
+
+	default:
+		return nil, fmt.Errorf("unsupported reference type: %s", cc.ReferenceType)
+	}
+}
+
+func (h *messageHandler) sendOpenaiReferenceTypeNone(ctx context.Context, cc *aicall.AIcall) (*message.Message, error) {
+	return h.sendOpenaiReferenceTypeCall(ctx, cc)
+}
+
+func (h *messageHandler) sendOpenaiReferenceTypeCall(ctx context.Context, cc *aicall.AIcall) (*message.Message, error) {
 	filters := map[string]string{
 		"deleted": "false",
 	}
@@ -85,6 +118,65 @@ func (h *messageHandler) sendOpenai(ctx context.Context, cc *aicall.AIcall) (*me
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the messages correctly")
 	}
+
+	slices.Reverse(messages)
+	res, err := h.engineOpenaiHandler.MessageSend(ctx, cc, messages)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not send the message correctly")
+	}
+
+	return res, nil
+}
+
+func (h *messageHandler) sendOpenaiReferenceTypeConversation(ctx context.Context, cc *aicall.AIcall) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "sendOpenaiReferenceTypeConversation",
+		"aicall_id": cc.ID,
+	})
+
+	// get ai engine
+	ai, err := h.reqHandler.AIV1AIGet(ctx, cc.AIID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the ai engine correctly. ai_id: %s", cc.AIID)
+	}
+	log.WithField("ai_engine", ai).Debugf("Found the ai engine.")
+
+	filters := map[string]string{
+		"deleted":         "false",
+		"conversation_id": cc.ReferenceID.String(),
+	}
+	cms, err := h.reqHandler.ConversationV1MessageGets(ctx, "", 100, filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the messages correctly")
+	}
+
+	// convert the conversation messages into messages
+	messages := []*message.Message{}
+	for _, cm := range cms {
+		role := message.RoleAssistant
+		if cm.Direction == cmmessage.DirectionIncoming {
+			role = message.RoleUser
+		}
+
+		direction := message.DirectionIncoming
+		if cm.Direction == cmmessage.DirectionOutgoing {
+			direction = message.DirectionOutgoing
+		}
+
+		m := &message.Message{
+			Direction: direction,
+			Role:      role,
+			Content:   cm.Text,
+
+			TMCreate: cm.TMCreate,
+		}
+
+		messages = append(messages, m)
+	}
+	messages = append(messages, &message.Message{
+		Role:    message.RoleSystem,
+		Content: ai.InitPrompt,
+	})
 
 	slices.Reverse(messages)
 	res, err := h.engineOpenaiHandler.MessageSend(ctx, cc, messages)
