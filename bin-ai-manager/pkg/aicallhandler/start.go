@@ -30,7 +30,6 @@ func (h *aicallHandler) Start(
 			ctx,
 			aiID,
 			activeflowID,
-			// referenceType,
 			referenceID,
 			gender,
 			language,
@@ -64,7 +63,6 @@ func (h *aicallHandler) startReferenceTypeCall(
 	ctx context.Context,
 	aiID uuid.UUID,
 	activeflowID uuid.UUID,
-	// referenceType aicall.ReferenceType,
 	referenceID uuid.UUID,
 	gender aicall.Gender,
 	language string,
@@ -172,7 +170,6 @@ func (h *aicallHandler) StartNew(
 
 func (h *aicallHandler) startReferenceTypeConversation(
 	ctx context.Context,
-	// c *ai.AI,
 	aiID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceID uuid.UUID,
