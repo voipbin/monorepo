@@ -297,7 +297,7 @@ var TypeListMediaRequired []Type = []Type{
 	TypeAMD,
 	TypeAnswer,
 	TypeBeep,
-	TypeAITalk,
+	// TypeAITalk,
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
 	TypeConfbridgeJoin,
