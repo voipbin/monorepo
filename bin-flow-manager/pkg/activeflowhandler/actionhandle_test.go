@@ -4392,7 +4392,7 @@ func Test_actionHandleAITalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedResume, tt.expectedGender, tt.expectedLanguage, 3000).Return(tt.responseService, nil)
+			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedResume, tt.expectedGender, tt.expectedLanguage, 30000).Return(tt.responseService, nil)
 
 			// push stack
 			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
