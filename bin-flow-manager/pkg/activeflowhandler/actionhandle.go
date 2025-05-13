@@ -1067,7 +1067,7 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 	}
 
 	referenceType := amaicall.ReferenceTypeCall
-	if af.ReferenceType == activeflow.ReferenceTypeMessage {
+	if af.ReferenceType == activeflow.ReferenceTypeConversation {
 		referenceType = amaicall.ReferenceTypeConversation
 	}
 

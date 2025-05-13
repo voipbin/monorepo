@@ -57,13 +57,13 @@ type ReferenceType string
 
 // list of ReferenceType
 const (
-	ReferenceTypeNone       ReferenceType = ""           // none
-	ReferenceTypeAI         ReferenceType = "ai"         // ai
-	ReferenceTypeCall       ReferenceType = "call"       // call
-	ReferenceTypeMessage    ReferenceType = "message"    // message
-	ReferenceTypeCampaign   ReferenceType = "campaign"   // campaign
-	ReferenceTypeTranscribe ReferenceType = "transcribe" // transcribe
-	ReferenceTypeRecording  ReferenceType = "recording"  // recording
+	ReferenceTypeNone         ReferenceType = ""             // none
+	ReferenceTypeAI           ReferenceType = "ai"           // ai
+	ReferenceTypeCall         ReferenceType = "call"         // call
+	ReferenceTypeCampaign     ReferenceType = "campaign"     // campaign
+	ReferenceTypeConversation ReferenceType = "conversation" // conversation
+	ReferenceTypeTranscribe   ReferenceType = "transcribe"   // transcribe
+	ReferenceTypeRecording    ReferenceType = "recording"    // recording
 )
 
 // Matches return true if the given items are the same

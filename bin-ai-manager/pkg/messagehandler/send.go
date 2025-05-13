@@ -179,6 +179,8 @@ func (h *messageHandler) sendOpenaiReferenceTypeConversation(ctx context.Context
 	})
 
 	slices.Reverse(messages)
+	log.WithField("messages", messages).Debugf("Found the messages.")
+
 	res, err := h.engineOpenaiHandler.MessageSend(ctx, cc, messages)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message correctly")

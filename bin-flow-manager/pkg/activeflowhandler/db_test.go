@@ -599,7 +599,7 @@ func Test_SetForwardActionID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
 				},
 
-				ReferenceType:  activeflow.ReferenceTypeMessage,
+				ReferenceType:  activeflow.ReferenceTypeConversation,
 				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
@@ -629,7 +629,7 @@ func Test_SetForwardActionID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
 					CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
 				},
-				ReferenceType:  activeflow.ReferenceTypeMessage,
+				ReferenceType:  activeflow.ReferenceTypeConversation,
 				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),

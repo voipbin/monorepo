@@ -56,8 +56,8 @@ func (h *conversationHandler) MessageExecuteActiveflow(ctx context.Context, cv *
 		uuid.Nil,
 		m.CustomerID,
 		num.MessageFlowID,
-		fmactiveflow.ReferenceTypeMessage,
-		m.ID,
+		fmactiveflow.ReferenceTypeConversation,
+		m.ConversationID,
 		uuid.Nil,
 	)
 	if err != nil {
