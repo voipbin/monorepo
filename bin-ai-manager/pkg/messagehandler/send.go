@@ -158,9 +158,9 @@ func (h *messageHandler) sendOpenaiReferenceTypeConversation(ctx context.Context
 			role = message.RoleUser
 		}
 
-		direction := message.DirectionIncoming
-		if cm.Direction == cmmessage.DirectionOutgoing {
-			direction = message.DirectionOutgoing
+		direction := message.DirectionOutgoing
+		if cm.Direction == cmmessage.DirectionIncoming {
+			direction = message.DirectionIncoming
 		}
 
 		m := &message.Message{

@@ -11,9 +11,12 @@ import (
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"reflect"
 	"testing"
+
+	cmmessage "monorepo/bin-conversation-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -114,7 +117,7 @@ func Test_sendChatGPT(t *testing.T) {
 	}
 }
 
-func Test_Send_sendChatGPT(t *testing.T) {
+func Test_Send_sendOpenai_sendOpenaiReferenceTypeCall(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -149,6 +152,7 @@ func Test_Send_sendChatGPT(t *testing.T) {
 					ID:         uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
 				},
+				ReferenceType: aicall.ReferenceTypeCall,
 				Status:        aicall.StatusProgressing,
 				AIEngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
 			},
@@ -366,6 +370,185 @@ func Test_Send_sendDialogflow(t *testing.T) {
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage2).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID2).Return(tt.expectMessage2, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage2.CustomerID, message.EventTypeMessageCreated, tt.expectMessage2)
+
+			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectMessage1) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectMessage1, res)
+			}
+		})
+	}
+}
+
+func Test_Send_sendOpenai_sendOpenaiReferenceTypeConversation(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		aicallID uuid.UUID
+		role     message.Role
+		content  string
+
+		responseAIcall *aicall.AIcall
+		responseUUID1  uuid.UUID
+		responseUUID2  uuid.UUID
+		responseAI     *ai.AI
+
+		responseConversationMessages []cmmessage.Message
+		responseMessage              *message.Message
+		responseConversationMessage  *cmmessage.Message
+
+		expectMessage1 *message.Message
+		expectMessage2 *message.Message
+
+		expectSize     uint64
+		expectFilters  map[string]string
+		expectMessages []*message.Message
+	}{
+		{
+			name: "normal",
+
+			aicallID: uuid.FromStringOrNil("9fddfcea-30f5-11f0-aeb0-1b4e5754602c"),
+			role:     message.RoleUser,
+			content:  "hello world!",
+
+			responseAIcall: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("9fddfcea-30f5-11f0-aeb0-1b4e5754602c"),
+					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
+				},
+				ReferenceType: aicall.ReferenceTypeConversation,
+				ReferenceID:   uuid.FromStringOrNil("cddc72ba-30f6-11f0-85c7-e307c3cfd78e"),
+				Status:        aicall.StatusProgressing,
+				AIEngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
+			},
+			responseUUID1: uuid.FromStringOrNil("a001ed30-30f5-11f0-8a08-e78fc1f92375"),
+			responseUUID2: uuid.FromStringOrNil("a02b008a-30f5-11f0-bfaa-7b5d28edebe5"),
+			responseAI: &ai.AI{
+				InitPrompt: "test init prompt",
+			},
+			responseConversationMessages: []cmmessage.Message{
+				{
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("a0547e10-30f5-11f0-bfa4-5714dab823f9"),
+					},
+					Direction: cmmessage.DirectionIncoming,
+					Text:      "direction incoming message",
+				},
+				{
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("a07dc266-30f5-11f0-985b-2f984f6949e2"),
+					},
+					Direction: cmmessage.DirectionOutgoing,
+					Text:      "direction outgoing message",
+				},
+			},
+			responseMessage: &message.Message{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a0a2886c-30f5-11f0-8fa7-a745edaed19e"),
+				},
+				Role:    message.RoleAssistant,
+				Content: "Hi there!",
+			},
+			responseConversationMessage: &cmmessage.Message{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("82c61946-30f8-11f0-9f21-9b77276fa3c3"),
+				},
+			},
+
+			expectMessage1: &message.Message{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("a001ed30-30f5-11f0-8a08-e78fc1f92375"),
+					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
+				},
+				AIcallID: uuid.FromStringOrNil("9fddfcea-30f5-11f0-aeb0-1b4e5754602c"),
+
+				Direction: message.DirectionOutgoing,
+				Role:      message.RoleUser,
+				Content:   "hello world!",
+			},
+			expectMessage2: &message.Message{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("a02b008a-30f5-11f0-bfaa-7b5d28edebe5"),
+					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
+				},
+				AIcallID: uuid.FromStringOrNil("9fddfcea-30f5-11f0-aeb0-1b4e5754602c"),
+
+				Direction: message.DirectionIncoming,
+				Role:      message.RoleAssistant,
+				Content:   "Hi there!",
+			},
+
+			expectSize: 100,
+			expectFilters: map[string]string{
+				"deleted":         "false",
+				"conversation_id": "cddc72ba-30f6-11f0-85c7-e307c3cfd78e",
+			},
+			expectMessages: []*message.Message{
+				{
+					Role:    message.RoleSystem,
+					Content: "test init prompt",
+				},
+				{
+					Direction: message.DirectionOutgoing,
+					Role:      message.RoleAssistant,
+					Content:   "direction outgoing message",
+				},
+				{
+					Direction: message.DirectionIncoming,
+					Role:      message.RoleUser,
+					Content:   "direction incoming message",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+			mockGPT := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+
+			h := &messageHandler{
+				utilHandler:   mockUtil,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+				reqHandler:    mockReq,
+
+				aicallHandler:       mockAIcall,
+				engineOpenaiHandler: mockGPT,
+			}
+
+			ctx := context.Background()
+
+			mockAIcall.EXPECT().Get(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID1)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage1).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID1).Return(tt.expectMessage1, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage1.CustomerID, message.EventTypeMessageCreated, tt.expectMessage1)
+
+			mockReq.EXPECT().AIV1AIGet(ctx, tt.responseAIcall.AIID).Return(tt.responseAI, nil)
+			mockReq.EXPECT().ConversationV1MessageGets(ctx, "", tt.expectSize, tt.expectFilters).Return(tt.responseConversationMessages, nil)
+
+			// mockDB.EXPECT().MessageGets(ctx, tt.responseAIcall.ID, tt.expectSize, "", tt.expectFilters).Return(tt.responseConversationMessages, nil)
+			mockGPT.EXPECT().MessageSend(ctx, tt.responseAIcall, tt.expectMessages).Return(tt.responseMessage, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID2)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage2).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID2).Return(tt.expectMessage2, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage2.CustomerID, message.EventTypeMessageCreated, tt.expectMessage2)
+
+			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.responseAIcall.ReferenceID, tt.responseMessage.Content, nil).Return(tt.responseConversationMessage, nil)
 
 			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content)
 			if err != nil {

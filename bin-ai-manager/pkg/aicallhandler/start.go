@@ -3,6 +3,7 @@ package aicallhandler
 import (
 	"context"
 	"fmt"
+	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
@@ -24,126 +25,87 @@ func (h *aicallHandler) Start(
 	resume bool,
 ) (*aicall.AIcall, error) {
 
-	switch referenceType {
-	case aicall.ReferenceTypeCall:
-		return h.startReferenceTypeCall(
-			ctx,
-			aiID,
-			activeflowID,
-			referenceID,
-			gender,
-			language,
-			resume,
-		)
-
-	case aicall.ReferenceTypeNone:
-		return h.startReferenceTypeNone(
-			ctx,
-			aiID,
-			gender,
-			language,
-		)
-
-	case aicall.ReferenceTypeConversation:
-		return h.startReferenceTypeConversation(
-			ctx,
-			aiID,
-			activeflowID,
-			referenceID,
-			gender,
-			language,
-		)
-
-	default:
-		return nil, fmt.Errorf("unsupported reference type")
-	}
-}
-
-func (h *aicallHandler) startReferenceTypeCall(
-	ctx context.Context,
-	aiID uuid.UUID,
-	activeflowID uuid.UUID,
-	referenceID uuid.UUID,
-	gender aicall.Gender,
-	language string,
-	resume bool,
-) (*aicall.AIcall, error) {
 	if resume {
-		return h.StartResume(ctx, activeflowID)
-	} else {
-		return h.StartNew(ctx, aiID, activeflowID, referenceID, gender, language)
+		return h.startResume(ctx, activeflowID)
 	}
-}
-
-func (h *aicallHandler) StartResume(ctx context.Context, activeflowID uuid.UUID) (*aicall.AIcall, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "StartResume",
-		"activeflow_id": activeflowID,
-	})
-
-	// get existing aicall info
-	vars, err := h.reqHandler.FlowV1VariableGet(ctx, activeflowID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get the activeflow variables. activeflow_id: %s", activeflowID)
-	}
-
-	aicallID := uuid.FromStringOrNil(vars.Variables[variableAIcallID])
-	if aicallID == uuid.Nil {
-		return nil, errors.New("could not get the aicall id from the activeflow variables")
-	}
-
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, aicallID, cmconfbridge.TypeConference)
-	if err != nil {
-		log.Errorf("Could not create confbridge. err: %v", err)
-		return nil, errors.Wrap(err, "Could not create confbridge")
-	}
-
-	// update aicall's confbridge info
-	res, err := h.UpdateStatusResuming(ctx, aicallID, cb.ID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not update the status to resuming. aicall_id: %s", aicallID)
-	}
-
-	return res, nil
-}
-
-func (h *aicallHandler) StartNew(
-	ctx context.Context,
-	aiID uuid.UUID,
-	activeflowID uuid.UUID,
-	// referenceType aicall.ReferenceType,
-	referenceID uuid.UUID,
-	gender aicall.Gender,
-	language string,
-) (*aicall.AIcall, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "startNew",
-		"ai_id":         aiID,
-		"activeflow_id": activeflowID,
-	})
-	log.Debugf("Starting a new aicall")
 
 	c, err := h.aiHandler.Get(ctx, aiID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get ai info")
 	}
 
-	// 	switch referenceType {
-	// 	case aicall.ReferenceTypeCall:
-	// 		return h.startReferenceTypeCall(ctx, c, activeflowID, referenceID, gender, language)
+	switch referenceType {
+	case aicall.ReferenceTypeCall:
+		return h.startReferenceTypeCall(ctx, c, activeflowID, referenceID, gender, language)
 
-	// 	case aicall.ReferenceTypeNone:
-	// 		return h.startReferenceTypeNone(ctx, c, gender, language)
+	case aicall.ReferenceTypeConversation:
+		return h.startReferenceTypeConversation(ctx, c, activeflowID, referenceID, gender, language)
 
-	// 	default:
-	// 		return nil, fmt.Errorf("unsupported reference type")
-	// 	}
-	// }
+	case aicall.ReferenceTypeNone:
+		return h.startReferenceTypeNone(ctx, c, gender, language)
 
-	// func (h *aicallHandler) startReferenceTypeCall(ctx context.Context, c *ai.AI, activeflowID uuid.UUID, referenceID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
-	// 	log := logrus.WithFields(logrus.Fields{
-	// 		"func": "startReferenceTypeCall",
-	// 	})
+	default:
+		return nil, fmt.Errorf("unsupported reference type")
+	}
+}
+
+// startResume starts an aicall with an existing aicall.
+// It is used to continue a previously interrupted or paused session.
+func (h *aicallHandler) startResume(ctx context.Context, activeflowID uuid.UUID) (*aicall.AIcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "startResume",
+		"activeflow_id": activeflowID,
+	})
+
+	// aicall get by activeflow id
+	filters := map[string]string{
+		"activeflow_id": activeflowID.String(),
+		"deleted":       "false",
+	}
+
+	tmps, err := h.Gets(ctx, 1, "", filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the aicall info. activeflow_id: %s", activeflowID)
+	} else if len(tmps) == 0 {
+		return nil, errors.New("could not get the aicall info. activeflow_id: %s")
+	}
+	cc := tmps[0]
+	log.WithField("aicall", cc).Debugf("Found the aicall. aicall_id: %s", cc.ID)
+
+	if cc.ReferenceType != aicall.ReferenceTypeCall {
+		return nil, errors.New("could not resume the aicall. reference type is not call")
+	}
+
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, cc.ID, cmconfbridge.TypeConference)
+	if err != nil {
+		log.Errorf("Could not create confbridge. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create confbridge")
+	}
+
+	// update aicall's confbridge info
+	res, err := h.UpdateStatusResuming(ctx, cc.ID, cb.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not update the status to resuming. aicall_id: %s", cc.ID)
+	}
+
+	return res, nil
+}
+
+// startReferenceTypeCall starts a new aicall with reference type call
+func (h *aicallHandler) startReferenceTypeCall(
+	ctx context.Context,
+	c *ai.AI,
+	activeflowID uuid.UUID,
+	referenceID uuid.UUID,
+	gender aicall.Gender,
+	language string,
+) (*aicall.AIcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "startNew",
+		"ai":            c,
+		"activeflow_id": activeflowID,
+	})
+	log.Debugf("Starting a new aicall")
 
 	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, c.ID, cmconfbridge.TypeConference)
 	if err != nil {
@@ -168,9 +130,10 @@ func (h *aicallHandler) StartNew(
 	return res, nil
 }
 
+// startReferenceTypeConversation starts a new aicall with reference type conversation
 func (h *aicallHandler) startReferenceTypeConversation(
 	ctx context.Context,
-	aiID uuid.UUID,
+	c *ai.AI,
 	activeflowID uuid.UUID,
 	referenceID uuid.UUID,
 	gender aicall.Gender,
@@ -178,13 +141,10 @@ func (h *aicallHandler) startReferenceTypeConversation(
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startReferenceTypeConversation",
+		"ai":            c,
 		"activeflow_id": activeflowID,
+		"reference_id":  referenceID,
 	})
-
-	c, err := h.aiHandler.Get(ctx, aiID)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get ai info")
-	}
 
 	// get existing aicall info
 	res, err := h.GetByReferenceID(ctx, referenceID)
@@ -215,47 +175,21 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 	log.WithField("message", m).Debugf("Sent the message to the ai. aicall_id: %s", res.ID)
 
-	// cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, c.ID, cmconfbridge.TypeConference)
-	// if err != nil {
-	// 	log.Errorf("Could not create confbridge. err: %v", err)
-	// 	return nil, errors.Wrap(err, "Could not create confbridge")
-	// }
-
-	// res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language)
-	// if err != nil {
-	// 	log.Errorf("Could not create aicall. err: %v", err)
-	// 	return nil, errors.Wrap(err, "Could not create aicall.")
-	// }
-	// log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
-
-	// go func(cctx context.Context) {
-	// 	if errInit := h.chatInit(cctx, c, res); errInit != nil {
-	// 		log.Errorf("Could not initialize chat. err: %v", errInit)
-	// 	}
-
-	// }(context.Background())
-
 	return res, nil
 }
 
+// startReferenceTypeNone starts a new aicall with no reference
+// this is used to test the aicall
 func (h *aicallHandler) startReferenceTypeNone(
-	// ctx context.Context, c *ai.AI, gender aicall.Gender, language string,
 	ctx context.Context,
-	aiID uuid.UUID,
-	// activeflowID uuid.UUID,
-	// referenceType aicall.ReferenceType,
-	// referenceID uuid.UUID,
+	c *ai.AI,
 	gender aicall.Gender,
 	language string,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "startReferenceTypeNone",
+		"ai":   c,
 	})
-
-	c, err := h.aiHandler.Get(ctx, aiID)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get ai info")
-	}
 
 	tmp, err := h.Create(ctx, c, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language)
 	if err != nil {
