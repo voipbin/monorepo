@@ -3913,7 +3913,7 @@ func Test_actionHandleCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("87a4f032-a996-11ec-b260-4b6f3f52e1c9"),
 					CustomerID: uuid.FromStringOrNil("87ede80a-a996-11ec-9086-d77d045a5f03"),
 				},
-				ReferenceType: activeflow.ReferenceTypeMessage,
+				ReferenceType: activeflow.ReferenceTypeConversation,
 				ReferenceID:   uuid.FromStringOrNil("8819cf88-a996-11ec-bd8b-f3a7053103f1"),
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("eca44350-a993-11ec-bb4d-cbe7cec73166"),
@@ -4392,7 +4392,7 @@ func Test_actionHandleAITalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedResume, tt.expectedGender, tt.expectedLanguage, 3000).Return(tt.responseService, nil)
+			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedResume, tt.expectedGender, tt.expectedLanguage, 30000).Return(tt.responseService, nil)
 
 			// push stack
 			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)

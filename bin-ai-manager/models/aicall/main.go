@@ -39,8 +39,9 @@ type ReferenceType string
 
 // list of reference types
 const (
-	ReferenceTypeNone ReferenceType = ""
-	ReferenceTypeCall ReferenceType = "call"
+	ReferenceTypeNone         ReferenceType = ""
+	ReferenceTypeCall         ReferenceType = "call"
+	ReferenceTypeConversation ReferenceType = "conversation"
 )
 
 // Status define

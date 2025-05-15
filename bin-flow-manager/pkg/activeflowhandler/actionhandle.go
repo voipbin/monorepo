@@ -1066,12 +1066,13 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 		return err
 	}
 
-	if af.ReferenceType != activeflow.ReferenceTypeCall {
-		return fmt.Errorf("wrong reference type. Only reference type call is supported. reference_type: %s", af.ReferenceType)
+	referenceType := amaicall.ReferenceTypeCall
+	if af.ReferenceType == activeflow.ReferenceTypeConversation {
+		referenceType = amaicall.ReferenceTypeConversation
 	}
 
 	// start service
-	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.ID, amaicall.ReferenceTypeCall, af.ReferenceID, opt.Resume, opt.Gender, opt.Language, 3000)
+	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.ID, referenceType, af.ReferenceID, opt.Resume, opt.Gender, opt.Language, 30000)
 	if err != nil {
 		return errors.Wrap(err, "Could not start the service.")
 	}
