@@ -53,7 +53,6 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 replace monorepo/bin-customer-manager => ../bin-customer-manager
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gin-contrib/cors v1.7.5
 	github.com/gin-gonic/gin v1.10.0
@@ -80,6 +79,7 @@ require (
 require (
 	cloud.google.com/go/storage v1.54.0
 	github.com/CyCoreSystems/audiosocket v0.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/gorilla/websocket v1.5.3
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/pebbe/zmq4 v1.4.0

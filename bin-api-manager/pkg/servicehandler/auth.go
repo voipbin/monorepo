@@ -7,7 +7,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
 )
 
