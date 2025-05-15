@@ -78,7 +78,7 @@ require (
 )
 
 require (
-	cloud.google.com/go/storage v1.53.0
+	cloud.google.com/go/storage v1.54.0
 	github.com/CyCoreSystems/audiosocket v0.2.1
 	github.com/gorilla/websocket v1.5.3
 	github.com/oapi-codegen/runtime v1.1.1
@@ -89,7 +89,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6
-	google.golang.org/api v0.232.0
+	google.golang.org/api v0.233.0
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab
@@ -116,11 +116,11 @@ require (
 )
 
 require (
-	cel.dev/expr v0.23.1 // indirect
-	cloud.google.com/go v0.121.0 // indirect
+	cel.dev/expr v0.24.0 // indirect
+	cloud.google.com/go v0.121.1 // indirect
 	cloud.google.com/go/auth v0.16.1 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
-	cloud.google.com/go/compute/metadata v0.6.0 // indirect
+	cloud.google.com/go/compute/metadata v0.7.0 // indirect
 	cloud.google.com/go/iam v1.5.2 // indirect
 	cloud.google.com/go/monitoring v1.24.2 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
@@ -156,7 +156,7 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
-	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
+	github.com/googleapis/gax-go/v2 v2.14.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -171,7 +171,7 @@ require (
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.63.0 // indirect
+	github.com/prometheus/common v0.64.0 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/sagikazarmark/locafero v0.9.0 // indirect
@@ -197,10 +197,10 @@ require (
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
-	google.golang.org/genproto v0.0.0-20250505200425-f936aa4a68b2 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250505200425-f936aa4a68b2 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250505200425-f936aa4a68b2 // indirect
-	google.golang.org/grpc v1.72.0 // indirect
+	google.golang.org/genproto v0.0.0-20250512202823-5a2f75b736a9 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250512202823-5a2f75b736a9 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250512202823-5a2f75b736a9 // indirect
+	google.golang.org/grpc v1.72.1 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
