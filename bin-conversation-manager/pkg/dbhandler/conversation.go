@@ -17,29 +17,29 @@ import (
 	"monorepo/bin-conversation-manager/models/conversation"
 )
 
-const (
+var (
 	conversationsTable  = "conversation_conversations"
-	conversationsFields = `
-		id,
-		customer_id,
-		owner_type,
-		owner_id,
+	conversationsFields = []conversation.Field{
+		conversation.FieldID,
+		conversation.FieldCustomerID,
+		conversation.FieldOwnerType,
+		conversation.FieldOwnerID,
 
-		account_id,
+		conversation.FieldAccountID,
 
-		name,
-		detail,
+		conversation.FieldName,
+		conversation.FieldDetail,
 
-		type,
-		dialog_id,
+		conversation.FieldType,
+		conversation.FieldDialogID,
 
-		self,
-		peer,
- 
-		tm_create,
-		tm_update,
-		tm_delete
-	`
+		conversation.FieldSelf,
+		conversation.FieldPeer,
+
+		conversation.FieldTMCreate,
+		conversation.FieldTMUpdate,
+		conversation.FieldTMDelete,
+	}
 )
 
 // conversationGetFromRow gets the conversation from the row.
@@ -104,9 +104,10 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 
 	now := h.utilHandler.TimeGetCurTime()
 
+	columns := commondatabasehandler.GetQuerySelectField(conversationsFields)
 	sb := squirrel.
 		Insert(conversationsTable).
-		Columns(conversationsFields).
+		Columns(columns).
 		Values(
 			cv.ID.Bytes(),
 			cv.CustomerID.Bytes(),
@@ -141,8 +142,9 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 
 // conversationGetFromDB gets the conversation info from the db.
 func (h *handler) conversationGetFromDB(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error) {
+	columns := commondatabasehandler.GetQuerySelectField(conversationsFields)
 	query, args, err := squirrel.
-		Select(conversationsFields).
+		Select(columns).
 		From(conversationsTable).
 		Where(squirrel.Eq{"id": id.Bytes()}).
 		PlaceholderFormat(squirrel.Question).
@@ -224,8 +226,9 @@ func (h *handler) ConversationGet(ctx context.Context, id uuid.UUID) (*conversat
 }
 
 func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
+	columns := commondatabasehandler.GetQuerySelectField(conversationsFields)
 	sb := squirrel.
-		Select(conversationsFields).
+		Select(columns).
 		From(conversationsTable).
 		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(self, '$.type')) = ?", self.Type)).
 		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(self, '$.target')) = ?", self.Target)).
@@ -261,8 +264,9 @@ func (h *handler) ConversationGets(ctx context.Context, size uint64, token strin
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	columns := commondatabasehandler.GetQuerySelectField(conversationsFields)
 	sb := squirrel.
-		Select(conversationsFields).
+		Select(columns).
 		From(conversationsTable).
 		Where(squirrel.Lt{"tm_create": token}).
 		OrderBy("tm_create DESC").

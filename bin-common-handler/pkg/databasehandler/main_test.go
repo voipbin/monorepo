@@ -23,6 +23,12 @@ type testStruct struct {
 	B string
 }
 
+type TestType string
+
+const (
+	TestTypeA TestType = "A"
+)
+
 func Test_PrepareUpdateFields(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -135,6 +141,13 @@ func Test_ApplyFields(t *testing.T) {
 			name: "string value",
 			fields: filter{
 				"name": "Alice",
+			},
+			wantSQL: `SELECT * FROM dummy WHERE name = ?`,
+		},
+		{
+			name: "typed string value",
+			fields: filter{
+				"name": TestTypeA,
 			},
 			wantSQL: `SELECT * FROM dummy WHERE name = ?`,
 		},
