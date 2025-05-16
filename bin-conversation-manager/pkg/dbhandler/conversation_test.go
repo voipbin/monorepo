@@ -177,6 +177,7 @@ func Test_ConversationGets(t *testing.T) {
 			filters: map[conversation.Field]any{
 				conversation.FieldDeleted:    false,
 				conversation.FieldCustomerID: uuid.FromStringOrNil("a55f730a-3e12-11ef-adec-df6b60fe6b19"),
+				conversation.FieldType:       conversation.TypeLine,
 			},
 
 			responseCurTime: "2022-04-18 03:22:17.995000",
