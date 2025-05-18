@@ -21,8 +21,8 @@ import (
 type AccountHandler interface {
 	Create(ctx context.Context, customerID uuid.UUID, accountType account.Type, name string, detail string, secret string, token string) (*account.Account, error)
 	Get(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*account.Account, error)
-	Update(ctx context.Context, id uuid.UUID, name string, detail string, secret string, token string) (*account.Account, error)
+	Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error)
+	Update(ctx context.Context, id uuid.UUID, fields map[account.Field]any) (*account.Account, error)
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
 }
 

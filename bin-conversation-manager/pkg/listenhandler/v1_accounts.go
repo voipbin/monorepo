@@ -8,11 +8,13 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 )
 
@@ -34,10 +36,19 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get filters
-	filters := h.utilHandler.URLParseFilters(u)
+	var req map[string]any
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
 
-	tmps, err := h.accountHandler.Gets(ctx, pageToken, pageSize, filters)
+	fields, err := account.ConvertStringMapToFieldMap(req)
+	if err != nil {
+		log.Errorf("Could not convert the filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmps, err := h.accountHandler.Gets(ctx, pageToken, pageSize, fields)
 	if err != nil {
 		log.Debugf("Could not get conversations. err: %v", err)
 		return simpleResponse(500), nil
@@ -142,16 +153,33 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	var req request.V1DataAccountsIDPut
-	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
-		return simpleResponse(400), nil
-	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
 	log.Debugf("Executing processV1AccountsIDPut. account_id: %s", id)
 
-	tmp, err := h.accountHandler.Update(ctx, id, req.Name, req.Detail, req.Secret, req.Token)
+	allowedItems := []string{
+		string(account.FieldName),
+		string(account.FieldDetail),
+		string(account.FieldType),
+		string(account.FieldSecret),
+		string(account.FieldToken),
+	}
+	filteredItems, err := requesthandler.GetFilteredItems(m, allowedItems)
+	if err != nil {
+		log.Errorf("Could not filter the request. err: %v", err)
+		return nil, err
+	}
+	if len(filteredItems) == 0 {
+		log.Debugf("No allowed fields provided for update. Skipping.")
+		return simpleResponse(200), nil
+	}
+
+	tmpFields, err := account.ConvertStringMapToFieldMap(filteredItems)
+	if err != nil {
+		log.Errorf("Could not convert field map. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.accountHandler.Update(ctx, id, tmpFields)
 	if err != nil {
 		log.Debugf("Could not get a conversation. conversation_id: %s, err: %v", id, err)
 		return simpleResponse(500), nil

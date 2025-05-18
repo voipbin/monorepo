@@ -120,7 +120,6 @@ func Test_processV1ConversationsGet(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			// mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockConversation.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.expectFields).Return(tt.responseConversations, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -300,10 +299,7 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 
 		expectedConversationID uuid.UUID
 		expectedFields         map[conversation.Field]any
-
-		expectName   string
-		expectDetail string
-		expectRes    *sock.Response
+		expectRes              *sock.Response
 	}{
 		{
 			name: "normal",
@@ -327,9 +323,6 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 				conversation.FieldDetail:    "test detail",
 				conversation.FieldAccountID: uuid.FromStringOrNil("a3f340b4-21ec-11f0-9b2a-f70f3bf0b3be"),
 			},
-			expectName:   "test name",
-			expectDetail: "test detail",
-
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",

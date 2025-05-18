@@ -52,10 +52,9 @@ func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	// filters
-	filters := map[string]string{
-		"customer_id": a.CustomerID.String(),
-		"deleted":     "false", // we don't need deleted items
+	filters := map[cvaccount.Field]any{
+		cvaccount.FieldDeleted:    false,
+		cvaccount.FieldCustomerID: a.CustomerID,
 	}
 
 	// get
@@ -135,15 +134,7 @@ func (h *serviceHandler) ConversationAccountCreate(
 }
 
 // ConversationAccountUpdate updates the conversation account
-func (h *serviceHandler) ConversationAccountUpdate(
-	ctx context.Context,
-	a *amagent.Agent,
-	accountID uuid.UUID,
-	name string,
-	detail string,
-	secret string,
-	token string,
-) (*cvaccount.WebhookMessage, error) {
+func (h *serviceHandler) ConversationAccountUpdate(ctx context.Context, a *amagent.Agent, accountID uuid.UUID, fields map[cvaccount.Field]any) (*cvaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationAccountUpdate",
 		"customer_id": a.CustomerID,
@@ -163,7 +154,7 @@ func (h *serviceHandler) ConversationAccountUpdate(
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ConversationV1AccountUpdate(ctx, accountID, name, detail, secret, token)
+	tmp, err := h.reqHandler.ConversationV1AccountUpdate(ctx, accountID, fields)
 	if err != nil {
 		log.Errorf("Could not update the conversation account. err: %v", err)
 		return nil, errors.Wrap(err, "could not update the conversation account")

@@ -3,7 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
-	cmaccount "monorepo/bin-conversation-manager/models/account"
+	cvaccount "monorepo/bin-conversation-manager/models/account"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -84,7 +84,7 @@ func (h *server) PostConversationAccounts(c *gin.Context) {
 	res, err := h.serviceHandler.ConversationAccountCreate(
 		c.Request.Context(),
 		&a,
-		cmaccount.Type(req.Type),
+		cvaccount.Type(req.Type),
 		req.Name,
 		req.Detail,
 		req.Secret,
@@ -164,7 +164,21 @@ func (h *server) PutConversationAccountsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConversationAccountUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, req.Secret, req.Token)
+	raw, err := structToFilteredMap(req)
+	if err != nil {
+		log.Errorf("Could not convert fields. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	fields, err := cvaccount.ConvertStringMapToFieldMap(raw)
+	if err != nil {
+		log.Errorf("Could not convert fields. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.ConversationAccountUpdate(c.Request.Context(), &a, target, fields)
 	if err != nil {
 		log.Errorf("Could not update the conversation account. err: %v", err)
 		c.AbortWithStatus(400)

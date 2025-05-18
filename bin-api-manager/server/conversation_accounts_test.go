@@ -53,7 +53,7 @@ func Test_conversationAccountsGet(t *testing.T) {
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"6adce0da-004e-11ee-b74a-23da476139db","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"6adce0da-004e-11ee-b74a-23da476139db","customer_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
 		},
 	}
 
@@ -135,7 +135,7 @@ func Test_conversationAccountsPost(t *testing.T) {
 			expectDetail: "test detail",
 			expectSecret: "test secret",
 			expectToken:  "test token",
-			expectRes:    `{"id":"6cc1b186-004f-11ee-91df-7f283f71f97a","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:    `{"id":"6cc1b186-004f-11ee-91df-7f283f71f97a","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -207,7 +207,7 @@ func Test_conversationAccountsIDGet(t *testing.T) {
 			},
 
 			expectConversationAccountID: uuid.FromStringOrNil("ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c"),
-			expectRes:                   `{"id":"ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:                   `{"id":"ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -259,10 +259,7 @@ func Test_conversationAccountsIDPut(t *testing.T) {
 		responseConversationAccount *cvaccount.WebhookMessage
 
 		expectConversationAccountID uuid.UUID
-		expectName                  string
-		expectDetail                string
-		expectSecret                string
-		expectToken                 string
+		expectFields                map[cvaccount.Field]any
 		expectRes                   string
 	}
 
@@ -276,7 +273,7 @@ func Test_conversationAccountsIDPut(t *testing.T) {
 			},
 
 			reqQuery: "/conversation_accounts/009f2ac8-0050-11ee-b416-5f4fb9c7c682",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
+			reqBody:  []byte(`{"name":"test name","secret":"test secret","token":"test token"}`),
 
 			responseConversationAccount: &cvaccount.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -285,11 +282,12 @@ func Test_conversationAccountsIDPut(t *testing.T) {
 			},
 
 			expectConversationAccountID: uuid.FromStringOrNil("009f2ac8-0050-11ee-b416-5f4fb9c7c682"),
-			expectName:                  "test name",
-			expectDetail:                "test detail",
-			expectSecret:                "test secret",
-			expectToken:                 "test token",
-			expectRes:                   `{"id":"009f2ac8-0050-11ee-b416-5f4fb9c7c682","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectFields: map[cvaccount.Field]any{
+				cvaccount.FieldName:   "test name",
+				cvaccount.FieldSecret: "test secret",
+				cvaccount.FieldToken:  "test token",
+			},
+			expectRes: `{"id":"009f2ac8-0050-11ee-b416-5f4fb9c7c682","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -315,7 +313,7 @@ func Test_conversationAccountsIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationAccountUpdate(req.Context(), &tt.agent, tt.expectConversationAccountID, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken).Return(tt.responseConversationAccount, nil)
+			mockSvc.EXPECT().ConversationAccountUpdate(req.Context(), &tt.agent, tt.expectConversationAccountID, tt.expectFields).Return(tt.responseConversationAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -361,7 +359,7 @@ func Test_conversationAccountsIDDelete(t *testing.T) {
 			},
 
 			expectConversationAccountID: uuid.FromStringOrNil("31a54f8a-0050-11ee-aa7e-d3a80a493b8b"),
-			expectRes:                   `{"id":"31a54f8a-0050-11ee-aa7e-d3a80a493b8b","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:                   `{"id":"31a54f8a-0050-11ee-aa7e-d3a80a493b8b","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 

@@ -85,7 +85,7 @@ func Test_ConversationV1AccountGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[cvaccount.Field]any
 
 		expectURL     string
 		expectTarget  string
@@ -99,16 +99,18 @@ func Test_ConversationV1AccountGets(t *testing.T) {
 
 			pageToken: "2021-03-02 03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[cvaccount.Field]any{
+				cvaccount.FieldDeleted:    false,
+				cvaccount.FieldCustomerID: uuid.FromStringOrNil("ea626f1c-33fc-11f0-9f26-03f438132b87"),
 			},
 
 			expectURL:    "/v1/accounts?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.conversation-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/accounts?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				URI:      "/v1/accounts?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"ea626f1c-33fc-11f0-9f26-03f438132b87","deleted":false}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -144,7 +146,6 @@ func Test_ConversationV1AccountGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1AccountGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
@@ -239,11 +240,8 @@ func Test_ConversationV1AccountUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id          uuid.UUID
-		accountName string
-		detail      string
-		secret      string
-		token       string
+		id     uuid.UUID
+		fields map[cvaccount.Field]any
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -254,18 +252,20 @@ func Test_ConversationV1AccountUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			id:          uuid.FromStringOrNil("a3c2b754-003e-11ee-aa7e-e760c874d75f"),
-			accountName: "test name",
-			detail:      "test detail",
-			secret:      "test secret",
-			token:       "test token",
+			id: uuid.FromStringOrNil("a3c2b754-003e-11ee-aa7e-e760c874d75f"),
+			fields: map[cvaccount.Field]any{
+				cvaccount.FieldName:   "test name",
+				cvaccount.FieldDetail: "test detail",
+				cvaccount.FieldSecret: "test secret",
+				cvaccount.FieldToken:  "test token",
+			},
 
 			expectTarget: "bin-manager.conversation-manager.request",
 			expectRequest: &sock.Request{
 				URI:      "/v1/accounts/a3c2b754-003e-11ee-aa7e-e760c874d75f",
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
+				Data:     []byte(`{"detail":"test detail","name":"test name","secret":"test secret","token":"test token"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -295,7 +295,7 @@ func Test_ConversationV1AccountUpdate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1AccountUpdate(ctx, tt.id, tt.accountName, tt.detail, tt.secret, tt.token)
+			res, err := reqHandler.ConversationV1AccountUpdate(ctx, tt.id, tt.fields)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

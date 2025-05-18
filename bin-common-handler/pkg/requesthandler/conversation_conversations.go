@@ -40,10 +40,10 @@ func (r *requestHandler) ConversationV1ConversationGet(ctx context.Context, conv
 // ConversationV1ConversationGets sends a request to conversation-manager
 // to getting a list of conversation info.
 // it returns detail list of conversation info if it succeed.
-func (r *requestHandler) ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error) {
+func (r *requestHandler) ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cvconversation.Field]any) ([]cvconversation.Conversation, error) {
 	uri := fmt.Sprintf("/v1/conversations?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	m, err := json.Marshal(fields)
+	m, err := json.Marshal(filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not marshal filters")
 	}

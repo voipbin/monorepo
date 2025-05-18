@@ -691,9 +691,9 @@ type RequestHandler interface {
 
 	// conversation-manager account
 	ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)
-	ConversationV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cvaccount.Account, error)
+	ConversationV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cvaccount.Field]any) ([]cvaccount.Account, error)
 	ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType cvaccount.Type, name string, detail string, secret string, token string) (*cvaccount.Account, error)
-	ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, name string, detail string, secret string, token string) (*cvaccount.Account, error)
+	ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, fields map[cvaccount.Field]any) (*cvaccount.Account, error)
 	ConversationV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)
 
 	// conversation-manager conversation

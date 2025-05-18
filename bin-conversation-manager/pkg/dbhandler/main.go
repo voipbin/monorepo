@@ -23,7 +23,8 @@ import (
 type DBHandler interface {
 	AccountCreate(ctx context.Context, ac *account.Account) error
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	AccountGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error)
+	AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error
+	AccountGets(context.Context, uint64, string, map[account.Field]any) ([]*account.Account, error)
 	AccountSet(ctx context.Context, id uuid.UUID, name string, detail string, secret string, token string) error
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 

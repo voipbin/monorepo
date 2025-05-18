@@ -90,18 +90,18 @@ func (mr *MockDBHandlerMockRecorder) AccountGet(ctx, id any) *gomock.Call {
 }
 
 // AccountGets mocks base method.
-func (m *MockDBHandler) AccountGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
+func (m *MockDBHandler) AccountGets(arg0 context.Context, arg1 uint64, arg2 string, arg3 map[account.Field]any) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "AccountGets", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].([]*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AccountGets indicates an expected call of AccountGets.
-func (mr *MockDBHandlerMockRecorder) AccountGets(ctx, size, token, filters any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AccountGets(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGets", reflect.TypeOf((*MockDBHandler)(nil).AccountGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGets", reflect.TypeOf((*MockDBHandler)(nil).AccountGets), arg0, arg1, arg2, arg3)
 }
 
 // AccountSet mocks base method.
@@ -116,6 +116,20 @@ func (m *MockDBHandler) AccountSet(ctx context.Context, id uuid.UUID, name, deta
 func (mr *MockDBHandlerMockRecorder) AccountSet(ctx, id, name, detail, secret, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSet", reflect.TypeOf((*MockDBHandler)(nil).AccountSet), ctx, id, name, detail, secret, token)
+}
+
+// AccountUpdate mocks base method.
+func (m *MockDBHandler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountUpdate indicates an expected call of AccountUpdate.
+func (mr *MockDBHandlerMockRecorder) AccountUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountUpdate", reflect.TypeOf((*MockDBHandler)(nil).AccountUpdate), ctx, id, fields)
 }
 
 // ConversationCreate mocks base method.

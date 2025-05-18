@@ -11,6 +11,7 @@ import (
 	cvrequest "monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // ConversationV1AccountGet sends a request to conversation-manager
@@ -39,13 +40,15 @@ func (r *requestHandler) ConversationV1AccountGet(ctx context.Context, accountID
 // ConversationV1AccountGets sends a request to conversation-manager
 // to getting a list of account info.
 // it returns detail list of conversation info if it succeed.
-func (r *requestHandler) ConversationV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cvaccount.Account, error) {
+func (r *requestHandler) ConversationV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cvaccount.Field]any) ([]cvaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/accounts", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/accounts", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -106,19 +109,12 @@ func (r *requestHandler) ConversationV1AccountCreate(ctx context.Context, custom
 // ConversationV1AccountUpdate sends a request to conversation-manager
 // to update the account info.
 // it returns update account info if it succeed.
-func (r *requestHandler) ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, name string, detail string, secret string, token string) (*cvaccount.Account, error) {
+func (r *requestHandler) ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, fields map[cvaccount.Field]any) (*cvaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
-	data := &cvrequest.V1DataAccountsIDPut{
-		Name:   name,
-		Detail: detail,
-		Secret: secret,
-		Token:  token,
-	}
-
-	m, err := json.Marshal(data)
+	m, err := json.Marshal(fields)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not marshal filters")
 	}
 
 	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPut, "conversation/conversations", 30000, 0, ContentTypeJSON, m)

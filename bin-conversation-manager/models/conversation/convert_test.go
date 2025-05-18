@@ -105,7 +105,7 @@ func Test_ConvertStringMapToFieldMap(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ConvertSringMapToFieldMap(tt.input)
+			got, err := ConvertStringMapToFieldMap(tt.input)
 			if tt.expectErr {
 				if err == nil {
 					t.Fatalf("expected error, got nil")

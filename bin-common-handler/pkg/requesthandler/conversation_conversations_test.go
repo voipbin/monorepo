@@ -11,7 +11,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
-	"monorepo/bin-common-handler/models/identity"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -92,7 +91,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		fields    map[cvconversation.Field]any
+		filters   map[cvconversation.Field]any
 
 		response *sock.Response
 
@@ -106,7 +105,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 
 			pageToken: "2021-03-02 03:23:20.995000",
 			pageSize:  10,
-			fields: map[cvconversation.Field]any{
+			filters: map[cvconversation.Field]any{
 				cvconversation.FieldDeleted:    false,
 				cvconversation.FieldCustomerID: uuid.FromStringOrNil("84b4b554-21ef-11f0-a5bb-e33bf5a5a345"),
 			},
@@ -155,7 +154,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.fields)
+			res, err := reqHandler.ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -218,7 +217,7 @@ func Test_ConversationV1ConversationCreate(t *testing.T) {
 				Data:     []byte(`{"customer_id":"8c9e3e90-1acc-11f0-8112-a7bddc5a51fd","name":"test name","detail":"test detail","type":"line","dialog_id":"80031872-1acc-11f0-b6a7-436484610c22","self":{"type":"line","target_name":"me"},"peer":{"type":"line","target":"8c790a08-1acc-11f0-b34c-ffae95d1d395"}}`),
 			},
 			expectRes: &cvconversation.Conversation{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("8cb9a9aa-1acc-11f0-b8cb-9f14cc6836d6"),
 				},
 			},
@@ -264,10 +263,8 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		conversationID   uuid.UUID
-		conversationName string
-		detail           string
-		fields           map[cvconversation.Field]any
+		conversationID uuid.UUID
+		fields         map[cvconversation.Field]any
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -278,9 +275,7 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			conversationID:   uuid.FromStringOrNil("1397bde6-007a-11ee-903f-4b1fc025c9a9"),
-			conversationName: "test name",
-			detail:           "test detail",
+			conversationID: uuid.FromStringOrNil("1397bde6-007a-11ee-903f-4b1fc025c9a9"),
 			fields: map[cvconversation.Field]any{
 				cvconversation.FieldName:   "test name",
 				cvconversation.FieldDetail: "test detail",
