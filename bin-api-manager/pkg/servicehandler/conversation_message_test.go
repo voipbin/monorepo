@@ -29,7 +29,7 @@ func Test_ConversationMessageGetsByConversationID(t *testing.T) {
 		responseConversation *cvconversation.Conversation
 		responseMessages     []cvmessage.Message
 
-		expectFilters map[string]string
+		expectFilters map[cvmessage.Field]any
 		expectRes     []*cvmessage.WebhookMessage
 	}{
 		{
@@ -65,9 +65,9 @@ func Test_ConversationMessageGetsByConversationID(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"deleted":         "false",
-				"conversation_id": "ee26103a-ed24-11ec-bfa1-7b247ecf7e93",
+			expectFilters: map[cvmessage.Field]any{
+				cvmessage.FieldDeleted:        false,
+				cvmessage.FieldConversationID: uuid.FromStringOrNil("ee26103a-ed24-11ec-bfa1-7b247ecf7e93"),
 			},
 			expectRes: []*cvmessage.WebhookMessage{
 				{

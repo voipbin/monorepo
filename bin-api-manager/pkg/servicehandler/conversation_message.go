@@ -83,9 +83,9 @@ func (h *serviceHandler) conversationMessageGetsByConversationID(
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	filters := map[string]string{
-		"deleted":         "false",
-		"conversation_id": conversationID.String(),
+	filters := map[cvmessage.Field]any{
+		cvmessage.FieldDeleted:        false,
+		cvmessage.FieldConversationID: conversationID,
 	}
 
 	tmps, err := h.reqHandler.ConversationV1MessageGets(ctx, token, size, filters)
