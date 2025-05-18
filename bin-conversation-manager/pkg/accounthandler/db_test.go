@@ -162,7 +162,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[account.Field]any
 
 		responseAccounts []*account.Account
 	}{
@@ -171,8 +171,8 @@ func Test_Gets(t *testing.T) {
 
 			size:  10,
 			token: "2020-05-03%2021:35:02.809",
-			filters: map[string]string{
-				"customer_id": "99a9734a-3e16-11ef-94d4-9b7a8c5e0f6c",
+			filters: map[account.Field]any{
+				account.FieldCustomerID: "99a9734a-3e16-11ef-94d4-9b7a8c5e0f6c",
 			},
 
 			responseAccounts: []*account.Account{
@@ -224,22 +224,18 @@ func Test_Update(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id          uuid.UUID
-		accountName string
-		detail      string
-		secret      string
-		token       string
+		id     uuid.UUID
+		fields map[account.Field]any
 
 		responseAccount *account.Account
 	}{
 		{
 			name: "normal",
 
-			id:          uuid.FromStringOrNil("b283ec96-fdf9-11ed-9d19-27d9e432deb5"),
-			accountName: "test name",
-			detail:      "test detail",
-			secret:      "test secret",
-			token:       "test token",
+			id: uuid.FromStringOrNil("b283ec96-fdf9-11ed-9d19-27d9e432deb5"),
+			fields: map[account.Field]any{
+				account.FieldName: "update name",
+			},
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -269,13 +265,12 @@ func Test_Update(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountSet(ctx, tt.id, tt.accountName, tt.detail, tt.secret, tt.token).Return(nil)
+			mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.fields).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountUpdated, tt.responseAccount)
-
 			mockLine.EXPECT().Setup(ctx, tt.responseAccount).Return(nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountUpdated, tt.responseAccount)
 
-			res, err := h.Update(ctx, tt.id, tt.accountName, tt.detail, tt.secret, tt.token)
+			res, err := h.Update(ctx, tt.id, tt.fields)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

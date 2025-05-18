@@ -90,7 +90,7 @@ func (mr *MockMessageHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockMessageHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*message.Message, error) {
+func (m *MockMessageHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]*message.Message)

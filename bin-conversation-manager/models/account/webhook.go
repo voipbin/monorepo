@@ -9,17 +9,17 @@ import (
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	Type Type `json:"type"`
+	Type Type `json:"type,omitempty"`
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name   string `json:"name,omitempty"`
+	Detail string `json:"detail,omitempty"`
 
-	Secret string `json:"secret"` // secret
-	Token  string `json:"token"`  // usually api token
+	Secret string `json:"secret,omitempty"` // secret
+	Token  string `json:"token,omitempty"`  // usually api token
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event

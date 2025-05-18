@@ -27,7 +27,7 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 		pageSize  uint64
 
 		responseAccounts []cvaccount.Account
-		expectFilters    map[string]string
+		expectFilters    map[cvaccount.Field]any
 		expectRes        []*cvaccount.WebhookMessage
 	}{
 		{
@@ -54,9 +54,9 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			expectFilters: map[cvaccount.Field]any{
+				cvaccount.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				cvaccount.FieldDeleted:    false,
 			},
 			expectRes: []*cvaccount.WebhookMessage{
 				{
@@ -244,12 +244,9 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
-		accountID   uuid.UUID
-		accountName string
-		detail      string
-		secret      string
-		token       string
+		agent     *amagent.Agent
+		accountID uuid.UUID
+		fileds    map[cvaccount.Field]any
 
 		response  *cvaccount.Account
 		expectRes *cvaccount.WebhookMessage
@@ -263,11 +260,13 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			accountID:   uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
-			accountName: "test name",
-			detail:      "test detail",
-			secret:      "test secret",
-			token:       "test token",
+			accountID: uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
+			fileds: map[cvaccount.Field]any{
+				cvaccount.FieldName:   "test name",
+				cvaccount.FieldDetail: "test detail",
+				cvaccount.FieldSecret: "test secret",
+				cvaccount.FieldToken:  "test token",
+			},
 
 			response: &cvaccount.Account{
 				Identity: commonidentity.Identity{
@@ -300,8 +299,8 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID).Return(tt.response, nil)
-			mockReq.EXPECT().ConversationV1AccountUpdate(ctx, tt.accountID, tt.accountName, tt.detail, tt.secret, tt.token).Return(tt.response, nil)
-			res, err := h.ConversationAccountUpdate(ctx, tt.agent, tt.accountID, tt.accountName, tt.detail, tt.secret, tt.token)
+			mockReq.EXPECT().ConversationV1AccountUpdate(ctx, tt.accountID, tt.fileds).Return(tt.response, nil)
+			res, err := h.ConversationAccountUpdate(ctx, tt.agent, tt.accountID, tt.fileds)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

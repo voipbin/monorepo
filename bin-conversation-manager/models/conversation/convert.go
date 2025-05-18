@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func ConvertSringMapToFieldMap(src map[string]any) (map[Field]any, error) {
+func ConvertStringMapToFieldMap(src map[string]any) (map[Field]any, error) {
 	res := make(map[Field]any, len(src))
 
 	for key, val := range src {

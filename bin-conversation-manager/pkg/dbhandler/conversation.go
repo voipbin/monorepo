@@ -19,26 +19,26 @@ import (
 
 var (
 	conversationsTable  = "conversation_conversations"
-	conversationsFields = []conversation.Field{
-		conversation.FieldID,
-		conversation.FieldCustomerID,
-		conversation.FieldOwnerType,
-		conversation.FieldOwnerID,
+	conversationsFields = []string{
+		string(conversation.FieldID),
+		string(conversation.FieldCustomerID),
+		string(conversation.FieldOwnerType),
+		string(conversation.FieldOwnerID),
 
-		conversation.FieldAccountID,
+		string(conversation.FieldAccountID),
 
-		conversation.FieldName,
-		conversation.FieldDetail,
+		string(conversation.FieldName),
+		string(conversation.FieldDetail),
 
-		conversation.FieldType,
-		conversation.FieldDialogID,
+		string(conversation.FieldType),
+		string(conversation.FieldDialogID),
 
-		conversation.FieldSelf,
-		conversation.FieldPeer,
+		string(conversation.FieldSelf),
+		string(conversation.FieldPeer),
 
-		conversation.FieldTMCreate,
-		conversation.FieldTMUpdate,
-		conversation.FieldTMDelete,
+		string(conversation.FieldTMCreate),
+		string(conversation.FieldTMUpdate),
+		string(conversation.FieldTMDelete),
 	}
 )
 
@@ -103,11 +103,9 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 	}
 
 	now := h.utilHandler.TimeGetCurTime()
-
-	columns := commondatabasehandler.GetQuerySelectField(conversationsFields)
 	sb := squirrel.
 		Insert(conversationsTable).
-		Columns(columns).
+		Columns(conversationsFields...).
 		Values(
 			cv.ID.Bytes(),
 			cv.CustomerID.Bytes(),
@@ -142,9 +140,8 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 
 // conversationGetFromDB gets the conversation info from the db.
 func (h *handler) conversationGetFromDB(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error) {
-	columns := commondatabasehandler.GetQuerySelectField(conversationsFields)
 	query, args, err := squirrel.
-		Select(columns).
+		Select(conversationsFields...).
 		From(conversationsTable).
 		Where(squirrel.Eq{"id": id.Bytes()}).
 		PlaceholderFormat(squirrel.Question).
@@ -226,9 +223,8 @@ func (h *handler) ConversationGet(ctx context.Context, id uuid.UUID) (*conversat
 }
 
 func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
-	columns := commondatabasehandler.GetQuerySelectField(conversationsFields)
 	sb := squirrel.
-		Select(columns).
+		Select(conversationsFields...).
 		From(conversationsTable).
 		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(self, '$.type')) = ?", self.Type)).
 		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(self, '$.target')) = ?", self.Target)).
@@ -259,22 +255,20 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commona
 	return res, nil
 }
 
-func (h *handler) ConversationGets(ctx context.Context, size uint64, token string, fiedls map[conversation.Field]any) ([]*conversation.Conversation, error) {
+func (h *handler) ConversationGets(ctx context.Context, size uint64, token string, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	columns := commondatabasehandler.GetQuerySelectField(conversationsFields)
 	sb := squirrel.
-		Select(columns).
+		Select(conversationsFields...).
 		From(conversationsTable).
-		Where(squirrel.Lt{"tm_create": token}).
-		OrderBy("tm_create DESC").
+		Where(squirrel.Lt{string(conversation.FieldTMCreate): token}).
+		OrderBy(string(conversation.FieldTMCreate) + " DESC").
 		Limit(size).
 		PlaceholderFormat(squirrel.Question)
 
-	var err error
-	sb, err = commondatabasehandler.ApplyFields(sb, fiedls)
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
 		return nil, fmt.Errorf("could not apply filters. ConversationGets. err: %v", err)
 	}
@@ -298,6 +292,9 @@ func (h *handler) ConversationGets(ctx context.Context, size uint64, token strin
 		}
 		res = append(res, u)
 	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. AccountGets. err: %v", err)
+	}
 
 	return res, nil
 }
@@ -308,7 +305,7 @@ func (h *handler) ConversationUpdate(ctx context.Context, id uuid.UUID, fields m
 		return nil
 	}
 
-	fields["tm_update"] = h.utilHandler.TimeGetCurTime()
+	fields[conversation.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
 	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
 	q := squirrel.Update(conversationsTable).

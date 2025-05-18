@@ -172,7 +172,7 @@ func Test_Gets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[message.Field]any
 
 		responseMessages []*message.Message
 	}{
@@ -181,8 +181,8 @@ func Test_Gets(t *testing.T) {
 
 			pageToken: "2022-04-18 03:22:17.995000",
 			pageSize:  100,
-			filters: map[string]string{
-				"customer_id": "853f266e-1bda-11f0-b63c-43ea1644089b",
+			filters: map[message.Field]any{
+				message.FieldCustomerID: uuid.FromStringOrNil("853f266e-1bda-11f0-b63c-43ea1644089b"),
 			},
 
 			responseMessages: []*message.Message{

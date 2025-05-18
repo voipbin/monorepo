@@ -88,7 +88,7 @@ func (mr *MockAccountHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockAccountHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*account.Account, error) {
+func (m *MockAccountHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]*account.Account)
@@ -103,16 +103,16 @@ func (mr *MockAccountHandlerMockRecorder) Gets(ctx, pageToken, pageSize, filters
 }
 
 // Update mocks base method.
-func (m *MockAccountHandler) Update(ctx context.Context, id uuid.UUID, name, detail, secret, token string) (*account.Account, error) {
+func (m *MockAccountHandler) Update(ctx context.Context, id uuid.UUID, fields map[account.Field]any) (*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, secret, token)
+	ret := m.ctrl.Call(m, "Update", ctx, id, fields)
 	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockAccountHandlerMockRecorder) Update(ctx, id, name, detail, secret, token any) *gomock.Call {
+func (mr *MockAccountHandlerMockRecorder) Update(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAccountHandler)(nil).Update), ctx, id, name, detail, secret, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAccountHandler)(nil).Update), ctx, id, fields)
 }

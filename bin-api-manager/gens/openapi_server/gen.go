@@ -3686,10 +3686,10 @@ type PostConversationAccountsJSONBody struct {
 
 // PutConversationAccountsIdJSONBody defines parameters for PutConversationAccountsId.
 type PutConversationAccountsIdJSONBody struct {
-	Detail string `json:"detail"`
-	Name   string `json:"name"`
-	Secret string `json:"secret"`
-	Token  string `json:"token"`
+	Detail *string `json:"detail,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	Secret *string `json:"secret,omitempty"`
+	Token  *string `json:"token,omitempty"`
 }
 
 // GetConversationsParams defines parameters for GetConversations.

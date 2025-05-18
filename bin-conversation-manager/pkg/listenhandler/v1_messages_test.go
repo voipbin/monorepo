@@ -6,6 +6,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -88,7 +89,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		responseFilters  map[string]string
+		expectFilters    map[message.Field]any
 		responseMessages []*message.Message
 
 		expectPageSize   uint64
@@ -98,13 +99,15 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/messages?filter_conversation_id=22f83522-0a74-4a91-813b-1fc45e5bd9fa&filter_deleted=false&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				Method:   sock.RequestMethodGet,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"conversation_id":"22f83522-0a74-4a91-813b-1fc45e5bd9fa","deleted":false}`),
 			},
 
-			responseFilters: map[string]string{
-				"conversation_id": "22f83522-0a74-4a91-813b-1fc45e5bd9fa",
-				"deleted":         "false",
+			expectFilters: map[message.Field]any{
+				message.FieldConversationID: uuid.FromStringOrNil("22f83522-0a74-4a91-813b-1fc45e5bd9fa"),
+				message.FieldDeleted:        false,
 			},
 			responseMessages: []*message.Message{
 				{
@@ -126,13 +129,15 @@ func Test_processV1MessagesGet(t *testing.T) {
 			name: "multiple results",
 
 			request: &sock.Request{
-				URI:    "/v1/messages?filter_conversation_id=813840b3-9055-449c-b97b-558a0472f6bb&filter_deleted=false&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				Method:   sock.RequestMethodGet,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"conversation_id":"813840b3-9055-449c-b97b-558a0472f6bb","deleted":false}`),
 			},
 
-			responseFilters: map[string]string{
-				"conversation_id": "813840b3-9055-449c-b97b-558a0472f6bb",
-				"deleted":         "false",
+			expectFilters: map[message.Field]any{
+				message.FieldConversationID: uuid.FromStringOrNil("813840b3-9055-449c-b97b-558a0472f6bb"),
+				message.FieldDeleted:        false,
 			},
 			responseMessages: []*message.Message{
 				{
@@ -174,8 +179,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 				messageHandler:      mockMessage,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockMessage.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.responseFilters).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.expectFilters).Return(tt.responseMessages, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

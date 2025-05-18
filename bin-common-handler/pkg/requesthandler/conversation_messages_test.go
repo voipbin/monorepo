@@ -160,7 +160,7 @@ func Test_ConversationV1MessageGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[cvmessage.Field]any
 
 		response *sock.Response
 
@@ -174,8 +174,8 @@ func Test_ConversationV1MessageGets(t *testing.T) {
 
 			pageToken: "2021-03-02 03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[cvmessage.Field]any{
+				cvmessage.FieldDeleted: false,
 			},
 
 			response: &sock.Response{
@@ -187,9 +187,10 @@ func Test_ConversationV1MessageGets(t *testing.T) {
 			expectURL:    "/v1/messages?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.conversation-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/messages?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				URI:      "/v1/messages?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"deleted":false}`),
 			},
 			expectRes: []cvmessage.Message{
 				{
@@ -219,7 +220,6 @@ func Test_ConversationV1MessageGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1MessageGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

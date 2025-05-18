@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
 )
@@ -39,27 +41,42 @@ const (
 	`
 )
 
-// conversationGetFromRow gets the conversation from the row.
+var (
+	messagesTable = "conversation_messages"
+
+	messagesFields = []string{ // This now matches the conversation_dbhandler.go style
+		string(message.FieldID),
+		string(message.FieldCustomerID),
+		string(message.FieldConversationID),
+		string(message.FieldDirection),
+		string(message.FieldStatus),
+		string(message.FieldReferenceType),
+		string(message.FieldReferenceID),
+		string(message.FieldTransactionID),
+		string(message.FieldText),
+		string(message.FieldMedias),
+		string(message.FieldTMCreate),
+		string(message.FieldTMUpdate),
+		string(message.FieldTMDelete),
+	}
+)
+
+// messageGetFromRow gets the message from the row.
 func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
-	var medias sql.NullString
+	var mediasJSON sql.NullString
 
 	res := &message.Message{}
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
-
 		&res.ConversationID,
 		&res.Direction,
 		&res.Status,
-
 		&res.ReferenceType,
 		&res.ReferenceID,
-
 		&res.TransactionID,
-
 		&res.Text,
-		&medias,
-
+		&mediasJSON,
 		&res.TMCreate,
 		&res.TMUpdate,
 		&res.TMDelete,
@@ -67,11 +84,11 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %v", err)
 	}
 
-	if !medias.Valid {
+	if !mediasJSON.Valid || mediasJSON.String == "" {
 		res.Medias = []media.Media{}
 	} else {
-		if errMedias := json.Unmarshal([]byte(medias.String), &res.Medias); errMedias != nil {
-			return nil, fmt.Errorf("could not unmarshal the Medias. messageGetFromRow. err: %v", errMedias)
+		if err := json.Unmarshal([]byte(mediasJSON.String), &res.Medias); err != nil {
+			return nil, fmt.Errorf("could not unmarshal Medias. messageGetFromRow. err: %v", err)
 		}
 	}
 
@@ -79,103 +96,77 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 }
 
 // MessageCreate creates a new message record
-func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
+func (h *handler) MessageCreate(ctx context.Context, msg *message.Message) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-	q := `insert into conversation_messages(
-		id,
-		customer_id,
-
-		conversation_id,
-		direction,
-		status,
-
-		reference_type,
-		reference_id,
-
-		transaction_id,
-
- 		text,
-		medias,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?, ?,
-		?, ?,
-		?,
- 		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	mediasBytes, err := json.Marshal(msg.Medias)
 	if err != nil {
-		return fmt.Errorf("could not prepare. MessageCreate. err: %v", err)
-	}
-	defer stmt.Close()
-
-	medias, err := json.Marshal(m.Medias)
-	if err != nil {
-		return fmt.Errorf("could not marshal the medias. err: %v", err)
+		return fmt.Errorf("could not marshal medias. MessageCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
-		m.ID.Bytes(),
-		m.CustomerID.Bytes(),
+	sb := squirrel.
+		Insert(messagesTable).
+		Columns(messagesFields...).
+		Values(
+			msg.ID.Bytes(),
+			msg.CustomerID.Bytes(),
+			msg.ConversationID.Bytes(),
+			msg.Direction,
+			msg.Status,
+			msg.ReferenceType,
+			msg.ReferenceID.Bytes(),
+			msg.TransactionID,
+			msg.Text,
+			mediasBytes,
+			now,
+			commondatabasehandler.DefaultTimeStamp,
+			commondatabasehandler.DefaultTimeStamp,
+		).
+		PlaceholderFormat(squirrel.Question)
 
-		m.ConversationID.Bytes(),
-		m.Direction,
-		m.Status,
-
-		m.ReferenceType,
-		m.ReferenceID.Bytes(),
-
-		m.TransactionID,
-
-		m.Text,
-		medias,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. MessageCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. MessageCreate. err: %v", err)
 	}
 
-	_ = h.messageUpdateToCache(ctx, m.ID)
-
+	_ = h.messageUpdateToCache(ctx, msg.ID)
 	return nil
 }
 
 // messageGetFromDB gets the message info from the db.
 func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.Message, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", messageSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	query, args, err := squirrel.
+		Select(messagesFields...).
+		From(messagesTable).
+		Where(squirrel.Eq{string(message.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. messageGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. messageGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. messageGetFromDB. err: %v", err)
+		return nil, errors.Wrapf(err, "could not query. messageGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer rows.Close()
 
-	if !row.Next() {
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. messageGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
-	res, err := h.messageGetFromRow(row)
+	res, err := h.messageGetFromRow(rows)
 	if err != nil {
-		return nil, err
+		// Error wrapping style from conversationGetFromDB
+		return nil, errors.Wrapf(err, "could not get message. messageGetFromDB. id: %s. err: %v", id, err)
 	}
-
 	return res, nil
 }
 
@@ -233,44 +224,32 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 	return res, nil
 }
 
-// MessageGets returns messages.
-func (h *handler) MessageGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*message.Message, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, messageSelect)
-
+// // MessageGets returns messages.
+func (h *handler) MessageGets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	sb := squirrel.
+		Select(messagesFields...).
+		From(messagesTable).
+		Where(squirrel.Lt{string(message.FieldTMCreate): token}).
+		OrderBy(string(message.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	var err error
+	sb, err = commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. MessageGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		case "customer_id", "conversation_id", "reference_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. MessageGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessageGets. err: %v", err)
 	}
@@ -280,10 +259,12 @@ func (h *handler) MessageGets(ctx context.Context, token string, size uint64, fi
 	for rows.Next() {
 		u, err := h.messageGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. MessageGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. MessageGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. MessageGets. err: %v", err)
 	}
 
 	return res, nil
@@ -350,29 +331,69 @@ func (h *handler) MessageUpdateStatus(ctx context.Context, id uuid.UUID, status 
 	return nil
 }
 
-// MessageDelete deletes the message.
-func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
-
-	q := `
-	update conversation_messages set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q,
-		ts,
-		ts,
-		id.Bytes(),
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. MessageDelete. err: %v", err)
+func (h *handler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// update the cache
-	_ = h.messageUpdateToCache(ctx, id)
+	fields[message.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
+	preparedFields := commondatabasehandler.PrepareUpdateFields(fields)
+	sb := squirrel.Update(messagesTable).
+		SetMap(preparedFields).
+		Where(squirrel.Eq{string(message.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("MessageUpdate: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("MessageUpdate: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrapf(err, "MessageUpdate: error fetching RowsAffected")
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	_ = h.messageUpdateToCache(ctx, id)
+	return nil
+}
+
+func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
+	ts := h.utilHandler.TimeGetCurTime()
+
+	updateMap := map[string]any{
+		string(message.FieldTMUpdate): ts,
+		string(message.FieldTMDelete): ts,
+	}
+
+	sb := squirrel.Update(messagesTable).
+		SetMap(updateMap).
+		Where(squirrel.Eq{string(message.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("MessageDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("MessageDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrapf(err, "MessageDelete: error fetching")
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+	_ = h.messageUpdateToCache(ctx, id)
 	return nil
 }

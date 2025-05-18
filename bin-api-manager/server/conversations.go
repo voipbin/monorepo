@@ -132,7 +132,7 @@ func (h *server) PutConversationsId(c *gin.Context, id string) {
 		return
 	}
 
-	fields, err := cvconversation.ConvertSringMapToFieldMap(raw)
+	fields, err := cvconversation.ConvertStringMapToFieldMap(raw)
 	if err != nil {
 		log.Errorf("Could not convert fields. err: %v", err)
 		c.AbortWithStatus(400)

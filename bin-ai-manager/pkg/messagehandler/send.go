@@ -9,7 +9,7 @@ import (
 	"slices"
 	"time"
 
-	cmmessage "monorepo/bin-conversation-manager/models/message"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -141,9 +141,9 @@ func (h *messageHandler) sendOpenaiReferenceTypeConversation(ctx context.Context
 	}
 	log.WithField("ai_engine", ai).Debugf("Found the ai engine.")
 
-	filters := map[string]string{
-		"deleted":         "false",
-		"conversation_id": cc.ReferenceID.String(),
+	filters := map[cvmessage.Field]any{
+		cvmessage.FieldDeleted:        false,
+		cvmessage.FieldConversationID: cc.ReferenceID,
 	}
 	cms, err := h.reqHandler.ConversationV1MessageGets(ctx, "", 100, filters)
 	if err != nil {
@@ -154,12 +154,12 @@ func (h *messageHandler) sendOpenaiReferenceTypeConversation(ctx context.Context
 	messages := []*message.Message{}
 	for _, cm := range cms {
 		role := message.RoleAssistant
-		if cm.Direction == cmmessage.DirectionIncoming {
+		if cm.Direction == cvmessage.DirectionIncoming {
 			role = message.RoleUser
 		}
 
 		direction := message.DirectionOutgoing
-		if cm.Direction == cmmessage.DirectionIncoming {
+		if cm.Direction == cvmessage.DirectionIncoming {
 			direction = message.DirectionIncoming
 		}
 

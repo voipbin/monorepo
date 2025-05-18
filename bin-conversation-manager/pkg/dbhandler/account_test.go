@@ -259,7 +259,7 @@ func Test_AccountGets(t *testing.T) {
 
 		token   string
 		limit   uint64
-		filters map[string]string
+		filters map[account.Field]any
 
 		responseCurTime string
 		expectRes       []*account.Account
@@ -283,9 +283,9 @@ func Test_AccountGets(t *testing.T) {
 
 			token: "2022-06-18 03:22:17.995000",
 			limit: 100,
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "157d41b4-3e16-11ef-a8ed-4b84a868d055",
+			filters: map[account.Field]any{
+				account.FieldDeleted:    false,
+				account.FieldCustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 			},
 
 			responseCurTime: "2022-04-18 03:22:17.995000",

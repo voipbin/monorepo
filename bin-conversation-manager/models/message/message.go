@@ -29,6 +29,34 @@ type Message struct {
 	TMDelete string `json:"tm_delete,omitempty"`
 }
 
+// Field defines the fields for the Message entity.
+type Field string
+
+// List of message fields
+const (
+	FieldID         Field = "id"
+	FieldCustomerID Field = "customer_id"
+
+	FieldConversationID Field = "conversation_id"
+	FieldDirection      Field = "direction"
+	FieldStatus         Field = "status"
+
+	FieldReferenceType Field = "reference_type"
+	FieldReferenceID   Field = "reference_id"
+
+	FieldTransactionID Field = "transaction_id"
+
+	FieldText   Field = "text"
+	FieldMedias Field = "medias" // Stored as JSON
+
+	FieldTMCreate Field = "tm_create"
+	FieldTMUpdate Field = "tm_update"
+	FieldTMDelete Field = "tm_delete"
+
+	// filter only
+	FieldDeleted Field = "deleted"
+)
+
 // Status defines
 type Status string
 

@@ -3051,7 +3051,7 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGet(ctx, accountI
 }
 
 // ConversationV1AccountGets mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]account0.Account, error) {
+func (m *MockRequestHandler) ConversationV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[account0.Field]any) ([]account0.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1AccountGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]account0.Account)
@@ -3066,18 +3066,18 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGets(ctx, pageTok
 }
 
 // ConversationV1AccountUpdate mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, name, detail, secret, token string) (*account0.Account, error) {
+func (m *MockRequestHandler) ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, fields map[account0.Field]any) (*account0.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1AccountUpdate", ctx, accountID, name, detail, secret, token)
+	ret := m.ctrl.Call(m, "ConversationV1AccountUpdate", ctx, accountID, fields)
 	ret0, _ := ret[0].(*account0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConversationV1AccountUpdate indicates an expected call of ConversationV1AccountUpdate.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountUpdate(ctx, accountID, name, detail, secret, token any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountUpdate(ctx, accountID, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountUpdate), ctx, accountID, name, detail, secret, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountUpdate), ctx, accountID, fields)
 }
 
 // ConversationV1ConversationCreate mocks base method.
@@ -3185,7 +3185,7 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageGet(ctx, messageI
 }
 
 // ConversationV1MessageGets mocks base method.
-func (m *MockRequestHandler) ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]message0.Message, error) {
+func (m *MockRequestHandler) ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[message0.Field]any) ([]message0.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1MessageGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]message0.Message)

@@ -90,7 +90,7 @@ func (h *messageHandler) Delete(ctx context.Context, id uuid.UUID) (*message.Mes
 }
 
 // Gets returns list of messages of the given filters
-func (h *messageHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*message.Message, error) {
+func (h *messageHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	res, err := h.db.MessageGets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get messages.")
@@ -101,8 +101,12 @@ func (h *messageHandler) Gets(ctx context.Context, pageToken string, pageSize ui
 
 // UpdateStatus returns list of messages of the given conversation
 func (h *messageHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) (*message.Message, error) {
-	if err := h.db.MessageUpdateStatus(ctx, id, status); err != nil {
-		return nil, errors.Wrapf(err, "Could not update the message status.")
+	fields := map[message.Field]any{
+		message.FieldStatus: status,
+	}
+
+	if errUpdate := h.db.MessageUpdate(ctx, id, fields); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "Could not update the message.")
 	}
 
 	res, err := h.db.MessageGet(ctx, id)

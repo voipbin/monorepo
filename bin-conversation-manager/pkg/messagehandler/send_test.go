@@ -35,7 +35,8 @@ func Test_Send_sendLine(t *testing.T) {
 		responseAccount *account.Account
 		responseUUID    uuid.UUID
 
-		expectMessage *message.Message
+		expectUpdateFields map[message.Field]any
+		expectMessage      *message.Message
 	}{
 		{
 			name: "line text type",
@@ -62,6 +63,9 @@ func Test_Send_sendLine(t *testing.T) {
 			},
 			responseUUID: uuid.FromStringOrNil("a0a1478e-0246-11ee-9a48-57bb5aa639c8"),
 
+			expectUpdateFields: map[message.Field]any{
+				message.FieldStatus: message.StatusDone,
+			},
 			expectMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a0a1478e-0246-11ee-9a48-57bb5aa639c8"),
@@ -109,7 +113,7 @@ func Test_Send_sendLine(t *testing.T) {
 			mockLine.EXPECT().Send(ctx, tt.conversation, tt.responseAccount, tt.text, tt.medias).Return(nil)
 
 			// update
-			mockDB.EXPECT().MessageUpdateStatus(ctx, tt.expectMessage.ID, message.StatusDone).Return(nil)
+			mockDB.EXPECT().MessageUpdate(ctx, tt.expectMessage.ID, tt.expectUpdateFields).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageUpdated, tt.expectMessage)
 

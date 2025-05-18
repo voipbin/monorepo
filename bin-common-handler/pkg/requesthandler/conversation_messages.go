@@ -12,6 +12,7 @@ import (
 	cvrequest "monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // ConversationV1MessageGet gets the message
@@ -75,13 +76,15 @@ func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversa
 // ConversationV1MessageGets sends a request to conversation-manager
 // to getting a list of message info.
 // it returns detail list of message info if it succeed.
-func (r *requestHandler) ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cvmessage.Message, error) {
+func (r *requestHandler) ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cvmessage.Field]any) ([]cvmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/messages", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/messages", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

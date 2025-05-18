@@ -4,34 +4,31 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
+	"monorepo/bin-common-handler/pkg/databasehandler"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-conversation-manager/models/account"
 )
 
-const (
-	// select query for account get
-	accountSelect = `
-	select
-		id,
-		customer_id,
+var (
+	accountsTable = "conversation_accounts"
 
-		type,
-
-		name,
-		detail,
-
-		secret,
-		token,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		conversation_accounts
-	`
+	accountsFields = []string{
+		string(account.FieldID),
+		string(account.FieldCustomerID),
+		string(account.FieldType),
+		string(account.FieldName),
+		string(account.FieldDetail),
+		string(account.FieldSecret),
+		string(account.FieldToken),
+		string(account.FieldTMCreate),
+		string(account.FieldTMUpdate),
+		string(account.FieldTMDelete),
+	}
 )
 
 // accountGetFromRow gets the account from the row.
@@ -62,86 +59,69 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 
 // AccountCreate creates a new account record
 func (h *handler) AccountCreate(ctx context.Context, ac *account.Account) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-	q := `insert into conversation_accounts(
-		id,
-		customer_id,
+	sb := squirrel.
+		Insert(accountsTable).
+		Columns(accountsFields...). // Spread if GetQuerySelectField returns []string
+		Values(
+			ac.ID.Bytes(),
+			ac.CustomerID.Bytes(),
+			ac.Type,
+			ac.Name,
+			ac.Detail,
+			ac.Secret,
+			ac.Token,
+			now,                              // tm_create
+			databasehandler.DefaultTimeStamp, // tm_update
+			databasehandler.DefaultTimeStamp, // tm_delete
+		).
+		PlaceholderFormat(squirrel.Question)
 
-		type,
-
-		name,
-		detail,
-
-		secret,
-		token,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?,
-		?, ?,
-		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not prepare. AccountCreate. err: %v", err)
+		return fmt.Errorf("could not build query. AccountCreate. err: %v", err)
 	}
-	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx,
-		ac.ID.Bytes(),
-		ac.CustomerID.Bytes(),
-
-		ac.Type,
-
-		ac.Name,
-		ac.Detail,
-
-		ac.Secret,
-		ac.Token,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
-	if err != nil {
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. AccountCreate. err: %v", err)
 	}
 
 	_ = h.accountUpdateToCache(ctx, ac.ID)
-
 	return nil
 }
 
 // accountGetFromDB gets the account info from the db.
 func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.Account, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", accountSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	query, args, err := squirrel.
+		Select(accountsFields...).
+		From(accountsTable).
+		Where(squirrel.Eq{string(account.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. accountGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. accountGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. accountGetFromDB. err: %v", err)
 	}
 	defer row.Close()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. accountGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.accountGetFromRow(row)
 	if err != nil {
-		return nil, err
+		// Wrap the error from accountGetFromRow to provide more context if desired,
+		// or return it directly if it's already descriptive enough.
+		// The example uses errors.Wrapf, let's follow that.
+		return nil, errors.Wrapf(err, "could not get account from row. accountGetFromDB. id: %s", id)
 	}
 
 	return res, nil
@@ -202,46 +182,30 @@ func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Accoun
 }
 
 // AccountGets returns a list of account.
-func (h *handler) AccountGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, accountSelect)
-
+func (h *handler) AccountGets(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	sb := squirrel.
+		Select(accountsFields...).
+		From(accountsTable).
+		Where(squirrel.Lt{string(account.FieldTMCreate): token}).
+		OrderBy(string(account.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. ConversationGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		case "customer_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. AccountGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AccountGets. err: %v", err)
 	}
@@ -253,8 +217,10 @@ func (h *handler) AccountGets(ctx context.Context, size uint64, token string, fi
 		if err != nil {
 			return nil, fmt.Errorf("could not get data. AccountGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. AccountGets. err: %v", err)
 	}
 
 	return res, nil
@@ -287,25 +253,63 @@ func (h *handler) AccountSet(ctx context.Context, id uuid.UUID, name string, det
 	return nil
 }
 
-// AccountDelete deletes the call
-func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
-	//prepare
-	q := `
-	update conversation_accounts set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AccountDelete. err: %v", err)
+// AccountUpdate updates the account info.
+func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// update the cache
-	_ = h.accountUpdateToCache(ctx, id)
+	fields[account.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
+	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	q := squirrel.Update(accountsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{"id": id.Bytes()})
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+		return fmt.Errorf("AccountUpdate: exec failed: %w", err)
+	}
+
+	_ = h.accountUpdateToCache(ctx, id)
+	return nil
+}
+
+func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
+	ts := h.utilHandler.TimeGetCurTime()
+
+	fields := map[account.Field]any{
+		account.FieldTMUpdate: ts,
+		account.FieldTMDelete: ts,
+	}
+
+	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	sb := squirrel.Update(accountsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(account.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("AccountDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrapf(err, "could not get rows affected: %v", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	_ = h.accountUpdateToCache(ctx, id)
 	return nil
 }

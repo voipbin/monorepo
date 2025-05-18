@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -40,7 +41,7 @@ func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *sock.R
 		return nil, err
 	}
 
-	fields, err := conversation.ConvertSringMapToFieldMap(req)
+	fields, err := conversation.ConvertStringMapToFieldMap(req)
 	if err != nil {
 		log.Errorf("Could not convert the filters. err: %v", err)
 		return simpleResponse(400), nil
@@ -161,35 +162,27 @@ func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *sock
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-
-	var req map[string]any
-	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
-		return nil, err
-	}
 	log.Debugf("Executing processV1ConversationsIDPut. message_id: %s", id)
 
-	allowedKeys := map[string]bool{
-		string(conversation.FieldOwnerType): true,
-		string(conversation.FieldOwnerID):   true,
-
-		string(conversation.FieldName):   true,
-		string(conversation.FieldDetail): true,
+	allowedItems := []string{
+		string(conversation.FieldOwnerType),
+		string(conversation.FieldOwnerID),
+		string(conversation.FieldName),
+		string(conversation.FieldDetail),
+		string(conversation.FieldAccountID),
 	}
 
-	filtered := make(map[string]any)
-	for key, val := range req {
-		if allowedKeys[key] {
-			filtered[key] = val
-		}
+	filteredItems, err := requesthandler.GetFilteredItems(m, allowedItems)
+	if err != nil {
+		log.Errorf("Could not filter the request. err: %v", err)
+		return nil, err
 	}
-
-	if len(filtered) == 0 {
+	if len(filteredItems) == 0 {
 		log.Debugf("No allowed fields provided for update. Skipping.")
 		return simpleResponse(200), nil
 	}
 
-	tmpFields, err := conversation.ConvertSringMapToFieldMap(req)
+	tmpFields, err := conversation.ConvertStringMapToFieldMap(filteredItems)
 	if err != nil {
 		log.Errorf("Could not convert field map. err: %v", err)
 		return nil, err

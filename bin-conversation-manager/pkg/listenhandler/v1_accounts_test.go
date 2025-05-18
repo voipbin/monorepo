@@ -6,6 +6,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -25,8 +26,8 @@ func Test_processV1AccountsGet(t *testing.T) {
 
 		expectPageSize  uint64
 		expectPageToken string
+		expectFilters   map[account.Field]any
 
-		responseFilters  map[string]string
 		responseAccounts []*account.Account
 
 		response *sock.Response
@@ -35,17 +36,19 @@ func Test_processV1AccountsGet(t *testing.T) {
 			name: "normal",
 
 			request: &sock.Request{
-				URI:    "/v1/accounts?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=6af495b0-fecb-11ed-b59e-e70b3afff8a1&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/accounts?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				Method:   sock.RequestMethodGet,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"6af495b0-fecb-11ed-b59e-e70b3afff8a1","deleted":false}`),
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2021-03-01 03:30:17.000000",
-
-			responseFilters: map[string]string{
-				"customer_id": "ac03d4ea-7f50-11ec-908d-d39407ab524d",
-				"deleted":     "false",
+			expectFilters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("6af495b0-fecb-11ed-b59e-e70b3afff8a1"),
+				account.FieldDeleted:    false,
 			},
+
 			responseAccounts: []*account.Account{
 				{
 					Identity: commonidentity.Identity{
@@ -57,24 +60,26 @@ func Test_processV1AccountsGet(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 		{
 			name: "2 results",
 
 			request: &sock.Request{
-				URI:    "/v1/accounts?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=6b2efe9e-fecb-11ed-aa65-ff71705cd816&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/accounts?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				Method:   sock.RequestMethodGet,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"6b2efe9e-fecb-11ed-aa65-ff71705cd816","deleted":false}`),
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2021-03-01 03:30:17.000000",
-
-			responseFilters: map[string]string{
-				"customer_id": "ac03d4ea-7f50-11ec-908d-d39407ab524d",
-				"deleted":     "false",
+			expectFilters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("6b2efe9e-fecb-11ed-aa65-ff71705cd816"),
+				account.FieldDeleted:    false,
 			},
+
 			responseAccounts: []*account.Account{
 				{
 					Identity: commonidentity.Identity{
@@ -91,7 +96,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"6b5f9da6-fecb-11ed-a0ea-4fdabd236387","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"6b906c9c-fecb-11ed-a341-f38426e7e737","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"6b5f9da6-fecb-11ed-a0ea-4fdabd236387","customer_id":"00000000-0000-0000-0000-000000000000"},{"id":"6b906c9c-fecb-11ed-a341-f38426e7e737","customer_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 	}
@@ -111,8 +116,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.responseFilters).Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.expectFilters).Return(tt.responseAccounts, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -167,7 +171,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"459c19ae-fecc-11ed-9558-fbf54c7aa51e","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"459c19ae-fecc-11ed-9558-fbf54c7aa51e","customer_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -228,7 +232,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1793ed06-fecd-11ed-ab65-07ce8687961d","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"1793ed06-fecd-11ed-ab65-07ce8687961d","customer_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -264,31 +268,16 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 	tests := []struct {
 		name string
 
-		expectID     uuid.UUID
-		expectName   string
-		expectDetail string
-		expectSecret string
-		expectToken  string
+		request *sock.Request
 
+		response        *sock.Response
 		responseAccount *account.Account
 
-		request  *sock.Request
-		response *sock.Response
+		expectID       uuid.UUID
+		expectedFields map[account.Field]any
 	}{
 		{
 			name: "normal",
-
-			expectID:     uuid.FromStringOrNil("17c1c726-fecd-11ed-8139-dff04db7fa05"),
-			expectName:   "test name",
-			expectDetail: "test detail",
-			expectSecret: "test secret",
-			expectToken:  "test token",
-
-			responseAccount: &account.Account{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("17c1c726-fecd-11ed-8139-dff04db7fa05"),
-				},
-			},
 
 			request: &sock.Request{
 				URI:      "/v1/accounts/17c1c726-fecd-11ed-8139-dff04db7fa05",
@@ -296,10 +285,24 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 			},
+
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"17c1c726-fecd-11ed-8139-dff04db7fa05","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"17c1c726-fecd-11ed-8139-dff04db7fa05","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+			},
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("17c1c726-fecd-11ed-8139-dff04db7fa05"),
+				},
+			},
+
+			expectID: uuid.FromStringOrNil("17c1c726-fecd-11ed-8139-dff04db7fa05"),
+			expectedFields: map[account.Field]any{
+				account.FieldName:   "test name",
+				account.FieldDetail: "test detail",
+				account.FieldSecret: "test secret",
+				account.FieldToken:  "test token",
 			},
 		},
 	}
@@ -317,7 +320,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken).Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectedFields).Return(tt.responseAccount, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -360,7 +363,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"17eeb786-fecd-11ed-8113-5f6f4693c29f","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"17eeb786-fecd-11ed-8113-5f6f4693c29f","customer_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}

@@ -170,8 +170,8 @@ func Test_ConversationGet(t *testing.T) {
 func Test_ConversationUpdate(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *amagent.Agent
+		name  string
+		agent *amagent.Agent
 
 		conversationID uuid.UUID
 		fileds         map[cvconversation.Field]any
@@ -181,7 +181,7 @@ func Test_ConversationUpdate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: &amagent.Agent{
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -227,7 +227,7 @@ func Test_ConversationUpdate(t *testing.T) {
 
 			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
 			mockReq.EXPECT().ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.fileds).Return(tt.responseConversation, nil)
-			res, err := h.ConversationUpdate(ctx, tt.customer, tt.conversationID, tt.fileds)
+			res, err := h.ConversationUpdate(ctx, tt.agent, tt.conversationID, tt.fileds)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

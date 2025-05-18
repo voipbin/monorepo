@@ -57,14 +57,14 @@ func (h *conversationHandler) GetOrCreateBySelfAndPeer(
 }
 
 // Gets returns list of conversations
-func (h *conversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, fields map[conversation.Field]any) ([]*conversation.Conversation, error) {
+func (h *conversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "Gets",
-		"fields": fields,
+		"filers": filters,
 	})
 	log.Debugf("Getting a list of conversations.")
 
-	res, err := h.db.ConversationGets(ctx, pageSize, pageToken, fields)
+	res, err := h.db.ConversationGets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get conversations. err: %v", err)
 		return nil, err

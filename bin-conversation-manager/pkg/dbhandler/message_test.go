@@ -119,7 +119,7 @@ func Test_MessageGets(t *testing.T) {
 
 		token   string
 		limit   uint64
-		filters map[string]string
+		filters map[message.Field]any
 
 		responseCurTime string
 		expectRes       []*message.Message
@@ -155,8 +155,8 @@ func Test_MessageGets(t *testing.T) {
 
 			token: "2022-05-18 04:22:17.995000",
 			limit: 100,
-			filters: map[string]string{
-				"conversation_id": "c51b50ca-1bce-11f0-8c4c-db38779c786d",
+			filters: map[message.Field]any{
+				message.FieldConversationID: uuid.FromStringOrNil("c51b50ca-1bce-11f0-8c4c-db38779c786d"),
 			},
 
 			responseCurTime: "2022-04-18 03:22:17.995000",
@@ -393,6 +393,88 @@ func Test_MessageDelete(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
+		})
+	}
+}
+
+func Test_MessageUpdate(t *testing.T) {
+	tests := []struct {
+		name    string
+		message *message.Message
+
+		id    uuid.UUID
+		field map[message.Field]any
+
+		responseCurTime string
+		expectRes       *message.Message
+	}{
+		{
+			name: "normal",
+			message: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("64b74416-3413-11f0-809c-c30541817b53"),
+					CustomerID: uuid.FromStringOrNil("010eac88-2199-11f0-ad61-671cf62bcc31"),
+				},
+			},
+
+			id: uuid.FromStringOrNil("64b74416-3413-11f0-809c-c30541817b53"),
+			field: map[message.Field]any{
+				message.FieldConversationID: uuid.FromStringOrNil("65209fd8-3413-11f0-8792-9be4d9395c77"),
+				message.FieldStatus:         message.StatusDone,
+			},
+
+			responseCurTime: "2020-04-18T03:22:17.995000",
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("64b74416-3413-11f0-809c-c30541817b53"),
+					CustomerID: uuid.FromStringOrNil("010eac88-2199-11f0-ad61-671cf62bcc31"),
+				},
+				ConversationID: uuid.FromStringOrNil("65209fd8-3413-11f0-8792-9be4d9395c77"),
+				Status:         message.StatusDone,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
+			if err := h.MessageCreate(ctx, tt.message); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().MessageSet(gomock.Any(), gomock.Any()).Return(nil)
+			if err := h.MessageUpdate(ctx, tt.id, tt.field); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().MessageGet(ctx, tt.message.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
+			res, err := h.MessageGet(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
 		})
 	}
 }
