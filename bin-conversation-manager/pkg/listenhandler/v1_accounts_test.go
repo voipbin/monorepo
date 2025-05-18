@@ -26,7 +26,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 
 		expectPageSize  uint64
 		expectPageToken string
-		expectFields    map[account.Field]any
+		expectFilters   map[account.Field]any
 
 		responseAccounts []*account.Account
 
@@ -44,7 +44,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 
 			expectPageSize:  10,
 			expectPageToken: "2021-03-01 03:30:17.000000",
-			expectFields: map[account.Field]any{
+			expectFilters: map[account.Field]any{
 				account.FieldCustomerID: uuid.FromStringOrNil("6af495b0-fecb-11ed-b59e-e70b3afff8a1"),
 				account.FieldDeleted:    false,
 			},
@@ -75,7 +75,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 
 			expectPageSize:  10,
 			expectPageToken: "2021-03-01 03:30:17.000000",
-			expectFields: map[account.Field]any{
+			expectFilters: map[account.Field]any{
 				account.FieldCustomerID: uuid.FromStringOrNil("6b2efe9e-fecb-11ed-aa65-ff71705cd816"),
 				account.FieldDeleted:    false,
 			},
@@ -116,7 +116,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.expectFields).Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.expectFilters).Return(tt.responseAccounts, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

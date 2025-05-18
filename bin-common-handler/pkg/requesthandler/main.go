@@ -716,7 +716,7 @@ type RequestHandler interface {
 
 	// conversation-manager message
 	ConversationV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cvmessage.Message, error)
-	ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cvmessage.Message, error)
+	ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cvmessage.Field]any) ([]cvmessage.Message, error)
 	ConversationV1MessageCreate(
 		ctx context.Context,
 		id uuid.UUID,

@@ -278,7 +278,7 @@ func (mr *MockDBHandlerMockRecorder) MessageGet(ctx, id any) *gomock.Call {
 }
 
 // MessageGets mocks base method.
-func (m *MockDBHandler) MessageGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*message.Message, error) {
+func (m *MockDBHandler) MessageGets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*message.Message)
@@ -305,6 +305,20 @@ func (m *MockDBHandler) MessageGetsByTransactionID(ctx context.Context, transact
 func (mr *MockDBHandlerMockRecorder) MessageGetsByTransactionID(ctx, transactionID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGetsByTransactionID", reflect.TypeOf((*MockDBHandler)(nil).MessageGetsByTransactionID), ctx, transactionID, token, limit)
+}
+
+// MessageUpdate mocks base method.
+func (m *MockDBHandler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageUpdate indicates an expected call of MessageUpdate.
+func (mr *MockDBHandlerMockRecorder) MessageUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageUpdate", reflect.TypeOf((*MockDBHandler)(nil).MessageUpdate), ctx, id, fields)
 }
 
 // MessageUpdateStatus mocks base method.

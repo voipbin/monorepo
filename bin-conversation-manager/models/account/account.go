@@ -26,8 +26,6 @@ type Field string
 
 // List of account fields
 const (
-	FieldDeleted Field = "deleted"
-
 	FieldID         Field = "id"
 	FieldCustomerID Field = "customer_id"
 
@@ -42,6 +40,9 @@ const (
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
 	FieldTMDelete Field = "tm_delete"
+
+	// filter only
+	FieldDeleted Field = "deleted"
 )
 
 // Type defines

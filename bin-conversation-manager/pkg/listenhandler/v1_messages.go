@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
 	"github.com/sirupsen/logrus"
@@ -66,8 +67,17 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	var req map[string]any
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	filters, err := message.ConvertStringMapToFieldMap(req)
+	if err != nil {
+		log.Errorf("Could not convert the filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.messageHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {

@@ -42,13 +42,13 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 		return nil, err
 	}
 
-	fields, err := account.ConvertStringMapToFieldMap(req)
+	filters, err := account.ConvertStringMapToFieldMap(req)
 	if err != nil {
 		log.Errorf("Could not convert the filters. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
-	tmps, err := h.accountHandler.Gets(ctx, pageToken, pageSize, fields)
+	tmps, err := h.accountHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Debugf("Could not get conversations. err: %v", err)
 		return simpleResponse(500), nil

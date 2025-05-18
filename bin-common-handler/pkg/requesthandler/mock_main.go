@@ -3185,7 +3185,7 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageGet(ctx, messageI
 }
 
 // ConversationV1MessageGets mocks base method.
-func (m *MockRequestHandler) ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]message0.Message, error) {
+func (m *MockRequestHandler) ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[message0.Field]any) ([]message0.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1MessageGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]message0.Message)

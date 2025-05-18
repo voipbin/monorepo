@@ -36,7 +36,7 @@ type MessageHandler interface {
 	) (*message.Message, error)
 	Delete(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
-	Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*message.Message, error)
+	Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[message.Field]any) ([]*message.Message, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) (*message.Message, error)
 
 	Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error)
