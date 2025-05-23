@@ -81,7 +81,7 @@ func (h *serviceHandler) ChatroommessageCreate(ctx context.Context, a *amagent.A
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, cr.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, cr.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -142,7 +142,7 @@ func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, a 
 	}
 	log.WithField("chatroom", tmp).Debugf("Found chatroom info. chatroom_id: %s", chatroomID)
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -201,7 +201,7 @@ func (h *serviceHandler) ChatroommessageDelete(ctx context.Context, a *amagent.A
 		return nil, fmt.Errorf("could not find chatroommessage info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, cr.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, cr.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
