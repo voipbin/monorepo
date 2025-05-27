@@ -10,9 +10,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commondatabase "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
-	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
 // Start starts a transcribe
@@ -82,7 +82,14 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 			log.Errorf("Could not get reference info. type: %s, err: %v", referenceType, err)
 			return false
 		}
-		if tmp.Status != cmcall.StatusProgressing {
+
+		if tmp.Status != cmcall.StatusDialing && tmp.Status != cmcall.StatusRinging && tmp.Status != cmcall.StatusProgressing {
+			log.Errorf("Call is not in a valid state for transcribe. status: %s", tmp.Status)
+			return false
+		}
+
+		if tmp.TMDelete < commondatabase.DefaultTimeStamp {
+			log.Errorf("Call is not valid for transcribe. tm_delete: %s", tmp.TMDelete)
 			return false
 		}
 
@@ -92,7 +99,7 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 			log.Errorf("Could not get reference info. type: %s, err: %v", referenceType, err)
 			return false
 		}
-		if tmp.TMDelete < dbhandler.DefaultTimeStamp {
+		if tmp.TMDelete < commondatabase.DefaultTimeStamp {
 			return false
 		}
 
