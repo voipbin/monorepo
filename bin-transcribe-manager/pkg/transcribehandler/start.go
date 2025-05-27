@@ -37,7 +37,7 @@ func (h *transcribeHandler) Start(
 
 	// check the reference is valid
 	if valid := h.isValidReference(ctx, referenceType, referenceID); !valid {
-		return nil, fmt.Errorf("the given reference info is not valid for transcribe")
+		return nil, fmt.Errorf("the given reference info is not valid for transcribe. reference_type: %s, reference_id: %s", referenceType, referenceID)
 	}
 
 	// parse the BCP47
@@ -100,6 +100,7 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 			return false
 		}
 		if tmp.TMDelete < commondatabase.DefaultTimeStamp {
+			log.Errorf("Confbridge is not valid for transcribe. tm_delete: %s", tmp.TMDelete)
 			return false
 		}
 
