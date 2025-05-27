@@ -8,6 +8,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -81,8 +82,8 @@ func Test_ConversationCreate(t *testing.T) {
 					TargetName: "test user",
 				},
 				TMCreate: "2022-04-18 03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMUpdate: commondatabasehandler.DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -199,8 +200,8 @@ func Test_ConversationGets(t *testing.T) {
 					Self:     commonaddress.Address{},
 					Peer:     commonaddress.Address{},
 					TMCreate: "2022-04-18 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMUpdate: commondatabasehandler.DefaultTimeStamp,
+					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -219,8 +220,8 @@ func Test_ConversationGets(t *testing.T) {
 					Self:     commonaddress.Address{},
 					Peer:     commonaddress.Address{},
 					TMCreate: "2022-04-18 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMUpdate: commondatabasehandler.DefaultTimeStamp,
+					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
 			},
 		},
@@ -312,7 +313,7 @@ func Test_ConversationUpdate(t *testing.T) {
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: "2020-04-18T03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}

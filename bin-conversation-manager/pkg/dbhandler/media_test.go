@@ -10,6 +10,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/pkg/cachehandler"
 )
@@ -34,7 +35,7 @@ func Test_MediaCreate(t *testing.T) {
 				Filename: "testfilename.wav",
 				TMCreate: "2022-04-18 03:22:17.995000",
 				TMUpdate: "2022-04-18 03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}

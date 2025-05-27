@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -54,8 +55,8 @@ func Test_AccountCreate(t *testing.T) {
 				Token:  "test token",
 
 				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMUpdate: commondatabasehandler.DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 		{
@@ -74,8 +75,8 @@ func Test_AccountCreate(t *testing.T) {
 				},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMUpdate: commondatabasehandler.DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -160,7 +161,7 @@ func Test_AccountSet(t *testing.T) {
 				Token:    "test token",
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: "2020-04-18T03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -296,8 +297,8 @@ func Test_AccountGets(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 					},
 					TMCreate: "2022-04-18 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMUpdate: commondatabasehandler.DefaultTimeStamp,
+					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -305,8 +306,8 @@ func Test_AccountGets(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 					},
 					TMCreate: "2022-04-18 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMUpdate: commondatabasehandler.DefaultTimeStamp,
+					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
 			},
 		},
