@@ -138,7 +138,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, 30000).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, true, 30000).Return(tt.responseMessage, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.responseAIcall.ReferenceID, tt.responseMessage.Content, string(tt.responseAIcall.Gender), tt.responseAIcall.Language, 10000).Return(nil)
 
 			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
@@ -239,7 +239,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, 30000).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, true, 30000).Return(tt.responseMessage, nil)
 
 			mockDB.EXPECT().AIcallUpdateStatusProgressing(ctx, tt.responseAIcall.ID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
@@ -365,7 +365,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			// get conversation message
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVarible, nil)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleUser, tt.expectMessageContent, 30000).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleUser, tt.expectMessageContent, false, 30000).Return(tt.responseMessage, nil)
 
 			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {

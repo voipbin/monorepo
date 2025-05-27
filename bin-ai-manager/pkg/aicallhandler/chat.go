@@ -90,7 +90,7 @@ func (h *aicallHandler) chatInit(ctx context.Context, cb *ai.AI, cc *aicall.AIca
 		return nil
 	}
 
-	tmp, err := h.reqHandler.AIV1MessageSend(ctx, cc.ID, message.RoleSystem, initPrompt, 30000)
+	tmp, err := h.reqHandler.AIV1MessageSend(ctx, cc.ID, message.RoleSystem, initPrompt, true, 30000)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the init prompt to the ai. aicall_id: %s", cc.ID)
 	}
@@ -121,11 +121,11 @@ func (h *aicallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *ai
 		return errors.Wrap(errStop, "Could not stop the media")
 	}
 
-	tmp, err := h.reqHandler.AIV1MessageSend(ctx, cc.ID, message.RoleUser, content, 30000)
+	tmp, err := h.reqHandler.AIV1MessageSend(ctx, cc.ID, message.RoleUser, content, true, 30000)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the message to the ai. aicall_id: %s", cc.ID)
 	}
-	log.WithField("message_id", tmp.ID).Debugf("Sent the message to the ai. aicall_id: %s", cc.ID)
+	log.WithField("message", tmp).Debugf("Response message from the ai. aicall_id: %s", cc.ID)
 
 	if errHandle := h.chatMessageHandle(ctx, cc, tmp); errHandle != nil {
 		return errors.Wrap(errHandle, "could not handle the chat message")

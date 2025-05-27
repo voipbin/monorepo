@@ -84,7 +84,7 @@ func Test_ChatMessage(t *testing.T) {
 
 			// Set up expectations for the mocks. Make sure arguments match what you're passing.
 			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.aicall.ReferenceID).Return(nil)
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.ID, tt.expectRole, tt.text, gomock.Any()).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.ID, tt.expectRole, tt.text, true, gomock.Any()).Return(tt.responseMessage, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.aicall.ReferenceID, tt.expectText, string(tt.aicall.Gender), tt.aicall.Language, 10000).Return(nil)
 
 			if errChat := h.ChatMessage(ctx, tt.aicall, tt.text); errChat != nil {
@@ -166,7 +166,7 @@ func Test_ChatInit(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.aicall.ActiveflowID, tt.expectVariables).Return(nil)
 			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.aicall.ActiveflowID, tt.ai.InitPrompt).Return(tt.responseInitPrompt, nil)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.expectInitPrompt, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.expectInitPrompt, true, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.aicall.ReferenceID, "test assist", string(tt.aicall.Gender), tt.aicall.Language, 10000).Return(nil)
 
 			err := h.chatInit(ctx, tt.ai, tt.aicall)
@@ -223,7 +223,7 @@ func Test_ChatInit_without_activeflow_id(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.ai.InitPrompt, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.ai.InitPrompt, true, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.aicall.ReferenceID, "test assist", string(tt.aicall.Gender), tt.aicall.Language, 10000).Return(nil)
 
 			err := h.chatInit(ctx, tt.ai, tt.aicall)
@@ -335,7 +335,7 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.aicall.ReferenceID).Return(nil)
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleUser, tt.messageContent, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleUser, tt.messageContent, true, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.aicall.ReferenceID, "test assist", string(tt.aicall.Gender), tt.aicall.Language, 10000).Return(nil)
 
 			errChat := h.chatMessageReferenceTypeCall(ctx, tt.aicall, tt.messageContent)

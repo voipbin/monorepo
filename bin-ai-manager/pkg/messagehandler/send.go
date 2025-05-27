@@ -17,7 +17,7 @@ import (
 )
 
 // Send sends a message to the ai engine and returns the sent message.
-func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error) {
+func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "Send",
 		"aicall_id": aicallID,
@@ -70,9 +70,14 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 	}
 
 	// create a message for incoming(response)
-	_, err = h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
+	tmpResponse, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the recevied message correctly")
+	}
+	log.WithField("response", tmpResponse).Debugf("Created the response message. message_id: %s", tmpResponse.ID)
+
+	if returnResponse {
+		res = tmpResponse
 	}
 
 	if cc.ReferenceType == aicall.ReferenceTypeConversation {
