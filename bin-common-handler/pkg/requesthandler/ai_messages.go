@@ -52,7 +52,7 @@ func (r *requestHandler) AIV1MessageSend(ctx context.Context, aicallID uuid.UUID
 		Role:     role,
 		Content:  content,
 
-		ReturnRespnse: returnResponse,
+		ReturnResponse: returnResponse,
 	}
 
 	m, err := json.Marshal(data)

@@ -14,5 +14,5 @@ type V1DataMessagesPost struct {
 	Role     message.Role `json:"role,omitempty"`
 	Content  string       `json:"content,omitempty"`
 
-	ReturnRespnse bool `json:"return_response,omitempty"` // if true, it will return the response message
+	ReturnResponse bool `json:"return_response,omitempty"` // if true, it will return the response message
 }
