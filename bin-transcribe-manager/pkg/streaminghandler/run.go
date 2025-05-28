@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
 	"github.com/sirupsen/logrus"
@@ -44,9 +45,6 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 		conn.Close()
 	}()
 
-	// Start keep-alive in a separate goroutine
-	go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval)
-
 	// Get streamingID
 	streamingID, err := h.audiosocketGetStreamingID(conn)
 	if err != nil {
@@ -55,6 +53,9 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	}
 	log = log.WithField("streaming_id", streamingID)
 	log.Debugf("Found streaming id: %s", streamingID)
+
+	// Start keep-alive in a separate goroutine
+	go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
 
 	st, err := h.Get(ctx, streamingID)
 	if err != nil {
@@ -79,8 +80,11 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	log.Warn("No handler executed successfully")
 }
 
-func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration) {
-	log := logrus.WithField("func", "runKeepAlive")
+func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "runKeepAlive",
+		"streaming_id": streamingID,
+	})
 
 	ticker := time.NewTicker(interval) // Use configurable interval
 	defer ticker.Stop()
@@ -98,7 +102,6 @@ func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, inte
 				log.Debugf("Failed to send keep alive message: %v", err)
 				return
 			}
-			log.Debug("Keep alive message sent")
 		}
 	}
 }

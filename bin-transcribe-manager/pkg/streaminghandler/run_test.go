@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -50,16 +51,19 @@ func (m *MockConn) SetWriteDeadline(t time.Time) error {
 
 func Test_runKeepAlive(t *testing.T) {
 	tests := []struct {
-		name          string
+		name        string
+		interval    time.Duration
+		streamingID uuid.UUID
+
 		expectWrites  int
 		cancelAfterMs int
-		intervalMs    int
 	}{
 		{
 			name:          "normal",
+			interval:      300 * time.Millisecond,
+			streamingID:   uuid.FromStringOrNil("eee08956-3bd7-11f0-b6f0-9fd777b76ce0"),
 			expectWrites:  3,
 			cancelAfterMs: 1050,
-			intervalMs:    300,
 		},
 	}
 
@@ -82,7 +86,7 @@ func Test_runKeepAlive(t *testing.T) {
 			}()
 
 			handler := &streamingHandler{}
-			handler.runKeepAlive(ctx, mockConn, time.Duration(tt.intervalMs)*time.Millisecond)
+			handler.runKeepAlive(ctx, mockConn, tt.interval, tt.streamingID)
 
 			mockConn.AssertNumberOfCalls(t, "Write", tt.expectWrites)
 		})
