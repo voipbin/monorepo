@@ -53,9 +53,9 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 		log.Errorf("Could not get mediaID: %v", err)
 		return
 	}
+	log = log.WithField("streaming_id", streamingID)
 	log.Debugf("Found streaming id: %s", streamingID)
 
-	// Fetch streaming information
 	st, err := h.Get(ctx, streamingID)
 	if err != nil {
 		log.Errorf("Could not get streaming: %v", err)
@@ -63,13 +63,11 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	}
 	log.WithField("streaming", st).Debugf("Streaming info retrieved. streaming_id: %s", st.ID)
 
-	// Define handlers
 	handlers := []func(*streaming.Streaming, net.Conn) error{
 		h.gcpRun,
 		h.awsRun,
 	}
 
-	// Execute handlers
 	for _, handler := range handlers {
 		if errRun := handler(st, conn); errRun != nil {
 			log.Errorf("Handler execution failed: %v", errRun)
@@ -104,62 +102,3 @@ func (h *streamingHandler) startKeepAlive(ctx context.Context, conn net.Conn) {
 		}
 	}
 }
-
-// func (h *streamingHandler) runStart(conn net.Conn) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func": "runStart",
-// 	})
-// 	defer conn.Close()
-
-// 	// get streamingID
-// 	streamingID, err := h.audiosocketGetStreamingID(conn)
-// 	if err != nil {
-// 		log.Errorf("Could not get mediaID. err: %v", err)
-// 		return
-// 	}
-// 	log.Debugf("Found streaming id. streaming_id: %s", streamingID)
-
-// 	st, err := h.Get(context.Background(), streamingID)
-// 	if err != nil {
-// 		log.Errorf("Could not get streaming. err: %v", err)
-// 		return
-// 	}
-// 	log.WithField("streaming", st).Debugf("Found streaming info. streaming_id: %s", st.ID)
-
-// 	handlers := []func(*streaming.Streaming, net.Conn) error{
-// 		h.gcpRun,
-// 		h.awsRun,
-// 	}
-
-// 	// Start Keep Alive after successful handler execution
-// 	go h.startKeepAlive(conn)
-
-// 	for _, handler := range handlers {
-// 		if errRun := handler(st, conn); errRun == nil {
-// 			return
-// 		} else {
-// 			log.Errorf("Could not run the handler. err: %v", errRun)
-// 		}
-// 	}
-// }
-
-// func (h *streamingHandler) startKeepAlive(conn net.Conn) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func": "startKeepAlive",
-// 	})
-
-// 	ticker := time.NewTicker(10 * time.Second) // Send keep alive every 10 seconds
-// 	defer ticker.Stop()
-
-// 	for range ticker.C {
-// 		// Create AudioSocket keepalive message
-// 		// Header: type (0x10) + length (0x0000)
-// 		keepAliveMessage := []byte{0x10, 0x00, 0x00}
-
-// 		_, err := conn.Write(keepAliveMessage)
-// 		if err != nil {
-// 			log.Debugf("Failed to send keep alive message. err: %v", err)
-// 			return
-// 		}
-// 	}
-// }
