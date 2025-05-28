@@ -183,7 +183,7 @@ func (h *listenHandler) processV1TranscribesIDStopPost(ctx context.Context, m *s
 
 	tr, err := h.transcribeHandler.Stop(ctx, id)
 	if err != nil {
-		log.Errorf("Could not update the conference. err: %v", err)
+		log.Errorf("Could not stop the transcribe. err: %v", err)
 		return simpleResponse(400), nil
 	}
 

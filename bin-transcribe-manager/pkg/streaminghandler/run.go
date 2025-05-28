@@ -90,9 +90,8 @@ func (h *streamingHandler) startKeepAlive(conn net.Conn) {
 		// Send message
 		_, err := conn.Write(keepAliveMessage)
 		if err != nil {
-			log.Errorf("Failed to send keep alive message. err: %v", err)
+			log.Debugf("Failed to send keep alive message. err: %v", err)
 			return
 		}
-		log.Debug("Keep alive message sent")
 	}
 }
