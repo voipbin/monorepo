@@ -32,7 +32,7 @@ func (h *streamingHandler) audiosocketGetNextMedia(conn net.Conn) (audiosocket.M
 
 	if m.Kind() != audiosocket.KindSlin {
 		if m.Kind() == audiosocket.KindHangup {
-			return nil, fmt.Errorf("received hangup. message_len: %d, kind: %v", m.ContentLength(), m.Kind())
+			return nil, fmt.Errorf("received hangup. message_len: %d, kind: %v", len(m), m.Kind())
 		}
 
 		return nil, nil
