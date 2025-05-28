@@ -4,6 +4,7 @@ import (
 	"context"
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/recording"
+	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -213,19 +214,22 @@ func Test_Stop_referenceTypeCall(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &recordingHandler{
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 			for _, channelID := range tt.responseRecording.ChannelIDs {
-				mockReq.EXPECT().AstChannelHangup(ctx, tt.responseRecording.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+				mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, tt.responseRecording.AsteriskID, channelID, ari.ChannelCauseNormalClearing).Return(nil)
 			}
 			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)

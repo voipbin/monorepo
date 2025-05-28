@@ -13,6 +13,7 @@ import (
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
@@ -51,17 +52,20 @@ func Test_Stop(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &externalMediaHandler{
 				utilHandler: mockUtil,
 				reqHandler:  mockReq,
 				db:          mockDB,
+
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().ExternalMediaGet(ctx, tt.externalMediaID).Return(tt.responseExternalMedia, nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.responseExternalMedia.AsteriskID, tt.responseExternalMedia.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, tt.responseExternalMedia.AsteriskID, tt.responseExternalMedia.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
 			mockDB.EXPECT().ExternalMediaDelete(ctx, tt.externalMediaID).Return(nil)
 
 			res, err := h.Stop(ctx, tt.externalMediaID)

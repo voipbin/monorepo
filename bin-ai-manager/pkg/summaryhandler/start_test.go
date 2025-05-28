@@ -226,7 +226,7 @@ func Test_startReferenceTypeConference(t *testing.T) {
 				tmtranscribe.ReferenceTypeConfbridge,
 				tt.responseConference.ConfbridgeID,
 				tt.language,
-				tmtranscribe.DirectionBoth,
+				tmtranscribe.DirectionIn,
 				5000,
 			).Return(tt.responseTranscribe, nil)
 

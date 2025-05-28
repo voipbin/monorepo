@@ -56,10 +56,12 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 	})
 
 	// stop the transcribe
-	_, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, ac.TranscribeID)
-	if err != nil {
-		// failed to stop the transcribe but we keep move
-		log.Errorf("Could not stops the transcribe. err: %v", err)
+	if ac.TranscribeID != uuid.Nil {
+		_, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, ac.TranscribeID)
+		if err != nil {
+			// failed to stop the transcribe but we keep move
+			log.Errorf("Could not stop the transcribe. err: %v", err)
+		}
 	}
 
 	res, err := h.UpdateStatusPausing(ctx, ac.ID)
@@ -71,26 +73,28 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 }
 
 // ProcessEnd ends a aicall process
-func (h *aicallHandler) ProcessEnd(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error) {
+func (h *aicallHandler) ProcessEnd(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "ProcessEnd",
-		"aicall_id": cb.ID,
+		"aicall_id": ac.ID,
 	})
 
 	// stop the transcribe
-	_, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, cb.TranscribeID)
-	if err != nil {
-		// failed to stop the transcribe but we keep move
-		log.Errorf("Could not stops the transcribe. err: %v", err)
+	if ac.TranscribeID != uuid.Nil {
+		_, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, ac.TranscribeID)
+		if err != nil {
+			// failed to stop the transcribe but we keep move
+			log.Errorf("Could not stop the transcribe. err: %v", err)
+		}
 	}
 
-	res, err := h.UpdateStatusEnd(ctx, cb.ID)
+	res, err := h.UpdateStatusEnd(ctx, ac.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not end the aicall")
 	}
 
 	// destroy the confbridge
-	tmp, err := h.reqHandler.CallV1ConfbridgeDelete(ctx, cb.ConfbridgeID)
+	tmp, err := h.reqHandler.CallV1ConfbridgeDelete(ctx, ac.ConfbridgeID)
 	if err != nil {
 		// we couldn't delete the confbridge here.
 		// but we don't return any error here because it doesn't affect to the activeflow execution.

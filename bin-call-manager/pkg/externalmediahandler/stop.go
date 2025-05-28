@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/ari"
@@ -27,9 +28,8 @@ func (h *externalMediaHandler) Stop(ctx context.Context, externalMediaID uuid.UU
 	}
 
 	// hangup the external media channel
-	if errHangup := h.reqHandler.AstChannelHangup(ctx, res.AsteriskID, res.ChannelID, ari.ChannelCauseNormalClearing, 0); errHangup != nil {
-		log.Errorf("Could not hangup the external media channel. err: %v", errHangup)
-		return nil, fmt.Errorf("could not hangup the external media channel")
+	if errHangup := h.channelHandler.HangingUpWithAsteriskID(ctx, res.AsteriskID, res.ChannelID, ari.ChannelCauseNormalClearing); errHangup != nil {
+		return nil, errors.Wrapf(errHangup, "could not hangup the external media channel")
 	}
 
 	// delete external media info

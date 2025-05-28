@@ -167,12 +167,10 @@ func (h *listenHandler) processV1TranscribesIDDelete(ctx context.Context, m *soc
 
 // processV1TranscribesIDStopPost handles /v1/transcribes/<id>/stop POST request
 func (h *listenHandler) processV1TranscribesIDStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1TranscribesIDStopPost",
-			"request": m,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1TranscribesIDStopPost",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -183,7 +181,7 @@ func (h *listenHandler) processV1TranscribesIDStopPost(ctx context.Context, m *s
 
 	tr, err := h.transcribeHandler.Stop(ctx, id)
 	if err != nil {
-		log.Errorf("Could not update the conference. err: %v", err)
+		log.Errorf("Could not stop the transcribe. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
