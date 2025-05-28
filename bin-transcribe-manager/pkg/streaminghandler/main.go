@@ -64,6 +64,8 @@ const (
 
 const (
 	defaultKeepAliveInterval = 10 * time.Second // 10 seconds
+	defaultMaxRetryAttempts  = 3
+	defaultInitialBackoff    = 100 * time.Millisecond // 100 milliseconds
 )
 
 type streamingHandler struct {

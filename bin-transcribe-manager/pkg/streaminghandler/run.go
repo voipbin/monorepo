@@ -98,10 +98,31 @@ func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, inte
 			// Create AudioSocket keepalive message
 			keepAliveMessage := []byte{0x10, 0x00, 0x00} // Header: type (0x10) + length (0x0000)
 
-			if _, err := conn.Write(keepAliveMessage); err != nil {
-				log.Debugf("Failed to send keep alive message: %v", err)
+			errRetry := h.retryWithBackoff(func() error {
+				_, writeErr := conn.Write(keepAliveMessage)
+				return writeErr
+			}, defaultMaxRetryAttempts, defaultInitialBackoff)
+			if errRetry != nil {
+				log.Errorf("Failed to send keep alive message after retries: %v", errRetry)
 				return
 			}
 		}
 	}
+}
+
+func (h *streamingHandler) retryWithBackoff(operation func() error, maxAttempts int, initialBackoff time.Duration) error {
+	backoff := initialBackoff
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		if err := operation(); err != nil {
+			if attempt == maxAttempts {
+				return err
+			}
+			time.Sleep(backoff)
+			backoff *= 2
+		} else {
+			return nil
+		}
+	}
+
+	return nil
 }
