@@ -21,7 +21,7 @@ type MessageHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error)
 
-	Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error)
+	Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error)
 }
 
 type messageHandler struct {

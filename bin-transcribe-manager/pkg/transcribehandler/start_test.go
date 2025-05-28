@@ -9,6 +9,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commondatabase "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -60,7 +61,8 @@ func Test_Start_referencetype_call(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
 				},
-				Status: cmcall.StatusProgressing,
+				Status:   cmcall.StatusProgressing,
+				TMDelete: commondatabase.DefaultTimeStamp,
 			},
 			responseUUID: uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
 			responseStreamings: []*streaming.Streaming{
@@ -182,7 +184,8 @@ func Test_isValidReference(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("918c6c26-98ae-11ed-8a80-a703c7717d9a"),
 				},
-				Status: cmcall.StatusProgressing,
+				Status:   cmcall.StatusProgressing,
+				TMDelete: commondatabase.DefaultTimeStamp,
 			},
 
 			expectRes: true,
@@ -197,7 +200,7 @@ func Test_isValidReference(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("915fe2c8-98ae-11ed-8b05-bf167f4d8651"),
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: commondatabase.DefaultTimeStamp,
 			},
 
 			expectRes: true,
@@ -346,6 +349,9 @@ func Test_startLive(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
+			if "9999-01-01 00:00:000000" < commondatabase.DefaultTimeStamp {
+				t.Errorf("Wrong match. DefaultTimeStamp should be greater than 9999-01-01 00:00:000000")
+			}
 		})
 	}
 }

@@ -12,7 +12,7 @@ import (
 
 const (
 	// DefaultTimeStamp is a placeholder for a default timestamp value used in specific queries.
-	DefaultTimeStamp = "9999-01-01 00:00:000"
+	DefaultTimeStamp = "9999-01-01 00:00:00.000000"
 )
 
 // PrepareUpdateFields processes a map of fields intended for an update operation (e.g., in a database).

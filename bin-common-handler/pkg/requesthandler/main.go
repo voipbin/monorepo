@@ -197,7 +197,7 @@ type RequestHandler interface {
 
 	// ai-manager message
 	AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbmessage.Message, error)
-	AIV1MessageSend(ctx context.Context, aicallID uuid.UUID, role cbmessage.Role, content string, timeout int) (*cbmessage.Message, error)
+	AIV1MessageSend(ctx context.Context, aicallID uuid.UUID, role cbmessage.Role, content string, returnResponse bool, timeout int) (*cbmessage.Message, error)
 	AIV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
 	AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
 

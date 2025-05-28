@@ -44,13 +44,15 @@ func (r *requestHandler) AIV1MessageGetsByAIcallID(ctx context.Context, aicallID
 // AIV1MessageSend sends a request to ai-manager
 // to send a message.
 // it returns created message if it succeed.
-func (r *requestHandler) AIV1MessageSend(ctx context.Context, aicallID uuid.UUID, role cbmessage.Role, content string, timeout int) (*cbmessage.Message, error) {
+func (r *requestHandler) AIV1MessageSend(ctx context.Context, aicallID uuid.UUID, role cbmessage.Role, content string, returnResponse bool, timeout int) (*cbmessage.Message, error) {
 	uri := "/v1/messages"
 
 	data := &cbrequest.V1DataMessagesPost{
 		AIcallID: aicallID,
 		Role:     role,
 		Content:  content,
+
+		ReturnResponse: returnResponse,
 	}
 
 	m, err := json.Marshal(data)

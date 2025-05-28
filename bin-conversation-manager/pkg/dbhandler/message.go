@@ -285,7 +285,7 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 		limit ?
 	`, messageSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, transactionID, token, limit)
+	rows, err := h.db.Query(q, commondatabasehandler.DefaultTimeStamp, transactionID, token, limit)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessageGetsByTransactionID. err: %v", err)
 	}

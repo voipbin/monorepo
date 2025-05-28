@@ -13,4 +13,6 @@ type V1DataMessagesPost struct {
 	AIcallID uuid.UUID    `json:"aicall_id,omitempty"`
 	Role     message.Role `json:"role,omitempty"`
 	Content  string       `json:"content,omitempty"`
+
+	ReturnResponse bool `json:"return_response,omitempty"` // if true, it will return the response message
 }

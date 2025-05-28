@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commondatabase "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -60,8 +61,8 @@ func Test_MessageCreate(t *testing.T) {
 				Text:           "Hello world",
 				Medias:         []media.Media{},
 				TMCreate:       "2022-04-18 03:22:17.995000",
-				TMUpdate:       DefaultTimeStamp,
-				TMDelete:       DefaultTimeStamp,
+				TMUpdate:       commondatabase.DefaultTimeStamp,
+				TMDelete:       commondatabase.DefaultTimeStamp,
 			},
 		},
 	}
@@ -173,8 +174,8 @@ func Test_MessageGets(t *testing.T) {
 					Text:           "hello world",
 					Medias:         []media.Media{},
 					TMCreate:       "2022-04-18 03:22:17.995000",
-					TMUpdate:       DefaultTimeStamp,
-					TMDelete:       DefaultTimeStamp,
+					TMUpdate:       commondatabase.DefaultTimeStamp,
+					TMDelete:       commondatabase.DefaultTimeStamp,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -188,8 +189,8 @@ func Test_MessageGets(t *testing.T) {
 					Text:           "This is test",
 					Medias:         []media.Media{},
 					TMCreate:       "2022-04-18 03:22:17.995000",
-					TMUpdate:       DefaultTimeStamp,
-					TMDelete:       DefaultTimeStamp,
+					TMUpdate:       commondatabase.DefaultTimeStamp,
+					TMDelete:       commondatabase.DefaultTimeStamp,
 				},
 			},
 		},
@@ -263,7 +264,7 @@ func Test_MessageUpdateStatus(t *testing.T) {
 
 				TMCreate: "2021-02-26 18:26:49.000",
 				TMUpdate: "2021-02-26 18:26:49.000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: commondatabase.DefaultTimeStamp,
 			},
 		},
 	}
@@ -349,7 +350,7 @@ func Test_MessageDelete(t *testing.T) {
 				Medias:         []media.Media{},
 				TMCreate:       "2021-02-26 18:26:49.000",
 				TMUpdate:       "2021-02-26 18:26:49.000",
-				TMDelete:       DefaultTimeStamp,
+				TMDelete:       commondatabase.DefaultTimeStamp,
 			},
 		},
 	}
@@ -434,7 +435,7 @@ func Test_MessageUpdate(t *testing.T) {
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: "2020-04-18T03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: commondatabase.DefaultTimeStamp,
 			},
 		},
 	}

@@ -144,7 +144,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt, 30000).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt, true, 30000).Return(tt.responseMessage, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.responseAIcall.ReferenceID, tt.responseMessage.Content, string(tt.responseAIcall.Gender), tt.responseAIcall.Language, 10000).Return(nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
@@ -277,7 +277,6 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(nil, fmt.Errorf(""))
 
-			// mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.responseAI.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
@@ -285,10 +284,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleUser, tt.expectMessageContent, 30000).Return(tt.responseMessage, nil)
-			// mockReq.EXPECT().CallV1CallTalk(ctx, tt.responseAIcall.ReferenceID, tt.responseMessage.Content, string(tt.responseAIcall.Gender), tt.responseAIcall.Language, 10000).Return(nil)
-
-			// mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleUser, tt.expectMessageContent, false, 30000).Return(tt.responseMessage, nil)
 
 			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.resume)
 			if err != nil {

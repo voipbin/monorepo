@@ -77,7 +77,7 @@ func Test_AImessageCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicallID, tt.role, tt.content, 30000).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicallID, tt.role, tt.content, false, 30000).Return(tt.response, nil)
 
 			res, err := h.AImessageCreate(ctx, tt.agent, tt.aicallID, tt.role, tt.content)
 			if err != nil {

@@ -259,7 +259,7 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeCall(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID2).Return(tt.expectMessage2, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage2.CustomerID, message.EventTypeMessageCreated, tt.expectMessage2)
 
-			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content)
+			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content, false)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -372,7 +372,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID2).Return(tt.expectMessage2, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage2.CustomerID, message.EventTypeMessageCreated, tt.expectMessage2)
 
-			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content)
+			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content, false)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -541,7 +541,6 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeConversation(t *testing.T) {
 			mockReq.EXPECT().AIV1AIGet(ctx, tt.responseAIcall.AIID).Return(tt.responseAI, nil)
 			mockReq.EXPECT().ConversationV1MessageGets(ctx, "", tt.expectSize, tt.expectFilters).Return(tt.responseConversationMessages, nil)
 
-			// mockDB.EXPECT().MessageGets(ctx, tt.responseAIcall.ID, tt.expectSize, "", tt.expectFilters).Return(tt.responseConversationMessages, nil)
 			mockGPT.EXPECT().MessageSend(ctx, tt.responseAIcall, tt.expectMessages).Return(tt.responseMessage, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID2)
@@ -551,7 +550,7 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeConversation(t *testing.T) {
 
 			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.responseAIcall.ReferenceID, tt.responseMessage.Content, nil).Return(tt.responseConversationMessage, nil)
 
-			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content)
+			res, err := h.Send(ctx, tt.aicallID, tt.role, tt.content, false)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

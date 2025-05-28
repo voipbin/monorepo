@@ -64,7 +64,7 @@ require (
 	github.com/smotes/purse v1.0.1
 	go.uber.org/mock v0.5.2
 	golang.org/x/sys v0.33.0 // indirect
-	google.golang.org/genproto v0.0.0-20250512202823-5a2f75b736a9 // indirect
+	google.golang.org/genproto v0.0.0-20250519155744-55703ea1f237 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )

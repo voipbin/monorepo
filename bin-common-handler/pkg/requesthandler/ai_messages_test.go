@@ -102,10 +102,11 @@ func Test_AIV1MessageSend(t *testing.T) {
 	tests := []struct {
 		name string
 
-		aicallID uuid.UUID
-		role     cbmessage.Role
-		content  string
-		timeout  int
+		aicallID       uuid.UUID
+		role           cbmessage.Role
+		content        string
+		returnResponse bool
+		timeout        int
 
 		response *sock.Response
 
@@ -116,10 +117,11 @@ func Test_AIV1MessageSend(t *testing.T) {
 		{
 			name: "normal",
 
-			aicallID: uuid.FromStringOrNil("5398cd60-f2cf-11ef-ac07-2b477cb8a829"),
-			role:     cbmessage.RoleUser,
-			content:  "test content",
-			timeout:  30000,
+			aicallID:       uuid.FromStringOrNil("5398cd60-f2cf-11ef-ac07-2b477cb8a829"),
+			role:           cbmessage.RoleUser,
+			content:        "test content",
+			returnResponse: true,
+			timeout:        30000,
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -132,7 +134,7 @@ func Test_AIV1MessageSend(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"aicall_id":"5398cd60-f2cf-11ef-ac07-2b477cb8a829","role":"user","content":"test content"}`),
+				Data:     []byte(`{"aicall_id":"5398cd60-f2cf-11ef-ac07-2b477cb8a829","role":"user","content":"test content","return_response":true}`),
 			},
 			expectRes: &cbmessage.Message{
 				Identity: identity.Identity{
@@ -155,7 +157,7 @@ func Test_AIV1MessageSend(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1MessageSend(ctx, tt.aicallID, tt.role, tt.content, tt.timeout)
+			cf, err := reqHandler.AIV1MessageSend(ctx, tt.aicallID, tt.role, tt.content, tt.returnResponse, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

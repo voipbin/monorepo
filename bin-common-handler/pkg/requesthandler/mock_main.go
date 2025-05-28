@@ -287,18 +287,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1MessageGetsByAIcallID(ctx, aicallI
 }
 
 // AIV1MessageSend mocks base method.
-func (m *MockRequestHandler) AIV1MessageSend(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, timeout int) (*message.Message, error) {
+func (m *MockRequestHandler) AIV1MessageSend(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool, timeout int) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1MessageSend", ctx, aicallID, role, content, timeout)
+	ret := m.ctrl.Call(m, "AIV1MessageSend", ctx, aicallID, role, content, returnResponse, timeout)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1MessageSend indicates an expected call of AIV1MessageSend.
-func (mr *MockRequestHandlerMockRecorder) AIV1MessageSend(ctx, aicallID, role, content, timeout any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1MessageSend(ctx, aicallID, role, content, returnResponse, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).AIV1MessageSend), ctx, aicallID, role, content, timeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).AIV1MessageSend), ctx, aicallID, role, content, returnResponse, timeout)
 }
 
 // AIV1ServiceTypeAIcallStart mocks base method.
