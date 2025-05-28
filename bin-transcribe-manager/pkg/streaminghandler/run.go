@@ -38,6 +38,7 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runStart",
 	})
+	defer conn.Close()
 
 	// get streamingID
 	streamingID, err := h.audiosocketGetStreamingID(conn)
