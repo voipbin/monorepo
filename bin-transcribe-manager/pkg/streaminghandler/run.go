@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"monorepo/bin-transcribe-manager/models/streaming"
 	"net"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -60,11 +61,40 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 		h.awsRun,
 	}
 
+	// Start Keep Alive after successful handler execution
+	go h.startKeepAlive(conn)
+
 	for _, handler := range handlers {
 		if errRun := handler(st, conn); errRun == nil {
 			return
 		} else {
 			log.Errorf("Could not run the handler. err: %v", errRun)
+		}
+	}
+}
+
+func (h *streamingHandler) startKeepAlive(conn net.Conn) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "startKeepAlive",
+	})
+
+	ticker := time.NewTicker(10 * time.Second) // Send keep alive every 10 seconds
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			// Create AudioSocket keepalive message
+			// Header: type (0x10) + length (0x0000)
+			keepAliveMessage := []byte{0x10, 0x00, 0x00}
+
+			// Send message
+			_, err := conn.Write(keepAliveMessage)
+			if err != nil {
+				log.Errorf("Failed to send keep alive message. err: %v", err)
+				return
+			}
+			log.Debug("Keep alive message sent")
 		}
 	}
 }
