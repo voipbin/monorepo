@@ -114,7 +114,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tmtranscribe.ReferenceTypeCall,
 				tt.referenceID,
 				tt.language,
-				tmtranscribe.DirectionIn,
+				tmtranscribe.DirectionBoth,
 				5000,
 			).Return(tt.responseTranscribe, nil)
 

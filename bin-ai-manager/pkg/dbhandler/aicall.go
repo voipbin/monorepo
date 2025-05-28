@@ -318,14 +318,14 @@ func (h *handler) aicallUpdateStatus(ctx context.Context, id uuid.UUID, transcri
 		update ai_aicalls set
 			status = ?,
 			transcribe_id = ?,
-			 tm_update = ?
+			tm_update = ?
 		where
 			id = ?
 		`
 
 	_, err := h.db.Exec(q, status, transcribeID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
-		return errors.Wrapf(err, "could not execute. AIcallUpdateStatusPausing")
+		return errors.Wrapf(err, "could not execute. aicallUpdateStatus")
 	}
 
 	// update the cache

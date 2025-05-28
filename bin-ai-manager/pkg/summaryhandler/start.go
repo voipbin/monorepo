@@ -90,7 +90,7 @@ func (h *summaryHandler) startReferenceTypeCall(
 		tmtranscribe.ReferenceTypeCall,
 		referenceID,
 		language,
-		tmtranscribe.DirectionIn,
+		tmtranscribe.DirectionBoth,
 		5000,
 	)
 	if err != nil {
