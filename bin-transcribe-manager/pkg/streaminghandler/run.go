@@ -81,20 +81,18 @@ func (h *streamingHandler) startKeepAlive(conn net.Conn) {
 	ticker := time.NewTicker(10 * time.Second) // Send keep alive every 10 seconds
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			// Create AudioSocket keepalive message
-			// Header: type (0x10) + length (0x0000)
-			keepAliveMessage := []byte{0x10, 0x00, 0x00}
+	// Use for range to iterate over ticker.C
+	for range ticker.C {
+		// Create AudioSocket keepalive message
+		// Header: type (0x10) + length (0x0000)
+		keepAliveMessage := []byte{0x10, 0x00, 0x00}
 
-			// Send message
-			_, err := conn.Write(keepAliveMessage)
-			if err != nil {
-				log.Errorf("Failed to send keep alive message. err: %v", err)
-				return
-			}
-			log.Debug("Keep alive message sent")
+		// Send message
+		_, err := conn.Write(keepAliveMessage)
+		if err != nil {
+			log.Errorf("Failed to send keep alive message. err: %v", err)
+			return
 		}
+		log.Debug("Keep alive message sent")
 	}
 }
