@@ -50,7 +50,7 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	// Get streamingID
 	streamingID, err := h.audiosocketGetStreamingID(conn)
 	if err != nil {
-		log.Errorf("Could not get mediaID: %v", err)
+		log.Errorf("Could not get streaming ID. err: %v", err)
 		return
 	}
 	log = log.WithField("streaming_id", streamingID)

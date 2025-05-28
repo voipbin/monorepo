@@ -60,7 +60,7 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 		_, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, ac.TranscribeID)
 		if err != nil {
 			// failed to stop the transcribe but we keep move
-			log.Errorf("Could not stops the transcribe. err: %v", err)
+			log.Errorf("Could not stop the transcribe. err: %v", err)
 		}
 	}
 
@@ -84,7 +84,7 @@ func (h *aicallHandler) ProcessEnd(ctx context.Context, ac *aicall.AIcall) (*aic
 		_, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, ac.TranscribeID)
 		if err != nil {
 			// failed to stop the transcribe but we keep move
-			log.Errorf("Could not stops the transcribe. err: %v", err)
+			log.Errorf("Could not stop the transcribe. err: %v", err)
 		}
 	}
 
