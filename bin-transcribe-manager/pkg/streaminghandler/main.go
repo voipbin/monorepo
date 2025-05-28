@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"log"
 	"sync"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -59,6 +60,10 @@ const (
 	defaultAWSRegion     = "eu-central-1"
 	defaultAWSEncoding   = transcribestreamingservice.MediaEncodingPcm
 	defaultAWSSampleRate = 8000
+)
+
+const (
+	defaultKeepAliveInterval = 10 * time.Second // 10 seconds
 )
 
 type streamingHandler struct {

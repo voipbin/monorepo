@@ -45,7 +45,7 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	}()
 
 	// Start keep-alive in a separate goroutine
-	go h.startKeepAlive(ctx, conn)
+	go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval)
 
 	// Get streamingID
 	streamingID, err := h.audiosocketGetStreamingID(conn)
@@ -79,10 +79,10 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	log.Warn("No handler executed successfully")
 }
 
-func (h *streamingHandler) startKeepAlive(ctx context.Context, conn net.Conn) {
-	log := logrus.WithField("func", "startKeepAlive")
+func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration) {
+	log := logrus.WithField("func", "runKeepAlive")
 
-	ticker := time.NewTicker(10 * time.Second) // Send keep alive every 10 seconds
+	ticker := time.NewTicker(interval) // Use configurable interval
 	defer ticker.Stop()
 
 	for {
