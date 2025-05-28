@@ -158,7 +158,7 @@ func (h *recordingHandler) stopReferenceTypeCall(ctx context.Context, r *recordi
 	for _, channelID := range r.ChannelIDs {
 		// hangup the channel
 		log.WithField("channel_id", channelID).Debugf("Hanging up the recording channel. channel_id: %s", channelID)
-		if errHangup := h.reqHandler.AstChannelHangup(ctx, r.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0); errHangup != nil {
+		if errHangup := h.channelHandler.HangingUpWithAsteriskID(ctx, r.AsteriskID, channelID, ari.ChannelCauseNormalClearing); errHangup != nil {
 			log.Errorf("Could not hangup the recording channel. err: %v", errHangup)
 		}
 	}

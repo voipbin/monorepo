@@ -64,6 +64,7 @@ func (h *channelHandler) HangingUpWithAsteriskID(ctx context.Context, asteriskID
 		"channel_id":  id,
 		"cause":       cause,
 	})
+	log.Debugf("Hanging up channel with asteriskID: %s, channelID: %s, cause: %d", asteriskID, id, cause)
 
 	if errHangup := h.reqHandler.AstChannelHangup(ctx, asteriskID, id, cause, 0); errHangup != nil {
 		if strings.Contains(errHangup.Error(), "404") {

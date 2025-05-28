@@ -31,6 +31,7 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) (*call.Ca
 		return nil, errors.Wrap(err, "could not get call info from the db")
 	}
 	log = log.WithField("call", c)
+	log.Debugf("Hanging up the call. call_id: %s, channel_id: %s", c.ID, cn.ID)
 
 	// remove the call bridge
 	if errDestroy := h.bridgeHandler.Destroy(ctx, c.BridgeID); errDestroy != nil {
