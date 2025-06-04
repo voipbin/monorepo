@@ -98,6 +98,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-sentinel-manager:
+    type: boolean
+    default: false
+
   run-bin-storage-manager:
     type: boolean
     default: false
@@ -520,6 +524,25 @@ workflows:
           <<: *context_production
           requires:
             - bin-route-manager-build
+            - release-approval
+
+  bin-sentinel-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-sentinel-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-sentinel-manager-test
+      - bin-sentinel-manager-build:
+          <<: *context_production
+          requires:
+            - bin-sentinel-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-sentinel-manager-build
+      - bin-sentinel-manager-release:
+          <<: *context_production
+          requires:
+            - bin-sentinel-manager-build
             - release-approval
 
   bin-storage-manager:
@@ -1185,6 +1208,32 @@ jobs:
           namespace: bin-manager
           source-directory: bin-route-manager
           image-name: route-manager
+
+  # bin-sentinel-manager
+  bin-sentinel-manager-test:
+    docker:
+      - image: cimg/go:1.24
+    steps:
+      - go-test:
+          source-directory: bin-sentinel-manager
+
+  bin-sentinel-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-sentinel-manager
+          image-name: sentinel-manager
+
+  bin-sentinel-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-sentinel-manager
+          image-name: sentinel-manager
 
   # bin-storage-manager
   bin-storage-manager-test:

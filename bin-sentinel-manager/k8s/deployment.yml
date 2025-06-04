@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinel-manager
+  labels:
+    app: sentinel-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentinel-manager
+  template:
+    metadata:
+      labels:
+        app: sentinel-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      containers:
+        - name: sentinel-manager
+          image: sentinel-manager-image
+          command:
+            - './sentinel-manager'
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
+            - name: REDIS_DATABASE
+              value: "1"
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+            - name: grpc
+              protocol: "TCP"
+              containerPort: 80
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "100Mi"
