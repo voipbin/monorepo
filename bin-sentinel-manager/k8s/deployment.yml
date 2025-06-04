@@ -24,28 +24,12 @@ spec:
           command:
             - './sentinel-manager'
           env:
-            - name: NODE_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
-            - name: POD_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
-            - name: DATABASE_DSN
-              value: ${DATABASE_DSN}
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
               value: ":2112"
             - name: RABBITMQ_ADDRESS
               value: ${RABBITMQ_ADDRESS}
-            - name: REDIS_ADDRESS
-              value: ${REDIS_ADDRESS}
-            - name: REDIS_PASSWORD
-              value: ${REDIS_PASSWORD}
-            - name: REDIS_DATABASE
-              value: "1"
           ports:
             - name: metrics
               protocol: "TCP"
@@ -55,5 +39,5 @@ spec:
               containerPort: 80
           resources:
             limits:
-              cpu: "100m"
-              memory: "100Mi"
+              cpu: "30m"
+              memory: "20Mi"

@@ -54,20 +54,31 @@ func (h *monitoringHandler) Run(ctx context.Context, selectors map[string][]stri
 					cache.Indexers{},
 				)
 
-				podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+				regstrantion, err := podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 					AddFunc: func(obj interface{}) {
 						pod := obj.(*corev1.Pod)
-						h.runPodAdded(ctx, pod)
+						if errRun := h.runPodAdded(ctx, pod); errRun != nil {
+							log.WithError(errRun).Errorf("Failed to run pod added handler for pod: %s/%s", pod.Namespace, pod.Name)
+						}
 					},
 					UpdateFunc: func(oldObj, newObj interface{}) {
 						newPod := newObj.(*corev1.Pod)
-						h.runPodUpdated(ctx, newPod)
+						if errRun := h.runPodUpdated(ctx, newPod); errRun != nil {
+							log.WithError(errRun).Errorf("Failed to run pod updated handler for pod: %s/%s", newPod.Namespace, newPod.Name)
+						}
 					},
 					DeleteFunc: func(obj interface{}) {
 						pod := obj.(*corev1.Pod)
-						h.runPodDeleted(ctx, pod)
+						if errRun := h.runPodDeleted(ctx, pod); errRun != nil {
+							log.WithError(errRun).Errorf("Failed to run pod deleted handler for pod: %s/%s", pod.Namespace, pod.Name)
+						}
 					},
 				})
+				if err != nil {
+					log.WithError(err).Errorf("Failed to add event handler for pod informer. namespace: %s, selector: %s", ns, labelSelector)
+					return
+				}
+				log.WithField("registration", regstrantion).Infof("Event handler registered for pod informer. namespace: %s, selector: %s", ns, labelSelector)
 
 				stopCh := make(chan struct{})
 
