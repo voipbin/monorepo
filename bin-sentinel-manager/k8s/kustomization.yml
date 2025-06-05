@@ -11,3 +11,20 @@ resources:
   - service.yml
   - role.yml
   - rolebinding.yml
+
+patches:
+  - target:
+      kind: Role
+      name: pod-reader
+    patch: |
+      - op: replace
+        path: /metadata/namespace
+        value: voip
+
+  - target:
+      kind: RoleBinding
+      name: pod-reader-binding
+    patch: |
+      - op: replace
+        path: /metadata/namespace
+        value: voip
