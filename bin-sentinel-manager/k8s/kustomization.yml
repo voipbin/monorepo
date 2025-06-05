@@ -10,4 +10,3 @@ resources:
   - deployment.yml
   - service.yml
   - rbac
-
