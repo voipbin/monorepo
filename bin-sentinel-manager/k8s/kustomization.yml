@@ -9,3 +9,5 @@ resources:
   - namespace.yml
   - deployment.yml
   - service.yml
+  - voip-role.yaml
+  - voip-rolebinding.yaml
