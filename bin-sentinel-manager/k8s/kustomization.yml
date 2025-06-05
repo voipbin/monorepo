@@ -9,5 +9,5 @@ resources:
   - namespace.yml
   - deployment.yml
   - service.yml
-  - role.yaml
-  - rolebinding.yaml
+  - role.yml
+  - rolebinding.yml
