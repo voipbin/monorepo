@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: sentinel-manager
+  namespace: bin-manager
   labels:
     app: sentinel-manager
 spec:
@@ -11,6 +12,7 @@ spec:
       app: sentinel-manager
   template:
     metadata:
+      namespace: bin-manager
       labels:
         app: sentinel-manager
       annotations:
