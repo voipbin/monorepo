@@ -1,0 +1,4 @@
+namespace: voip
+resources:
+  - role.yml
+  - rolebinding.yml
