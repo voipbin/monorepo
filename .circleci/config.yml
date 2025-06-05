@@ -36,6 +36,7 @@ workflows:
             bin-queue-manager/.*        run-bin-queue-manager true
             bin-registrar-manager/.*    run-bin-registrar-manager true
             bin-route-manager/.*        run-bin-route-manager true
+            bin-sentinel-manager/.*     run-bin-sentinel-manager true
             bin-storage-manager/.*      run-bin-storage-manager true
             bin-tag-manager/.*          run-bin-tag-manager true
             bin-transcribe-manager/.*   run-bin-transcribe-manager true

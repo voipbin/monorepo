@@ -27,6 +27,7 @@ const (
 	ServiceNameQueueManager      ServiceName = "queue-manager"
 	ServiceNameRegistrarManager  ServiceName = "registrar-manager"
 	ServiceNameRouteManager      ServiceName = "route-manager"
+	ServiceNameSentinelManager   ServiceName = "sentinel-manager"
 	ServiceNameStorageManager    ServiceName = "storage-manager"
 	ServiceNameTagManager        ServiceName = "tag-manager"
 	ServiceNameTranscribeManager ServiceName = "transcribe-manager"
