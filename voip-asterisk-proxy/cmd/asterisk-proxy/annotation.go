@@ -93,7 +93,6 @@ func patchPodAnnotation(clientset *kubernetes.Clientset, namespace, podName, ann
 
 	log.Info("Attempting to patch pod annotation")
 
-	// 어노테이션 키의 '/'를 JSON Patch 경로에 맞게 '~1'로 이스케이프
 	escapedAnnotationKey := strings.ReplaceAll(annotationKey, "/", "~1")
 	patchPayload := []map[string]string{
 		{
