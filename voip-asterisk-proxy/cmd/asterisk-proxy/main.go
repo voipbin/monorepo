@@ -58,6 +58,11 @@ var (
 	recordingBucketDirectory   = ""
 )
 
+const (
+	defaultMaxRetries = 10
+	defaultRetryDelay = 500 * time.Millisecond
+)
+
 var chSigs = make(chan os.Signal, 1)
 
 func main() {
@@ -78,6 +83,16 @@ func main() {
 	asteriskID, asteriskAddress, err := getAsteriskIDAddress(interfaceName)
 	if err != nil {
 		log.Errorf("Could not get correct asterisk-id, asterisk-address info.")
+		return
+	}
+
+	if errSet := setProxyInfoRedis(redisAddress, redisPassword, redisDatabase, asteriskID, asteriskAddress); errSet != nil {
+		log.Errorf("Could not initiate proxy info redis. err: %v", errSet)
+		return
+	}
+
+	if errSet := setProxyInfoAnnotation(asteriskID); errSet != nil {
+		log.Errorf("Could not initiate proxy info annotation handler. err: %v", errSet)
 		return
 	}
 
@@ -129,11 +144,6 @@ func main() {
 	}
 	log.Debugf("The listen handler is running now. id: %s, address: %v", asteriskID, asteriskAddress)
 
-	if err := handleProxyInfo(redisAddress, redisPassword, redisDatabase, asteriskID, asteriskAddress); err != nil {
-		log.Errorf("Could not initiate proxy info handler. err: %v", err)
-		return
-	}
-
 	sig := <-chSigs
 	log.Infof("Terminating api-manager. sig: %v", sig)
 
@@ -161,8 +171,8 @@ func connectAMI(host, port, username, password string) *amigo.Amigo {
 	return amiSock
 }
 
-// handleProxyInfo updates the ipaddress for every 3 min
-func handleProxyInfo(addr string, password string, database int, asteriskID string, internalAddress string) error {
+// setProxyInfoRedis updates the ipaddress for every 3 min
+func setProxyInfoRedis(addr string, password string, database int, asteriskID string, internalAddress string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "handleProxyInfo",
 		"internal_address": internalAddress,
