@@ -7,6 +7,17 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
+// list of namespaces
+const (
+	namespaceVOIP = "voip"
+	namespaceBIN  = "bin"
+)
+
+// list of lables
+const (
+	lableAppAsteriskCall = "asterisk-call"
+)
+
 type monitoringHandler struct {
 	util          utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler

@@ -117,6 +117,16 @@ func (h *monitoringHandler) runPodDeleted(ctx context.Context, pod *corev1.Pod) 
 	log := logrus.WithField("func", "runPodDeleted")
 
 	log.WithField("pod", pod).Infof("Pod deleted. namespace: %s, name: %s", pod.Namespace, pod.Name)
+	if pod.Namespace == namespaceVOIP || pod.Labels["app"] == lableAppAsteriskCall {
+		log.Debugf("Pod is in VOIP namespace or has asterisk-call label, starting recovery process.")
+
+		if errRecovery := h.reqHandler.CallV1RecoveryStart(ctx, pod.Annotations["asterisk-id"]); errRecovery != nil {
+			log.WithError(errRecovery).Errorf("Failed to start recovery for pod: %s/%s", pod.Namespace, pod.Name)
+			return errors.Wrapf(errRecovery, "failed to start recovery for pod %s/%s", pod.Namespace, pod.Name)
+		} else {
+			log.Infof("Recovery started for pod: %s/%s", pod.Namespace, pod.Name)
+		}
+	}
 
 	return nil
 }
