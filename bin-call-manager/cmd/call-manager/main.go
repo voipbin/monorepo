@@ -41,6 +41,10 @@ var (
 	redisAddress            = ""
 	redisDatabase           = 0
 	redisPassword           = ""
+
+	homerAPIAddress      = ""
+	homerAuthToken       = ""
+	homerLoadBalancerIPs = []string{}
 )
 
 func main() {
@@ -97,7 +101,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	recordingHandler := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db)
-	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler)
+	recoveryHandler := callhandler.NewRecoveryHandler(reqHandler, homerAPIAddress, homerAuthToken, homerLoadBalancerIPs)
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler, recoveryHandler)
 	ariEventHandler := arieventhandler.NewEventHandler(sockHandler, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
 
 	// run subscribe listener

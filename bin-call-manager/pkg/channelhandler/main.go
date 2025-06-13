@@ -41,6 +41,7 @@ type ChannelHandler interface {
 		state ari.ChannelState,
 	) (*channel.Channel, error)
 	Get(ctx context.Context, id string) (*channel.Channel, error)
+	GetChannelsForRecovery(ctx context.Context, asteriskID string) ([]*channel.Channel, error)
 	Delete(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error)
 	SetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	SetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error

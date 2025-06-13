@@ -69,6 +69,7 @@ type DBHandler interface {
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
 	ChannelEndAndDelete(ctx context.Context, id string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
+	ChannelGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error)
 	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error
 	ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error
 	ChannelSetStasisInfo(ctx context.Context, id string, chType channel.Type, stasisName string, stasisData map[channel.StasisDataType]string, direction channel.Direction) error

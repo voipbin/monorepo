@@ -1629,3 +1629,116 @@ func Test_ChannelSetMuteDirection(t *testing.T) {
 		})
 	}
 }
+
+func Test_ChannelGets(t *testing.T) {
+
+	type test struct {
+		name     string
+		channels []*channel.Channel
+
+		filters map[string]string
+
+		responseCurTime string
+
+		expectRes []*channel.Channel
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			channels: []*channel.Channel{
+				{
+					ID:         "3b29f23c-42ec-11f0-ad0b-9360df8ed5c7",
+					AsteriskID: "3e:50:6b:43:bb:31",
+				},
+				{
+					ID:         "3b733fc8-42ec-11f0-9fa5-4f77e55ccdbd",
+					AsteriskID: "3e:50:6b:43:bb:31",
+				},
+			},
+
+			filters: map[string]string{
+				"deleted":     "false",
+				"asterisk_id": "3e:50:6b:43:bb:31",
+			},
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+
+			expectRes: []*channel.Channel{
+				{
+					ID:         "3b733fc8-42ec-11f0-9fa5-4f77e55ccdbd",
+					AsteriskID: "3e:50:6b:43:bb:31",
+
+					Data:       map[string]interface{}{},
+					StasisData: map[channel.StasisDataType]string{},
+
+					TMAnswer:  DefaultTimeStamp,
+					TMRinging: DefaultTimeStamp,
+					TMEnd:     DefaultTimeStamp,
+					TMCreate:  "2020-04-18 03:22:17.995000",
+					TMUpdate:  DefaultTimeStamp,
+					TMDelete:  DefaultTimeStamp,
+				},
+				{
+					ID:         "3b29f23c-42ec-11f0-ad0b-9360df8ed5c7",
+					AsteriskID: "3e:50:6b:43:bb:31",
+
+					Data:       map[string]interface{}{},
+					StasisData: map[channel.StasisDataType]string{},
+
+					TMAnswer:  DefaultTimeStamp,
+					TMRinging: DefaultTimeStamp,
+					TMEnd:     DefaultTimeStamp,
+					TMCreate:  "2020-04-18 03:22:17.995000",
+					TMUpdate:  DefaultTimeStamp,
+					TMDelete:  DefaultTimeStamp,
+				},
+			},
+		},
+		{
+			name:     "empty",
+			channels: []*channel.Channel{},
+
+			filters: map[string]string{
+				"deleted":     "true",
+				"asterisk_id": "3e:50:6b:43:bb:32",
+			},
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes:       []*channel.Channel{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// creates calls for test
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := &handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			for _, c := range tt.channels {
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockCache.EXPECT().ChannelSet(ctx, gomock.Any())
+				_ = h.ChannelCreate(ctx, c)
+			}
+
+			res, err := h.ChannelGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+			}
+		})
+	}
+}

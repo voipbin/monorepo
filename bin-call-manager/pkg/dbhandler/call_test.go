@@ -244,8 +244,8 @@ func Test_CallGets(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			[]*call.Call{
+			name: "normal",
+			calls: []*call.Call{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("9e8a2df2-c8ea-4fea-b982-48103dd04a9e"),
@@ -260,14 +260,14 @@ func Test_CallGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
+			filters: map[string]string{
 				"customer_id": "739625ca-7f43-11ec-8d25-4f519d029295",
 				"deleted":     "false",
 			},
 
-			"2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18 03:22:17.995000",
 
-			[]*call.Call{
+			expectRes: []*call.Call{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("9e8a2df2-c8ea-4fea-b982-48103dd04a9e"),
@@ -309,16 +309,16 @@ func Test_CallGets(t *testing.T) {
 			},
 		},
 		{
-			"empty",
-			[]*call.Call{},
+			name:  "empty",
+			calls: []*call.Call{},
 
-			map[string]string{
+			filters: map[string]string{
 				"customer_id": "cd1bc551-c4e8-45c8-a457-d41d65e1f18c",
 				"deleted":     "true",
 			},
 
-			"2020-04-18 03:22:17.995000",
-			[]*call.Call{},
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes:       []*call.Call{},
 		},
 	}
 

@@ -91,6 +91,9 @@ func (h *callHandler) Start(ctx context.Context, cn *channel.Channel) error {
 	case channel.ContextApplication:
 		return h.startContextApplication(ctx, cn)
 
+	case channel.ContextCallRecovery:
+		return h.startContextCallRecovery(ctx, cn)
+
 	default:
 		return fmt.Errorf("no route found for stasisstart. channel_id: %s, stasis_data: %v", cn.ID, cn.StasisData)
 	}
@@ -345,6 +348,26 @@ func (h *callHandler) startContextApplication(ctx context.Context, cn *channel.C
 		log.Errorf("Could not find correct event handler. app_name: %s", appName)
 		return fmt.Errorf("could not find correct event handler. app_name: %s", appName)
 	}
+}
+
+// startContextCallRecovery handles context call-recovery context type of StasisStart event.
+func (h *callHandler) startContextCallRecovery(ctx context.Context, cn *channel.Channel) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startContextCallRecovery",
+		"channel_id": cn.ID,
+	})
+	log.Infof("Executing startContextCallRecovery. channel_id: %s", cn.ID)
+
+	callID := cn.StasisData[channel.StasisDataTypeCallID]
+	log.Debugf("Parsed info. call_id: %s, ", callID)
+
+	// dial to the destination
+	if errDial := h.channelHandler.Dial(ctx, cn.ID, "", defaultDialTimeout); errDial != nil {
+		log.Errorf("Could not dial the channel to the destination. channel_id: %s, err: %v", cn.ID, errDial)
+		return errors.Wrap(errDial, "could not dial the channel to the destination")
+	}
+
+	return nil
 }
 
 // addCallBridge creates a call bridge and put the channel into the join bridge.

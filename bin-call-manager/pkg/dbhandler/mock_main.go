@@ -576,6 +576,21 @@ func (mr *MockDBHandlerMockRecorder) ChannelGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGet", reflect.TypeOf((*MockDBHandler)(nil).ChannelGet), ctx, id)
 }
 
+// ChannelGets mocks base method.
+func (m *MockDBHandler) ChannelGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelGets", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelGets indicates an expected call of ChannelGets.
+func (mr *MockDBHandlerMockRecorder) ChannelGets(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGets", reflect.TypeOf((*MockDBHandler)(nil).ChannelGets), ctx, size, token, filters)
+}
+
 // ChannelSetBridgeID mocks base method.
 func (m *MockDBHandler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error {
 	m.ctrl.T.Helper()

@@ -132,6 +132,7 @@ type callHandler struct {
 	recordingHandler     recordinghandler.RecordingHandler
 	externalMediaHandler externalmediahandler.ExternalMediaHandler
 	groupcallHandler     groupcallhandler.GroupcallHandler
+	recoveryHandler      RecoveryHandler
 }
 
 // contextType
@@ -246,6 +247,7 @@ func NewCallHandler(
 	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
+	recoveryHandler RecoveryHandler,
 ) CallHandler {
 
 	h := &callHandler{
@@ -259,6 +261,7 @@ func NewCallHandler(
 		recordingHandler:     recordingHandler,
 		externalMediaHandler: externalMediaHandler,
 		groupcallHandler:     groupcallHandler,
+		recoveryHandler:      recoveryHandler,
 	}
 
 	return h

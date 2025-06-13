@@ -83,6 +83,7 @@ const (
 	// call
 	ContextCallIncoming  Context = "call-in"            // context for the incoming channel
 	ContextCallOutgoing  Context = "call-out"           // context for the outgoing channel
+	ContextCallRecovery  Context = "call-recovery"      // context for the channel which created for recovery
 	ContextRecording     Context = "call-record"        // context for the channel which created only for recording
 	ContextCallService   Context = "call-svc"           // context for the channel where it came back to stasis from the other asterisk application
 	ContextJoinCall      Context = "call-join"          // context for the channel for conference joining

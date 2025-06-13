@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -22,6 +23,9 @@ const (
 	defaultRedisAddress            = "127.0.0.1:6379"
 	defaultRedisDatabase           = 1
 	defaultRedisPassword           = ""
+	defaultHomerAPIAddress         = ""
+	defaultHomerAuthToken          = ""
+	defaultHomerLoadBalancerIPs    = ""
 )
 
 // proces init
@@ -48,9 +52,15 @@ func initVariable() {
 	pflag.String("prometheus_endpoint", defaultPrometheusEndpoint, "URL for the Prometheus metrics endpoint")
 	pflag.String("prometheus_listen_address", defaultPrometheusListenAddress, "Address for Prometheus to listen on (e.g., localhost:8080)")
 	pflag.String("database_dsn", defaultDatabaseDSN, "Data Source Name for database connection (e.g., user:password@tcp(localhost:3306)/dbname)")
+
 	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
 	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
+
+	pflag.String("homer_api_address", defaultHomerAPIAddress, "Address of the Homer API server (e.g., http://localhost:8080)")
+	pflag.String("homer_auth_token", defaultHomerAuthToken, "Authentication token for the Homer API (if required)")
+	pflag.String("homer_loadbalancer_ips", defaultHomerLoadBalancerIPs, "Comma-separated list of IPs for the Homer load balancer (if required)")
+
 	pflag.Parse()
 
 	// rabbitmq_address
@@ -129,6 +139,41 @@ func initVariable() {
 		panic(errEnv)
 	}
 	redisDatabase = viper.GetInt("redis_database")
+
+	// homer_api_address
+	if errFlag := viper.BindPFlag("homer_api_address", pflag.Lookup("homer_api_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("homer_api_address", "HOMER_API_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	homerAPIAddress = viper.GetString("homer_api_address")
+
+	// homer_auth_token
+	if errFlag := viper.BindPFlag("homer_auth_token", pflag.Lookup("homer_auth_token")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("homer_auth_token", "HOMER_AUTH_TOKEN"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	homerAuthToken = viper.GetString("homer_auth_token")
+
+	// homer_load_balancer_ips
+	if errFlag := viper.BindPFlag("homer_load_balancer_ips", pflag.Lookup("homer_load_balancer_ips")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("homer_load_balancer_ips", "HOMER_LOAD_BALANCER_IPS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	tmpHomerLoadBalancerIPs := viper.GetString("homer_load_balancer_ips")
+	homerLoadBalancerIPs = strings.Split(tmpHomerLoadBalancerIPs, ",")
+
 }
 
 // initLog inits log settings.

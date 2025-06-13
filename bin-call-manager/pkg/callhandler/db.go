@@ -150,6 +150,15 @@ func (h *callHandler) Get(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	return res, nil
 }
 
+func (h *callHandler) GetByChannelID(ctx context.Context, channelID string) (*call.Call, error) {
+	res, err := h.db.CallGetByChannelID(ctx, channelID)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get call info from the db")
+	}
+
+	return res, nil
+}
+
 // updateForRouteFailover updates the call for route failover
 func (h *callHandler) updateForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{

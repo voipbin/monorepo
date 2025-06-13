@@ -114,6 +114,22 @@ func (h *channelHandler) Get(ctx context.Context, id string) (*channel.Channel, 
 	return res, nil
 }
 
+// GetChannelsForRecovery returns channels for recovery.
+func (h *channelHandler) GetChannelsForRecovery(ctx context.Context, asteriskID string) ([]*channel.Channel, error) {
+	filters := map[string]string{
+		"asterisk_id": asteriskID,
+		"state":       string(ari.ChannelStateUp),
+		"deleted":     "false",
+	}
+
+	res, err := h.db.ChannelGets(ctx, 10000, "", filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get recovery channels for asterisk_id %s", asteriskID)
+	}
+
+	return res, nil
+}
+
 // Delete deletes the channel.
 func (h *channelHandler) Delete(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error) {
 	log := logrus.WithFields(logrus.Fields{
