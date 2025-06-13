@@ -116,6 +116,8 @@ const (
 	defaultExistTimeout        = time.Second * 3
 	defaultHealthMaxRetryCount = 2
 	defaultHealthDelay         = 10000 // 10 seconds
+
+	defaultChannelRecoveryLimit = uint64(10000)
 )
 
 var (

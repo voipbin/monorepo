@@ -122,7 +122,7 @@ func (h *channelHandler) GetChannelsForRecovery(ctx context.Context, asteriskID 
 		"deleted":     "false",
 	}
 
-	res, err := h.db.ChannelGets(ctx, 10000, "", filters)
+	res, err := h.db.ChannelGets(ctx, defaultChannelRecoveryLimit, "", filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get recovery channels for asterisk_id %s", asteriskID)
 	}

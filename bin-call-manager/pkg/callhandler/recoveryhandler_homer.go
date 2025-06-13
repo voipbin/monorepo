@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/jart/gosip/sip"
 	"github.com/pkg/errors"
@@ -68,10 +69,14 @@ func (h *recoveryHandler) getSIPMessages(ctx context.Context, callID string) ([]
 
 	homerAPIEndpoint := fmt.Sprintf("%s/api/v3/call/transaction", h.homerAPIAddress)
 
+	now := time.Now()
+	fromTimestamp := now.Add(defaultHomerSearchTimeRange).UnixMilli()
+	toTimestamp := now.UnixMilli()
+
 	payload := homerRequestPayload{
 		Timestamp: TimeRange{
-			From: defaultFromTimestampMs,
-			To:   defaultToTimestampMs,
+			From: fromTimestamp,
+			To:   toTimestamp,
 		},
 		Param: homerRequestParam{
 			Limit:   1,

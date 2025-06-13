@@ -56,8 +56,7 @@ type recoveryHandler struct {
 }
 
 var (
-	defaultFromTimestampMs = time.Now().Add(-24 * time.Hour).UnixMilli() // 24 hours ago
-	defaultToTimestampMs   = time.Now().UnixMilli()                      // current time
+	defaultHomerSearchTimeRange = -24 * time.Hour // from 24 hours ago
 )
 
 // NewRecoveryHandler creates a new RecoveryHandler instance
