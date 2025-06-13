@@ -53,7 +53,7 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 require (
 	github.com/dongri/phonenumber v0.1.12
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/go-sql-driver/mysql v1.9.2
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/jart/gosip v0.0.0-20250608211422-1158f11cb31e
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32

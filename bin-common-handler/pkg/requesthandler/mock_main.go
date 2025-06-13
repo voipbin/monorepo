@@ -2153,6 +2153,20 @@ func (mr *MockRequestHandlerMockRecorder) CallV1RecordingStop(ctx, recordingID a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1RecordingStop", reflect.TypeOf((*MockRequestHandler)(nil).CallV1RecordingStop), ctx, recordingID)
 }
 
+// CallV1RecoveryStart mocks base method.
+func (m *MockRequestHandler) CallV1RecoveryStart(ctx context.Context, asteriskID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1RecoveryStart", ctx, asteriskID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1RecoveryStart indicates an expected call of CallV1RecoveryStart.
+func (mr *MockRequestHandlerMockRecorder) CallV1RecoveryStart(ctx, asteriskID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1RecoveryStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1RecoveryStart), ctx, asteriskID)
+}
+
 // CampaignV1CampaignCreate mocks base method.
 func (m *MockRequestHandler) CampaignV1CampaignCreate(ctx context.Context, id, customerID uuid.UUID, campaignType campaign.Type, name, detail string, serviceLevel int, endHandle campaign.EndHandle, actions []action.Action, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
