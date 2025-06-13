@@ -115,7 +115,9 @@ func (h *recoveryHandler) getSIPMessages(ctx context.Context, callID string) ([]
 	}
 
 	responseData := homerAPIResponse{}
-	json.Unmarshal(respBody, &responseData)
+	if errUnmarshal := json.Unmarshal(respBody, &responseData); errUnmarshal != nil {
+		return nil, errors.Wrapf(errUnmarshal, "error unmarshalling response for call ID %s", callID)
+	}
 
 	res := []*sip.Msg{}
 	for _, message := range responseData.Data.Messages {

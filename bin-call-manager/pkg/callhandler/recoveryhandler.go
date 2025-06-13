@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -221,15 +220,6 @@ func (h *recoveryHandler) findFirstSuccessfulResponse(messages []*sip.Msg, invit
 		}
 	}
 	return nil
-}
-
-func (h *recoveryHandler) splitAndTrim(s string) []string {
-	var result []string
-	tmps := strings.Split(s, ",")
-	for _, tmp := range tmps {
-		result = append(result, strings.TrimSpace(tmp))
-	}
-	return result
 }
 
 func (h *recoveryHandler) validateLastMessage(lastMsg *sip.Msg) error {
