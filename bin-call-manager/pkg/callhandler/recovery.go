@@ -25,21 +25,21 @@ func (h *callHandler) Recovery(ctx context.Context, asteriskID string) error {
 
 	// run recovery
 	for _, ch := range channels {
-		go func() {
-			log := log.WithField("channel", ch.ID)
+		go func(innerCh *channel.Channel) {
+			log := log.WithField("channel", innerCh.ID)
 
-			if ch.Type != channel.TypeCall {
+			if innerCh.Type != channel.TypeCall {
 				// nothing to do
 				return
 			}
 
-			log.Debugf("Starting recovery for channel. channel_id: %s", ch.ID)
-			if err := h.recoveryRun(context.Background(), ch); err != nil {
+			log.Debugf("Starting recovery for channel. channel_id: %s", innerCh.ID)
+			if err := h.recoveryRun(context.Background(), innerCh); err != nil {
 				log.Errorf("Could not run recovery for channel. err: %v", err)
 				return
 			}
 			log.Info("Recovery completed successfully")
-		}()
+		}(ch)
 	}
 
 	return nil

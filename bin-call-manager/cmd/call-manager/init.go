@@ -59,7 +59,7 @@ func initVariable() {
 
 	pflag.String("homer_api_address", defaultHomerAPIAddress, "Address of the Homer API server (e.g., http://localhost:8080)")
 	pflag.String("homer_auth_token", defaultHomerAuthToken, "Authentication token for the Homer API (if required)")
-	pflag.String("homer_loadbalancer_ips", defaultHomerLoadBalancerIPs, "Comma-separated list of IPs for the Homer load balancer (if required)")
+	pflag.String("homer_load_balancer_ips", defaultHomerLoadBalancerIPs, "Comma-separated list of IPs for the Homer load balancer (if required)")
 
 	pflag.Parse()
 
