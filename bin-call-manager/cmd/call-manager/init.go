@@ -172,7 +172,11 @@ func initVariable() {
 		panic(errEnv)
 	}
 	tmpHomerLoadBalancerIPs := viper.GetString("homer_load_balancer_ips")
-	homerLoadBalancerIPs = strings.Split(tmpHomerLoadBalancerIPs, ",")
+	if tmpHomerLoadBalancerIPs == "" {
+		homerLoadBalancerIPs = []string{}
+	} else {
+		homerLoadBalancerIPs = strings.Split(tmpHomerLoadBalancerIPs, ",")
+	}
 
 }
 
