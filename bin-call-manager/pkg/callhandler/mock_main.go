@@ -554,6 +554,20 @@ func (mr *MockCallHandlerMockRecorder) RecordingStop(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStop", reflect.TypeOf((*MockCallHandler)(nil).RecordingStop), ctx, id)
 }
 
+// Recovery mocks base method.
+func (m *MockCallHandler) Recovery(ctx context.Context, asteriskID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Recovery", ctx, asteriskID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Recovery indicates an expected call of Recovery.
+func (mr *MockCallHandlerMockRecorder) Recovery(ctx, asteriskID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recovery", reflect.TypeOf((*MockCallHandler)(nil).Recovery), ctx, asteriskID)
+}
+
 // SilenceOff mocks base method.
 func (m *MockCallHandler) SilenceOff(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()

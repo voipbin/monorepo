@@ -107,6 +107,9 @@ var (
 	regV1GroupcallsIDHangupCall        = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/hangup_call$")
 	regV1GroupcallsIDAnswerGroupcallID = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/answer_groupcall_id$")
 
+	// recovery
+	regV1Recovery = regexp.MustCompile("/v1/recovery$")
+
 	// recordings
 	regV1RecordingsGet    = regexp.MustCompile(`/v1/recordings\?`)
 	regV1Recordings       = regexp.MustCompile(`/v1/recordings$`)
@@ -506,6 +509,14 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1GroupcallsIDAnswerGroupcallID.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1GroupcallsIDAnswerGroupcallIDPost(ctx, m)
 		requestType = "/v1/groupcalls/<groupcall-id>/answer_groupcall_id"
+
+	//////////////
+	// recovery
+	//////////////
+	// POST /recovery
+	case regV1Recovery.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1RecoveryPost(ctx, m)
+		requestType = "/v1/recovery"
 
 	//////////////
 	// recordings
