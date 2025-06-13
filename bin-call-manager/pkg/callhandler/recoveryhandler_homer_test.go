@@ -63,12 +63,11 @@ func Test_getRecoveryDetails(t *testing.T) {
 				RequestURI: "sip:+821021656521@10.31.35.4:5070;transport=udp",
 				Routes:     "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>, <sip:192.76.120.10;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>, <sip:10.255.0.1;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>",
 				CallID:     "1ced6b72-70c6-4c45-82e1-078568bf9d45",
-				// From:   `"Anonymous" <sip:anonymous@anonymous.invalid>;tag=2f41957b-9c9d-45d1-a18c-310ce92516ba`,
+
 				FromDisplay: "Anonymous",
 				FromURI:     "sip:anonymous@anonymous.invalid",
 				FromTag:     "2f41957b-9c9d-45d1-a18c-310ce92516ba",
 
-				// To:     `<sip:+821021656521@sip.telnyx.com>;tag=2cDr76BUDp2SF`,
 				ToDisplay: "",
 				ToURI:     "sip:+821021656521@sip.telnyx.com",
 				ToTag:     "2cDr76BUDp2SF",

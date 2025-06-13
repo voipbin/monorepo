@@ -29,12 +29,10 @@ func (h *listenHandler) processV1RecoveryPost(ctx context.Context, m *sock.Reque
 		return nil, err
 	}
 
-	go func() {
-		if errRecovery := h.callHandler.Recovery(context.Background(), req.AsteriskID); errRecovery != nil {
-			log.Errorf("Could not run recovery for asterisk ID %s. err: %v", req.AsteriskID, errRecovery)
-			return
-		}
-	}()
+	if errRecovery := h.callHandler.Recovery(context.Background(), req.AsteriskID); errRecovery != nil {
+		log.Errorf("Could not run recovery for asterisk ID %s. err: %v", req.AsteriskID, errRecovery)
+		return nil, errRecovery
+	}
 
 	res := &sock.Response{
 		StatusCode: 200,

@@ -1,5 +1,7 @@
 package callhandler
 
+//go:generate mockgen -package callhandler -destination ./mock_recoveryhandler.go -source recoveryhandler.go -build_flags=-mod=mod
+
 import (
 	"context"
 	"fmt"

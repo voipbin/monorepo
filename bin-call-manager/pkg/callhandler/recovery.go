@@ -71,8 +71,6 @@ func (h *callHandler) recoveryRun(ctx context.Context, ch *channel.Channel) erro
 
 	dialURI := fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, recoveryDetail.RequestURI)
 
-	// dialURI := anonymous@anonymous.invalid
-
 	channelVariables := map[string]string{
 		"PJSIP_RECOVERY_FROM_DISPLAY": recoveryDetail.FromDisplay,
 		"PJSIP_RECOVERY_FROM_URI":     recoveryDetail.FromURI,
@@ -100,7 +98,8 @@ func (h *callHandler) recoveryRun(ctx context.Context, ch *channel.Channel) erro
 	}).Info("Creating channel with variables and app args")
 
 	// create a channel
-	tmp, err := h.channelHandler.StartChannel(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", channelVariables)
+	channelID := h.utilHandler.UUIDCreate().String()
+	tmp, err := h.channelHandler.StartChannel(ctx, requesthandler.AsteriskIDCall, channelID, appArgs, dialURI, "", "", "", channelVariables)
 	if err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 		return err
