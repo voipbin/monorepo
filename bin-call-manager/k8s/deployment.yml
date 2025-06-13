@@ -46,6 +46,12 @@ spec:
               value: ${REDIS_PASSWORD}
             - name: REDIS_DATABASE
               value: "1"
+            - name: HOMER_API_ADDRESS
+              value: ${HOMER_API_ADDRESS}
+            - name: HOMER_AUTH_TOKEN
+              value: ${HOMER_AUTH_TOKEN}
+            - name: HOMER_LOAD_BALANCER_IPS
+              value: ${HOMER_LOAD_BALANCER_IPS}
           ports:
             - name: metrics
               protocol: "TCP"

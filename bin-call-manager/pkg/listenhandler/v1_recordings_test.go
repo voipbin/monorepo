@@ -18,7 +18,7 @@ import (
 )
 
 func Test_processV1RecordingsGet(t *testing.T) {
-	type test struct {
+	tests := []struct {
 		name      string
 		request   *sock.Request
 		pageSize  uint64
@@ -27,9 +27,7 @@ func Test_processV1RecordingsGet(t *testing.T) {
 		responseFilters    map[string]string
 		responseRecordings []*recording.Recording
 		expectRes          *sock.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			name: "normal",
 			request: &sock.Request{

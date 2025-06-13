@@ -5,9 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -51,8 +54,6 @@ const (
 
 	from
 		call_channels
-	where
-		id = ?
 	`
 )
 
@@ -584,7 +585,9 @@ func (h *handler) channelGetFromCache(ctx context.Context, id string) (*channel.
 // channelGetFromDB returns channel from the DB.
 func (h *handler) channelGetFromDB(ctx context.Context, id string) (*channel.Channel, error) {
 
-	row, err := h.db.Query(channelSelect, id)
+	q := fmt.Sprintf("%s where id = ?", channelSelect)
+
+	row, err := h.db.Query(q, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChannelGet. err: %v", err)
 	}
@@ -646,4 +649,55 @@ func (h *handler) ChannelSetMuteDirection(ctx context.Context, id string, muteDi
 	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
+}
+
+func (h *handler) ChannelGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error) {
+	// prepare
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
+	`, channelSelect)
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not query. ChannelGets. query: %s, err: %v", q, err)
+	}
+	defer rows.Close()
+
+	res := []*channel.Channel{}
+	for rows.Next() {
+		u, err := h.channelGetFromRow(rows)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get data. channelGetFromRow, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
 }

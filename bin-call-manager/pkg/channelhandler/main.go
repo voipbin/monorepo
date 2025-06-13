@@ -41,6 +41,7 @@ type ChannelHandler interface {
 		state ari.ChannelState,
 	) (*channel.Channel, error)
 	Get(ctx context.Context, id string) (*channel.Channel, error)
+	GetChannelsForRecovery(ctx context.Context, asteriskID string) ([]*channel.Channel, error)
 	Delete(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error)
 	SetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	SetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
@@ -115,6 +116,8 @@ const (
 	defaultExistTimeout        = time.Second * 3
 	defaultHealthMaxRetryCount = 2
 	defaultHealthDelay         = 10000 // 10 seconds
+
+	defaultChannelRecoveryLimit = uint64(10000)
 )
 
 var (

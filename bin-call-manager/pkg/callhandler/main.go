@@ -113,6 +113,8 @@ type CallHandler interface {
 	ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)
 	ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)
 
+	Recovery(ctx context.Context, asteriskID string) error
+
 	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*call.Call, error)
 	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
 
@@ -132,6 +134,7 @@ type callHandler struct {
 	recordingHandler     recordinghandler.RecordingHandler
 	externalMediaHandler externalmediahandler.ExternalMediaHandler
 	groupcallHandler     groupcallhandler.GroupcallHandler
+	recoveryHandler      RecoveryHandler
 }
 
 // contextType
@@ -246,6 +249,7 @@ func NewCallHandler(
 	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
+	recoveryHandler RecoveryHandler,
 ) CallHandler {
 
 	h := &callHandler{
@@ -259,6 +263,7 @@ func NewCallHandler(
 		recordingHandler:     recordingHandler,
 		externalMediaHandler: externalMediaHandler,
 		groupcallHandler:     groupcallHandler,
+		recoveryHandler:      recoveryHandler,
 	}
 
 	return h
