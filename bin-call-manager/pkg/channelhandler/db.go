@@ -30,6 +30,7 @@ func (h *channelHandler) Create(
 	destinationNumber string,
 
 	state ari.ChannelState,
+
 ) (*channel.Channel, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "Create",
@@ -495,29 +496,26 @@ func (h *channelHandler) updateStasisInfo(
 // UpdateSIPInfoByChannelVariable updates's channel's SIP info.
 func (h *channelHandler) UpdateSIPInfoByChannelVariable(ctx context.Context, cn *channel.Channel) (*channel.Channel, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "UpdateSIPInfo",
-		"channel": cn,
+		"func":       "UpdateSIPInfoByChannelVariable",
+		"channel_id": cn.ID,
 	})
 
 	// set sip call-id
 	sipCallID, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,Call-ID)`)
 	if err != nil {
-		log.Errorf("Could not get channel variable. err: %v", err)
-		return nil, errors.Wrap(err, "could not get channel variable")
+		log.Debugf("Could not get channel variable. variable: CHANNEL(pjsip,Call-ID), err: %v", err)
 	}
 
 	// set sip pai
 	sipPai, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,P-Asserted-Identity)`)
 	if err != nil {
-		log.Errorf("Could not get channel variable. err: %v", err)
-		return nil, errors.Wrap(err, "could not get channel variable")
+		log.Debugf("Could not get channel variable. variable: CHANNEL(pjsip,P-Asserted-Identity), err: %v", err)
 	}
 
 	// set sip privacy
 	sipPrivacy, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,Privacy)`)
 	if err != nil {
-		log.Errorf("Could not get channel variable. err: %v", err)
-		return nil, errors.Wrap(err, "could not get channel variable")
+		log.Debugf("Could not get channel variable. variable: CHANNEL(pjsip,Privacy), err: %v", err)
 	}
 
 	// set sip sipTransport
