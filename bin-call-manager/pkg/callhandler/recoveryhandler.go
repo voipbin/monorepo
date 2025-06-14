@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -17,16 +18,13 @@ import (
 
 type recoveryDetail struct {
 	RequestURI string
-	// Routes     []string
-	Routes string
-	CallID string
+	Routes     string
+	CallID     string
 
-	// From        string
 	FromDisplay string
 	FromURI     string
 	FromTag     string
 
-	// To        string
 	ToDisplay string
 	ToURI     string
 	ToTag     string
@@ -115,14 +113,36 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 		return nil, errors.New("no SIP messages provided")
 	}
 
-	firstInvite := messages[0]
-	role, err := h.determineRole(firstInvite)
-	if err != nil {
-		return nil, err
-	} else if role == asteriskRoleUnknown {
-		return nil, fmt.Errorf("first message is not an INVITE request, method: %s, isResponse: %t", firstInvite.Method, firstInvite.IsResponse())
+	var firstInvite *sip.Msg
+	var role asteriskRole
+
+	// Find the first INVITE message
+	for _, msg := range messages {
+		if msg.Method == sip.MethodInvite {
+			firstInvite = msg
+			var err error
+			role, err = h.determineRole(msg)
+			if err != nil {
+				log.Warnf("Error determining role for INVITE message: %v", err)
+				continue
+			} else if role != asteriskRoleUnknown {
+				log.Debugf("Found INVITE message with role: %s", role)
+				break
+			} else {
+				log.Debug("Found an INVITE message but could not determine its role.")
+			}
+		} else {
+			log.Tracef("Skipping non-INVITE message: %s", msg.Method)
+		}
 	}
-	log.Debugf("Determined role. role: %s", role)
+
+	if firstInvite == nil {
+		return nil, errors.New("no INVITE message found in the SIP message list")
+	}
+
+	if role == asteriskRoleUnknown {
+		return nil, errors.New("no INVITE message with a known role found")
+	}
 
 	res := &recoveryDetail{}
 	requestURI, routes := h.extractContactAndRoutes(messages, firstInvite, role)
@@ -130,6 +150,11 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 		return nil, errors.New("the request URI is missing")
 	}
 	res.RequestURI = requestURI
+	listRoutes := strings.Split(routes, ",")
+	if listRoutes != nil || len(listRoutes) > 1 {
+		res.Routes = strings.Join(listRoutes[1:], ",")
+	}
+
 	res.Routes = routes
 	log.Debugf("Extracted request URI and routes. RequestURI: %s, Routes: %s", res.RequestURI, res.Routes)
 
@@ -148,10 +173,7 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 	res.ToURI = lastMsg.To.Uri.String()
 	res.ToTag = lastMsg.To.Param.Get("tag").Value
 
-	// res.From = h.formatSIPAddress(lastMsg.From)
-	// res.To = h.formatSIPAddress(lastMsg.To)
 	res.CSeq = lastMsg.CSeq + 1
-	// log.Debugf("Extracted last message details. callID: %s, from: %s, to: %s, cseq: %d", res.CallID, res.From, res.To, res.CSeq)
 
 	return res, nil
 }
