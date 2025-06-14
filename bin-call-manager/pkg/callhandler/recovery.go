@@ -16,6 +16,7 @@ func (h *callHandler) Recovery(ctx context.Context, asteriskID string) error {
 		"func":       "Recovery",
 		"asteriskID": asteriskID,
 	})
+	log.Debugf("Starting recovery for asterisk ID: %s", asteriskID)
 
 	// get channels of the give asterisk ID
 	channels, err := h.channelHandler.GetChannelsForRecovery(ctx, asteriskID)
