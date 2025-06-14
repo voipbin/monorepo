@@ -1638,7 +1638,7 @@ func Test_ChannelGets(t *testing.T) {
 
 		filters map[string]string
 
-		responseCurTime string
+		responseCurTimes []string
 
 		expectRes []*channel.Channel
 	}
@@ -1662,7 +1662,10 @@ func Test_ChannelGets(t *testing.T) {
 				"asterisk_id": "3e:50:6b:43:bb:31",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTimes: []string{
+				"2020-04-18 03:22:17.995000",
+				"2020-04-18 03:22:18.995000",
+			},
 
 			expectRes: []*channel.Channel{
 				{
@@ -1675,7 +1678,7 @@ func Test_ChannelGets(t *testing.T) {
 					TMAnswer:  DefaultTimeStamp,
 					TMRinging: DefaultTimeStamp,
 					TMEnd:     DefaultTimeStamp,
-					TMCreate:  "2020-04-18 03:22:17.995000",
+					TMCreate:  "2020-04-18 03:22:18.995000",
 					TMUpdate:  DefaultTimeStamp,
 					TMDelete:  DefaultTimeStamp,
 				},
@@ -1704,8 +1707,8 @@ func Test_ChannelGets(t *testing.T) {
 				"asterisk_id": "3e:50:6b:43:bb:32",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
-			expectRes:       []*channel.Channel{},
+			responseCurTimes: []string{},
+			expectRes:        []*channel.Channel{},
 		},
 	}
 
@@ -1725,13 +1728,138 @@ func Test_ChannelGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			for _, c := range tt.channels {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			for i, c := range tt.channels {
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTimes[i])
 				mockCache.EXPECT().ChannelSet(ctx, gomock.Any())
 				_ = h.ChannelCreate(ctx, c)
 			}
 
 			res, err := h.ChannelGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+			}
+		})
+	}
+}
+
+func Test_ChannelGetsForRecovery(t *testing.T) {
+
+	type test struct {
+		name     string
+		channels []*channel.Channel
+
+		asteriskID  string
+		channelType channel.Type
+		startTime   string
+		endTime     string
+		size        uint64
+
+		responseCurTimes []string
+
+		expectRes []*channel.Channel
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			channels: []*channel.Channel{
+				{
+					ID:         "94e47248-48dc-11f0-95bc-e7af7d0649ff",
+					AsteriskID: "3e:50:6b:43:bb:32",
+					Type:       channel.TypeCall,
+				},
+				{
+					ID:         "951aff48-48dc-11f0-b5a4-ef7f3e74ce09",
+					AsteriskID: "3e:50:6b:43:bb:32",
+					Type:       channel.TypeCall,
+				},
+				{
+					ID:         "9543bb4a-48dc-11f0-be5c-47c96fc104ff",
+					AsteriskID: "3e:50:6b:43:bb:32",
+					Type:       channel.TypeCall,
+				},
+				{
+					ID:         "9568a1bc-48dc-11f0-80d6-3facb800a905",
+					AsteriskID: "3e:50:6b:43:bb:32",
+					Type:       channel.TypeCall,
+				},
+			},
+
+			asteriskID:  "3e:50:6b:43:bb:32",
+			channelType: channel.TypeCall,
+			startTime:   "2025-06-14 01:30:00.000000",
+			endTime:     "2025-06-14 03:30:00.000000",
+			size:        10,
+
+			responseCurTimes: []string{
+				"2025-06-14 01:00:00.000000",
+				"2025-06-14 02:00:00.000000",
+				"2025-06-14 03:00:00.000000",
+				"2025-06-14 04:00:00.000000",
+			},
+
+			expectRes: []*channel.Channel{
+				{
+					ID:         "9543bb4a-48dc-11f0-be5c-47c96fc104ff",
+					AsteriskID: "3e:50:6b:43:bb:32",
+					Type:       channel.TypeCall,
+
+					Data:       map[string]any{},
+					StasisData: map[channel.StasisDataType]string{},
+
+					TMAnswer:  DefaultTimeStamp,
+					TMRinging: DefaultTimeStamp,
+					TMEnd:     DefaultTimeStamp,
+					TMCreate:  "2025-06-14 03:00:00.000000",
+					TMUpdate:  DefaultTimeStamp,
+					TMDelete:  DefaultTimeStamp,
+				},
+				{
+					ID:         "951aff48-48dc-11f0-b5a4-ef7f3e74ce09",
+					AsteriskID: "3e:50:6b:43:bb:32",
+					Type:       channel.TypeCall,
+
+					Data:       map[string]any{},
+					StasisData: map[channel.StasisDataType]string{},
+
+					TMAnswer:  DefaultTimeStamp,
+					TMRinging: DefaultTimeStamp,
+					TMEnd:     DefaultTimeStamp,
+					TMCreate:  "2025-06-14 02:00:00.000000",
+					TMUpdate:  DefaultTimeStamp,
+					TMDelete:  DefaultTimeStamp,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// creates calls for test
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := &handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			for i, c := range tt.channels {
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTimes[i])
+				mockCache.EXPECT().ChannelSet(ctx, gomock.Any())
+				_ = h.ChannelCreate(ctx, c)
+			}
+
+			res, err := h.ChannelGetsForRecovery(ctx, tt.asteriskID, tt.channelType, tt.startTime, tt.endTime, tt.size)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

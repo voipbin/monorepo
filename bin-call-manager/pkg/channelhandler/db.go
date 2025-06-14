@@ -115,14 +115,21 @@ func (h *channelHandler) Get(ctx context.Context, id string) (*channel.Channel, 
 }
 
 // GetChannelsForRecovery returns channels for recovery.
-func (h *channelHandler) GetChannelsForRecovery(ctx context.Context, asteriskID string) ([]*channel.Channel, error) {
-	filters := map[string]string{
-		"asterisk_id": asteriskID,
-		"state":       string(ari.ChannelStateUp),
-		"deleted":     "false",
-	}
-
-	res, err := h.db.ChannelGets(ctx, defaultChannelRecoveryLimit, "", filters)
+func (h *channelHandler) GetChannelsForRecovery(
+	ctx context.Context,
+	asteriskID string,
+	channelType channel.Type,
+	startTime string,
+	endTime string,
+	size uint64,
+) ([]*channel.Channel, error) {
+	res, err := h.db.ChannelGetsForRecovery(ctx,
+		asteriskID,
+		channelType,
+		startTime,
+		endTime,
+		size,
+	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get recovery channels for asterisk_id %s", asteriskID)
 	}

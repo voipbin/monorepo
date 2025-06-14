@@ -218,18 +218,18 @@ func (mr *MockChannelHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // GetChannelsForRecovery mocks base method.
-func (m *MockChannelHandler) GetChannelsForRecovery(ctx context.Context, asteriskID string) ([]*channel.Channel, error) {
+func (m *MockChannelHandler) GetChannelsForRecovery(ctx context.Context, asteriskID string, channelType channel.Type, startTime, endTime string, size uint64) ([]*channel.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetChannelsForRecovery", ctx, asteriskID)
+	ret := m.ctrl.Call(m, "GetChannelsForRecovery", ctx, asteriskID, channelType, startTime, endTime, size)
 	ret0, _ := ret[0].([]*channel.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetChannelsForRecovery indicates an expected call of GetChannelsForRecovery.
-func (mr *MockChannelHandlerMockRecorder) GetChannelsForRecovery(ctx, asteriskID any) *gomock.Call {
+func (mr *MockChannelHandlerMockRecorder) GetChannelsForRecovery(ctx, asteriskID, channelType, startTime, endTime, size any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChannelsForRecovery", reflect.TypeOf((*MockChannelHandler)(nil).GetChannelsForRecovery), ctx, asteriskID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChannelsForRecovery", reflect.TypeOf((*MockChannelHandler)(nil).GetChannelsForRecovery), ctx, asteriskID, channelType, startTime, endTime, size)
 }
 
 // HangingUp mocks base method.

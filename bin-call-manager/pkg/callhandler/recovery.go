@@ -6,6 +6,7 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"strconv"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -13,13 +14,15 @@ import (
 
 func (h *callHandler) Recovery(ctx context.Context, asteriskID string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "Recovery",
-		"asteriskID": asteriskID,
+		"func":        "Recovery",
+		"asterisk_id": asteriskID,
 	})
 	log.Debugf("Starting recovery for asterisk ID: %s", asteriskID)
 
 	// get channels of the give asterisk ID
-	channels, err := h.channelHandler.GetChannelsForRecovery(ctx, asteriskID)
+	startTime := h.utilHandler.TimeGetCurTimeAdd(-(time.Hour * 24))
+	endTime := h.utilHandler.TimeGetCurTime()
+	channels, err := h.channelHandler.GetChannelsForRecovery(ctx, asteriskID, channel.TypeCall, startTime, endTime, defaultRecoveryChannelLimit)
 	if err != nil {
 		return errors.Wrapf(err, "could not get channels for recovery. asterisk_id: %s", asteriskID)
 	}

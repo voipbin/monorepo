@@ -153,6 +153,8 @@ const (
 
 	defaultHealthMaxRetryCount = 2
 	defaultHealthDelay         = 10000 // 10 seconds
+
+	defaultRecoveryChannelLimit = uint64(10000) // default limit of channels for recovery
 )
 
 // list of variables
