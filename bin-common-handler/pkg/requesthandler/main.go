@@ -464,6 +464,9 @@ type RequestHandler interface {
 	CallV1GroupcallHangupCall(ctx context.Context, groupcallID uuid.UUID) error
 	CallV1GroupcallHangupGroupcall(ctx context.Context, groupcallID uuid.UUID) error
 
+	// call-manager recovery
+	CallV1RecoveryStart(ctx context.Context, asteriskID string) error
+
 	// call-manager recordings
 	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
 	CallV1RecordingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmrecording.Recording, error)
