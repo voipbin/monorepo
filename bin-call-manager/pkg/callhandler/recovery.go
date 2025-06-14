@@ -57,7 +57,7 @@ func (h *callHandler) recoveryRun(ctx context.Context, ch *channel.Channel) erro
 
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "recoveryRun",
-		"channel": ch.ID,
+		"channel": ch,
 	})
 
 	if ch.Type != channel.TypeCall {

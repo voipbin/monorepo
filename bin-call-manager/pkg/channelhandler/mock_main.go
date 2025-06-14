@@ -485,20 +485,6 @@ func (mr *MockChannelHandlerMockRecorder) SetDirection(ctx, id, direction any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDirection", reflect.TypeOf((*MockChannelHandler)(nil).SetDirection), ctx, id, direction)
 }
 
-// SetSIPCallID mocks base method.
-func (m *MockChannelHandler) SetSIPCallID(ctx context.Context, id, sipCallID string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetSIPCallID", ctx, id, sipCallID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetSIPCallID indicates an expected call of SetSIPCallID.
-func (mr *MockChannelHandlerMockRecorder) SetSIPCallID(ctx, id, sipCallID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSIPCallID", reflect.TypeOf((*MockChannelHandler)(nil).SetSIPCallID), ctx, id, sipCallID)
-}
-
 // SetSIPTransport mocks base method.
 func (m *MockChannelHandler) SetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error {
 	m.ctrl.T.Helper()

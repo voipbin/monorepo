@@ -53,7 +53,6 @@ type ChannelHandler interface {
 	SetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	SetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
 	SetDirection(ctx context.Context, id string, direction channel.Direction) error
-	SetSIPCallID(ctx context.Context, id string, sipCallID string) error
 
 	ARIChannelStateChange(ctx context.Context, e *ari.ChannelStateChange) (*channel.Channel, error)
 	ARIStasisStart(ctx context.Context, e *ari.StasisStart) (*channel.Channel, error)

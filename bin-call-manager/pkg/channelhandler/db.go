@@ -233,22 +233,6 @@ func (h *channelHandler) SetDirection(ctx context.Context, id string, direction 
 	return nil
 }
 
-// SetSIPCallID sets the channel's sip call id.
-func (h *channelHandler) SetSIPCallID(ctx context.Context, id string, sipCallID string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "SetSIPCallID",
-		"channel_id": id,
-	})
-	log.Debugf("Setting channel's transport. channel_id: %s, sip_call_id: %s", id, sipCallID)
-
-	if err := h.db.ChannelSetSIPCallID(ctx, id, sipCallID); err != nil {
-		log.Errorf("Could not set the channel's sip_call_id. channel_id: %s, err: %v", id, err)
-		return err
-	}
-
-	return nil
-}
-
 // SetType sets the channel's type.
 func (h *channelHandler) SetType(ctx context.Context, id string, channelType channel.Type) error {
 	log := logrus.WithFields(logrus.Fields{

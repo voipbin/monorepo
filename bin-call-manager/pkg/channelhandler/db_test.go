@@ -485,56 +485,6 @@ func Test_SetDirection(t *testing.T) {
 	}
 }
 
-func Test_SetSIPCallID(t *testing.T) {
-
-	type test struct {
-		name string
-
-		id        string
-		sipCallID string
-
-		responseChannel *channel.Channel
-	}
-
-	tests := []test{
-		{
-			"normal",
-
-			"1e5c8b0c-6e5e-11ed-8582-a3186cbc997e",
-			"2009157e-6e5e-11ed-8a8e-bbb3856712ec",
-
-			&channel.Channel{
-				ID: "1e5c8b0c-6e5e-11ed-8582-a3186cbc997e",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := channelHandler{
-				utilHandler:   mockUtil,
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.id, tt.sipCallID).Return(nil)
-			if err := h.SetSIPCallID(ctx, tt.id, tt.sipCallID); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
 func Test_SetType(t *testing.T) {
 
 	type test struct {

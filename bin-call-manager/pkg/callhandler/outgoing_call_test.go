@@ -136,7 +136,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				TMProgressing: dbhandler.DefaultTimeStamp,
 				TMHangup:      dbhandler.DefaultTimeStamp,
 			},
-			expectArgs:        "context_type=call,context=call-out,call_id=f1afa9ce-ecb2-11ea-ab94-a768ab787da0,transport=udp",
+			expectArgs:        "context_type=call,context=call-out,call_id=f1afa9ce-ecb2-11ea-ab94-a768ab787da0,transport=udp,direction=outgoing",
 			expectEndpointDst: "pjsip/call-out/sip:testoutgoing@test.com",
 			expectVariables: map[string]string{
 				"CALLERID(name)": "test",
@@ -331,7 +331,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				TMHangup:      dbhandler.DefaultTimeStamp,
 			},
 			expectProviderID:  uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
-			expectArgs:        "context_type=call,context=call-out,call_id=b7c40962-07fb-11eb-bb82-a3bd16bf1bd9,transport=udp",
+			expectArgs:        "context_type=call,context=call-out,call_id=b7c40962-07fb-11eb-bb82-a3bd16bf1bd9,transport=udp,direction=outgoing",
 			expectEndpointDst: "pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
 			expectVariables: map[string]string{
 				"CALLERID(name)": "test",
@@ -820,7 +820,7 @@ func Test_createChannel(t *testing.T) {
 			},
 
 			expectProviderID: uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
-			expectArgs:       "context_type=call,context=call-out,call_id=7e0a846a-5d96-11ed-9005-07794a4f93cb,transport=udp",
+			expectArgs:       "context_type=call,context=call-out,call_id=7e0a846a-5d96-11ed-9005-07794a4f93cb,transport=udp,direction=outgoing",
 			expectDialURI:    "pjsip/call-out/sip:+821100000001@test.com;transport=udp",
 			expectVariables: map[string]string{
 				"CALLERID(name)": "",
@@ -852,7 +852,7 @@ func Test_createChannel(t *testing.T) {
 			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, tt.call.ChannelID, tt.expectArgs, tt.expectDialURI, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			if err := h.createChannel(ctx, tt.call); err != nil {
+			if err := h.createChannelOutgoing(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -944,7 +944,7 @@ func Test_createFailoverChannel(t *testing.T) {
 
 			uuid.FromStringOrNil("c403ec52-5f7d-11ed-9b6f-5b9ada249a57"),
 			uuid.FromStringOrNil("cc3d77a8-5f7d-11ed-9232-03d402cb4d34"),
-			"context_type=call,context=call-out,call_id=25c7a29a-5f7d-11ed-86cc-bb999f3cccaf,transport=udp",
+			"context_type=call,context=call-out,call_id=25c7a29a-5f7d-11ed-86cc-bb999f3cccaf,transport=udp,direction=outgoing",
 			"pjsip/call-out/sip:+821100000001@test.com;transport=udp",
 			map[string]string{
 				"CALLERID(name)": "",
