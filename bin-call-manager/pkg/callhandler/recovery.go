@@ -23,6 +23,7 @@ func (h *callHandler) Recovery(ctx context.Context, asteriskID string) error {
 	if err != nil {
 		return errors.Wrapf(err, "could not get channels for recovery. asterisk_id: %s", asteriskID)
 	}
+	log.Debugf("Got %d channels for recovery", len(channels))
 
 	// run recovery
 	for _, ch := range channels {
