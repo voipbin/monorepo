@@ -701,3 +701,50 @@ func (h *handler) ChannelGets(ctx context.Context, size uint64, token string, fi
 
 	return res, nil
 }
+
+// ChannelGetsForRecovery returns list of channels for recovery.
+func (h *handler) ChannelGetsForRecovery(
+	ctx context.Context,
+	asteriskID string,
+	channelType channel.Type,
+	startTime string,
+	endTime string,
+	size uint64,
+) ([]*channel.Channel, error) {
+	// prepare
+	q := fmt.Sprintf(`%s
+	where
+		asterisk_id = ?
+		and type = ?
+		and tm_create > ?
+		and tm_create < ?
+	`, channelSelect)
+
+	values := []any{
+		asteriskID,
+		channelType,
+		startTime,
+		endTime,
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not query. query: %s, err: %v", q, err)
+	}
+	defer rows.Close()
+
+	res := []*channel.Channel{}
+	for rows.Next() {
+		u, err := h.channelGetFromRow(rows)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get data. channelGetFromRow, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
