@@ -334,20 +334,8 @@ func Test_ARIChannelStateChange_outgoing_statusUp(t *testing.T) {
 			mockDB.EXPECT().ChannelGet(ctx, tt.event.Channel.ID).Return(tt.responseChannel, nil)
 
 			// set sip_call_id
-			mockRequest.EXPECT().AstChannelVariableGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, `CHANNEL(pjsip,Call-ID)`).Return(tt.responseValCallID, nil)
+			mockRequest.EXPECT().AstChannelVariableGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, `CHANNEL(pjsip,call-id)`).Return(tt.responseValCallID, nil)
 			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.responseChannel.ID, tt.responseValCallID).Return(nil)
-
-			// set sip_pai
-			mockRequest.EXPECT().AstChannelVariableGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, `CHANNEL(pjsip,P-Asserted-Identity)`).Return(tt.responseValPai, nil)
-			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.responseChannel.ID, "sip_pai", tt.responseValPai).Return(nil)
-
-			// set sip_privacy
-			mockRequest.EXPECT().AstChannelVariableGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, `CHANNEL(pjsip,Privacy)`).Return(tt.responseValPrivacy, nil)
-			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.responseChannel.ID, "sip_privacy", tt.responseValPrivacy).Return(nil)
-
-			// set sip transport
-			mockDB.EXPECT().ChannelSetSIPTransport(ctx, tt.responseChannel.ID, tt.expectTransport).Return(nil)
-			mockDB.EXPECT().ChannelGet(ctx, tt.responseChannel.ID).Return(tt.responseChannel, nil)
 
 			mockDB.EXPECT().ChannelGet(ctx, tt.responseChannel.ID).Return(tt.responseChannel, nil)
 

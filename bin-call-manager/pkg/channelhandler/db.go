@@ -500,32 +500,22 @@ func (h *channelHandler) UpdateSIPInfoByChannelVariable(ctx context.Context, cn 
 		"channel_id": cn.ID,
 	})
 
-	// set sip call-id
-	sipCallID, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,Call-ID)`)
+	// set sip_call_id
+	// note: because of asterisk's limitation, we can not access to the sip header directly.
+	// so, we need to use the CHANNEL(tech,variable) function to get the sip call id.
+	// https://docs.asterisk.org/Asterisk_22_Documentation/API_Documentation/Dialplan_Functions/CHANNEL/#arguments
+	sipCallID, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,call-id)`)
 	if err != nil {
 		log.Debugf("Could not get channel variable. variable: CHANNEL(pjsip,Call-ID), err: %v", err)
 	}
 
-	// set sip pai
-	sipPai, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,P-Asserted-Identity)`)
-	if err != nil {
-		log.Debugf("Could not get channel variable. variable: CHANNEL(pjsip,P-Asserted-Identity), err: %v", err)
+	if errSet := h.db.ChannelSetSIPCallID(ctx, cn.ID, sipCallID); errSet != nil {
+		return nil, errors.Wrap(errSet, "could not set channel's sip_call_id")
 	}
 
-	// set sip privacy
-	sipPrivacy, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,Privacy)`)
+	res, err := h.db.ChannelGet(ctx, cn.ID)
 	if err != nil {
-		log.Debugf("Could not get channel variable. variable: CHANNEL(pjsip,Privacy), err: %v", err)
-	}
-
-	// set sip sipTransport
-	sipTransport := channel.SIPTransport(cn.StasisData[channel.StasisDataTypeTransport])
-
-	// get updated channel
-	res, err := h.UpdateSIPInfo(ctx, cn.ID, sipCallID, sipPai, sipPrivacy, sipTransport)
-	if err != nil {
-		log.Errorf("Could not get updated channel. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get channel info after setting sip_call_id. channel_id: %s", cn.ID)
 	}
 
 	return res, nil
