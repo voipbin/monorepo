@@ -100,7 +100,7 @@ func (h *recoveryHandler) GetRecoveryDetail(ctx context.Context, callID string) 
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get recovery details for call ID. call_id: %s", callID)
 	}
-	log.WithField("res", res).Debug("Recovery details extracted successfully")
+	log.WithField("res", res).Debug("Found recovery details successfully")
 
 	return res, nil
 }
