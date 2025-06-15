@@ -150,9 +150,11 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 		return nil, errors.New("the request URI is missing")
 	}
 	res.RequestURI = requestURI
+
 	listRoutes := strings.Split(routes, ",")
 	if listRoutes != nil || len(listRoutes) > 1 {
 		res.Routes = strings.Join(listRoutes[1:], ",")
+		res.Routes = strings.TrimSpace(res.Routes)
 	}
 	log.Debugf("Extracted request URI and routes. RequestURI: %s, Routes: %s", res.RequestURI, res.Routes)
 
