@@ -232,7 +232,7 @@ func (h *callHandler) CreateCallOutgoing(
 	}
 
 	// create a channel for the call
-	if err := h.createChannel(ctx, res); err != nil {
+	if err := h.createChannelOutgoing(ctx, res); err != nil {
 		log.Errorf("Could not create channel. err: %v", err)
 		return nil, err
 	}
@@ -424,10 +424,10 @@ func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, d
 	return res, nil
 }
 
-// createChannel creates a new channel for outgoing call
-func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
+// createChannelOutgoing creates a new channel for outgoing call
+func (h *callHandler) createChannelOutgoing(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "createChannel",
+		"func":    "createChannelOutgoing",
 		"call_id": c.ID,
 	})
 
@@ -446,11 +446,12 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 	log.Debugf("Endpoint detail. endpoint_destination: %s, variables: %v", dialURI, channelVariables)
 
 	// set app args
-	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s",
-		channel.StasisDataTypeContextType, channel.TypeCall,
+	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
+		channel.StasisDataTypeContextType, channel.ContextTypeCall,
 		channel.StasisDataTypeContext, channel.ContextCallOutgoing,
 		channel.StasisDataTypeCallID, c.ID,
 		channel.StasisDataTypeTransport, transport,
+		channel.StasisDataTypeDirection, channel.DirectionOutgoing,
 	)
 
 	// create a channel
@@ -490,7 +491,7 @@ func (h *callHandler) createFailoverChannel(ctx context.Context, c *call.Call) (
 	}
 	log.WithField("call", cc).Debugf("Updated call for route failover. call_id: %s", cc.ID)
 
-	if errCreate := h.createChannel(ctx, cc); errCreate != nil {
+	if errCreate := h.createChannelOutgoing(ctx, cc); errCreate != nil {
 		log.Errorf("Could not create a channel for routefailover. err: %v", err)
 		return nil, errCreate
 	}

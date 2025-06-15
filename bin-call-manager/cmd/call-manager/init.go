@@ -25,7 +25,7 @@ const (
 	defaultRedisPassword           = ""
 	defaultHomerAPIAddress         = ""
 	defaultHomerAuthToken          = ""
-	defaultHomerLoadBalancerIPs    = ""
+	defaultHomerWhitelist          = ""
 )
 
 // proces init
@@ -59,7 +59,7 @@ func initVariable() {
 
 	pflag.String("homer_api_address", defaultHomerAPIAddress, "Address of the Homer API server (e.g., http://localhost:8080)")
 	pflag.String("homer_auth_token", defaultHomerAuthToken, "Authentication token for the Homer API (if required)")
-	pflag.String("homer_load_balancer_ips", defaultHomerLoadBalancerIPs, "Comma-separated list of IPs for the Homer load balancer (if required)")
+	pflag.String("homer_whitelist", defaultHomerWhitelist, "Comma-separated list of IPs for the Homer whitelist (if required)")
 
 	pflag.Parse()
 
@@ -162,20 +162,20 @@ func initVariable() {
 	}
 	homerAuthToken = viper.GetString("homer_auth_token")
 
-	// homer_load_balancer_ips
-	if errFlag := viper.BindPFlag("homer_load_balancer_ips", pflag.Lookup("homer_load_balancer_ips")); errFlag != nil {
+	// homer_whitelist
+	if errFlag := viper.BindPFlag("homer_whitelist", pflag.Lookup("homer_whitelist")); errFlag != nil {
 		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
-	if errEnv := viper.BindEnv("homer_load_balancer_ips", "HOMER_LOAD_BALANCER_IPS"); errEnv != nil {
+	if errEnv := viper.BindEnv("homer_whitelist", "HOMER_WHITELIST"); errEnv != nil {
 		log.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
-	tmpHomerLoadBalancerIPs := viper.GetString("homer_load_balancer_ips")
-	if tmpHomerLoadBalancerIPs == "" {
-		homerLoadBalancerIPs = []string{}
+	tmpHomerWhitelist := viper.GetString("homer_whitelist")
+	if tmpHomerWhitelist == "" {
+		homerWhitelist = []string{}
 	} else {
-		homerLoadBalancerIPs = strings.Split(tmpHomerLoadBalancerIPs, ",")
+		homerWhitelist = strings.Split(tmpHomerWhitelist, ",")
 	}
 
 }
