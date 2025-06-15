@@ -154,8 +154,6 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 	if listRoutes != nil || len(listRoutes) > 1 {
 		res.Routes = strings.Join(listRoutes[1:], ",")
 	}
-
-	res.Routes = routes
 	log.Debugf("Extracted request URI and routes. RequestURI: %s, Routes: %s", res.RequestURI, res.Routes)
 
 	lastMsg := messages[len(messages)-1]
