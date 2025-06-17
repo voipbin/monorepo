@@ -264,13 +264,3 @@ func (h *recoveryHandler) validateLastMessage(lastMsg *sip.Msg) error {
 
 	return nil
 }
-
-// func (h *recoveryHandler) formatSIPAddress(addr *sip.Addr) (string, string, string) {
-// 	if addr.Display != "" && addr.Uri != nil {
-// 		return fmt.Sprintf("\"%s\" <%s>;tag=%s", addr.Display, addr.Uri, addr.Param.Get("tag").Value)
-// 	} else if addr != nil {
-// 		return addr.String()
-// 	}
-
-// 	return ""
-// }

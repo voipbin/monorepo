@@ -178,6 +178,19 @@ const (
 	variableCallDigits       = "voipbin.call.digits" // digit
 )
 
+const (
+	channelVariableRecoveryFromDisplay = "PJSIP_RECOVERY_FROM_DISPLAY"
+	channelVariableRecoveryFromURI     = "PJSIP_RECOVERY_FROM_URI"
+	channelVariableRecoveryFromTag     = "PJSIP_RECOVERY_FROM_TAG"
+	channelVariableRecoveryToDisplay   = "PJSIP_RECOVERY_TO_DISPLAY"
+	channelVariableRecoveryToURI       = "PJSIP_RECOVERY_TO_URI"
+	channelVariableRecoveryToTag       = "PJSIP_RECOVERY_TO_TAG"
+	channelVariableRecoveryCSeq        = "PJSIP_RECOVERY_CSEQ"
+	channelVariableRecoveryCallID      = "PJSIP_RECOVERY_CALL-ID"
+	channelVariableRecoveryRoutes      = "PJSIP_RECOVERY_ROUTES"
+	channelVariableRecoveryRequestURI  = "PJSIP_RECOVERY_REQUEST_URI"
+)
+
 var (
 	metricsNamespace = commonoutline.GetMetricNameSpace(common.Servicename)
 

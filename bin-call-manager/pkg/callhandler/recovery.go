@@ -77,18 +77,18 @@ func (h *callHandler) recoveryRun(ctx context.Context, ch *channel.Channel) erro
 	dialURI := fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, recoveryDetail.RequestURI)
 
 	channelVariables := map[string]string{
-		"PJSIP_RECOVERY_FROM_DISPLAY": recoveryDetail.FromDisplay,
-		"PJSIP_RECOVERY_FROM_URI":     recoveryDetail.FromURI,
-		"PJSIP_RECOVERY_FROM_TAG":     recoveryDetail.FromTag,
+		channelVariableRecoveryFromDisplay: recoveryDetail.FromDisplay,
+		channelVariableRecoveryFromURI:     recoveryDetail.FromURI,
+		channelVariableRecoveryFromTag:     recoveryDetail.FromTag,
 
-		"PJSIP_RECOVERY_TO_DISPLAY": recoveryDetail.ToDisplay,
-		"PJSIP_RECOVERY_TO_URI":     recoveryDetail.ToURI,
-		"PJSIP_RECOVERY_TO_TAG":     recoveryDetail.ToTag,
+		channelVariableRecoveryToDisplay: recoveryDetail.ToDisplay,
+		channelVariableRecoveryToURI:     recoveryDetail.ToURI,
+		channelVariableRecoveryToTag:     recoveryDetail.ToTag,
 
-		"PJSIP_RECOVERY_Call-ID":     recoveryDetail.CallID,
-		"PJSIP_RECOVERY_CSeq":        strconv.Itoa(recoveryDetail.CSeq),
-		"PJSIP_RECOVERY_Routes":      recoveryDetail.Routes,
-		"PJSIP_RECOVERY_REQUEST_URI": recoveryDetail.RequestURI,
+		channelVariableRecoveryCallID:     recoveryDetail.CallID,
+		channelVariableRecoveryCSeq:       strconv.Itoa(recoveryDetail.CSeq),
+		channelVariableRecoveryRoutes:     recoveryDetail.Routes,
+		channelVariableRecoveryRequestURI: recoveryDetail.RequestURI,
 	}
 
 	// set app args
