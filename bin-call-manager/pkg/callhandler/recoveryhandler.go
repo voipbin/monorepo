@@ -17,9 +17,10 @@ import (
 )
 
 type recoveryDetail struct {
-	RequestURI string
-	Routes     string
-	CallID     string
+	RequestURI   string
+	Routes       string
+	RecordRoutes string
+	CallID       string
 
 	FromDisplay string
 	FromURI     string
@@ -145,7 +146,7 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 	}
 
 	res := &recoveryDetail{}
-	requestURI, routes := h.extractContactAndRoutes(messages, firstInvite, role)
+	requestURI, routes, recordRoutes := h.extractContactAndRoutes(messages, firstInvite, role)
 	if requestURI == "" {
 		return nil, errors.New("the request URI is missing")
 	}
@@ -156,7 +157,13 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 		res.Routes = strings.Join(listRoutes, ",")
 		res.Routes = strings.TrimSpace(res.Routes)
 	}
-	log.Debugf("Extracted request URI and routes. RequestURI: %s, Routes: %s", res.RequestURI, res.Routes)
+
+	listRecordRoutes := strings.Split(recordRoutes, ",")
+	if listRoutes != nil || len(listRecordRoutes) > 1 {
+		res.RecordRoutes = strings.Join(listRecordRoutes, ",")
+		res.RecordRoutes = strings.TrimSpace(res.RecordRoutes)
+	}
+	log.Debugf("Extracted request URI and routes. RequestURI: %s, Routes: %s, RecordRoutes: %s", res.RequestURI, res.Routes, res.RecordRoutes)
 
 	lastMsg := messages[len(messages)-1]
 	if errValidate := h.validateLastMessage(lastMsg); errValidate != nil {
@@ -196,9 +203,10 @@ func (h *recoveryHandler) determineRole(firstMessage *sip.Msg) (asteriskRole, er
 		firstMessage.Method, firstMessage.IsResponse())
 }
 
-func (h *recoveryHandler) extractContactAndRoutes(messages []*sip.Msg, firstInvite *sip.Msg, role asteriskRole) (string, string) {
+func (h *recoveryHandler) extractContactAndRoutes(messages []*sip.Msg, firstInvite *sip.Msg, role asteriskRole) (string, string, string) {
 	remoteContact := ""
 	routes := ""
+	recordRoutes := ""
 
 	switch role {
 	case asteriskRoleUAC:
@@ -212,6 +220,7 @@ func (h *recoveryHandler) extractContactAndRoutes(messages []*sip.Msg, firstInvi
 
 			if firstSuccessfulResponse.RecordRoute != nil {
 				routes = firstSuccessfulResponse.RecordRoute.Reversed().String()
+				recordRoutes = firstSuccessfulResponse.RecordRoute.String()
 			}
 		} else if firstInvite.To != nil {
 			remoteContact = firstInvite.To.Uri.String()
@@ -226,13 +235,14 @@ func (h *recoveryHandler) extractContactAndRoutes(messages []*sip.Msg, firstInvi
 
 		if firstInvite.RecordRoute != nil {
 			routes = firstInvite.RecordRoute.String()
+			recordRoutes = firstInvite.RecordRoute.String()
 		}
 	default:
 		// Handle default case in the calling function. This should never happen, but leaving here as documentation
-		return remoteContact, routes
+		return remoteContact, routes, recordRoutes
 	}
 
-	return remoteContact, routes
+	return remoteContact, routes, recordRoutes
 }
 
 func (h *recoveryHandler) findFirstSuccessfulResponse(messages []*sip.Msg, inviteCSeq int) *sip.Msg {

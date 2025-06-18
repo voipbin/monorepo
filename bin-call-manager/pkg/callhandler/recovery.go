@@ -85,10 +85,11 @@ func (h *callHandler) recoveryRun(ctx context.Context, ch *channel.Channel) erro
 		channelVariableRecoveryToURI:     recoveryDetail.ToURI,
 		channelVariableRecoveryToTag:     recoveryDetail.ToTag,
 
-		channelVariableRecoveryCallID:     recoveryDetail.CallID,
-		channelVariableRecoveryCSeq:       strconv.Itoa(recoveryDetail.CSeq),
-		channelVariableRecoveryRoutes:     recoveryDetail.Routes,
-		channelVariableRecoveryRequestURI: recoveryDetail.RequestURI,
+		channelVariableRecoveryCallID:       recoveryDetail.CallID,
+		channelVariableRecoveryCSeq:         strconv.Itoa(recoveryDetail.CSeq),
+		channelVariableRecoveryRoutes:       recoveryDetail.Routes,
+		channelVariableRecoveryRecordRoutes: recoveryDetail.RecordRoutes,
+		channelVariableRecoveryRequestURI:   recoveryDetail.RequestURI,
 	}
 
 	// set app args

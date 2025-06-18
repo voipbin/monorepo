@@ -48,9 +48,10 @@ func Test_recoveryRun(t *testing.T) {
 				},
 			},
 			responseRecoveryDetail: &recoveryDetail{
-				RequestURI: "sip:+821021656521@10.31.35.4:5070;transport=udp",
-				Routes:     "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>, <sip:192.76.120.10;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>, <sip:10.255.0.1;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>",
-				CallID:     "1ced6b72-70c6-4c45-82e1-078568bf9d45",
+				RequestURI:   "sip:+821021656521@10.31.35.4:5070;transport=udp",
+				Routes:       "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>, <sip:192.76.120.10;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>, <sip:10.255.0.1;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>",
+				RecordRoutes: "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>",
+				CallID:       "1ced6b72-70c6-4c45-82e1-078568bf9d45",
 
 				FromDisplay: "Anonymous",
 				FromURI:     "sip:anonymous@anonymous.invalid",
@@ -80,8 +81,9 @@ func Test_recoveryRun(t *testing.T) {
 				channelVariableRecoveryCallID: "1ced6b72-70c6-4c45-82e1-078568bf9d45",
 				channelVariableRecoveryCSeq:   "2595",
 
-				channelVariableRecoveryRoutes:     "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>, <sip:192.76.120.10;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>, <sip:10.255.0.1;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>",
-				channelVariableRecoveryRequestURI: "sip:+821021656521@10.31.35.4:5070;transport=udp",
+				channelVariableRecoveryRoutes:       "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>, <sip:192.76.120.10;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>, <sip:10.255.0.1;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>",
+				channelVariableRecoveryRecordRoutes: "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>",
+				channelVariableRecoveryRequestURI:   "sip:+821021656521@10.31.35.4:5070;transport=udp",
 			},
 		},
 	}
