@@ -48,6 +48,7 @@ type DBHandler interface {
 	CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *fmaction.Action, hold bool) error
 	CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error
 	CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
+	CallSetChannelIDAndBridgeID(ctx context.Context, id uuid.UUID, channelID string, bridgeID string) error
 	CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error
 	CallSetData(ctx context.Context, id uuid.UUID, data map[call.DataType]string) error
 	CallSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error

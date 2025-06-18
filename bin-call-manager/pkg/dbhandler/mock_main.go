@@ -309,6 +309,20 @@ func (mr *MockDBHandlerMockRecorder) CallSetBridgeID(ctx, id, bridgeID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).CallSetBridgeID), ctx, id, bridgeID)
 }
 
+// CallSetChannelIDAndBridgeID mocks base method.
+func (m *MockDBHandler) CallSetChannelIDAndBridgeID(ctx context.Context, id uuid.UUID, channelID, bridgeID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetChannelIDAndBridgeID", ctx, id, channelID, bridgeID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetChannelIDAndBridgeID indicates an expected call of CallSetChannelIDAndBridgeID.
+func (mr *MockDBHandlerMockRecorder) CallSetChannelIDAndBridgeID(ctx, id, channelID, bridgeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetChannelIDAndBridgeID", reflect.TypeOf((*MockDBHandler)(nil).CallSetChannelIDAndBridgeID), ctx, id, channelID, bridgeID)
+}
+
 // CallSetConfbridgeID mocks base method.
 func (m *MockDBHandler) CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error {
 	m.ctrl.T.Helper()

@@ -373,6 +373,15 @@ func (h *callHandler) startContextCallRecovery(ctx context.Context, cn *channel.
 	}
 	log.WithField("call", c).Debugf("Got call info. call_id: %s", c.ID)
 
+	bridgeID, err := h.addCallBridge(ctx, cn, c.ID)
+	if err != nil {
+		return errors.Wrapf(err, "could not add the channel to the join bridge. call_id: %s", c.ID)
+	}
+
+	if errSet := h.db.CallSetChannelIDAndBridgeID(ctx, c.ID, cn.ID, bridgeID); errSet != nil {
+		return errors.Wrapf(errSet, "could not set call channel and bridge id. call_id: %s", c.ID)
+	}
+
 	if errExecute := h.actionExecute(ctx, c); errExecute != nil {
 		return errors.Wrapf(errExecute, "could not execute action for call. call_id: %s", c.ID)
 	}
