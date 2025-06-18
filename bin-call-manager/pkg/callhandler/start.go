@@ -358,13 +358,23 @@ func (h *callHandler) startContextCallRecovery(ctx context.Context, cn *channel.
 	})
 	log.Infof("Executing startContextCallRecovery. channel_id: %s", cn.ID)
 
-	callID := cn.StasisData[channel.StasisDataTypeCallID]
-	log.Debugf("Parsed info. call_id: %s, ", callID)
+	callID := uuid.FromStringOrNil(cn.StasisData[channel.StasisDataTypeCallID])
+	log.Debugf("Parsed info. call_id: %s", callID)
 
 	// dial to the destination
 	if errDial := h.channelHandler.Dial(ctx, cn.ID, "", defaultDialTimeout); errDial != nil {
 		log.Errorf("Could not dial the channel to the destination. channel_id: %s, err: %v", cn.ID, errDial)
 		return errors.Wrap(errDial, "could not dial the channel to the destination")
+	}
+
+	c, err := h.Get(ctx, callID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get call by call ID. call_id: %s", callID)
+	}
+	log.WithField("call", c).Debugf("Got call info. call_id: %s", c.ID)
+
+	if errExecute := h.actionExecute(ctx, c); errExecute != nil {
+		return errors.Wrapf(errExecute, "could not execute action for call. call_id: %s", c.ID)
 	}
 
 	return nil
