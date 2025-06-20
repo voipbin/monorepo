@@ -105,6 +105,11 @@ const (
 	QueueNameRouteRequest   QueueName = "bin-manager.route-manager.request"
 	QueueNameRouteSubscribe QueueName = "bin-manager.route-manager.subscribe"
 
+	// sentinel-manager
+	QueueNameSentinelEvent     QueueName = "bin-manager.sentinel-manager.event"
+	QueueNameSentinelRequest   QueueName = "bin-manager.sentinel-manager.request"
+	QueueNameSentinelSubscribe QueueName = "bin-manager.sentinel-manager.subscribe"
+
 	// storage-manager
 	QueueNameStorageEvent     QueueName = "bin-manager.storage-manager.event"
 	QueueNameStorageRequest   QueueName = "bin-manager.storage-manager.request"

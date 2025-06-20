@@ -2,6 +2,7 @@ package monitoringhandler
 
 import (
 	"context"
+	"monorepo/bin-sentinel-manager/models/pod"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -97,34 +98,38 @@ func (h *monitoringHandler) Run(ctx context.Context, selectors map[string][]stri
 	return nil
 }
 
-func (h *monitoringHandler) runPodAdded(ctx context.Context, pod *corev1.Pod) error {
+func (h *monitoringHandler) runPodAdded(ctx context.Context, p *corev1.Pod) error {
 	log := logrus.WithField("func", "runPodAdded")
 
-	log.WithField("pod", pod).Infof("Pod added. namespace: %s, name: %s", pod.Namespace, pod.Name)
+	log.WithField("pod", p).Infof("Pod added. namespace: %s, name: %s", p.Namespace, p.Name)
+	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodAdded, p)
 
 	return nil
 }
 
-func (h *monitoringHandler) runPodUpdated(ctx context.Context, pod *corev1.Pod) error {
+func (h *monitoringHandler) runPodUpdated(ctx context.Context, p *corev1.Pod) error {
 	log := logrus.WithField("func", "runPodUpdated")
 
-	log.WithField("pod", pod).Infof("Pod updated. namespace: %s, name: %s", pod.Namespace, pod.Name)
+	log.WithField("pod", p).Infof("Pod updated. namespace: %s, name: %s", p.Namespace, p.Name)
+	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodUpdated, p)
 
 	return nil
 }
 
-func (h *monitoringHandler) runPodDeleted(ctx context.Context, pod *corev1.Pod) error {
+func (h *monitoringHandler) runPodDeleted(ctx context.Context, p *corev1.Pod) error {
 	log := logrus.WithField("func", "runPodDeleted")
 
-	log.WithField("pod", pod).Infof("Pod deleted. namespace: %s, name: %s", pod.Namespace, pod.Name)
-	if pod.Namespace == namespaceVOIP || pod.Labels["app"] == lableAppAsteriskCall {
+	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodDeleted, p)
+	log.WithField("pod", p).Infof("Pod deleted. namespace: %s, name: %s", p.Namespace, p.Name)
+
+	if p.Namespace == namespaceVOIP || p.Labels["app"] == lableAppAsteriskCall {
 		log.Debugf("Pod is in VOIP namespace or has asterisk-call label, starting recovery process.")
 
-		if errRecovery := h.reqHandler.CallV1RecoveryStart(ctx, pod.Annotations["asterisk-id"]); errRecovery != nil {
-			log.WithError(errRecovery).Errorf("Failed to start recovery for pod: %s/%s", pod.Namespace, pod.Name)
-			return errors.Wrapf(errRecovery, "failed to start recovery for pod %s/%s", pod.Namespace, pod.Name)
+		if errRecovery := h.reqHandler.CallV1RecoveryStart(ctx, p.Annotations["asterisk-id"]); errRecovery != nil {
+			log.WithError(errRecovery).Errorf("Failed to start recovery for pod: %s/%s", p.Namespace, p.Name)
+			return errors.Wrapf(errRecovery, "failed to start recovery for pod %s/%s", p.Namespace, p.Name)
 		} else {
-			log.Infof("Recovery started for pod: %s/%s", pod.Namespace, pod.Name)
+			log.Infof("Recovery started for pod: %s/%s", p.Namespace, p.Name)
 		}
 	}
 
