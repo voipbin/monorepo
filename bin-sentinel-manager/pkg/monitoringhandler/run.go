@@ -56,19 +56,19 @@ func (h *monitoringHandler) Run(ctx context.Context, selectors map[string][]stri
 				)
 
 				regstrantion, err := podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-					AddFunc: func(obj interface{}) {
+					AddFunc: func(obj any) {
 						pod := obj.(*corev1.Pod)
 						if errRun := h.runPodAdded(ctx, pod); errRun != nil {
 							log.WithError(errRun).Errorf("Failed to run pod added handler for pod: %s/%s", pod.Namespace, pod.Name)
 						}
 					},
-					UpdateFunc: func(oldObj, newObj interface{}) {
+					UpdateFunc: func(oldObj, newObj any) {
 						newPod := newObj.(*corev1.Pod)
 						if errRun := h.runPodUpdated(ctx, newPod); errRun != nil {
 							log.WithError(errRun).Errorf("Failed to run pod updated handler for pod: %s/%s", newPod.Namespace, newPod.Name)
 						}
 					},
-					DeleteFunc: func(obj interface{}) {
+					DeleteFunc: func(obj any) {
 						pod := obj.(*corev1.Pod)
 						if errRun := h.runPodDeleted(ctx, pod); errRun != nil {
 							log.WithError(errRun).Errorf("Failed to run pod deleted handler for pod: %s/%s", pod.Namespace, pod.Name)
