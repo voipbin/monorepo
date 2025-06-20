@@ -153,13 +153,13 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 	res.RequestURI = requestURI
 
 	listRoutes := strings.Split(routes, ",")
-	if listRoutes != nil || len(listRoutes) > 1 {
+	if len(listRoutes) > 1 {
 		res.Routes = strings.Join(listRoutes, ",")
 		res.Routes = strings.TrimSpace(res.Routes)
 	}
 
 	listRecordRoutes := strings.Split(recordRoutes, ",")
-	if listRoutes != nil || len(listRecordRoutes) > 1 {
+	if len(listRecordRoutes) > 1 {
 		res.RecordRoutes = strings.Join(listRecordRoutes, ",")
 		res.RecordRoutes = strings.TrimSpace(res.RecordRoutes)
 	}
