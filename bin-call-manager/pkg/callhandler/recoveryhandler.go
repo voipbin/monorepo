@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -16,17 +17,15 @@ import (
 )
 
 type recoveryDetail struct {
-	RequestURI string
-	// Routes     []string
-	Routes string
-	CallID string
+	RequestURI   string
+	Routes       string
+	RecordRoutes string
+	CallID       string
 
-	// From        string
 	FromDisplay string
 	FromURI     string
 	FromTag     string
 
-	// To        string
 	ToDisplay string
 	ToURI     string
 	ToTag     string
@@ -100,7 +99,7 @@ func (h *recoveryHandler) GetRecoveryDetail(ctx context.Context, callID string) 
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get recovery details for call ID. call_id: %s", callID)
 	}
-	log.WithField("res", res).Debug("Recovery details extracted successfully")
+	log.WithField("res", res).Debug("Found recovery details successfully")
 
 	return res, nil
 }
@@ -115,23 +114,56 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 		return nil, errors.New("no SIP messages provided")
 	}
 
-	firstInvite := messages[0]
-	role, err := h.determineRole(firstInvite)
-	if err != nil {
-		return nil, err
-	} else if role == asteriskRoleUnknown {
-		return nil, fmt.Errorf("first message is not an INVITE request, method: %s, isResponse: %t", firstInvite.Method, firstInvite.IsResponse())
+	var firstInvite *sip.Msg
+	var role asteriskRole
+
+	// Find the first INVITE message
+	for _, msg := range messages {
+		if msg.Method == sip.MethodInvite {
+			firstInvite = msg
+			var err error
+			role, err = h.determineRole(msg)
+			if err != nil {
+				log.Warnf("Error determining role for INVITE message: %v", err)
+				continue
+			} else if role != asteriskRoleUnknown {
+				log.Debugf("Found INVITE message with role: %s", role)
+				break
+			} else {
+				log.Debug("Found an INVITE message but could not determine its role.")
+			}
+		} else {
+			log.Tracef("Skipping non-INVITE message: %s", msg.Method)
+		}
 	}
-	log.Debugf("Determined role. role: %s", role)
+
+	if firstInvite == nil {
+		return nil, errors.New("no INVITE message found in the SIP message list")
+	}
+
+	if role == asteriskRoleUnknown {
+		return nil, errors.New("no INVITE message with a known role found")
+	}
 
 	res := &recoveryDetail{}
-	requestURI, routes := h.extractContactAndRoutes(messages, firstInvite, role)
+	requestURI, routes, recordRoutes := h.extractContactAndRoutes(messages, firstInvite, role)
 	if requestURI == "" {
 		return nil, errors.New("the request URI is missing")
 	}
 	res.RequestURI = requestURI
-	res.Routes = routes
-	log.Debugf("Extracted request URI and routes. RequestURI: %s, Routes: %s", res.RequestURI, res.Routes)
+
+	listRoutes := strings.Split(routes, ",")
+	if len(listRoutes) > 1 {
+		res.Routes = strings.Join(listRoutes, ",")
+		res.Routes = strings.TrimSpace(res.Routes)
+	}
+
+	listRecordRoutes := strings.Split(recordRoutes, ",")
+	if len(listRecordRoutes) > 1 {
+		res.RecordRoutes = strings.Join(listRecordRoutes, ",")
+		res.RecordRoutes = strings.TrimSpace(res.RecordRoutes)
+	}
+	log.Debugf("Extracted request URI and routes. RequestURI: %s, Routes: %s, RecordRoutes: %s", res.RequestURI, res.Routes, res.RecordRoutes)
 
 	lastMsg := messages[len(messages)-1]
 	if errValidate := h.validateLastMessage(lastMsg); errValidate != nil {
@@ -148,10 +180,7 @@ func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip
 	res.ToURI = lastMsg.To.Uri.String()
 	res.ToTag = lastMsg.To.Param.Get("tag").Value
 
-	// res.From = h.formatSIPAddress(lastMsg.From)
-	// res.To = h.formatSIPAddress(lastMsg.To)
 	res.CSeq = lastMsg.CSeq + 1
-	// log.Debugf("Extracted last message details. callID: %s, from: %s, to: %s, cseq: %d", res.CallID, res.From, res.To, res.CSeq)
 
 	return res, nil
 }
@@ -174,9 +203,10 @@ func (h *recoveryHandler) determineRole(firstMessage *sip.Msg) (asteriskRole, er
 		firstMessage.Method, firstMessage.IsResponse())
 }
 
-func (h *recoveryHandler) extractContactAndRoutes(messages []*sip.Msg, firstInvite *sip.Msg, role asteriskRole) (string, string) {
+func (h *recoveryHandler) extractContactAndRoutes(messages []*sip.Msg, firstInvite *sip.Msg, role asteriskRole) (string, string, string) {
 	remoteContact := ""
 	routes := ""
+	recordRoutes := ""
 
 	switch role {
 	case asteriskRoleUAC:
@@ -190,6 +220,7 @@ func (h *recoveryHandler) extractContactAndRoutes(messages []*sip.Msg, firstInvi
 
 			if firstSuccessfulResponse.RecordRoute != nil {
 				routes = firstSuccessfulResponse.RecordRoute.Reversed().String()
+				recordRoutes = firstSuccessfulResponse.RecordRoute.String()
 			}
 		} else if firstInvite.To != nil {
 			remoteContact = firstInvite.To.Uri.String()
@@ -204,13 +235,14 @@ func (h *recoveryHandler) extractContactAndRoutes(messages []*sip.Msg, firstInvi
 
 		if firstInvite.RecordRoute != nil {
 			routes = firstInvite.RecordRoute.String()
+			recordRoutes = firstInvite.RecordRoute.String()
 		}
 	default:
 		// Handle default case in the calling function. This should never happen, but leaving here as documentation
-		return remoteContact, routes
+		return remoteContact, routes, recordRoutes
 	}
 
-	return remoteContact, routes
+	return remoteContact, routes, recordRoutes
 }
 
 func (h *recoveryHandler) findFirstSuccessfulResponse(messages []*sip.Msg, inviteCSeq int) *sip.Msg {
@@ -242,13 +274,3 @@ func (h *recoveryHandler) validateLastMessage(lastMsg *sip.Msg) error {
 
 	return nil
 }
-
-// func (h *recoveryHandler) formatSIPAddress(addr *sip.Addr) (string, string, string) {
-// 	if addr.Display != "" && addr.Uri != nil {
-// 		return fmt.Sprintf("\"%s\" <%s>;tag=%s", addr.Display, addr.Uri, addr.Param.Get("tag").Value)
-// 	} else if addr != nil {
-// 		return addr.String()
-// 	}
-
-// 	return ""
-// }

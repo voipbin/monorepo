@@ -309,6 +309,20 @@ func (mr *MockDBHandlerMockRecorder) CallSetBridgeID(ctx, id, bridgeID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).CallSetBridgeID), ctx, id, bridgeID)
 }
 
+// CallSetChannelIDAndBridgeID mocks base method.
+func (m *MockDBHandler) CallSetChannelIDAndBridgeID(ctx context.Context, id uuid.UUID, channelID, bridgeID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetChannelIDAndBridgeID", ctx, id, channelID, bridgeID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetChannelIDAndBridgeID indicates an expected call of CallSetChannelIDAndBridgeID.
+func (mr *MockDBHandlerMockRecorder) CallSetChannelIDAndBridgeID(ctx, id, channelID, bridgeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetChannelIDAndBridgeID", reflect.TypeOf((*MockDBHandler)(nil).CallSetChannelIDAndBridgeID), ctx, id, channelID, bridgeID)
+}
+
 // CallSetConfbridgeID mocks base method.
 func (m *MockDBHandler) CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -589,6 +603,21 @@ func (m *MockDBHandler) ChannelGets(ctx context.Context, size uint64, token stri
 func (mr *MockDBHandlerMockRecorder) ChannelGets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGets", reflect.TypeOf((*MockDBHandler)(nil).ChannelGets), ctx, size, token, filters)
+}
+
+// ChannelGetsForRecovery mocks base method.
+func (m *MockDBHandler) ChannelGetsForRecovery(ctx context.Context, asteriskID string, channelType channel.Type, startTime, endTime string, size uint64) ([]*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelGetsForRecovery", ctx, asteriskID, channelType, startTime, endTime, size)
+	ret0, _ := ret[0].([]*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelGetsForRecovery indicates an expected call of ChannelGetsForRecovery.
+func (mr *MockDBHandlerMockRecorder) ChannelGetsForRecovery(ctx, asteriskID, channelType, startTime, endTime, size any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetsForRecovery", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetsForRecovery), ctx, asteriskID, channelType, startTime, endTime, size)
 }
 
 // ChannelSetBridgeID mocks base method.

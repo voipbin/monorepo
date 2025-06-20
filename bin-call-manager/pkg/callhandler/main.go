@@ -153,6 +153,8 @@ const (
 
 	defaultHealthMaxRetryCount = 2
 	defaultHealthDelay         = 10000 // 10 seconds
+
+	defaultRecoveryChannelLimit = uint64(10000) // default limit of channels for recovery
 )
 
 // list of variables
@@ -174,6 +176,20 @@ const (
 	variableCallDirection    = "voipbin.call.direction"
 	variableCallMasterCallID = "voipbin.call.master_call_id"
 	variableCallDigits       = "voipbin.call.digits" // digit
+)
+
+const (
+	channelVariableRecoveryFromDisplay  = "PJSIP_RECOVERY_FROM_DISPLAY"
+	channelVariableRecoveryFromURI      = "PJSIP_RECOVERY_FROM_URI"
+	channelVariableRecoveryFromTag      = "PJSIP_RECOVERY_FROM_TAG"
+	channelVariableRecoveryToDisplay    = "PJSIP_RECOVERY_TO_DISPLAY"
+	channelVariableRecoveryToURI        = "PJSIP_RECOVERY_TO_URI"
+	channelVariableRecoveryToTag        = "PJSIP_RECOVERY_TO_TAG"
+	channelVariableRecoveryCallID       = "PJSIP_RECOVERY_CALL-ID"
+	channelVariableRecoveryCSeq         = "PJSIP_RECOVERY_CSEQ"
+	channelVariableRecoveryRoutes       = "PJSIP_RECOVERY_ROUTES"
+	channelVariableRecoveryRecordRoutes = "PJSIP_RECOVERY_RECORD-ROUTES"
+	channelVariableRecoveryRequestURI   = "PJSIP_RECOVERY_REQUEST_URI"
 )
 
 var (

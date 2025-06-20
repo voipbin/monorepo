@@ -48,9 +48,10 @@ func Test_recoveryRun(t *testing.T) {
 				},
 			},
 			responseRecoveryDetail: &recoveryDetail{
-				RequestURI: "sip:+821021656521@10.31.35.4:5070;transport=udp",
-				Routes:     "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>, <sip:192.76.120.10;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>, <sip:10.255.0.1;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>",
-				CallID:     "1ced6b72-70c6-4c45-82e1-078568bf9d45",
+				RequestURI:   "sip:+821021656521@10.31.35.4:5070;transport=udp",
+				Routes:       "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>, <sip:192.76.120.10;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>, <sip:10.255.0.1;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>",
+				RecordRoutes: "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>",
+				CallID:       "1ced6b72-70c6-4c45-82e1-078568bf9d45",
 
 				FromDisplay: "Anonymous",
 				FromURI:     "sip:anonymous@anonymous.invalid",
@@ -69,19 +70,20 @@ func Test_recoveryRun(t *testing.T) {
 			expectedAppArgs: "context_type=call,context=call-recovery,call_id=c97b20ca-4822-11f0-9345-9b3103d03af7",
 			expectedDialURI: "pjsip/call-out/sip:+821021656521@10.31.35.4:5070;transport=udp",
 			expectedChannelVariables: map[string]string{
-				"PJSIP_RECOVERY_FROM_DISPLAY": "Anonymous",
-				"PJSIP_RECOVERY_FROM_TAG":     "2f41957b-9c9d-45d1-a18c-310ce92516ba",
-				"PJSIP_RECOVERY_FROM_URI":     "sip:anonymous@anonymous.invalid",
+				channelVariableRecoveryFromDisplay: "Anonymous",
+				channelVariableRecoveryFromURI:     "sip:anonymous@anonymous.invalid",
+				channelVariableRecoveryFromTag:     "2f41957b-9c9d-45d1-a18c-310ce92516ba",
 
-				"PJSIP_RECOVERY_TO_DISPLAY": "",
-				"PJSIP_RECOVERY_TO_TAG":     "2cDr76BUDp2SF",
-				"PJSIP_RECOVERY_TO_URI":     "sip:+821021656521@sip.telnyx.com",
+				channelVariableRecoveryToDisplay: "",
+				channelVariableRecoveryToURI:     "sip:+821021656521@sip.telnyx.com",
+				channelVariableRecoveryToTag:     "2cDr76BUDp2SF",
 
-				"PJSIP_RECOVERY_CSeq":    "2595",
-				"PJSIP_RECOVERY_Call-ID": "1ced6b72-70c6-4c45-82e1-078568bf9d45",
+				channelVariableRecoveryCallID: "1ced6b72-70c6-4c45-82e1-078568bf9d45",
+				channelVariableRecoveryCSeq:   "2595",
 
-				"PJSIP_RECOVERY_REQUEST_URI": "sip:+821021656521@10.31.35.4:5070;transport=udp",
-				"PJSIP_RECOVERY_Routes":      "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>, <sip:192.76.120.10;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>, <sip:10.255.0.1;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>",
+				channelVariableRecoveryRoutes:       "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>, <sip:192.76.120.10;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>, <sip:10.255.0.1;r2=on;lr;ftag=2f41957b-9c9d-45d1-a18c-310ce92516ba>",
+				channelVariableRecoveryRecordRoutes: "<sip:10.164.0.20;transport=tcp;r2=on;lr>, <sip:34.90.68.237:5060;r2=on;lr>",
+				channelVariableRecoveryRequestURI:   "sip:+821021656521@10.31.35.4:5070;transport=udp",
 			},
 		},
 	}

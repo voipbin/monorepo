@@ -1112,3 +1112,28 @@ func (h *handler) CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDi
 
 	return nil
 }
+
+// CallSetChannelIDAndBridgeID sets the call's channel_id and bridge_id
+func (h *handler) CallSetChannelIDAndBridgeID(ctx context.Context, id uuid.UUID, channelID string, bridgeID string) error {
+	// prepare
+	q := `
+	update
+		call_calls
+	set
+		channel_id = ?,
+		bridge_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, channelID, bridgeID, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallSetChannelIDAndBridgeID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.callUpdateToCache(ctx, id)
+
+	return nil
+}

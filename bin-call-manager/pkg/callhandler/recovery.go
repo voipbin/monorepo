@@ -6,6 +6,7 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"strconv"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -13,15 +14,19 @@ import (
 
 func (h *callHandler) Recovery(ctx context.Context, asteriskID string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "Recovery",
-		"asteriskID": asteriskID,
+		"func":        "Recovery",
+		"asterisk_id": asteriskID,
 	})
+	log.Debugf("Starting recovery for asterisk ID: %s", asteriskID)
 
 	// get channels of the give asterisk ID
-	channels, err := h.channelHandler.GetChannelsForRecovery(ctx, asteriskID)
+	startTime := h.utilHandler.TimeGetCurTimeAdd(-(time.Hour * 24))
+	endTime := h.utilHandler.TimeGetCurTime()
+	channels, err := h.channelHandler.GetChannelsForRecovery(ctx, asteriskID, channel.TypeCall, startTime, endTime, defaultRecoveryChannelLimit)
 	if err != nil {
 		return errors.Wrapf(err, "could not get channels for recovery. asterisk_id: %s", asteriskID)
 	}
+	log.Debugf("Got %d channels for recovery", len(channels))
 
 	// run recovery
 	for _, ch := range channels {
@@ -52,7 +57,7 @@ func (h *callHandler) recoveryRun(ctx context.Context, ch *channel.Channel) erro
 
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "recoveryRun",
-		"channel": ch.ID,
+		"channel": ch,
 	})
 
 	if ch.Type != channel.TypeCall {
@@ -72,18 +77,19 @@ func (h *callHandler) recoveryRun(ctx context.Context, ch *channel.Channel) erro
 	dialURI := fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, recoveryDetail.RequestURI)
 
 	channelVariables := map[string]string{
-		"PJSIP_RECOVERY_FROM_DISPLAY": recoveryDetail.FromDisplay,
-		"PJSIP_RECOVERY_FROM_URI":     recoveryDetail.FromURI,
-		"PJSIP_RECOVERY_FROM_TAG":     recoveryDetail.FromTag,
+		channelVariableRecoveryFromDisplay: recoveryDetail.FromDisplay,
+		channelVariableRecoveryFromURI:     recoveryDetail.FromURI,
+		channelVariableRecoveryFromTag:     recoveryDetail.FromTag,
 
-		"PJSIP_RECOVERY_TO_DISPLAY": recoveryDetail.ToDisplay,
-		"PJSIP_RECOVERY_TO_URI":     recoveryDetail.ToURI,
-		"PJSIP_RECOVERY_TO_TAG":     recoveryDetail.ToTag,
+		channelVariableRecoveryToDisplay: recoveryDetail.ToDisplay,
+		channelVariableRecoveryToURI:     recoveryDetail.ToURI,
+		channelVariableRecoveryToTag:     recoveryDetail.ToTag,
 
-		"PJSIP_RECOVERY_Call-ID":     recoveryDetail.CallID,
-		"PJSIP_RECOVERY_CSeq":        strconv.Itoa(recoveryDetail.CSeq),
-		"PJSIP_RECOVERY_Routes":      recoveryDetail.Routes,
-		"PJSIP_RECOVERY_REQUEST_URI": recoveryDetail.RequestURI,
+		channelVariableRecoveryCallID:       recoveryDetail.CallID,
+		channelVariableRecoveryCSeq:         strconv.Itoa(recoveryDetail.CSeq),
+		channelVariableRecoveryRoutes:       recoveryDetail.Routes,
+		channelVariableRecoveryRecordRoutes: recoveryDetail.RecordRoutes,
+		channelVariableRecoveryRequestURI:   recoveryDetail.RequestURI,
 	}
 
 	// set app args

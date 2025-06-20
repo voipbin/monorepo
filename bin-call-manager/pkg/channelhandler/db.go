@@ -30,6 +30,7 @@ func (h *channelHandler) Create(
 	destinationNumber string,
 
 	state ari.ChannelState,
+
 ) (*channel.Channel, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "Create",
@@ -115,14 +116,21 @@ func (h *channelHandler) Get(ctx context.Context, id string) (*channel.Channel, 
 }
 
 // GetChannelsForRecovery returns channels for recovery.
-func (h *channelHandler) GetChannelsForRecovery(ctx context.Context, asteriskID string) ([]*channel.Channel, error) {
-	filters := map[string]string{
-		"asterisk_id": asteriskID,
-		"state":       string(ari.ChannelStateUp),
-		"deleted":     "false",
-	}
-
-	res, err := h.db.ChannelGets(ctx, defaultChannelRecoveryLimit, "", filters)
+func (h *channelHandler) GetChannelsForRecovery(
+	ctx context.Context,
+	asteriskID string,
+	channelType channel.Type,
+	startTime string,
+	endTime string,
+	size uint64,
+) ([]*channel.Channel, error) {
+	res, err := h.db.ChannelGetsForRecovery(ctx,
+		asteriskID,
+		channelType,
+		startTime,
+		endTime,
+		size,
+	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get recovery channels for asterisk_id %s", asteriskID)
 	}
@@ -222,22 +230,6 @@ func (h *channelHandler) SetDirection(ctx context.Context, id string, direction 
 			promChannelTransportAndDirection.WithLabelValues(string(tmp.SIPTransport), string(tmp.Direction)).Inc()
 		}
 	}()
-
-	return nil
-}
-
-// SetSIPCallID sets the channel's sip call id.
-func (h *channelHandler) SetSIPCallID(ctx context.Context, id string, sipCallID string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "SetSIPCallID",
-		"channel_id": id,
-	})
-	log.Debugf("Setting channel's transport. channel_id: %s, sip_call_id: %s", id, sipCallID)
-
-	if err := h.db.ChannelSetSIPCallID(ctx, id, sipCallID); err != nil {
-		log.Errorf("Could not set the channel's sip_call_id. channel_id: %s, err: %v", id, err)
-		return err
-	}
 
 	return nil
 }
@@ -504,39 +496,26 @@ func (h *channelHandler) updateStasisInfo(
 // UpdateSIPInfoByChannelVariable updates's channel's SIP info.
 func (h *channelHandler) UpdateSIPInfoByChannelVariable(ctx context.Context, cn *channel.Channel) (*channel.Channel, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "UpdateSIPInfo",
-		"channel": cn,
+		"func":       "UpdateSIPInfoByChannelVariable",
+		"channel_id": cn.ID,
 	})
 
-	// set sip call-id
-	sipCallID, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,Call-ID)`)
+	// set sip_call_id
+	// note: because of asterisk's limitation, we can not access to the sip header directly.
+	// so, we need to use the CHANNEL(tech,variable) function to get the sip call id.
+	// https://docs.asterisk.org/Asterisk_22_Documentation/API_Documentation/Dialplan_Functions/CHANNEL/#arguments
+	sipCallID, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,call-id)`)
 	if err != nil {
-		log.Errorf("Could not get channel variable. err: %v", err)
-		return nil, errors.Wrap(err, "could not get channel variable")
+		log.Debugf("Could not get channel variable. variable: CHANNEL(pjsip,Call-ID), err: %v", err)
 	}
 
-	// set sip pai
-	sipPai, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,P-Asserted-Identity)`)
-	if err != nil {
-		log.Errorf("Could not get channel variable. err: %v", err)
-		return nil, errors.Wrap(err, "could not get channel variable")
+	if errSet := h.db.ChannelSetSIPCallID(ctx, cn.ID, sipCallID); errSet != nil {
+		return nil, errors.Wrap(errSet, "could not set channel's sip_call_id")
 	}
 
-	// set sip privacy
-	sipPrivacy, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,Privacy)`)
+	res, err := h.db.ChannelGet(ctx, cn.ID)
 	if err != nil {
-		log.Errorf("Could not get channel variable. err: %v", err)
-		return nil, errors.Wrap(err, "could not get channel variable")
-	}
-
-	// set sip sipTransport
-	sipTransport := channel.SIPTransport(cn.StasisData[channel.StasisDataTypeTransport])
-
-	// get updated channel
-	res, err := h.UpdateSIPInfo(ctx, cn.ID, sipCallID, sipPai, sipPrivacy, sipTransport)
-	if err != nil {
-		log.Errorf("Could not get updated channel. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get channel info after setting sip_call_id. channel_id: %s", cn.ID)
 	}
 
 	return res, nil
