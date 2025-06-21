@@ -77,8 +77,8 @@ func (h *callHandler) EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error
 		"pod":  p,
 	})
 
-	if p.Namespace == "voip" || p.Labels["app"] == "asterisk-call" {
-		log.Debugf("Pod is in VOIP namespace or has asterisk-call label, starting recovery process.")
+	if p.Namespace == "voip" && p.Labels["app"] == "asterisk-call" {
+		log.Debugf("Received pod deleted event for asterisk-call pod. Starting call recovery. pod_name: %s, pod_namespace: %s", p.Name, p.Namespace)
 		if errRecovery := h.RecoveryStart(ctx, p.Annotations["asterisk-id"]); errRecovery != nil {
 			return errors.Wrapf(errRecovery, "failed to start recovery for pod %s/%s", p.Namespace, p.Name)
 		}
