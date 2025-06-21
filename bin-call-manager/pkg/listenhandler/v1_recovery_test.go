@@ -53,7 +53,7 @@ func Test_processV1RecoveryPost(t *testing.T) {
 				recordingHandler: mockRecording,
 			}
 
-			mockCall.EXPECT().Recovery(gomock.Any(), "42:01:0a:a4:00:03").Return(nil).Times(1)
+			mockCall.EXPECT().RecoveryStart(gomock.Any(), tt.expectedAsteriskID).Return(nil).Times(1)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

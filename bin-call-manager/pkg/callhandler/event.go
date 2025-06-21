@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"monorepo/bin-call-manager/models/call"
+	smpod "monorepo/bin-sentinel-manager/models/pod"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
@@ -65,6 +66,23 @@ func (h *callHandler) EventFMActiveflowUpdated(ctx context.Context, a *fmactivef
 		return err
 	}
 	log.WithField("call", c).Debugf("Hangup call detail. call_id: %s", c.ID)
+
+	return nil
+}
+
+// EventSMPodDeleted handles the sentinel-manager's pod_deleted event
+func (h *callHandler) EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "EventSMPodDeleted",
+		"pod":  p,
+	})
+
+	if p.Namespace == "voip" || p.Labels["app"] == "asterisk-call" {
+		log.Debugf("Pod is in VOIP namespace or has asterisk-call label, starting recovery process.")
+		if errRecovery := h.RecoveryStart(ctx, p.Annotations["asterisk-id"]); errRecovery != nil {
+			return errors.Wrapf(errRecovery, "failed to start recovery for pod %s/%s", p.Namespace, p.Name)
+		}
+	}
 
 	return nil
 }

@@ -150,7 +150,6 @@ func Test_runPodDeleted(t *testing.T) {
 			ctx := context.Background()
 
 			mockNotify.EXPECT().PublishEvent(ctx, pod.EventTypePodDeleted, tt.pod)
-			mockReq.EXPECT().CallV1RecoveryStart(ctx, tt.expectedAsteriskID).Return(nil)
 			if errRun := h.runPodDeleted(ctx, tt.pod); errRun != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errRun)
 			}

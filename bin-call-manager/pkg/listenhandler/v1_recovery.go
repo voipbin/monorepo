@@ -29,7 +29,7 @@ func (h *listenHandler) processV1RecoveryPost(ctx context.Context, m *sock.Reque
 		return nil, err
 	}
 
-	if errRecovery := h.callHandler.Recovery(context.Background(), req.AsteriskID); errRecovery != nil {
+	if errRecovery := h.callHandler.RecoveryStart(context.Background(), req.AsteriskID); errRecovery != nil {
 		log.Errorf("Could not run recovery for asterisk ID %s. err: %v", req.AsteriskID, errRecovery)
 		return nil, errRecovery
 	}

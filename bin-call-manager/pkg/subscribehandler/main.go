@@ -15,6 +15,7 @@ import (
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+	smpod "monorepo/bin-sentinel-manager/models/pod"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -179,6 +180,10 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 	// flow-manager
 	case m.Publisher == string(commonoutline.ServiceNameFlowManager) && m.Type == fmactiveflow.EventTypeActiveflowUpdated:
 		err = h.processEventFMActiveflowUpdated(ctx, m)
+
+	// sentnel-manager
+	case m.Publisher == string(commonoutline.ServiceNameSentinelManager) && m.Type == smpod.EventTypePodDeleted:
+		err = h.processEventSMPodDeleted(ctx, m)
 
 	default:
 		// ignore the event.

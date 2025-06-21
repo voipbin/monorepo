@@ -2,9 +2,12 @@ package monitoringhandler
 
 import (
 	"context"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // list of namespaces
@@ -40,4 +43,23 @@ func NewMonitoringHandler(
 	}
 
 	return h
+}
+
+var (
+	metricsNamespace = commonoutline.GetMetricNameSpace(commonoutline.ServiceNameSentinelManager)
+
+	promPodStateChangeCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "pod_state_change_total",
+			Help:      "Counts the number of pod state changes",
+		},
+		[]string{"namespace", "pod", "state"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promPodStateChangeCounter,
+	)
 }
