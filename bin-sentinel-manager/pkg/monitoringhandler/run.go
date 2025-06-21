@@ -56,12 +56,11 @@ func (h *monitoringHandler) Run(ctx context.Context, selectors map[string][]stri
 				)
 
 				regstrantion, err := podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-					AddFunc: func(obj any) {
-						pod := obj.(*corev1.Pod)
-						if errRun := h.runPodAdded(ctx, pod); errRun != nil {
-							log.WithError(errRun).Errorf("Failed to run pod added handler for pod: %s/%s", pod.Namespace, pod.Name)
-						}
-					},
+
+					// note: we can not use added event type here because it is not guaranteed that the pod is fully initialized when the event is received.
+					// this event is also used when the pod is registered in the watch list.
+					AddFunc: func(obj any) {},
+
 					UpdateFunc: func(oldObj, newObj any) {
 						newPod := newObj.(*corev1.Pod)
 						if errRun := h.runPodUpdated(ctx, newPod); errRun != nil {
@@ -98,40 +97,26 @@ func (h *monitoringHandler) Run(ctx context.Context, selectors map[string][]stri
 	return nil
 }
 
-func (h *monitoringHandler) runPodAdded(ctx context.Context, p *corev1.Pod) error {
-	log := logrus.WithField("func", "runPodAdded")
-
-	log.WithField("pod", p).Infof("Pod added. namespace: %s, name: %s", p.Namespace, p.Name)
-	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodAdded, p)
-
-	return nil
-}
-
+// runPodUpdated handles the pod updated event.
 func (h *monitoringHandler) runPodUpdated(ctx context.Context, p *corev1.Pod) error {
 	log := logrus.WithField("func", "runPodUpdated")
 
 	log.WithField("pod", p).Infof("Pod updated. namespace: %s, name: %s", p.Namespace, p.Name)
 	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodUpdated, p)
 
+	promPodStateChangeCounter.WithLabelValues(p.Namespace, p.Labels["app"], "updated").Inc()
+
 	return nil
 }
 
+// runPodUpdated handles the pod updated event.
 func (h *monitoringHandler) runPodDeleted(ctx context.Context, p *corev1.Pod) error {
 	log := logrus.WithField("func", "runPodDeleted")
 
-	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodDeleted, p)
 	log.WithField("pod", p).Infof("Pod deleted. namespace: %s, name: %s", p.Namespace, p.Name)
+	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodDeleted, p)
 
-	if p.Namespace == namespaceVOIP || p.Labels["app"] == lableAppAsteriskCall {
-		log.Debugf("Pod is in VOIP namespace or has asterisk-call label, starting recovery process.")
-
-		if errRecovery := h.reqHandler.CallV1RecoveryStart(ctx, p.Annotations["asterisk-id"]); errRecovery != nil {
-			log.WithError(errRecovery).Errorf("Failed to start recovery for pod: %s/%s", p.Namespace, p.Name)
-			return errors.Wrapf(errRecovery, "failed to start recovery for pod %s/%s", p.Namespace, p.Name)
-		} else {
-			log.Infof("Recovery started for pod: %s/%s", p.Namespace, p.Name)
-		}
-	}
+	promPodStateChangeCounter.WithLabelValues(p.Namespace, p.Labels["app"], "deleted").Inc()
 
 	return nil
 }

@@ -21,6 +21,7 @@ import (
 	customer "monorepo/bin-customer-manager/models/customer"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
+	pod "monorepo/bin-sentinel-manager/models/pod"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -310,6 +311,20 @@ func (mr *MockCallHandlerMockRecorder) EventFMActiveflowUpdated(ctx, a any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventFMActiveflowUpdated", reflect.TypeOf((*MockCallHandler)(nil).EventFMActiveflowUpdated), ctx, a)
 }
 
+// EventSMPodDeleted mocks base method.
+func (m *MockCallHandler) EventSMPodDeleted(ctx context.Context, p *pod.Pod) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventSMPodDeleted", ctx, p)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventSMPodDeleted indicates an expected call of EventSMPodDeleted.
+func (mr *MockCallHandlerMockRecorder) EventSMPodDeleted(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventSMPodDeleted", reflect.TypeOf((*MockCallHandler)(nil).EventSMPodDeleted), ctx, p)
+}
+
 // ExternalMediaStart mocks base method.
 func (m *MockCallHandler) ExternalMediaStart(ctx context.Context, id, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format, direction string) (*call.Call, error) {
 	m.ctrl.T.Helper()
@@ -554,18 +569,18 @@ func (mr *MockCallHandlerMockRecorder) RecordingStop(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStop", reflect.TypeOf((*MockCallHandler)(nil).RecordingStop), ctx, id)
 }
 
-// Recovery mocks base method.
-func (m *MockCallHandler) Recovery(ctx context.Context, asteriskID string) error {
+// RecoveryStart mocks base method.
+func (m *MockCallHandler) RecoveryStart(ctx context.Context, asteriskID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Recovery", ctx, asteriskID)
+	ret := m.ctrl.Call(m, "RecoveryStart", ctx, asteriskID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Recovery indicates an expected call of Recovery.
-func (mr *MockCallHandlerMockRecorder) Recovery(ctx, asteriskID any) *gomock.Call {
+// RecoveryStart indicates an expected call of RecoveryStart.
+func (mr *MockCallHandlerMockRecorder) RecoveryStart(ctx, asteriskID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recovery", reflect.TypeOf((*MockCallHandler)(nil).Recovery), ctx, asteriskID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoveryStart", reflect.TypeOf((*MockCallHandler)(nil).RecoveryStart), ctx, asteriskID)
 }
 
 // SilenceOff mocks base method.

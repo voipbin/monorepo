@@ -134,6 +134,7 @@ func runSubscribe(
 		string(commonoutline.QueueNameAsteriskEventAll),
 		string(commonoutline.QueueNameCustomerEvent),
 		string(commonoutline.QueueNameFlowEvent),
+		string(commonoutline.QueueNameSentinelEvent),
 	}
 	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")
 

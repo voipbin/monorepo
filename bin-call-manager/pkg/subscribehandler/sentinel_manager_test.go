@@ -1,42 +1,43 @@
 package subscribehandler
 
 import (
-	"testing"
-
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/sockhandler"
-
-	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
-
-	"github.com/gofrs/uuid"
-	gomock "go.uber.org/mock/gomock"
-
 	"monorepo/bin-call-manager/pkg/arieventhandler"
 	"monorepo/bin-call-manager/pkg/callhandler"
+	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/sockhandler"
+	smpod "monorepo/bin-sentinel-manager/models/pod"
+	"testing"
+
+	gomock "go.uber.org/mock/gomock"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func Test_processEvent_processEventActiveflowStop(t *testing.T) {
+func Test_processEvent_processEventSMPodDeleted(t *testing.T) {
 
 	tests := []struct {
 		name  string
 		event *sock.Event
 
-		expectedActiveflow *fmactiveflow.Activeflow
+		expectedPod *smpod.Pod
 	}{
 		{
 			name: "normal",
 
 			event: &sock.Event{
-				Publisher: "flow-manager",
-				Type:      "activeflow_updated",
+				Publisher: "sentinel-manager",
+				Type:      smpod.EventTypePodDeleted,
 				DataType:  "application/json",
-				Data:      []byte(`{"id":"e739a280-f161-11ee-8444-2385d7cef78a"}`),
+				Data:      []byte(`{"metadata":{"annotations":{"asterisk-id":"3e:50:6b:43:bb:32"}}}`),
 			},
 
-			expectedActiveflow: &fmactiveflow.Activeflow{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("e739a280-f161-11ee-8444-2385d7cef78a"),
+			expectedPod: &smpod.Pod{
+				Pod: v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Annotations: map[string]string{
+							"asterisk-id": "3e:50:6b:43:bb:32",
+						},
+					},
 				},
 			},
 		},
@@ -57,7 +58,7 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 				callHandler:     mockCall,
 			}
 
-			mockCall.EXPECT().EventFMActiveflowUpdated(gomock.Any(), tt.expectedActiveflow).Return(nil)
+			mockCall.EXPECT().EventSMPodDeleted(gomock.Any(), tt.expectedPod).Return(nil)
 
 			if errProcess := h.processEvent(tt.event); errProcess != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errProcess)

@@ -12,9 +12,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *callHandler) Recovery(ctx context.Context, asteriskID string) error {
+func (h *callHandler) RecoveryStart(ctx context.Context, asteriskID string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Recovery",
+		"func":        "RecoveryStart",
 		"asterisk_id": asteriskID,
 	})
 	log.Debugf("Starting recovery for asterisk ID: %s", asteriskID)
