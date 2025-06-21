@@ -98,17 +98,21 @@ func (h *monitoringHandler) Run(ctx context.Context, selectors map[string][]stri
 	return nil
 }
 
+// runPodAdded handles the pod added event.
+// note: we can not use added event type here because it is not guaranteed that the pod is fully initialized when the event is received.
+// this event is also used when the pod is registered in the watch list.
 func (h *monitoringHandler) runPodAdded(ctx context.Context, p *corev1.Pod) error {
-	log := logrus.WithField("func", "runPodAdded")
+	// log := logrus.WithField("func", "runPodAdded")
 
-	log.WithField("pod", p).Infof("Pod added. namespace: %s, name: %s", p.Namespace, p.Name)
-	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodAdded, p)
+	// log.WithField("pod", p).Infof("Pod added. namespace: %s, name: %s", p.Namespace, p.Name)
+	// h.notifyHandler.PublishEvent(ctx, pod.EventTypePodAdded, p)
 
-	promPodStateChangeCounter.WithLabelValues(p.Namespace, p.Labels["app"], "added").Inc()
+	// promPodStateChangeCounter.WithLabelValues(p.Namespace, p.Labels["app"], "added").Inc()
 
 	return nil
 }
 
+// runPodUpdated handles the pod updated event.
 func (h *monitoringHandler) runPodUpdated(ctx context.Context, p *corev1.Pod) error {
 	log := logrus.WithField("func", "runPodUpdated")
 
@@ -120,6 +124,7 @@ func (h *monitoringHandler) runPodUpdated(ctx context.Context, p *corev1.Pod) er
 	return nil
 }
 
+// runPodUpdated handles the pod updated event.
 func (h *monitoringHandler) runPodDeleted(ctx context.Context, p *corev1.Pod) error {
 	log := logrus.WithField("func", "runPodDeleted")
 
