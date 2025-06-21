@@ -56,12 +56,11 @@ func (h *monitoringHandler) Run(ctx context.Context, selectors map[string][]stri
 				)
 
 				regstrantion, err := podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-					AddFunc: func(obj any) {
-						pod := obj.(*corev1.Pod)
-						if errRun := h.runPodAdded(ctx, pod); errRun != nil {
-							log.WithError(errRun).Errorf("Failed to run pod added handler for pod: %s/%s", pod.Namespace, pod.Name)
-						}
-					},
+
+					// note: we can not use added event type here because it is not guaranteed that the pod is fully initialized when the event is received.
+					// this event is also used when the pod is registered in the watch list.
+					AddFunc: func(obj any) {},
+
 					UpdateFunc: func(oldObj, newObj any) {
 						newPod := newObj.(*corev1.Pod)
 						if errRun := h.runPodUpdated(ctx, newPod); errRun != nil {
@@ -95,20 +94,6 @@ func (h *monitoringHandler) Run(ctx context.Context, selectors map[string][]stri
 
 	<-ctx.Done()
 	log.Info("Context cancelled. Shutting down informers.")
-	return nil
-}
-
-// runPodAdded handles the pod added event.
-// note: we can not use added event type here because it is not guaranteed that the pod is fully initialized when the event is received.
-// this event is also used when the pod is registered in the watch list.
-func (h *monitoringHandler) runPodAdded(ctx context.Context, p *corev1.Pod) error {
-	// log := logrus.WithField("func", "runPodAdded")
-
-	// log.WithField("pod", p).Infof("Pod added. namespace: %s, name: %s", p.Namespace, p.Name)
-	// h.notifyHandler.PublishEvent(ctx, pod.EventTypePodAdded, p)
-
-	// promPodStateChangeCounter.WithLabelValues(p.Namespace, p.Labels["app"], "added").Inc()
-
 	return nil
 }
 

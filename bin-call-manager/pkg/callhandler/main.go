@@ -194,6 +194,11 @@ const (
 	channelVariableRecoveryRequestURI   = "PJSIP_RECOVERY_REQUEST_URI"
 )
 
+const (
+	asteriskPodNamespace = "voip"
+	asteriskPodLabelApp  = "asterisk-call"
+)
+
 var (
 	metricsNamespace = commonoutline.GetMetricNameSpace(common.Servicename)
 
