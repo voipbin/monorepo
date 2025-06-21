@@ -181,7 +181,7 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 	case m.Publisher == string(commonoutline.ServiceNameFlowManager) && m.Type == fmactiveflow.EventTypeActiveflowUpdated:
 		err = h.processEventFMActiveflowUpdated(ctx, m)
 
-	// sentnel-manager
+	// sentinel-manager
 	case m.Publisher == string(commonoutline.ServiceNameSentinelManager) && m.Type == smpod.EventTypePodDeleted:
 		err = h.processEventSMPodDeleted(ctx, m)
 
