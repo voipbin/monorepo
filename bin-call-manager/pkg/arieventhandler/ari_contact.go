@@ -18,6 +18,7 @@ func (h *eventHandler) EventHandlerContactStatusChange(ctx context.Context, evt 
 		"func":  "EventHandlerContactStatusChange",
 		"event": e,
 	})
+	log.Debugf("Received ContactStatusChange event: %v", e)
 
 	customerID, ext, err := common.ParseSIPURI(e.Endpoint.Resource)
 	if err != nil {
