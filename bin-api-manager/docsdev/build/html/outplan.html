@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Outplan &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=ea6a6c20" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+            <link rel="next" title="Webhook" href="webhook.html" />
+            <link rel="prev" title="Outdial" href="outdial.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Outplan</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/outplan.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="outplan">
+<span id="outplan-main"></span><h1>Outplan<a class="headerlink" href="#outplan" title="Link to this heading"></a></h1>
+<section id="overview">
+<span id="outplan-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The VoIPBIN’s outplan API provides a powerful tool for managing and customizing dialing strategies for outdial operations. The outplan defines how the system should handle dialing attempts and retries when making outbound calls to various destinations.</p>
+<p>With the outplan API, users can create and configure multiple outplans, each with its own unique dialing strategy. The outplan allows users to set parameters such as dial timeout, try interval, and maximum try counts for different dialing attempts.</p>
+<p>The outplan API is commonly used in conjunction with the outdial API to manage the dialing behavior of outbound calling campaigns. Users can apply specific outplans to different outdials, allowing for targeted and customized dialing strategies for different destinations or scenarios.</p>
+<p>By utilizing the outplan API, businesses and developers can optimize their outbound calling operations, increase the success rate of dialing attempts, and effectively manage retries and timeouts. This flexibility and customization provided by the outplan API make it a valuable tool for organizations looking to streamline their outbound communication processes and enhance their customer engagement efforts.</p>
+<section id="key-features">
+<h3>Key features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h3>
+<p>The outplan API offers several key features that allow users to finely tune the dialing behavior of their outbound calling campaigns:</p>
+<ul class="simple">
+<li><p>Dial Timeout: Users can specify the maximum duration that the system will wait for a call to be answered before considering it a timeout and marking it as such.</p></li>
+<li><p>Try Interval: The outplan API allows users to define the interval between consecutive dialing attempts. This feature gives users control over how often the system should retry dialing a destination if the call is not successful on the first attempt.</p></li>
+<li><p>Maximum Try Counts: Users can set the maximum number of times the system should try to connect to a destination. This parameter enables users to customize the level of persistence in attempting to establish a successful call.</p></li>
+</ul>
+</section>
+</section>
+<section id="outplan-struct-outplan">
+<span id="id1"></span><h2>Outplan<a class="headerlink" href="#outplan-struct-outplan" title="Link to this heading"></a></h2>
+<section id="outplan-struct-outplan-outplan">
+<span id="id2"></span><h3>Outplan<a class="headerlink" href="#outplan-struct-outplan-outplan" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;dial_timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
+    <span class="s2">&quot;try_interval&quot;</span><span class="p">:</span> <span class="mi">60000</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_0&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_1&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_2&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_3&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_4&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>id: Outplan’s id.</p></li>
+<li><p>name: Outplan’s name.</p></li>
+<li><p>detail: Outplan’s detail.</p></li>
+<li><p><em>source</em>: Source address. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>dial_timeout: Timeout for dialing. milliseconds</p></li>
+<li><p>try_interval: Delay time for retry. milliseconds</p></li>
+<li><p>max_try_count_0: Maximum try count for destination 0.</p></li>
+<li><p>max_try_count_1: Maximum try count for destination 1.</p></li>
+<li><p>max_try_count_2: Maximum try count for destination 2.</p></li>
+<li><p>max_try_count_3: Maximum try count for destination 3.</p></li>
+<li><p>max_try_count_4: Maximum try count for destination 4.</p></li>
+</ul>
+<section id="example">
+<h4>example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test outplan&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;outplan for test use.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;dial_timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
+    <span class="s2">&quot;try_interval&quot;</span><span class="p">:</span> <span class="mi">60000</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_0&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_1&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_3&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">&quot;max_try_count_4&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-28 01:50:23.414000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-30 12:01:13.780469&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="try-interval">
+<h3>Try interval<a class="headerlink" href="#try-interval" title="Link to this heading"></a></h3>
+<p>When the VoIPBIN makes a retry dialing, it waits try interval after the previous call’s end.</p>
+<img alt="_images/outplan_struct_try_interval.png" src="_images/outplan_struct_try_interval.png" />
+</section>
+<section id="max-try-count">
+<h3>Max try count<a class="headerlink" href="#max-try-count" title="Link to this heading"></a></h3>
+<p>The max try count configs max try count for the given destination.</p>
+<img alt="_images/outplan_struct_max_try_count.png" src="_images/outplan_struct_max_try_count.png" />
+</section>
+</section>
+<section id="tutorial">
+<span id="outplan-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<section id="get-list-of-outplans">
+<h3>Get list of outplans<a class="headerlink" href="#get-list-of-outplans" title="Link to this heading"></a></h3>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/outplans?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA&#39;
+
+{
+    &quot;result&quot;: [
+        {
+            &quot;id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
+            &quot;name&quot;: &quot;test outplan&quot;,
+            &quot;detail&quot;: &quot;outplan for test use.&quot;,
+            &quot;source&quot;: {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+821021656521&quot;,
+                &quot;target_name&quot;: &quot;&quot;,
+                &quot;name&quot;: &quot;&quot;,
+                &quot;detail&quot;: &quot;&quot;
+            },
+            &quot;dial_timeout&quot;: 30000,
+            &quot;try_interval&quot;: 60000,
+            &quot;max_try_count_0&quot;: 5,
+            &quot;max_try_count_1&quot;: 5,
+            &quot;max_try_count_2&quot;: 5,
+            &quot;max_try_count_3&quot;: 5,
+            &quot;max_try_count_4&quot;: 5,
+            &quot;tm_create&quot;: &quot;2022-04-28 01:50:23.414000&quot;,
+            &quot;tm_update&quot;: &quot;2022-04-30 12:01:13.780469&quot;,
+            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+        }
+    ],
+    &quot;next_page_token&quot;: &quot;2022-04-28 01:50:23.414000&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="get-detail-of-outplan">
+<h3>Get detail of outplan<a class="headerlink" href="#get-detail-of-outplan" title="Link to this heading"></a></h3>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA&#39;
+
+{
+    &quot;id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
+    &quot;name&quot;: &quot;test outplan&quot;,
+    &quot;detail&quot;: &quot;outplan for test use.&quot;,
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821021656521&quot;,
+        &quot;target_name&quot;: &quot;&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
+    },
+    &quot;dial_timeout&quot;: 30000,
+    &quot;try_interval&quot;: 60000,
+    &quot;max_try_count_0&quot;: 5,
+    &quot;max_try_count_1&quot;: 5,
+    &quot;max_try_count_2&quot;: 5,
+    &quot;max_try_count_3&quot;: 5,
+    &quot;max_try_count_4&quot;: 5,
+    &quot;tm_create&quot;: &quot;2022-04-28 01:50:23.414000&quot;,
+    &quot;tm_update&quot;: &quot;2022-04-30 12:01:13.780469&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="create-a-new-outplan">
+<h3>Create a new outplan<a class="headerlink" href="#create-a-new-outplan" title="Link to this heading"></a></h3>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/outplans?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;test outplan&quot;,
+        &quot;detail&quot;: &quot;outplan for test use.&quot;,
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;
+        },
+        &quot;dial_timeout&quot;: 30000,
+        &quot;try_interval&quot;: 600000,
+        &quot;max_try_count_0&quot;: 5,
+        &quot;max_try_count_1&quot;: 5,
+        &quot;max_try_count_2&quot;: 5,
+        &quot;max_try_count_3&quot;: 5,
+        &quot;max_try_count_4&quot;: 5
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="update-outplan-s-dial-info">
+<h3>Update outplan’s dial info<a class="headerlink" href="#update-outplan-s-dial-info" title="Link to this heading"></a></h3>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e/dial_info?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;
+        },
+        &quot;dial_timeout&quot;: 30000,
+        &quot;try_interval&quot;: 60000,
+        &quot;max_try_count_0&quot;: 5,
+        &quot;max_try_count_1&quot;: 5,
+        &quot;max_try_count_2&quot;: 5,
+        &quot;max_try_count_3&quot;: 5,
+        &quot;max_try_count_4&quot;: 5
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="delete-outplan">
+<h3>Delete outplan<a class="headerlink" href="#delete-outplan" title="Link to this heading"></a></h3>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/outplans/88334a03-bc6b-40b6-878f-46df2d9865db?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39;
+</pre></div>
+</div>
+</section>
+<section id="update-outplan-s-basic-info">
+<h3>Update outplan’s basic info<a class="headerlink" href="#update-outplan-s-basic-info" title="Link to this heading"></a></h3>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;test outplan&quot;,
+        &quot;detail&quot;: &quot;outplan for test use&quot;
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
+    &quot;name&quot;: &quot;test outplan&quot;,
+    &quot;detail&quot;: &quot;outplan for test use&quot;,
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821021656521&quot;,
+        &quot;target_name&quot;: &quot;&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
+    },
+    &quot;dial_timeout&quot;: 30000,
+    &quot;try_interval&quot;: 60000,
+    &quot;max_try_count_0&quot;: 5,
+    &quot;max_try_count_1&quot;: 5,
+    &quot;max_try_count_2&quot;: 5,
+    &quot;max_try_count_3&quot;: 5,
+    &quot;max_try_count_4&quot;: 5,
+    &quot;tm_create&quot;: &quot;2022-04-28 01:50:23.414000&quot;,
+    &quot;tm_update&quot;: &quot;2022-05-02 05:59:44.290658&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="outdial.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>Outdial
+    </a>
+    <a class="float-right" href="webhook.html" title="Next">
+        Webhook <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Outplan</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#key-features">Key features</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#outplan-struct-outplan">Outplan</a><ul>
+<li><a class="reference internal" href="#outplan-struct-outplan-outplan">Outplan</a><ul>
+<li><a class="reference internal" href="#example">example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#try-interval">Try interval</a></li>
+<li><a class="reference internal" href="#max-try-count">Max try count</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference internal" href="#get-list-of-outplans">Get list of outplans</a></li>
+<li><a class="reference internal" href="#get-detail-of-outplan">Get detail of outplan</a></li>
+<li><a class="reference internal" href="#create-a-new-outplan">Create a new outplan</a></li>
+<li><a class="reference internal" href="#update-outplan-s-dial-info">Update outplan’s dial info</a></li>
+<li><a class="reference internal" href="#delete-outplan">Delete outplan</a></li>
+<li><a class="reference internal" href="#update-outplan-s-basic-info">Update outplan’s basic info</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                <p style="display: none">
+                    <a class="text-light" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Wagtail Sphinx Theme 6.3.0
+                    </a>
+                </p>
+            </div>
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

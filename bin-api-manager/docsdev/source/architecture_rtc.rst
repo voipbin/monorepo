@@ -110,6 +110,8 @@ SIP Session Recovery
 --------------------
 VoIPBin provides **SIP session recovery** to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents issues such as call drops, abrupt conference exits, and media channel failures by making the client perceive the session as uninterrupted.
 
+.. youtube:: GMd-pOwyrtA
+
 How It Works
 ++++++++++++
 
@@ -118,41 +120,42 @@ When an Asterisk instance crashes, all SIP sessions managed by that instance dis
 .. image:: _static/images/architecture_rtc_sip_session_recovery_flow.png
     :alt: SIP Session Recovery Flow
 
-.. code::
+Detailed Steps
+++++++++++++++
 
-    1. **Crash Detection**  
-    The `sentinel-manager` quickly detects the abnormal termination of an Asterisk instance.
+1. **Crash Detection**
+The `sentinel-manager` quickly detects the abnormal termination of an Asterisk instance.
 
-    2. **Session Lookup**  
-    The internal database is queried to retrieve all sessions handled by the failed instance.
+2. **Session Lookup**
+The internal database is queried to retrieve all sessions handled by the failed instance.
 
-    3. **SIP Field Collection (via HOMER)**  
-    The HOMER API is used to obtain SIP header information such as Call-ID, From/To headers, Routes, etc.
+3. **SIP Field Collection (via HOMER)**
+The HOMER API is used to obtain SIP header information such as Call-ID, From/To headers, Routes, etc.
 
-    4. **Create SIP Channels on Another Asterisk**  
-    A healthy Asterisk instance is selected, and new SIP channels are created with the same SIP information as the original sessions.
+4. **Create SIP Channels on Another Asterisk**
+A healthy Asterisk instance is selected, and new SIP channels are created with the same SIP information as the original sessions.
 
-    5. **Set Recovery Channel Variables**  
-    The following channel variables are set to ensure the new INVITE is recognized as a continuation of the original session:
+5. **Set Recovery Channel Variables**
+The following channel variables are set to ensure the new INVITE is recognized as a continuation of the original session:
 
-    PJSIP_RECOVERY_FROM_DISPLAY
-    PJSIP_RECOVERY_FROM_URI
-    PJSIP_RECOVERY_FROM_TAG
-    PJSIP_RECOVERY_TO_DISPLAY
-    PJSIP_RECOVERY_TO_URI
-    PJSIP_RECOVERY_TO_TAG
-    Call-ID, CSeq, Routes, and other SIP headers are similarly restored.
+* PJSIP_RECOVERY_FROM_DISPLAY
+* PJSIP_RECOVERY_FROM_URI
+* PJSIP_RECOVERY_FROM_TAG
+* PJSIP_RECOVERY_TO_DISPLAY
+* PJSIP_RECOVERY_TO_URI
+* PJSIP_RECOVERY_TO_TAG
+* Call-ID, CSeq, Routes, and other SIP headers are similarly restored.
 
-    6. **Send Recovery INVITE**  
-    The INVITE reuses the original Call-ID and tags, so the client interprets it as a re-INVITE and maintains the session.
+6. **Send Recovery INVITE**
+The INVITE reuses the original Call-ID and tags, so the client interprets it as a re-INVITE and maintains the session.
 
-    7. **Restore RTP and SIP Sessions**  
-    Signaling and media are fully re-established, restoring the call to its previous state.
+7. **Restore RTP and SIP Sessions**
+Signaling and media are fully re-established, restoring the call to its previous state.
 
-    8. **Resume Flow Execution**  
-    The recovered session resumes Flow execution from just before the crash:  
-    - If the user was on a call with another party, the conversation continues without interruption.  
-    - If the user was in a conference, they are reconnected to the same conference bridge.
+8. **Resume Flow Execution**
+The recovered session resumes Flow execution from just before the crash:  
+- If the user was on a call with another party, the conversation continues without interruption.  
+- If the user was in a conference, they are reconnected to the same conference bridge.
 
 Asterisk Patch for Recovery
 +++++++++++++++++++++++++++
@@ -162,7 +165,10 @@ To support this functionality, VoIPBin patches Asterisk's PJSIP stack to overrid
 .. image:: _static/images/architecture_rtc_sip_session_recovery_diagram.png
     :alt: SIP Session Recovery Flow
 
+This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation of the previous session.
+
 .. code::
+
     val_from_display_c_str = pbx_builtin_getvar_helper(session->channel, "PJSIP_RECOVERY_FROM_DISPLAY");
     val_from_uri_c_str     = pbx_builtin_getvar_helper(session->channel, "PJSIP_RECOVERY_FROM_URI");
     val_from_tag_c_str     = pbx_builtin_getvar_helper(session->channel, "PJSIP_RECOVERY_FROM_TAG");
@@ -173,7 +179,6 @@ To support this functionality, VoIPBin patches Asterisk's PJSIP stack to overrid
 
     // Call-ID, CSeq, Routes, and others are handled similarly
 
-This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation of the previous session.
-
 The full patch is available on GitHub:
+
 * https://github.com/voipbin/etc/blob/main/asterisk/add_pjsip_recovery.patch
