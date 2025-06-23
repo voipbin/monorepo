@@ -292,6 +292,58 @@ This approach provides a consistent and unified framework for handling both 1:1 
 </ul>
 </section>
 </section>
+<section id="sip-session-recovery">
+<h3>SIP Session Recovery<a class="headerlink" href="#sip-session-recovery" title="Link to this heading"></a></h3>
+<p>VoIPBin provides <strong>SIP session recovery</strong> to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents issues such as call drops, abrupt conference exits, and media channel failures by making the client perceive the session as uninterrupted.</p>
+<section id="how-it-works">
+<h4>How It Works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h4>
+<p>When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Normally, because there is no BYE message, clients experience unexpected call termination. VoIPBin recovers sessions through the following steps:</p>
+<img alt="SIP Session Recovery Flow" src="_images/architecture_rtc_sip_session_recovery_flow.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. **Crash Detection**
+The `sentinel-manager` quickly detects the abnormal termination of an Asterisk instance.
+
+2. **Session Lookup**
+The internal database is queried to retrieve all sessions handled by the failed instance.
+
+3. **SIP Field Collection (via HOMER)**
+The HOMER API is used to obtain SIP header information such as Call-ID, From/To headers, Routes, etc.
+
+4. **Create SIP Channels on Another Asterisk**
+A healthy Asterisk instance is selected, and new SIP channels are created with the same SIP information as the original sessions.
+
+5. **Set Recovery Channel Variables**
+The following channel variables are set to ensure the new INVITE is recognized as a continuation of the original session:
+
+PJSIP_RECOVERY_FROM_DISPLAY
+PJSIP_RECOVERY_FROM_URI
+PJSIP_RECOVERY_FROM_TAG
+PJSIP_RECOVERY_TO_DISPLAY
+PJSIP_RECOVERY_TO_URI
+PJSIP_RECOVERY_TO_TAG
+Call-ID, CSeq, Routes, and other SIP headers are similarly restored.
+
+6. **Send Recovery INVITE**
+The INVITE reuses the original Call-ID and tags, so the client interprets it as a re-INVITE and maintains the session.
+
+7. **Restore RTP and SIP Sessions**
+Signaling and media are fully re-established, restoring the call to its previous state.
+
+8. **Resume Flow Execution**
+The recovered session resumes Flow execution from just before the crash:
+- If the user was on a call with another party, the conversation continues without interruption.
+- If the user was in a conference, they are reconnected to the same conference bridge.
+</pre></div>
+</div>
+</section>
+<section id="asterisk-patch-for-recovery">
+<h4>Asterisk Patch for Recovery<a class="headerlink" href="#asterisk-patch-for-recovery" title="Link to this heading"></a></h4>
+<p>To support this functionality, VoIPBin patches Asterisk’s PJSIP stack to override SIP header fields based on channel variables:</p>
+<img alt="SIP Session Recovery Flow" src="_images/architecture_rtc_sip_session_recovery_diagram.png" />
+<p>This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation of the previous session.</p>
+<p>The full patch is available on GitHub:
+* <a class="reference external" href="https://github.com/voipbin/etc/blob/main/asterisk/add_pjsip_recovery.patch">https://github.com/voipbin/etc/blob/main/asterisk/add_pjsip_recovery.patch</a></p>
+</section>
+</section>
 </section>
 </section>
 
@@ -326,6 +378,11 @@ This approach provides a consistent and unified framework for handling both 1:1 
 <li><a class="reference internal" href="#conference">Conference</a><ul>
 <li><a class="reference internal" href="#conference-flow">Conference Flow</a></li>
 <li><a class="reference internal" href="#calls-as-a-special-case-of-conferencing">1:1 Calls as a Special Case of Conferencing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sip-session-recovery">SIP Session Recovery</a><ul>
+<li><a class="reference internal" href="#how-it-works">How It Works</a></li>
+<li><a class="reference internal" href="#asterisk-patch-for-recovery">Asterisk Patch for Recovery</a></li>
 </ul>
 </li>
 </ul>
