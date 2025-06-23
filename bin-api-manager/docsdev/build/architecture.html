@@ -292,6 +292,68 @@ This approach provides a consistent and unified framework for handling both 1:1 
 </ul>
 </section>
 </section>
+<section id="sip-session-recovery">
+<h3>SIP Session Recovery<a class="headerlink" href="#sip-session-recovery" title="Link to this heading"></a></h3>
+<p>VoIPBin provides <strong>SIP session recovery</strong> to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents issues such as call drops, abrupt conference exits, and media channel failures by making the client perceive the session as uninterrupted.</p>
+<div class="video_wrapper" style="">
+<iframe allowfullscreen="true" src="https://www.youtube.com/embed/GMd-pOwyrtA" style="border: 0; height: 345px; width: 560px">
+</iframe></div><section id="how-it-works">
+<h4>How It Works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h4>
+<p>When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Normally, because there is no BYE message, clients experience unexpected call termination. VoIPBin recovers sessions through the following steps:</p>
+<img alt="SIP Session Recovery Flow" src="_images/architecture_rtc_sip_session_recovery_flow.png" />
+</section>
+<section id="detailed-steps">
+<h4>Detailed Steps<a class="headerlink" href="#detailed-steps" title="Link to this heading"></a></h4>
+<p>1. <strong>Crash Detection</strong>
+The <cite>sentinel-manager</cite> quickly detects the abnormal termination of an Asterisk instance.</p>
+<p>2. <strong>Session Lookup</strong>
+The internal database is queried to retrieve all sessions handled by the failed instance.</p>
+<p>3. <strong>SIP Field Collection (via HOMER)</strong>
+The HOMER API is used to obtain SIP header information such as Call-ID, From/To headers, Routes, etc.</p>
+<p>4. <strong>Create SIP Channels on Another Asterisk</strong>
+A healthy Asterisk instance is selected, and new SIP channels are created with the same SIP information as the original sessions.</p>
+<p>5. <strong>Set Recovery Channel Variables</strong>
+The following channel variables are set to ensure the new INVITE is recognized as a continuation of the original session:</p>
+<ul class="simple">
+<li><p>PJSIP_RECOVERY_FROM_DISPLAY</p></li>
+<li><p>PJSIP_RECOVERY_FROM_URI</p></li>
+<li><p>PJSIP_RECOVERY_FROM_TAG</p></li>
+<li><p>PJSIP_RECOVERY_TO_DISPLAY</p></li>
+<li><p>PJSIP_RECOVERY_TO_URI</p></li>
+<li><p>PJSIP_RECOVERY_TO_TAG</p></li>
+<li><p>Call-ID, CSeq, Routes, and other SIP headers are similarly restored.</p></li>
+</ul>
+<p>6. <strong>Send Recovery INVITE</strong>
+The INVITE reuses the original Call-ID and tags, so the client interprets it as a re-INVITE and maintains the session.</p>
+<p>7. <strong>Restore RTP and SIP Sessions</strong>
+Signaling and media are fully re-established, restoring the call to its previous state.</p>
+<p>8. <strong>Resume Flow Execution</strong>
+The recovered session resumes Flow execution from just before the crash:
+- If the user was on a call with another party, the conversation continues without interruption.
+- If the user was in a conference, they are reconnected to the same conference bridge.</p>
+</section>
+<section id="asterisk-patch-for-recovery">
+<h4>Asterisk Patch for Recovery<a class="headerlink" href="#asterisk-patch-for-recovery" title="Link to this heading"></a></h4>
+<p>To support this functionality, VoIPBin patches Asterisk’s PJSIP stack to override SIP header fields based on channel variables:</p>
+<img alt="SIP Session Recovery Flow" src="_images/architecture_rtc_sip_session_recovery_diagram.png" />
+<p>This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation of the previous session.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">val_from_display_c_str</span> <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_DISPLAY&quot;</span><span class="p">);</span>
+<span class="n">val_from_uri_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_URI&quot;</span><span class="p">);</span>
+<span class="n">val_from_tag_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_TAG&quot;</span><span class="p">);</span>
+
+<span class="n">val_to_display_c_str</span>   <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_DISPLAY&quot;</span><span class="p">);</span>
+<span class="n">val_to_uri_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_URI&quot;</span><span class="p">);</span>
+<span class="n">val_to_tag_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_TAG&quot;</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Call</span><span class="o">-</span><span class="n">ID</span><span class="p">,</span> <span class="n">CSeq</span><span class="p">,</span> <span class="n">Routes</span><span class="p">,</span> <span class="ow">and</span> <span class="n">others</span> <span class="n">are</span> <span class="n">handled</span> <span class="n">similarly</span>
+</pre></div>
+</div>
+<p>The full patch is available on GitHub:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/voipbin/etc/blob/main/asterisk/add_pjsip_recovery.patch">https://github.com/voipbin/etc/blob/main/asterisk/add_pjsip_recovery.patch</a></p></li>
+</ul>
+</section>
+</section>
 </section>
 </section>
 
@@ -326,6 +388,12 @@ This approach provides a consistent and unified framework for handling both 1:1 
 <li><a class="reference internal" href="#conference">Conference</a><ul>
 <li><a class="reference internal" href="#conference-flow">Conference Flow</a></li>
 <li><a class="reference internal" href="#calls-as-a-special-case-of-conferencing">1:1 Calls as a Special Case of Conferencing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sip-session-recovery">SIP Session Recovery</a><ul>
+<li><a class="reference internal" href="#how-it-works">How It Works</a></li>
+<li><a class="reference internal" href="#detailed-steps">Detailed Steps</a></li>
+<li><a class="reference internal" href="#asterisk-patch-for-recovery">Asterisk Patch for Recovery</a></li>
 </ul>
 </li>
 </ul>
