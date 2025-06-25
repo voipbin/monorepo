@@ -89,7 +89,7 @@ func (h *activeflowHandler) addActions(ctx context.Context, af *activeflow.Activ
 		return errors.Wrapf(errAdd, "could not add the actions. activeflow_id: %s", af.ID)
 	}
 
-	if errUpdate := h.update(ctx, af); errUpdate != nil {
+	if errUpdate := h.updateStackProgress(ctx, af); errUpdate != nil {
 		return errors.Wrapf(errUpdate, "could not update the activeflow. activeflow_id: %s", af.ID)
 	}
 
@@ -112,7 +112,7 @@ func (h *activeflowHandler) PopStackWithStackID(ctx context.Context, af *activef
 	af.ForwardActionID = tmp.ReturnActionID
 
 	// update activeflow
-	if err := h.update(ctx, af); err != nil {
+	if err := h.updateStackProgress(ctx, af); err != nil {
 		return errors.Wrapf(err, "could not update the active flow after popped the stack. stack_id: %s", af.CurrentStackID)
 	}
 
@@ -146,7 +146,7 @@ func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Active
 	af.ForwardActionID = tmp.Actions[0].ID
 
 	// update activeflow
-	if err := h.update(ctx, af); err != nil {
+	if err := h.updateStackProgress(ctx, af); err != nil {
 		return errors.Wrapf(err, "could not update the active flow after pushed the actions. stack_id: %s", stackID)
 	}
 

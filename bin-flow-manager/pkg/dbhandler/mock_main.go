@@ -104,7 +104,7 @@ func (mr *MockDBHandlerMockRecorder) ActiveflowGetWithLock(ctx, id any) *gomock.
 }
 
 // ActiveflowGets mocks base method.
-func (m *MockDBHandler) ActiveflowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
+func (m *MockDBHandler) ActiveflowGets(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveflowGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*activeflow.Activeflow)
@@ -132,32 +132,18 @@ func (mr *MockDBHandlerMockRecorder) ActiveflowReleaseLock(ctx, id any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowReleaseLock", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowReleaseLock), ctx, id)
 }
 
-// ActiveflowSetStatus mocks base method.
-func (m *MockDBHandler) ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveflowSetStatus", ctx, id, status)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ActiveflowSetStatus indicates an expected call of ActiveflowSetStatus.
-func (mr *MockDBHandlerMockRecorder) ActiveflowSetStatus(ctx, id, status any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowSetStatus", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowSetStatus), ctx, id, status)
-}
-
 // ActiveflowUpdate mocks base method.
-func (m *MockDBHandler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error {
+func (m *MockDBHandler) ActiveflowUpdate(ctx context.Context, id uuid.UUID, fields map[activeflow.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveflowUpdate", ctx, af)
+	ret := m.ctrl.Call(m, "ActiveflowUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ActiveflowUpdate indicates an expected call of ActiveflowUpdate.
-func (mr *MockDBHandlerMockRecorder) ActiveflowUpdate(ctx, af any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ActiveflowUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowUpdate", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowUpdate), ctx, af)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowUpdate", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowUpdate), ctx, id, fields)
 }
 
 // FlowCreate mocks base method.

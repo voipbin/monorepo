@@ -767,7 +767,7 @@ type RequestHandler interface {
 	) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGet(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
-	FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]fmactiveflow.Activeflow, error)
+	FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[fmactiveflow.Field]any) ([]fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGetNextAction(ctx context.Context, activeflowID, actionID uuid.UUID) (*fmaction.Action, error)
 	FlowV1ActiveflowUpdateForwardActionID(ctx context.Context, activeflowID, forwardActionID uuid.UUID, forwardNow bool) error
 	FlowV1ActiveflowExecute(ctx context.Context, activeflowID uuid.UUID) error

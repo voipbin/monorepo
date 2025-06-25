@@ -184,7 +184,7 @@ func Test_updateNextAction(t *testing.T) {
 			mockVar.EXPECT().SubstituteOption(ctx, tt.responseAction.Option, tt.responseVariable)
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.Identity.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 

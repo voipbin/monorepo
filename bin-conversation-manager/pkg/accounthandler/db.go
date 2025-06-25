@@ -95,37 +95,6 @@ func (h *accountHandler) Gets(ctx context.Context, pageToken string, pageSize ui
 	return res, nil
 }
 
-// // Update updates the account and return the updated account
-// func (h *accountHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, secret string, token string) (*account.Account, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":       "Update",
-// 		"account_id": id,
-// 		"name":       name,
-// 		"detail":     detail,
-// 		"secret":     len(secret),
-// 		"token":      len(token),
-// 	})
-
-// 	if errSet := h.db.AccountSet(ctx, id, name, detail, secret, token); errSet != nil {
-// 		log.Errorf("Could not set account info. err: %v", errSet)
-// 		return nil, errors.Wrap(errSet, "could not set account info")
-// 	}
-
-// 	res, err := h.Get(ctx, id)
-// 	if err != nil {
-// 		log.Errorf("Could not get updated account info")
-// 		return nil, errors.Wrap(err, "could not get updated account info")
-// 	}
-
-// 	if errSetup := h.setup(ctx, res); errSetup != nil {
-// 		log.Errorf("Could not setup the account. err: %v", errSetup)
-// 		return nil, errors.Wrap(errSetup, "could not setup the account")
-// 	}
-// 	h.notifyHandler.PublishEvent(ctx, account.EventTypeAccountUpdated, res)
-
-// 	return res, nil
-// }
-
 // Update updates account and return a updated account.
 func (h *accountHandler) Update(ctx context.Context, id uuid.UUID, fields map[account.Field]any) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{

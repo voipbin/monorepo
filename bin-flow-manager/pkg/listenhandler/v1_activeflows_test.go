@@ -149,7 +149,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		responseFilters     map[string]string
+		responseFilters     map[activeflow.Field]any
 		responseActiveflows []*activeflow.Activeflow
 
 		expectedToken string
@@ -159,13 +159,15 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			name: "1 item",
 			request: &sock.Request{
-				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d", "deleted": false}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
-				"deleted":     "false",
+			responseFilters: map[activeflow.Field]any{
+				activeflow.FieldCustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+				activeflow.FieldDeleted:    false,
 			},
 			responseActiveflows: []*activeflow.Activeflow{
 				{
@@ -187,13 +189,15 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63", "deleted": false}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63",
-				"deleted":     "false",
+			responseFilters: map[activeflow.Field]any{
+				activeflow.FieldCustomerID: uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
+				activeflow.FieldDeleted:    false,
 			},
 			responseActiveflows: []*activeflow.Activeflow{
 				{
@@ -219,14 +223,15 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			name: "empty",
 			request: &sock.Request{
-				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885&filter_deleted=false",
+				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885", "deleted": false}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
-				"deleted":     "false",
+			responseFilters: map[activeflow.Field]any{
+				activeflow.FieldCustomerID: uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
+				activeflow.FieldDeleted:    false,
 			},
 			responseActiveflows: []*activeflow.Activeflow{},
 
@@ -257,7 +262,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				activeflowHandler: mockActiveflowHandler,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			// mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockActiveflowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, tt.responseFilters).Return(tt.responseActiveflows, nil)
 
 			res, err := h.processRequest(tt.request)

@@ -280,20 +280,21 @@ func Test_updateCurrentAction(t *testing.T) {
 		act          *action.Action
 
 		responseActiveflow *activeflow.Activeflow
-		responseDBCurTime  string
 
+		expectUpdateFields     map[activeflow.Field]any
 		expectActiveflowUpdate *activeflow.Activeflow
 	}{
 		{
-			"normal",
-			uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
-			uuid.FromStringOrNil("e70a8fac-d4b4-11ec-adc8-bfe8cdd29a31"),
-			&action.Action{
+			name: "normal",
+
+			activeflowID: uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
+			stackID:      uuid.FromStringOrNil("e70a8fac-d4b4-11ec-adc8-bfe8cdd29a31"),
+			act: &action.Action{
 				ID:   uuid.FromStringOrNil("f916a6a2-06ae-11eb-a239-53802c6fbb36"),
 				Type: action.TypeAnswer,
 			},
 
-			&activeflow.Activeflow{
+			responseActiveflow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
 				},
@@ -302,10 +303,30 @@ func Test_updateCurrentAction(t *testing.T) {
 					ID:   uuid.FromStringOrNil("b08981ee-d4ba-11ec-93bf-93a97d1a142f"),
 					Type: action.TypeAnswer,
 				},
+				StackMap: map[uuid.UUID]*stack.Stack{},
 			},
-			"2022-04-18 03:22:17.995000",
 
-			&activeflow.Activeflow{
+			expectUpdateFields: map[activeflow.Field]any{
+				activeflow.FieldCurrentStackID: uuid.FromStringOrNil("e70a8fac-d4b4-11ec-adc8-bfe8cdd29a31"),
+				activeflow.FieldCurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("f916a6a2-06ae-11eb-a239-53802c6fbb36"),
+					Type: action.TypeAnswer,
+				},
+
+				activeflow.FieldForwardStackID:  stack.IDEmpty,
+				activeflow.FieldForwardActionID: action.IDEmpty,
+
+				activeflow.FieldStackMap: map[uuid.UUID]*stack.Stack{},
+
+				activeflow.FieldExecuteCount: uint64(1),
+				activeflow.FieldExecutedActions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("b08981ee-d4ba-11ec-93bf-93a97d1a142f"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			expectActiveflowUpdate: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
 				},
@@ -345,7 +366,7 @@ func Test_updateCurrentAction(t *testing.T) {
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflowUpdate).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflowID, tt.expectUpdateFields).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
@@ -426,11 +447,11 @@ func Test_SetForwardActionID(t *testing.T) {
 		actionID   uuid.UUID
 		forwardNow bool
 
-		responseStackID uuid.UUID
-		responseAction  *action.Action
+		responseStackID    uuid.UUID
+		responseAction     *action.Action
+		responseActiveflow *activeflow.Activeflow
 
-		af                     *activeflow.Activeflow
-		expectUpdateActiveflow *activeflow.Activeflow
+		expectUpdateFields map[activeflow.Field]any
 	}{
 		{
 			name: "reference type call forward now true",
@@ -445,7 +466,7 @@ func Test_SetForwardActionID(t *testing.T) {
 				Type: action.TypeAnswer,
 			},
 
-			af: &activeflow.Activeflow{
+			responseActiveflow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
 					CustomerID: uuid.FromStringOrNil("fcc49e18-af6c-11ec-9857-8bc5d3558dc9"),
@@ -476,23 +497,21 @@ func Test_SetForwardActionID(t *testing.T) {
 						},
 					},
 				},
+
+				ExecutedActions: []action.Action{},
 			},
-			expectUpdateActiveflow: &activeflow.Activeflow{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
-					CustomerID: uuid.FromStringOrNil("fcc49e18-af6c-11ec-9857-8bc5d3558dc9"),
-				},
-				ReferenceType:  activeflow.ReferenceTypeCall,
-				ReferenceID:    uuid.FromStringOrNil("fa923116-d67f-11ec-b2b7-83b4ced11267"),
-				CurrentStackID: stack.IDMain,
-				CurrentAction: action.Action{
+
+			expectUpdateFields: map[activeflow.Field]any{
+				activeflow.FieldCurrentStackID: stack.IDMain,
+				activeflow.FieldCurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
 					Type: action.TypeAnswer,
 				},
 
-				ForwardStackID:  stack.IDMain,
-				ForwardActionID: uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
-				StackMap: map[uuid.UUID]*stack.Stack{
+				activeflow.FieldForwardStackID:  stack.IDMain,
+				activeflow.FieldForwardActionID: uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
+
+				activeflow.FieldStackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
@@ -507,6 +526,9 @@ func Test_SetForwardActionID(t *testing.T) {
 						},
 					},
 				},
+
+				activeflow.FieldExecuteCount:    uint64(0),
+				activeflow.FieldExecutedActions: []action.Action{},
 			},
 		},
 		{
@@ -521,8 +543,7 @@ func Test_SetForwardActionID(t *testing.T) {
 				ID:   uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
 				Type: action.TypeAnswer,
 			},
-
-			af: &activeflow.Activeflow{
+			responseActiveflow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
 					CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
@@ -550,20 +571,20 @@ func Test_SetForwardActionID(t *testing.T) {
 						},
 					},
 				},
+				ExecutedActions: []action.Action{},
 			},
-			expectUpdateActiveflow: &activeflow.Activeflow{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
-					CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
-				},
-				CurrentStackID: stack.IDMain,
-				CurrentAction: action.Action{
+
+			expectUpdateFields: map[activeflow.Field]any{
+				activeflow.FieldCurrentStackID: stack.IDMain,
+				activeflow.FieldCurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
 					Type: action.TypeAnswer,
 				},
-				ForwardStackID:  stack.IDMain,
-				ForwardActionID: uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
-				StackMap: map[uuid.UUID]*stack.Stack{
+
+				activeflow.FieldForwardStackID:  stack.IDMain,
+				activeflow.FieldForwardActionID: uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
+
+				activeflow.FieldStackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
@@ -578,22 +599,24 @@ func Test_SetForwardActionID(t *testing.T) {
 						},
 					},
 				},
+
+				activeflow.FieldExecuteCount:    uint64(0),
+				activeflow.FieldExecutedActions: []action.Action{},
 			},
 		},
 		{
-			"reference type message forward now true",
+			name: "reference type message forward now true",
 
-			uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
-			uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
-			true,
+			id:         uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
+			actionID:   uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
+			forwardNow: true,
 
-			stack.IDMain,
-			&action.Action{
+			responseStackID: stack.IDMain,
+			responseAction: &action.Action{
 				ID:   uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
 				Type: action.TypeAnswer,
 			},
-
-			&activeflow.Activeflow{
+			responseActiveflow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
 					CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
@@ -623,21 +646,20 @@ func Test_SetForwardActionID(t *testing.T) {
 						},
 					},
 				},
+				ExecutedActions: []action.Action{},
 			},
-			&activeflow.Activeflow{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
-					CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
-				},
-				ReferenceType:  activeflow.ReferenceTypeConversation,
-				CurrentStackID: stack.IDMain,
-				CurrentAction: action.Action{
+
+			expectUpdateFields: map[activeflow.Field]any{
+				activeflow.FieldCurrentStackID: stack.IDMain,
+				activeflow.FieldCurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
 					Type: action.TypeAnswer,
 				},
-				ForwardStackID:  stack.IDMain,
-				ForwardActionID: uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
-				StackMap: map[uuid.UUID]*stack.Stack{
+
+				activeflow.FieldForwardStackID:  stack.IDMain,
+				activeflow.FieldForwardActionID: uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
+
+				activeflow.FieldStackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
 						Actions: []action.Action{
@@ -652,6 +674,9 @@ func Test_SetForwardActionID(t *testing.T) {
 						},
 					},
 				},
+
+				activeflow.FieldExecuteCount:    uint64(0),
+				activeflow.FieldExecutedActions: []action.Action{},
 			},
 		},
 	}
@@ -675,12 +700,12 @@ func Test_SetForwardActionID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.id).Return(tt.af, nil)
-			mockStack.EXPECT().GetAction(tt.af.StackMap, tt.af.CurrentStackID, tt.actionID, false).Return(tt.responseStackID, tt.responseAction, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
+			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockStack.EXPECT().GetAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, tt.actionID, false).Return(tt.responseStackID, tt.responseAction, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
 
-			if tt.forwardNow && tt.af.ReferenceType == activeflow.ReferenceTypeCall {
-				mockReq.EXPECT().CallV1CallActionNext(ctx, tt.af.ReferenceID, true).Return(nil)
+			if tt.forwardNow && tt.responseActiveflow.ReferenceType == activeflow.ReferenceTypeCall {
+				mockReq.EXPECT().CallV1CallActionNext(ctx, tt.responseActiveflow.ReferenceID, true).Return(nil)
 			}
 
 			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.id).Return(nil)
@@ -763,21 +788,21 @@ func Test_Gets(t *testing.T) {
 
 		token   string
 		size    uint64
-		filters map[string]string
+		filters map[activeflow.Field]any
 
 		responseGet []*activeflow.Activeflow
 	}{
 		{
-			"test normal",
+			name: "test normal",
 
-			"2020-10-10T03:30:17.000000",
-			10,
-			map[string]string{
-				"customer_id": "e3bb9832-f81d-11ec-bcd9-9f298317c9f9",
-				"deleted":     "false",
+			token: "2020-10-10T03:30:17.000000",
+			size:  10,
+			filters: map[activeflow.Field]any{
+				activeflow.FieldCustomerID: uuid.FromStringOrNil("e3bb9832-f81d-11ec-bcd9-9f298317c9f9"),
+				activeflow.FieldDeleted:    false,
 			},
 
-			[]*activeflow.Activeflow{
+			responseGet: []*activeflow.Activeflow{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("7a8224b6-f81e-11ec-99b1-476bd41ee6d0"),

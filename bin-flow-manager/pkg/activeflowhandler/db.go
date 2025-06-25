@@ -98,8 +98,26 @@ func (h *activeflowHandler) Create(
 	return res, nil
 }
 
-func (h *activeflowHandler) update(ctx context.Context, af *activeflow.Activeflow) error {
-	if errUpdate := h.db.ActiveflowUpdate(ctx, af); errUpdate != nil {
+func (h *activeflowHandler) updateStackProgress(ctx context.Context, af *activeflow.Activeflow) error {
+	fields := map[activeflow.Field]any{
+		activeflow.FieldCurrentStackID: af.CurrentStackID,
+		activeflow.FieldCurrentAction:  af.CurrentAction,
+
+		activeflow.FieldForwardStackID:  af.ForwardStackID,
+		activeflow.FieldForwardActionID: af.ForwardActionID,
+
+		activeflow.FieldExecuteCount: af.ExecuteCount,
+	}
+
+	if af.StackMap != nil {
+		fields[activeflow.FieldStackMap] = af.StackMap
+	}
+
+	if af.ExecutedActions != nil {
+		fields[activeflow.FieldExecutedActions] = af.ExecutedActions
+	}
+
+	if errUpdate := h.db.ActiveflowUpdate(ctx, af.ID, fields); errUpdate != nil {
 		return errors.Wrapf(errUpdate, "could not update the active flow. activeflow_id: %s", af.ID)
 	}
 	return nil
@@ -135,7 +153,7 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	log.Debugf("Updating activeflow's foward action. forward_stack_id: %s, forward_action_id: %s", targetStackID, targetAction.ID)
-	if errUpdate := h.update(ctx, af); errUpdate != nil {
+	if errUpdate := h.updateStackProgress(ctx, af); errUpdate != nil {
 		log.Errorf("Could not update the active flow. err :%v", errUpdate)
 		return errUpdate
 	}
@@ -176,7 +194,7 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 	af.ForwardActionID = action.IDEmpty
 	af.ExecuteCount++
 
-	if errUpdate := h.update(ctx, af); errUpdate != nil {
+	if errUpdate := h.updateStackProgress(ctx, af); errUpdate != nil {
 		return nil, errors.Wrapf(errUpdate, "could not update the active flow. activeflow_id: %s", id)
 	}
 
@@ -188,6 +206,32 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowUpdated, res)
 
 	return res, err
+}
+
+func (h *activeflowHandler) updateStatus(ctx context.Context, id uuid.UUID, satus activeflow.Status) (*activeflow.Activeflow, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "updateStatus",
+		"activeflow_id": id,
+		"status":        satus,
+	})
+
+	fields := map[activeflow.Field]any{
+		activeflow.FieldStatus: satus,
+	}
+
+	if errUpdate := h.db.ActiveflowUpdate(ctx, id, fields); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update activeflow status. activeflow_id: %s, status: %s", id, satus)
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated activeflow. activeflow_id: %s", id)
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowUpdated, res)
+
+	log.Debugf("Updated activeflow status. activeflow_id: %s, status: %s", res.ID, res.Status)
+
+	return res, nil
 }
 
 // updateNextAction updates the next action to the current action.
@@ -340,7 +384,7 @@ func (h *activeflowHandler) ReleaseLock(ctx context.Context, id uuid.UUID) error
 }
 
 // Gets returns list of activeflows
-func (h *activeflowHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
+func (h *activeflowHandler) Gets(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
 
 	res, err := h.db.ActiveflowGets(ctx, token, size, filters)
 	if err != nil {

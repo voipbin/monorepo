@@ -23,15 +23,10 @@ func (h *activeflowHandler) Stop(ctx context.Context, id uuid.UUID) (*activeflow
 		return af, nil
 	}
 
-	if errSet := h.db.ActiveflowSetStatus(ctx, id, activeflow.StatusEnded); errSet != nil {
-		return nil, errors.Wrapf(errSet, "Could not set activeflow status. status: %s", activeflow.StatusEnded)
-	}
-
-	res, err := h.Get(ctx, id)
+	res, err := h.updateStatus(ctx, id, activeflow.StatusEnded)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not get updated activeflow info. activeflow_id: %s", id)
+		return nil, errors.Wrapf(err, "could not update activeflow status. activeflow_id: %s, status: %s", id, activeflow.StatusEnded)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowUpdated, res)
 
 	return res, nil
 }

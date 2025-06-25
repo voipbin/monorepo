@@ -506,7 +506,7 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[fmactiveflow.Field]any
 
 		expectURL     string
 		expectTarget  string
@@ -515,26 +515,28 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 		expectRes     []fmactiveflow.Activeflow
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			"2020-09-20T03:23:20.995000",
-			10,
-			map[string]string{
-				"deleted": "false",
+			pageToken: "2020-09-20T03:23:20.995000",
+			pageSize:  10,
+			filters: map[fmactiveflow.Field]any{
+				fmactiveflow.FieldDeleted: false,
 			},
 
-			"/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
-			"bin-manager.flow-manager.request",
-			&sock.Request{
-				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+			expectURL:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"559ede26-ca70-11ed-abba-e395946aa2e9"}]`),
 			},
-			[]fmactiveflow.Activeflow{
+			expectRes: []fmactiveflow.Activeflow{
 				{
 					Identity: identity.Identity{
 						ID: uuid.FromStringOrNil("559ede26-ca70-11ed-abba-e395946aa2e9"),
@@ -543,26 +545,28 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 			},
 		},
 		{
-			"2 items",
+			name: "2 items",
 
-			"2020-09-20T03:23:20.995000",
-			10,
-			map[string]string{
-				"deleted": "false",
+			pageToken: "2020-09-20T03:23:20.995000",
+			pageSize:  10,
+			filters: map[fmactiveflow.Field]any{
+				fmactiveflow.FieldDeleted: false,
 			},
 
-			"/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
-			"bin-manager.flow-manager.request",
-			&sock.Request{
-				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+			expectURL:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"56005566-ca70-11ed-81cf-6f43d9813fe9"},{"id":"5634bf5e-ca70-11ed-8158-03aa1817578a"}]`),
 			},
-			[]fmactiveflow.Activeflow{
+			expectRes: []fmactiveflow.Activeflow{
 				{
 					Identity: identity.Identity{
 						ID: uuid.FromStringOrNil("56005566-ca70-11ed-81cf-6f43d9813fe9"),
@@ -590,7 +594,6 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1ActiveflowGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

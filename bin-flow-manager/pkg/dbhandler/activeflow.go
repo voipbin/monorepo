@@ -5,44 +5,44 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"strconv"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-flow-manager/models/activeflow"
 )
 
-const (
-	// select query for flow get
-	activeflowSelect = `
-	select
-		id,
-		customer_id,
+var (
+	activeflowsTable  = "flow_activeflows"
+	activeflowsFields = []string{
+		string(activeflow.FieldID),
+		string(activeflow.FieldCustomerID),
 
-		status,
-		flow_id,
+		string(activeflow.FieldStatus),
+		string(activeflow.FieldFlowID),
 
-		reference_type,
-		reference_id,
-		reference_activeflow_id,
+		string(activeflow.FieldReferenceType),
+		string(activeflow.FieldReferenceID),
+		string(activeflow.FieldReferenceActiveflowID),
 
-		stack_map,
+		string(activeflow.FieldStackMap),
+		string(activeflow.FieldCurrentStackID),
+		string(activeflow.FieldCurrentAction),
 
-		current_stack_id,
-		current_action,
+		string(activeflow.FieldForwardStackID),
+		string(activeflow.FieldForwardActionID),
 
-		forward_stack_id,
-		forward_action_id,
+		string(activeflow.FieldExecuteCount),
+		string(activeflow.FieldExecutedActions),
 
-		execute_count,
-		executed_actions,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		flow_activeflows
-	`
+		string(activeflow.FieldTMCreate),
+		string(activeflow.FieldTMUpdate),
+		string(activeflow.FieldTMDelete),
+	}
 )
 
 // activeflowGetFromRow gets the activeflow from the row.
@@ -94,49 +94,8 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 	return res, nil
 }
 
-// ActiveflowCreate creates a new activeflow record
 func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow) error {
-
-	q := `insert into flow_activeflows(
-		id,
-		customer_id,
-
-		status,
-		flow_id,
-
-		reference_type,
-		reference_id,
-		reference_activeflow_id,
-
-		stack_map,
-
-		current_stack_id,
-		current_action,
-
-		forward_stack_id,
-		forward_action_id,
-
-		execute_count,
-		executed_actions,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, ?, ?,
-		?,
-		?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ActiveflowCreate. err: %v", err)
-	}
-	defer stmt.Close()
+	now := h.util.TimeGetCurTime()
 
 	tmpCurrentAction, err := json.Marshal(f.CurrentAction)
 	if err != nil {
@@ -153,68 +112,78 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 		return fmt.Errorf("could not marshal stack_map. ActiveflowCreate. err: %v", err)
 	}
 
-	// ts := h.util.TimeGetCurTime()
-	_, err = stmt.ExecContext(ctx,
-		f.ID.Bytes(),
-		f.CustomerID.Bytes(),
+	sb := squirrel.
+		Insert(activeflowsTable).
+		Columns(activeflowsFields...).
+		Values(
+			f.ID.Bytes(),
+			f.CustomerID.Bytes(),
 
-		f.Status,
-		f.FlowID.Bytes(),
+			f.Status,
+			f.FlowID.Bytes(),
 
-		f.ReferenceType,
-		f.ReferenceID.Bytes(),
-		f.ReferenceActiveflowID.Bytes(),
+			f.ReferenceType,
+			f.ReferenceID.Bytes(),
+			f.ReferenceActiveflowID.Bytes(),
 
-		tmpStackMap,
+			tmpStackMap,
 
-		f.CurrentStackID.Bytes(),
-		tmpCurrentAction,
+			f.CurrentStackID.Bytes(),
+			tmpCurrentAction,
 
-		f.ForwardStackID.Bytes(),
-		f.ForwardActionID.Bytes(),
+			f.ForwardStackID.Bytes(),
+			f.ForwardActionID.Bytes(),
 
-		f.ExecuteCount,
-		tmpExecutedActions,
+			f.ExecuteCount,
+			tmpExecutedActions,
 
-		h.util.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+			now,                                    // tm_create
+			commondatabasehandler.DefaultTimeStamp, // tm_update
+			commondatabasehandler.DefaultTimeStamp, // tm_delete
+		).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ActiveflowCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. ActiveflowCreate. err: %v", err)
 	}
 
 	_ = h.activeflowUpdateToCache(ctx, f.ID)
-
 	return nil
 }
 
 // activeflowGetFromDB gets the activeflow info from the db.
 func (h *handler) activeflowGetFromDB(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", activeflowSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	query, args, err := squirrel.
+		Select(activeflowsFields...).
+		From(activeflowsTable).
+		Where(squirrel.Eq{string(activeflow.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. activeflowGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. activeflowGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. activeflowGetFromDB. err: %v", err)
 	}
 	defer row.Close()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. activeflowGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.activeflowGetFromRow(row)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get account from row. activeflowGetFromDB. id: %s", id)
 	}
 
 	return res, nil
@@ -300,44 +269,30 @@ func (h *handler) ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 	return h.cache.ActiveflowReleaseLock(ctx, id)
 }
 
-// ActiveflowGets returns flows.
-func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, activeflowSelect)
-
+func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	sb := squirrel.
+		Select(activeflowsFields...).
+		From(activeflowsTable).
+		Where(squirrel.Lt{string(activeflow.FieldTMCreate): token}).
+		OrderBy(string(activeflow.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. ActiveflowGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "flow_id", "reference_id", "reference_activeflow_id", "current_stack_id", "forward_stack_id", "forward_action_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ActiveflowGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ActiveflowGets. err: %v", err)
 	}
@@ -347,99 +302,73 @@ func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64,
 	for rows.Next() {
 		u, err := h.activeflowGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. ActiveflowGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. ActiveflowGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. ActiveflowGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// ActiveflowUpdate updates action related information.
-func (h *handler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error {
+func (h *handler) ActiveflowUpdate(ctx context.Context, id uuid.UUID, fields map[activeflow.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
 
-	q := `
-	update flow_activeflows set
-		current_stack_id = ?,
-		current_action = ?,
+	fields[activeflow.FieldTMUpdate] = h.util.TimeGetCurTime()
 
-		forward_stack_id = ?,
-		forward_action_id = ?,
+	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	q := squirrel.Update(activeflowsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{"id": id.Bytes()})
 
-		stack_map = ?,
-
-		execute_count = ?,
-		executed_actions = ?,
-
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpCurrentAction, err := json.Marshal(af.CurrentAction)
+	sqlStr, args, err := q.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal current_action. ActiveflowUpdateActionInfo. err: %v", err)
-	}
-	tmpStackMap, err := json.Marshal(af.StackMap)
-	if err != nil {
-		return fmt.Errorf("could not marshal stack_map. ActiveflowUpdateActionInfo. err: %v", err)
-	}
-	tmpExecutedActions, err := json.Marshal(af.ExecutedActions)
-	if err != nil {
-		return fmt.Errorf("could not marshal executed_actions. ActiveflowUpdateActionInfo. err: %v", err)
+		return fmt.Errorf("ActiveflowUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(q, af.CurrentStackID.Bytes(), tmpCurrentAction, af.ForwardStackID.Bytes(), af.ForwardActionID.Bytes(), tmpStackMap, af.ExecuteCount, tmpExecutedActions, h.util.TimeGetCurTime(), af.ID.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ActiveflowUpdateActionInfo. err: %v", err)
+	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+		return fmt.Errorf("ActiveflowUpdate: exec failed: %w", err)
 	}
 
-	// set to the cache
-	_ = h.activeflowUpdateToCache(ctx, af.ID)
-
+	_ = h.activeflowUpdateToCache(ctx, id)
 	return nil
 }
 
-// ActiveflowDelete deletes the activeflow.
 func (h *handler) ActiveflowDelete(ctx context.Context, id uuid.UUID) error {
-
-	q := `
-	update flow_activeflows set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.util.TimeGetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ActiveflowDelete. err: %v", err)
+
+	fields := map[activeflow.Field]any{
+		activeflow.FieldTMUpdate: ts,
+		activeflow.FieldTMDelete: ts,
 	}
 
-	// set to the cache
-	_ = h.activeflowUpdateToCache(ctx, id)
+	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	sb := squirrel.Update(activeflowsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(activeflow.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
 
-	return nil
-}
-
-// ActiveflowSetStatus sets the status.
-func (h *handler) ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error {
-
-	q := `
-	update flow_activeflows set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.util.TimeGetCurTime()
-	if _, err := h.db.Exec(q, status, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ActiveflowSetStatus. err: %v", err)
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("ActiveflowDelete: build SQL failed: %w", err)
 	}
 
-	// set to the cache
-	_ = h.activeflowUpdateToCache(ctx, id)
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("ActiveflowDelete: exec failed: %w", err)
+	}
 
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrapf(err, "could not get rows affected: %v", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	_ = h.activeflowUpdateToCache(ctx, id)
 	return nil
 }
