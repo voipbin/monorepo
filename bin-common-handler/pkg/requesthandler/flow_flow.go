@@ -12,6 +12,7 @@ import (
 	fmrequest "monorepo/bin-flow-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // FlowV1FlowCreate creates a new flow.
@@ -172,13 +173,15 @@ func (r *requestHandler) FlowV1FlowUpdateActions(ctx context.Context, flowID uui
 // FlowV1FlowGets sends a request to flow-manager
 // to getting a list of flows.
 // it returns detail list of flows if it succeed.
-func (r *requestHandler) FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]fmflow.Flow, error) {
+func (r *requestHandler) FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[fmflow.Field]any) ([]fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodGet, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodGet, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

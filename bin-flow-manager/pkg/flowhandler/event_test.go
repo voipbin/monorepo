@@ -25,7 +25,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 		customer      *cmcustomer.Customer
 		responseFlows []*flow.Flow
 
-		expectFilter map[string]string
+		expectFilter map[flow.Field]any
 	}{
 		{
 			name: "normal",
@@ -46,9 +46,9 @@ func Test_EventCustomerDeleted(t *testing.T) {
 				},
 			},
 
-			expectFilter: map[string]string{
-				"customer_id": "264d2078-ecd5-11ee-8120-e31f06a93e99",
-				"deleted":     "false",
+			expectFilter: map[flow.Field]any{
+				flow.FieldCustomerID: uuid.FromStringOrNil("264d2078-ecd5-11ee-8120-e31f06a93e99"),
+				flow.FieldDeleted:    false,
 			},
 		},
 	}

@@ -183,7 +183,7 @@ func (h *handler) activeflowGetFromDB(ctx context.Context, id uuid.UUID) (*activ
 
 	res, err := h.activeflowGetFromRow(row)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not get account from row. activeflowGetFromDB. id: %s", id)
+		return nil, errors.Wrapf(err, "could not get data from row. activeflowGetFromDB. id: %s", id)
 	}
 
 	return res, nil

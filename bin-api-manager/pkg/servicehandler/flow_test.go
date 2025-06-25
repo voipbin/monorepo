@@ -290,7 +290,7 @@ func Test_FlowGets(t *testing.T) {
 		pageSize  uint64
 
 		responseFlows []fmflow.Flow
-		expectFilters map[string]string
+		expectFilters map[fmflow.Field]any
 		expectRes     []*fmflow.WebhookMessage
 	}{
 		{
@@ -327,10 +327,10 @@ func Test_FlowGets(t *testing.T) {
 					TMDelete: defaultTimestamp,
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
-				"type":        string(fmflow.TypeFlow),
+			expectFilters: map[fmflow.Field]any{
+				fmflow.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				fmflow.FieldType:       fmflow.TypeFlow,
+				fmflow.FieldDeleted:    false,
 			},
 			expectRes: []*fmflow.WebhookMessage{
 				{
@@ -384,10 +384,10 @@ func Test_FlowGets(t *testing.T) {
 					TMDelete: defaultTimestamp,
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
-				"type":        string(fmflow.TypeFlow),
+			expectFilters: map[fmflow.Field]any{
+				fmflow.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				fmflow.FieldDeleted:    false,
+				fmflow.FieldType:       fmflow.TypeFlow,
 			},
 			expectRes: []*fmflow.WebhookMessage{
 				{

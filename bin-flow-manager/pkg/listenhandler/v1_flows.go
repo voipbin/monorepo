@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-flow-manager/models/flow"
 	"monorepo/bin-flow-manager/pkg/listenhandler/models/request"
 )
 
@@ -192,8 +193,17 @@ func (h *listenHandler) v1FlowsGet(ctx context.Context, m *sock.Request) (*sock.
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	var req map[string]any
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	filters, err := flow.ConvertStringMapToFieldMap(req)
+	if err != nil {
+		log.Errorf("Could not convert the filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	// gets the list of flows
 	tmp, err := h.flowHandler.Gets(ctx, pageToken, pageSize, filters)

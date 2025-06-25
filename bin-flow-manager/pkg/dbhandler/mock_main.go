@@ -190,7 +190,7 @@ func (mr *MockDBHandlerMockRecorder) FlowGet(ctx, id any) *gomock.Call {
 }
 
 // FlowGets mocks base method.
-func (m *MockDBHandler) FlowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
+func (m *MockDBHandler) FlowGets(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*flow.Flow)
@@ -219,17 +219,17 @@ func (mr *MockDBHandlerMockRecorder) FlowSetToCache(ctx, f any) *gomock.Call {
 }
 
 // FlowUpdate mocks base method.
-func (m *MockDBHandler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error {
+func (m *MockDBHandler) FlowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdate", ctx, id, name, detail, actions)
+	ret := m.ctrl.Call(m, "FlowUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FlowUpdate indicates an expected call of FlowUpdate.
-func (mr *MockDBHandlerMockRecorder) FlowUpdate(ctx, id, name, detail, actions any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) FlowUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), ctx, id, name, detail, actions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), ctx, id, fields)
 }
 
 // FlowUpdateActions mocks base method.

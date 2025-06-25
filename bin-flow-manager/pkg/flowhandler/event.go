@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-flow-manager/models/flow"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -18,9 +19,9 @@ func (h *flowHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.C
 	log.Debugf("Deleting all flows of customer. customer_id: %s", cu.ID)
 
 	// get all flows in customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[flow.Field]any{
+		flow.FieldCustomerID: cu.ID,
+		flow.FieldDeleted:    false,
 	}
 	ags, err := h.Gets(ctx, h.util.TimeGetCurTime(), 1000, filters)
 	if err != nil {

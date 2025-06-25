@@ -231,7 +231,7 @@ func Test_Gets(t *testing.T) {
 		name    string
 		token   string
 		limit   uint64
-		filters map[string]string
+		filters map[flow.Field]any
 
 		responseFlows []*flow.Flow
 	}{
@@ -240,9 +240,9 @@ func Test_Gets(t *testing.T) {
 
 			token: "2020-10-10T03:30:17.000000",
 			limit: 10,
-			filters: map[string]string{
-				"customer_id": "938cdf96-7f4c-11ec-94d3-8ba7d397d7fb",
-				"deleted":     "false",
+			filters: map[flow.Field]any{
+				flow.FieldCustomerID: uuid.FromStringOrNil("938cdf96-7f4c-11ec-94d3-8ba7d397d7fb"),
+				flow.FieldDeleted:    false,
 			},
 
 			responseFlows: []*flow.Flow{
@@ -295,8 +295,9 @@ func Test_Update(t *testing.T) {
 		detail   string
 		actions  []action.Action
 
-		responseFlow *flow.Flow
-		expectedRes  *flow.Flow
+		responseFlow       *flow.Flow
+		expectUpdateFiedls map[flow.Field]any
+		expectedRes        *flow.Flow
 	}{
 		{
 			name: "test normal",
@@ -319,6 +320,15 @@ func Test_Update(t *testing.T) {
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("445ad416-676d-11eb-bca9-1f9e07621368"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			expectUpdateFiedls: map[flow.Field]any{
+				flow.FieldName:   "changed name",
+				flow.FieldDetail: "changed detail",
+				flow.FieldActions: []action.Action{
+					{
 						Type: action.TypeAnswer,
 					},
 				},
@@ -355,7 +365,7 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowUpdate(ctx, tt.id, tt.flowName, tt.detail, gomock.Any()).Return(nil)
+			mockDB.EXPECT().FlowUpdate(ctx, tt.id, tt.expectUpdateFiedls).Return(nil)
 			mockDB.EXPECT().FlowGet(ctx, tt.id).Return(tt.responseFlow, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow)
 
