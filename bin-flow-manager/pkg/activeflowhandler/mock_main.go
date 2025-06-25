@@ -163,7 +163,7 @@ func (mr *MockActiveflowHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockActiveflowHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
+func (m *MockActiveflowHandler) Gets(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*activeflow.Activeflow)

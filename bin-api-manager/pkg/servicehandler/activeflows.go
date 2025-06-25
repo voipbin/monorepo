@@ -150,9 +150,9 @@ func (h *serviceHandler) ActiveflowGets(ctx context.Context, a *amagent.Agent, s
 	}
 
 	// filters
-	filters := map[string]string{
-		"customer_id": a.CustomerID.String(),
-		"deleted":     "false", // we don't need deleted items
+	filters := map[fmactiveflow.Field]any{
+		fmactiveflow.FieldCustomerID: a.CustomerID,
+		fmactiveflow.FieldDeleted:    false, // we don't need deleted items
 	}
 
 	tmps, err := h.reqHandler.FlowV1ActiveflowGets(ctx, token, size, filters)

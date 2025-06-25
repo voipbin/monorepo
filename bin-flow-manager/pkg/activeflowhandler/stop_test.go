@@ -26,6 +26,8 @@ func Test_Stop(t *testing.T) {
 
 		responseActiveflow *activeflow.Activeflow
 		responseDBCurTime  string
+
+		expectUpdateFields map[activeflow.Field]any
 	}{
 		{
 			name: "normal",
@@ -37,6 +39,10 @@ func Test_Stop(t *testing.T) {
 					ID: uuid.FromStringOrNil("6d8a9464-c8d9-11ed-abfb-d3b58a5adf22"),
 				},
 				ReferenceType: activeflow.ReferenceTypeCall,
+			},
+
+			expectUpdateFields: map[activeflow.Field]any{
+				activeflow.FieldStatus: activeflow.StatusEnded,
 			},
 		},
 	}
@@ -60,7 +66,7 @@ func Test_Stop(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockDB.EXPECT().ActiveflowSetStatus(ctx, tt.id, activeflow.StatusEnded).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 

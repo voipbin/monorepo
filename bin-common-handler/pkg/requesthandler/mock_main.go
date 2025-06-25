@@ -3587,7 +3587,7 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowGetNextAction(ctx, act
 }
 
 // FlowV1ActiveflowGets mocks base method.
-func (m *MockRequestHandler) FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]activeflow.Activeflow, error) {
+func (m *MockRequestHandler) FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[activeflow.Field]any) ([]activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowV1ActiveflowGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]activeflow.Activeflow)
@@ -3705,7 +3705,7 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1FlowGet(ctx, flowID any) *gomock
 }
 
 // FlowV1FlowGets mocks base method.
-func (m *MockRequestHandler) FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]flow.Flow, error) {
+func (m *MockRequestHandler) FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[flow.Field]any) ([]flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowV1FlowGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]flow.Flow)

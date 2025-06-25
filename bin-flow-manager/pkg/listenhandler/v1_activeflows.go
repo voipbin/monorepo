@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/pkg/listenhandler/models/request"
 )
 
@@ -33,8 +34,17 @@ func (h *listenHandler) v1ActiveflowsGet(ctx context.Context, m *sock.Request) (
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	var req map[string]any
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	filters, err := activeflow.ConvertStringMapToFieldMap(req)
+	if err != nil {
+		log.Errorf("Could not convert the filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.activeflowHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {

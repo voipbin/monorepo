@@ -11,7 +11,6 @@ package dbhandler
 
 import (
 	context "context"
-	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
 	flow "monorepo/bin-flow-manager/models/flow"
 	variable "monorepo/bin-flow-manager/models/variable"
@@ -104,7 +103,7 @@ func (mr *MockDBHandlerMockRecorder) ActiveflowGetWithLock(ctx, id any) *gomock.
 }
 
 // ActiveflowGets mocks base method.
-func (m *MockDBHandler) ActiveflowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
+func (m *MockDBHandler) ActiveflowGets(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveflowGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*activeflow.Activeflow)
@@ -132,32 +131,18 @@ func (mr *MockDBHandlerMockRecorder) ActiveflowReleaseLock(ctx, id any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowReleaseLock", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowReleaseLock), ctx, id)
 }
 
-// ActiveflowSetStatus mocks base method.
-func (m *MockDBHandler) ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveflowSetStatus", ctx, id, status)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ActiveflowSetStatus indicates an expected call of ActiveflowSetStatus.
-func (mr *MockDBHandlerMockRecorder) ActiveflowSetStatus(ctx, id, status any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowSetStatus", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowSetStatus), ctx, id, status)
-}
-
 // ActiveflowUpdate mocks base method.
-func (m *MockDBHandler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error {
+func (m *MockDBHandler) ActiveflowUpdate(ctx context.Context, id uuid.UUID, fields map[activeflow.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveflowUpdate", ctx, af)
+	ret := m.ctrl.Call(m, "ActiveflowUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ActiveflowUpdate indicates an expected call of ActiveflowUpdate.
-func (mr *MockDBHandlerMockRecorder) ActiveflowUpdate(ctx, af any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ActiveflowUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowUpdate", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowUpdate), ctx, af)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowUpdate", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowUpdate), ctx, id, fields)
 }
 
 // FlowCreate mocks base method.
@@ -204,7 +189,7 @@ func (mr *MockDBHandlerMockRecorder) FlowGet(ctx, id any) *gomock.Call {
 }
 
 // FlowGets mocks base method.
-func (m *MockDBHandler) FlowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
+func (m *MockDBHandler) FlowGets(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*flow.Flow)
@@ -233,31 +218,17 @@ func (mr *MockDBHandlerMockRecorder) FlowSetToCache(ctx, f any) *gomock.Call {
 }
 
 // FlowUpdate mocks base method.
-func (m *MockDBHandler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error {
+func (m *MockDBHandler) FlowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdate", ctx, id, name, detail, actions)
+	ret := m.ctrl.Call(m, "FlowUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FlowUpdate indicates an expected call of FlowUpdate.
-func (mr *MockDBHandlerMockRecorder) FlowUpdate(ctx, id, name, detail, actions any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) FlowUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), ctx, id, name, detail, actions)
-}
-
-// FlowUpdateActions mocks base method.
-func (m *MockDBHandler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdateActions", ctx, id, actions)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FlowUpdateActions indicates an expected call of FlowUpdateActions.
-func (mr *MockDBHandlerMockRecorder) FlowUpdateActions(ctx, id, actions any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdateActions", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdateActions), ctx, id, actions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), ctx, id, fields)
 }
 
 // VariableCreate mocks base method.

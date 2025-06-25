@@ -167,7 +167,7 @@ func Test_v1FlowsGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		responseFilters map[string]string
+		responseFilters map[flow.Field]any
 		responseFlows   []*flow.Flow
 
 		expectedToken string
@@ -177,14 +177,15 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "1 item",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","deleted":false}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
-				"deleted":     "false",
+			responseFilters: map[flow.Field]any{
+				flow.FieldCustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+				flow.FieldDeleted:    false,
 			},
 
 			responseFlows: []*flow.Flow{
@@ -213,15 +214,16 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "has various filters",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false&filter_type=flow",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","deleted":false,"type":"flow"}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
-				"deleted":     "false",
-				"type":        string(flow.TypeFlow),
+			responseFilters: map[flow.Field]any{
+				flow.FieldCustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+				flow.FieldDeleted:    false,
+				flow.FieldType:       flow.TypeFlow,
 			},
 
 			responseFlows: []*flow.Flow{
@@ -250,13 +252,14 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63"}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63",
+			responseFilters: map[flow.Field]any{
+				flow.FieldCustomerID: uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
 			},
 
 			responseFlows: []*flow.Flow{
@@ -297,13 +300,14 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "empty",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
+			responseFilters: map[flow.Field]any{
+				flow.FieldCustomerID: uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
 			},
 			responseFlows: []*flow.Flow{},
 
@@ -318,14 +322,15 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "type flow",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=49e66560-7f4c-11ec-9d15-2396902a0309&filter_type=flow",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"49e66560-7f4c-11ec-9d15-2396902a0309","type":"flow"}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "49e66560-7f4c-11ec-9d15-2396902a0309",
-				"type":        string(flow.TypeFlow),
+			responseFilters: map[flow.Field]any{
+				flow.FieldCustomerID: uuid.FromStringOrNil("49e66560-7f4c-11ec-9d15-2396902a0309"),
+				flow.FieldType:       flow.TypeFlow,
 			},
 			responseFlows: []*flow.Flow{
 				{
@@ -367,7 +372,6 @@ func Test_v1FlowsGet(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockFlowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, tt.responseFilters).Return(tt.responseFlows, nil)
 
 			res, err := h.processRequest(tt.request)

@@ -63,7 +63,7 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 	}
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.update(ctx, af); err != nil {
+	if err := h.updateStackProgress(ctx, af); err != nil {
 		return errors.Wrapf(err, "could not update the active flow after appending the patched actions.")
 	}
 
@@ -177,7 +177,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.update(ctx, af); err != nil {
+	if err := h.updateStackProgress(ctx, af); err != nil {
 		return errors.Wrapf(err, "could not update the active flow after appending the patched actions.")
 	}
 
@@ -228,7 +228,7 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 	// failed
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.update(ctx, af); err != nil {
+	if err := h.updateStackProgress(ctx, af); err != nil {
 		return errors.Wrapf(err, "could not update the activeflow after appended the patched actions.")
 	}
 
@@ -353,7 +353,7 @@ func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, a
 	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.update(ctx, af); err != nil {
+	if err := h.updateStackProgress(ctx, af); err != nil {
 		return errors.Wrapf(err, "could not update the active flow after appending the patched actions.")
 	}
 
@@ -416,7 +416,7 @@ func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, a
 	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.update(ctx, af); err != nil {
+	if err := h.updateStackProgress(ctx, af); err != nil {
 		return errors.Wrapf(err, "could not update the active flow after appending the patched actions")
 	}
 
@@ -841,7 +841,7 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if errSet := h.update(ctx, af); errSet != nil {
+	if errSet := h.updateStackProgress(ctx, af); errSet != nil {
 		log.Errorf("Could not update the active flow. err: %v", errSet)
 		return err
 	}

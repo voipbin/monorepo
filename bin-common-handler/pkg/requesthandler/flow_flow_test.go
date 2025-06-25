@@ -310,7 +310,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[fmflow.Field]any
 
 		response *sock.Response
 
@@ -320,28 +320,29 @@ func Test_FlowV1FlowGets(t *testing.T) {
 		expectResult  []fmflow.Flow
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			"2020-09-20 03:23:20.995000",
-			10,
-			map[string]string{
-				"customer_id": "c971cc06-7f4d-11ec-b0dc-5ff21ea97f57",
+			pageToken: "2020-09-20 03:23:20.995000",
+			pageSize:  10,
+			filters: map[fmflow.Field]any{
+				fmflow.FieldCustomerID: uuid.FromStringOrNil("c971cc06-7f4d-11ec-b0dc-5ff21ea97f57"),
 			},
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"c971cc06-7f4d-11ec-b0dc-5ff21ea97f57","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
 			},
 
-			"/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
-			"bin-manager.flow-manager.request",
-			&sock.Request{
-				URI:      "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=c971cc06-7f4d-11ec-b0dc-5ff21ea97f57",
+			expectURL:    "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"c971cc06-7f4d-11ec-b0dc-5ff21ea97f57"}`),
 			},
-			[]fmflow.Flow{
+			expectResult: []fmflow.Flow{
 				{
 					Identity: identity.Identity{
 						ID:         uuid.FromStringOrNil("158e4b2c-0c55-11eb-b4f2-37c93a78a6a0"),
@@ -357,28 +358,29 @@ func Test_FlowV1FlowGets(t *testing.T) {
 			},
 		},
 		{
-			"get type conference",
+			name: "get type conference",
 
-			"2020-09-20 03:23:20.995000",
-			10,
-			map[string]string{
-				"type": string(fmflow.TypeConference),
+			pageToken: "2020-09-20 03:23:20.995000",
+			pageSize:  10,
+			filters: map[fmflow.Field]any{
+				fmflow.FieldType: string(fmflow.TypeConference),
 			},
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"d9fceace-7f4d-11ec-8949-cf7a5dce40c9","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
 			},
 
-			"/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
-			"bin-manager.flow-manager.request",
-			&sock.Request{
-				URI:      "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_type=conference",
+			expectURL:    "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
+				Data:     []byte(`{"type":"conference"}`),
 			},
-			[]fmflow.Flow{
+			expectResult: []fmflow.Flow{
 				{
 					Identity: identity.Identity{
 						ID:         uuid.FromStringOrNil("158e4b2c-0c55-11eb-b4f2-37c93a78a6a0"),
@@ -407,7 +409,6 @@ func Test_FlowV1FlowGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1FlowGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

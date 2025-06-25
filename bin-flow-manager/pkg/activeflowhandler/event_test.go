@@ -26,6 +26,8 @@ func Test_EventCallHangup(t *testing.T) {
 
 		call               *cmcall.Call
 		responseActiveflow *activeflow.Activeflow
+
+		expectUpdateFields map[activeflow.Field]any
 	}{
 		{
 			name: "normal",
@@ -40,6 +42,9 @@ func Test_EventCallHangup(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("442965e0-ecd8-11ee-b7dd-0bad460f1c42"),
 				},
+			},
+			expectUpdateFields: map[activeflow.Field]any{
+				activeflow.FieldStatus: activeflow.StatusEnded,
 			},
 		},
 	}
@@ -69,7 +74,7 @@ func Test_EventCallHangup(t *testing.T) {
 				mockReq.EXPECT().CallV1CallHangup(ctx, tt.responseActiveflow.ReferenceID).Return(&cmcall.Call{}, nil)
 			}
 
-			mockDB.EXPECT().ActiveflowSetStatus(ctx, tt.responseActiveflow.ID, activeflow.StatusEnded).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.responseActiveflow.ID, tt.expectUpdateFields).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.responseActiveflow.ID).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
@@ -87,7 +92,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 
 		customer *cucustomer.Customer
 
-		expectFilters       map[string]string
+		expectFilters       map[activeflow.Field]any
 		responseActiveflows []*activeflow.Activeflow
 	}{
 		{
@@ -97,9 +102,9 @@ func Test_EventCustomerDeleted(t *testing.T) {
 				ID: uuid.FromStringOrNil("77812854-ecdf-11ee-85e1-6fea89f3f255"),
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "77812854-ecdf-11ee-85e1-6fea89f3f255",
-				"deleted":     "false",
+			expectFilters: map[activeflow.Field]any{
+				activeflow.FieldCustomerID: uuid.FromStringOrNil("77812854-ecdf-11ee-85e1-6fea89f3f255"),
+				activeflow.FieldDeleted:    false,
 			},
 			responseActiveflows: []*activeflow.Activeflow{
 				{

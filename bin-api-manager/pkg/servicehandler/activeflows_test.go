@@ -333,33 +333,33 @@ func Test_ActiveflowGets(t *testing.T) {
 		token string
 
 		responseActiveflows []fmactiveflow.Activeflow
-		expectFilters       map[string]string
+		expectFilters       map[fmactiveflow.Field]any
 		expectRes           []*fmactiveflow.WebhookMessage
 	}{
 		{
-			"normal",
-			&amagent.Agent{
+			name: "normal",
+			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("040422b6-3771-11ed-801b-27518c703c82"),
 					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			10,
-			"2020-09-20 03:23:20.995000",
+			size:  10,
+			token: "2020-09-20 03:23:20.995000",
 
-			[]fmactiveflow.Activeflow{
+			responseActiveflows: []fmactiveflow.Activeflow{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("23dc5a36-cb23-11ed-8a25-8f48bd8c19bf"),
 					},
 				},
 			},
-			map[string]string{
-				"customer_id": "1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3",
-				"deleted":     "false",
+			expectFilters: map[fmactiveflow.Field]any{
+				fmactiveflow.FieldCustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				fmactiveflow.FieldDeleted:    false,
 			},
-			[]*fmactiveflow.WebhookMessage{
+			expectRes: []*fmactiveflow.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("23dc5a36-cb23-11ed-8a25-8f48bd8c19bf"),

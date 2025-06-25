@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cmcall "monorepo/bin-call-manager/models/call"
+	"monorepo/bin-flow-manager/models/activeflow"
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -39,9 +40,9 @@ func (h *activeflowHandler) EventCustomerDeleted(ctx context.Context, cu *cmcust
 	log.Debugf("Stopping all activeflows of customer. customer_id: %s", cu.ID)
 
 	// get all flows in customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[activeflow.Field]any{
+		activeflow.FieldCustomerID: cu.ID,
+		activeflow.FieldDeleted:    false,
 	}
 	afs, err := h.Gets(ctx, h.utilHandler.TimeGetCurTime(), 1000, filters)
 	if err != nil {

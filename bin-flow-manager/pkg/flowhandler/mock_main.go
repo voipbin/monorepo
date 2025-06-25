@@ -119,7 +119,7 @@ func (mr *MockFlowHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockFlowHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
+func (m *MockFlowHandler) Gets(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*flow.Flow)

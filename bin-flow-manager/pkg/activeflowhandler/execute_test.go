@@ -99,7 +99,7 @@ func Test_Execute(t *testing.T) {
 
 			// executeAction
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
@@ -285,7 +285,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 
 			// executeAction
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, gomock.Any()).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), activeflow.EventTypeActiveflowUpdated, gomock.Any())
 
@@ -350,7 +350,7 @@ func Test_ExecuteNextActionError(t *testing.T) {
 			mockDB.EXPECT().ActiveflowGetWithLock(gomock.Any(), tt.id).Return(nil, fmt.Errorf(""))
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockDB.EXPECT().ActiveflowSetStatus(ctx, tt.id, activeflow.StatusEnded).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, map[activeflow.Field]any{activeflow.FieldStatus: activeflow.StatusEnded}).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), activeflow.EventTypeActiveflowUpdated, gomock.Any())
 

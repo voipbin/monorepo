@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -116,8 +117,8 @@ func Test_ActiveflowCreate(t *testing.T) {
 				},
 
 				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMUpdate: commondatabasehandler.DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -160,10 +161,11 @@ func Test_ActiveflowCreate(t *testing.T) {
 func Test_ActiveflowUpdate(t *testing.T) {
 
 	tests := []struct {
-		name string
+		name       string
+		activeflow *activeflow.Activeflow
 
-		activeflow       *activeflow.Activeflow
-		updateActiveflow *activeflow.Activeflow
+		id     uuid.UUID
+		fields map[activeflow.Field]any
 
 		responseCurTime string
 
@@ -171,7 +173,6 @@ func Test_ActiveflowUpdate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-
 			activeflow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("7b55d582-ace6-11ec-a6de-b7dda3562854"),
@@ -210,39 +211,16 @@ func Test_ActiveflowUpdate(t *testing.T) {
 				ExecuteCount:    0,
 				ExecutedActions: []action.Action{},
 			},
-			updateActiveflow: &activeflow.Activeflow{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("7b55d582-ace6-11ec-a6de-b7dda3562854"),
-					CustomerID: uuid.FromStringOrNil("27803e46-ace3-11ec-bad1-2fd1981d5580"),
-				},
 
-				StackMap: map[uuid.UUID]*stack.Stack{
-					stack.IDMain: {
-						ID: stack.IDMain,
-						Actions: []action.Action{
-							{
-								ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
-								Type: action.TypeAnswer,
-							},
-							{
-								ID:   uuid.FromStringOrNil("a5567ece-d589-11ec-a7ed-f7c002ca2172"),
-								Type: action.TypeAnswer,
-							},
-						},
-					},
-				},
-
-				CurrentStackID: stack.IDMain,
-				CurrentAction: action.Action{
+			id: uuid.FromStringOrNil("7b55d582-ace6-11ec-a6de-b7dda3562854"),
+			fields: map[activeflow.Field]any{
+				activeflow.FieldCurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("a5567ece-d589-11ec-a7ed-f7c002ca2172"),
 					Type: action.TypeAnswer,
 				},
 
-				ForwardStackID:  stack.IDEmpty,
-				ForwardActionID: action.IDEmpty,
-
-				ExecuteCount: 1,
-				ExecutedActions: []action.Action{
+				activeflow.FieldExecuteCount: 1,
+				activeflow.FieldExecutedActions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
 						Type: action.TypeAnswer,
@@ -297,7 +275,7 @@ func Test_ActiveflowUpdate(t *testing.T) {
 
 				TMCreate: "2020-04-18 03:22:17.995000",
 				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -325,8 +303,8 @@ func Test_ActiveflowUpdate(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
-			if err := h.ActiveflowUpdate(ctx, tt.updateActiveflow); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			if errUpdate := h.ActiveflowUpdate(ctx, tt.id, tt.fields); errUpdate != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 
 			mockCache.EXPECT().ActiveflowGet(gomock.Any(), tt.activeflow.ID).Return(nil, fmt.Errorf(""))
@@ -487,7 +465,7 @@ func Test_ActiveflowGets(t *testing.T) {
 		activeflows []activeflow.Activeflow
 
 		size    uint64
-		filters map[string]string
+		filters map[activeflow.Field]any
 
 		responseCurTime string
 
@@ -511,9 +489,9 @@ func Test_ActiveflowGets(t *testing.T) {
 			},
 
 			size: 10,
-			filters: map[string]string{
-				"customer_id": "c3419d78-ecda-11ee-96fd-276b944569e9",
-				"deleted":     "false",
+			filters: map[activeflow.Field]any{
+				activeflow.FieldCustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
+				activeflow.FieldDeleted:    false,
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -525,8 +503,8 @@ func Test_ActiveflowGets(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 					},
 					TMCreate: "2020-04-18 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMUpdate: commondatabasehandler.DefaultTimeStamp,
+					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -534,8 +512,8 @@ func Test_ActiveflowGets(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 					},
 					TMCreate: "2020-04-18 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMUpdate: commondatabasehandler.DefaultTimeStamp,
+					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
 			},
 		},

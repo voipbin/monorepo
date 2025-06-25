@@ -107,10 +107,10 @@ func (h *serviceHandler) FlowGets(ctx context.Context, a *amagent.Agent, size ui
 	}
 
 	// filters
-	filters := map[string]string{
-		"customer_id": a.CustomerID.String(),
-		"deleted":     "false", // we don't need deleted items
-		"type":        string(fmflow.TypeFlow),
+	filters := map[fmflow.Field]any{
+		fmflow.FieldCustomerID: a.CustomerID,
+		fmflow.FieldType:       fmflow.TypeFlow,
+		fmflow.FieldDeleted:    false,
 	}
 
 	// get flows

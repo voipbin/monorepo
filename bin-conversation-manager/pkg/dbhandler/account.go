@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
-	"monorepo/bin-common-handler/pkg/databasehandler"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-conversation-manager/models/account"
 )
@@ -72,9 +71,9 @@ func (h *handler) AccountCreate(ctx context.Context, ac *account.Account) error 
 			ac.Detail,
 			ac.Secret,
 			ac.Token,
-			now,                              // tm_create
-			databasehandler.DefaultTimeStamp, // tm_update
-			databasehandler.DefaultTimeStamp, // tm_delete
+			now,                                    // tm_create
+			commondatabasehandler.DefaultTimeStamp, // tm_update
+			commondatabasehandler.DefaultTimeStamp, // tm_delete
 		).
 		PlaceholderFormat(squirrel.Question)
 
@@ -197,7 +196,7 @@ func (h *handler) AccountGets(ctx context.Context, size uint64, token string, fi
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ConversationGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. AccountGets. err: %v", err)
 	}
 
 	query, args, err := sb.ToSql()

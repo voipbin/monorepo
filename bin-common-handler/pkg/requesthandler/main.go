@@ -767,7 +767,7 @@ type RequestHandler interface {
 	) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGet(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
-	FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]fmactiveflow.Activeflow, error)
+	FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[fmactiveflow.Field]any) ([]fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGetNextAction(ctx context.Context, activeflowID, actionID uuid.UUID) (*fmaction.Action, error)
 	FlowV1ActiveflowUpdateForwardActionID(ctx context.Context, activeflowID, forwardActionID uuid.UUID, forwardNow bool) error
 	FlowV1ActiveflowExecute(ctx context.Context, activeflowID uuid.UUID) error
@@ -780,7 +780,7 @@ type RequestHandler interface {
 	FlowV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error)
 	FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 	FlowV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
-	FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]fmflow.Flow, error)
+	FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[fmflow.Field]any) ([]fmflow.Flow, error)
 	FlowV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error)
 	FlowV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error)
 
