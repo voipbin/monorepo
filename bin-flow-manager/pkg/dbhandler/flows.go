@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/flow"
 )
 
@@ -32,27 +31,6 @@ var (
 		string(flow.FieldTMUpdate),
 		string(flow.FieldTMDelete),
 	}
-)
-
-const (
-	// select query for flow get
-	flowSelect = `
-	select
-		id,
-		customer_id,
-		type,
-
-		name,
-		detail,
-
-		actions,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		flow_flows
-	`
 )
 
 // flowGetFromRow gets the flow from the row.
@@ -84,61 +62,6 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 
 	return res, nil
 }
-
-// func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
-
-// 	q := `insert into flow_flows(
-// 		id,
-// 		customer_id,
-// 		type,
-
-// 		name,
-// 		detail,
-
-// 		actions,
-
-// 		tm_create,
-// 		tm_update,
-// 		tm_delete
-// 	) values(
-// 		?, ?, ?,
-// 		?, ?,
-// 		?,
-// 		?, ?, ?
-// 		)`
-// 	stmt, err := h.db.PrepareContext(ctx, q)
-// 	if err != nil {
-// 		return fmt.Errorf("could not prepare. FlowCreate. err: %v", err)
-// 	}
-// 	defer stmt.Close()
-
-// 	tmpActions, err := json.Marshal(f.Actions)
-// 	if err != nil {
-// 		return fmt.Errorf("could not marshal actions. FlowCreate. err: %v", err)
-// 	}
-
-// 	_, err = stmt.ExecContext(ctx,
-// 		f.ID.Bytes(),
-// 		f.CustomerID.Bytes(),
-// 		f.Type,
-
-// 		f.Name,
-// 		f.Detail,
-
-// 		tmpActions,
-
-// 		h.util.TimeGetCurTime(),
-// 		DefaultTimeStamp,
-// 		DefaultTimeStamp,
-// 	)
-// 	if err != nil {
-// 		return fmt.Errorf("could not execute query. FlowCreate. err: %v", err)
-// 	}
-
-// 	_ = h.flowUpdateToCache(ctx, f.ID)
-
-// 	return nil
-// }
 
 func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 	now := h.util.TimeGetCurTime()
@@ -217,49 +140,6 @@ func (h *handler) flowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flo
 	return res, nil
 }
 
-// flowDeleteCache deletes cache
-func (h *handler) flowDeleteCache(ctx context.Context, id uuid.UUID) error {
-
-	// delete from cache
-	err := h.cache.FlowDel(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// // flowGetFromDB gets the flow info from the db.
-// func (h *handler) flowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
-
-// 	// prepare
-// 	q := fmt.Sprintf("%s where id = ?", flowSelect)
-
-// 	stmt, err := h.db.PrepareContext(ctx, q)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not prepare. FlowGetFromDB. err: %v", err)
-// 	}
-// 	defer stmt.Close()
-
-// 	// query
-// 	row, err := stmt.QueryContext(ctx, id.Bytes())
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not query. FlowGetFromDB. err: %v", err)
-// 	}
-// 	defer row.Close()
-
-// 	if !row.Next() {
-// 		return nil, ErrNotFound
-// 	}
-
-// 	res, err := h.flowGetFromRow(row)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return res, nil
-// }
-
 func (h *handler) flowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 	query, args, err := squirrel.
 		Select(flowsFields...).
@@ -310,62 +190,6 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	return res, nil
 }
 
-// // FlowGets returns flows.
-// func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
-// 	// prepare
-// 	q := fmt.Sprintf(`%s
-// 	where
-// 		tm_create < ?
-// 	`, flowSelect)
-
-// 	if token == "" {
-// 		token = h.util.TimeGetCurTime()
-// 	}
-
-// 	values := []interface{}{
-// 		token,
-// 	}
-
-// 	for k, v := range filters {
-// 		switch k {
-// 		case "customer_id":
-// 			q = fmt.Sprintf("%s and customer_id = ?", q)
-// 			tmp := uuid.FromStringOrNil(v)
-// 			values = append(values, tmp.Bytes())
-
-// 		case "deleted":
-// 			if v == "false" {
-// 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-// 				values = append(values, commondatabasehandler.DefaultTimeStamp)
-// 			}
-
-// 		default:
-// 			q = fmt.Sprintf("%s and %s = ?", q, k)
-// 			values = append(values, v)
-// 		}
-// 	}
-
-// 	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-// 	values = append(values, strconv.FormatUint(size, 10))
-// 	rows, err := h.db.Query(q, values...)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not query. FlowGets. err: %v", err)
-// 	}
-// 	defer rows.Close()
-
-// 	res := []*flow.Flow{}
-// 	for rows.Next() {
-// 		u, err := h.flowGetFromRow(rows)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("dbhandler: Could not scan the row. FlowGets. err: %v", err)
-// 		}
-
-// 		res = append(res, u)
-// 	}
-
-// 	return res, nil
-// }
-
 func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
@@ -410,40 +234,20 @@ func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filte
 	return res, nil
 }
 
-// // FlowUpdate updates the most of flow information.
-// // except permenant info(i.e. id, timestamp, etc)
-// func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error {
-// 	q := `
-// 	update flow_flows set
-// 		name = ?,
-// 		detail = ?,
-// 		actions = ?,
-// 		tm_update = ?
-// 	where
-// 		id = ?
-// 	`
-
-// 	tmpActions, err := json.Marshal(actions)
-// 	if err != nil {
-// 		return fmt.Errorf("could not marshal actions. FlowUpdate. err: %v", err)
-// 	}
-
-// 	if _, err := h.db.Exec(q, name, detail, tmpActions, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
-// 		return fmt.Errorf("could not execute the query. FlowUpdate. err: %v", err)
-// 	}
-
-// 	// set to the cache
-// 	_ = h.flowUpdateToCache(ctx, id)
-
-// 	return nil
-// }
-
 func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.Field]any) error {
 	if len(fields) == 0 {
 		return nil
 	}
 
 	fields[flow.FieldTMUpdate] = h.util.TimeGetCurTime()
+
+	return h.flowUpdate(ctx, id, fields)
+}
+
+func (h *handler) flowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
 
 	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
 	q := squirrel.Update(flowsTable).
@@ -465,46 +269,16 @@ func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.
 
 // FlowDelete deletes the given flow
 func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update flow_flows set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
 
-	ts := h.util.TimeGetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. FlowDelete. err: %v", err)
+	now := h.util.TimeGetCurTime()
+	fields := map[flow.Field]any{
+		flow.FieldTMDelete: now,
+		flow.FieldTMUpdate: now,
 	}
 
-	// delete cache
-	_ = h.flowDeleteCache(ctx, id)
-
-	return nil
-}
-
-// FlowUpdateActions updates the actions.
-func (h *handler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error {
-	q := `
-	update flow_flows set
-		actions = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpActions, err := json.Marshal(actions)
-	if err != nil {
-		return fmt.Errorf("could not marshal actions. FlowUpdateActions. err: %v", err)
+	if errUpdate := h.flowUpdate(ctx, id, fields); errUpdate != nil {
+		return fmt.Errorf("could not update flow for delete. FlowDelete. err: %v", errUpdate)
 	}
-
-	if _, err := h.db.Exec(q, tmpActions, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. FlowUpdateActions. err: %v", err)
-	}
-
-	// set to the cache
-	_ = h.flowUpdateToCache(ctx, id)
 
 	return nil
 }

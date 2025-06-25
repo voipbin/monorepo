@@ -509,104 +509,13 @@ func Test_FlowDelete(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().FlowDel(ctx, tt.flow.ID)
+			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowDelete(ctx, tt.flow.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().FlowGet(ctx, tt.flow.ID).Return(nil, fmt.Errorf("error"))
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any()).Return(nil)
-			res, err := h.FlowGet(ctx, tt.flow.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectedRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
-			}
-		})
-	}
-}
-
-func Test_FlowUpdateActions(t *testing.T) {
-
-	tests := []struct {
-		name string
-		flow *flow.Flow
-
-		actions []action.Action
-
-		responseCurTime string
-		expectedRes     *flow.Flow
-	}{
-		{
-			name: "test normal",
-			flow: &flow.Flow{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("585b7a74-18a0-48ac-b4c5-1ba5ddea87ae"),
-				},
-				Name:    "test name",
-				Detail:  "test detail",
-				Persist: true,
-			},
-
-			actions: []action.Action{
-				{
-					ID:   uuid.FromStringOrNil("330047cb-6259-4eb9-aa08-548bf6d82e79"),
-					Type: action.TypeAnswer,
-				},
-			},
-
-			responseCurTime: "2020-04-18 03:22:17.995000",
-			expectedRes: &flow.Flow{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("585b7a74-18a0-48ac-b4c5-1ba5ddea87ae"),
-				},
-				Name:    "test name",
-				Detail:  "test detail",
-				Persist: true,
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("330047cb-6259-4eb9-aa08-548bf6d82e79"),
-						Type: action.TypeAnswer,
-					},
-				},
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
-			}
-
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
-			if err := h.FlowCreate(ctx, tt.flow); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
-			if err := h.FlowUpdateActions(ctx, tt.flow.ID, tt.actions); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().FlowGet(ctx, tt.flow.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			res, err := h.FlowGet(ctx, tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

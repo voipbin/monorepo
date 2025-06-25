@@ -391,7 +391,9 @@ func Test_FlowUpdateActions(t *testing.T) {
 		actions []action.Action
 
 		responseFlow *flow.Flow
-		expectedRes  *flow.Flow
+
+		expectedUpdateFields map[flow.Field]any
+		expectedRes          *flow.Flow
 	}{
 		{
 			name: "test normal",
@@ -411,6 +413,15 @@ func Test_FlowUpdateActions(t *testing.T) {
 				Name:   "changed name",
 				Detail: "changed detail",
 				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("bbaa71de-5c9c-40fb-b8e7-28c331c28f73"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+
+			expectedUpdateFields: map[flow.Field]any{
+				flow.FieldActions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("bbaa71de-5c9c-40fb-b8e7-28c331c28f73"),
 						Type: action.TypeAnswer,
@@ -446,10 +457,9 @@ func Test_FlowUpdateActions(t *testing.T) {
 				notifyHandler: mockNotify,
 				actionHandler: mockAction,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowUpdateActions(ctx, tt.id, gomock.Any()).Return(nil)
+			mockDB.EXPECT().FlowUpdate(ctx, tt.id, tt.expectedUpdateFields).Return(nil)
 			mockDB.EXPECT().FlowGet(ctx, tt.id).Return(tt.responseFlow, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow)
 

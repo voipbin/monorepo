@@ -11,7 +11,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/flow"
 	"monorepo/bin-flow-manager/models/variable"
@@ -36,9 +35,7 @@ type DBHandler interface {
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowGets(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error)
 	FlowSetToCache(ctx context.Context, f *flow.Flow) error
-	// FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error
 	FlowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.Field]any) error
-	FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error
 
 	VariableCreate(ctx context.Context, t *variable.Variable) error
 	VariableGet(ctx context.Context, id uuid.UUID) (*variable.Variable, error)

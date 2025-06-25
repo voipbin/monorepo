@@ -11,7 +11,6 @@ package dbhandler
 
 import (
 	context "context"
-	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
 	flow "monorepo/bin-flow-manager/models/flow"
 	variable "monorepo/bin-flow-manager/models/variable"
@@ -230,20 +229,6 @@ func (m *MockDBHandler) FlowUpdate(ctx context.Context, id uuid.UUID, fields map
 func (mr *MockDBHandlerMockRecorder) FlowUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdate), ctx, id, fields)
-}
-
-// FlowUpdateActions mocks base method.
-func (m *MockDBHandler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdateActions", ctx, id, actions)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FlowUpdateActions indicates an expected call of FlowUpdateActions.
-func (mr *MockDBHandlerMockRecorder) FlowUpdateActions(ctx, id, actions any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdateActions", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdateActions), ctx, id, actions)
 }
 
 // VariableCreate mocks base method.

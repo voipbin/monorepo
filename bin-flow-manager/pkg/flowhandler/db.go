@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -201,9 +202,12 @@ func (h *flowHandler) UpdateActions(ctx context.Context, id uuid.UUID, actions [
 	}
 	log.WithField("new_actions", tmpActions).Debug("Created the new actions tmp.")
 
-	if err := h.db.FlowUpdateActions(ctx, id, tmpActions); err != nil {
-		log.Errorf("Could not update the flow info. err: %v", err)
-		return nil, err
+	fileds := map[flow.Field]any{
+		flow.FieldActions: tmpActions,
+	}
+
+	if errUpdate := h.db.FlowUpdate(ctx, id, fileds); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the flow actions. flow_id: %s", id)
 	}
 
 	res, err := h.db.FlowGet(ctx, id)
