@@ -62,9 +62,8 @@ func ConvertStringMapToFieldMap(src map[string]any) (map[Field]any, error) {
 			}
 			res[field] = str
 
-		// Default case: if the field key is not one of the recognized account.Field constants.
 		default:
-			return nil, fmt.Errorf("unknown or unhandled field for Account: %s", key)
+			return nil, fmt.Errorf("unknown or unhandled field: %s", key)
 		}
 	}
 
