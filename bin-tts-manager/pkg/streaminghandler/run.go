@@ -2,7 +2,6 @@ package streaminghandler
 
 import (
 	"context"
-	"fmt"
 	"monorepo/bin-tts-manager/models/streaming"
 	"net"
 	"time"
@@ -27,7 +26,7 @@ func (h *streamingHandler) Run() error {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Println("Error accepting connection:", err)
+			log.Errorf("Error accepting connection: %v", err)
 			continue
 		}
 		log.Debugf("Accepted connection. remote_addr: %s", conn.RemoteAddr())
