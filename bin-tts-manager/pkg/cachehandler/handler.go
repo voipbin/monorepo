@@ -38,14 +38,6 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 	return nil
 }
 
-// delSerialize deletes the cached serialized data.
-func (h *handler) delSerialize(ctx context.Context, key string) error {
-	if err := h.Cache.Del(ctx, key).Err(); err != nil {
-		return err
-	}
-	return nil
-}
-
 // StreamingSet sets the streaming info into the cache.
 func (h *handler) StreamingSet(ctx context.Context, s *streaming.Streaming) error {
 	key := fmt.Sprintf("tts:streaming:%s", s.ID)

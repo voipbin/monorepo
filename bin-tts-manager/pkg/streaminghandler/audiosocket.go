@@ -26,27 +26,6 @@ func (h *streamingHandler) audiosocketGetStreamingID(conn net.Conn) (uuid.UUID, 
 	return res, nil
 }
 
-func (h *streamingHandler) audiosocketGetNextMedia(conn net.Conn) (audiosocket.Message, error) {
-	m, err := audiosocket.NextMessage(conn)
-	if err != nil {
-		return nil, err
-	}
-
-	if m.Kind() != audiosocket.KindSlin {
-		if m.Kind() == audiosocket.KindHangup {
-			return nil, fmt.Errorf("received hangup. content_len: %d, kind: %v", m.ContentLength(), m.Kind())
-		}
-
-		return nil, nil
-	}
-
-	if m.ContentLength() < 1 {
-		return nil, nil
-	}
-
-	return m, nil
-}
-
 // audiosocketWrapData wraps the raw audio data into a format suitable for audiosocket transmission.
 // [2 bytes: audio format]
 // [2 bytes: sample count]
