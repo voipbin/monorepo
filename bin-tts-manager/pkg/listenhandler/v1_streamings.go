@@ -21,7 +21,7 @@ func (h *listenHandler) v1StreamingsPost(ctx context.Context, m *sock.Request) (
 
 	var req request.V1DataStreamingsPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
+		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return nil, err
 	}
 	log.WithField("request", req).Debugf("Request detail.")
@@ -100,7 +100,7 @@ func (h *listenHandler) v1StreamingsIDSayPost(ctx context.Context, m *sock.Reque
 
 	var req request.V1DataStreamingsIDSayPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
+		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return nil, err
 	}
 	log.WithField("request", req).Debugf("Request detail.")
