@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-tts-manager/models/tts"
 	"monorepo/bin-tts-manager/pkg/audiohandler"
 	"monorepo/bin-tts-manager/pkg/buckethandler"
@@ -26,7 +27,8 @@ type ttsHandler struct {
 	audioHandler  audiohandler.AudioHandler
 	bucketHandler buckethandler.BucketHandler
 
-	notifyHandler notifyhandler.NotifyHandler
+	requestHandler requesthandler.RequestHandler
+	notifyHandler  notifyhandler.NotifyHandler
 }
 
 var (
@@ -60,6 +62,7 @@ func NewTTSHandler(
 	bucketName string,
 	mediaBucketDirectory string,
 	localAddress string,
+	requestHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 ) TTSHandler {
 	log := logrus.WithFields(logrus.Fields{
@@ -90,7 +93,8 @@ func NewTTSHandler(
 		audioHandler:  audioHandler,
 		bucketHandler: bucketHandler,
 
-		notifyHandler: notifyHandler,
+		requestHandler: requestHandler,
+		notifyHandler:  notifyHandler,
 	}
 
 	return h
