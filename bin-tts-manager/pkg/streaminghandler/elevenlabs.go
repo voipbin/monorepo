@@ -1,5 +1,7 @@
 package streaminghandler
 
+//go:generate mockgen -package streaminghandler -destination ./mock_elevenlabs.go -source elevenlabs.go -build_flags=-mod=mod
+
 import (
 	"context"
 	"encoding/base64"
@@ -36,7 +38,18 @@ const (
 
 	defaultElevenlabsVoiceID      = "EXAVITQu4vr4xnSDxMaL"   // Default voice ID for ElevenLabs
 	defaultElevenlabsModelID      = "eleven_multilingual_v2" // Default model ID for ElevenLabs
+	defaultConvertSampleRate      = 8000                     // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
 	defaultElevenlabsOutputFormat = "pcm_16000"              // Default output format for ElevenLabs. PCM (S16LE - Signed 16-bit Little Endian), Sample rate: 16kHz, Bit depth: 16-bit as it's the minimum raw PCM output from ElevenLabs.
+)
+
+var (
+	// Map of ElevenLabs output formats to their corresponding sample rates.
+	// https://elevenlabs.io/docs/capabilities/text-to-speech#supported-formats
+	elevenlabsFormatToRate = map[string]int{
+		"pcm_16000": 16000,
+		"pcm_24000": 24000,
+		"pcm_48000": 48000,
+	}
 )
 
 var evelenlabsVoiceIDMap = map[string]string{
@@ -117,7 +130,7 @@ type elevenlabsHandler struct {
 	apiKey string
 }
 
-func NewElevenlabsHandler(notifyHandler notifyhandler.NotifyHandler, apiKey string) *elevenlabsHandler {
+func NewElevenlabsHandler(notifyHandler notifyhandler.NotifyHandler, apiKey string) streamer {
 	return &elevenlabsHandler{
 		notifyHandler: notifyHandler,
 
@@ -183,7 +196,6 @@ func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming
 	}
 
 	return conn.WriteJSON(message)
-
 }
 
 func (h *elevenlabsHandler) Finish(ctx context.Context, st *streaming.Streaming) error {
@@ -242,14 +254,26 @@ func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst 
 			decodedAudio, decodeErr := base64.StdEncoding.DecodeString(response.Audio)
 			if decodeErr != nil {
 				log.Errorf("Could not decode base64 audio data: %v. Message: %s", decodeErr, response.Audio)
-				continue
+				return
 			}
 			log.Debugf("Decoded audio chunk size before processing: %d bytes.", len(decodedAudio))
 
-			if errProcess := h.processPCM(connAst, st, decodedAudio); errProcess != nil {
+			data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodedAudio)
+			if errProcess != nil {
 				log.Errorf("Could not process PCM data: %v. Message: %s", errProcess, response.Audio)
+				return
 			}
 			log.Debugf("Processed audio chunk of size %d bytes.", len(decodedAudio))
+
+			// send it to the asterisk connection.
+			// TTS play!
+			n, err := connAst.Write(data)
+			if err != nil {
+				log.Errorf("Could not write data to asterisk connection: %v", err)
+				return
+			}
+
+			log.Debugf("Wrote %d bytes to asterisk connection", n)
 		}
 
 		// Check for the 'isFinal' flag, which indicates the end of audio generation.
@@ -268,46 +292,39 @@ func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst 
 			log.Debugf("Error from server: %s", response.Error)
 		}
 	}
-
 }
 
-func (h *elevenlabsHandler) processPCM(connAst net.Conn, st *streaming.Streaming, data []byte) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "processPCM",
-		"streaming_id":   st.ID,
-		"reference_id":   st.ReferenceID,
-		"reference_type": st.ReferenceType,
-	})
-
+// convertAndWrapPCMData converts raw PCM data with the given input format into
+// audiosocket-wrapped 16-bit PCM bytes suitable for transmission.
+//
+// inputFormat: the audio format string (must exist in elevenlabsFormatToRate map)
+// data: raw PCM data bytes; must have even length for 16-bit samples.
+//
+// Returns wrapped PCM bytes or an error on invalid input or processing failure.
+func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byte) ([]byte, error) {
 	if len(data)%2 != 0 {
-		return fmt.Errorf("PCM data length must be even for 16-bit samples (received %d bytes)", len(data))
+		return nil, fmt.Errorf("PCM data length must be even for 16-bit samples (received %d bytes)", len(data))
 	}
 
-	// Use a dynamically growing slice for downsampled data
-	// Pre-allocate capacity for efficiency, roughly half the input size
-	downsampledData := make([]byte, 0, len(data)/2)
-
-	// Iterate through the input data, taking every other 16-bit sample.
-	// Each iteration processes 4 bytes (two 16-bit samples) from the input
-	// and appends 2 bytes (one 16-bit sample) to the output.
-	for i := 0; i+3 < len(data); i += 4 { // Ensure at least 4 bytes (two 16-bit samples) are available for processing
-		// Append the first 16-bit sample (data[i] and data[i+1])
-		downsampledData = append(downsampledData, data[i], data[i+1])
+	// Parse sample rate from format string
+	inputRate, ok := elevenlabsFormatToRate[inputFormat]
+	if !ok {
+		return nil, fmt.Errorf("unsupported input format: %s", inputFormat)
 	}
 
-	data, err := audiosocketWrapData(downsampledData)
+	samples, err := h.getDataSamples(inputRate, data)
 	if err != nil {
-		return errors.Wrapf(err, "failed to wrap data for audiosocket")
+		return nil, errors.Wrapf(err, "failed to get samples for format %s", inputFormat)
 	}
 
-	n, err := connAst.Write(data)
+	res, err := audiosocketWrapDataPCM16Bit(samples)
 	if err != nil {
-		return errors.Wrapf(err, "failed to write data to asterisk connection")
+		return nil, errors.Wrapf(err, "failed to wrap data for audiosocket")
 	}
-	log.Debugf("Wrote %d bytes to asterisk connection", n)
 
-	return nil
+	return res, nil
 }
+
 func (h *elevenlabsHandler) getVoiceID(language string, gender streaming.Gender) string {
 
 	baseLang := strings.ToLower(strings.SplitN(language, "_", 2)[0])
@@ -325,4 +342,29 @@ func (h *elevenlabsHandler) getVoiceID(language string, gender streaming.Gender)
 	}
 
 	return defaultElevenlabsVoiceID
+}
+
+// getDataSamples processes 16-bit PCM data with the given inputRate sample rate.
+// If inputRate equals defaultConvertSampleRate, it returns data as is.
+// If inputRate is an integer multiple of defaultConvertSampleRate, it downsamples accordingly.
+// Otherwise, it returns an error because only integer downsampling is supported.
+func (h *elevenlabsHandler) getDataSamples(inputRate int, data []byte) ([]byte, error) {
+	if inputRate == defaultConvertSampleRate {
+		// No conversion needed
+		return data, nil
+	}
+
+	if inputRate%defaultConvertSampleRate != 0 {
+		return nil, fmt.Errorf("cannot convert %d Hz to %d Hz: only integer downsampling supported", inputRate, defaultConvertSampleRate)
+	}
+
+	factor := inputRate / defaultConvertSampleRate
+	res := make([]byte, 0, len(data)/factor)
+
+	// Downsample by selecting every 'factor'-th sample (2 bytes per sample)
+	for i := 0; i+2*factor-1 < len(data); i += 2 * factor {
+		res = append(res, data[i], data[i+1])
+	}
+
+	return res, nil
 }

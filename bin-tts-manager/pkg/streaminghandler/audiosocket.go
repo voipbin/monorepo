@@ -8,10 +8,32 @@ import (
 
 	"github.com/CyCoreSystems/audiosocket"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
-// audiosocketGetStreamingID gets the streaming id from the connection
-// the first message of the audiosocket should be the streaming id
+const (
+	audiosocketFormatSLIN uint16 = 0x0010 // SLIN format for 16-bit PCM audio
+)
+
+// audiosocketGetStreamingID reads the first message from the audiosocket connection
+// and extracts the streaming ID, which is expected to be a UUID.
+//
+// According to the Audiosocket protocol, the very first message sent on the connection
+// must be a message of kind KindID, containing the streaming session's UUID.
+//
+// Parameters:
+//
+//	conn net.Conn - The network connection to read from.
+//
+// Returns:
+//
+//	uuid.UUID - The extracted streaming ID if successful, or uuid.Nil on error.
+//	error     - Any error encountered during reading or validation.
+//
+// Errors are returned if:
+//   - Reading the next message from the connection fails.
+//   - The message kind is not KindID as expected.
+//   - The payload cannot be parsed into a valid UUID.
 func (h *streamingHandler) audiosocketGetStreamingID(conn net.Conn) (uuid.UUID, error) {
 	m, err := audiosocket.NextMessage(conn)
 	if err != nil {
@@ -26,11 +48,28 @@ func (h *streamingHandler) audiosocketGetStreamingID(conn net.Conn) (uuid.UUID, 
 	return res, nil
 }
 
-// audiosocketWrapData wraps the raw audio data into a format suitable for audiosocket transmission.
-// [2 bytes: audio format]
-// [2 bytes: sample count]
-// [raw audio payload (PCM, μ-law, etc.)]
-func audiosocketWrapData(data []byte) ([]byte, error) {
+// audiosocketWrapDataPCM16Bit wraps raw 16-bit PCM audio data into the Audiosocket transmission format.
+//
+// The wrapped byte slice has the following structure:
+//   - 2 bytes: Audio format identifier (uint16, BigEndian), fixed to audiosocketFormatSLIN (0x0010 for signed linear PCM)
+//   - 2 bytes: Sample count (uint16, BigEndian), representing the number of 16-bit samples
+//   - N bytes: Raw audio payload (16-bit PCM data)
+//
+// Parameters:
+//
+//	data []byte - Raw audio data buffer, must be 16-bit aligned (even length) since each sample is 2 bytes.
+//
+// Returns:
+//
+//	[]byte - The wrapped byte slice ready to be sent via Audiosocket.
+//	error  - Returns an error if the input data length is not valid or if writing to the buffer fails.
+//
+// Notes:
+//   - The function expects input PCM data to be signed 16-bit samples (little or big endian doesn't matter here,
+//     since this function only wraps data without conversion).
+//   - The sample count is calculated as len(data) / 2 because each sample consists of 2 bytes.
+//   - The resulting byte slice can be directly transmitted over Audiosocket protocol.
+func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 	if len(data)%2 != 0 {
 		return nil, fmt.Errorf("PCM data must be 16-bit aligned (even number of bytes)")
 	}
@@ -39,16 +78,20 @@ func audiosocketWrapData(data []byte) ([]byte, error) {
 
 	buf := new(bytes.Buffer)
 
-	// Write audio format (0x0010 for SLIN)
-	_ = binary.Write(buf, binary.BigEndian, uint16(0x0010))
+	// Write audio format (SLIN)
+	if errWrite := binary.Write(buf, binary.BigEndian, audiosocketFormatSLIN); errWrite != nil {
+		return nil, errors.Wrapf(errWrite, "could not write audio format")
+	}
 
 	// Write sample count
-	_ = binary.Write(buf, binary.BigEndian, uint16(sampleCount))
+	if errWrite := binary.Write(buf, binary.BigEndian, uint16(sampleCount)); errWrite != nil {
+		return nil, errors.Wrapf(errWrite, "could not write sample count")
+	}
 
 	// Write raw PCM data
 	_, err := buf.Write(data)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not write raw audio data")
 	}
 
 	return buf.Bytes(), nil

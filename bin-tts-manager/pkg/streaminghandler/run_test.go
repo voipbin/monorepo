@@ -1,9 +1,12 @@
 package streaminghandler
 
 import (
+	"context"
 	"net"
+	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -46,46 +49,46 @@ func (m *MockConn) SetWriteDeadline(t time.Time) error {
 	return m.Called(t).Error(0)
 }
 
-// func Test_runKeepAlive(t *testing.T) {
-// 	tests := []struct {
-// 		name        string
-// 		interval    time.Duration
-// 		streamingID uuid.UUID
+func Test_runKeepAlive(t *testing.T) {
+	tests := []struct {
+		name        string
+		interval    time.Duration
+		streamingID uuid.UUID
 
-// 		expectWrites  int
-// 		cancelAfterMs int
-// 	}{
-// 		{
-// 			name:          "normal",
-// 			interval:      300 * time.Millisecond,
-// 			streamingID:   uuid.FromStringOrNil("eee08956-3bd7-11f0-b6f0-9fd777b76ce0"),
-// 			expectWrites:  3,
-// 			cancelAfterMs: 1050,
-// 		},
-// 	}
+		expectWrites  int
+		cancelAfterMs int
+	}{
+		{
+			name:          "normal",
+			interval:      300 * time.Millisecond,
+			streamingID:   uuid.FromStringOrNil("eee08956-3bd7-11f0-b6f0-9fd777b76ce0"),
+			expectWrites:  3,
+			cancelAfterMs: 1050,
+		},
+	}
 
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mockConn := new(MockConn)
-// 			mockConn.On("Write", []byte{0x10, 0x00, 0x00}).Return(3, nil)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mockConn := new(MockConn)
+			mockConn.On("Write", []byte{0x10, 0x00, 0x00}).Return(3, nil)
 
-// 			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(context.Background())
 
-// 			defer func() {
-// 				cancel()
-// 				mockConn.AssertExpectations(t)
-// 			}()
+			defer func() {
+				cancel()
+				mockConn.AssertExpectations(t)
+			}()
 
-// 			go func() {
-// 				time.Sleep(time.Duration(tt.cancelAfterMs) * time.Millisecond)
-// 				cancel()
-// 			}()
+			go func() {
+				time.Sleep(time.Duration(tt.cancelAfterMs) * time.Millisecond)
+				cancel()
+			}()
 
-// 			handler := &streamingHandler{}
-// 			handler.runKeepAlive(ctx, mockConn, tt.interval, tt.streamingID)
+			handler := &streamingHandler{}
+			handler.runKeepAlive(ctx, mockConn, tt.interval, tt.streamingID)
 
-// 			mockConn.AssertNumberOfCalls(t, "Write", tt.expectWrites)
-// 		})
-// 	}
-// }
+			mockConn.AssertNumberOfCalls(t, "Write", tt.expectWrites)
+		})
+	}
+}
