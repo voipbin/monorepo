@@ -60,12 +60,12 @@ func Test_Stop(t *testing.T) {
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &streamingHandler{
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
-				notifyHandler: mockNotfiy,
+				notifyHandler: mockNotify,
 				mapStreaming:  make(map[uuid.UUID]*streaming.Streaming),
 			}
 			ctx := context.Background()

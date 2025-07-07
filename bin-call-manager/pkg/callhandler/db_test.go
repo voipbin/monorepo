@@ -712,20 +712,20 @@ func Test_UpdateHangup(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyHandler: mockNotfiy,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetHangup(ctx, tt.id, tt.reason, tt.hangupBy).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, tt.responseCall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, tt.responseCall)
 
 			_, err := h.UpdateHangupInfo(ctx, tt.id, tt.reason, tt.hangupBy)
 			if err != nil {
@@ -770,20 +770,20 @@ func Test_UpdateMuteDirection(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyHandler: mockNotfiy,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.muteDirection).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			_, err := h.UpdateMuteDirection(ctx, tt.id, tt.muteDirection)
 			if err != nil {

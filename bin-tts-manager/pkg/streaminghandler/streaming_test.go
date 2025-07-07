@@ -67,19 +67,19 @@ func Test_Create(t *testing.T) {
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &streamingHandler{
 				utilHandler:    mockUtil,
 				requestHandler: mockReq,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				mapStreaming:   make(map[uuid.UUID]*streaming.Streaming),
 				podID:          tt.podID,
 			}
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseID)
-			mockNotfiy.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingCreated, gomock.Any())
+			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingCreated, gomock.Any())
 
 			res, err := h.Create(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
 			if err != nil {
@@ -101,7 +101,7 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match. expected: %v, got: %v", tt.expectRes, resGet)
 			}
 
-			mockNotfiy.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingDeleted, tt.expectRes)
+			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingDeleted, tt.expectRes)
 			h.Delete(ctx, tt.responseID)
 			resDelete, err := h.Get(ctx, tt.responseID)
 			if err == nil {

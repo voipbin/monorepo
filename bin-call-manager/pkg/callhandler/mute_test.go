@@ -53,7 +53,7 @@ func Test_MuteOn(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
@@ -61,7 +61,7 @@ func Test_MuteOn(t *testing.T) {
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 				bridgeHandler:  mockBridge,
 			}
@@ -71,7 +71,7 @@ func Test_MuteOn(t *testing.T) {
 			mockChannel.EXPECT().MuteOn(ctx, tt.responseCall.ChannelID, channel.MuteDirection(tt.direction)).Return(nil)
 			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.direction).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			if err := h.MuteOn(ctx, tt.id, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -116,7 +116,7 @@ func Test_MuteOff(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
@@ -124,7 +124,7 @@ func Test_MuteOff(t *testing.T) {
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 				bridgeHandler:  mockBridge,
 			}
@@ -134,7 +134,7 @@ func Test_MuteOff(t *testing.T) {
 			mockChannel.EXPECT().MuteOff(ctx, tt.responseCall.ChannelID, channel.MuteDirection(tt.direction)).Return(nil)
 			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.expectMuteDirection).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			if err := h.MuteOff(ctx, tt.id, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

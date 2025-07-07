@@ -89,14 +89,14 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 			}
 
@@ -105,7 +105,7 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetStatusProgressing(gomock.Any(), tt.call.ID)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.responseCall, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 			if tt.call.Direction != call.DirectionIncoming {
 				// ActionNext
 				// consider the call was hungup already to make this test done quickly.
@@ -160,19 +160,19 @@ func Test_ARIChannelStateChangeStatusRinging(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyHandler: mockNotfiy,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.responseCall1, nil)
 			mockDB.EXPECT().CallSetStatusRinging(ctx, tt.responseCall1.ID)
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall1.ID).Return(tt.responseCall2, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall2.CustomerID, call.EventTypeCallRinging, tt.responseCall2)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall2.CustomerID, call.EventTypeCallRinging, tt.responseCall2)
 
 			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
