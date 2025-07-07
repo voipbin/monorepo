@@ -74,6 +74,7 @@ import (
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
+	streaming "monorepo/bin-tts-manager/models/streaming"
 	tts "monorepo/bin-tts-manager/models/tts"
 	webhook "monorepo/bin-webhook-manager/models/webhook"
 	reflect "reflect"
@@ -5162,6 +5163,50 @@ func (m *MockRequestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid
 func (mr *MockRequestHandlerMockRecorder) TTSV1SpeecheCreate(ctx, callID, text, gender, language, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeecheCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeecheCreate), ctx, callID, text, gender, language, timeout)
+}
+
+// TTSV1StreamingCreate mocks base method.
+func (m *MockRequestHandler) TTSV1StreamingCreate(ctx context.Context, customerID uuid.UUID, referenceType streaming.ReferenceType, referenceID uuid.UUID, language string, gender streaming.Gender, direction streaming.Direction) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1StreamingCreate", ctx, customerID, referenceType, referenceID, language, gender, direction)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1StreamingCreate indicates an expected call of TTSV1StreamingCreate.
+func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingCreate(ctx, customerID, referenceType, referenceID, language, gender, direction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingCreate), ctx, customerID, referenceType, referenceID, language, gender, direction)
+}
+
+// TTSV1StreamingDelete mocks base method.
+func (m *MockRequestHandler) TTSV1StreamingDelete(ctx context.Context, streamingID uuid.UUID) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1StreamingDelete", ctx, streamingID)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1StreamingDelete indicates an expected call of TTSV1StreamingDelete.
+func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingDelete(ctx, streamingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingDelete", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingDelete), ctx, streamingID)
+}
+
+// TTSV1StreamingSay mocks base method.
+func (m *MockRequestHandler) TTSV1StreamingSay(ctx context.Context, podID string, streamingID uuid.UUID, text string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1StreamingSay", ctx, podID, streamingID, text)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TTSV1StreamingSay indicates an expected call of TTSV1StreamingSay.
+func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingSay(ctx, podID, streamingID, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingSay", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingSay), ctx, podID, streamingID, text)
 }
 
 // TagV1TagCreate mocks base method.

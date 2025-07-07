@@ -30,15 +30,15 @@ func Test_v1SpeechesPost(t *testing.T) {
 		expectRes      *sock.Response
 	}{
 		{
-			"normal test",
+			name: "normal test",
 
-			&sock.Request{
+			request: &sock.Request{
 				URI:    "/v1/speeches",
 				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"call_id": "107d1f0e-9665-11ed-b3f3-039937430300", "text": "hello world", "gender": "female", "language": "en-US"}`),
 			},
 
-			&tts.TTS{
+			responseTTS: &tts.TTS{
 				Gender:          tts.GenderFemale,
 				Text:            "hello world",
 				Language:        "en-US",
@@ -46,11 +46,11 @@ func Test_v1SpeechesPost(t *testing.T) {
 				MediaFilepath:   "temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav",
 			},
 
-			uuid.FromStringOrNil("107d1f0e-9665-11ed-b3f3-039937430300"),
-			"hello world",
-			"en-US",
-			tts.GenderFemale,
-			&sock.Response{
+			expectCallID:   uuid.FromStringOrNil("107d1f0e-9665-11ed-b3f3-039937430300"),
+			expectText:     "hello world",
+			expectLanguage: "en-US",
+			expectGender:   tts.GenderFemale,
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"gender":"female","text":"hello world","language":"en-US","media_bucket_name":"voipbin-tmp-bucket-europe-west4","media_filepath":"temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav"}`),

@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-tts-manager/pkg/streaminghandler"
 	"monorepo/bin-tts-manager/pkg/ttshandler"
 )
 
@@ -27,13 +28,21 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	sockHandler sockhandler.SockHandler
-	ttsHandler  ttshandler.TTSHandler
+	sockHandler      sockhandler.SockHandler
+	ttsHandler       ttshandler.TTSHandler
+	streamingHandler streaminghandler.StreamingHandler
 }
 
 var (
+	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
 	// speeches
 	regV1Speeches = regexp.MustCompile("/v1/speeches")
+
+	// streamings
+	resV1Streamings      = regexp.MustCompile("/v1/streamings$")
+	resV1StreamingsID    = regexp.MustCompile("/v1/streamings/" + regUUID + "$")
+	resV1StreamingsIDSay = regexp.MustCompile("/v1/streamings/" + regUUID + "/say$")
 )
 
 var (
@@ -69,10 +78,12 @@ func simpleResponse(code int) *sock.Response {
 func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	ttsHandler ttshandler.TTSHandler,
+	streamingHandler streaminghandler.StreamingHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		sockHandler: sockHandler,
-		ttsHandler:  ttsHandler,
+		sockHandler:      sockHandler,
+		ttsHandler:       ttsHandler,
+		streamingHandler: streamingHandler,
 	}
 
 	return h
@@ -114,10 +125,26 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	start := time.Now()
 	switch {
 
-	// v1
+	////// v1
+	// /speeches
 	case regV1Speeches.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/speeches"
 		response, err = h.v1SpeechesPost(ctx, m)
+
+	// /streamings
+	case resV1Streamings.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/streamings"
+		response, err = h.v1StreamingsPost(ctx, m)
+
+	// /streamings/<id>
+	case resV1StreamingsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		requestType = "/streamings/<streaming-id>"
+		response, err = h.v1StreamingsIDDelete(ctx, m)
+
+	// /streamings/<id>/say
+	case resV1StreamingsIDSay.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/streamings/<streaming-id>/say"
+		response, err = h.v1StreamingsIDSayPost(ctx, m)
 
 	default:
 		log.Errorf("Could not find corresponded message handler. data: %s", m.Data)

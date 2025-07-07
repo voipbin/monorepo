@@ -123,7 +123,7 @@ func Test_Hangup(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
@@ -132,7 +132,7 @@ func Test_Hangup(t *testing.T) {
 				utilHandler:      mockUtil,
 				reqHandler:       mockReq,
 				db:               mockDB,
-				notifyHandler:    mockNotfiy,
+				notifyHandler:    mockNotify,
 				channelHandler:   mockChannel,
 				bridgeHandler:    mockBridge,
 				groupcallHandler: mockGroupcall,
@@ -146,7 +146,7 @@ func Test_Hangup(t *testing.T) {
 			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, call.HangupReasonNormal, call.HangupByRemote).Return(nil)
 			tt.responseCall.Status = call.StatusHangup
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, gomock.Any())
 			if tt.responseCall.GroupcallID != uuid.Nil {
 				mockReq.EXPECT().CallV1GroupcallHangupCall(ctx, tt.responseCall.GroupcallID).Return(nil)
 			}
@@ -169,7 +169,7 @@ func Test_Hangup(t *testing.T) {
 					Status: call.StatusTerminating,
 				}
 				mockDB.EXPECT().CallGet(ctx, tmpCall.ID).Return(tmpCall2, nil)
-				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tmpCall2.CustomerID, call.EventTypeCallTerminating, gomock.Any())
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, tmpCall2.CustomerID, call.EventTypeCallTerminating, gomock.Any())
 				mockChannel.EXPECT().HangingUp(ctx, tmpCall2.ChannelID, ari.ChannelCauseNormalClearing).Return(tt.responseChannel, nil)
 			}
 
@@ -262,14 +262,14 @@ func Test_hangingUpWithCause(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 			}
 			ctx := context.Background()
@@ -283,7 +283,7 @@ func Test_hangingUpWithCause(t *testing.T) {
 			tmpCall := *tt.responseCall
 			tmpCall.Status = tt.expectCallStatus
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(&tmpCall, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tmpCall.CustomerID, tt.expectEventType, &tmpCall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tmpCall.CustomerID, tt.expectEventType, &tmpCall)
 
 			mockChannel.EXPECT().HangingUp(ctx, tmpCall.ChannelID, tt.cause).Return(tt.responseChannel, nil)
 
@@ -352,14 +352,14 @@ func Test_hangingupWithReference(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 			}
 			ctx := context.Background()
@@ -370,7 +370,7 @@ func Test_hangingupWithReference(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusTerminating).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
 
 			mockChannel.EXPECT().HangingUp(ctx, tt.responseCall.ChannelID, tt.responseReferenceChannel.HangupCause).Return(tt.responseReferenceChannel, nil)
 
@@ -520,14 +520,14 @@ func Test_isRetryable(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 			}
 			ctx := context.Background()

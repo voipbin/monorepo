@@ -79,6 +79,7 @@ import (
 
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
+	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 	tmtts "monorepo/bin-tts-manager/models/tts"
 
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
@@ -1016,6 +1017,19 @@ type RequestHandler interface {
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)
+
+	// tts-manager streamings
+	TTSV1StreamingCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		referenceType tmstreaming.ReferenceType,
+		referenceID uuid.UUID,
+		language string,
+		gender tmstreaming.Gender,
+		direction tmstreaming.Direction,
+	) (*tmstreaming.Streaming, error)
+	TTSV1StreamingDelete(ctx context.Context, streamingID uuid.UUID) (*tmstreaming.Streaming, error)
+	TTSV1StreamingSay(ctx context.Context, podID string, streamingID uuid.UUID, text string) error
 
 	// transcribe-manager
 	TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)

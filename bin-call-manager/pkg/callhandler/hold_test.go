@@ -49,7 +49,7 @@ func Test_HoldOn(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
@@ -57,7 +57,7 @@ func Test_HoldOn(t *testing.T) {
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 				bridgeHandler:  mockBridge,
 			}
@@ -104,7 +104,7 @@ func Test_HoldOff(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
@@ -112,7 +112,7 @@ func Test_HoldOff(t *testing.T) {
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 				bridgeHandler:  mockBridge,
 			}

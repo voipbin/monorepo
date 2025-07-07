@@ -73,12 +73,12 @@ func Test_Start(t *testing.T) {
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &streamingHandler{
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
-				notifyHandler: mockNotfiy,
+				notifyHandler: mockNotify,
 				mapStreaming:  make(map[uuid.UUID]*streaming.Streaming),
 
 				listenAddress: tt.listenAddress,
@@ -86,7 +86,7 @@ func Test_Start(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockNotfiy.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingStarted, gomock.Any())
+			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingStarted, gomock.Any())
 			mockReq.EXPECT().CallV1ExternalMediaStart(ctx, tt.responseUUID, cmexternalmedia.ReferenceType(tt.referenceType), tt.referenceID, true, tt.listenAddress, defaultEncapsulation, defaultTransport, defaultConnectionType, defaultFormat, string(tt.direction)).Return(tt.responseExternalMedia, nil)
 
 			res, err := h.Start(ctx, tt.customerID, tt.transcribeID, tt.referenceType, tt.referenceID, tt.language, tt.direction)

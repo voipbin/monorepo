@@ -22,6 +22,7 @@ const (
 	defaultGCPBucketName           = ""
 	defaultAWSAccessKey            = ""
 	defaultAWSSecretKey            = ""
+	defaultElevenlabsAPIKey        = ""
 )
 
 // proces init
@@ -49,6 +50,7 @@ func initVariable() {
 	pflag.String("gcp_bucket_name", defaultGCPBucketName, "GCP bucket name for tmp storage.")
 	pflag.String("aws_access_key", defaultAWSAccessKey, "AWS access key.")
 	pflag.String("aws_secret_key", defaultAWSSecretKey, "AWS secret key.")
+	pflag.String("elevenlabs_api_key", defaultElevenlabsAPIKey, "ElevenLabs API key.")
 	pflag.Parse()
 
 	// rabbitmq_address
@@ -138,6 +140,17 @@ func initVariable() {
 		panic(errEnv)
 	}
 	awsSecretKey = viper.GetString("aws_secret_key")
+
+	// elevenlabs_api_key
+	if errFlag := viper.BindPFlag("elevenlabs_api_key", pflag.Lookup("elevenlabs_api_key")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("elevenlabs_api_key", "ELEVENLABS_API_KEY"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	elevenlabsAPIKey = viper.GetString("elevenlabs_api_key")
 
 }
 

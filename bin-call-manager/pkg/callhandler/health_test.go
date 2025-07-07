@@ -111,14 +111,14 @@ func Test_HealthCheck(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
-				notifyHandler:  mockNotfiy,
+				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 			}
 			ctx := context.Background()
