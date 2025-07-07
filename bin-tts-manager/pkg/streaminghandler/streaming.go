@@ -19,8 +19,8 @@ func (h *streamingHandler) Create(
 	gender streaming.Gender,
 	direction streaming.Direction,
 ) (*streaming.Streaming, error) {
-	h.muSteaming.Lock()
-	defer h.muSteaming.Unlock()
+	h.muStreaming.Lock()
+	defer h.muStreaming.Unlock()
 
 	id := h.utilHandler.UUIDCreate()
 	res := &streaming.Streaming{
@@ -53,8 +53,8 @@ func (h *streamingHandler) Create(
 
 // Gets returns streaming
 func (h *streamingHandler) Get(ctx context.Context, streamingID uuid.UUID) (*streaming.Streaming, error) {
-	h.muSteaming.Lock()
-	defer h.muSteaming.Unlock()
+	h.muStreaming.Lock()
+	defer h.muStreaming.Unlock()
 
 	res, ok := h.mapStreaming[streamingID]
 	if !ok {
@@ -65,8 +65,8 @@ func (h *streamingHandler) Get(ctx context.Context, streamingID uuid.UUID) (*str
 }
 
 func (h *streamingHandler) Delete(ctx context.Context, streamingID uuid.UUID) {
-	h.muSteaming.Lock()
-	defer h.muSteaming.Unlock()
+	h.muStreaming.Lock()
+	defer h.muStreaming.Unlock()
 
 	tmp, ok := h.mapStreaming[streamingID]
 	if !ok {

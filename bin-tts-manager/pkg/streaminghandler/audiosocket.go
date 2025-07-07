@@ -71,7 +71,7 @@ func (h *streamingHandler) audiosocketGetStreamingID(conn net.Conn) (uuid.UUID, 
 //   - The resulting byte slice can be directly transmitted over Audiosocket protocol.
 func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 	if len(data)%2 != 0 {
-		return nil, fmt.Errorf("PCM data must be 16-bit aligned (even number of bytes)")
+		return nil, fmt.Errorf("the PCM data must be 16-bit aligned (even number of bytes). bytes: %d", len(data))
 	}
 
 	sampleCount := len(data) / 2 // 2 bytes per sample (16-bit)

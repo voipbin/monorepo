@@ -52,7 +52,7 @@ var (
 	}
 )
 
-var evelenlabsVoiceIDMap = map[string]string{
+var elevenlabsVoiceIDMap = map[string]string{
 	// English
 	"english_male":    "21m00Tcm4TlvDq8ikWAM", // Adam
 	"english_female":  "EXAVITQu4vr4xnSDxMaL", // Rachel
@@ -331,13 +331,13 @@ func (h *elevenlabsHandler) getVoiceID(language string, gender streaming.Gender)
 	tmpGender := strings.ToLower(string(gender))
 	key := fmt.Sprintf("%s_%s", baseLang, tmpGender)
 
-	if id, ok := evelenlabsVoiceIDMap[key]; ok {
+	if id, ok := elevenlabsVoiceIDMap[key]; ok {
 		return id
 	}
 
 	// fallback to neutral
 	neutralKey := fmt.Sprintf("%s_neutral", baseLang)
-	if id, ok := evelenlabsVoiceIDMap[neutralKey]; ok {
+	if id, ok := elevenlabsVoiceIDMap[neutralKey]; ok {
 		return id
 	}
 

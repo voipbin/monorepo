@@ -67,7 +67,7 @@ type streamingHandler struct {
 	podID         string
 
 	mapStreaming map[uuid.UUID]*streaming.Streaming
-	muSteaming   sync.Mutex
+	muStreaming  sync.Mutex
 
 	elevenlabsHandler streamer
 }
@@ -93,7 +93,7 @@ func NewStreamingHandler(
 		podID:         podID,
 
 		mapStreaming: make(map[uuid.UUID]*streaming.Streaming),
-		muSteaming:   sync.Mutex{},
+		muStreaming:  sync.Mutex{},
 
 		elevenlabsHandler: elevenlabsHandler,
 	}

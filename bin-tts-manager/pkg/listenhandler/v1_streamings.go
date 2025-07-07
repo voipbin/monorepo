@@ -13,7 +13,7 @@ import (
 )
 
 // v1StreamingsPost handles /v1/streamings POST request
-// creates a new tts audio for the given text and upload the file to the bucket. Returns uploaded filename with path.
+// It starts a new streaming session based on the provided request data.
 func (h *listenHandler) v1StreamingsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1StreamingsPost",
