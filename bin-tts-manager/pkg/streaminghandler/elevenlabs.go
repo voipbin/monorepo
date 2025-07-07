@@ -177,7 +177,7 @@ func (h *elevenlabsHandler) initConn(ctx context.Context, st *streaming.Streamin
 	// Establish the WebSocket connection.
 	res, _, err := websocket.DefaultDialer.DialContext(ctx, u.String(), header)
 	if err != nil {
-		return nil, fmt.Errorf("websocket connection failed: %v", err)
+		return nil, errors.Wrapf(err, "failed to connect to ElevenLabs WebSocket at %s", u.String())
 	}
 
 	return res, nil

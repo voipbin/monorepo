@@ -41,7 +41,7 @@ func (h *streamingHandler) Start(
 
 	// start the external media
 	// send request to the call-manager
-	em, err := h.reqHandler.CallV1ExternalMediaStart(
+	em, err := h.requestHandler.CallV1ExternalMediaStart(
 		ctx,
 		res.ID,
 		externalmedia.ReferenceType(referenceType),

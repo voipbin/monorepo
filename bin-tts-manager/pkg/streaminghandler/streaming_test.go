@@ -70,11 +70,11 @@ func Test_Create(t *testing.T) {
 			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &streamingHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotfiy,
-				mapStreaming:  make(map[uuid.UUID]*streaming.Streaming),
-				podID:         tt.podID,
+				utilHandler:    mockUtil,
+				requestHandler: mockReq,
+				notifyHandler:  mockNotfiy,
+				mapStreaming:   make(map[uuid.UUID]*streaming.Streaming),
+				podID:          tt.podID,
 			}
 			ctx := context.Background()
 

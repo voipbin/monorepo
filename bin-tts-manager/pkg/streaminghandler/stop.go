@@ -24,7 +24,7 @@ func (h *streamingHandler) Stop(ctx context.Context, id uuid.UUID) (*streaming.S
 
 	// note:
 	// the call-manager's external media id and streaming id are the same.
-	em, err := h.reqHandler.CallV1ExternalMediaStop(ctx, res.ID)
+	em, err := h.requestHandler.CallV1ExternalMediaStop(ctx, res.ID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not stop the external media. external_media_id: %s", res.ID)
 	}

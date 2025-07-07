@@ -59,9 +59,9 @@ type streamer interface {
 }
 
 type streamingHandler struct {
-	utilHandler   utilhandler.UtilHandler
-	reqHandler    requesthandler.RequestHandler
-	notifyHandler notifyhandler.NotifyHandler
+	utilHandler    utilhandler.UtilHandler
+	requestHandler requesthandler.RequestHandler
+	notifyHandler  notifyhandler.NotifyHandler
 
 	listenAddress string
 	podID         string
@@ -85,9 +85,9 @@ func NewStreamingHandler(
 	elevenlabsHandler := NewElevenlabsHandler(notifyHandler, elevenlabsAPIKey)
 
 	return &streamingHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    reqHandler,
-		notifyHandler: notifyHandler,
+		utilHandler:    utilhandler.NewUtilHandler(),
+		requestHandler: reqHandler,
+		notifyHandler:  notifyHandler,
 
 		listenAddress: listenAddress,
 		podID:         podID,
