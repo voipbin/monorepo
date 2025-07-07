@@ -32,28 +32,28 @@ func Test_TTSV1SpeecheCreate(t *testing.T) {
 		expectRes     *tmtts.TTS
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("cf0413d8-921a-11ec-96ed-7f0948b70d4e"),
-			"hello world",
-			tmtts.GenderMale,
-			"en-US",
-			3000,
+			callID:   uuid.FromStringOrNil("cf0413d8-921a-11ec-96ed-7f0948b70d4e"),
+			text:     "hello world",
+			gender:   tmtts.GenderMale,
+			language: "en-US",
+			timeout:  3000,
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"gender":"male","text":"hello world","language":"en-US","media_filepath":"tts/tmp_filename.wav"}`),
 			},
-			&sock.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/speeches",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"call_id":"cf0413d8-921a-11ec-96ed-7f0948b70d4e","text":"hello world","gender":"male","language":"en-US"}`),
 			},
-			"tts/tmp_filename.wav",
+			expectURL: "tts/tmp_filename.wav",
 
-			&tmtts.TTS{
+			expectRes: &tmtts.TTS{
 				Gender:        tmtts.GenderMale,
 				Text:          "hello world",
 				Language:      "en-US",
