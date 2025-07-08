@@ -57,16 +57,20 @@ func (h *aicallHandler) chatMessageActionsHandle(ctx context.Context, cc *aicall
 
 // chatMessageTextHandle handles chat message text
 func (h *aicallHandler) chatMessageTextHandle(ctx context.Context, cc *aicall.AIcall, text string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":   "chatMessageTextHandle",
-		"aicall": cc,
-		"text":   text,
-	})
+	// log := logrus.WithFields(logrus.Fields{
+	// 	"func":   "chatMessageTextHandle",
+	// 	"aicall": cc,
+	// 	"text":   text,
+	// })
 
-	if errTalk := h.reqHandler.CallV1CallTalk(ctx, cc.ReferenceID, text, string(cc.Gender), cc.Language, 10000); errTalk != nil {
-		log.Errorf("Could not talk to the call. err: %v", errTalk)
-		return errors.Wrap(errTalk, "could not talk to the call")
+	if errSay := h.reqHandler.TTSV1StreamingSay(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, text); errSay != nil {
+		return errors.Wrapf(errSay, "could not say the text. aicall_id: %s", cc.ID)
 	}
+
+	// if errTalk := h.reqHandler.CallV1CallTalk(ctx, cc.ReferenceID, text, string(cc.Gender), cc.Language, 10000); errTalk != nil {
+	// 	log.Errorf("Could not talk to the call. err: %v", errTalk)
+	// 	return errors.Wrap(errTalk, "could not talk to the call")
+	// }
 
 	return nil
 }
