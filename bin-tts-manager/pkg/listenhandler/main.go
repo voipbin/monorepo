@@ -24,7 +24,7 @@ const (
 
 // ListenHandler interface
 type ListenHandler interface {
-	Run(queue, exchangeDelay string) error
+	Run(queueNormal, queueVolatile, exchangeDelay string) error
 }
 
 type listenHandler struct {
@@ -89,24 +89,89 @@ func NewListenHandler(
 	return h
 }
 
-func (h *listenHandler) Run(queue, exchangeDelay string) error {
+// runListenQueue listens the queue
+func (h *listenHandler) runListenQueue(queue string) error {
 	logrus.WithFields(logrus.Fields{
 		"queue": queue,
 	}).Info("Creating rabbitmq queue for listen.")
 
+	// declare the queue
 	if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
 	// receive requests
 	go func() {
-		if errRPC := h.sockHandler.ConsumeRPC(context.Background(), queue, "tts-manager", false, false, false, 10, h.processRequest); errRPC != nil {
-			logrus.Errorf("Could not consume the message correctly. err: %v", errRPC)
+		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "tts-manager", false, false, false, 10, h.processRequest); errConsume != nil {
+			logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 		}
 	}()
 
 	return nil
 }
+
+// runListenQueueVolatile listens volatile queue
+func (h *listenHandler) runListenQueueVolatile(queue string) error {
+	logrus.WithFields(logrus.Fields{
+		"queue": queue,
+	}).Info("Creating rabbitmq queue for listen.")
+
+	// declare the queue
+	if err := h.sockHandler.QueueCreate(queue, "volatile"); err != nil {
+		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+	}
+
+	// receive requests
+	go func() {
+		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "tts-manager", false, false, false, 10, h.processRequest); errConsume != nil {
+			logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
+		}
+	}()
+
+	return nil
+}
+
+// Run
+func (h *listenHandler) Run(queueNormal, queueVolatile, exchangeDelay string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"queue_normal":   queueNormal,
+		"queue_volatile": queueVolatile,
+	})
+	log.Info("Creating rabbitmq queue for listen.")
+
+	// start queue listen
+	if err := h.runListenQueue(queueNormal); err != nil {
+		log.Errorf("Could not listen the queue. err: %v", err)
+		return err
+	}
+
+	// start volatile queue listen
+	if err := h.runListenQueueVolatile(queueVolatile); err != nil {
+		log.Errorf("Could not listen the volatile queue. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// func (h *listenHandler) Run(queue, exchangeDelay string) error {
+// 	logrus.WithFields(logrus.Fields{
+// 		"queue": queue,
+// 	}).Info("Creating rabbitmq queue for listen.")
+
+// 	if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
+// 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+// 	}
+
+// 	// receive requests
+// 	go func() {
+// 		if errRPC := h.sockHandler.ConsumeRPC(context.Background(), queue, "tts-manager", false, false, false, 10, h.processRequest); errRPC != nil {
+// 			logrus.Errorf("Could not consume the message correctly. err: %v", errRPC)
+// 		}
+// 	}()
+
+// 	return nil
+// }
 
 // processRequest
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
