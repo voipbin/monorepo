@@ -2,6 +2,7 @@ package streaming
 
 import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"sync"
 
 	"github.com/gofrs/uuid"
 )
@@ -18,9 +19,10 @@ type Streaming struct {
 	Gender    Gender    `json:"gender,omitempty"`
 	Direction Direction `json:"direction,omitempty"` // Direction of the streaming
 
-	Vendor     Vendor    `json:"-"` // Vendor of the service (e.g., gcp, aws)
-	ConnVendor any       `json:"-"` // WebSocket connection to the vendor for the streaming
-	ChanDone   chan bool `json:"-"` // Signals when handleWebSocketMessages goroutine has exited.
+	Vendor         Vendor     `json:"-"` // Vendor of the service (e.g., gcp, aws)
+	ConnVendor     any        `json:"-"` // WebSocket connection to the vendor for the streaming
+	ConnVendorLock sync.Mutex `json:"-"` // Mutex lock for ConnVendor to ensure thread safety
+	ChanDone       chan bool  `json:"-"` // Signals when handleWebSocketMessages goroutine has exited.
 }
 
 // // Direction represents the direction of the streaming in a call.

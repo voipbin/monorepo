@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-tts-manager/models/streaming"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -147,6 +148,8 @@ func (h *elevenlabsHandler) Run(ctx context.Context, st *streaming.Streaming, co
 
 	st.Vendor = streaming.VendorElevenlabs
 	st.ConnVendor = connElevenlabs
+
+	go h.runKeepAlive(ctx, st)
 	go h.handleReceivedMessages(ctx, conn, st)
 
 	<-st.ChanDone
@@ -183,6 +186,19 @@ func (h *elevenlabsHandler) initConn(ctx context.Context, st *streaming.Streamin
 	return res, nil
 }
 
+func (h *elevenlabsHandler) send(ctx context.Context, st *streaming.Streaming, msg any) error {
+
+	st.ConnVendorLock.Lock()
+	defer st.ConnVendorLock.Unlock()
+
+	conn, ok := st.ConnVendor.(*websocket.Conn)
+	if !ok || conn == nil {
+		return fmt.Errorf("the ConnVendor is not a *websocket.Conn or is nil")
+	}
+
+	return conn.WriteJSON(msg)
+}
+
 func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming, text string) error {
 
 	message := ElevenlabsMessage{
@@ -190,12 +206,7 @@ func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming
 		TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
 	}
 
-	conn, ok := st.ConnVendor.(*websocket.Conn)
-	if !ok || conn == nil {
-		return fmt.Errorf("the ConnVendor is not a *websocket.Conn or is nil")
-	}
-
-	return conn.WriteJSON(message)
+	return h.send(ctx, st, message)
 }
 
 func (h *elevenlabsHandler) Finish(ctx context.Context, st *streaming.Streaming) error {
@@ -205,12 +216,7 @@ func (h *elevenlabsHandler) Finish(ctx context.Context, st *streaming.Streaming)
 		Finalize:             true, // Explicitly tells the API to finalize generation.
 	}
 
-	conn, ok := st.ConnVendor.(*websocket.Conn)
-	if !ok || conn == nil {
-		return fmt.Errorf("the ConnVendor is not a *websocket.Conn or is nil")
-	}
-
-	return conn.WriteJSON(message)
+	return h.send(ctx, st, message)
 }
 
 func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst net.Conn, st *streaming.Streaming) {
@@ -367,4 +373,28 @@ func (h *elevenlabsHandler) getDataSamples(inputRate int, data []byte) ([]byte, 
 	}
 
 	return res, nil
+}
+
+func (h *elevenlabsHandler) runKeepAlive(ctx context.Context, st *streaming.Streaming) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "runKeepAlive",
+		"streaming_id": st.ID,
+	})
+
+	ticker := time.NewTicker(time.Second * 10) // Use configurable interval
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Debug("Keep-alive stopped")
+			return
+		case <-ticker.C:
+
+			if errText := h.AddText(ctx, st, " "); errText != nil {
+				// consider connection has closed.
+				return
+			}
+		}
+	}
 }
