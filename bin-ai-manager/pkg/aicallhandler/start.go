@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -101,7 +102,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 	language string,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "startNew",
+		"func":          "startReferenceTypeCall",
 		"ai":            c,
 		"activeflow_id": activeflowID,
 	})
@@ -113,7 +114,14 @@ func (h *aicallHandler) startReferenceTypeCall(
 		return nil, errors.Wrap(err, "Could not create confbridge")
 	}
 
-	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language)
+	// start streaming tts
+	st, err := h.reqHandler.TTSV1StreamingCreate(ctx, c.CustomerID, tmstreaming.ReferenceTypeCall, referenceID, language, tmstreaming.Gender(gender), tmstreaming.DirectionOutgoing)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not create streaming tts")
+	}
+	log.WithField("streaming_tts", st).Debugf("Created streaming tts. streaming_id: %s", st.ID)
+
+	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, st.ID, st.PodID)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
@@ -150,7 +158,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	res, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
 		// aicall not found, create a new one
-		res, err = h.Create(ctx, c, activeflowID, aicall.ReferenceTypeConversation, referenceID, uuid.Nil, gender, language)
+		res, err = h.Create(ctx, c, activeflowID, aicall.ReferenceTypeConversation, referenceID, uuid.Nil, gender, language, uuid.Nil, "")
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
@@ -191,7 +199,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 		"ai":   c,
 	})
 
-	tmp, err := h.Create(ctx, c, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language)
+	tmp, err := h.Create(ctx, c, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language, uuid.Nil, "")
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")

@@ -36,6 +36,9 @@ const (
 		gender,
 		language,
 
+		tts_streaming_id,
+		tts_streaming_pod_id,
+
 		tm_end,
 		tm_create,
 		tm_update,
@@ -71,6 +74,9 @@ func (h *handler) aicallGetFromRow(row *sql.Rows) (*aicall.AIcall, error) {
 
 		&res.Gender,
 		&res.Language,
+
+		&res.TTSStreamingID,
+		&res.TTSStreamingPodID,
 
 		&res.TMEnd,
 		&res.TMCreate,
@@ -114,6 +120,9 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 
 		gender,
 		language,
+
+		tts_streaming_id,
+		tts_streaming_pod_id,
  
 		tm_end,
 		tm_create,
@@ -125,6 +134,7 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 		?, ?, ?,
 		?, ?,
 		?,
+		?, ?,
 		?, ?,
  		?, ?, ?, ?
 		)
@@ -155,6 +165,9 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 
 		cb.Gender,
 		cb.Language,
+
+		cb.TTSStreamingID.Bytes(),
+		cb.TTSStreamingPodID,
 
 		DefaultTimeStamp,
 		h.utilHandler.TimeGetCurTime(),
