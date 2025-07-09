@@ -217,6 +217,8 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.U
 		// so we are putting the bridge here to put the channel into the bridge easily.
 		// create a external media channel
 		chData = id.String()
+		transport = externalmedia.TransportTCP
+		format = "slin"
 		log.Debugf("The encapsulation is audiosocket. Use the channel id as the channel data in force. ch_data: %s", chData)
 	} else {
 		chData = fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
