@@ -46,7 +46,7 @@ func (h *streamingHandler) Start(
 		res.ID,
 		externalmedia.ReferenceType(referenceType),
 		referenceID,
-		true,
+		false,
 		h.listenAddress,
 		defaultEncapsulation,
 		defaultTransport,
