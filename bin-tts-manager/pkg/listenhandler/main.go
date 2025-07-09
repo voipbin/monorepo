@@ -184,8 +184,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	var err error
 	var response *sock.Response
 
-	log.Debug("Received request.")
-
 	ctx := context.Background()
 	start := time.Now()
 	switch {

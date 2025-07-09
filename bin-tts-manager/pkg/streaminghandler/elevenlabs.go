@@ -269,7 +269,7 @@ func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst 
 				log.Errorf("Could not process PCM data: %v. Message: %s", errProcess, response.Audio)
 				return
 			}
-			log.Debugf("Processed audio chunk of size %d bytes.", len(decodedAudio))
+			log.Debugf("Processed audio chunk of size %d bytes.", len(data))
 
 			// send it to the asterisk connection.
 			// TTS play!

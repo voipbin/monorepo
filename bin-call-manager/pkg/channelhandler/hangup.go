@@ -48,6 +48,7 @@ func (h *channelHandler) HangingUp(ctx context.Context, id string, cause ari.Cha
 		return res, nil
 	}
 
+	log.WithField("channel", res).Debugf("Hanging up the channel. channel_id: %s, cause: %d", res.ID, cause)
 	if errHangup := h.HangingUpWithAsteriskID(ctx, res.AsteriskID, res.ID, cause); errHangup != nil {
 		log.Errorf("Could not hangup the channel. err: %v", errHangup)
 		return nil, errHangup
