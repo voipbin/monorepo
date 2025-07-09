@@ -114,7 +114,7 @@ func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx cont
 	// create a bridge
 	bridgeID := h.utilHandler.UUIDCreate().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCallSnoop, c.ID)
-	br, err := h.bridgeHandler.Start(ctx, ch.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeProxyMedia})
+	br, err := h.bridgeHandler.Start(ctx, ch.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing})
 	if err != nil {
 		log.Errorf("Could not create a bridge for external media. error: %v", err)
 		return nil, err
