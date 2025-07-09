@@ -57,7 +57,7 @@ func (h *externalMediaHandler) startReferenceTypeCallWithInsertMedia(ctx context
 		"id":      id,
 		"call_id": callID,
 	})
-	log.Debug("Creating the external media for call type.")
+	log.Debug("Creating the external media with insert media for call type.")
 
 	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
@@ -231,7 +231,7 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.U
 
 	extChannelID := h.utilHandler.UUIDCreate().String()
 
-	em, err := h.Create(ctx, id, asteriskID, extChannelID, referenceType, referenceID, "", 0, externalHost, encapsulation, defaultTransport, defaultConnectionType, defaultFormat, defaultDirection)
+	em, err := h.Create(ctx, id, asteriskID, extChannelID, referenceType, referenceID, "", 0, externalHost, encapsulation, transport, defaultConnectionType, format, defaultDirection)
 	if err != nil {
 		log.Errorf("Could not create a external media. err: %v", err)
 		return nil, err

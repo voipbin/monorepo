@@ -229,8 +229,8 @@ func (h *callHandler) startContextJoinCall(ctx context.Context, cn *channel.Chan
 
 	// put the channel to the bridge
 	if errJoin := h.bridgeHandler.ChannelJoin(ctx, bridgeID, cn.ID, "", false, false); errJoin != nil {
-		log.Errorf("Could not add the external snoop channel to the bridge. err: %v", errJoin)
-		return errors.Wrap(errJoin, "could not add the external snoop channel to the channel")
+		log.Errorf("Could not add the join channel to the bridge. err: %v", errJoin)
+		return errors.Wrap(errJoin, "could not add the join channel to the bridge")
 	}
 
 	// dial to the destination
