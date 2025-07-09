@@ -119,6 +119,7 @@ func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx cont
 		log.Errorf("Could not create a bridge for external media. error: %v", err)
 		return nil, err
 	}
+	log.WithField("bridge", br).Debugf("Created a new bridge for the external media. bridge_id: %s", br.ID)
 
 	// create a snoop channel
 	// set app args

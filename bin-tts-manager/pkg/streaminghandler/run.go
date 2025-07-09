@@ -54,7 +54,7 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	log.Debugf("Found streaming id: %s", streamingID)
 
 	// // Start keep-alive in a separate goroutine
-	go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
+	// go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
 	go h.runKeepConsume(ctx, conn)
 
 	st, err := h.Get(ctx, streamingID)
