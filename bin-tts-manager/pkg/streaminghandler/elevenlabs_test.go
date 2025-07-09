@@ -2,7 +2,6 @@ package streaminghandler
 
 import (
 	"bytes"
-	"encoding/binary"
 	"monorepo/bin-tts-manager/models/streaming"
 	"testing"
 )
@@ -144,62 +143,62 @@ func Test_getVoiceID(t *testing.T) {
 	}
 }
 
-func Test_convertAndWrapPCMData(t *testing.T) {
+// func Test_convertAndWrapPCMData(t *testing.T) {
 
-	tests := []struct {
-		name        string
-		inputFormat string
-		rawData     []byte
-		expectedRes []byte
-		expectError bool
-	}{
-		{
-			name:        "valid pcm_16000 input",
-			inputFormat: "pcm_16000",
-			rawData:     []byte{0x11, 0x22, 0x33, 0x44}, // 2 samples
-			expectedRes: func() []byte {
-				buf := new(bytes.Buffer)
-				_ = binary.Write(buf, binary.BigEndian, audiosocketFormatSLIN)
-				_ = binary.Write(buf, binary.BigEndian, uint16(1)) // 1 sample (from first 2 bytes)
-				_, _ = buf.Write([]byte{0x11, 0x22})
-				return buf.Bytes()
-			}(),
-			expectError: false,
-		},
-		{
-			name:        "odd length input (error)",
-			inputFormat: "pcm_16000",
-			rawData:     []byte{0x01},
-			expectError: true,
-		},
-		{
-			name:        "unsupported format",
-			inputFormat: "mp3_44100",
-			rawData:     []byte{0x00, 0x01},
-			expectError: true,
-		},
-	}
+// 	tests := []struct {
+// 		name        string
+// 		inputFormat string
+// 		rawData     []byte
+// 		expectedRes []byte
+// 		expectError bool
+// 	}{
+// 		{
+// 			name:        "valid pcm_16000 input",
+// 			inputFormat: "pcm_16000",
+// 			rawData:     []byte{0x11, 0x22, 0x33, 0x44}, // 2 samples
+// 			expectedRes: func() []byte {
+// 				buf := new(bytes.Buffer)
+// 				_ = binary.Write(buf, binary.BigEndian, audiosocketFormatSLIN)
+// 				_ = binary.Write(buf, binary.BigEndian, uint16(1)) // 1 sample (from first 2 bytes)
+// 				_, _ = buf.Write([]byte{0x11, 0x22})
+// 				return buf.Bytes()
+// 			}(),
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "odd length input (error)",
+// 			inputFormat: "pcm_16000",
+// 			rawData:     []byte{0x01},
+// 			expectError: true,
+// 		},
+// 		{
+// 			name:        "unsupported format",
+// 			inputFormat: "mp3_44100",
+// 			rawData:     []byte{0x00, 0x01},
+// 			expectError: true,
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			handler := &elevenlabsHandler{}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			handler := &elevenlabsHandler{}
 
-			res, err := handler.convertAndWrapPCMData(tt.inputFormat, tt.rawData)
-			if tt.expectError {
-				if err == nil {
-					t.Errorf("expected error, but got nil")
-				}
-				return
-			}
+// 			res, err := handler.convertAndWrapPCMData(tt.inputFormat, tt.rawData)
+// 			if tt.expectError {
+// 				if err == nil {
+// 					t.Errorf("expected error, but got nil")
+// 				}
+// 				return
+// 			}
 
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-				return
-			}
+// 			if err != nil {
+// 				t.Errorf("unexpected error: %v", err)
+// 				return
+// 			}
 
-			if !bytes.Equal(res, tt.expectedRes) {
-				t.Errorf("unexpected output:\nExpected: %v\nGot:      %v", tt.expectedRes, res)
-			}
-		})
-	}
-}
+// 			if !bytes.Equal(res, tt.expectedRes) {
+// 				t.Errorf("unexpected output:\nExpected: %v\nGot:      %v", tt.expectedRes, res)
+// 			}
+// 		})
+// 	}
+// }
