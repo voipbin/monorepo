@@ -84,7 +84,7 @@ func Test_Start_reference_type_call_with_insert_media(t *testing.T) {
 			"client",
 			"ulaw",
 			"both",
-			"context_type=call,context=call-externalmedia,bridge_id=500d0b6e-eb39-11ee-a30a-9392749106cc,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57,external_media_id=77e08632-b331-11ef-b2b5-cfa11dfce0d5",
+			"context_type=call,context=call-externalmedia,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57,external_media_id=77e08632-b331-11ef-b2b5-cfa11dfce0d5",
 			&externalmedia.ExternalMedia{
 				ID:             uuid.FromStringOrNil("77e08632-b331-11ef-b2b5-cfa11dfce0d5"),
 				AsteriskID:     "42:01:0a:a4:00:05",
@@ -205,7 +205,7 @@ func Test_Start_reference_type_call_without_insert_media(t *testing.T) {
 			uuid.FromStringOrNil("488feb00-96e3-11ed-8ae7-1fe9bc7a995f"),
 
 			"reference_type=call-snoop,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
-			"context_type=call,context=call-externalmedia,bridge_id=9b6c7a78-96e3-11ed-904b-9baa2c0183fd,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57,external_media_id=78473c24-b331-11ef-aa9c-e7c52f9d3f7b",
+			"context_type=call,context=call-externalmedia,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57,external_media_id=78473c24-b331-11ef-aa9c-e7c52f9d3f7b",
 			&externalmedia.ExternalMedia{
 				ID:             uuid.FromStringOrNil("78473c24-b331-11ef-aa9c-e7c52f9d3f7b"),
 				AsteriskID:     "42:01:0a:a4:00:05",
@@ -323,7 +323,7 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 			responseUUIDChannelID: uuid.FromStringOrNil("548cc82e-97ba-11ed-9f0c-43e1928c2d6e"),
 
 			expectExternalHost: "example.com",
-			expectChannelData:  "context_type=call,context=call-externalmedia,bridge_id=5466b238-97ba-11ed-9021-0b336edbced2,reference_type=confbridge,reference_id=543f0d00-97ba-11ed-86fe-ef2b82ea3c6f,external_media_id=79076e90-b331-11ef-bc31-33cb17f32724",
+			expectChannelData:  "context_type=call,context=call-externalmedia,reference_type=confbridge,reference_id=543f0d00-97ba-11ed-86fe-ef2b82ea3c6f,external_media_id=79076e90-b331-11ef-bc31-33cb17f32724",
 			expectExternalMedia: &externalmedia.ExternalMedia{
 				ID:             uuid.FromStringOrNil("79076e90-b331-11ef-bc31-33cb17f32724"),
 				AsteriskID:     "42:01:0a:a4:00:05",

@@ -580,9 +580,8 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
 				StasisData: map[channel.StasisDataType]string{
-					"context":                      string(channel.ContextExternalMedia),
-					"external_media_id":            "45efbb3c-b33d-11ef-8648-fbef93b5f7dc",
-					channel.StasisDataTypeBridgeID: "2745ad6e-5c92-11f0-870a-9fc8f9ad15e9",
+					"context":           string(channel.ContextExternalMedia),
+					"external_media_id": "45efbb3c-b33d-11ef-8648-fbef93b5f7dc",
 				},
 			},
 
@@ -590,10 +589,11 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 				ID:            uuid.FromStringOrNil("45efbb3c-b33d-11ef-8648-fbef93b5f7dc"),
 				ReferenceType: externalmedia.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("0648d6c0-0301-11ec-818e-53865044b15c"),
+				BridgeID:      "78e4b45a-5c95-11f0-91fc-1b37f3d2ce30",
 			},
 
 			expectExternalMediaID: uuid.FromStringOrNil("45efbb3c-b33d-11ef-8648-fbef93b5f7dc"),
-			expectBridgeID:        "2745ad6e-5c92-11f0-870a-9fc8f9ad15e9",
+			expectBridgeID:        "78e4b45a-5c95-11f0-91fc-1b37f3d2ce30",
 		},
 	}
 

@@ -34,6 +34,7 @@ func Test_Create(t *testing.T) {
 		connectionType string
 		format         string
 		direction      string
+		bridgeID       string
 
 		responseUUID uuid.UUID
 
@@ -55,6 +56,7 @@ func Test_Create(t *testing.T) {
 			connectionType: defaultConnectionType,
 			format:         defaultFormat,
 			direction:      defaultDirection,
+			bridgeID:       "4003dd64-5c95-11f0-9713-e7211a7f4e42",
 
 			expectExternalMedia: &externalmedia.ExternalMedia{
 				ID:             uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
@@ -70,6 +72,7 @@ func Test_Create(t *testing.T) {
 				ConnectionType: defaultConnectionType,
 				Format:         defaultFormat,
 				Direction:      defaultDirection,
+				BridgeID:       "4003dd64-5c95-11f0-9713-e7211a7f4e42",
 			},
 		},
 		{
@@ -88,6 +91,7 @@ func Test_Create(t *testing.T) {
 			connectionType: defaultConnectionType,
 			format:         defaultFormat,
 			direction:      defaultDirection,
+			bridgeID:       "49dd9fe6-5c95-11f0-97d1-9b0c79587747",
 
 			responseUUID: uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
 			expectExternalMedia: &externalmedia.ExternalMedia{
@@ -104,6 +108,7 @@ func Test_Create(t *testing.T) {
 				ConnectionType: defaultConnectionType,
 				Format:         defaultFormat,
 				Direction:      defaultDirection,
+				BridgeID:       "49dd9fe6-5c95-11f0-97d1-9b0c79587747",
 			},
 		},
 	}
@@ -146,6 +151,7 @@ func Test_Create(t *testing.T) {
 				tt.connectionType,
 				tt.format,
 				tt.direction,
+				tt.bridgeID,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

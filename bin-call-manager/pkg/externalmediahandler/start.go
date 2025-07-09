@@ -221,10 +221,9 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.U
 		format = "slin"
 		log.Debugf("The encapsulation is audiosocket. Use the channel id as the channel data in force. ch_data: %s", chData)
 	} else {
-		chData = fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
+		chData = fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
 			channel.StasisDataTypeContextType, channel.ContextTypeCall,
 			channel.StasisDataTypeContext, channel.ContextExternalMedia,
-			channel.StasisDataTypeBridgeID, bridgeID,
 			channel.StasisDataTypeReferenceType, referenceType,
 			channel.StasisDataTypeReferenceID, referenceID,
 			channel.StasisDataTypeExternalMediaID, id,
@@ -233,7 +232,7 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.U
 
 	extChannelID := h.utilHandler.UUIDCreate().String()
 
-	em, err := h.Create(ctx, id, asteriskID, extChannelID, referenceType, referenceID, "", 0, externalHost, encapsulation, transport, defaultConnectionType, format, defaultDirection)
+	em, err := h.Create(ctx, id, asteriskID, extChannelID, referenceType, referenceID, "", 0, externalHost, encapsulation, transport, defaultConnectionType, format, defaultDirection, bridgeID)
 	if err != nil {
 		log.Errorf("Could not create a external media. err: %v", err)
 		return nil, err

@@ -33,7 +33,7 @@ func (h *bridgeHandler) ChannelKick(ctx context.Context, id string, channelID st
 // ChannelJoin joins the channel from the bridge
 func (h *bridgeHandler) ChannelJoin(ctx context.Context, id string, channelID string, role string, absorbDTMF bool, mute bool) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "ChannelKick",
+		"func":       "ChannelJoin",
 		"bridge_id":  id,
 		"channel_id": channelID,
 	})
