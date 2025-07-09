@@ -249,7 +249,7 @@ func Test_Start_reference_type_call_without_insert_media(t *testing.T) {
 			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseChannel, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridgeID)
-			mockBridge.EXPECT().Start(ctx, tt.responseChannel.AsteriskID, tt.responseUUIDBridgeID.String(), tt.expectBridgeArgs, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().Start(ctx, tt.responseChannel.AsteriskID, tt.responseUUIDBridgeID.String(), tt.expectBridgeArgs, []bridge.Type{bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDSnoopID)
 			mockChannel.EXPECT().StartSnoop(ctx, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), tt.direction, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
