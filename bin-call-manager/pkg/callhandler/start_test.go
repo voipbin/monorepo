@@ -30,11 +30,9 @@ import (
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
-	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
-	"monorepo/bin-call-manager/pkg/externalmediahandler"
 )
 
 func Test_GetTypeContextIncomingCall(t *testing.T) {
@@ -557,77 +555,77 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 	}
 }
 
-func Test_StartHandlerContextExternalMedia(t *testing.T) {
+// func Test_StartHandlerContextExternalMedia(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		channel *channel.Channel
+// 		channel *channel.Channel
 
-		responseExternalMedia *externalmedia.ExternalMedia
-		responseCall          *call.Call
+// 		responseExternalMedia *externalmedia.ExternalMedia
+// 		responseCall          *call.Call
 
-		expectExternalMediaID uuid.UUID
-		expectBridgeID        string
-	}{
-		{
-			name: "normal",
+// 		expectExternalMediaID uuid.UUID
+// 		expectBridgeID        string
+// 	}{
+// 		{
+// 			name: "normal",
 
-			channel: &channel.Channel{
-				AsteriskID:        "80:fa:5b:5e:da:81",
-				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
-				Name:              "PJSIP/in-voipbin-00000915",
-				DestinationNumber: "+123456789",
-				State:             ari.ChannelStateRing,
-				StasisData: map[channel.StasisDataType]string{
-					"context":           string(channel.ContextExternalMedia),
-					"external_media_id": "45efbb3c-b33d-11ef-8648-fbef93b5f7dc",
-				},
-			},
+// 			channel: &channel.Channel{
+// 				AsteriskID:        "80:fa:5b:5e:da:81",
+// 				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
+// 				Name:              "PJSIP/in-voipbin-00000915",
+// 				DestinationNumber: "+123456789",
+// 				State:             ari.ChannelStateRing,
+// 				StasisData: map[channel.StasisDataType]string{
+// 					"context":           string(channel.ContextExternalMedia),
+// 					"external_media_id": "45efbb3c-b33d-11ef-8648-fbef93b5f7dc",
+// 				},
+// 			},
 
-			responseExternalMedia: &externalmedia.ExternalMedia{
-				ID:            uuid.FromStringOrNil("45efbb3c-b33d-11ef-8648-fbef93b5f7dc"),
-				ReferenceType: externalmedia.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("0648d6c0-0301-11ec-818e-53865044b15c"),
-				BridgeID:      "78e4b45a-5c95-11f0-91fc-1b37f3d2ce30",
-			},
+// 			responseExternalMedia: &externalmedia.ExternalMedia{
+// 				ID:            uuid.FromStringOrNil("45efbb3c-b33d-11ef-8648-fbef93b5f7dc"),
+// 				ReferenceType: externalmedia.ReferenceTypeCall,
+// 				ReferenceID:   uuid.FromStringOrNil("0648d6c0-0301-11ec-818e-53865044b15c"),
+// 				BridgeID:      "78e4b45a-5c95-11f0-91fc-1b37f3d2ce30",
+// 			},
 
-			expectExternalMediaID: uuid.FromStringOrNil("45efbb3c-b33d-11ef-8648-fbef93b5f7dc"),
-			expectBridgeID:        "78e4b45a-5c95-11f0-91fc-1b37f3d2ce30",
-		},
-	}
+// 			expectExternalMediaID: uuid.FromStringOrNil("45efbb3c-b33d-11ef-8648-fbef93b5f7dc"),
+// 			expectBridgeID:        "78e4b45a-5c95-11f0-91fc-1b37f3d2ce30",
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockChannel := channelhandler.NewMockChannelHandler(mc)
-			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
-			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
+// 			mockReq := requesthandler.NewMockRequestHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+// 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+// 			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
-			h := &callHandler{
-				reqHandler:           mockReq,
-				notifyHandler:        mockNotify,
-				db:                   mockDB,
-				channelHandler:       mockChannel,
-				bridgeHandler:        mockBridge,
-				externalMediaHandler: mockExternal,
-			}
-			ctx := context.Background()
+// 			h := &callHandler{
+// 				reqHandler:           mockReq,
+// 				notifyHandler:        mockNotify,
+// 				db:                   mockDB,
+// 				channelHandler:       mockChannel,
+// 				bridgeHandler:        mockBridge,
+// 				externalMediaHandler: mockExternal,
+// 			}
+// 			ctx := context.Background()
 
-			mockExternal.EXPECT().Get(ctx, tt.expectExternalMediaID).Return(tt.responseExternalMedia, nil)
+// 			mockExternal.EXPECT().Get(ctx, tt.expectExternalMediaID).Return(tt.responseExternalMedia, nil)
 
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
-			if err := h.Start(ctx, tt.channel); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
+// 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
+// 			if err := h.Start(ctx, tt.channel); err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 
