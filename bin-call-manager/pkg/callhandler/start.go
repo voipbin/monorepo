@@ -186,28 +186,25 @@ func (h *callHandler) startContextExternalMedia(ctx context.Context, cn *channel
 	}
 
 	bridgeID := ""
-	if em.ReferenceType == externalmedia.ReferenceTypeCall {
-		c, err := h.Get(ctx, em.ReferenceID)
-		if err != nil {
-			log.Errorf("Could not get reference call info. err: %v", err)
-			return errors.Wrap(err, "could not get reference call info")
-		}
-		bridgeID = c.BridgeID
-	} else if em.ReferenceType == externalmedia.ReferenceTypeConfbridge {
+	switch em.ReferenceType {
+	case externalmedia.ReferenceTypeCall:
+		bridgeID = cn.StasisData[channel.StasisDataTypeBridgeID]
+
+	case externalmedia.ReferenceTypeConfbridge:
 		c, err := h.confbridgeHandler.Get(ctx, em.ReferenceID)
 		if err != nil {
 			log.Errorf("Could not get reference confbridge info. err: %v", err)
 			return errors.Wrap(err, "could not get reference confbridge info")
 		}
 		bridgeID = c.BridgeID
-	}
 
-	log.Debugf("Parsed info. external_media_id: %s, bridge: %s", em.ID, bridgeID)
-	log = log.WithField("bridge_id", bridgeID)
+	default:
+		return fmt.Errorf("unsupported reference type for external media. reference_type: %s, reference_id: %s", em.ReferenceType, em.ReferenceID)
+	}
+	log.Debugf("Found bridge info info. external_media_id: %s, bridge: %s", em.ID, bridgeID)
 
 	// put the channel to the bridge
 	if errJoin := h.bridgeHandler.ChannelJoin(ctx, bridgeID, cn.ID, "", false, false); errJoin != nil {
-		log.Errorf("Could not add the external snoop channel to the bridge. err: %v", errJoin)
 		return errors.Wrap(errJoin, "could not add the external snoop channel to the bridge")
 	}
 

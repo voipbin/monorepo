@@ -580,8 +580,9 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
 				StasisData: map[channel.StasisDataType]string{
-					"context":           string(channel.ContextExternalMedia),
-					"external_media_id": "45efbb3c-b33d-11ef-8648-fbef93b5f7dc",
+					"context":                      string(channel.ContextExternalMedia),
+					"external_media_id":            "45efbb3c-b33d-11ef-8648-fbef93b5f7dc",
+					channel.StasisDataTypeBridgeID: "2745ad6e-5c92-11f0-870a-9fc8f9ad15e9",
 				},
 			},
 
@@ -590,15 +591,9 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 				ReferenceType: externalmedia.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("0648d6c0-0301-11ec-818e-53865044b15c"),
 			},
-			responseCall: &call.Call{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("0648d6c0-0301-11ec-818e-53865044b15c"),
-				},
-				BridgeID: "6acf04f2-b33e-11ef-b32f-8f571d44cc7a",
-			},
 
 			expectExternalMediaID: uuid.FromStringOrNil("45efbb3c-b33d-11ef-8648-fbef93b5f7dc"),
-			expectBridgeID:        "6acf04f2-b33e-11ef-b32f-8f571d44cc7a",
+			expectBridgeID:        "2745ad6e-5c92-11f0-870a-9fc8f9ad15e9",
 		},
 	}
 
@@ -625,7 +620,6 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 			ctx := context.Background()
 
 			mockExternal.EXPECT().Get(ctx, tt.expectExternalMediaID).Return(tt.responseExternalMedia, nil)
-			mockDB.EXPECT().CallGet(ctx, tt.responseExternalMedia.ReferenceID).Return(tt.responseCall, nil)
 
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.Start(ctx, tt.channel); err != nil {
