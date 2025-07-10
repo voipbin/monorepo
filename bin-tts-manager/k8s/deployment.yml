@@ -72,6 +72,9 @@ spec:
             - name: metrics
               protocol: "TCP"
               containerPort: 2112
+            - name: audiosocket
+              protocol: "TCP"
+              containerPort: 8080
           resources:
             limits:
               cpu: "50m"
@@ -94,9 +97,6 @@ spec:
             - name: http
               protocol: "TCP"
               containerPort: 80
-            - name: audiosocket
-              protocol: "TCP"
-              containerPort: 8080
           resources:
             limits:
               cpu: "20m"
