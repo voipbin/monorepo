@@ -171,6 +171,7 @@ func (h *elevenlabsHandler) initConn(ctx context.Context, st *streaming.Streamin
 	// Add necessary query parameters for the stream.
 	q := u.Query()
 	q.Set("model_id", defaultElevenlabsModelID)
+	q.Set("optimize_streaming_latency", "4")
 	q.Set("output_format", defaultElevenlabsOutputFormat)
 	u.RawQuery = q.Encode()
 
@@ -210,9 +211,9 @@ func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming
 	})
 
 	message := ElevenlabsMessage{
-		Text: text,
-		// TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
-		Finalize: true,
+		Text:                 text,
+		TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
+		Finalize:             true,
 	}
 
 	log.Debugf("Sending message to ElevenLabs. text: %s", message.Text)
