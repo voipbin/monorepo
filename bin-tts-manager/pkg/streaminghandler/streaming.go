@@ -3,6 +3,7 @@ package streaminghandler
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/gofrs/uuid"
 
@@ -37,7 +38,8 @@ func (h *streamingHandler) Create(
 		Gender:    gender,
 		Direction: direction,
 
-		ChanDone: make(chan bool),
+		ChanDone:       make(chan bool),
+		ConnVendorLock: sync.Mutex{},
 	}
 
 	_, ok := h.mapStreaming[id]

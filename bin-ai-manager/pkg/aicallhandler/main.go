@@ -32,6 +32,8 @@ type AIcallHandler interface {
 		confbridgeID uuid.UUID,
 		gender aicall.Gender,
 		language string,
+		ttsStreamingID uuid.UUID,
+		ttsStreamingPodID string,
 	) (*aicall.AIcall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)

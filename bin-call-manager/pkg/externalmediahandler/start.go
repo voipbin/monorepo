@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/bridge"
@@ -57,7 +58,7 @@ func (h *externalMediaHandler) startReferenceTypeCallWithInsertMedia(ctx context
 		"id":      id,
 		"call_id": callID,
 	})
-	log.Debug("Creating the external media for call type.")
+	log.Debug("Creating the external media with insert media for call type.")
 
 	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
@@ -114,11 +115,12 @@ func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx cont
 	// create a bridge
 	bridgeID := h.utilHandler.UUIDCreate().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCallSnoop, c.ID)
-	br, err := h.bridgeHandler.Start(ctx, ch.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+	br, err := h.bridgeHandler.Start(ctx, ch.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing})
 	if err != nil {
 		log.Errorf("Could not create a bridge for external media. error: %v", err)
 		return nil, err
 	}
+	log.WithField("bridge", br).Debugf("Created a new bridge for the external media. bridge_id: %s", br.ID)
 
 	// create a snoop channel
 	// set app args
@@ -130,7 +132,7 @@ func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx cont
 	)
 
 	snoopID := h.utilHandler.UUIDCreate().String()
-	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth)
+	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionOut)
 	if err != nil {
 		log.Errorf("Could not create a snoop channel for the external media. error: %v", err)
 		return nil, err
@@ -217,12 +219,13 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.U
 		// so we are putting the bridge here to put the channel into the bridge easily.
 		// create a external media channel
 		chData = id.String()
+		transport = externalmedia.TransportTCP
+		format = "slin"
 		log.Debugf("The encapsulation is audiosocket. Use the channel id as the channel data in force. ch_data: %s", chData)
 	} else {
-		chData = fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
+		chData = fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
 			channel.StasisDataTypeContextType, channel.ContextTypeCall,
 			channel.StasisDataTypeContext, channel.ContextExternalMedia,
-			channel.StasisDataTypeBridgeID, bridgeID,
 			channel.StasisDataTypeReferenceType, referenceType,
 			channel.StasisDataTypeReferenceID, referenceID,
 			channel.StasisDataTypeExternalMediaID, id,
@@ -230,19 +233,17 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.U
 	}
 
 	extChannelID := h.utilHandler.UUIDCreate().String()
-
-	em, err := h.Create(ctx, id, asteriskID, extChannelID, referenceType, referenceID, "", 0, externalHost, encapsulation, defaultTransport, defaultConnectionType, defaultFormat, defaultDirection)
+	em, err := h.Create(ctx, id, asteriskID, extChannelID, referenceType, referenceID, "", 0, externalHost, encapsulation, transport, defaultConnectionType, format, defaultDirection, bridgeID)
 	if err != nil {
-		log.Errorf("Could not create a external media. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create a external media")
 	}
 	log.WithField("external_media", em).Debugf("Created a new external media")
 
 	extCh, err := h.channelHandler.StartExternalMedia(ctx, asteriskID, extChannelID, externalHost, string(encapsulation), string(transport), defaultConnectionType, format, defaultDirection, chData, nil)
 	if err != nil {
-		log.Errorf("Could not create a external media channel. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create a external media channel")
 	}
+	log.WithField("external_channel", extCh).Debugf("Created a new external media channel. external_channel_id: %s", extCh.ID)
 
 	// parse local localIP and port
 	localIP := ""

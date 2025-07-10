@@ -2,7 +2,6 @@ package streaminghandler
 
 import (
 	"bytes"
-	"encoding/binary"
 	"testing"
 )
 
@@ -18,13 +17,11 @@ func Test_audiosocketWrapData16BitsPCM(t *testing.T) {
 		{
 			name:  "valid 16-bit PCM data (2 samples)",
 			input: []byte{0x01, 0x02, 0x03, 0x04}, // 2 samples
-			expectData: func() []byte {
-				buf := new(bytes.Buffer)
-				_ = binary.Write(buf, binary.BigEndian, audiosocketFormatSLIN) // audio format
-				_ = binary.Write(buf, binary.BigEndian, uint16(2))             // sample count
-				_, _ = buf.Write([]byte{0x01, 0x02, 0x03, 0x04})               // raw PCM
-				return buf.Bytes()
-			}(),
+			expectData: []byte{
+				0x10,       // data type (audioTypePCM16LE)
+				0x00, 0x04, // payload length (4 bytes, big-endian)
+				0x01, 0x02, 0x03, 0x04, // raw PCM (little-endian)
+			},
 			expectErr: false,
 		},
 		{
@@ -35,12 +32,10 @@ func Test_audiosocketWrapData16BitsPCM(t *testing.T) {
 		{
 			name:  "empty input (0 samples)",
 			input: []byte{},
-			expectData: func() []byte {
-				buf := new(bytes.Buffer)
-				_ = binary.Write(buf, binary.BigEndian, audiosocketFormatSLIN)
-				_ = binary.Write(buf, binary.BigEndian, uint16(0))
-				return buf.Bytes()
-			}(),
+			expectData: []byte{
+				0x10,       // data type (audioTypePCM16LE)
+				0x00, 0x00, // payload length (0 bytes, big-endian)
+			},
 			expectErr: false,
 		},
 	}

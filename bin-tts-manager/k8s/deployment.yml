@@ -72,10 +72,13 @@ spec:
             - name: metrics
               protocol: "TCP"
               containerPort: 2112
+            - name: audiosocket
+              protocol: "TCP"
+              containerPort: 8090
           resources:
             limits:
-              cpu: "20m"
-              memory: "60M"
+              cpu: "50m"
+              memory: "80M"
 
         - name: http-server
           image: python:3.9-bookworm

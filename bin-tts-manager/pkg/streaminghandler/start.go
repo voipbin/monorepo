@@ -64,11 +64,17 @@ func (h *streamingHandler) Start(
 }
 
 func (h *streamingHandler) Say(ctx context.Context, id uuid.UUID, text string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "Say",
+		"streaming_id": id,
+		"text":         text,
+	})
 
 	st, err := h.Get(ctx, id)
 	if err != nil {
 		return errors.Wrapf(err, "could not get streaming info. streaming_id: %s", id)
 	}
+	log.WithField("streaming", st).Debugf("Streaming info retrieved for Say. streaming_id: %s", st.ID)
 
 	switch st.Vendor {
 	case streaming.VendorElevenlabs:

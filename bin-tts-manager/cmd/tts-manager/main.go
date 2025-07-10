@@ -70,7 +70,7 @@ func run() error {
 
 	localAddress := os.Getenv("POD_IP")
 	podID := os.Getenv("HOSTNAME")
-	listenAddress := fmt.Sprintf("%s:8080", localAddress)
+	listenAddress := fmt.Sprintf("%s:8090", localAddress)
 
 	ttsHandler := ttshandler.NewTTSHandler(awsAccessKey, awsSecretKey, gcpCredentialBase64, gcpProjectID, gcpBucketName, "/shared-data", localAddress, reqHandler, notifyHandler)
 	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, listenAddress, podID, elevenlabsAPIKey)
@@ -82,40 +82,15 @@ func run() error {
 	return nil
 }
 
-// runListen run the listener
 func runListen(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, podID string) {
-
-	if errRun := runListenNormal(sockHandler, ttsHandler, streamingHandler); errRun != nil {
-		panic(errors.Wrapf(errRun, "could not run listen handler in normal mode"))
-	}
-
-	if errRun := runListenPod(sockHandler, ttsHandler, streamingHandler, podID); errRun != nil {
-		panic(errors.Wrapf(errRun, "could not run listen handler in pod mode"))
-	}
-}
-
-func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler) error {
 
 	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler)
 
 	// run
-	if errRun := listenHandler.Run(string(commonoutline.QueueNameTTSRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
-		return errors.Wrapf(errRun, "could not run listen handler in normal mode")
+	queueNameVolatile := fmt.Sprintf("%s.%s", commonoutline.QueueNameTTSRequest, podID)
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameTTSRequest), queueNameVolatile, string(commonoutline.QueueNameDelay)); errRun != nil {
+		panic(errors.Wrapf(errRun, "could not run listen handler in normal mode"))
 	}
-
-	return nil
-}
-
-// runListen run the listener
-func runListenPod(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, podID string) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler)
-
-	queueName := fmt.Sprintf("%s.%s", commonoutline.QueueNameTTSRequest, podID)
-	if err := listenHandler.Run(queueName, string(commonoutline.QueueNameDelay)); err != nil {
-		return errors.Wrapf(err, "could not run listen handler in pod mode")
-	}
-
-	return nil
 }
 
 func runStreaming(streamingHandler streaminghandler.StreamingHandler) {

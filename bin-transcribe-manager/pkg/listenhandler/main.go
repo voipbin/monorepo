@@ -109,9 +109,10 @@ func NewListenHandler(
 	return h
 }
 
-// runListenQueue listens the queue
-func (h *listenHandler) runListenQueue(queue string) error {
+// runListenQueueNormal listens the queue
+func (h *listenHandler) runListenQueueNormal(queue string) error {
 	logrus.WithFields(logrus.Fields{
+		"func":  "runListenQueueNormal",
 		"queue": queue,
 	}).Info("Creating rabbitmq queue for listen.")
 
@@ -133,6 +134,7 @@ func (h *listenHandler) runListenQueue(queue string) error {
 // runListenQueueVolatile listens volatile queue
 func (h *listenHandler) runListenQueueVolatile(queue string) error {
 	logrus.WithFields(logrus.Fields{
+		"func":  "runListenQueueVolatile",
 		"queue": queue,
 	}).Info("Creating rabbitmq queue for listen.")
 
@@ -152,15 +154,15 @@ func (h *listenHandler) runListenQueueVolatile(queue string) error {
 }
 
 // Run
-func (h *listenHandler) Run(queue, queueVolatile, exchangeDelay string) error {
+func (h *listenHandler) Run(queueNormal, queueVolatile, exchangeDelay string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"queue":          queue,
-		"queue volatile": queueVolatile,
+		"queue_normal":   queueNormal,
+		"queue_volatile": queueVolatile,
 	})
 	log.Info("Creating rabbitmq queue for listen.")
 
 	// start queue listen
-	if err := h.runListenQueue(queue); err != nil {
+	if err := h.runListenQueueNormal(queueNormal); err != nil {
 		log.Errorf("Could not listen the queue. err: %v", err)
 		return err
 	}

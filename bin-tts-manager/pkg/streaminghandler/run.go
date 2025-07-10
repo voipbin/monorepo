@@ -54,7 +54,7 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	log.Debugf("Found streaming id: %s", streamingID)
 
 	// // Start keep-alive in a separate goroutine
-	go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
+	// go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
 	go h.runKeepConsume(ctx, conn)
 
 	st, err := h.Get(ctx, streamingID)
@@ -73,6 +73,7 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 			log.Errorf("Handler execution failed: %v", errRun)
 			continue
 		}
+		log.Debugf("Handler executed successfully. streaming_id: %s", streamingID)
 		return
 	}
 
@@ -80,6 +81,11 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 }
 
 func (h *streamingHandler) runKeepConsume(ctx context.Context, conn net.Conn) {
+	// log := logrus.WithFields(logrus.Fields{
+	// 	"func":         "runKeepConsume",
+	// 	"streaming_id": streamingID,
+	// })
+
 	buffer := make([]byte, 1024)
 
 	for {
@@ -91,6 +97,7 @@ func (h *streamingHandler) runKeepConsume(ctx context.Context, conn net.Conn) {
 			if err != nil {
 				return
 			}
+			// log.Debugf("Received %d bytes from connection for streaming ID: %s", n, streamingID)
 		}
 	}
 }
@@ -113,6 +120,7 @@ func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, inte
 			// Create AudioSocket keepalive message
 			keepAliveMessage := []byte{0x10, 0x00, 0x00} // Header: type (0x10) + length (0x0000)
 
+			log.Debugf("Sending keep alive message to for streaming ID: %s", streamingID)
 			errRetry := h.retryWithBackoff(func() error {
 				_, writeErr := conn.Write(keepAliveMessage)
 				return writeErr
