@@ -152,6 +152,8 @@ func (h *elevenlabsHandler) Run(ctx context.Context, st *streaming.Streaming, co
 	// go h.runKeepAlive(ctx, st)
 	// go h.handleReceivedMessages(ctx, conn, st)
 
+	go h.testSay(ctx, conn, st)
+
 	<-st.ChanDone
 
 	return nil
@@ -210,10 +212,6 @@ func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming
 	})
 
 	log.Debugf("Say!!!")
-	if errSay := h.testSay(ctx, st.ConnVendor.(net.Conn), st); errSay != nil {
-		log.Errorf("Failed to send test audio data: %v", errSay)
-		return errors.Wrapf(errSay, "failed to send test audio data")
-	}
 	return nil
 
 	// message := ElevenlabsMessage{
@@ -244,7 +242,7 @@ func (h *elevenlabsHandler) Finish(ctx context.Context, st *streaming.Streaming)
 	return h.send(ctx, st, message)
 }
 
-func (h *elevenlabsHandler) testSay(ctx context.Context, connAst net.Conn, st *streaming.Streaming) error {
+func (h *elevenlabsHandler) testSay(ctx context.Context, connAst net.Conn, st *streaming.Streaming) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "testSay",
 		"streaming_id": st.ID,
@@ -254,17 +252,19 @@ func (h *elevenlabsHandler) testSay(ctx context.Context, connAst net.Conn, st *s
 		select {
 		case <-ctx.Done():
 			log.Debug("Context done, stopping testSay.")
-			return nil
+			return
 		default:
 			log.Debugf("Sending test audio data to asterisk connection for streaming ID: %s", st.ID)
 			decodeSample, err := base64.StdEncoding.DecodeString(testSampleData)
 			if err != nil {
-				return errors.Wrapf(err, "failed to decode test sample data")
+				log.Errorf("Failed to decode test sample data: %v", err)
+				return
 			}
 
 			data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodeSample)
 			if errProcess != nil {
-				return errors.Wrapf(errProcess, "failed to process PCM data for test audio")
+				log.Errorf("Failed to process PCM data for test audio: %v", errProcess)
+				return
 			}
 			log.Debugf("Processed audio chunk of size %d bytes.", len(data))
 
@@ -273,7 +273,7 @@ func (h *elevenlabsHandler) testSay(ctx context.Context, connAst net.Conn, st *s
 			n, err := connAst.Write(data)
 			if err != nil {
 				log.Errorf("Could not write data to asterisk connection: %v", err)
-				return errors.Wrapf(err, "failed to write test audio data to asterisk connection")
+				return
 			}
 
 			log.Debugf("Wrote %d bytes to asterisk connection", n)
