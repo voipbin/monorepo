@@ -55,7 +55,7 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 
 	// // Start keep-alive in a separate goroutine
 	// go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
-	go h.runKeepConsume(ctx, conn, streamingID)
+	go h.runKeepConsume(ctx, conn)
 
 	st, err := h.Get(ctx, streamingID)
 	if err != nil {
@@ -73,13 +73,14 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 			log.Errorf("Handler execution failed: %v", errRun)
 			continue
 		}
+		log.Debugf("Handler executed successfully. streaming_id: %s", streamingID)
 		return
 	}
 
 	log.Warn("No handler executed successfully")
 }
 
-func (h *streamingHandler) runKeepConsume(ctx context.Context, conn net.Conn, streamingID uuid.UUID) {
+func (h *streamingHandler) runKeepConsume(ctx context.Context, conn net.Conn) {
 	// log := logrus.WithFields(logrus.Fields{
 	// 	"func":         "runKeepConsume",
 	// 	"streaming_id": streamingID,
