@@ -113,7 +113,7 @@ func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, inte
 			// Create AudioSocket keepalive message
 			keepAliveMessage := []byte{0x10, 0x00, 0x00} // Header: type (0x10) + length (0x0000)
 
-			log.Debugf("Sending keep alive message to conn: %s", conn.RemoteAddr())
+			log.Debugf("Sending keep alive message to for streaming ID: %s", streamingID)
 			errRetry := h.retryWithBackoff(func() error {
 				_, writeErr := conn.Write(keepAliveMessage)
 				return writeErr
