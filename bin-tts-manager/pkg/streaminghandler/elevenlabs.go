@@ -248,6 +248,8 @@ func (h *elevenlabsHandler) testSay(ctx context.Context, connAst net.Conn, st *s
 		"streaming_id": st.ID,
 	})
 
+	const chunkSize = 4096
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -261,22 +263,46 @@ func (h *elevenlabsHandler) testSay(ctx context.Context, connAst net.Conn, st *s
 				return
 			}
 
-			data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodeSample)
-			if errProcess != nil {
-				log.Errorf("Failed to process PCM data for test audio: %v", errProcess)
-				return
-			}
-			log.Debugf("Processed audio chunk of size %d bytes.", len(data))
+			// data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodeSample)
+			// if errProcess != nil {
+			// 	log.Errorf("Failed to process PCM data for test audio: %v", errProcess)
+			// 	return
+			// }
+			// log.Debugf("Processed audio chunk of size %d bytes.", len(data))
 
 			// send it to the asterisk connection.
 			// TTS play!
-			n, err := connAst.Write(data)
-			if err != nil {
-				log.Errorf("Could not write data to asterisk connection: %v", err)
-				return
+			// n, err := connAst.Write(data)
+			// if err != nil {
+			// 	log.Errorf("Could not write data to asterisk connection: %v", err)
+			// 	return
+			// }
+
+			total := len(decodeSample)
+			sent := 0
+
+			for sent < total {
+				end := sent + chunkSize
+				if end > total {
+					end = total
+				}
+
+				sample := decodeSample[sent:end]
+				data, err := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, sample)
+				if err != nil {
+					log.Errorf("Could not process PCM data for test audio chunk: %v", err)
+					return
+				}
+
+				_, err = connAst.Write(data)
+				if err != nil {
+					log.Printf("write failed: %v", err)
+					return
+				}
+				sent += len(sample)
 			}
 
-			log.Debugf("Wrote %d bytes to asterisk connection", n)
+			log.Debugf("Wrote %d bytes to asterisk connection", sent)
 		}
 
 		time.Sleep(2 * time.Second) // Sleep for 2 seconds before sending the next test audio chunk.
