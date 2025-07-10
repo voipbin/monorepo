@@ -132,7 +132,7 @@ func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx cont
 	)
 
 	snoopID := h.utilHandler.UUIDCreate().String()
-	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionBoth)
+	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionOut)
 	if err != nil {
 		log.Errorf("Could not create a snoop channel for the external media. error: %v", err)
 		return nil, err
