@@ -24,7 +24,7 @@ func (h *listenHandler) v1StreamingsPost(ctx context.Context, m *sock.Request) (
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return nil, err
 	}
-	log.WithField("request", req).Debugf("Request detail.")
+	log.WithField("request", req).Debugf("Request detail for v1StreamingsPost.")
 
 	tmp, err := h.streamingHandler.Start(ctx, req.CustomerID, req.ReferenceType, req.ReferenceID, req.Language, req.Gender, req.Direction)
 	if err != nil {
@@ -103,7 +103,7 @@ func (h *listenHandler) v1StreamingsIDSayPost(ctx context.Context, m *sock.Reque
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return nil, err
 	}
-	log.WithField("request", req).Debugf("Request detail.")
+	log.WithField("request", req).Debugf("Request detail for v1StreamingsIDSayPost.")
 
 	if errSay := h.streamingHandler.Say(ctx, streamingID, req.Text); errSay != nil {
 		log.Errorf("Could not say a streaming. err: %v", errSay)

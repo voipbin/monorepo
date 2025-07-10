@@ -187,13 +187,13 @@ func (h *callHandler) startContextExternalMedia(ctx context.Context, cn *channel
 	bridgeID := ""
 	switch em.ReferenceType {
 	case externalmedia.ReferenceTypeCall:
-		c, err := h.Get(ctx, em.ReferenceID)
-		if err != nil {
-			log.Errorf("Could not get reference call info. err: %v", err)
-			return errors.Wrap(err, "could not get reference call info")
-		}
-		// bridgeID = em.BridgeID
-		bridgeID = c.BridgeID
+		// c, err := h.Get(ctx, em.ReferenceID)
+		// if err != nil {
+		// 	log.Errorf("Could not get reference call info. err: %v", err)
+		// 	return errors.Wrap(err, "could not get reference call info")
+		// }
+		bridgeID = em.BridgeID
+		// bridgeID = c.BridgeID
 
 	case externalmedia.ReferenceTypeConfbridge:
 		cb, err := h.confbridgeHandler.Get(ctx, em.ReferenceID)
