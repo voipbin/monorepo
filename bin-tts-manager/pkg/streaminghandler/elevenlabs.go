@@ -206,24 +206,6 @@ func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming
 		TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
 	}
 
-	go func() {
-		log := logrus.WithFields(logrus.Fields{
-			"func":           "AddTextLoop",
-			"streaming_id":   st.ID,
-			"reference_id":   st.ReferenceID,
-			"reference_type": st.ReferenceType,
-			"text":           text,
-		})
-
-		for {
-			time.Sleep(time.Second * 2) // Wait for 2 seconds before sending the next message.
-			if err := h.send(ctx, st, message); err != nil {
-				log.Errorf("Failed to send text loop message: %v", err)
-				return
-			}
-		}
-	}()
-
 	return h.send(ctx, st, message)
 }
 
