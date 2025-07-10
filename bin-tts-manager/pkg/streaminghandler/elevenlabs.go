@@ -276,6 +276,8 @@ func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst 
 
 		// Process audio data if present.
 		if response.Audio != "" {
+			log.WithField("audio", response.Audio).Debugf("Received audio chunk for streaming ID: %s", st.ID)
+
 			decodedAudio, decodeErr := base64.StdEncoding.DecodeString(response.Audio)
 			if decodeErr != nil {
 				log.Errorf("Could not decode base64 audio data: %v. Message: %s", decodeErr, response.Audio)
@@ -297,7 +299,6 @@ func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst 
 				log.Errorf("Could not write data to asterisk connection: %v", err)
 				return
 			}
-			log.WithField("data", data).Debugf("Wrote %d bytes to asterisk connection for streaming ID: %s", n, st.ID)
 
 			log.Debugf("Wrote %d bytes to asterisk connection", n)
 		}
@@ -352,7 +353,6 @@ func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byt
 	res := audiosocket.SlinMessage(samples)
 
 	log.Debugf("Converted and wrapped PCM data. total_len: %d, content_length: %d, kind: %x", len(res), res.ContentLength(), res.Kind())
-	res.ContentLength()
 
 	// res, err := audiosocketWrapDataPCM16Bit(samples)
 	// if err != nil {
