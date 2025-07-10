@@ -210,8 +210,9 @@ func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming
 	})
 
 	message := ElevenlabsMessage{
-		Text:                 text,
-		TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
+		Text: text,
+		// TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
+		Finalize: true,
 	}
 
 	log.Debugf("Sending message to ElevenLabs. text: %s", message.Text)
