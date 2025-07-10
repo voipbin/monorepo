@@ -74,8 +74,8 @@ spec:
               containerPort: 2112
           resources:
             limits:
-              cpu: "40m"
-              memory: "60M"
+              cpu: "50m"
+              memory: "80M"
 
         - name: http-server
           image: python:3.9-bookworm
