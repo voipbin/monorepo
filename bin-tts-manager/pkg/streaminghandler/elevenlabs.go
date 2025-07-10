@@ -297,6 +297,7 @@ func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst 
 				log.Errorf("Could not write data to asterisk connection: %v", err)
 				return
 			}
+			log.WithField("data", data).Debugf("Wrote %d bytes to asterisk connection for streaming ID: %s", n, st.ID)
 
 			log.Debugf("Wrote %d bytes to asterisk connection", n)
 		}
