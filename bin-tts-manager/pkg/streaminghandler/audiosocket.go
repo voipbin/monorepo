@@ -74,17 +74,12 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("the PCM data must be 16-bit aligned (even number of bytes). bytes: %d", len(data))
 	}
 
-	// sampleCount := len(data) / 2 // 2 bytes per sample (16-bit)
-
 	buf := new(bytes.Buffer)
 
 	// Write audio format (SLIN)
 	if errWrite := buf.WriteByte(audiosocketFormatSLIN); errWrite != nil {
 		return nil, fmt.Errorf("failed to write data type: %w", errWrite)
 	}
-	// if errWrite := binary.Write(buf, binary.BigEndian, audiosocketFormatSLIN); errWrite != nil {
-	// 	return nil, errors.Wrapf(errWrite, "could not write audio format")
-	// }
 
 	// Write sample count
 	payloadLength := uint16(len(data))

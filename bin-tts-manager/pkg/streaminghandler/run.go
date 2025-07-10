@@ -80,10 +80,10 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 }
 
 func (h *streamingHandler) runKeepConsume(ctx context.Context, conn net.Conn, streamingID uuid.UUID) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "runKeepConsume",
-		"streaming_id": streamingID,
-	})
+	// log := logrus.WithFields(logrus.Fields{
+	// 	"func":         "runKeepConsume",
+	// 	"streaming_id": streamingID,
+	// })
 
 	buffer := make([]byte, 1024)
 
@@ -92,11 +92,11 @@ func (h *streamingHandler) runKeepConsume(ctx context.Context, conn net.Conn, st
 		case <-ctx.Done():
 			return
 		default:
-			n, err := conn.Read(buffer)
+			_, err := conn.Read(buffer)
 			if err != nil {
 				return
 			}
-			log.Debugf("Received %d bytes from connection for streaming ID: %s", n, streamingID)
+			// log.Debugf("Received %d bytes from connection for streaming ID: %s", n, streamingID)
 		}
 	}
 }
