@@ -74,7 +74,7 @@ spec:
               containerPort: 2112
             - name: audiosocket
               protocol: "TCP"
-              containerPort: 8080
+              containerPort: 8090
           resources:
             limits:
               cpu: "50m"

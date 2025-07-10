@@ -37,7 +37,7 @@ func Test_Start(t *testing.T) {
 	}{
 		{
 			name:          "normal",
-			listenAddress: "localhost:8080",
+			listenAddress: "localhost:8090",
 
 			customerID:    uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
 			transcribeID:  uuid.FromStringOrNil("e210a336-e9df-11ef-b5e9-bbbc7edb0445"),
