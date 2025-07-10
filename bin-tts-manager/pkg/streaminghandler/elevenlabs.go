@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CyCoreSystems/audiosocket"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -200,22 +201,38 @@ func (h *elevenlabsHandler) send(ctx context.Context, st *streaming.Streaming, m
 }
 
 func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming, text string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "AddText",
+		"streaming_id":   st.ID,
+		"reference_id":   st.ReferenceID,
+		"reference_type": st.ReferenceType,
+		"text":           text,
+	})
 
 	message := ElevenlabsMessage{
 		Text:                 text,
 		TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
 	}
 
+	log.Debugf("Sending message to ElevenLabs. text: %s", message.Text)
 	return h.send(ctx, st, message)
 }
 
 func (h *elevenlabsHandler) Finish(ctx context.Context, st *streaming.Streaming) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "AddText",
+		"streaming_id":   st.ID,
+		"reference_id":   st.ReferenceID,
+		"reference_type": st.ReferenceType,
+	})
+
 	message := ElevenlabsMessage{
 		Text:                 "", // Empty text signifies the end of input.
 		TryTriggerGeneration: true,
 		Finalize:             true, // Explicitly tells the API to finalize generation.
 	}
 
+	log.Debugf("Sending finalize message to ElevenLabs for streaming ID: %s", st.ID)
 	return h.send(ctx, st, message)
 }
 
@@ -323,10 +340,12 @@ func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byt
 		return nil, errors.Wrapf(err, "failed to get samples for format %s", inputFormat)
 	}
 
-	res, err := audiosocketWrapDataPCM16Bit(samples)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to wrap data for audiosocket")
-	}
+	res := audiosocket.SlinMessage(samples)
+
+	// res, err := audiosocketWrapDataPCM16Bit(samples)
+	// if err != nil {
+	// 	return nil, errors.Wrapf(err, "failed to wrap data for audiosocket")
+	// }
 
 	return res, nil
 }
