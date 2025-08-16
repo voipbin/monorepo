@@ -5,6 +5,7 @@ package streaminghandler
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-tts-manager/models/streaming"
@@ -150,7 +151,7 @@ func (h *elevenlabsHandler) Run(ctx context.Context, st *streaming.Streaming, co
 	st.ConnVendor = connElevenlabs
 
 	// go h.runKeepAlive(ctx, st)
-	// go h.handleReceivedMessages(ctx, conn, st)
+	go h.handleReceivedMessages(ctx, conn, st)
 
 	go h.testSay(ctx, conn, st)
 
@@ -204,24 +205,19 @@ func (h *elevenlabsHandler) send(ctx context.Context, st *streaming.Streaming, m
 
 func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming, text string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "AddText",
-		"streaming_id":   st.ID,
-		"reference_id":   st.ReferenceID,
-		"reference_type": st.ReferenceType,
-		"text":           text,
+		"func":      "AddText",
+		"streaming": st,
+		"text":      text,
 	})
 
-	log.Debugf("Say!!!")
-	return nil
+	message := ElevenlabsMessage{
+		Text:                 text,
+		TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
+		Finalize:             true,
+	}
 
-	// message := ElevenlabsMessage{
-	// 	Text:                 text,
-	// 	TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
-	// 	Finalize:             true,
-	// }
-
-	// log.Debugf("Sending message to ElevenLabs. text: %s", message.Text)
-	// return h.send(ctx, st, message)
+	log.Debugf("Sending message to ElevenLabs. text: %s", message.Text)
+	return h.send(ctx, st, message)
 }
 
 func (h *elevenlabsHandler) Finish(ctx context.Context, st *streaming.Streaming) error {
@@ -309,88 +305,83 @@ func (h *elevenlabsHandler) testSay(ctx context.Context, connAst net.Conn, st *s
 	}
 }
 
-// func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst net.Conn, st *streaming.Streaming) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":           "handleReceivedMessages",
-// 		"streaming_id":   st.ID,
-// 		"reference_id":   st.ReferenceID,
-// 		"reference_type": st.ReferenceType,
-// 	})
+func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst net.Conn, st *streaming.Streaming) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "handleReceivedMessages",
+		"streaming": st,
+	})
 
-// 	defer func() {
-// 		st.ChanDone <- true
-// 		log.Debugf("handleWebSocketMessages goroutine signaled done.")
-// 	}()
+	defer func() {
+		st.ChanDone <- true
+		log.Debugf("handleWebSocketMessages goroutine signaled done.")
+	}()
 
-// 	conn, ok := st.ConnVendor.(*websocket.Conn)
-// 	if !ok || conn == nil {
-// 		return
-// 	}
+	conn, ok := st.ConnVendor.(*websocket.Conn)
+	if !ok || conn == nil {
+		return
+	}
 
-// 	for {
-// 		messageType, message, err := conn.ReadMessage()
-// 		if err != nil {
-// 			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-// 				log.Debugf("WebSocket closed normally by server or client. Exiting handleWebSocketMessages.")
-// 			} else {
-// 				log.Errorf("Error reading websocket message: %v. Exiting handleWebSocketMessages.", err)
-// 			}
-// 			return
-// 		}
-// 		log.Debugf("Received WebSocket message (type: %d, size: %d bytes)", messageType, len(message))
+	for {
+		messageType, message, err := conn.ReadMessage()
+		if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+				log.Debugf("WebSocket closed normally by server or client. Exiting handleWebSocketMessages.")
+			} else {
+				log.Errorf("Error reading websocket message: %v. Exiting handleWebSocketMessages.", err)
+			}
+			return
+		}
+		log.Debugf("Received WebSocket message (type: %d, size: %d bytes)", messageType, len(message))
 
-// 		var response ElevenlabsResponse
-// 		if errUnmarshal := json.Unmarshal(message, &response); errUnmarshal != nil {
-// 			log.Errorf("Error parsing response: %v. Message: %s", errUnmarshal, string(message))
-// 			continue
-// 		}
+		var response ElevenlabsResponse
+		if errUnmarshal := json.Unmarshal(message, &response); errUnmarshal != nil {
+			log.Errorf("Error parsing response: %v. Message: %s", errUnmarshal, string(message))
+			continue
+		}
 
-// 		// Process audio data if present.
-// 		if response.Audio != "" {
-// 			log.WithField("audio", response.Audio).Debugf("Received audio chunk for streaming ID: %s", st.ID)
+		// Process audio data if present.
+		if response.Audio != "" {
+			log.WithField("audio", response.Audio).Debugf("Received audio chunk for streaming ID: %s", st.ID)
 
-// 			decodedAudio, decodeErr := base64.StdEncoding.DecodeString(response.Audio)
-// 			if decodeErr != nil {
-// 				log.Errorf("Could not decode base64 audio data: %v. Message: %s", decodeErr, response.Audio)
-// 				return
-// 			}
-// 			log.Debugf("Decoded audio chunk size before processing: %d bytes.", len(decodedAudio))
+			decodedAudio, decodeErr := base64.StdEncoding.DecodeString(response.Audio)
+			if decodeErr != nil {
+				log.Errorf("Could not decode base64 audio data: %v. Message: %s", decodeErr, response.Audio)
+				return
+			}
+			log.Debugf("Decoded audio chunk size before processing: %d bytes.", len(decodedAudio))
 
-// 			data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodedAudio)
-// 			if errProcess != nil {
-// 				log.Errorf("Could not process PCM data: %v. Message: %s", errProcess, response.Audio)
-// 				return
-// 			}
-// 			log.Debugf("Processed audio chunk of size %d bytes.", len(data))
+			data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodedAudio)
+			if errProcess != nil {
+				log.Errorf("Could not process PCM data: %v. Message: %s", errProcess, response.Audio)
+				return
+			}
+			log.Debugf("Processed audio chunk of size %d bytes.", len(data))
 
-// 			// send it to the asterisk connection.
-// 			// TTS play!
-// 			n, err := connAst.Write(data)
-// 			if err != nil {
-// 				log.Errorf("Could not write data to asterisk connection: %v", err)
-// 				return
-// 			}
+			// send it to the asterisk connection.
+			// TTS play
+			if errWrite := audiosocketWrite(connAst, data); errWrite != nil {
+				log.Errorf("Could not write processed audio data to asterisk connection: %v", errWrite)
+				return
+			}
+		}
 
-// 			log.Debugf("Wrote %d bytes to asterisk connection", n)
-// 		}
+		// Check for the 'isFinal' flag, which indicates the end of audio generation.
+		if response.IsFinal {
+			log.Println("Received final message for current generation.")
+			h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingFinished, st)
+		}
 
-// 		// Check for the 'isFinal' flag, which indicates the end of audio generation.
-// 		if response.IsFinal {
-// 			log.Println("Received final message for current generation.")
-// 			h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingFinished, st)
-// 		}
+		// Log other control messages like 'status'.
+		if response.Status != "" {
+			log.Debugf("Status: %s", response.Status)
+		}
 
-// 		// Log other control messages like 'status'.
-// 		if response.Status != "" {
-// 			log.Debugf("Status: %s", response.Status)
-// 		}
-
-// 		// Log any errors reported by the server.
-// 		if response.Error != "" {
-// 			log.Debugf("Error from server: %s", response.Error)
-// 		}
-// 	}
-// }
+		// Log any errors reported by the server.
+		if response.Error != "" {
+			log.Debugf("Error from server: %s", response.Error)
+		}
+	}
+}
 
 // convertAndWrapPCMData converts raw PCM data with the given input format into
 // audiosocket-wrapped 16-bit PCM bytes suitable for transmission.
@@ -422,13 +413,7 @@ func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byt
 	}
 
 	res := audiosocket.SlinMessage(samples)
-
 	log.Debugf("Converted and wrapped PCM data. total_len: %d, content_length: %d, kind: %x", len(res), res.ContentLength(), res.Kind())
-
-	// res, err := audiosocketWrapDataPCM16Bit(samples)
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "failed to wrap data for audiosocket")
-	// }
 
 	return res, nil
 }

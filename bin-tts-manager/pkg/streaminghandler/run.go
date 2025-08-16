@@ -22,6 +22,7 @@ func (h *streamingHandler) Run() error {
 	if err != nil {
 		return errors.Wrapf(err, "could not listen on the address. address: %s", h.listenAddress)
 	}
+	defer listener.Close()
 
 	for {
 		conn, err := listener.Accept()
