@@ -23,6 +23,8 @@ type ExternalMedia struct {
 	ConnectionType string        `json:"connection_type"`
 	Format         string        `json:"format"`
 	Direction      string        `json:"direction"`
+
+	BridgeID string `json:"bridge_id,omitempty"` // bridge id for the external-media channel and external-media-snoop channel.
 }
 
 // ReferenceType define

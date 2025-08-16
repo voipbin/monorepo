@@ -61,18 +61,18 @@ func (mr *MockAIcallHandlerMockRecorder) ChatMessage(ctx, cb, text any) *gomock.
 }
 
 // Create mocks base method.
-func (m *MockAIcallHandler) Create(ctx context.Context, c *ai.AI, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID, confbridgeID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
+func (m *MockAIcallHandler) Create(ctx context.Context, c *ai.AI, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID, confbridgeID uuid.UUID, gender aicall.Gender, language string, ttsStreamingID uuid.UUID, ttsStreamingPodID string) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language)
+	ret := m.ctrl.Call(m, "Create", ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language, ttsStreamingID, ttsStreamingPodID)
 	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockAIcallHandlerMockRecorder) Create(ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) Create(ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language, ttsStreamingID, ttsStreamingPodID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAIcallHandler)(nil).Create), ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAIcallHandler)(nil).Create), ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language, ttsStreamingID, ttsStreamingPodID)
 }
 
 // Delete mocks base method.

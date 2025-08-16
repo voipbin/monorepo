@@ -25,6 +25,7 @@ func (h *externalMediaHandler) Create(
 	connectionType string,
 	format string,
 	direction string,
+	bridgeID string,
 ) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
@@ -52,6 +53,8 @@ func (h *externalMediaHandler) Create(
 		ConnectionType: connectionType,
 		Format:         format,
 		Direction:      direction,
+
+		BridgeID: bridgeID,
 	}
 
 	if errDB := h.db.ExternalMediaSet(ctx, extMedia); errDB != nil {
