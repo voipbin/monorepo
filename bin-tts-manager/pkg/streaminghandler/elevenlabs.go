@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CyCoreSystems/audiosocket"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -407,13 +406,10 @@ func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byt
 		return nil, fmt.Errorf("unsupported input format: %s", inputFormat)
 	}
 
-	samples, err := h.getDataSamples(inputRate, data)
+	res, err := h.getDataSamples(inputRate, data)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get samples for format %s", inputFormat)
 	}
-
-	res := audiosocket.SlinMessage(samples)
-	log.Debugf("Converted and wrapped PCM data. total_len: %d, content_length: %d, kind: %x", len(res), res.ContentLength(), res.Kind())
 
 	return res, nil
 }
