@@ -390,12 +390,6 @@ func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst 
 //
 // Returns wrapped PCM bytes or an error on invalid input or processing failure.
 func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byte) ([]byte, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "convertAndWrapPCMData",
-		"input_format": inputFormat,
-		"data_length":  len(data),
-	})
-
 	if len(data)%2 != 0 {
 		return nil, fmt.Errorf("PCM data length must be even for 16-bit samples (received %d bytes)", len(data))
 	}
