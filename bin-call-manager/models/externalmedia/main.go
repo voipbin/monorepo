@@ -17,14 +17,17 @@ type ExternalMedia struct {
 	LocalIP   string `json:"local_ip"`
 	LocalPort int    `json:"local_port"`
 
-	ExternalHost   string        `json:"external_host"`
-	Encapsulation  Encapsulation `json:"encapsulation"` // Payload encapsulation protocol
-	Transport      Transport     `json:"transport"`
-	ConnectionType string        `json:"connection_type"`
-	Format         string        `json:"format"`
-	Direction      string        `json:"direction"`
+	// external media channel info
+	ExternalHost    string        `json:"external_host"`
+	Encapsulation   Encapsulation `json:"encapsulation"` // Payload encapsulation protocol
+	Transport       Transport     `json:"transport"`
+	ConnectionType  string        `json:"connection_type"`
+	Format          string        `json:"format"`
+	DirectionListen Direction     `json:"direction_listen"`          // direction for the external-media channel, if not set, it will be the same as DirectionSpeak
+	DirectionSpeak  Direction     `json:"direction_speak,omitempty"` // direction for the external-media channel, if not set, it will be the same as DirectionListen
 
-	BridgeID string `json:"bridge_id,omitempty"` // bridge id for the external-media channel and external-media-snoop channel.
+	BridgeID   string `json:"bridge_id,omitempty"`   // bridge id for the external-media channel and external-media-snoop channel.
+	PlaybackID string `json:"playback_id,omitempty"` // playback id for the silence media play id for the reference channel
 }
 
 // ReferenceType define
@@ -52,4 +55,13 @@ type Transport string
 const (
 	TransportUDP Transport = "udp"
 	TransportTCP Transport = "tcp"
+)
+
+type Direction string
+
+const (
+	DirectionNone Direction = "" // no direction set
+	DirectionIn   Direction = "in"
+	DirectionOut  Direction = "out"
+	DirectionBoth Direction = "both"
 )

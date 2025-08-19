@@ -37,6 +37,8 @@ const (
 	defaultConnectionType = "client"
 	defaultFormat         = "ulaw"
 	defaultDirection      = "both" //
+
+	defaultSilenceMedia = "sounds:silence_slin16_8000_1m"
 )
 
 type externalMediaHandler struct {

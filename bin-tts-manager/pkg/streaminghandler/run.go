@@ -117,6 +117,7 @@ func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, inte
 		case <-ctx.Done():
 			log.Debug("Keep-alive stopped")
 			return
+
 		case <-ticker.C:
 			// Create AudioSocket keepalive message
 			keepAliveMessage := []byte{0x10, 0x00, 0x00} // Header: type (0x10) + length (0x0000)

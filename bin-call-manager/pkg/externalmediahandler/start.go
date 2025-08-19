@@ -52,7 +52,15 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, id uu
 }
 
 // startReferenceTypeCallWithInsertMedia starts the external media processing with external media insertion
-func (h *externalMediaHandler) startReferenceTypeCallWithInsertMedia(ctx context.Context, id uuid.UUID, callID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, format string) (*externalmedia.ExternalMedia, error) {
+func (h *externalMediaHandler) startReferenceTypeCallWithInsertMedia(
+	ctx context.Context,
+	id uuid.UUID,
+	callID uuid.UUID,
+	externalHost string,
+	encapsulation externalmedia.Encapsulation,
+	transport externalmedia.Transport,
+	format string,
+) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "startReferenceTypeCallWithInsertMedia",
 		"id":      id,
@@ -90,7 +98,16 @@ func (h *externalMediaHandler) startReferenceTypeCallWithInsertMedia(ctx context
 // it looks ok, but the snoop channel does not pass the inserted media from the external media socket to the snooping channel,
 // we can not use this for media insertion.
 // btw, the transcribes need to distinguish the channel's in/out stream direction, the transcribe is the only actual user of this feature for now.
-func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx context.Context, id uuid.UUID, callID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, format string, direction string) (*externalmedia.ExternalMedia, error) {
+func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(
+	ctx context.Context,
+	id uuid.UUID,
+	callID uuid.UUID,
+	externalHost string,
+	encapsulation externalmedia.Encapsulation,
+	transport externalmedia.Transport,
+	format string,
+	directionListen string,
+) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startReferenceTypeCallWithoutInsertMedia",
 		"id":            id,
@@ -138,6 +155,90 @@ func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx cont
 		return nil, err
 	}
 	log.WithField("channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
+
+	// start external media
+	res, err := h.startExternalMedia(ctx, id, ch.AsteriskID, br.ID, externalmedia.ReferenceTypeCall, c.ID, externalHost, encapsulation, transport, format)
+	if err != nil {
+		log.Errorf("Could not start the external media. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// startReferenceTypeCallWithoutInsertMedia starts the external media processing without external media insertion
+// this external media does not allowed to insert the media to the call.
+// this is used by the transcribe-manager to distinguish the channel's media in/out.
+// this makes snoop channel of the given channel and export the media to the external media socket.
+// it looks ok, but the snoop channel does not pass the inserted media from the external media socket to the snooping channel,
+// we can not use this for media insertion.
+// btw, the transcribes need to distinguish the channel's in/out stream direction, the transcribe is the only actual user of this feature for now.
+func (h *externalMediaHandler) startReferenceTypeCallNew(
+	ctx context.Context,
+	id uuid.UUID,
+	callID uuid.UUID,
+	externalHost string,
+	encapsulation externalmedia.Encapsulation,
+	transport externalmedia.Transport,
+	format string,
+	directionListen externalmedia.Direction,
+	directionSpeak externalmedia.Direction,
+) (*externalmedia.ExternalMedia, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "startReferenceTypeCallWithoutInsertMedia",
+		"id":            id,
+		"call_id":       callID,
+		"external_host": externalHost,
+	})
+	log.Debug("Creating the external media without insert media for call type.")
+
+	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get a call info. err: %v", err)
+		return nil, err
+	}
+
+	// get channel
+	ch, err := h.channelHandler.Get(ctx, c.ChannelID)
+	if err != nil {
+		log.Errorf("Could not get channel info. err: %v", err)
+		return nil, err
+	}
+
+	// create a bridge
+	bridgeID := h.utilHandler.UUIDCreate().String()
+	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCallSnoop, c.ID)
+	br, err := h.bridgeHandler.Start(ctx, ch.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing})
+	if err != nil {
+		log.Errorf("Could not create a bridge for external media. error: %v", err)
+		return nil, err
+	}
+	log.WithField("bridge", br).Debugf("Created a new bridge for the external media. bridge_id: %s", br.ID)
+
+	// create a snoop channel
+	// set app args
+	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s",
+		channel.StasisDataTypeContextType, channel.ContextTypeCall,
+		channel.StasisDataTypeContext, channel.ContextExternalSoop,
+		channel.StasisDataTypeCallID, c.ID,
+		channel.StasisDataTypeBridgeID, br.ID,
+	)
+
+	// start snooping channel
+	snoopID := h.utilHandler.UUIDCreate().String()
+	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirection(directionListen), channel.SnoopDirection(directionSpeak))
+	if err != nil {
+		log.Errorf("Could not create a snoop channel for the external media. error: %v", err)
+		return nil, err
+	}
+	log.WithField("channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
+
+	// play the silence media
+	// note: this is very important to play the silence media to
+	playbackID := h.utilHandler.UUIDCreate().String()
+	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, uuid.Nil, []string{defaultSilenceMedia}, ""); errPlay != nil {
+		return nil, errors.Wrapf(errPlay, "could not play silence media")
+	}
 
 	// start external media
 	res, err := h.startExternalMedia(ctx, id, ch.AsteriskID, br.ID, externalmedia.ReferenceTypeCall, c.ID, externalHost, encapsulation, transport, format)
@@ -219,8 +320,6 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.U
 		// so we are putting the bridge here to put the channel into the bridge easily.
 		// create a external media channel
 		chData = id.String()
-		transport = externalmedia.TransportTCP
-		format = "slin"
 		log.Debugf("The encapsulation is audiosocket. Use the channel id as the channel data in force. ch_data: %s", chData)
 	} else {
 		chData = fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",

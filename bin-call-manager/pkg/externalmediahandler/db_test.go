@@ -33,7 +33,7 @@ func Test_Create(t *testing.T) {
 		transport      externalmedia.Transport
 		connectionType string
 		format         string
-		direction      string
+		direction      externalmedia.Direction
 		bridgeID       string
 
 		responseUUID uuid.UUID
@@ -59,20 +59,20 @@ func Test_Create(t *testing.T) {
 			bridgeID:       "4003dd64-5c95-11f0-9713-e7211a7f4e42",
 
 			expectExternalMedia: &externalmedia.ExternalMedia{
-				ID:             uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ChannelID:      "6295f80e-97b6-11ed-88e0-ffb00420fb1a",
-				ReferenceType:  externalmedia.ReferenceTypeCall,
-				ReferenceID:    uuid.FromStringOrNil("da311f40-97b8-11ed-99f4-13108e8918da"),
-				LocalIP:        "127.0.0.1",
-				LocalPort:      8080,
-				ExternalHost:   "127.0.0.1:8090",
-				Encapsulation:  defaultEncapsulation,
-				Transport:      defaultTransport,
-				ConnectionType: defaultConnectionType,
-				Format:         defaultFormat,
-				Direction:      defaultDirection,
-				BridgeID:       "4003dd64-5c95-11f0-9713-e7211a7f4e42",
+				ID:              uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
+				AsteriskID:      "3e:50:6b:43:bb:30",
+				ChannelID:       "6295f80e-97b6-11ed-88e0-ffb00420fb1a",
+				ReferenceType:   externalmedia.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("da311f40-97b8-11ed-99f4-13108e8918da"),
+				LocalIP:         "127.0.0.1",
+				LocalPort:       8080,
+				ExternalHost:    "127.0.0.1:8090",
+				Encapsulation:   defaultEncapsulation,
+				Transport:       defaultTransport,
+				ConnectionType:  defaultConnectionType,
+				Format:          defaultFormat,
+				DirectionListen: defaultDirection,
+				BridgeID:        "4003dd64-5c95-11f0-9713-e7211a7f4e42",
 			},
 		},
 		{
@@ -95,20 +95,20 @@ func Test_Create(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
 			expectExternalMedia: &externalmedia.ExternalMedia{
-				ID:             uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ChannelID:      "09d1321e-b330-11ef-ad3e-170da10752c8",
-				ReferenceType:  externalmedia.ReferenceTypeCall,
-				ReferenceID:    uuid.FromStringOrNil("09ec9a0e-b330-11ef-b9dc-6701b7b5d325"),
-				LocalIP:        "127.0.0.1",
-				LocalPort:      8080,
-				ExternalHost:   "127.0.0.1:8090",
-				Encapsulation:  defaultEncapsulation,
-				Transport:      defaultTransport,
-				ConnectionType: defaultConnectionType,
-				Format:         defaultFormat,
-				Direction:      defaultDirection,
-				BridgeID:       "49dd9fe6-5c95-11f0-97d1-9b0c79587747",
+				ID:              uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
+				AsteriskID:      "3e:50:6b:43:bb:30",
+				ChannelID:       "09d1321e-b330-11ef-ad3e-170da10752c8",
+				ReferenceType:   externalmedia.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("09ec9a0e-b330-11ef-b9dc-6701b7b5d325"),
+				LocalIP:         "127.0.0.1",
+				LocalPort:       8080,
+				ExternalHost:    "127.0.0.1:8090",
+				Encapsulation:   defaultEncapsulation,
+				Transport:       defaultTransport,
+				ConnectionType:  defaultConnectionType,
+				Format:          defaultFormat,
+				DirectionListen: defaultDirection,
+				BridgeID:        "49dd9fe6-5c95-11f0-97d1-9b0c79587747",
 			},
 		},
 	}
