@@ -24,12 +24,7 @@ const (
 )
 
 func awsGetClient(accessKey string, secretKey string) (*polly.Client, error) {
-	// Create AWS session
-	// sess, err := session.NewSession(&aws.Config{
-	// 	Region:      aws.String(defaultAWSRegion),
-	// 	Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-	// })
-
+	// Create AWS config
 	cfg, err := config.LoadDefaultConfig(context.Background(),
 		config.WithRegion(defaultAWSRegion),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
