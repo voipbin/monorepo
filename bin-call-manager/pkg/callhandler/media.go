@@ -59,7 +59,7 @@ func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, 
 	}
 
 	// play
-	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, actionID, medias, ""); errPlay != nil {
+	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, actionID.String(), medias, "", 0, 0); errPlay != nil {
 		log.Errorf("Could not play the media for tts. medias: %v, err: %v", medias, errPlay)
 		return errors.Wrap(errPlay, "could not play the media for tts")
 	}
@@ -98,7 +98,7 @@ func (h *callHandler) Play(ctx context.Context, callID uuid.UUID, runNext bool, 
 	}
 
 	// play
-	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, actionID, medias, ""); errPlay != nil {
+	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, actionID.String(), medias, "", 0, 0); errPlay != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, errPlay)
 		return errors.Wrap(errPlay, "could not play the media")
 	}

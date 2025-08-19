@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -43,11 +42,19 @@ func (h *channelHandler) PlaybackStop(ctx context.Context, id string) error {
 }
 
 // Play plays the given medias to the channel.
-func (h *channelHandler) Play(ctx context.Context, id string, actionID uuid.UUID, medias []string, language string) error {
+func (h *channelHandler) Play(
+	ctx context.Context,
+	id string,
+	playbackID string,
+	medias []string,
+	language string,
+	offsetms int,
+	skipms int,
+) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "Play",
-		"channel_id": id,
-		"action_id":  actionID,
+		"func":        "Play",
+		"channel_id":  id,
+		"playback_id": playbackID,
 	})
 
 	cn, err := h.Get(ctx, id)
@@ -61,7 +68,7 @@ func (h *channelHandler) Play(ctx context.Context, id string, actionID uuid.UUID
 		return fmt.Errorf("the channel has hungup already")
 	}
 
-	if err := h.reqHandler.AstChannelPlay(ctx, cn.AsteriskID, cn.ID, actionID, medias, ""); err != nil {
+	if err := h.reqHandler.AstChannelPlay(ctx, cn.AsteriskID, cn.ID, medias, language, offsetms, skipms, playbackID); err != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, err)
 		return errors.Wrap(err, "could not play the media")
 	}

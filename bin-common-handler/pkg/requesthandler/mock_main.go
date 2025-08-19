@@ -886,17 +886,17 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelMuteOn(ctx, asteriskID, chan
 }
 
 // AstChannelPlay mocks base method.
-func (m *MockRequestHandler) AstChannelPlay(ctx context.Context, asteriskID, channelID string, actionID uuid.UUID, medias []string, lang string) error {
+func (m *MockRequestHandler) AstChannelPlay(ctx context.Context, asteriskID, channelID string, medias []string, lang string, offsetms, skipms int, playbackID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelPlay", ctx, asteriskID, channelID, actionID, medias, lang)
+	ret := m.ctrl.Call(m, "AstChannelPlay", ctx, asteriskID, channelID, medias, lang, offsetms, skipms, playbackID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelPlay indicates an expected call of AstChannelPlay.
-func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(ctx, asteriskID, channelID, actionID, medias, lang any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(ctx, asteriskID, channelID, medias, lang, offsetms, skipms, playbackID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelPlay", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelPlay), ctx, asteriskID, channelID, actionID, medias, lang)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelPlay", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelPlay), ctx, asteriskID, channelID, medias, lang, offsetms, skipms, playbackID)
 }
 
 // AstChannelRecord mocks base method.

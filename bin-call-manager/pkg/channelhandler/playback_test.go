@@ -8,7 +8,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/channel"
@@ -93,10 +92,12 @@ func Test_Play(t *testing.T) {
 	type test struct {
 		name string
 
-		id       string
-		actionID uuid.UUID
-		medias   []string
-		language string
+		id         string
+		playbackID string
+		medias     []string
+		language   string
+		offsetms   int
+		skipms     int
 
 		responseChannel *channel.Channel
 		expectRes       *channel.Channel
@@ -104,21 +105,23 @@ func Test_Play(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			"b3bb9556-a911-11ed-82b4-5b1a0561bc34",
-			uuid.FromStringOrNil("b3ecb76c-a911-11ed-ba75-1fd6a1f4a8dc"),
-			[]string{
+			id:         "b3bb9556-a911-11ed-82b4-5b1a0561bc34",
+			playbackID: "b3ecb76c-a911-11ed-ba75-1fd6a1f4a8dc",
+			medias: []string{
 				"https://test.com/b41231e0-a911-11ed-826d-b783a5e07b3b.wav",
 				"https://test.com/b43af49a-a911-11ed-a9b1-1f8d8b922359.wav",
 			},
-			"",
+			language: "",
+			offsetms: 0,
+			skipms:   0,
 
-			&channel.Channel{
+			responseChannel: &channel.Channel{
 				ID:       "b3bb9556-a911-11ed-82b4-5b1a0561bc34",
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
-			&channel.Channel{
+			expectRes: &channel.Channel{
 				ID: "b3bb9556-a911-11ed-82b4-5b1a0561bc34",
 			},
 		},
@@ -143,9 +146,9 @@ func Test_Play(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelPlay(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.actionID, tt.medias, "").Return(nil)
+			mockReq.EXPECT().AstChannelPlay(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.medias, tt.language, tt.offsetms, tt.skipms, tt.playbackID).Return(nil)
 
-			if err := h.Play(ctx, tt.id, tt.actionID, tt.medias, tt.language); err != nil {
+			if err := h.Play(ctx, tt.id, tt.playbackID, tt.medias, tt.language, tt.offsetms, tt.skipms); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

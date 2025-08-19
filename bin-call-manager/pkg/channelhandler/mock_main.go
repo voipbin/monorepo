@@ -16,7 +16,6 @@ import (
 	address "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
 
-	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -388,17 +387,17 @@ func (mr *MockChannelHandlerMockRecorder) MuteOn(ctx, id, direction any) *gomock
 }
 
 // Play mocks base method.
-func (m *MockChannelHandler) Play(ctx context.Context, id string, actionID uuid.UUID, medias []string, language string) error {
+func (m *MockChannelHandler) Play(ctx context.Context, id, playbackID string, medias []string, language string, offsetms, skipms int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Play", ctx, id, actionID, medias, language)
+	ret := m.ctrl.Call(m, "Play", ctx, id, playbackID, medias, language, offsetms, skipms)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Play indicates an expected call of Play.
-func (mr *MockChannelHandlerMockRecorder) Play(ctx, id, actionID, medias, language any) *gomock.Call {
+func (mr *MockChannelHandlerMockRecorder) Play(ctx, id, playbackID, medias, language, offsetms, skipms any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Play", reflect.TypeOf((*MockChannelHandler)(nil).Play), ctx, id, actionID, medias, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Play", reflect.TypeOf((*MockChannelHandler)(nil).Play), ctx, id, playbackID, medias, language, offsetms, skipms)
 }
 
 // PlaybackStop mocks base method.

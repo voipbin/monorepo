@@ -9,8 +9,6 @@ import (
 	cmari "monorepo/bin-call-manager/models/ari"
 	cmchannel "monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-common-handler/models/sock"
-
-	"github.com/gofrs/uuid"
 )
 
 // AstChannelAnswer sends the channel answer request
@@ -306,20 +304,33 @@ func (r *requestHandler) AstChannelDial(ctx context.Context, asteriskID, channel
 // AstChannelPlay plays the music file on the channel
 // The channelID will be used for playbackId as well.
 // medias string must be stared with sound:, recording:, number:, digits:, characters:, tone:.
-func (r *requestHandler) AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error {
+func (r *requestHandler) AstChannelPlay(
+	ctx context.Context,
+	asteriskID string,
+	channelID string,
+	medias []string,
+	lang string,
+	offsetms int,
+	skipms int,
+	playbackID string,
+) error {
 	url := fmt.Sprintf("/ari/channels/%s/play", channelID)
 
-	type Data struct {
+	payload := struct {
 		Media      []string `json:"media"`
-		PlaybackID string   `json:"playbackId"`
-		Language   string   `json:"lang,omitempty"`
+		PlaybackID string   `json:"playbackId,omitempty"`
+		Lang       string   `json:"lang,omitempty"`
+		Offsetms   int      `json:"offsetms,omitempty"`
+		Skipms     int      `json:"skipms,omitempty"`
+	}{
+		Media:      medias,
+		PlaybackID: playbackID,
+		Lang:       lang,
+		Offsetms:   offsetms,
+		Skipms:     skipms,
 	}
 
-	m, err := json.Marshal(Data{
-		medias,
-		actionID.String(),
-		lang,
-	})
+	m, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}

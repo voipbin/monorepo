@@ -315,7 +315,7 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 				mockChannel.EXPECT().Answer(ctx, tt.call.ChannelID).Return(nil)
 			}
 			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tmtts.Gender(tt.expectGender), tt.expectLanguage, 10000).Return(tt.responseTTS, nil)
-			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.call.Action.ID, tt.expectURI, "").Return(nil)
+			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.call.Action.ID.String(), tt.expectURI, "", 0, 0).Return(nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -380,7 +380,7 @@ func Test_ActionExecute_actionExecutePlay(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.call.Action.ID, tt.expectMedias, "").Return(nil)
+			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.call.Action.ID.String(), tt.expectMedias, "", 0, 0).Return(nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
