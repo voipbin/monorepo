@@ -8,7 +8,6 @@ import (
 	cmari "monorepo/bin-call-manager/models/ari"
 	cmchannel "monorepo/bin-call-manager/models/channel"
 
-	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
@@ -825,46 +824,58 @@ func Test_AstChannelDial(t *testing.T) {
 func Test_AstChannelPlay(t *testing.T) {
 
 	tests := []struct {
-		name      string
-		asterisk  string
-		channelID string
-		actionID  uuid.UUID
-		medias    []string
-		response  *sock.Response
+		name       string
+		asterisk   string
+		channelID  string
+		medias     []string
+		lang       string
+		offsetms   int
+		skipms     int
+		playbackID string
+
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
 	}{
 		{
-			"1 media",
-			"00:11:22:33:44:55",
-			"94bcc2b4-e718-11ea-a8cf-e7d1a61482a8",
-			uuid.FromStringOrNil("c44864cc-e7d9-11ea-923a-73e96775044d"),
-			[]string{"sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"},
-			&sock.Response{
+			name:       "1 media",
+			asterisk:   "00:11:22:33:44:55",
+			channelID:  "94bcc2b4-e718-11ea-a8cf-e7d1a61482a8",
+			medias:     []string{"sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"},
+			lang:       "en",
+			offsetms:   10,
+			skipms:     20,
+			playbackID: "c44864cc-e7d9-11ea-923a-73e96775044d",
+
+			response: &sock.Response{
 				StatusCode: 200,
 			},
 
-			"asterisk.00:11:22:33:44:55.request",
-			&sock.Request{
+			expectTarget: "asterisk.00:11:22:33:44:55.request",
+			expectRequest: &sock.Request{
 				URI:      "/ari/channels/94bcc2b4-e718-11ea-a8cf-e7d1a61482a8/play",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"media":["sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"],"playbackId":"c44864cc-e7d9-11ea-923a-73e96775044d"}`),
+				Data:     []byte(`{"media":["sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"],"playbackId":"c44864cc-e7d9-11ea-923a-73e96775044d","lang":"en","offsetms":10,"skipms":20}`),
 			},
 		},
 		{
-			"2 medias",
-			"00:11:22:33:44:55",
-			"94bcc2b4-e718-11ea-a8cf-e7d1a61482a8",
-			uuid.FromStringOrNil("dde1c518-e7d9-11ea-902a-2b04669d8a49"),
-			[]string{"sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav", "sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm-test.wav"},
-			&sock.Response{
+			name:       "2 medias",
+			asterisk:   "00:11:22:33:44:55",
+			channelID:  "94bcc2b4-e718-11ea-a8cf-e7d1a61482a8",
+			medias:     []string{"sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav", "sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm-test.wav"},
+			lang:       "",
+			offsetms:   0,
+			skipms:     0,
+			playbackID: "dde1c518-e7d9-11ea-902a-2b04669d8a49",
+
+			response: &sock.Response{
 				StatusCode: 200,
 			},
 
-			"asterisk.00:11:22:33:44:55.request",
-			&sock.Request{
+			expectTarget: "asterisk.00:11:22:33:44:55.request",
+			expectRequest: &sock.Request{
 				URI:      "/ari/channels/94bcc2b4-e718-11ea-a8cf-e7d1a61482a8/play",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
@@ -885,7 +896,7 @@ func Test_AstChannelPlay(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelPlay(context.Background(), tt.asterisk, tt.channelID, tt.actionID, tt.medias, "")
+			err := reqHandler.AstChannelPlay(context.Background(), tt.asterisk, tt.channelID, tt.medias, tt.lang, tt.offsetms, tt.skipms, tt.playbackID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

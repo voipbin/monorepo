@@ -14,7 +14,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-call-manager/models/ari"
@@ -96,7 +95,15 @@ type ChannelHandler interface {
 
 	Continue(ctx context.Context, id string, context string, exten string, priority int, label string) error
 
-	Play(ctx context.Context, id string, actionID uuid.UUID, medias []string, language string) error
+	Play(
+		ctx context.Context,
+		id string,
+		playbackID string,
+		medias []string,
+		language string,
+		offsetms int,
+		skipms int,
+	) error
 	PlaybackStop(ctx context.Context, id string) error
 
 	Redirect(ctx context.Context, id string, context string, exten string, priority string) error

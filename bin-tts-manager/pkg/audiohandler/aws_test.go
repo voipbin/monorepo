@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"monorepo/bin-tts-manager/models/tts"
+
+	"github.com/aws/aws-sdk-go-v2/service/polly/types"
 )
 
 func Test_awsGetVoiceID(t *testing.T) {
@@ -13,7 +15,7 @@ func Test_awsGetVoiceID(t *testing.T) {
 		name     string
 		lang     string
 		gender   tts.Gender
-		expected string
+		expected types.VoiceId
 	}{
 		{
 			name:     "US Female",
@@ -145,7 +147,7 @@ func Test_awsGetVoiceID(t *testing.T) {
 			name:     "KR Neutral",
 			lang:     "ko-KR",
 			gender:   tts.GenderNeutral,
-			expected: "Jisoo",
+			expected: "Jihye",
 		},
 		{
 			name:     "BR Female",
@@ -163,7 +165,7 @@ func Test_awsGetVoiceID(t *testing.T) {
 			name:     "BR Neutral",
 			lang:     "pt-BR",
 			gender:   tts.GenderNeutral,
-			expected: "Vitoria",
+			expected: "Camila",
 		},
 		{
 			name:     "RU Female",
@@ -181,7 +183,7 @@ func Test_awsGetVoiceID(t *testing.T) {
 			name:     "RU Neutral",
 			lang:     "ru-RU",
 			gender:   tts.GenderNeutral,
-			expected: "Katya",
+			expected: "Tatyana",
 		},
 		{
 			name:     "CN Female",
@@ -193,13 +195,13 @@ func Test_awsGetVoiceID(t *testing.T) {
 			name:     "CN Male",
 			lang:     "zh-CN",
 			gender:   tts.GenderMale,
-			expected: "Wang",
+			expected: "Zhiyu",
 		},
 		{
 			name:     "CN Neutral",
 			lang:     "zh-CN",
 			gender:   tts.GenderNeutral,
-			expected: "Xiaoyan",
+			expected: "Zhiyu",
 		},
 		{
 			name:     "Unknown Language",

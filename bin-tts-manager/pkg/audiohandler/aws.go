@@ -10,10 +10,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/polly"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/polly"
+	"github.com/aws/aws-sdk-go-v2/service/polly/types"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -22,18 +23,23 @@ const (
 	defaultAWSRegion = "eu-central-1"
 )
 
-func awsGetClient(accessKey string, secretKey string) (*polly.Polly, error) {
-	// Create AWS session
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(defaultAWSRegion),
-		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-	})
+func awsGetClient(accessKey string, secretKey string) (*polly.Client, error) {
+	// Create AWS config
+	cfg, err := config.LoadDefaultConfig(context.Background(),
+		config.WithRegion(defaultAWSRegion),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			accessKey,
+			secretKey,
+			"",
+		)),
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create AWS session: %v", err)
 	}
 
 	// Initialize Polly client
-	res := polly.New(sess)
+	res := polly.NewFromConfig(cfg)
 	return res, nil
 }
 
@@ -43,15 +49,15 @@ func (h *audioHandler) awsAudioCreate(ctx context.Context, callID uuid.UUID, tex
 	voiceID := h.awsGetVoiceID(lang, gender)
 	input := &polly.SynthesizeSpeechInput{
 		Text:         aws.String(text),
-		TextType:     aws.String(polly.TextTypeSsml),
-		OutputFormat: aws.String(polly.OutputFormatPcm),
-		VoiceId:      aws.String(voiceID),
+		TextType:     types.TextTypeSsml,
+		OutputFormat: types.OutputFormatPcm,
+		VoiceId:      voiceID,
 		SampleRate:   aws.String(strconv.Itoa(int(defaultSampleRate))),
 	}
 
 	start := time.Now()
 
-	resp, err := h.awsClient.SynthesizeSpeech(input)
+	resp, err := h.awsClient.SynthesizeSpeech(ctx, input)
 	if err != nil {
 		return fmt.Errorf("failed to synthesize speech: %w", err)
 	}
@@ -66,49 +72,49 @@ func (h *audioHandler) awsAudioCreate(ctx context.Context, callID uuid.UUID, tex
 	return nil
 }
 
-func (h *audioHandler) awsGetVoiceID(lang string, gender tts.Gender) string {
-	mapVoiceName := map[string]string{
-		"en-US:" + string(tts.GenderFemale):  "Joanna",
-		"en-US:" + string(tts.GenderMale):    "Matthew",
-		"en-US:" + string(tts.GenderNeutral): "Joey",
+func (h *audioHandler) awsGetVoiceID(lang string, gender tts.Gender) types.VoiceId {
+	mapVoiceName := map[string]types.VoiceId{
+		"en-US:" + string(tts.GenderFemale):  types.VoiceIdJoanna,
+		"en-US:" + string(tts.GenderMale):    types.VoiceIdMatthew,
+		"en-US:" + string(tts.GenderNeutral): types.VoiceIdJoey,
 
-		"en-GB:" + string(tts.GenderFemale):  "Amy",
-		"en-GB:" + string(tts.GenderMale):    "Brian",
-		"en-GB:" + string(tts.GenderNeutral): "Emma",
+		"en-GB:" + string(tts.GenderFemale):  types.VoiceIdAmy,
+		"en-GB:" + string(tts.GenderMale):    types.VoiceIdBrian,
+		"en-GB:" + string(tts.GenderNeutral): types.VoiceIdEmma,
 
-		"de-DE:" + string(tts.GenderFemale):  "Marlene",
-		"de-DE:" + string(tts.GenderMale):    "Hans",
-		"de-DE:" + string(tts.GenderNeutral): "Vicki",
+		"de-DE:" + string(tts.GenderFemale):  types.VoiceIdMarlene,
+		"de-DE:" + string(tts.GenderMale):    types.VoiceIdHans,
+		"de-DE:" + string(tts.GenderNeutral): types.VoiceIdVicki,
 
-		"fr-FR:" + string(tts.GenderFemale):  "Celine",
-		"fr-FR:" + string(tts.GenderMale):    "Mathieu",
-		"fr-FR:" + string(tts.GenderNeutral): "Lea",
+		"fr-FR:" + string(tts.GenderFemale):  types.VoiceIdCeline,
+		"fr-FR:" + string(tts.GenderMale):    types.VoiceIdMathieu,
+		"fr-FR:" + string(tts.GenderNeutral): types.VoiceIdLea,
 
-		"es-ES:" + string(tts.GenderFemale):  "Conchita",
-		"es-ES:" + string(tts.GenderMale):    "Enrique",
-		"es-ES:" + string(tts.GenderNeutral): "Lucia",
+		"es-ES:" + string(tts.GenderFemale):  types.VoiceIdConchita,
+		"es-ES:" + string(tts.GenderMale):    types.VoiceIdEnrique,
+		"es-ES:" + string(tts.GenderNeutral): types.VoiceIdLucia,
 
-		"it-IT:" + string(tts.GenderFemale):  "Carla",
-		"it-IT:" + string(tts.GenderMale):    "Giorgio",
-		"it-IT:" + string(tts.GenderNeutral): "Bianca",
+		"it-IT:" + string(tts.GenderFemale):  types.VoiceIdCarla,
+		"it-IT:" + string(tts.GenderMale):    types.VoiceIdGiorgio,
+		"it-IT:" + string(tts.GenderNeutral): types.VoiceIdBianca,
 
-		"ja-JP:" + string(tts.GenderFemale): "Mizuki",
-		"ja-JP:" + string(tts.GenderMale):   "Takumi",
+		"ja-JP:" + string(tts.GenderFemale): types.VoiceIdMizuki,
+		"ja-JP:" + string(tts.GenderMale):   types.VoiceIdTakumi,
 
-		"ko-KR:" + string(tts.GenderFemale):  "Seoyeon",
-		"ko-KR:" + string(tts.GenderNeutral): "Jisoo",
+		"ko-KR:" + string(tts.GenderFemale):  types.VoiceIdSeoyeon,
+		"ko-KR:" + string(tts.GenderNeutral): types.VoiceIdJihye,
 
-		"pt-BR:" + string(tts.GenderFemale):  "Camila",
-		"pt-BR:" + string(tts.GenderMale):    "Ricardo",
-		"pt-BR:" + string(tts.GenderNeutral): "Vitoria",
+		"pt-BR:" + string(tts.GenderFemale):  types.VoiceIdCamila,
+		"pt-BR:" + string(tts.GenderMale):    types.VoiceIdRicardo,
+		"pt-BR:" + string(tts.GenderNeutral): types.VoiceIdCamila,
 
-		"ru-RU:" + string(tts.GenderFemale):  "Tatyana",
-		"ru-RU:" + string(tts.GenderMale):    "Maxim",
-		"ru-RU:" + string(tts.GenderNeutral): "Katya",
+		"ru-RU:" + string(tts.GenderFemale):  types.VoiceIdTatyana,
+		"ru-RU:" + string(tts.GenderMale):    types.VoiceIdMaxim,
+		"ru-RU:" + string(tts.GenderNeutral): types.VoiceIdTatyana,
 
-		"zh-CN:" + string(tts.GenderFemale):  "Zhiyu",
-		"zh-CN:" + string(tts.GenderMale):    "Wang",
-		"zh-CN:" + string(tts.GenderNeutral): "Xiaoyan",
+		"zh-CN:" + string(tts.GenderFemale):  types.VoiceIdZhiyu,
+		"zh-CN:" + string(tts.GenderMale):    types.VoiceIdZhiyu,
+		"zh-CN:" + string(tts.GenderNeutral): types.VoiceIdZhiyu,
 	}
 
 	tmp := fmt.Sprintf("%s:%s", lang, gender)

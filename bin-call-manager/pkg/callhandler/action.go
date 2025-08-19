@@ -325,7 +325,7 @@ func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call) error
 	}).Debugf("Sending a request to the asterisk for media playing.")
 
 	// play the beep.
-	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, c.Action.ID, medias, ""); errPlay != nil {
+	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, c.Action.ID.String(), medias, "", 0, 0); errPlay != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, errPlay)
 		return fmt.Errorf("could not play the media. err: %v", errPlay)
 	}

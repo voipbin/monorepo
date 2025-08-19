@@ -18,7 +18,7 @@ import (
 	speech "cloud.google.com/go/speech/apiv1"
 	"cloud.google.com/go/speech/apiv1/speechpb"
 	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming"
-	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
+	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming/types"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
@@ -58,7 +58,7 @@ const (
 // default aws stt options
 const (
 	defaultAWSRegion     = "eu-central-1"
-	defaultAWSEncoding   = transcribestreamingservice.MediaEncodingPcm
+	defaultAWSEncoding   = types.MediaEncodingPcm
 	defaultAWSSampleRate = 8000
 )
 

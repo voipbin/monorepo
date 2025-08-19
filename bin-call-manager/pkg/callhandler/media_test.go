@@ -137,7 +137,7 @@ func Test_Talk(t *testing.T) {
 			}
 
 			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.responseCall.ID, tt.text, tmtts.Gender(tt.gender), tt.language, 10000).Return(tt.responseTTS, nil)
-			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectActionID, tt.expectURI, "").Return(nil)
+			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectActionID.String(), tt.expectURI, "", 0, 0).Return(nil)
 
 			if err := h.Talk(ctx, tt.callID, tt.runNext, tt.text, tt.gender, tt.language); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -234,7 +234,7 @@ func Test_Play(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectActionID, tt.expectURI, "").Return(nil)
+			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectActionID.String(), tt.expectURI, "", 0, 0).Return(nil)
 
 			if err := h.Play(ctx, tt.callID, tt.runNext, tt.urls); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
