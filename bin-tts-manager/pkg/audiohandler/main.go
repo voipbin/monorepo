@@ -8,7 +8,7 @@ import (
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
-	"github.com/aws/aws-sdk-go/service/polly"
+	"github.com/aws/aws-sdk-go-v2/service/polly"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
@@ -22,7 +22,7 @@ type AudioHandler interface {
 
 type audioHandler struct {
 	gcpClient *texttospeech.Client
-	awsClient *polly.Polly
+	awsClient *polly.Client
 }
 
 // list of default variables
