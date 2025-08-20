@@ -72,7 +72,19 @@ func Test_Start(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockReq.EXPECT().CallV1ExternalMediaStart(ctx, tt.responseUUID, tt.referenceType, tt.referenceID, false, localhost, defaultExternalMediaEncapsulation, defaultExternalMediaTransport, defaultExternalMediaConnectionType, defaultExternalMediaFormat, defaultExternalMediaDirection).Return(tt.responseExternalMedia, nil)
+			mockReq.EXPECT().CallV1ExternalMediaStart(
+				ctx,
+				tt.responseUUID,
+				tt.referenceType,
+				tt.referenceID,
+				localhost,
+				defaultExternalMediaEncapsulation,
+				defaultExternalMediaTransport,
+				defaultExternalMediaConnectionType,
+				defaultExternalMediaFormat,
+				defaultExternalMediaDirectionListen,
+				defaultExternalMediaDirectionSpeak,
+			).Return(tt.responseExternalMedia, nil)
 
 			res, err := h.Start(ctx, tt.ws, tt.referenceType, tt.referenceID, tt.encapsulation)
 			if err != nil {

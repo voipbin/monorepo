@@ -17,11 +17,12 @@ import (
 
 // default external media configs
 const (
-	defaultExternalMediaTransport      = "tcp"
-	defaultExternalMediaEncapsulation  = "audiosocket"
-	defaultExternalMediaConnectionType = "client"
-	defaultExternalMediaFormat         = "ulaw"
-	defaultExternalMediaDirection      = "both"
+	defaultExternalMediaTransport       = "tcp"
+	defaultExternalMediaEncapsulation   = "audiosocket"
+	defaultExternalMediaConnectionType  = "client"
+	defaultExternalMediaFormat          = "ulaw"
+	defaultExternalMediaDirectionListen = cmexternalmedia.DirectionBoth
+	defaultExternalMediaDirectionSpeak  = cmexternalmedia.DirectionBoth
 )
 
 type StreamHandler interface {
