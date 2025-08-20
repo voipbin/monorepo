@@ -26,7 +26,6 @@ import (
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
-	"monorepo/bin-call-manager/models/externalmedia"
 )
 
 // list of application name
@@ -185,23 +184,7 @@ func (h *callHandler) startContextExternalMedia(ctx context.Context, cn *channel
 		return errors.Wrap(err, "could not find external media")
 	}
 
-	bridgeID := ""
-	if em.ReferenceType == externalmedia.ReferenceTypeCall {
-		c, err := h.Get(ctx, em.ReferenceID)
-		if err != nil {
-			log.Errorf("Could not get reference call info. err: %v", err)
-			return errors.Wrap(err, "could not get reference call info")
-		}
-		bridgeID = c.BridgeID
-	} else if em.ReferenceType == externalmedia.ReferenceTypeConfbridge {
-		c, err := h.confbridgeHandler.Get(ctx, em.ReferenceID)
-		if err != nil {
-			log.Errorf("Could not get reference confbridge info. err: %v", err)
-			return errors.Wrap(err, "could not get reference confbridge info")
-		}
-		bridgeID = c.BridgeID
-	}
-
+	bridgeID := em.BridgeID
 	log.Debugf("Parsed info. external_media_id: %s, bridge: %s", em.ID, bridgeID)
 	log = log.WithField("bridge_id", bridgeID)
 

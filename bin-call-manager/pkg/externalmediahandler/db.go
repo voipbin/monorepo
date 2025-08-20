@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/externalmedia"
@@ -15,6 +16,8 @@ func (h *externalMediaHandler) Create(
 	id uuid.UUID,
 	asteriskID string,
 	channelID string,
+	bridgeID string,
+	playbackID string,
 	referenceType externalmedia.ReferenceType,
 	referenceID uuid.UUID,
 	localIP string,
@@ -24,7 +27,8 @@ func (h *externalMediaHandler) Create(
 	transport externalmedia.Transport,
 	connectionType string,
 	format string,
-	direction string,
+	directionListen externalmedia.Direction,
+	directionSpeak externalmedia.Direction,
 ) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
@@ -40,9 +44,13 @@ func (h *externalMediaHandler) Create(
 
 		AsteriskID: asteriskID,
 		ChannelID:  channelID,
+		BridgeID:   bridgeID,
+		PlaybackID: playbackID,
 
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
+
+		Status: externalmedia.StatusRunning,
 
 		LocalIP:         localIP,
 		LocalPort:       localPort,
@@ -51,7 +59,8 @@ func (h *externalMediaHandler) Create(
 		Transport:       transport,
 		ConnectionType:  connectionType,
 		Format:          format,
-		DirectionListen: direction,
+		DirectionListen: directionListen,
+		DirectionSpeak:  directionSpeak,
 	}
 
 	if errDB := h.db.ExternalMediaSet(ctx, extMedia); errDB != nil {
@@ -108,6 +117,25 @@ func (h *externalMediaHandler) UpdateLocalAddress(ctx context.Context, id uuid.U
 
 	if errDB := h.db.ExternalMediaSet(ctx, tmp); errDB != nil {
 		return nil, errDB
+	}
+
+	res, err := h.db.ExternalMediaGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (h *externalMediaHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status externalmedia.Status) (*externalmedia.ExternalMedia, error) {
+	tmp, err := h.db.ExternalMediaGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get external media with id: %s", id)
+	}
+
+	tmp.Status = status
+	if errDB := h.db.ExternalMediaSet(ctx, tmp); errDB != nil {
+		return nil, errors.Wrapf(errDB, "could not update external media status")
 	}
 
 	res, err := h.db.ExternalMediaGet(ctx, id)

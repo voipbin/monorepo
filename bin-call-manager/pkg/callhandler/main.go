@@ -20,6 +20,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
+	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
@@ -42,7 +43,7 @@ type CallHandler interface {
 	ARIChannelDtmfReceived(ctx context.Context, cn *channel.Channel, digit string, duration int) error
 	ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	ARIChannelStateChange(ctx context.Context, cn *channel.Channel) error
-	ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error
+	ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, e *ari.PlaybackFinished) error
 	ARIStasisStart(ctx context.Context, cn *channel.Channel) error
 
 	HealthCheck(ctx context.Context, id uuid.UUID, retryCount int)

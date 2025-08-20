@@ -284,21 +284,21 @@ func TestARIChannelDestroyedContextTypeConference(t *testing.T) {
 func Test_ARIPlaybackFinished(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		channel    *channel.Channel
-		call       *call.Call
-		playbackID string
+		name    string
+		channel *channel.Channel
+		call    *call.Call
+		e       *ari.PlaybackFinished
 
 		responseCall *call.Call
 	}{
 		{
-			"normal",
-			&channel.Channel{
+			name: "normal",
+			channel: &channel.Channel{
 				ID:   "1b8da938-e7dd-11ea-8e4a-1f2bd2b9f5b4",
 				Data: map[string]interface{}{},
 				Type: channel.TypeConfbridge,
 			},
-			&call.Call{
+			call: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
 				},
@@ -308,9 +308,13 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 				FlowID:       uuid.FromStringOrNil("32c36bf4-156f-11ec-af17-87eb4aca917b"),
 				ActiveflowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),
 			},
-			"77a82874-e7dd-11ea-9647-27054cd71830",
+			e: &ari.PlaybackFinished{
+				Playback: ari.Playback{
+					ID: "call:77a82874-e7dd-11ea-9647-27054cd71830",
+				},
+			},
 
-			&call.Call{
+			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
 				},
@@ -346,7 +350,7 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(fmt.Errorf(""))
 			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{Status: call.StatusHangup}, nil)
 
-			if errFin := h.ARIPlaybackFinished(ctx, tt.channel, tt.playbackID); errFin != nil {
+			if errFin := h.ARIPlaybackFinished(ctx, tt.channel, tt.e); errFin != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errFin)
 			}
 		})

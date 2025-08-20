@@ -16,6 +16,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/playback"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
@@ -31,22 +32,23 @@ func Test_Talk(t *testing.T) {
 		gender   string
 		language string
 
-		responseCall *call.Call
-		responseTTS  *tmtts.TTS
+		responseCall         *call.Call
+		responseTTS          *tmtts.TTS
+		responseUUIDActionID uuid.UUID
 
-		expectURI      []string
-		expectActionID uuid.UUID
+		expectURI        []string
+		expectPlaybackID string
 	}{
 		{
-			"run next is true",
+			name: "run next is true",
 
-			uuid.FromStringOrNil("27bf2d84-a49c-11ed-aafc-e3364f827dc8"),
-			true,
-			`hello world`,
-			"male",
-			"en-US",
+			callID:   uuid.FromStringOrNil("27bf2d84-a49c-11ed-aafc-e3364f827dc8"),
+			runNext:  true,
+			text:     `hello world`,
+			gender:   "male",
+			language: "en-US",
 
-			&call.Call{
+			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("27bf2d84-a49c-11ed-aafc-e3364f827dc8"),
 				},
@@ -61,8 +63,7 @@ func Test_Talk(t *testing.T) {
 					},
 				},
 			},
-
-			&tmtts.TTS{
+			responseTTS: &tmtts.TTS{
 				Gender:          tmtts.GenderMale,
 				Text:            "hello world",
 				Language:        "en-US",
@@ -70,19 +71,19 @@ func Test_Talk(t *testing.T) {
 				MediaFilepath:   "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
 			},
 
-			[]string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
-			uuid.FromStringOrNil("285a1c22-a49c-11ed-b48e-6f39f4fd59ff"),
+			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
+			expectPlaybackID: playback.IDPrefixCall + "285a1c22-a49c-11ed-b48e-6f39f4fd59ff",
 		},
 		{
-			"run next is false",
+			name: "run next is false",
 
-			uuid.FromStringOrNil("71e7f32c-a49d-11ed-8cc4-a300fe8c4c9d"),
-			false,
-			`hello world`,
-			"male",
-			"en-US",
+			callID:   uuid.FromStringOrNil("71e7f32c-a49d-11ed-8cc4-a300fe8c4c9d"),
+			runNext:  false,
+			text:     `hello world`,
+			gender:   "male",
+			language: "en-US",
 
-			&call.Call{
+			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("71e7f32c-a49d-11ed-8cc4-a300fe8c4c9d"),
 				},
@@ -97,17 +98,17 @@ func Test_Talk(t *testing.T) {
 					},
 				},
 			},
-
-			&tmtts.TTS{
+			responseTTS: &tmtts.TTS{
 				Gender:          tmtts.GenderMale,
 				Text:            "hello world",
 				Language:        "en-US",
 				MediaBucketName: "test_bucket",
 				MediaFilepath:   "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
 			},
+			responseUUIDActionID: uuid.FromStringOrNil("c988dc86-7de9-11f0-b57e-57ffac78c55a"),
 
-			[]string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
-			uuid.Nil,
+			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
+			expectPlaybackID: playback.IDPrefixCall + "c988dc86-7de9-11f0-b57e-57ffac78c55a",
 		},
 	}
 
@@ -137,7 +138,10 @@ func Test_Talk(t *testing.T) {
 			}
 
 			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.responseCall.ID, tt.text, tmtts.Gender(tt.gender), tt.language, 10000).Return(tt.responseTTS, nil)
-			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectActionID.String(), tt.expectURI, "", 0, 0).Return(nil)
+			if !tt.runNext {
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
+			}
+			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectPlaybackID, tt.expectURI, "", 0, 0).Return(nil)
 
 			if err := h.Talk(ctx, tt.callID, tt.runNext, tt.text, tt.gender, tt.language); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -157,20 +161,20 @@ func Test_Play(t *testing.T) {
 
 		responseCall *call.Call
 
-		expectURI      []string
-		expectActionID uuid.UUID
+		expectURI        []string
+		expectplaybackID string
 	}{
 		{
-			"run next is true",
+			name: "run next is true",
 
-			uuid.FromStringOrNil("9a78ee81-8462-4350-9fd2-6bbf93cc26f2"),
-			true,
-			[]string{
+			callID:  uuid.FromStringOrNil("9a78ee81-8462-4350-9fd2-6bbf93cc26f2"),
+			runNext: true,
+			urls: []string{
 				"https://test.com/test-1.wav",
 				"https://test.com/test-2.wav",
 			},
 
-			&call.Call{
+			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("9a78ee81-8462-4350-9fd2-6bbf93cc26f2"),
 				},
@@ -180,23 +184,23 @@ func Test_Play(t *testing.T) {
 				},
 			},
 
-			[]string{
+			expectURI: []string{
 				"sound:https://test.com/test-1.wav",
 				"sound:https://test.com/test-2.wav",
 			},
-			uuid.FromStringOrNil("19baefc2-5de9-4acb-b6a7-0f4a55089934"),
+			expectplaybackID: playback.IDPrefixCall + "19baefc2-5de9-4acb-b6a7-0f4a55089934",
 		},
 		{
-			"run next is false",
+			name: "run next is false",
 
-			uuid.FromStringOrNil("3d0c6c4a-a17f-4c5d-ae2b-635e5866fbd0"),
-			false,
-			[]string{
+			callID:  uuid.FromStringOrNil("3d0c6c4a-a17f-4c5d-ae2b-635e5866fbd0"),
+			runNext: false,
+			urls: []string{
 				"https://test.com/139ddf48-1110-4ba1-b3b3-be4ded864089.wav",
 				"https://test.com/0d604e92-96cc-4521-a787-9745f0ae70c3.wav",
 			},
 
-			&call.Call{
+			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3d0c6c4a-a17f-4c5d-ae2b-635e5866fbd0"),
 				},
@@ -206,11 +210,11 @@ func Test_Play(t *testing.T) {
 				},
 			},
 
-			[]string{
+			expectURI: []string{
 				"sound:https://test.com/139ddf48-1110-4ba1-b3b3-be4ded864089.wav",
 				"sound:https://test.com/0d604e92-96cc-4521-a787-9745f0ae70c3.wav",
 			},
-			uuid.Nil,
+			expectplaybackID: playback.IDPrefixCall + "00000000-0000-0000-0000-000000000000",
 		},
 	}
 
@@ -234,7 +238,7 @@ func Test_Play(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectActionID.String(), tt.expectURI, "", 0, 0).Return(nil)
+			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectplaybackID, tt.expectURI, "", 0, 0).Return(nil)
 
 			if err := h.Play(ctx, tt.callID, tt.runNext, tt.urls); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

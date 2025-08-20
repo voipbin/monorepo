@@ -11,6 +11,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
@@ -35,6 +37,8 @@ type ExternalMediaHandler interface {
 		directionSpeak externalmedia.Direction,
 	) (*externalmedia.ExternalMedia, error)
 	Stop(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
+
+	ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, e *ari.PlaybackFinished) error
 }
 
 // list of channel variables
@@ -44,11 +48,12 @@ const (
 )
 
 const (
-	defaultEncapsulation  = externalmedia.EncapsulationRTP
-	defaultTransport      = externalmedia.TransportUDP
-	defaultConnectionType = "client"
-	defaultFormat         = "ulaw"
-	defaultDirection      = "both" //
+	defaultEncapsulation        = externalmedia.EncapsulationRTP
+	defaultTransport            = externalmedia.TransportUDP
+	defaultConnectionType       = "client"
+	defaultFormat               = "ulaw"
+	defaultDirection            = "both" //
+	defaultSilencePlaybackMedia = "sound:silence_slin16_8000_1m"
 )
 
 type externalMediaHandler struct {

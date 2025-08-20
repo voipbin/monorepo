@@ -25,10 +25,10 @@ func Test_Stop(t *testing.T) {
 		responseExternalMedia *externalmedia.ExternalMedia
 	}{
 		{
-			"normal",
-			uuid.FromStringOrNil("f325901e-96ee-11ed-bf37-abb6beffa198"),
+			name:            "normal",
+			externalMediaID: uuid.FromStringOrNil("f325901e-96ee-11ed-bf37-abb6beffa198"),
 
-			&externalmedia.ExternalMedia{
+			responseExternalMedia: &externalmedia.ExternalMedia{
 				ID:              uuid.FromStringOrNil("f325901e-96ee-11ed-bf37-abb6beffa198"),
 				AsteriskID:      "42:01:0a:a4:00:05",
 				ChannelID:       "f3b36ede-96ee-11ed-8213-53b58f84fb99",
@@ -64,6 +64,8 @@ func Test_Stop(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.externalMediaID).Return(tt.responseExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ExternalMediaGet(ctx, tt.externalMediaID).Return(tt.responseExternalMedia, nil)
 			mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, tt.responseExternalMedia.AsteriskID, tt.responseExternalMedia.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
 			mockDB.EXPECT().ExternalMediaDelete(ctx, tt.externalMediaID).Return(nil)

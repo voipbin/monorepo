@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/confbridge"
 	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/models/playback"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
@@ -47,6 +48,7 @@ func Test_Start_startReferenceTypeCall(t *testing.T) {
 
 		expectBridgeArgs    string
 		expectChannelData   string
+		expectPlaybackID    string
 		expectExternalMedia *externalmedia.ExternalMedia
 	}{
 		{
@@ -83,6 +85,7 @@ func Test_Start_startReferenceTypeCall(t *testing.T) {
 
 			expectBridgeArgs:  "reference_type=call-snoop,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
 			expectChannelData: "context_type=call,context=call-externalmedia,bridge_id=9b6c7a78-96e3-11ed-904b-9baa2c0183fd,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57,external_media_id=78473c24-b331-11ef-aa9c-e7c52f9d3f7b",
+			expectPlaybackID:  playback.IDPrefixExternalMedia + "78473c24-b331-11ef-aa9c-e7c52f9d3f7b",
 			expectExternalMedia: &externalmedia.ExternalMedia{
 				ID:              uuid.FromStringOrNil("78473c24-b331-11ef-aa9c-e7c52f9d3f7b"),
 				AsteriskID:      "42:01:0a:a4:00:05",
@@ -130,6 +133,8 @@ func Test_Start_startReferenceTypeCall(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDSnoopID)
 			mockChannel.EXPECT().StartSnoop(ctx, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirection(tt.directionListen), channel.SnoopDirection(tt.directionSpeak)).Return(&channel.Channel{}, nil)
+
+			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectPlaybackID, []string{defaultSilencePlaybackMedia}, "", 0, 0).Return(nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
 			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.externalHost, string(tt.encapsulation), string(tt.transport), tt.connectionType, tt.format, string(tt.directionListen), tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)

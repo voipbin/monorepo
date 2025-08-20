@@ -11,6 +11,8 @@ package externalmediahandler
 
 import (
 	context "context"
+	ari "monorepo/bin-call-manager/models/ari"
+	channel "monorepo/bin-call-manager/models/channel"
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	reflect "reflect"
 
@@ -40,6 +42,20 @@ func NewMockExternalMediaHandler(ctrl *gomock.Controller) *MockExternalMediaHand
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockExternalMediaHandler) EXPECT() *MockExternalMediaHandlerMockRecorder {
 	return m.recorder
+}
+
+// ARIPlaybackFinished mocks base method.
+func (m *MockExternalMediaHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, e *ari.PlaybackFinished) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIPlaybackFinished", ctx, cn, e)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIPlaybackFinished indicates an expected call of ARIPlaybackFinished.
+func (mr *MockExternalMediaHandlerMockRecorder) ARIPlaybackFinished(ctx, cn, e any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIPlaybackFinished", reflect.TypeOf((*MockExternalMediaHandler)(nil).ARIPlaybackFinished), ctx, cn, e)
 }
 
 // Get mocks base method.

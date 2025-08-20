@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/playback"
 )
 
 // Talk plays the tts to the given call id.
@@ -54,12 +55,14 @@ func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, 
 
 	actionID := c.Action.ID
 	if !runNext {
-		// we don't want to execut the next action
-		actionID = uuid.Nil
+		// we don't want to execute the next action
+		// generate a new uuid
+		actionID = h.utilHandler.UUIDCreate()
 	}
 
 	// play
-	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, actionID.String(), medias, "", 0, 0); errPlay != nil {
+	playbackID := fmt.Sprintf("%s%s", playback.IDPrefixCall, actionID.String())
+	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, playbackID, medias, "", 0, 0); errPlay != nil {
 		log.Errorf("Could not play the media for tts. medias: %v, err: %v", medias, errPlay)
 		return errors.Wrap(errPlay, "could not play the media for tts")
 	}
@@ -98,7 +101,8 @@ func (h *callHandler) Play(ctx context.Context, callID uuid.UUID, runNext bool, 
 	}
 
 	// play
-	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, actionID.String(), medias, "", 0, 0); errPlay != nil {
+	playbackID := fmt.Sprintf("%s%s", playback.IDPrefixCall, actionID.String())
+	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, playbackID, medias, "", 0, 0); errPlay != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, errPlay)
 		return errors.Wrap(errPlay, "could not play the media")
 	}

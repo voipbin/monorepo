@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/confbridgehandler"
 	db "monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -48,13 +49,14 @@ type eventHandler struct {
 	cache       cachehandler.CacheHandler
 	sockHandler sockhandler.SockHandler
 
-	reqHandler        requesthandler.RequestHandler
-	notifyHandler     notifyhandler.NotifyHandler
-	callHandler       callhandler.CallHandler
-	confbridgeHandler confbridgehandler.ConfbridgeHandler
-	channelHandler    channelhandler.ChannelHandler
-	bridgeHandler     bridgehandler.BridgeHandler
-	recordingHandler  recordinghandler.RecordingHandler
+	reqHandler           requesthandler.RequestHandler
+	notifyHandler        notifyhandler.NotifyHandler
+	callHandler          callhandler.CallHandler
+	confbridgeHandler    confbridgehandler.ConfbridgeHandler
+	channelHandler       channelhandler.ChannelHandler
+	bridgeHandler        bridgehandler.BridgeHandler
+	recordingHandler     recordinghandler.RecordingHandler
+	externalmediaHandler externalmediahandler.ExternalMediaHandler
 }
 
 func init() {}
@@ -71,18 +73,20 @@ func NewEventHandler(
 	channelHandler channelhandler.ChannelHandler,
 	brideHandler bridgehandler.BridgeHandler,
 	recordingHandler recordinghandler.RecordingHandler,
+	externalmediaHandler externalmediahandler.ExternalMediaHandler,
 ) ARIEventHandler {
 	h := &eventHandler{
-		sockHandler:       sock,
-		db:                db,
-		cache:             cache,
-		reqHandler:        reqHandler,
-		notifyHandler:     notifyHandler,
-		callHandler:       callHandler,
-		confbridgeHandler: confbridgeHandler,
-		channelHandler:    channelHandler,
-		bridgeHandler:     brideHandler,
-		recordingHandler:  recordingHandler,
+		sockHandler:          sock,
+		db:                   db,
+		cache:                cache,
+		reqHandler:           reqHandler,
+		notifyHandler:        notifyHandler,
+		callHandler:          callHandler,
+		confbridgeHandler:    confbridgeHandler,
+		channelHandler:       channelHandler,
+		bridgeHandler:        brideHandler,
+		recordingHandler:     recordingHandler,
+		externalmediaHandler: externalmediaHandler,
 	}
 
 	return h
