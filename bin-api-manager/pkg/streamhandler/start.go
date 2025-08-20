@@ -39,13 +39,13 @@ func (h *streamHandler) Start(
 		tmp.ID,
 		referenceType,
 		referenceID,
-		false,
 		h.listenAddress,
 		defaultExternalMediaEncapsulation,
 		defaultExternalMediaTransport,
 		defaultExternalMediaConnectionType,
 		defaultExternalMediaFormat,
-		defaultExternalMediaDirection,
+		defaultExternalMediaDirectionListen,
+		defaultExternalMediaDirectionSpeak,
 	)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)

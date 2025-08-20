@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	cmcall "monorepo/bin-call-manager/models/call"
+	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
@@ -368,7 +369,8 @@ func (r *requestHandler) CallV1CallExternalMediaStart(
 	transport string, // udp
 	connectionType string, // client,server
 	format string, // ulaw
-	direction string, // in,out,both
+	directionListen cmexternalmedia.Direction,
+	directionSpeak cmexternalmedia.Direction,
 ) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
 
@@ -379,7 +381,8 @@ func (r *requestHandler) CallV1CallExternalMediaStart(
 		Transport:       transport,
 		ConnectionType:  connectionType,
 		Format:          format,
-		Direction:       direction,
+		DirectionListen: directionListen,
+		DirectionSpeak:  directionSpeak,
 	})
 	if err != nil {
 		return nil, err

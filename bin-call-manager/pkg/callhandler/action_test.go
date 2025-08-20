@@ -22,6 +22,7 @@ import (
 	callapplication "monorepo/bin-call-manager/models/callapplication"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/models/playback"
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/confbridgehandler"
@@ -253,10 +254,11 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 
 		responseTTS *tmtts.TTS
 
-		expectSSML     string
-		expectGender   string
-		expectLanguage string
-		expectURI      []string
+		expectSSML       string
+		expectGender     string
+		expectLanguage   string
+		expectPlaybackID string
+		expectURI        []string
 	}{
 		{
 			name: "normal",
@@ -284,10 +286,11 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
 			},
 
-			expectSSML:     `hello world`,
-			expectGender:   "male",
-			expectLanguage: "en-US",
-			expectURI:      []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
+			expectSSML:       `hello world`,
+			expectGender:     "male",
+			expectLanguage:   "en-US",
+			expectPlaybackID: playback.IDPrefixCall + "5c9cd6be-2195-11eb-a9c9-bfc91ac88411",
+			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
 		},
 	}
 
@@ -315,7 +318,7 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 				mockChannel.EXPECT().Answer(ctx, tt.call.ChannelID).Return(nil)
 			}
 			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tmtts.Gender(tt.expectGender), tt.expectLanguage, 10000).Return(tt.responseTTS, nil)
-			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.call.Action.ID.String(), tt.expectURI, "", 0, 0).Return(nil)
+			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.expectPlaybackID, tt.expectURI, "", 0, 0).Return(nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -331,12 +334,13 @@ func Test_ActionExecute_actionExecutePlay(t *testing.T) {
 
 		call *call.Call
 
-		expectMedias []string
+		expectPlaybackID string
+		expectMedias     []string
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&call.Call{
+			call: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f4fce23b-356f-45e2-994a-2e7763fb1f6a"),
 				},
@@ -353,7 +357,8 @@ func Test_ActionExecute_actionExecutePlay(t *testing.T) {
 				},
 			},
 
-			[]string{
+			expectPlaybackID: playback.IDPrefixCall + "2641f116-90d1-40a3-a817-e16b4f3325da",
+			expectMedias: []string{
 				"sound:https://test.com/e258dc64-edb1-4220-8245-16ddc4941f96.wav",
 				"sound:https://test.com/84e3e1eb-4977-4ba3-bdf0-c56f35e24d57.wav",
 			},
@@ -380,7 +385,7 @@ func Test_ActionExecute_actionExecutePlay(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.call.Action.ID.String(), tt.expectMedias, "", 0, 0).Return(nil)
+			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.expectPlaybackID, tt.expectMedias, "", 0, 0).Return(nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -833,16 +838,17 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 
 		responseExternalMedia *externalmedia.ExternalMedia
 
-		expectHost           string
-		expectEncapsulation  externalmedia.Encapsulation
-		expectTransport      externalmedia.Transport
-		expectConnectionType string
-		expectFormat         string
-		expectDirection      string
+		expectHost            string
+		expectEncapsulation   externalmedia.Encapsulation
+		expectTransport       externalmedia.Transport
+		expectConnectionType  string
+		expectFormat          string
+		expectDirectionListen externalmedia.Direction
+		expectDirectionSpeak  externalmedia.Direction
 	}{
 		{
-			"normal",
-			&call.Call{
+			name: "normal",
+			call: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3ba00ae0-02f8-11ec-863a-abd78c8246c4"),
 				},
@@ -851,27 +857,29 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 					Type: fmaction.TypeExternalMediaStart,
 					ID:   uuid.FromStringOrNil("447f0d28-02f8-11ec-bfdb-4bb2407458ce"),
 					Option: map[string]any{
-						"external_host":   "example.com",
-						"encapsulation":   "rtp",
-						"transport":       "udp",
-						"connection_type": "client",
-						"format":          "ulaw",
-						"direction":       "both",
-						"data":            "",
+						"external_host":    "example.com",
+						"encapsulation":    "rtp",
+						"transport":        "udp",
+						"connection_type":  "client",
+						"format":           "ulaw",
+						"direction_listen": "in",
+						"direction_speak":  "out",
+						"data":             "",
 					},
 				},
 			},
 
-			&externalmedia.ExternalMedia{
+			responseExternalMedia: &externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("caff4130-96ed-11ed-a978-ff691cc47d66"),
 			},
 
-			"example.com",
-			"rtp",
-			"udp",
-			"client",
-			"ulaw",
-			"both",
+			expectHost:            "example.com",
+			expectEncapsulation:   "rtp",
+			expectTransport:       "udp",
+			expectConnectionType:  "client",
+			expectFormat:          "ulaw",
+			expectDirectionListen: externalmedia.DirectionIn,
+			expectDirectionSpeak:  externalmedia.DirectionOut,
 		},
 	}
 
@@ -895,7 +903,19 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockExternal.EXPECT().Start(ctx, uuid.Nil, externalmedia.ReferenceTypeCall, tt.call.ID, true, tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection).Return(tt.responseExternalMedia, nil)
+			mockExternal.EXPECT().Start(
+				ctx,
+				uuid.Nil,
+				externalmedia.ReferenceTypeCall,
+				tt.call.ID,
+				tt.expectHost,
+				tt.expectEncapsulation,
+				tt.expectTransport,
+				tt.expectConnectionType,
+				tt.expectFormat,
+				tt.expectDirectionListen,
+				tt.expectDirectionSpeak,
+			).Return(tt.responseExternalMedia, nil)
 			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.call.ID, tt.responseExternalMedia.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)

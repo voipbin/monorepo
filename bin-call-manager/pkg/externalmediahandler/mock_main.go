@@ -11,6 +11,8 @@ package externalmediahandler
 
 import (
 	context "context"
+	ari "monorepo/bin-call-manager/models/ari"
+	channel "monorepo/bin-call-manager/models/channel"
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	reflect "reflect"
 
@@ -40,6 +42,20 @@ func NewMockExternalMediaHandler(ctrl *gomock.Controller) *MockExternalMediaHand
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockExternalMediaHandler) EXPECT() *MockExternalMediaHandlerMockRecorder {
 	return m.recorder
+}
+
+// ARIPlaybackFinished mocks base method.
+func (m *MockExternalMediaHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, e *ari.PlaybackFinished) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIPlaybackFinished", ctx, cn, e)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIPlaybackFinished indicates an expected call of ARIPlaybackFinished.
+func (mr *MockExternalMediaHandlerMockRecorder) ARIPlaybackFinished(ctx, cn, e any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIPlaybackFinished", reflect.TypeOf((*MockExternalMediaHandler)(nil).ARIPlaybackFinished), ctx, cn, e)
 }
 
 // Get mocks base method.
@@ -73,18 +89,18 @@ func (mr *MockExternalMediaHandlerMockRecorder) Gets(ctx, size, token, filters a
 }
 
 // Start mocks base method.
-func (m *MockExternalMediaHandler) Start(ctx context.Context, id uuid.UUID, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, insertMedia bool, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format, direction string) (*externalmedia.ExternalMedia, error) {
+func (m *MockExternalMediaHandler) Start(ctx context.Context, id uuid.UUID, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format string, directionListen, directionSpeak externalmedia.Direction) (*externalmedia.ExternalMedia, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, id, referenceType, referenceID, insertMedia, externalHost, encapsulation, transport, connectionType, format, direction)
+	ret := m.ctrl.Call(m, "Start", ctx, id, referenceType, referenceID, externalHost, encapsulation, transport, connectionType, format, directionListen, directionSpeak)
 	ret0, _ := ret[0].(*externalmedia.ExternalMedia)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockExternalMediaHandlerMockRecorder) Start(ctx, id, referenceType, referenceID, insertMedia, externalHost, encapsulation, transport, connectionType, format, direction any) *gomock.Call {
+func (mr *MockExternalMediaHandlerMockRecorder) Start(ctx, id, referenceType, referenceID, externalHost, encapsulation, transport, connectionType, format, directionListen, directionSpeak any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockExternalMediaHandler)(nil).Start), ctx, id, referenceType, referenceID, insertMedia, externalHost, encapsulation, transport, connectionType, format, direction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockExternalMediaHandler)(nil).Start), ctx, id, referenceType, referenceID, externalHost, encapsulation, transport, connectionType, format, directionListen, directionSpeak)
 }
 
 // Stop mocks base method.

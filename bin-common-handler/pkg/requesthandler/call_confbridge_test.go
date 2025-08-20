@@ -185,7 +185,6 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 		transport       string
 		connectionType  string
 		format          string
-		direction       string
 
 		response *sock.Response
 
@@ -193,30 +192,29 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 		expectRes     *cmconfbridge.Confbridge
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("8bb7a268-97d0-11ed-bb1d-efd9a3f33560"),
-			uuid.FromStringOrNil("7ef0bc4e-b336-11ef-b176-9ffcf00e7082"),
-			"localhost:5060",
-			"rtp",
-			"udp",
-			"client",
-			"ulaw",
-			"both",
+			confbridgeID:    uuid.FromStringOrNil("8bb7a268-97d0-11ed-bb1d-efd9a3f33560"),
+			externalMediaID: uuid.FromStringOrNil("7ef0bc4e-b336-11ef-b176-9ffcf00e7082"),
+			externalHost:    "localhost:5060",
+			encapsulation:   "rtp",
+			transport:       "udp",
+			connectionType:  "client",
+			format:          "ulaw",
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8bb7a268-97d0-11ed-bb1d-efd9a3f33560"}`),
 			},
 
-			&sock.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/confbridges/8bb7a268-97d0-11ed-bb1d-efd9a3f33560/external-media",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"external_media_id":"7ef0bc4e-b336-11ef-b176-9ffcf00e7082","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"external_media_id":"7ef0bc4e-b336-11ef-b176-9ffcf00e7082","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw"}`),
 			},
-			&cmconfbridge.Confbridge{
+			expectRes: &cmconfbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("8bb7a268-97d0-11ed-bb1d-efd9a3f33560"),
 				},
@@ -238,7 +236,16 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1ConfbridgeExternalMediaStart(ctx, tt.confbridgeID, tt.externalMediaID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := reqHandler.CallV1ConfbridgeExternalMediaStart(
+				ctx,
+				tt.confbridgeID,
+				tt.externalMediaID,
+				tt.externalHost,
+				tt.encapsulation,
+				tt.transport,
+				tt.connectionType,
+				tt.format,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

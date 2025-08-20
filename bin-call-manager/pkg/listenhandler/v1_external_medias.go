@@ -75,13 +75,13 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *sock
 		req.ID,
 		req.ReferenceType,
 		req.ReferenceID,
-		req.NoInsertMedia,
 		req.ExternalHost,
 		externalmedia.Encapsulation(req.Encapsulation),
 		externalmedia.Transport(req.Transport),
 		req.ConnectionType,
 		req.Format,
-		req.Direction,
+		req.DirectionListen,
+		req.DirectionSpeak,
 	)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)

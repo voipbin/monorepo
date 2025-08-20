@@ -16,6 +16,7 @@ import (
 	callapplication "monorepo/bin-call-manager/models/callapplication"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/models/playback"
 	"monorepo/bin-call-manager/models/recording"
 )
 
@@ -325,7 +326,8 @@ func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call) error
 	}).Debugf("Sending a request to the asterisk for media playing.")
 
 	// play the beep.
-	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, c.Action.ID.String(), medias, "", 0, 0); errPlay != nil {
+	playbackID := fmt.Sprintf("%s%s", playback.IDPrefixCall, c.Action.ID.String())
+	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, playbackID, medias, "", 0, 0); errPlay != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, errPlay)
 		return fmt.Errorf("could not play the media. err: %v", errPlay)
 	}
@@ -664,7 +666,18 @@ func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *ca
 		}
 	}
 
-	cc, err := h.ExternalMediaStart(ctx, c.ID, uuid.Nil, option.ExternalHost, externalmedia.Encapsulation(option.Encapsulation), externalmedia.Transport(option.Transport), option.ConnectionType, option.Format, option.Direction)
+	cc, err := h.ExternalMediaStart(
+		ctx,
+		c.ID,
+		uuid.Nil,
+		option.ExternalHost,
+		externalmedia.Encapsulation(option.Encapsulation),
+		externalmedia.Transport(option.Transport),
+		option.ConnectionType,
+		option.Format,
+		externalmedia.Direction(option.DirectionListen),
+		externalmedia.Direction(option.DirectionSpeak),
+	)
 	if err != nil {
 		log.Errorf("Could not start external media. err: %v", err)
 		return err

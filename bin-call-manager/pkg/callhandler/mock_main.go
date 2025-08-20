@@ -11,6 +11,7 @@ package callhandler
 
 import (
 	context "context"
+	ari "monorepo/bin-call-manager/models/ari"
 	bridge "monorepo/bin-call-manager/models/bridge"
 	call "monorepo/bin-call-manager/models/call"
 	channel "monorepo/bin-call-manager/models/channel"
@@ -109,17 +110,17 @@ func (mr *MockCallHandlerMockRecorder) ARIChannelStateChange(ctx, cn any) *gomoc
 }
 
 // ARIPlaybackFinished mocks base method.
-func (m *MockCallHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error {
+func (m *MockCallHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, e *ari.PlaybackFinished) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIPlaybackFinished", ctx, cn, playbackID)
+	ret := m.ctrl.Call(m, "ARIPlaybackFinished", ctx, cn, e)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ARIPlaybackFinished indicates an expected call of ARIPlaybackFinished.
-func (mr *MockCallHandlerMockRecorder) ARIPlaybackFinished(ctx, cn, playbackID any) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) ARIPlaybackFinished(ctx, cn, e any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIPlaybackFinished", reflect.TypeOf((*MockCallHandler)(nil).ARIPlaybackFinished), ctx, cn, playbackID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIPlaybackFinished", reflect.TypeOf((*MockCallHandler)(nil).ARIPlaybackFinished), ctx, cn, e)
 }
 
 // ARIStasisStart mocks base method.
@@ -326,18 +327,18 @@ func (mr *MockCallHandlerMockRecorder) EventSMPodDeleted(ctx, p any) *gomock.Cal
 }
 
 // ExternalMediaStart mocks base method.
-func (m *MockCallHandler) ExternalMediaStart(ctx context.Context, id, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format, direction string) (*call.Call, error) {
+func (m *MockCallHandler) ExternalMediaStart(ctx context.Context, id, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format string, directionListen, directionSpeak externalmedia.Direction) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExternalMediaStart", ctx, id, externalMediaID, externalHost, encapsulation, transport, connectionType, format, direction)
+	ret := m.ctrl.Call(m, "ExternalMediaStart", ctx, id, externalMediaID, externalHost, encapsulation, transport, connectionType, format, directionListen, directionSpeak)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExternalMediaStart indicates an expected call of ExternalMediaStart.
-func (mr *MockCallHandlerMockRecorder) ExternalMediaStart(ctx, id, externalMediaID, externalHost, encapsulation, transport, connectionType, format, direction any) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) ExternalMediaStart(ctx, id, externalMediaID, externalHost, encapsulation, transport, connectionType, format, directionListen, directionSpeak any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStart", reflect.TypeOf((*MockCallHandler)(nil).ExternalMediaStart), ctx, id, externalMediaID, externalHost, encapsulation, transport, connectionType, format, direction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStart", reflect.TypeOf((*MockCallHandler)(nil).ExternalMediaStart), ctx, id, externalMediaID, externalHost, encapsulation, transport, connectionType, format, directionListen, directionSpeak)
 }
 
 // ExternalMediaStop mocks base method.

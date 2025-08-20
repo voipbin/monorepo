@@ -11,6 +11,7 @@ import (
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/playback"
 	"monorepo/bin-call-manager/pkg/callhandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
@@ -96,8 +97,8 @@ func Test_EventHandlerPlaybackFinished(t *testing.T) {
 		expectPlaybackID string
 	}{
 		{
-			"normal",
-			&ari.PlaybackFinished{
+			name: "normal",
+			event: &ari.PlaybackFinished{
 				Event: ari.Event{
 					Type:        ari.EventTypePlaybackFinished,
 					Application: "voipbin",
@@ -105,7 +106,7 @@ func Test_EventHandlerPlaybackFinished(t *testing.T) {
 					AsteriskID:  "42:01:0a:a4:0f:d0",
 				},
 				Playback: ari.Playback{
-					ID:        "a41baef4-04b9-403d-a9f5-8ea82c8b1749",
+					ID:        playback.IDPrefixCall + "a41baef4-04b9-403d-a9f5-8ea82c8b1749",
 					Language:  "en",
 					MediaURI:  "sound:/mnt/media/tts/00ad7c95d14643f3f6f61d18acb039e7fedf05ab",
 					State:     ari.PlaybackStateDone,
@@ -113,13 +114,13 @@ func Test_EventHandlerPlaybackFinished(t *testing.T) {
 				},
 			},
 
-			&channel.Channel{
+			responseChannel: &channel.Channel{
 				AsteriskID: "42:01:0a:a4:0f:d0",
 				ID:         "21dccba3-9792-4d57-904d-5260d57cd681",
 				TMEnd:      dbhandler.DefaultTimeStamp,
 			},
-			"21dccba3-9792-4d57-904d-5260d57cd681",
-			"a41baef4-04b9-403d-a9f5-8ea82c8b1749",
+			expectchannelID:  "21dccba3-9792-4d57-904d-5260d57cd681",
+			expectPlaybackID: "a41baef4-04b9-403d-a9f5-8ea82c8b1749",
 		},
 	}
 
@@ -145,7 +146,7 @@ func Test_EventHandlerPlaybackFinished(t *testing.T) {
 			ctx := context.Background()
 
 			mockChannel.EXPECT().UpdatePlaybackID(ctx, tt.expectchannelID, "").Return(tt.responseChannel, nil)
-			mockCall.EXPECT().ARIPlaybackFinished(gomock.Any(), tt.responseChannel, tt.expectPlaybackID).Return(nil)
+			mockCall.EXPECT().ARIPlaybackFinished(gomock.Any(), tt.responseChannel, tt.event).Return(nil)
 
 			if err := h.EventHandlerPlaybackFinished(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

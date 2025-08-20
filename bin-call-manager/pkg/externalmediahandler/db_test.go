@@ -21,19 +21,22 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id             uuid.UUID
-		asteriskID     string
-		channelID      string
-		referenceType  externalmedia.ReferenceType
-		referenceID    uuid.UUID
-		localIP        string
-		localPort      int
-		externalHost   string
-		encapsulation  externalmedia.Encapsulation
-		transport      externalmedia.Transport
-		connectionType string
-		format         string
-		direction      string
+		id              uuid.UUID
+		asteriskID      string
+		channelID       string
+		bridgeID        string
+		playbackID      string
+		referenceType   externalmedia.ReferenceType
+		referenceID     uuid.UUID
+		localIP         string
+		localPort       int
+		externalHost    string
+		encapsulation   externalmedia.Encapsulation
+		transport       externalmedia.Transport
+		connectionType  string
+		format          string
+		directionListen externalmedia.Direction
+		directionSpeak  externalmedia.Direction
 
 		responseUUID uuid.UUID
 
@@ -42,68 +45,82 @@ func Test_Create(t *testing.T) {
 		{
 			name: "normal",
 
-			id:             uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
-			asteriskID:     "3e:50:6b:43:bb:30",
-			channelID:      "6295f80e-97b6-11ed-88e0-ffb00420fb1a",
-			referenceType:  externalmedia.ReferenceTypeCall,
-			referenceID:    uuid.FromStringOrNil("da311f40-97b8-11ed-99f4-13108e8918da"),
-			localIP:        "127.0.0.1",
-			localPort:      8080,
-			externalHost:   "127.0.0.1:8090",
-			encapsulation:  defaultEncapsulation,
-			transport:      defaultTransport,
-			connectionType: defaultConnectionType,
-			format:         defaultFormat,
-			direction:      defaultDirection,
+			id:              uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
+			asteriskID:      "3e:50:6b:43:bb:30",
+			channelID:       "6295f80e-97b6-11ed-88e0-ffb00420fb1a",
+			bridgeID:        "7f34278a-7d9e-11f0-ba9f-97cef5bed809",
+			playbackID:      "7f571894-7d9e-11f0-9702-67d856ab2a53",
+			referenceType:   externalmedia.ReferenceTypeCall,
+			referenceID:     uuid.FromStringOrNil("da311f40-97b8-11ed-99f4-13108e8918da"),
+			localIP:         "127.0.0.1",
+			localPort:       8080,
+			externalHost:    "127.0.0.1:8090",
+			encapsulation:   defaultEncapsulation,
+			transport:       defaultTransport,
+			connectionType:  defaultConnectionType,
+			format:          defaultFormat,
+			directionListen: externalmedia.DirectionIn,
+			directionSpeak:  externalmedia.DirectionOut,
 
 			expectExternalMedia: &externalmedia.ExternalMedia{
-				ID:             uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ChannelID:      "6295f80e-97b6-11ed-88e0-ffb00420fb1a",
-				ReferenceType:  externalmedia.ReferenceTypeCall,
-				ReferenceID:    uuid.FromStringOrNil("da311f40-97b8-11ed-99f4-13108e8918da"),
-				LocalIP:        "127.0.0.1",
-				LocalPort:      8080,
-				ExternalHost:   "127.0.0.1:8090",
-				Encapsulation:  defaultEncapsulation,
-				Transport:      defaultTransport,
-				ConnectionType: defaultConnectionType,
-				Format:         defaultFormat,
-				Direction:      defaultDirection,
+				ID:              uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
+				AsteriskID:      "3e:50:6b:43:bb:30",
+				ChannelID:       "6295f80e-97b6-11ed-88e0-ffb00420fb1a",
+				BridgeID:        "7f34278a-7d9e-11f0-ba9f-97cef5bed809",
+				PlaybackID:      "7f571894-7d9e-11f0-9702-67d856ab2a53",
+				ReferenceType:   externalmedia.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("da311f40-97b8-11ed-99f4-13108e8918da"),
+				Status:          externalmedia.StatusRunning,
+				LocalIP:         "127.0.0.1",
+				LocalPort:       8080,
+				ExternalHost:    "127.0.0.1:8090",
+				Encapsulation:   defaultEncapsulation,
+				Transport:       defaultTransport,
+				ConnectionType:  defaultConnectionType,
+				Format:          defaultFormat,
+				DirectionListen: externalmedia.DirectionIn,
+				DirectionSpeak:  externalmedia.DirectionOut,
 			},
 		},
 		{
 			name: "has no id given",
 
-			id:             uuid.Nil,
-			asteriskID:     "3e:50:6b:43:bb:30",
-			channelID:      "09d1321e-b330-11ef-ad3e-170da10752c8",
-			referenceType:  externalmedia.ReferenceTypeCall,
-			referenceID:    uuid.FromStringOrNil("09ec9a0e-b330-11ef-b9dc-6701b7b5d325"),
-			localIP:        "127.0.0.1",
-			localPort:      8080,
-			externalHost:   "127.0.0.1:8090",
-			encapsulation:  defaultEncapsulation,
-			transport:      defaultTransport,
-			connectionType: defaultConnectionType,
-			format:         defaultFormat,
-			direction:      defaultDirection,
+			id:              uuid.Nil,
+			asteriskID:      "3e:50:6b:43:bb:30",
+			channelID:       "09d1321e-b330-11ef-ad3e-170da10752c8",
+			bridgeID:        "96b5355c-7d9e-11f0-a2ca-b3875a58d870",
+			playbackID:      "96df44be-7d9e-11f0-a0fd-bb11489c28cf",
+			referenceType:   externalmedia.ReferenceTypeCall,
+			referenceID:     uuid.FromStringOrNil("09ec9a0e-b330-11ef-b9dc-6701b7b5d325"),
+			localIP:         "127.0.0.1",
+			localPort:       8080,
+			externalHost:    "127.0.0.1:8090",
+			encapsulation:   defaultEncapsulation,
+			transport:       defaultTransport,
+			connectionType:  defaultConnectionType,
+			format:          defaultFormat,
+			directionListen: externalmedia.DirectionIn,
+			directionSpeak:  externalmedia.DirectionOut,
 
 			responseUUID: uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
 			expectExternalMedia: &externalmedia.ExternalMedia{
-				ID:             uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
-				AsteriskID:     "3e:50:6b:43:bb:30",
-				ChannelID:      "09d1321e-b330-11ef-ad3e-170da10752c8",
-				ReferenceType:  externalmedia.ReferenceTypeCall,
-				ReferenceID:    uuid.FromStringOrNil("09ec9a0e-b330-11ef-b9dc-6701b7b5d325"),
-				LocalIP:        "127.0.0.1",
-				LocalPort:      8080,
-				ExternalHost:   "127.0.0.1:8090",
-				Encapsulation:  defaultEncapsulation,
-				Transport:      defaultTransport,
-				ConnectionType: defaultConnectionType,
-				Format:         defaultFormat,
-				Direction:      defaultDirection,
+				ID:              uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
+				AsteriskID:      "3e:50:6b:43:bb:30",
+				ChannelID:       "09d1321e-b330-11ef-ad3e-170da10752c8",
+				BridgeID:        "96b5355c-7d9e-11f0-a2ca-b3875a58d870",
+				PlaybackID:      "96df44be-7d9e-11f0-a0fd-bb11489c28cf",
+				ReferenceType:   externalmedia.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("09ec9a0e-b330-11ef-b9dc-6701b7b5d325"),
+				Status:          externalmedia.StatusRunning,
+				LocalIP:         "127.0.0.1",
+				LocalPort:       8080,
+				ExternalHost:    "127.0.0.1:8090",
+				Encapsulation:   defaultEncapsulation,
+				Transport:       defaultTransport,
+				ConnectionType:  defaultConnectionType,
+				Format:          defaultFormat,
+				DirectionListen: externalmedia.DirectionIn,
+				DirectionSpeak:  externalmedia.DirectionOut,
 			},
 		},
 	}
@@ -136,6 +153,8 @@ func Test_Create(t *testing.T) {
 				tt.id,
 				tt.asteriskID,
 				tt.channelID,
+				tt.bridgeID,
+				tt.playbackID,
 				tt.referenceType,
 				tt.referenceID,
 				tt.localIP,
@@ -145,7 +164,8 @@ func Test_Create(t *testing.T) {
 				tt.transport,
 				tt.connectionType,
 				tt.format,
-				tt.direction,
+				tt.directionListen,
+				tt.directionSpeak,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

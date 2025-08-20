@@ -455,7 +455,18 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 		return nil, err
 	}
 
-	tmp, err := h.callHandler.ExternalMediaStart(ctx, id, req.ExternalMediaID, req.ExternalHost, externalmedia.Encapsulation(req.Encapsulation), externalmedia.Transport(req.Transport), req.ConnectionType, req.Format, req.Direction)
+	tmp, err := h.callHandler.ExternalMediaStart(
+		ctx,
+		id,
+		req.ExternalMediaID,
+		req.ExternalHost,
+		externalmedia.Encapsulation(req.Encapsulation),
+		externalmedia.Transport(req.Transport),
+		req.ConnectionType,
+		req.Format,
+		req.DirectionListen,
+		req.DirectionSpeak,
+	)
 	if err != nil {
 		log.Errorf("Could not start the external media. call: %s, err: %v", id, err)
 		return nil, err

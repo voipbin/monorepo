@@ -2,13 +2,16 @@ package callhandler
 
 import (
 	"context"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/playback"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
@@ -58,14 +61,12 @@ func (h *callHandler) ARIChannelDtmfReceived(ctx context.Context, cn *channel.Ch
 
 // ARIPlaybackFinished handles PlaybackFinished ARI event
 // parsed playbackID to the action id, and execute the next action if its correct.
-func (h *callHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error {
+func (h *callHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, e *ari.PlaybackFinished) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ARIPlaybackFinished",
-		"channel_id":  cn.ID,
-		"playback_id": playbackID,
+		"func":       "ARIPlaybackFinished",
+		"channel_id": cn.ID,
+		"event":      e,
 	})
-
-	actionID := uuid.FromStringOrNil(playbackID)
 
 	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
@@ -74,6 +75,7 @@ func (h *callHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Chann
 	}
 
 	// compare actionID
+	actionID := uuid.FromStringOrNil(strings.TrimPrefix(e.Playback.ID, playback.IDPrefixCall))
 	if c.Action.ID != actionID {
 		log.Debugf("The call's action id does not match. call: %s, channel: %s, action: %s", c.ID, cn.ID, actionID)
 		return nil

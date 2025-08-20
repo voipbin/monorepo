@@ -23,12 +23,12 @@ func (h *streamingHandler) Start(
 	direction streaming.Direction,
 ) (*streaming.Streaming, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Start",
-		"customer_id":    customerID,
-		"reference_type": referenceType,
-		"reference_id":   referenceID,
-		"language":       language,
-		"direction":      direction,
+		"func":             "Start",
+		"customer_id":      customerID,
+		"reference_type":   referenceType,
+		"reference_id":     referenceID,
+		"language":         language,
+		"direction_listen": direction,
 	})
 
 	// create streaming record
@@ -46,13 +46,13 @@ func (h *streamingHandler) Start(
 		res.ID,
 		externalmedia.ReferenceType(referenceType),
 		referenceID,
-		true,
 		h.listenAddress,
 		defaultEncapsulation,
 		defaultTransport,
 		defaultConnectionType,
 		defaultFormat,
-		string(direction),
+		externalmedia.DirectionNone,
+		externalmedia.Direction(direction),
 	)
 	if err != nil {
 		log.Errorf("Could not create external media. err: %v", err)

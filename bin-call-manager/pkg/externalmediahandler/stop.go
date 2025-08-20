@@ -20,11 +20,9 @@ func (h *externalMediaHandler) Stop(ctx context.Context, externalMediaID uuid.UU
 	})
 	log.Debug("Stopping the external media.")
 
-	// get external media
-	res, err := h.db.ExternalMediaGet(ctx, externalMediaID)
-	if err != nil || res == nil {
-		log.Debug("No external media exist. Nothing to do.")
-		return nil, fmt.Errorf("could not find external media")
+	res, err := h.UpdateStatus(ctx, externalMediaID, externalmedia.StatusTerminating)
+	if err != nil {
+		return nil, fmt.Errorf("could not update external media status: %w", err)
 	}
 
 	// hangup the external media channel

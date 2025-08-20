@@ -146,7 +146,6 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 	transport string, // udp
 	connectionType string, // client,server
 	format string, // ulaw
-	direction string, // in,out,both
 ) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s/external-media", confbridgeID)
 
@@ -157,7 +156,6 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 		Transport:       transport,
 		ConnectionType:  connectionType,
 		Format:          format,
-		Direction:       direction,
 	}
 
 	m, err := json.Marshal(reqData)

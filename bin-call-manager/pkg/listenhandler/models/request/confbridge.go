@@ -28,7 +28,6 @@ type V1DataConfbridgesIDExternalMediaPost struct {
 	Transport       string    `json:"transport,omitempty"`
 	ConnectionType  string    `json:"connection_type,omitempty"`
 	Format          string    `json:"format,omitempty"`
-	Direction       string    `json:"direction,omitempty"`
 }
 
 // V1DataConfbridgesIDRecordingStartPost is

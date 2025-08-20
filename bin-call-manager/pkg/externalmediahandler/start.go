@@ -6,15 +6,29 @@ import (
 	"strconv"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/models/playback"
 )
 
 // Start starts the external media processing
-func (h *externalMediaHandler) Start(ctx context.Context, id uuid.UUID, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, noInsertMedia bool, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*externalmedia.ExternalMedia, error) {
+func (h *externalMediaHandler) Start(
+	ctx context.Context,
+	id uuid.UUID,
+	referenceType externalmedia.ReferenceType,
+	referenceID uuid.UUID,
+	externalHost string,
+	encapsulation externalmedia.Encapsulation,
+	transport externalmedia.Transport,
+	connectionType string,
+	format string,
+	directionListen externalmedia.Direction,
+	directionSpeak externalmedia.Direction,
+) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Start",
 		"reference_type": referenceType,
@@ -22,9 +36,14 @@ func (h *externalMediaHandler) Start(ctx context.Context, id uuid.UUID, referenc
 	})
 	log.Debug("Creating the external media.")
 
+	if id == uuid.Nil {
+		log.Debugf("The requested id is empty. Generate a new id.")
+		id = h.utilHandler.UUIDCreate()
+	}
+
 	switch referenceType {
 	case externalmedia.ReferenceTypeCall:
-		return h.startReferenceTypeCall(ctx, id, referenceID, externalHost, noInsertMedia, encapsulation, transport, format, direction)
+		return h.startReferenceTypeCall(ctx, id, referenceID, externalHost, encapsulation, transport, format, directionListen, directionSpeak)
 
 	case externalmedia.ReferenceTypeConfbridge:
 		return h.startReferenceTypeConfbridge(ctx, id, referenceID, externalHost, encapsulation, transport, format)
@@ -35,7 +54,17 @@ func (h *externalMediaHandler) Start(ctx context.Context, id uuid.UUID, referenc
 }
 
 // startReferenceTypeCall starts the external media processing
-func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, id uuid.UUID, callID uuid.UUID, externalHost string, noInsertMedia bool, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, format string, direction string) (*externalmedia.ExternalMedia, error) {
+func (h *externalMediaHandler) startReferenceTypeCall(
+	ctx context.Context,
+	id uuid.UUID,
+	callID uuid.UUID,
+	externalHost string,
+	encapsulation externalmedia.Encapsulation,
+	transport externalmedia.Transport,
+	format string,
+	directionListen externalmedia.Direction,
+	directionSpeak externalmedia.Direction,
+) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "startReferenceTypeCall",
 		"id":      id,
@@ -43,72 +72,17 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, id uu
 	})
 	log.Debug("Creating the external media for call type.")
 
-	if noInsertMedia {
-		return h.startReferenceTypeCallWithoutInsertMedia(ctx, id, callID, externalHost, encapsulation, transport, format, direction)
-	}
-
-	return h.startReferenceTypeCallWithInsertMedia(ctx, id, callID, externalHost, encapsulation, transport, format)
-}
-
-// startReferenceTypeCallWithInsertMedia starts the external media processing with external media insertion
-func (h *externalMediaHandler) startReferenceTypeCallWithInsertMedia(ctx context.Context, id uuid.UUID, callID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, format string) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "startReferenceTypeCallWithInsertMedia",
-		"id":      id,
-		"call_id": callID,
-	})
-	log.Debug("Creating the external media for call type.")
-
 	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get a call info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get call info for call_id: %s", callID)
 	}
 
 	// get channel
 	ch, err := h.channelHandler.Get(ctx, c.ChannelID)
 	if err != nil {
 		log.Errorf("Could not get channel info. err: %v", err)
-		return nil, err
-	}
-
-	// start external media
-	res, err := h.startExternalMedia(ctx, id, ch.AsteriskID, c.BridgeID, externalmedia.ReferenceTypeCall, c.ID, externalHost, encapsulation, transport, format)
-	if err != nil {
-		log.Errorf("Could not start the external media. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// startReferenceTypeCallWithoutInsertMedia starts the external media processing without external media insertion
-// this external media does not allowed to insert the media to the call.
-// this is used by the transcribe-manager to distinguish the channel's media in/out.
-// this makes snoop channel of the given channel and export the media to the external media socket.
-// it looks ok, but the snoop channel does not pass the inserted media from the external media socket to the snooping channel,
-// we can not use this for media insertion.
-// btw, the transcribes need to distinguish the channel's in/out stream direction, the transcribe is the only actual user of this feature for now.
-func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx context.Context, id uuid.UUID, callID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, format string, direction string) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "startReferenceTypeCallWithoutInsertMedia",
-		"id":            id,
-		"call_id":       callID,
-		"external_host": externalHost,
-	})
-	log.Debug("Creating the external media without insert media for call type.")
-
-	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
-	if err != nil {
-		log.Errorf("Could not get a call info. err: %v", err)
-		return nil, err
-	}
-
-	// get channel
-	ch, err := h.channelHandler.Get(ctx, c.ChannelID)
-	if err != nil {
-		log.Errorf("Could not get channel info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get channel info for channel_id: %s", c.ChannelID)
 	}
 
 	// create a bridge
@@ -120,8 +94,7 @@ func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx cont
 		return nil, err
 	}
 
-	// create a snoop channel
-	// set app args
+	// set app args for snoop channel
 	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s",
 		channel.StasisDataTypeContextType, channel.ContextTypeCall,
 		channel.StasisDataTypeContext, channel.ContextExternalSoop,
@@ -129,16 +102,38 @@ func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx cont
 		channel.StasisDataTypeBridgeID, br.ID,
 	)
 
+	// create snoop channel
 	snoopID := h.utilHandler.UUIDCreate().String()
-	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth)
+	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirection(directionListen), channel.SnoopDirection(directionSpeak))
 	if err != nil {
 		log.Errorf("Could not create a snoop channel for the external media. error: %v", err)
 		return nil, err
 	}
-	log.WithField("channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
+	log.WithField("snoop_channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
+
+	// start silence playback
+	playbackID := fmt.Sprintf("%s%s", playback.IDPrefixExternalMedia, id.String())
+	if errPlay := h.channelHandler.Play(ctx, ch.ID, playbackID, []string{defaultSilencePlaybackMedia}, "", 0, 0); errPlay != nil {
+		return nil, errors.Wrapf(errPlay, "could not start silence playback for channel_id: %s", ch.ID)
+	}
+	log.WithField("playback_id", playbackID).Debugf("Started silence playback for the channel. channel_id: %s", ch.ID)
 
 	// start external media
-	res, err := h.startExternalMedia(ctx, id, ch.AsteriskID, br.ID, externalmedia.ReferenceTypeCall, c.ID, externalHost, encapsulation, transport, format)
+	res, err := h.startExternalMedia(
+		ctx,
+		id,
+		ch.AsteriskID,
+		br.ID,
+		playbackID,
+		externalmedia.ReferenceTypeCall,
+		c.ID,
+		externalHost,
+		encapsulation,
+		transport,
+		format,
+		directionListen,
+		directionSpeak,
+	)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)
 		return nil, err
@@ -148,7 +143,15 @@ func (h *externalMediaHandler) startReferenceTypeCallWithoutInsertMedia(ctx cont
 }
 
 // startReferenceTypeConfbridge starts the external media processing reference type
-func (h *externalMediaHandler) startReferenceTypeConfbridge(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, format string) (*externalmedia.ExternalMedia, error) {
+func (h *externalMediaHandler) startReferenceTypeConfbridge(
+	ctx context.Context,
+	id uuid.UUID,
+	confbridgeID uuid.UUID,
+	externalHost string,
+	encapsulation externalmedia.Encapsulation,
+	transport externalmedia.Transport,
+	format string,
+) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startReferenceTypeConfbridge",
 		"confbridge_id": confbridgeID,
@@ -173,7 +176,21 @@ func (h *externalMediaHandler) startReferenceTypeConfbridge(ctx context.Context,
 	log.WithField("bridge", br).Debugf("Found bridge info. bridge_id: %s", br.ID)
 
 	// start external media
-	res, err := h.startExternalMedia(ctx, id, br.AsteriskID, br.ID, externalmedia.ReferenceTypeConfbridge, cb.ID, externalHost, encapsulation, transport, format)
+	res, err := h.startExternalMedia(
+		ctx,
+		id,
+		br.AsteriskID,
+		br.ID,
+		"", // playbackID is not used in confbridge
+		externalmedia.ReferenceTypeConfbridge,
+		cb.ID,
+		externalHost,
+		encapsulation,
+		transport,
+		format,
+		externalmedia.DirectionBoth, // confbridge is always both direction
+		externalmedia.DirectionBoth, // confbridge is always both direction
+	)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)
 		return nil, err
@@ -183,7 +200,21 @@ func (h *externalMediaHandler) startReferenceTypeConfbridge(ctx context.Context,
 }
 
 // startExternalMedia starts the external media and create external media database record
-func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.UUID, asteriskID string, bridgeID string, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, format string) (*externalmedia.ExternalMedia, error) {
+func (h *externalMediaHandler) startExternalMedia(
+	ctx context.Context,
+	id uuid.UUID,
+	asteriskID string,
+	bridgeID string,
+	playbackID string,
+	referenceType externalmedia.ReferenceType,
+	referenceID uuid.UUID,
+	externalHost string,
+	encapsulation externalmedia.Encapsulation,
+	transport externalmedia.Transport,
+	format string,
+	directionListen externalmedia.Direction,
+	directionSpeak externalmedia.Direction,
+) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "startExternalMedia",
 		"reference_type": referenceType,
@@ -230,8 +261,25 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, id uuid.U
 	}
 
 	extChannelID := h.utilHandler.UUIDCreate().String()
-
-	em, err := h.Create(ctx, id, asteriskID, extChannelID, referenceType, referenceID, "", 0, externalHost, encapsulation, defaultTransport, defaultConnectionType, defaultFormat, defaultDirection)
+	em, err := h.Create(
+		ctx,
+		id,
+		asteriskID,
+		extChannelID,
+		bridgeID,
+		playbackID,
+		referenceType,
+		referenceID,
+		"",
+		0,
+		externalHost,
+		encapsulation,
+		defaultTransport,
+		defaultConnectionType,
+		defaultFormat,
+		directionListen,
+		directionSpeak,
+	)
 	if err != nil {
 		log.Errorf("Could not create a external media. err: %v", err)
 		return nil, err

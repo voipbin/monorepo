@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	cmcall "monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -830,7 +831,8 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 		transport       string
 		connectionType  string
 		format          string
-		direction       string
+		directionListen externalmedia.Direction
+		directionSpeak  externalmedia.Direction
 
 		response *sock.Response
 
@@ -838,30 +840,31 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 		expectRes     *cmcall.Call
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"),
-			uuid.FromStringOrNil("766dd784-b334-11ef-a452-ef0fb4017ab9"),
-			"localhost:5060",
-			"rtp",
-			"udp",
-			"client",
-			"ulaw",
-			"both",
+			callID:          uuid.FromStringOrNil("a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"),
+			externalMediaID: uuid.FromStringOrNil("766dd784-b334-11ef-a452-ef0fb4017ab9"),
+			externalHost:    "localhost:5060",
+			encapsulation:   "rtp",
+			transport:       "udp",
+			connectionType:  "client",
+			format:          "ulaw",
+			directionListen: externalmedia.DirectionIn,
+			directionSpeak:  externalmedia.DirectionOut,
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"}`),
 			},
 
-			&sock.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/calls/a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb/external-media",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"external_media_id":"766dd784-b334-11ef-a452-ef0fb4017ab9","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"external_media_id":"766dd784-b334-11ef-a452-ef0fb4017ab9","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction_listen":"in","direction_speak":"out"}`),
 			},
-			&cmcall.Call{
+			expectRes: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"),
 				},
@@ -883,7 +886,18 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1CallExternalMediaStart(ctx, tt.callID, tt.externalMediaID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := reqHandler.CallV1CallExternalMediaStart(
+				ctx,
+				tt.callID,
+				tt.externalMediaID,
+				tt.externalHost,
+				tt.encapsulation,
+				tt.transport,
+				tt.connectionType,
+				tt.format,
+				tt.directionListen,
+				tt.directionSpeak,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

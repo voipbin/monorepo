@@ -12,7 +12,16 @@ import (
 )
 
 // ExternalMediaStart starts the external media processing
-func (h *confbridgeHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*confbridge.Confbridge, error) {
+func (h *confbridgeHandler) ExternalMediaStart(
+	ctx context.Context,
+	id uuid.UUID,
+	externalMediaID uuid.UUID,
+	externalHost string,
+	encapsulation externalmedia.Encapsulation,
+	transport externalmedia.Transport,
+	connectionType string,
+	format string,
+) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "ExternalMediaStart",
 		"confbridge_id":     id,
@@ -31,7 +40,19 @@ func (h *confbridgeHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID
 		return nil, fmt.Errorf("the confbridge has external media already")
 	}
 
-	tmp, err := h.externalMediaHandler.Start(ctx, externalMediaID, externalmedia.ReferenceTypeConfbridge, c.ID, true, externalHost, encapsulation, transport, connectionType, format, direction)
+	tmp, err := h.externalMediaHandler.Start(
+		ctx,
+		externalMediaID,
+		externalmedia.ReferenceTypeConfbridge,
+		c.ID,
+		externalHost,
+		encapsulation,
+		transport,
+		connectionType,
+		format,
+		externalmedia.DirectionBoth,
+		externalmedia.DirectionBoth,
+	)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)
 		return nil, err
