@@ -44,14 +44,14 @@ func (h *externalMediaHandler) Create(
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
-		LocalIP:        localIP,
-		LocalPort:      localPort,
-		ExternalHost:   externalHost,
-		Encapsulation:  encapsulation,
-		Transport:      transport,
-		ConnectionType: connectionType,
-		Format:         format,
-		Direction:      direction,
+		LocalIP:         localIP,
+		LocalPort:       localPort,
+		ExternalHost:    externalHost,
+		Encapsulation:   encapsulation,
+		Transport:       transport,
+		ConnectionType:  connectionType,
+		Format:          format,
+		DirectionListen: direction,
 	}
 
 	if errDB := h.db.ExternalMediaSet(ctx, extMedia); errDB != nil {

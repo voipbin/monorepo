@@ -116,7 +116,18 @@ type CallHandler interface {
 
 	RecoveryStart(ctx context.Context, asteriskID string) error
 
-	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*call.Call, error)
+	ExternalMediaStart(
+		ctx context.Context,
+		id uuid.UUID,
+		externalMediaID uuid.UUID,
+		externalHost string,
+		encapsulation externalmedia.Encapsulation,
+		transport externalmedia.Transport,
+		connectionType string,
+		format string,
+		directionListen externalmedia.Direction,
+		directionSpeak externalmedia.Direction,
+	) (*call.Call, error)
 	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
 
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error

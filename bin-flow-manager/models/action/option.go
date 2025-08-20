@@ -199,13 +199,14 @@ type OptionEmpty struct {
 
 // OptionExternalMediaStart defines action OptionExternalMediaStart's option.
 type OptionExternalMediaStart struct {
-	ExternalHost   string `json:"external_host,omitempty"`   // external media target host address
-	Encapsulation  string `json:"encapsulation,omitempty"`   // encapsulation. default: rtp
-	Transport      string `json:"transport,omitempty"`       // transport. default: udp
-	ConnectionType string `json:"connection_type,omitempty"` // connection type. default: client
-	Format         string `json:"format,omitempty"`          // format default: ulaw
-	Direction      string `json:"direction,omitempty"`       // direction. default: both
-	Data           string `json:"data,omitempty"`            // data
+	ExternalHost    string `json:"external_host,omitempty"`    // external media target host address
+	Encapsulation   string `json:"encapsulation,omitempty"`    // encapsulation. default: rtp
+	Transport       string `json:"transport,omitempty"`        // transport. default: udp
+	ConnectionType  string `json:"connection_type,omitempty"`  // connection type. default: client
+	Format          string `json:"format,omitempty"`           // format default: ulaw
+	DirectionListen string `json:"direction_listen,omitempty"` // direction. default: ""
+	DirectionSpeak  string `json:"direction_speak,omitempty"`  // direction. default: ""
+	Data            string `json:"data,omitempty"`             // data
 }
 
 // OptionExternalMediaStop defines action OptionExternalMediaStop's option

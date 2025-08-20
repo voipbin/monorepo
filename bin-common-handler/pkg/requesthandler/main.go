@@ -346,7 +346,18 @@ type RequestHandler interface {
 	CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
 	CallV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallRemoveChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallExternalMediaStart(ctx context.Context, callID uuid.UUID, externalMediaID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmcall.Call, error)
+	CallV1CallExternalMediaStart(
+		ctx context.Context,
+		callID uuid.UUID,
+		externalMediaID uuid.UUID,
+		externalHost string,
+		encapsulation string,
+		transport string,
+		connectionType string,
+		format string,
+		directionListen cmexternalmedia.Direction,
+		directionSpeak cmexternalmedia.Direction,
+	) (*cmcall.Call, error)
 	CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
 	CallV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
@@ -442,14 +453,25 @@ type RequestHandler interface {
 		transport string, // udp
 		connectionType string, // client,server
 		format string, // ulaw
-		direction string, // in,out,both
 	) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeExternalMediaStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
 
 	// call-manager external-media
 	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
 	CallV1ExternalMediaGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmexternalmedia.ExternalMedia, error)
-	CallV1ExternalMediaStart(ctx context.Context, externalMediaID uuid.UUID, referenceType cmexternalmedia.ReferenceType, referenceID uuid.UUID, noInsertMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmexternalmedia.ExternalMedia, error)
+	CallV1ExternalMediaStart(
+		ctx context.Context,
+		externalMediaID uuid.UUID,
+		referenceType cmexternalmedia.ReferenceType,
+		referenceID uuid.UUID,
+		externalHost string,
+		encapsulation string,
+		transport string,
+		connectionType string,
+		format string,
+		directionListen cmexternalmedia.Direction,
+		directionSpeak cmexternalmedia.Direction,
+	) (*cmexternalmedia.ExternalMedia, error)
 	CallV1ExternalMediaStop(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
 
 	// call-manager groupcall

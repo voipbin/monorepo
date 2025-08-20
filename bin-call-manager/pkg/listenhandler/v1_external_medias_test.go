@@ -22,16 +22,16 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		expectID             uuid.UUID
-		expectReferenceType  externalmedia.ReferenceType
-		expectReferenceID    uuid.UUID
-		expectNoInsertMedia  bool
-		expectExternalHost   string
-		expectEncapsulation  externalmedia.Encapsulation
-		expectTransport      externalmedia.Transport
-		expectConnectionType string
-		expectFormat         string
-		expectDirection      string
+		expectID              uuid.UUID
+		expectReferenceType   externalmedia.ReferenceType
+		expectReferenceID     uuid.UUID
+		expectExternalHost    string
+		expectEncapsulation   externalmedia.Encapsulation
+		expectTransport       externalmedia.Transport
+		expectConnectionType  string
+		expectFormat          string
+		expectDirectionListen externalmedia.Direction
+		expectDirectionSpeak  externalmedia.Direction
 
 		responseExternalMedia *externalmedia.ExternalMedia
 		expectRes             *sock.Response
@@ -39,32 +39,32 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal type connect",
-			&sock.Request{
+			name: "normal type connect",
+			request: &sock.Request{
 				URI:      "/v1/external-medias",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"077a8dce-b332-11ef-a775-d39c4839f5a6","reference_type":"call","reference_id":"45832182-97b2-11ed-8f17-33590535a404","no_insert_media":false,"external_host":"127.0.0.1:8080","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"id":"077a8dce-b332-11ef-a775-d39c4839f5a6","reference_type":"call","reference_id":"45832182-97b2-11ed-8f17-33590535a404","external_host":"127.0.0.1:8080","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction_listen":"in","direction_speak":"out"}`),
 			},
 
-			uuid.FromStringOrNil("077a8dce-b332-11ef-a775-d39c4839f5a6"),
-			externalmedia.ReferenceTypeCall,
-			uuid.FromStringOrNil("45832182-97b2-11ed-8f17-33590535a404"),
-			false,
-			"127.0.0.1:8080",
-			"rtp",
-			"udp",
-			"client",
-			"ulaw",
-			"both",
+			expectID:              uuid.FromStringOrNil("077a8dce-b332-11ef-a775-d39c4839f5a6"),
+			expectReferenceType:   externalmedia.ReferenceTypeCall,
+			expectReferenceID:     uuid.FromStringOrNil("45832182-97b2-11ed-8f17-33590535a404"),
+			expectExternalHost:    "127.0.0.1:8080",
+			expectEncapsulation:   "rtp",
+			expectTransport:       "udp",
+			expectConnectionType:  "client",
+			expectFormat:          "ulaw",
+			expectDirectionListen: externalmedia.DirectionIn,
+			expectDirectionSpeak:  externalmedia.DirectionOut,
 
-			&externalmedia.ExternalMedia{
+			responseExternalMedia: &externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("077a8dce-b332-11ef-a775-d39c4839f5a6"),
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"077a8dce-b332-11ef-a775-d39c4839f5a6","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}`),
+				Data:       []byte(`{"id":"077a8dce-b332-11ef-a775-d39c4839f5a6","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}`),
 			},
 		},
 	}
@@ -87,13 +87,13 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 				tt.expectID,
 				tt.expectReferenceType,
 				tt.expectReferenceID,
-				tt.expectNoInsertMedia,
 				tt.expectExternalHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,
 				tt.expectConnectionType,
 				tt.expectFormat,
-				tt.expectDirection,
+				tt.expectDirectionListen,
+				tt.expectDirectionSpeak,
 			).Return(tt.responseExternalMedia, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -122,40 +122,40 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 		expectRes              *sock.Response
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&sock.Request{
+			request: &sock.Request{
 				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809&reference_id=0971d7c4-e829-11ee-a17d-b320c527e478",
 				Method: sock.RequestMethodGet,
 			},
-			10,
-			"2020-05-03 21:35:02.809",
+			pageSize:  10,
+			pageToken: "2020-05-03 21:35:02.809",
 
-			[]*externalmedia.ExternalMedia{
+			responseExternalMedias: []*externalmedia.ExternalMedia{
 				{
 					ID: uuid.FromStringOrNil("28db3628-e829-11ee-a39e-83e2f12ec29f"),
 				},
 			},
-			map[string]string{
+			responseFilters: map[string]string{
 				"reference_id": "0971d7c4-e829-11ee-a17d-b320c527e478",
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"28db3628-e829-11ee-a39e-83e2f12ec29f","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}]`),
+				Data:       []byte(`[{"id":"28db3628-e829-11ee-a39e-83e2f12ec29f","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}]`),
 			},
 		},
 		{
-			"2 items",
+			name: "2 items",
 
-			&sock.Request{
+			request: &sock.Request{
 				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_reference_id=98d20344-e829-11ee-992d-fbe3942f7a49",
 				Method: sock.RequestMethodGet,
 			},
-			10,
-			"2020-05-03 21:35:02.809",
+			pageSize:  10,
+			pageToken: "2020-05-03 21:35:02.809",
 
-			[]*externalmedia.ExternalMedia{
+			responseExternalMedias: []*externalmedia.ExternalMedia{
 				{
 					ID: uuid.FromStringOrNil("98fda9f4-e829-11ee-83bd-233ee47d5cb3"),
 				},
@@ -163,13 +163,13 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("992a4cca-e829-11ee-83e5-4bc5ace56a63"),
 				},
 			},
-			map[string]string{
+			responseFilters: map[string]string{
 				"reference_id": "98d20344-e829-11ee-992d-fbe3942f7a49",
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"98fda9f4-e829-11ee-83bd-233ee47d5cb3","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""},{"id":"992a4cca-e829-11ee-83e5-4bc5ace56a63","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}]`),
+				Data:       []byte(`[{"id":"98fda9f4-e829-11ee-83bd-233ee47d5cb3","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""},{"id":"992a4cca-e829-11ee-83e5-4bc5ace56a63","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}]`),
 			},
 		},
 	}
@@ -220,21 +220,21 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal type connect",
-			&sock.Request{
+			name: "normal type connect",
+			request: &sock.Request{
 				URI:    "/v1/external-medias/86d29aa4-97b3-11ed-a086-eb62e01c6736",
 				Method: sock.RequestMethodGet,
 			},
 
-			uuid.FromStringOrNil("86d29aa4-97b3-11ed-a086-eb62e01c6736"),
+			expectID: uuid.FromStringOrNil("86d29aa4-97b3-11ed-a086-eb62e01c6736"),
 
-			&externalmedia.ExternalMedia{
+			responseExternalMedia: &externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("86d29aa4-97b3-11ed-a086-eb62e01c6736"),
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"86d29aa4-97b3-11ed-a086-eb62e01c6736","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}`),
+				Data:       []byte(`{"id":"86d29aa4-97b3-11ed-a086-eb62e01c6736","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}`),
 			},
 		},
 	}
@@ -280,21 +280,21 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal type connect",
-			&sock.Request{
+			name: "normal type connect",
+			request: &sock.Request{
 				URI:    "/v1/external-medias/bbfd5cdc-97b3-11ed-8caa-e705f8c7d343",
 				Method: sock.RequestMethodDelete,
 			},
 
-			uuid.FromStringOrNil("bbfd5cdc-97b3-11ed-8caa-e705f8c7d343"),
+			expectID: uuid.FromStringOrNil("bbfd5cdc-97b3-11ed-8caa-e705f8c7d343"),
 
-			&externalmedia.ExternalMedia{
+			responseExternalMedia: &externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("bbfd5cdc-97b3-11ed-8caa-e705f8c7d343"),
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbfd5cdc-97b3-11ed-8caa-e705f8c7d343","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}`),
+				Data:       []byte(`{"id":"bbfd5cdc-97b3-11ed-8caa-e705f8c7d343","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}`),
 			},
 		},
 	}

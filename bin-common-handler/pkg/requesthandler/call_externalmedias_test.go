@@ -123,13 +123,13 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 		externalMediaID uuid.UUID
 		referenceType   cmexternalmedia.ReferenceType
 		referenceID     uuid.UUID
-		noInsertMedia   bool
 		externalHost    string
 		encapsulation   string
 		transport       string
 		connectionType  string
 		format          string
-		direction       string
+		directionListen cmexternalmedia.Direction
+		directionSpeak  cmexternalmedia.Direction
 
 		response *sock.Response
 
@@ -137,32 +137,32 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 		expectRes     *cmexternalmedia.ExternalMedia
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("7f655194-b336-11ef-ad61-e340f855ae0d"),
-			cmexternalmedia.ReferenceTypeCall,
-			uuid.FromStringOrNil("94a6ec48-97c2-11ed-bd66-afb196d5c598"),
-			true,
-			"localhost:5060",
-			"rtp",
-			"udp",
-			"client",
-			"ulaw",
-			"both",
+			externalMediaID: uuid.FromStringOrNil("7f655194-b336-11ef-ad61-e340f855ae0d"),
+			referenceType:   cmexternalmedia.ReferenceTypeCall,
+			referenceID:     uuid.FromStringOrNil("94a6ec48-97c2-11ed-bd66-afb196d5c598"),
+			externalHost:    "localhost:5060",
+			encapsulation:   "rtp",
+			transport:       "udp",
+			connectionType:  "client",
+			format:          "ulaw",
+			directionListen: cmexternalmedia.DirectionIn,
+			directionSpeak:  cmexternalmedia.DirectionOut,
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e8337d9a-97c2-11ed-93ad-5bcba5332622"}`),
 			},
 
-			&sock.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/external-medias",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"7f655194-b336-11ef-ad61-e340f855ae0d","reference_type":"call","reference_id":"94a6ec48-97c2-11ed-bd66-afb196d5c598","no_insert_media":true,"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"id":"7f655194-b336-11ef-ad61-e340f855ae0d","reference_type":"call","reference_id":"94a6ec48-97c2-11ed-bd66-afb196d5c598","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction_listen":"in","direction_speak":"out"}`),
 			},
-			&cmexternalmedia.ExternalMedia{
+			expectRes: &cmexternalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("e8337d9a-97c2-11ed-93ad-5bcba5332622"),
 			},
 		},
@@ -182,7 +182,19 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1ExternalMediaStart(ctx, tt.externalMediaID, tt.referenceType, tt.referenceID, tt.noInsertMedia, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := reqHandler.CallV1ExternalMediaStart(
+				ctx,
+				tt.externalMediaID,
+				tt.referenceType,
+				tt.referenceID,
+				tt.externalHost,
+				tt.encapsulation,
+				tt.transport,
+				tt.connectionType,
+				tt.format,
+				tt.directionListen,
+				tt.directionSpeak,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

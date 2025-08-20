@@ -833,16 +833,17 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 
 		responseExternalMedia *externalmedia.ExternalMedia
 
-		expectHost           string
-		expectEncapsulation  externalmedia.Encapsulation
-		expectTransport      externalmedia.Transport
-		expectConnectionType string
-		expectFormat         string
-		expectDirection      string
+		expectHost            string
+		expectEncapsulation   externalmedia.Encapsulation
+		expectTransport       externalmedia.Transport
+		expectConnectionType  string
+		expectFormat          string
+		expectDirectionListen externalmedia.Direction
+		expectDirectionSpeak  externalmedia.Direction
 	}{
 		{
-			"normal",
-			&call.Call{
+			name: "normal",
+			call: &call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3ba00ae0-02f8-11ec-863a-abd78c8246c4"),
 				},
@@ -851,27 +852,29 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 					Type: fmaction.TypeExternalMediaStart,
 					ID:   uuid.FromStringOrNil("447f0d28-02f8-11ec-bfdb-4bb2407458ce"),
 					Option: map[string]any{
-						"external_host":   "example.com",
-						"encapsulation":   "rtp",
-						"transport":       "udp",
-						"connection_type": "client",
-						"format":          "ulaw",
-						"direction":       "both",
-						"data":            "",
+						"external_host":    "example.com",
+						"encapsulation":    "rtp",
+						"transport":        "udp",
+						"connection_type":  "client",
+						"format":           "ulaw",
+						"direction_listen": "in",
+						"direction_speak":  "out",
+						"data":             "",
 					},
 				},
 			},
 
-			&externalmedia.ExternalMedia{
+			responseExternalMedia: &externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("caff4130-96ed-11ed-a978-ff691cc47d66"),
 			},
 
-			"example.com",
-			"rtp",
-			"udp",
-			"client",
-			"ulaw",
-			"both",
+			expectHost:            "example.com",
+			expectEncapsulation:   "rtp",
+			expectTransport:       "udp",
+			expectConnectionType:  "client",
+			expectFormat:          "ulaw",
+			expectDirectionListen: externalmedia.DirectionIn,
+			expectDirectionSpeak:  externalmedia.DirectionOut,
 		},
 	}
 
@@ -895,7 +898,19 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockExternal.EXPECT().Start(ctx, uuid.Nil, externalmedia.ReferenceTypeCall, tt.call.ID, true, tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection).Return(tt.responseExternalMedia, nil)
+			mockExternal.EXPECT().Start(
+				ctx,
+				uuid.Nil,
+				externalmedia.ReferenceTypeCall,
+				tt.call.ID,
+				tt.expectHost,
+				tt.expectEncapsulation,
+				tt.expectTransport,
+				tt.expectConnectionType,
+				tt.expectFormat,
+				tt.expectDirectionListen,
+				tt.expectDirectionSpeak,
+			).Return(tt.responseExternalMedia, nil)
 			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.call.ID, tt.responseExternalMedia.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)

@@ -38,13 +38,13 @@ func (h *streamingHandler) Start(ctx context.Context, customerID uuid.UUID, tran
 		res.ID,
 		externalmedia.ReferenceType(referenceType),
 		referenceID,
-		true,
 		h.listenAddress,
 		defaultEncapsulation,
 		defaultTransport,
 		defaultConnectionType,
 		defaultFormat,
-		string(direction),
+		externalmedia.Direction(direction),
+		externalmedia.DirectionNone,
 	)
 	if err != nil {
 		log.Errorf("Could not create external media. err: %v", err)

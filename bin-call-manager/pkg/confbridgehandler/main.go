@@ -70,7 +70,16 @@ type ConfbridgeHandler interface {
 	) (*confbridge.Confbridge, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 
-	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*confbridge.Confbridge, error)
+	ExternalMediaStart(
+		ctx context.Context,
+		id uuid.UUID,
+		externalMediaID uuid.UUID,
+		externalHost string,
+		encapsulation externalmedia.Encapsulation,
+		transport externalmedia.Transport,
+		connectionType string,
+		format string,
+	) (*confbridge.Confbridge, error)
 	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 
 	FlagAdd(ctx context.Context, id uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error)

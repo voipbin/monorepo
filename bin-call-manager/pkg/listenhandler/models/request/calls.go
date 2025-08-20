@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/models/recording"
 )
 
@@ -74,13 +75,14 @@ type V1DataCallsIDActionNextPost struct {
 // v1 data type for V1DataCallsIDExternalMediaPost
 // /v1/calls/<call-id>/external-media POST
 type V1DataCallsIDExternalMediaPost struct {
-	ExternalMediaID uuid.UUID `json:"external_media_id,omitempty"`
-	ExternalHost    string    `json:"external_host,omitempty"`
-	Encapsulation   string    `json:"encapsulation,omitempty"`
-	Transport       string    `json:"transport,omitempty"`
-	ConnectionType  string    `json:"connection_type,omitempty"`
-	Format          string    `json:"format,omitempty"`
-	Direction       string    `json:"direction,omitempty"`
+	ExternalMediaID uuid.UUID               `json:"external_media_id,omitempty"`
+	ExternalHost    string                  `json:"external_host,omitempty"`
+	Encapsulation   string                  `json:"encapsulation,omitempty"`
+	Transport       string                  `json:"transport,omitempty"`
+	ConnectionType  string                  `json:"connection_type,omitempty"`
+	Format          string                  `json:"format,omitempty"`
+	DirectionListen externalmedia.Direction `json:"direction_listen,omitempty"`
+	DirectionSpeak  externalmedia.Direction `json:"direction_speak,omitempty"`
 }
 
 // V1DataCallsIDDigitsPost is

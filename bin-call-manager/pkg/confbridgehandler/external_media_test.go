@@ -30,7 +30,6 @@ func Test_ExternalMediaStart(t *testing.T) {
 		transport       externalmedia.Transport
 		connectionType  string
 		format          string
-		direction       string
 
 		responseCall          *confbridge.Confbridge
 		responseExternalMedia *externalmedia.ExternalMedia
@@ -45,7 +44,6 @@ func Test_ExternalMediaStart(t *testing.T) {
 			transport:       externalmedia.TransportUDP,
 			connectionType:  "client",
 			format:          "ulaw",
-			direction:       "both",
 
 			responseCall: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
@@ -78,11 +76,32 @@ func Test_ExternalMediaStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockExternal.EXPECT().Start(ctx, tt.externalMediaID, externalmedia.ReferenceTypeConfbridge, tt.id, true, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction).Return(tt.responseExternalMedia, nil)
+			mockExternal.EXPECT().Start(
+				ctx,
+				tt.externalMediaID,
+				externalmedia.ReferenceTypeConfbridge,
+				tt.id,
+				tt.externalHost,
+				tt.encapsulation,
+				tt.transport,
+				tt.connectionType,
+				tt.format,
+				externalmedia.DirectionBoth,
+				externalmedia.DirectionBoth,
+			).Return(tt.responseExternalMedia, nil)
 			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseCall, nil)
 
-			res, err := h.ExternalMediaStart(ctx, tt.id, tt.externalMediaID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := h.ExternalMediaStart(
+				ctx,
+				tt.id,
+				tt.externalMediaID,
+				tt.externalHost,
+				tt.encapsulation,
+				tt.transport,
+				tt.connectionType,
+				tt.format,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

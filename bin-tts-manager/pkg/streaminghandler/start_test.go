@@ -2,6 +2,7 @@ package streaminghandler
 
 import (
 	"context"
+	"monorepo/bin-call-manager/models/externalmedia"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -87,7 +88,19 @@ func Test_Start(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingCreated, gomock.Any())
-			mockReq.EXPECT().CallV1ExternalMediaStart(ctx, tt.responseUUID, cmexternalmedia.ReferenceType(tt.referenceType), tt.referenceID, true, tt.listenAddress, defaultEncapsulation, defaultTransport, defaultConnectionType, defaultFormat, string(tt.direction)).Return(tt.responseExternalMedia, nil)
+			mockReq.EXPECT().CallV1ExternalMediaStart(
+				ctx,
+				tt.responseUUID,
+				cmexternalmedia.ReferenceType(tt.referenceType),
+				tt.referenceID,
+				tt.listenAddress,
+				defaultEncapsulation,
+				defaultTransport,
+				defaultConnectionType,
+				defaultFormat,
+				externalmedia.DirectionNone,
+				externalmedia.Direction(tt.direction),
+			).Return(tt.responseExternalMedia, nil)
 
 			res, err := h.Start(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
 			if err != nil {

@@ -929,7 +929,8 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 		expectTransport       externalmedia.Transport
 		expectConnectionType  string
 		expectFormat          string
-		expectDirection       string
+		expectDirectionListen externalmedia.Direction
+		expectDirectionSpeak  externalmedia.Direction
 
 		expectRes *sock.Response
 	}
@@ -942,7 +943,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 				URI:      "/v1/calls/31255b7c-0a6b-11ec-87e2-afe5a545df76/external-media",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"external_media_id":"6e4d943c-b333-11ef-8f62-fb15e69cf29c","external_host": "127.0.0.1:5060", "encapsulation": "rtp", "transport": "udp", "connection_type": "client", "format": "ulaw", "direction": "both", "data": ""}`),
+				Data:     []byte(`{"external_media_id":"6e4d943c-b333-11ef-8f62-fb15e69cf29c","external_host": "127.0.0.1:5060", "encapsulation": "rtp", "transport": "udp", "connection_type": "client", "format": "ulaw", "direction_listen": "in", "direction_speak": "out", "data": ""}`),
 			},
 
 			responseCall: &call.Call{
@@ -958,7 +959,8 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 			expectTransport:       "udp",
 			expectConnectionType:  "client",
 			expectFormat:          "ulaw",
-			expectDirection:       "both",
+			expectDirectionListen: externalmedia.DirectionIn,
+			expectDirectionSpeak:  externalmedia.DirectionOut,
 
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -992,7 +994,8 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 				tt.expectTransport,
 				tt.expectConnectionType,
 				tt.expectFormat,
-				tt.expectDirection,
+				tt.expectDirectionListen,
+				tt.expectDirectionSpeak,
 			).Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
