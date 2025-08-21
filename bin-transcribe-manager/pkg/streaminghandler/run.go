@@ -96,7 +96,7 @@ func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, inte
 			return
 		case <-ticker.C:
 			// Create AudioSocket keepalive message
-			keepAliveMessage := []byte{0x10, 0x00, 0x00} // Header: type (0x10) + length (0x0000)
+			keepAliveMessage := []byte{0x10, 0x00, 0x01, 0x00} // Header: type (0x10) + length (0x0001)
 
 			errRetry := h.retryWithBackoff(func() error {
 				_, writeErr := conn.Write(keepAliveMessage)
