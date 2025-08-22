@@ -643,6 +643,21 @@ func (mr *MockRequestHandlerMockRecorder) AstBridgeGet(ctx, asteriskID, bridgeID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeGet", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeGet), ctx, asteriskID, bridgeID)
 }
 
+// AstBridgePlay mocks base method.
+func (m *MockRequestHandler) AstBridgePlay(ctx context.Context, asteriskID, bridgeID string, medias []string, language string, offsetms, skipms int, playbackID string) (*ari.Playback, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstBridgePlay", ctx, asteriskID, bridgeID, medias, language, offsetms, skipms, playbackID)
+	ret0, _ := ret[0].(*ari.Playback)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AstBridgePlay indicates an expected call of AstBridgePlay.
+func (mr *MockRequestHandlerMockRecorder) AstBridgePlay(ctx, asteriskID, bridgeID, medias, language, offsetms, skipms, playbackID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgePlay", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgePlay), ctx, asteriskID, bridgeID, medias, language, offsetms, skipms, playbackID)
+}
+
 // AstBridgeRecord mocks base method.
 func (m *MockRequestHandler) AstBridgeRecord(ctx context.Context, asteriskID, bridgeID, filename, format string, duration, silence int, beep bool, endKey, ifExists string) error {
 	m.ctrl.T.Helper()
@@ -886,17 +901,18 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelMuteOn(ctx, asteriskID, chan
 }
 
 // AstChannelPlay mocks base method.
-func (m *MockRequestHandler) AstChannelPlay(ctx context.Context, asteriskID, channelID string, medias []string, lang string, offsetms, skipms int, playbackID string) error {
+func (m *MockRequestHandler) AstChannelPlay(ctx context.Context, asteriskID, channelID string, medias []string, language string, offsetms, skipms int, playbackID string) (*ari.Playback, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelPlay", ctx, asteriskID, channelID, medias, lang, offsetms, skipms, playbackID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "AstChannelPlay", ctx, asteriskID, channelID, medias, language, offsetms, skipms, playbackID)
+	ret0, _ := ret[0].(*ari.Playback)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AstChannelPlay indicates an expected call of AstChannelPlay.
-func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(ctx, asteriskID, channelID, medias, lang, offsetms, skipms, playbackID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelPlay(ctx, asteriskID, channelID, medias, language, offsetms, skipms, playbackID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelPlay", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelPlay), ctx, asteriskID, channelID, medias, lang, offsetms, skipms, playbackID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelPlay", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelPlay), ctx, asteriskID, channelID, medias, language, offsetms, skipms, playbackID)
 }
 
 // AstChannelRecord mocks base method.

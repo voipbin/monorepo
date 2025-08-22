@@ -68,10 +68,12 @@ func (h *channelHandler) Play(
 		return fmt.Errorf("the channel has hungup already")
 	}
 
-	if err := h.reqHandler.AstChannelPlay(ctx, cn.AsteriskID, cn.ID, medias, language, offsetms, skipms, playbackID); err != nil {
+	tmp, err := h.reqHandler.AstChannelPlay(ctx, cn.AsteriskID, cn.ID, medias, language, offsetms, skipms, playbackID)
+	if err != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, err)
 		return errors.Wrap(err, "could not play the media")
 	}
+	log.WithField("playback", tmp).Debugf("Playback requested successfully")
 
 	return nil
 }

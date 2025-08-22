@@ -10,6 +10,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
@@ -89,7 +90,7 @@ func Test_PlaybackStop(t *testing.T) {
 
 func Test_Play(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		id         string
@@ -100,10 +101,7 @@ func Test_Play(t *testing.T) {
 		skipms     int
 
 		responseChannel *channel.Channel
-		expectRes       *channel.Channel
-	}
-
-	tests := []test{
+	}{
 		{
 			name: "normal",
 
@@ -120,9 +118,6 @@ func Test_Play(t *testing.T) {
 			responseChannel: &channel.Channel{
 				ID:       "b3bb9556-a911-11ed-82b4-5b1a0561bc34",
 				TMDelete: dbhandler.DefaultTimeStamp,
-			},
-			expectRes: &channel.Channel{
-				ID: "b3bb9556-a911-11ed-82b4-5b1a0561bc34",
 			},
 		},
 	}
@@ -146,7 +141,7 @@ func Test_Play(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelPlay(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.medias, tt.language, tt.offsetms, tt.skipms, tt.playbackID).Return(nil)
+			mockReq.EXPECT().AstChannelPlay(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.medias, tt.language, tt.offsetms, tt.skipms, tt.playbackID).Return(&ari.Playback{}, nil)
 
 			if err := h.Play(ctx, tt.id, tt.playbackID, tt.medias, tt.language, tt.offsetms, tt.skipms); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

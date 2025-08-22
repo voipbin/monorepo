@@ -163,7 +163,7 @@ func (r *requestHandler) AstBridgeRecord(ctx context.Context, asteriskID string,
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/removechannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/record", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -171,4 +171,52 @@ func (r *requestHandler) AstBridgeRecord(ctx context.Context, asteriskID string,
 		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
 	return nil
+}
+
+// AstBridgePlay sends the request for recording the given bridge
+func (r *requestHandler) AstBridgePlay(
+	ctx context.Context,
+	asteriskID string,
+	bridgeID string,
+	medias []string,
+	language string,
+	offsetms int,
+	skipms int,
+	playbackID string,
+) (*cmari.Playback, error) {
+	url := fmt.Sprintf("/ari/bridges/%s/play", bridgeID)
+
+	payload := struct {
+		Media      []string `json:"media"`
+		PlaybackID string   `json:"playbackId,omitempty"`
+		Lang       string   `json:"lang,omitempty"`
+		Offsetms   int      `json:"offsetms,omitempty"`
+		Skipms     int      `json:"skipms,omitempty"`
+	}{
+		Media:      medias,
+		PlaybackID: playbackID,
+		Lang:       language,
+		Offsetms:   offsetms,
+		Skipms:     skipms,
+	}
+
+	m, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/play", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case resp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", resp.StatusCode)
+	}
+
+	res, err := cmari.ParsePlayback([]byte(resp.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
