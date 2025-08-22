@@ -32,9 +32,9 @@ func (h *externalMediaHandler) ARIPlaybackFinished(ctx context.Context, br *brid
 	}
 
 	if errPlay := h.bridgeHandler.Play(ctx, br.ID, e.Playback.ID, []string{defaultSilencePlaybackMedia}, "", 0, 0); errPlay != nil {
-		return errors.Wrapf(errPlay, "could not start silence playback for channel_id: %s", br.ID)
+		return errors.Wrapf(errPlay, "could not start silence playback for bridge. bridge_id: %s", br.ID)
 	}
-	log.Debugf("Started silence playback for the channel. channel_id: %s", br.ID)
+	log.Debugf("Started silence playback for the bridge. bridge_id: %s", br.ID)
 
 	return nil
 }

@@ -81,7 +81,7 @@ func (h *eventHandler) EventHandlerPlaybackFinished(ctx context.Context, evt int
 		}
 
 		if br.TMDelete < dbhandler.DefaultTimeStamp {
-			log.Infof("The channel already hungup. channel_id: %s", br.ID)
+			log.Infof("The bridge already deleted. bridge_id: %s", br.ID)
 			return nil
 		}
 
@@ -91,30 +91,4 @@ func (h *eventHandler) EventHandlerPlaybackFinished(ctx context.Context, evt int
 		return fmt.Errorf("unsupported target resource: %s", targetResource)
 
 	}
-
-	// channelID := parts[1]
-
-	// channelID := e.Playback.TargetURI[len("channel:"):]
-	// cn, err := h.channelHandler.UpdatePlaybackID(ctx, channelID, "")
-	// if err != nil {
-	// 	log.Errorf("Could not update the channel's playback id. channel_id: %s, err: %v", channelID, err)
-	// 	// we've failed to set the plabyback id, but the playback is working.
-	// 	// we don't return the error here.
-	// }
-
-	// if cn.TMEnd < dbhandler.DefaultTimeStamp {
-	// 	log.Infof("The channel already hungup. channel_id: %s", cn.ID)
-	// 	return nil
-	// }
-
-	// switch {
-	// case strings.HasPrefix(e.Playback.ID, playback.IDPrefixCall):
-	// 	return h.callHandler.ARIPlaybackFinished(ctx, cn, e)
-
-	// case strings.HasPrefix(e.Playback.ID, playback.IDPrefixExternalMedia):
-	// 	return h.externalmediaHandler.ARIPlaybackFinished(ctx, cn, e)
-
-	// default:
-	// 	return fmt.Errorf("could not find playback id prefix. playback_id: %s", e.Playback.ID)
-	// }
 }
