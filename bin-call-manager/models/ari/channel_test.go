@@ -66,7 +66,7 @@ func TestParseChannel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			channel, err := ParseChannel([]byte(tt.message))
 			if err != nil {
-				t.Errorf("Wront match. expect: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(tt.expectParse, channel) == false {
