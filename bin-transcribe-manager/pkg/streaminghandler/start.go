@@ -20,6 +20,7 @@ func (h *streamingHandler) Start(ctx context.Context, customerID uuid.UUID, tran
 		"transcribe_id":  transcribeID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
+		"language":       language,
 		"direction":      direction,
 	})
 

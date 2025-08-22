@@ -71,6 +71,7 @@ func Test_Start_startReferenceTypeCall(t *testing.T) {
 				},
 				// AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID: "8066017c-02fb-11ec-ba6c-c320820accf1",
+				BridgeID:  "51bf770e-7f1b-11f0-ac50-971ccbe0a7ba",
 			},
 			responseChannel: &channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:05",
@@ -134,7 +135,7 @@ func Test_Start_startReferenceTypeCall(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDSnoopID)
 			mockChannel.EXPECT().StartSnoop(ctx, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirection(tt.directionListen), channel.SnoopDirection(tt.directionSpeak)).Return(&channel.Channel{}, nil)
 
-			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectPlaybackID, []string{defaultSilencePlaybackMedia}, "", 0, 0).Return(nil)
+			mockBridge.EXPECT().Play(ctx, tt.responseCall.BridgeID, tt.expectPlaybackID, []string{defaultSilencePlaybackMedia}, "", 0, 0).Return(nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
 			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.externalHost, string(tt.encapsulation), string(tt.transport), tt.connectionType, tt.format, string(tt.directionListen), tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)

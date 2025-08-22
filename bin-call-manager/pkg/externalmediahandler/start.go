@@ -112,8 +112,10 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 	log.WithField("snoop_channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
 
 	// start silence playback
+	// we are playing a silence playback to the call's callbridge.
+	// because if we play the silence playback to the call's channel, it blocks other media play on the call's channel.
 	playbackID := fmt.Sprintf("%s%s", playback.IDPrefixExternalMedia, id.String())
-	if errPlay := h.channelHandler.Play(ctx, ch.ID, playbackID, []string{defaultSilencePlaybackMedia}, "", 0, 0); errPlay != nil {
+	if errPlay := h.bridgeHandler.Play(ctx, c.BridgeID, playbackID, []string{defaultSilencePlaybackMedia}, "", 0, 0); errPlay != nil {
 		return nil, errors.Wrapf(errPlay, "could not start silence playback for channel_id: %s", ch.ID)
 	}
 	log.WithField("playback_id", playbackID).Debugf("Started silence playback for the channel. channel_id: %s", ch.ID)

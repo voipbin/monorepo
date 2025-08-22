@@ -144,6 +144,7 @@ func (h *transcribeHandler) startLive(
 	// create transcribe id
 	id := h.utilHandler.UUIDCreate()
 	log = log.WithField("transcribe_id", id)
+	log.Debugf("Starting live transcribe. transcribe_id: %s", id)
 
 	directions := []transcript.Direction{transcript.Direction(direction)}
 	if direction == transcribe.DirectionBoth {

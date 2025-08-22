@@ -12,7 +12,7 @@ package externalmediahandler
 import (
 	context "context"
 	ari "monorepo/bin-call-manager/models/ari"
-	channel "monorepo/bin-call-manager/models/channel"
+	bridge "monorepo/bin-call-manager/models/bridge"
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	reflect "reflect"
 
@@ -45,7 +45,7 @@ func (m *MockExternalMediaHandler) EXPECT() *MockExternalMediaHandlerMockRecorde
 }
 
 // ARIPlaybackFinished mocks base method.
-func (m *MockExternalMediaHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, e *ari.PlaybackFinished) error {
+func (m *MockExternalMediaHandler) ARIPlaybackFinished(ctx context.Context, cn *bridge.Bridge, e *ari.PlaybackFinished) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ARIPlaybackFinished", ctx, cn, e)
 	ret0, _ := ret[0].(error)
