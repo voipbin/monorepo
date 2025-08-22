@@ -107,8 +107,6 @@ func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, inte
 				log.Errorf("Failed to send keep alive message after retries: %v", errRetry)
 				return
 			}
-
-			log.Debugf("Keep-alive message sent successfully. streaming_id: %s", streamingID)
 		}
 	}
 }
