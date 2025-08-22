@@ -190,8 +190,8 @@ func (h *callHandler) startContextExternalMedia(ctx context.Context, cn *channel
 
 	// put the channel to the bridge
 	if errJoin := h.bridgeHandler.ChannelJoin(ctx, bridgeID, cn.ID, "", false, false); errJoin != nil {
-		log.Errorf("Could not add the external snoop channel to the bridge. err: %v", errJoin)
-		return errors.Wrap(errJoin, "could not add the external snoop channel to the bridge")
+		log.Errorf("Could not add the external media channel to the bridge. err: %v", errJoin)
+		return errors.Wrap(errJoin, "could not add the external media channel to the bridge")
 	}
 
 	return nil

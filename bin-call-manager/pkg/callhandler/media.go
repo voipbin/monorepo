@@ -66,6 +66,7 @@ func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, 
 		log.Errorf("Could not play the media for tts. medias: %v, err: %v", medias, errPlay)
 		return errors.Wrap(errPlay, "could not play the media for tts")
 	}
+	log.Debugf("Played the tts media. playback_id: %s, medias: %v", playbackID, medias)
 
 	return nil
 }
