@@ -12,7 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-call-manager/models/ari"
-	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
@@ -38,7 +38,7 @@ type ExternalMediaHandler interface {
 	) (*externalmedia.ExternalMedia, error)
 	Stop(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
 
-	ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, e *ari.PlaybackFinished) error
+	ARIPlaybackFinished(ctx context.Context, cn *bridge.Bridge, e *ari.PlaybackFinished) error
 }
 
 // list of channel variables

@@ -3,7 +3,7 @@ package externalmediahandler
 import (
 	"context"
 	"monorepo/bin-call-manager/models/ari"
-	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/models/playback"
 	"strings"
@@ -13,10 +13,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *externalMediaHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, e *ari.PlaybackFinished) error {
+func (h *externalMediaHandler) ARIPlaybackFinished(ctx context.Context, br *bridge.Bridge, e *ari.PlaybackFinished) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "ARIPlaybackFinished",
-		"channel": cn,
+		"channel": br,
 		"event":   e,
 	})
 
@@ -31,10 +31,10 @@ func (h *externalMediaHandler) ARIPlaybackFinished(ctx context.Context, cn *chan
 		return nil
 	}
 
-	if errPlay := h.channelHandler.Play(ctx, cn.ID, e.Playback.ID, []string{defaultSilencePlaybackMedia}, "", 0, 0); errPlay != nil {
-		return errors.Wrapf(errPlay, "could not start silence playback for channel_id: %s", cn.ID)
+	if errPlay := h.bridgeHandler.Play(ctx, br.ID, e.Playback.ID, []string{defaultSilencePlaybackMedia}, "", 0, 0); errPlay != nil {
+		return errors.Wrapf(errPlay, "could not start silence playback for channel_id: %s", br.ID)
 	}
-	log.Debugf("Started silence playback for the channel. channel_id: %s", cn.ID)
+	log.Debugf("Started silence playback for the channel. channel_id: %s", br.ID)
 
 	return nil
 }
