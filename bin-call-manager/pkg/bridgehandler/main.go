@@ -45,6 +45,15 @@ type BridgeHandler interface {
 	AddChannelID(ctx context.Context, id, channelID string) (*bridge.Bridge, error)
 	RemoveChannelID(ctx context.Context, id, channelID string) (*bridge.Bridge, error)
 	Destroy(ctx context.Context, id string) error
+	Play(
+		ctx context.Context,
+		id string,
+		playbackID string,
+		medias []string,
+		language string,
+		offsetms int,
+		skipms int,
+	) error
 
 	ChannelKick(ctx context.Context, id string, channelID string) error
 	ChannelJoin(ctx context.Context, id string, channelID string, role string, absorbDTMF bool, mute bool) error

@@ -248,6 +248,16 @@ type RequestHandler interface {
 	AstBridgeCreate(ctx context.Context, asteriskID, bridgeID, bridgeName string, bridgeType []cmbridge.Type) error
 	AstBridgeDelete(ctx context.Context, asteriskID, bridgeID string) error
 	AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*cmbridge.Bridge, error)
+	AstBridgePlay(
+		ctx context.Context,
+		asteriskID string,
+		bridgeID string,
+		medias []string,
+		language string,
+		offsetms int,
+		skipms int,
+		playbackID string,
+	) (*cmari.Playback, error)
 	AstBridgeRemoveChannel(ctx context.Context, asteriskID, bridgeID, channelID string) error
 	AstBridgeRecord(ctx context.Context, asteriskID string, bridgeID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 
@@ -272,11 +282,11 @@ type RequestHandler interface {
 		asteriskID string,
 		channelID string,
 		medias []string,
-		lang string,
+		language string,
 		offsetms int,
 		skipms int,
 		playbackID string,
-	) error
+	) (*cmari.Playback, error)
 	AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelRing(ctx context.Context, asteriskID string, channelID string) error
 	AstChannelSilenceOn(ctx context.Context, asteriskID string, channelID string) error

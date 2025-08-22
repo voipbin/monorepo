@@ -828,7 +828,7 @@ func Test_AstChannelPlay(t *testing.T) {
 		asterisk   string
 		channelID  string
 		medias     []string
-		lang       string
+		language   string
 		offsetms   int
 		skipms     int
 		playbackID string
@@ -837,19 +837,21 @@ func Test_AstChannelPlay(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
+		expectRes     *cmari.Playback
 	}{
 		{
 			name:       "1 media",
 			asterisk:   "00:11:22:33:44:55",
 			channelID:  "94bcc2b4-e718-11ea-a8cf-e7d1a61482a8",
 			medias:     []string{"sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"},
-			lang:       "en",
+			language:   "en",
 			offsetms:   10,
 			skipms:     20,
 			playbackID: "c44864cc-e7d9-11ea-923a-73e96775044d",
 
 			response: &sock.Response{
 				StatusCode: 200,
+				Data:       []byte(`{"id":"c44864cc-e7d9-11ea-923a-73e96775044d"}`),
 			},
 
 			expectTarget: "asterisk.00:11:22:33:44:55.request",
@@ -859,19 +861,23 @@ func Test_AstChannelPlay(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"media":["sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"],"playbackId":"c44864cc-e7d9-11ea-923a-73e96775044d","lang":"en","offsetms":10,"skipms":20}`),
 			},
+			expectRes: &cmari.Playback{
+				ID: "c44864cc-e7d9-11ea-923a-73e96775044d",
+			},
 		},
 		{
 			name:       "2 medias",
 			asterisk:   "00:11:22:33:44:55",
 			channelID:  "94bcc2b4-e718-11ea-a8cf-e7d1a61482a8",
 			medias:     []string{"sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav", "sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm-test.wav"},
-			lang:       "",
+			language:   "",
 			offsetms:   0,
 			skipms:     0,
 			playbackID: "dde1c518-e7d9-11ea-902a-2b04669d8a49",
 
 			response: &sock.Response{
 				StatusCode: 200,
+				Data:       []byte(`{"id":"dde1c518-e7d9-11ea-902a-2b04669d8a49"}`),
 			},
 
 			expectTarget: "asterisk.00:11:22:33:44:55.request",
@@ -880,6 +886,9 @@ func Test_AstChannelPlay(t *testing.T) {
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"media":["sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav","sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm-test.wav"],"playbackId":"dde1c518-e7d9-11ea-902a-2b04669d8a49"}`),
+			},
+			expectRes: &cmari.Playback{
+				ID: "dde1c518-e7d9-11ea-902a-2b04669d8a49",
 			},
 		},
 	}
@@ -896,9 +905,13 @@ func Test_AstChannelPlay(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelPlay(context.Background(), tt.asterisk, tt.channelID, tt.medias, tt.lang, tt.offsetms, tt.skipms, tt.playbackID)
+			res, err := reqHandler.AstChannelPlay(context.Background(), tt.asterisk, tt.channelID, tt.medias, tt.language, tt.offsetms, tt.skipms, tt.playbackID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

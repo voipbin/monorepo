@@ -309,11 +309,11 @@ func (r *requestHandler) AstChannelPlay(
 	asteriskID string,
 	channelID string,
 	medias []string,
-	lang string,
+	language string,
 	offsetms int,
 	skipms int,
 	playbackID string,
-) error {
+) (*cmari.Playback, error) {
 	url := fmt.Sprintf("/ari/channels/%s/play", channelID)
 
 	payload := struct {
@@ -325,24 +325,30 @@ func (r *requestHandler) AstChannelPlay(
 	}{
 		Media:      medias,
 		PlaybackID: playbackID,
-		Lang:       lang,
+		Lang:       language,
 		Offsetms:   offsetms,
 		Skipms:     skipms,
 	}
 
 	m, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/channels/play", 10000, 0, ContentTypeJSON, m)
+	resp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/channels/play", 10000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, err
+	case resp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", resp.StatusCode)
 	}
-	return nil
+
+	res, err := cmari.ParsePlayback([]byte(resp.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // AstChannelRecord records the given the channel

@@ -1,5 +1,7 @@
 package ari
 
+import "encoding/json"
+
 // Playback ARI message
 // https://wiki.asterisk.org/wiki/display/AST/Asterisk+17+REST+Data+Models#Asterisk17RESTDataModels-Playback
 type Playback struct {
@@ -41,4 +43,15 @@ type PlaybackFinished struct {
 type PlaybackStarted struct {
 	Event
 	Playback Playback `json:"playback"`
+}
+
+func ParsePlayback(message []byte) (*Playback, error) {
+	res := &Playback{}
+
+	err := json.Unmarshal(message, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

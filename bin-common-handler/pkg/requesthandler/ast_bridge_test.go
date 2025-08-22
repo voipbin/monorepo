@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	cmari "monorepo/bin-call-manager/models/ari"
 	cmbridge "monorepo/bin-call-manager/models/bridge"
 
 	"github.com/gofrs/uuid"
@@ -332,23 +333,23 @@ func Test_AstBridgeRecord(t *testing.T) {
 		expectRequest *sock.Request
 	}{
 		{
-			"normal",
-			"00:11:22:33:44:55",
-			"67708fbc-904d-11ed-beba-4f35dd737a8d",
-			"conference_67708fbc-904d-11ed-beba-4f35dd737a8d_2020-05-17T10:24:54.396+0000",
-			"wav",
-			0,
-			0,
-			false,
-			"",
-			"fail",
+			name:     "normal",
+			asterisk: "00:11:22:33:44:55",
+			bridgeID: "67708fbc-904d-11ed-beba-4f35dd737a8d",
+			filename: "conference_67708fbc-904d-11ed-beba-4f35dd737a8d_2020-05-17T10:24:54.396+0000",
+			format:   "wav",
+			duration: 0,
+			silence:  0,
+			beep:     false,
+			endKey:   "",
+			ifExist:  "fail",
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 			},
 
-			"asterisk.00:11:22:33:44:55.request",
-			&sock.Request{
+			expectTarget: "asterisk.00:11:22:33:44:55.request",
+			expectRequest: &sock.Request{
 				URI:      "/ari/bridges/67708fbc-904d-11ed-beba-4f35dd737a8d/record",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
@@ -372,6 +373,85 @@ func Test_AstBridgeRecord(t *testing.T) {
 			err := reqHandler.AstBridgeRecord(context.Background(), tt.asterisk, tt.bridgeID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_AstBridgePlay(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asterisk   string
+		bridgeID   string
+		medias     []string
+		language   string
+		offsetms   int
+		skipms     int
+		playbackID string
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *cmari.Playback
+	}{
+		{
+			name:       "normal",
+			asterisk:   "00:11:22:33:44:55",
+			bridgeID:   "67708fbc-904d-11ed-beba-4f35dd737a8d",
+			medias:     []string{"sound:demo-congrats", "sound:https://example.com/media2.wav"},
+			language:   "en",
+			offsetms:   1000,
+			skipms:     500,
+			playbackID: "playback_12345",
+
+			response: &sock.Response{
+				StatusCode: 200,
+				Data:       []byte(`{"id": "playback_12345"}`),
+			},
+
+			expectTarget: "asterisk.00:11:22:33:44:55.request",
+			expectRequest: &sock.Request{
+				URI:      "/ari/bridges/67708fbc-904d-11ed-beba-4f35dd737a8d/play",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"media":["sound:demo-congrats","sound:https://example.com/media2.wav"],"playbackId":"playback_12345","lang":"en","offsetms":1000,"skipms":500}`),
+			},
+			expectRes: &cmari.Playback{
+				ID: "playback_12345",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AstBridgePlay(
+				context.Background(),
+				tt.asterisk,
+				tt.bridgeID,
+				tt.medias,
+				tt.language,
+				tt.offsetms,
+				tt.skipms,
+				tt.playbackID,
+			)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

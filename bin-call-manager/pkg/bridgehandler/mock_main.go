@@ -158,6 +158,20 @@ func (mr *MockBridgeHandlerMockRecorder) IsExist(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsExist", reflect.TypeOf((*MockBridgeHandler)(nil).IsExist), ctx, id)
 }
 
+// Play mocks base method.
+func (m *MockBridgeHandler) Play(ctx context.Context, id, playbackID string, medias []string, language string, offsetms, skipms int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Play", ctx, id, playbackID, medias, language, offsetms, skipms)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Play indicates an expected call of Play.
+func (mr *MockBridgeHandlerMockRecorder) Play(ctx, id, playbackID, medias, language, offsetms, skipms any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Play", reflect.TypeOf((*MockBridgeHandler)(nil).Play), ctx, id, playbackID, medias, language, offsetms, skipms)
+}
+
 // RemoveChannelID mocks base method.
 func (m *MockBridgeHandler) RemoveChannelID(ctx context.Context, id, channelID string) (*bridge.Bridge, error) {
 	m.ctrl.T.Helper()
