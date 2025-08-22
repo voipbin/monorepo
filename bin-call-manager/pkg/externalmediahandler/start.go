@@ -274,9 +274,9 @@ func (h *externalMediaHandler) startExternalMedia(
 		0,
 		externalHost,
 		encapsulation,
-		defaultTransport,
+		transport,
 		defaultConnectionType,
-		defaultFormat,
+		format,
 		directionListen,
 		directionSpeak,
 	)
@@ -286,7 +286,19 @@ func (h *externalMediaHandler) startExternalMedia(
 	}
 	log.WithField("external_media", em).Debugf("Created a new external media")
 
-	extCh, err := h.channelHandler.StartExternalMedia(ctx, asteriskID, extChannelID, externalHost, string(encapsulation), string(transport), defaultConnectionType, format, defaultDirection, chData, nil)
+	extCh, err := h.channelHandler.StartExternalMedia(
+		ctx,
+		asteriskID,
+		extChannelID,
+		externalHost,
+		string(encapsulation),
+		string(transport),
+		defaultConnectionType,
+		format,
+		defaultDirection,
+		chData,
+		nil,
+	)
 	if err != nil {
 		log.Errorf("Could not create a external media channel. err: %v", err)
 		return nil, err
