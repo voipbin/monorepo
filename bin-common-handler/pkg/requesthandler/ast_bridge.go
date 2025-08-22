@@ -173,7 +173,7 @@ func (r *requestHandler) AstBridgeRecord(ctx context.Context, asteriskID string,
 	return nil
 }
 
-// AstBridgePlay sends the request for plyaing media to the given bridge
+// AstBridgePlay sends the request for playing media to the given bridge
 func (r *requestHandler) AstBridgePlay(
 	ctx context.Context,
 	asteriskID string,
