@@ -57,15 +57,8 @@ func (h *aicallHandler) chatMessageActionsHandle(ctx context.Context, cc *aicall
 
 // chatMessageTextHandle handles chat message text
 func (h *aicallHandler) chatMessageTextHandle(ctx context.Context, cc *aicall.AIcall, text string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":   "chatMessageTextHandle",
-		"aicall": cc,
-		"text":   text,
-	})
-
-	if errTalk := h.reqHandler.CallV1CallTalk(ctx, cc.ReferenceID, text, string(cc.Gender), cc.Language, 10000); errTalk != nil {
-		log.Errorf("Could not talk to the call. err: %v", errTalk)
-		return errors.Wrap(errTalk, "could not talk to the call")
+	if errSay := h.reqHandler.TTSV1StreamingSay(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, text); errSay != nil {
+		return errors.Wrapf(errSay, "could not say the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
 	}
 
 	return nil
@@ -116,6 +109,8 @@ func (h *aicallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *ai
 	}
 
 	// stop the media because chat will talk soon
+	// todo: add streaming stop here
+	Need to fix here
 	if errStop := h.reqHandler.CallV1CallMediaStop(ctx, cc.ReferenceID); errStop != nil {
 		log.Errorf("Could not stop the media. err: %v", errStop)
 		return errors.Wrap(errStop, "Could not stop the media")

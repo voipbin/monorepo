@@ -17,6 +17,7 @@ import (
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
+	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 	reflect "reflect"
 	"testing"
 	"time"
@@ -37,12 +38,13 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 		language      string
 		resume        bool
 
-		responseAI         *ai.AI
-		responseConfbridge *cmconfbridge.Confbridge
-		responseUUIDAIcall uuid.UUID
-		responseAIcall     *aicall.AIcall
-		responseMessage    *message.Message
-		responseUUIDAction uuid.UUID
+		responseAI           *ai.AI
+		responseConfbridge   *cmconfbridge.Confbridge
+		responseTTSStreaming *tmstreaming.Streaming
+		responseUUIDAIcall   uuid.UUID
+		responseAIcall       *aicall.AIcall
+		responseMessage      *message.Message
+		responseUUIDAction   uuid.UUID
 
 		expectAIcall *aicall.AIcall
 		expectRes    *commonservice.Service
@@ -70,6 +72,12 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				},
 			},
+			responseTTSStreaming: &tmstreaming.Streaming{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("457c3846-817e-11f0-9090-6309abe0b661"),
+				},
+				PodID: "45e53dd2-817e-11f0-a608-7f6bb70061e4",
+			},
 			responseUUIDAIcall: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 			responseAIcall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
@@ -89,15 +97,17 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
-				AIID:          uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
-				ActiveflowID:  uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
-				AIEngineType:  ai.EngineTypeNone,
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
-				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				Status:        aicall.StatusInitiating,
+				AIID:              uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+				ActiveflowID:      uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
+				AIEngineType:      ai.EngineTypeNone,
+				ReferenceType:     aicall.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
+				ConfbridgeID:      uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				Gender:            aicall.GenderFemale,
+				Language:          "en-US",
+				Status:            aicall.StatusInitiating,
+				TTSStreamingID:    uuid.FromStringOrNil("457c3846-817e-11f0-9090-6309abe0b661"),
+				TTSStreamingPodID: "45e53dd2-817e-11f0-a608-7f6bb70061e4",
 			},
 			expectRes: &commonservice.Service{
 				ID:   uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
@@ -139,6 +149,15 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 			ctx := context.Background()
 			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.responseAI.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().TTSV1StreamingCreate(
+				ctx,
+				tt.responseAI.CustomerID,
+				tmstreaming.ReferenceTypeCall,
+				tt.referenceID,
+				tt.language,
+				tmstreaming.Gender(tt.gender),
+				tmstreaming.DirectionOutgoing,
+			).Return(tt.responseTTSStreaming, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)

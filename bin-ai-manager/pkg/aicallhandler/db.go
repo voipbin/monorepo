@@ -23,6 +23,8 @@ func (h *aicallHandler) Create(
 	confbridgeID uuid.UUID,
 	gender aicall.Gender,
 	language string,
+	ttsStreamingID uuid.UUID,
+	ttsStreamingPodID string,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Create",
@@ -51,6 +53,9 @@ func (h *aicallHandler) Create(
 		Language: language,
 
 		Status: aicall.StatusInitiating,
+
+		TTSStreamingID:    ttsStreamingID,
+		TTSStreamingPodID: ttsStreamingPodID,
 	}
 	log = log.WithField("aicall_id", id.String())
 	log.WithField("aicall", tmp).Debugf("Creating aicall. aicall_id: %s", tmp.ID)

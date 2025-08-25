@@ -20,6 +20,9 @@ create table ai_aicalls(
   gender    varchar(255), -- gender
   language  varchar(255), -- language
 
+  tts_streaming_id      binary(16),     -- tts streaming id
+  tts_streaming_pod_id  varchar(255),   -- tts streaming pod id
+
   -- timestamps
   tm_end    datetime(6),  --
   tm_create datetime(6),  --

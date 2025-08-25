@@ -28,6 +28,10 @@ type AIcall struct {
 	Gender   Gender `json:"gender,omitempty"`
 	Language string `json:"language,omitempty"`
 
+	// tts streaming info
+	TTSStreamingID    uuid.UUID `json:"tts_streaming_id,omitempty"`     // TTS streaming ID
+	TTSStreamingPodID string    `json:"tts_streaming_pod_id,omitempty"` // TTS's pod ID for streaming.
+
 	TMEnd    string `json:"tm_end,omitempty"`
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
