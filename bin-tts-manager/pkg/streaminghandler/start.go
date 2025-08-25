@@ -78,3 +78,19 @@ func (h *streamingHandler) Say(ctx context.Context, id uuid.UUID, text string) e
 		return errors.Errorf("unsupported vendor for text streaming. vendor: %s", st.Vendor)
 	}
 }
+
+func (h *streamingHandler) SayStop(ctx context.Context, id uuid.UUID, text string) error {
+
+	st, err := h.Get(ctx, id)
+	if err != nil {
+		return errors.Wrapf(err, "could not get streaming info. streaming_id: %s", id)
+	}
+
+	switch st.Vendor {
+	case streaming.VendorElevenlabs:
+		return h.elevenlabsHandler.AddText(ctx, st, text)
+
+	default:
+		return errors.Errorf("unsupported vendor for text streaming. vendor: %s", st.Vendor)
+	}
+}
