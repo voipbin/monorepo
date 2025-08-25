@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/CyCoreSystems/audiosocket"
 	"github.com/gofrs/uuid"
@@ -12,7 +13,9 @@ import (
 )
 
 const (
-	audiosocketFormatSLIN uint16 = 0x0010 // SLIN format for 16-bit PCM audio
+	audiosocketFormatSLIN      = 0x10                  // SLIN format for 16-bit PCM audio
+	audiosocketMaxFragmentSize = 320                   // Maximum fragment size for Audiosocket messages
+	audiosocketWriteDelay      = 20 * time.Millisecond // Delay between writing fragments to avoid flooding the connection
 )
 
 // audiosocketGetStreamingID reads the first message from the audiosocket connection
@@ -51,7 +54,7 @@ func (h *streamingHandler) audiosocketGetStreamingID(conn net.Conn) (uuid.UUID, 
 // audiosocketWrapDataPCM16Bit wraps raw 16-bit PCM audio data into the Audiosocket transmission format.
 //
 // The wrapped byte slice has the following structure:
-//   - 2 bytes: Audio format identifier (uint16, BigEndian), fixed to audiosocketFormatSLIN (0x0010 for signed linear PCM)
+//   - 2 bytes: Audio format identifier (uint16, BigEndian), fixed to audiosocketFormatSLIN (0x10 for signed linear PCM)
 //   - 2 bytes: Sample count (uint16, BigEndian), representing the number of 16-bit samples
 //   - N bytes: Raw audio payload (16-bit PCM data)
 //
@@ -74,17 +77,16 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("the PCM data must be 16-bit aligned (even number of bytes). bytes: %d", len(data))
 	}
 
-	sampleCount := len(data) / 2 // 2 bytes per sample (16-bit)
-
 	buf := new(bytes.Buffer)
 
 	// Write audio format (SLIN)
-	if errWrite := binary.Write(buf, binary.BigEndian, audiosocketFormatSLIN); errWrite != nil {
-		return nil, errors.Wrapf(errWrite, "could not write audio format")
+	if errWrite := buf.WriteByte(audiosocketFormatSLIN); errWrite != nil {
+		return nil, fmt.Errorf("failed to write data type: %w", errWrite)
 	}
 
 	// Write sample count
-	if errWrite := binary.Write(buf, binary.BigEndian, uint16(sampleCount)); errWrite != nil {
+	payloadLength := uint16(len(data))
+	if errWrite := binary.Write(buf, binary.BigEndian, payloadLength); errWrite != nil {
 		return nil, errors.Wrapf(errWrite, "could not write sample count")
 	}
 
@@ -95,4 +97,47 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// audiosocketWrite sends raw audio data over the Audiosocket connection in fragments.
+// the data must be 16-bit PCM audio data, and it will be wrapped in the Audiosocket format.
+func audiosocketWrite(conn net.Conn, data []byte) error {
+	if len(data) == 0 {
+		return fmt.Errorf("cannot write empty data to connection")
+	}
+
+	payloadLen := len(data)
+	offset := 0
+	for offset < len(data) {
+		fragmentLen := audiosocketMaxFragmentSize
+		if offset+audiosocketMaxFragmentSize > payloadLen {
+			fragmentLen = payloadLen - offset
+		}
+
+		fragment := data[offset : offset+fragmentLen]
+		tmp, err := audiosocketWrapDataPCM16Bit(fragment)
+		if err != nil {
+			return errors.Wrapf(err, "failed to wrap data for audiosocket")
+		}
+
+		_, err = conn.Write(tmp)
+		if err != nil {
+			return errors.Wrapf(err, "failed to write wrapped data to connection")
+		}
+
+		offset += fragmentLen
+		time.Sleep(audiosocketWriteDelay)
+	}
+
+	// Write the data to the connection
+	n, err := conn.Write(data)
+	if err != nil {
+		return errors.Wrapf(err, "failed to write data to connection")
+	}
+
+	if n != len(data) {
+		return fmt.Errorf("short write: expected %d bytes, wrote %d", len(data), n)
+	}
+
+	return nil
 }
