@@ -2,7 +2,6 @@ package streaminghandler
 
 import (
 	"bytes"
-	"encoding/binary"
 	"monorepo/bin-tts-manager/models/streaming"
 	"testing"
 )
@@ -157,13 +156,9 @@ func Test_convertAndWrapPCMData(t *testing.T) {
 			name:        "valid pcm_16000 input",
 			inputFormat: "pcm_16000",
 			rawData:     []byte{0x11, 0x22, 0x33, 0x44}, // 2 samples
-			expectedRes: func() []byte {
-				buf := new(bytes.Buffer)
-				_ = binary.Write(buf, binary.BigEndian, audiosocketFormatSLIN)
-				_ = binary.Write(buf, binary.BigEndian, uint16(1)) // 1 sample (from first 2 bytes)
-				_, _ = buf.Write([]byte{0x11, 0x22})
-				return buf.Bytes()
-			}(),
+			expectedRes: []byte{
+				0x11, 0x22,
+			},
 			expectError: false,
 		},
 		{

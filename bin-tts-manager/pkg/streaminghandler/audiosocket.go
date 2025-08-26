@@ -2,9 +2,11 @@ package streaminghandler
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/CyCoreSystems/audiosocket"
 	"github.com/gofrs/uuid"
@@ -12,7 +14,9 @@ import (
 )
 
 const (
-	audiosocketFormatSLIN uint16 = 0x0010 // SLIN format for 16-bit PCM audio
+	audiosocketFormatSLIN      = 0x10                  // SLIN format for 16-bit PCM audio
+	audiosocketMaxFragmentSize = 320                   // Maximum fragment size for Audiosocket messages
+	audiosocketWriteDelay      = 20 * time.Millisecond // Delay between writing fragments to avoid flooding the connection
 )
 
 // audiosocketGetStreamingID reads the first message from the audiosocket connection
@@ -51,7 +55,7 @@ func (h *streamingHandler) audiosocketGetStreamingID(conn net.Conn) (uuid.UUID, 
 // audiosocketWrapDataPCM16Bit wraps raw 16-bit PCM audio data into the Audiosocket transmission format.
 //
 // The wrapped byte slice has the following structure:
-//   - 2 bytes: Audio format identifier (uint16, BigEndian), fixed to audiosocketFormatSLIN (0x0010 for signed linear PCM)
+//   - 2 bytes: Audio format identifier (uint16, BigEndian), fixed to audiosocketFormatSLIN (0x10 for signed linear PCM)
 //   - 2 bytes: Sample count (uint16, BigEndian), representing the number of 16-bit samples
 //   - N bytes: Raw audio payload (16-bit PCM data)
 //
@@ -74,17 +78,16 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("the PCM data must be 16-bit aligned (even number of bytes). bytes: %d", len(data))
 	}
 
-	sampleCount := len(data) / 2 // 2 bytes per sample (16-bit)
-
 	buf := new(bytes.Buffer)
 
 	// Write audio format (SLIN)
-	if errWrite := binary.Write(buf, binary.BigEndian, audiosocketFormatSLIN); errWrite != nil {
-		return nil, errors.Wrapf(errWrite, "could not write audio format")
+	if errWrite := buf.WriteByte(audiosocketFormatSLIN); errWrite != nil {
+		return nil, fmt.Errorf("failed to write data type: %w", errWrite)
 	}
 
 	// Write sample count
-	if errWrite := binary.Write(buf, binary.BigEndian, uint16(sampleCount)); errWrite != nil {
+	payloadLength := uint16(len(data))
+	if errWrite := binary.Write(buf, binary.BigEndian, payloadLength); errWrite != nil {
 		return nil, errors.Wrapf(errWrite, "could not write sample count")
 	}
 
@@ -95,4 +98,67 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// audiosocketWrite fragments and sends large 16-bit PCM audio data over an Audiosocket connection.
+//
+// Purpose:
+//   - To avoid overwhelming the connection, this function splits the input audio data into smaller fragments,
+//     wraps each fragment in the Audiosocket format, and writes them sequentially to the connection with a short delay between each write.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeout control.
+//   - conn: The net.Conn connection to which audio data will be sent.
+//   - data: Raw audio data as a byte slice (must be 16-bit PCM, i.e., even number of bytes).
+//
+// Behavior:
+//   - The function divides the input data into fragments of up to audiosocketMaxFragmentSize bytes.
+//   - Each fragment is wrapped using audiosocketWrapDataPCM16Bit before being sent.
+//   - After each fragment is written, the function waits for audiosocketWriteDelay to prevent flooding the connection.
+//   - If the context is cancelled or an error occurs during wrapping or writing, the function returns an error.
+//
+// Returns:
+//   - error: Returns an error if the context is cancelled, the data is invalid, or writing fails.
+func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
+	if len(data) == 0 {
+		// nothing to send
+		return nil
+	}
+
+	payloadLen := len(data)
+	offset := 0
+	for offset < len(data) {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
+		fragmentLen := audiosocketMaxFragmentSize
+		if offset+audiosocketMaxFragmentSize > payloadLen {
+			fragmentLen = payloadLen - offset
+		}
+
+		fragment := data[offset : offset+fragmentLen]
+		tmp, err := audiosocketWrapDataPCM16Bit(fragment)
+		if err != nil {
+			return errors.Wrapf(err, "failed to wrap data for audiosocket")
+		}
+
+		_, err = conn.Write(tmp)
+		if err != nil {
+			return errors.Wrapf(err, "failed to write wrapped data to connection")
+		}
+
+		offset += fragmentLen
+
+		select {
+		case <-time.After(audiosocketWriteDelay):
+			// do nothing
+			// continue
+
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+
+	return nil
 }

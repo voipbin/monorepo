@@ -86,7 +86,7 @@ func Test_runKeepAlive(t *testing.T) {
 			}()
 
 			handler := &streamingHandler{}
-			handler.runKeepAlive(ctx, mockConn, tt.interval, tt.streamingID)
+			handler.runKeepAlive(ctx, cancel, mockConn, tt.interval, tt.streamingID)
 
 			mockConn.AssertNumberOfCalls(t, "Write", tt.expectWrites)
 		})

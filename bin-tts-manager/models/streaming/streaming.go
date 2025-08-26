@@ -2,6 +2,8 @@ package streaming
 
 import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"net"
+	"sync"
 
 	"github.com/gofrs/uuid"
 )
@@ -18,9 +20,11 @@ type Streaming struct {
 	Gender    Gender    `json:"gender,omitempty"`
 	Direction Direction `json:"direction,omitempty"` // Direction of the streaming
 
-	Vendor     Vendor    `json:"-"` // Vendor of the service (e.g., gcp, aws)
-	ConnVendor any       `json:"-"` // WebSocket connection to the vendor for the streaming
-	ChanDone   chan bool `json:"-"` // Signals when handleWebSocketMessages goroutine has exited.
+	VendorLock   sync.Mutex `json:"-"` // Lock for synchronizing access to VendorConfig
+	VendorName   VendorName `json:"-"` // Vendor of the service (e.g., gcp, aws)
+	VendorConfig any        `json:"-"`
+
+	ConnAst net.Conn `json:"-"` // Connection to the Asterisk for the streaming
 }
 
 // // Direction represents the direction of the streaming in a call.
@@ -50,8 +54,9 @@ const (
 	ReferenceTypeConfbridge ReferenceType = "confbridge" // reference type is a confbridge (conference bridge)
 )
 
-type Vendor string
+type VendorName string
 
 const (
-	VendorElevenlabs Vendor = "elevenlabs" // elevenlabs vendor
+	VendorNameNone       VendorName = ""           // vendor name is not set
+	VendorNameElevenlabs VendorName = "elevenlabs" // elevenlabs vendor
 )

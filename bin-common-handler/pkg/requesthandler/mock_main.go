@@ -5225,6 +5225,20 @@ func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingSay(ctx, podID, streamin
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingSay", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingSay), ctx, podID, streamingID, text)
 }
 
+// TTSV1StreamingSayStop mocks base method.
+func (m *MockRequestHandler) TTSV1StreamingSayStop(ctx context.Context, podID string, streamingID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1StreamingSayStop", ctx, podID, streamingID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TTSV1StreamingSayStop indicates an expected call of TTSV1StreamingSayStop.
+func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingSayStop(ctx, podID, streamingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingSayStop", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingSayStop), ctx, podID, streamingID)
+}
+
 // TagV1TagCreate mocks base method.
 func (m *MockRequestHandler) TagV1TagCreate(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag.Tag, error) {
 	m.ctrl.T.Helper()

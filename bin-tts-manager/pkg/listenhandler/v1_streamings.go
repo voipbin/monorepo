@@ -116,3 +116,30 @@ func (h *listenHandler) v1StreamingsIDSayPost(ctx context.Context, m *sock.Reque
 
 	return res, nil
 }
+
+// v1StreamingsIDSayStopPost handles /v1/streamings/<id>/say_stop POST request
+func (h *listenHandler) v1StreamingsIDSayStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1StreamingsIDSayStopPost",
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/streamings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/say_stop"
+	tmpVals := strings.Split(u.Path, "/")
+	streamingID := uuid.FromStringOrNil(tmpVals[3])
+
+	if errStop := h.streamingHandler.SayStop(ctx, streamingID); errStop != nil {
+		log.Errorf("Could not stop the say streaming. err: %v", errStop)
+		return nil, errStop
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}

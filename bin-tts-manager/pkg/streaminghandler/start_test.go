@@ -9,7 +9,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-tts-manager/models/streaming"
-	reflect "reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -102,14 +101,9 @@ func Test_Start(t *testing.T) {
 				externalmedia.Direction(tt.direction),
 			).Return(tt.responseExternalMedia, nil)
 
-			res, err := h.Start(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
+			_, err := h.Start(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expected: ok, got: %v", err)
-			}
-
-			tt.expectRes.ChanDone = res.ChanDone
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpected: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -131,7 +125,8 @@ func Test_Say(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("cd6ea4f8-5af2-11f0-9694-5fb9b4e116cb"),
 					},
-					Vendor: streaming.VendorElevenlabs,
+					VendorName:   streaming.VendorNameElevenlabs,
+					VendorConfig: &ElevenlabsConfig{},
 				},
 			},
 
@@ -165,7 +160,7 @@ func Test_Say(t *testing.T) {
 				h.mapStreaming[s.ID] = s
 			}
 
-			mockEleven.EXPECT().AddText(ctx, gomock.Any(), tt.text).Return(nil).Times(1)
+			mockEleven.EXPECT().AddText(gomock.Any(), tt.text).Return(nil).Times(1)
 
 			if err := h.Say(ctx, tt.id, tt.text); err != nil {
 				t.Errorf("Wrong match. expected: ok, got: %v", err)

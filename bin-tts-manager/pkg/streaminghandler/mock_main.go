@@ -12,7 +12,6 @@ package streaminghandler
 import (
 	context "context"
 	streaming "monorepo/bin-tts-manager/models/streaming"
-	net "net"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -71,6 +70,20 @@ func (mr *MockStreamingHandlerMockRecorder) Say(ctx, id, text any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Say", reflect.TypeOf((*MockStreamingHandler)(nil).Say), ctx, id, text)
 }
 
+// SayStop mocks base method.
+func (m *MockStreamingHandler) SayStop(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SayStop", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SayStop indicates an expected call of SayStop.
+func (mr *MockStreamingHandlerMockRecorder) SayStop(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayStop", reflect.TypeOf((*MockStreamingHandler)(nil).SayStop), ctx, id)
+}
+
 // Start mocks base method.
 func (m *MockStreamingHandler) Start(ctx context.Context, customerID uuid.UUID, referenceType streaming.ReferenceType, referenceID uuid.UUID, language string, gender streaming.Gender, direction streaming.Direction) (*streaming.Streaming, error) {
 	m.ctrl.T.Helper()
@@ -126,29 +139,56 @@ func (m *Mockstreamer) EXPECT() *MockstreamerMockRecorder {
 }
 
 // AddText mocks base method.
-func (m *Mockstreamer) AddText(ctx context.Context, st *streaming.Streaming, text string) error {
+func (m *Mockstreamer) AddText(vendorConfig any, text string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddText", ctx, st, text)
+	ret := m.ctrl.Call(m, "AddText", vendorConfig, text)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddText indicates an expected call of AddText.
-func (mr *MockstreamerMockRecorder) AddText(ctx, st, text any) *gomock.Call {
+func (mr *MockstreamerMockRecorder) AddText(vendorConfig, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddText", reflect.TypeOf((*Mockstreamer)(nil).AddText), ctx, st, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddText", reflect.TypeOf((*Mockstreamer)(nil).AddText), vendorConfig, text)
+}
+
+// Init mocks base method.
+func (m *Mockstreamer) Init(st *streaming.Streaming) (any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Init", st)
+	ret0, _ := ret[0].(any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Init indicates an expected call of Init.
+func (mr *MockstreamerMockRecorder) Init(st any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*Mockstreamer)(nil).Init), st)
 }
 
 // Run mocks base method.
-func (m *Mockstreamer) Run(ctx context.Context, st *streaming.Streaming, conn net.Conn) error {
+func (m *Mockstreamer) Run(vendorConfig any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run", ctx, st, conn)
+	ret := m.ctrl.Call(m, "Run", vendorConfig)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockstreamerMockRecorder) Run(ctx, st, conn any) *gomock.Call {
+func (mr *MockstreamerMockRecorder) Run(vendorConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*Mockstreamer)(nil).Run), ctx, st, conn)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*Mockstreamer)(nil).Run), vendorConfig)
+}
+
+// SayStop mocks base method.
+func (m *Mockstreamer) SayStop(vendorConfig any) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SayStop", vendorConfig)
+}
+
+// SayStop indicates an expected call of SayStop.
+func (mr *MockstreamerMockRecorder) SayStop(vendorConfig any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayStop", reflect.TypeOf((*Mockstreamer)(nil).SayStop), vendorConfig)
 }
