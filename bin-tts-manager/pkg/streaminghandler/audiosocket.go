@@ -149,7 +149,15 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 		}
 
 		offset += fragmentLen
-		time.Sleep(audiosocketWriteDelay)
+
+		select {
+		case <-time.After(audiosocketWriteDelay):
+			// do nothing
+			// continue
+
+		case <-ctx.Done():
+			return ctx.Err()
+		}
 	}
 
 	return nil
