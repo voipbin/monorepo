@@ -69,36 +69,6 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 		return
 	}
 
-	// initHandlers := map[streaming.VendorName]func(st *streaming.Streaming) (any, error){
-	// 	streaming.VendorNameElevenlabs: h.elevenlabsHandler.Init,
-	// }
-
-	// for n, f := range initHandlers {
-	// 	tmp, errInit := f(st)
-	// 	if errInit != nil {
-	// 		log.Errorf("Handler initialization failed: %v", errInit)
-	// 		continue
-	// 	}
-
-	// 	st.VendorName = n
-	// 	st.SetVendorConfig(tmp)
-	// 	break
-	// }
-
-	// switch st.VendorName {
-	// case streaming.VendorNameNone:
-	// 	log.Errorf("No suitable vendor found for streaming ID: %s", st.ID)
-	// 	return
-
-	// case streaming.VendorNameElevenlabs:
-	// 	log.Debugf("Starting ElevenLabs handler for streaming ID: %s", st.ID)
-	// 	go h.elevenlabsHandler.Run(st.VendorConfig)
-
-	// default:
-	// 	log.Errorf("Unsupported vendor: %s for streaming ID: %s", st.VendorName, st.ID)
-	// 	return
-	// }
-
 	<-ctx.Done()
 	log.Infof("Streaming handler stopped. streaming_id: %s", streamingID)
 }
