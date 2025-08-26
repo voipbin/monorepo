@@ -20,16 +20,11 @@ type Streaming struct {
 	Gender    Gender    `json:"gender,omitempty"`
 	Direction Direction `json:"direction,omitempty"` // Direction of the streaming
 
-	VendorName   VendorName `json:"-"` // Vendor of the service (e.g., gcp, aws)
 	VendorLock   sync.Mutex `json:"-"` // Lock for synchronizing access to VendorConfig
+	VendorName   VendorName `json:"-"` // Vendor of the service (e.g., gcp, aws)
 	VendorConfig any        `json:"-"`
 
 	ConnAst net.Conn `json:"-"` // Connection to the Asterisk for the streaming
-
-	// VendorLock     sync.Mutex `json:"-"` // Lock for synchronizing access
-	// ConnVendor     any        `json:"-"` // WebSocket connection to the vendor for the streaming
-	// ChanDone       chan bool  `json:"-"` // Signals when handleWebSocketMessages goroutine has exited.
-	// VendorChanStop chan bool  `json:"-"` // Signals when to stop the say streaming
 }
 
 // // Direction represents the direction of the streaming in a call.

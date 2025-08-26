@@ -100,8 +100,25 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// audiosocketWrite sends raw audio data over the Audiosocket connection in fragments.
-// the data must be 16-bit PCM audio data, and it will be wrapped in the Audiosocket format.
+// audiosocketWrite fragments and sends large 16-bit PCM audio data over an Audiosocket connection.
+//
+// Purpose:
+//   - To avoid overwhelming the connection, this function splits the input audio data into smaller fragments,
+//     wraps each fragment in the Audiosocket format, and writes them sequentially to the connection with a short delay between each write.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeout control.
+//   - conn: The net.Conn connection to which audio data will be sent.
+//   - data: Raw audio data as a byte slice (must be 16-bit PCM, i.e., even number of bytes).
+//
+// Behavior:
+//   - The function divides the input data into fragments of up to audiosocketMaxFragmentSize bytes.
+//   - Each fragment is wrapped using audiosocketWrapDataPCM16Bit before being sent.
+//   - After each fragment is written, the function waits for audiosocketWriteDelay to prevent flooding the connection.
+//   - If the context is cancelled or an error occurs during wrapping or writing, the function returns an error.
+//
+// Returns:
+//   - error: Returns an error if the context is cancelled, the data is invalid, or writing fails.
 func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 	if len(data) == 0 {
 		return fmt.Errorf("cannot write empty data to connection")
