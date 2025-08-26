@@ -121,7 +121,8 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 //   - error: Returns an error if the context is cancelled, the data is invalid, or writing fails.
 func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 	if len(data) == 0 {
-		return fmt.Errorf("cannot write empty data to connection")
+		// nothing to send
+		return nil
 	}
 
 	payloadLen := len(data)

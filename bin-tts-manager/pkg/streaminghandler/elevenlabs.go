@@ -249,9 +249,9 @@ func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
 
 			// Process audio data if present.
 			if response.Audio != "" {
-				decodedAudio, decodeErr := base64.StdEncoding.DecodeString(response.Audio)
-				if decodeErr != nil {
-					log.Errorf("Could not decode base64 audio data: %v. Message: %s", decodeErr, response.Audio)
+				decodedAudio, errDecode := base64.StdEncoding.DecodeString(response.Audio)
+				if errDecode != nil {
+					log.Errorf("Could not decode base64 audio data: %v. Message: %s", errDecode, response.Audio)
 					return
 				}
 				log.Debugf("Decoded audio chunk size before processing: %d bytes.", len(decodedAudio))
