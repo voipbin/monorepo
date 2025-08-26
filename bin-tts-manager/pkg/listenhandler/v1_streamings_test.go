@@ -219,3 +219,65 @@ func Test_v1StreamingsIDSayPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_v1StreamingsIDSayStopPost(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		request *sock.Request
+
+		responseStreaming *streaming.Streaming
+
+		expectID  uuid.UUID
+		expectRes *sock.Response
+	}{
+		{
+			name: "normal test",
+
+			request: &sock.Request{
+				URI:    "/v1/streamings/b349ca90-8283-11f0-bb51-9bcbfbadb7eb/say_stop",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseStreaming: &streaming.Streaming{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b349ca90-8283-11f0-bb51-9bcbfbadb7eb"),
+				},
+			},
+
+			expectID: uuid.FromStringOrNil("b349ca90-8283-11f0-bb51-9bcbfbadb7eb"),
+			expectRes: &sock.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockTTS := ttshandler.NewMockTTSHandler(mc)
+			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:      mockSock,
+				ttsHandler:       mockTTS,
+				streamingHandler: mockStreaming,
+			}
+
+			mockStreaming.EXPECT().SayStop(gomock.Any(), tt.expectID).Return(nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

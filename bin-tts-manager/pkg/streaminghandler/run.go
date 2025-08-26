@@ -2,6 +2,7 @@ package streaminghandler
 
 import (
 	"context"
+	"fmt"
 	"monorepo/bin-tts-manager/models/streaming"
 	"net"
 	"time"
@@ -54,32 +55,57 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	log.Debugf("Found streaming id: %s", streamingID)
 
 	// // Start keep-alive in a separate goroutine
-	go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
-	go h.runKeepConsume(ctx, conn)
+	go h.runKeepAlive(ctx, cancel, conn, defaultKeepAliveInterval, streamingID)
+	go h.runKeepConsume(ctx, cancel, conn)
 
-	st, err := h.Get(ctx, streamingID)
+	st, err := h.UpdateConnAst(streamingID, conn)
 	if err != nil {
-		log.Errorf("Could not get streaming: %v", err)
-		return
-	}
-	log.WithField("streaming", st).Debugf("Streaming info retrieved. streaming_id: %s", st.ID)
-
-	handlers := []func(context.Context, *streaming.Streaming, net.Conn) error{
-		h.elevenlabsHandler.Run,
-	}
-
-	for _, handler := range handlers {
-		if errRun := handler(ctx, st, conn); errRun != nil {
-			log.Errorf("Handler execution failed: %v", errRun)
-			continue
-		}
+		log.Errorf("Could not update the conn ast. err: %v", err)
 		return
 	}
 
-	log.Warn("No handler executed successfully")
+	if errStreamer := h.runStreamer(st); errStreamer != nil {
+		log.Errorf("Could not run the streamer. err: %v", errStreamer)
+		return
+	}
+
+	// initHandlers := map[streaming.VendorName]func(st *streaming.Streaming) (any, error){
+	// 	streaming.VendorNameElevenlabs: h.elevenlabsHandler.Init,
+	// }
+
+	// for n, f := range initHandlers {
+	// 	tmp, errInit := f(st)
+	// 	if errInit != nil {
+	// 		log.Errorf("Handler initialization failed: %v", errInit)
+	// 		continue
+	// 	}
+
+	// 	st.VendorName = n
+	// 	st.SetVendorConfig(tmp)
+	// 	break
+	// }
+
+	// switch st.VendorName {
+	// case streaming.VendorNameNone:
+	// 	log.Errorf("No suitable vendor found for streaming ID: %s", st.ID)
+	// 	return
+
+	// case streaming.VendorNameElevenlabs:
+	// 	log.Debugf("Starting ElevenLabs handler for streaming ID: %s", st.ID)
+	// 	go h.elevenlabsHandler.Run(st.VendorConfig)
+
+	// default:
+	// 	log.Errorf("Unsupported vendor: %s for streaming ID: %s", st.VendorName, st.ID)
+	// 	return
+	// }
+
+	<-ctx.Done()
+	log.Infof("Streaming handler stopped. streaming_id: %s", streamingID)
 }
 
-func (h *streamingHandler) runKeepConsume(ctx context.Context, conn net.Conn) {
+func (h *streamingHandler) runKeepConsume(ctx context.Context, cancel context.CancelFunc, conn net.Conn) {
+	defer cancel()
+
 	buffer := make([]byte, 1024)
 
 	for {
@@ -95,11 +121,12 @@ func (h *streamingHandler) runKeepConsume(ctx context.Context, conn net.Conn) {
 	}
 }
 
-func (h *streamingHandler) runKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {
+func (h *streamingHandler) runKeepAlive(ctx context.Context, cancel context.CancelFunc, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "runKeepAlive",
 		"streaming_id": streamingID,
 	})
+	defer cancel()
 
 	ticker := time.NewTicker(interval) // Use configurable interval
 	defer ticker.Stop()
@@ -139,6 +166,56 @@ func (h *streamingHandler) retryWithBackoff(operation func() error, maxAttempts 
 			return nil
 		}
 	}
+
+	return nil
+}
+
+func (h *streamingHandler) runStreamer(st *streaming.Streaming) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "runStreamer",
+		"streaming_id": st.ID,
+	})
+
+	initHandlers := map[streaming.VendorName]func(st *streaming.Streaming) (any, error){
+		streaming.VendorNameElevenlabs: h.elevenlabsHandler.Init,
+	}
+
+	for n, f := range initHandlers {
+		tmp, errInit := f(st)
+		if errInit != nil {
+			log.Errorf("Handler initialization failed: %v", errInit)
+			continue
+		}
+
+		h.SetVendorInfo(st, n, tmp)
+		break
+	}
+
+	if st.VendorConfig == nil {
+		return fmt.Errorf("failed to initialize any vendor for streaming ID: %s", st.ID)
+	}
+
+	go func(s *streaming.Streaming) {
+
+		// run the streamer based on the vendor
+		switch s.VendorName {
+		case streaming.VendorNameNone:
+			log.Errorf("No suitable vendor found for streaming ID: %s", s.ID)
+			return
+
+		case streaming.VendorNameElevenlabs:
+			log.Debugf("Starting ElevenLabs handler for streaming ID: %s", s.ID)
+			if errRun := h.elevenlabsHandler.Run(s.VendorConfig); errRun != nil {
+				log.Errorf("Could not run the elevenlabs handler. err: %v", errRun)
+			}
+
+		default:
+			log.Errorf("Unsupported vendor: %s for streaming ID: %s", s.VendorName, s.ID)
+			return
+		}
+
+		h.SetVendorInfo(s, streaming.VendorNameNone, nil)
+	}(st)
 
 	return nil
 }

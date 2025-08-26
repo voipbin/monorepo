@@ -2,6 +2,7 @@ package streaminghandler
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"net"
@@ -101,7 +102,7 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 
 // audiosocketWrite sends raw audio data over the Audiosocket connection in fragments.
 // the data must be 16-bit PCM audio data, and it will be wrapped in the Audiosocket format.
-func audiosocketWrite(conn net.Conn, data []byte) error {
+func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 	if len(data) == 0 {
 		return fmt.Errorf("cannot write empty data to connection")
 	}
@@ -109,6 +110,10 @@ func audiosocketWrite(conn net.Conn, data []byte) error {
 	payloadLen := len(data)
 	offset := 0
 	for offset < len(data) {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
 		fragmentLen := audiosocketMaxFragmentSize
 		if offset+audiosocketMaxFragmentSize > payloadLen {
 			fragmentLen = payloadLen - offset
@@ -127,16 +132,6 @@ func audiosocketWrite(conn net.Conn, data []byte) error {
 
 		offset += fragmentLen
 		time.Sleep(audiosocketWriteDelay)
-	}
-
-	// Write the data to the connection
-	n, err := conn.Write(data)
-	if err != nil {
-		return errors.Wrapf(err, "failed to write data to connection")
-	}
-
-	if n != len(data) {
-		return fmt.Errorf("short write: expected %d bytes, wrote %d", len(data), n)
 	}
 
 	return nil
