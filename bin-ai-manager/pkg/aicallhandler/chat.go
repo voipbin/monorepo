@@ -109,8 +109,6 @@ func (h *aicallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *ai
 	}
 
 	// stop the media because chat will talk soon
-	// todo: add streaming stop here
-	// Need to fix here
 	if errStop := h.reqHandler.TTSV1StreamingSayStop(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID); errStop != nil {
 		log.Errorf("Could not stop the tts streaming. err: %v", errStop)
 		return errors.Wrap(errStop, "Could not stop the tts streaming")

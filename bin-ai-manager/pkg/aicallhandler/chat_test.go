@@ -312,7 +312,7 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 		aicall         *aicall.AIcall
 		messageContent string
 
-		resposneMessage *message.Message
+		responseMessage *message.Message
 	}{
 		{
 			name: "normal",
@@ -332,7 +332,7 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 			},
 			messageContent: "hi",
 
-			resposneMessage: &message.Message{
+			responseMessage: &message.Message{
 				Content: "Hello, my name is chat-gpt.",
 			},
 		},
@@ -359,8 +359,8 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().TTSV1StreamingSayStop(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID).Return(nil)
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleUser, tt.messageContent, true, gomock.Any()).Return(tt.resposneMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.resposneMessage.Content).Return(nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleUser, tt.messageContent, true, gomock.Any()).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
 
 			errChat := h.chatMessageReferenceTypeCall(ctx, tt.aicall, tt.messageContent)
 			if errChat != nil {
