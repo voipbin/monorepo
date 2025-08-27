@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-tts-manager/models/streaming"
 	"net"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -27,6 +29,8 @@ type ElevenlabsConfig struct {
 
 	ConnWebsock *websocket.Conn `json:"-"` // connector between the service and ElevenLabs
 	ConnAst     net.Conn        `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
+
+	muConnWebsock sync.Mutex `json:"-"`
 }
 
 type ElevenlabsMessage struct {
@@ -163,6 +167,8 @@ func (h *elevenlabsHandler) Init(st *streaming.Streaming) (any, error) {
 
 		ConnWebsock: connWebsock,
 		ConnAst:     st.ConnAst,
+
+		muConnWebsock: sync.Mutex{},
 	}
 
 	return res, nil
@@ -185,6 +191,7 @@ func (h *elevenlabsHandler) Run(vendorConfig any) error {
 	defer h.SayStop(cf)
 
 	go h.readWebsock(cf)
+	go h.runKeepAlive(cf)
 
 	<-cf.Ctx.Done()
 
@@ -329,6 +336,9 @@ func (h *elevenlabsHandler) AddText(vendorConfig any, text string) error {
 		return fmt.Errorf("the ConnWebsock is nil")
 	}
 
+	cf.muConnWebsock.Lock()
+	defer cf.muConnWebsock.Unlock()
+
 	message := ElevenlabsMessage{
 		Text:                 text,
 		TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
@@ -409,4 +419,21 @@ func (h *elevenlabsHandler) getDataSamples(inputRate int, data []byte) ([]byte, 
 	}
 
 	return res, nil
+}
+
+func (h *elevenlabsHandler) runKeepAlive(cf *ElevenlabsConfig) {
+	ticker := time.NewTicker(time.Second * 10) // Use configurable interval
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-cf.Ctx.Done():
+			return
+
+		case <-ticker.C:
+			if errSend := h.AddText(cf, " "); errSend != nil {
+				return
+			}
+		}
+	}
 }

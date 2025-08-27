@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
+	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 	reflect "reflect"
 	"testing"
 	"time"
@@ -32,10 +33,11 @@ func Test_startReferenceTypeCall(t *testing.T) {
 		gender       aicall.Gender
 		language     string
 
-		responseConfbridge *cmconfbridge.Confbridge
-		responseUUIDAIcall uuid.UUID
-		responseAIcall     *aicall.AIcall
-		responseMessage    *message.Message
+		responseConfbridge   *cmconfbridge.Confbridge
+		responseTTSStreaming *tmstreaming.Streaming
+		responseUUIDAIcall   uuid.UUID
+		responseAIcall       *aicall.AIcall
+		responseMessage      *message.Message
 
 		expectAIcall         *aicall.AIcall
 		expectAIcallMessages []message.Message
@@ -63,6 +65,12 @@ func Test_startReferenceTypeCall(t *testing.T) {
 					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				},
 			},
+			responseTTSStreaming: &tmstreaming.Streaming{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f3e1ca38-817c-11f0-b195-eb59dc9cc7d9"),
+				},
+				PodID: "f42f870a-817c-11f0-baa2-6fadbb11d7a1",
+			},
 			responseUUIDAIcall: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 			responseAIcall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
@@ -80,15 +88,17 @@ func Test_startReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
-				AIID:          uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
-				ActiveflowID:  uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
-				AIEngineType:  ai.EngineTypeNone,
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
-				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				Status:        aicall.StatusInitiating,
+				AIID:              uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+				ActiveflowID:      uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+				AIEngineType:      ai.EngineTypeNone,
+				ReferenceType:     aicall.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+				ConfbridgeID:      uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				Gender:            aicall.GenderFemale,
+				Language:          "en-US",
+				Status:            aicall.StatusInitiating,
+				TTSStreamingID:    uuid.FromStringOrNil("f3e1ca38-817c-11f0-b195-eb59dc9cc7d9"),
+				TTSStreamingPodID: "f42f870a-817c-11f0-baa2-6fadbb11d7a1",
 			},
 			expectMessage: &message.Message{
 				Role:    message.RoleSystem,
@@ -131,6 +141,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.ai.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().TTSV1StreamingCreate(ctx, tt.ai.CustomerID, tmstreaming.ReferenceTypeCall, tt.referenceID, tt.language, tmstreaming.Gender(tt.gender), tmstreaming.DirectionOutgoing).Return(tt.responseTTSStreaming, nil)
 
 			// create
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
@@ -139,7 +150,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, true, 30000).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.responseAIcall.ReferenceID, tt.responseMessage.Content, string(tt.responseAIcall.Gender), tt.responseAIcall.Language, 10000).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.responseAIcall.TTSStreamingPodID, tt.responseAIcall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
 
 			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {

@@ -24,13 +24,15 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai            *ai.AI
-		activeflowID  uuid.UUID
-		referenceType aicall.ReferenceType
-		referenceID   uuid.UUID
-		confbridgeID  uuid.UUID
-		gender        aicall.Gender
-		language      string
+		ai                *ai.AI
+		activeflowID      uuid.UUID
+		referenceType     aicall.ReferenceType
+		referenceID       uuid.UUID
+		confbridgeID      uuid.UUID
+		gender            aicall.Gender
+		language          string
+		ttsStreamingID    uuid.UUID
+		ttsStreamingPodID string
 
 		responseUUID   uuid.UUID
 		responseAIcall *aicall.AIcall
@@ -51,12 +53,14 @@ func Test_Create(t *testing.T) {
 					"key1": "value1",
 				},
 			},
-			activeflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
-			referenceType: aicall.ReferenceTypeCall,
-			referenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
-			confbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
-			gender:        aicall.GenderFemale,
-			language:      "en-US",
+			activeflowID:      uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
+			referenceType:     aicall.ReferenceTypeCall,
+			referenceID:       uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
+			confbridgeID:      uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
+			gender:            aicall.GenderFemale,
+			language:          "en-US",
+			ttsStreamingID:    uuid.FromStringOrNil("f28face2-817a-11f0-a087-531eee9532b8"),
+			ttsStreamingPodID: "f2d8841c-817a-11f0-9521-4f553837a2fb",
 
 			responseUUID: uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
 			responseAIcall: &aicall.AIcall{
@@ -76,13 +80,15 @@ func Test_Create(t *testing.T) {
 				AIEngineData: map[string]any{
 					"key1": "value1",
 				},
-				ActiveflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
-				ConfbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				Status:        aicall.StatusInitiating,
+				ActiveflowID:      uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
+				ReferenceType:     aicall.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
+				ConfbridgeID:      uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
+				Gender:            aicall.GenderFemale,
+				Language:          "en-US",
+				Status:            aicall.StatusInitiating,
+				TTSStreamingID:    uuid.FromStringOrNil("f28face2-817a-11f0-a087-531eee9532b8"),
+				TTSStreamingPodID: "f2d8841c-817a-11f0-9521-4f553837a2fb",
 			},
 		},
 	}
@@ -113,7 +119,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			res, err := h.Create(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language)
+			res, err := h.Create(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.ttsStreamingID, tt.ttsStreamingPodID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
