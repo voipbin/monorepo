@@ -1071,6 +1071,7 @@ type RequestHandler interface {
 	) (*tmstreaming.Streaming, error)
 	TTSV1StreamingDelete(ctx context.Context, streamingID uuid.UUID) (*tmstreaming.Streaming, error)
 	TTSV1StreamingSay(ctx context.Context, podID string, streamingID uuid.UUID, text string) error
+	TTSV1StreamingSayStop(ctx context.Context, podID string, streamingID uuid.UUID) error
 
 	// transcribe-manager
 	TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)

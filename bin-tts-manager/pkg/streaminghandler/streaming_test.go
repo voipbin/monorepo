@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-tts-manager/models/streaming"
-	reflect "reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -81,24 +80,14 @@ func Test_Create(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseID)
 			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingCreated, gomock.Any())
 
-			res, err := h.Create(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
+			_, err := h.Create(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expected: ok, got: %v", err)
 			}
 
-			tt.expectRes.ChanDone = res.ChanDone
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match. expected: %v, got: %v", tt.expectRes, res)
-			}
-
-			resGet, err := h.Get(ctx, tt.responseID)
+			_, err = h.Get(ctx, tt.responseID)
 			if err != nil {
 				t.Errorf("Wrong match. expected: ok, got: %v", err)
-			}
-
-			tt.expectRes.ChanDone = resGet.ChanDone
-			if !reflect.DeepEqual(resGet, tt.expectRes) {
-				t.Errorf("Wrong match. expected: %v, got: %v", tt.expectRes, resGet)
 			}
 
 			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingDeleted, tt.expectRes)

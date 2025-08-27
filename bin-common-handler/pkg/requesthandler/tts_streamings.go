@@ -106,3 +106,23 @@ func (r *requestHandler) TTSV1StreamingSay(ctx context.Context, podID string, st
 
 	return nil
 }
+
+// TTSV1StreamingSayStop stops the saying streaming tts.
+func (r *requestHandler) TTSV1StreamingSayStop(ctx context.Context, podID string, streamingID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/streamings/%s/say_stop", streamingID)
+
+	queueName := fmt.Sprintf("bin-manager.tts-manager.request.%s", podID)
+
+	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodPost, "tts/streamings/<streaming-id>/say_stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}

@@ -206,3 +206,62 @@ func Test_TTSV1StreamingSay(t *testing.T) {
 		})
 	}
 }
+
+func Test_TTSV1StreamingSayStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		podID string
+		id    uuid.UUID
+
+		response *sock.Response
+
+		expectQueue   string
+		expectRequest *sock.Request
+		expectRes     *tmstreaming.Streaming
+	}{
+		{
+			name: "normal",
+
+			podID: "184c7e7c-8286-11f0-b4c5-77e7c515c4f2",
+			id:    uuid.FromStringOrNil("187a294e-8286-11f0-a61c-ef87402cb1a0"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"187a294e-8286-11f0-a61c-ef87402cb1a0"}`),
+			},
+
+			expectQueue: "bin-manager.tts-manager.request.184c7e7c-8286-11f0-b4c5-77e7c515c4f2",
+			expectRequest: &sock.Request{
+				URI:      "/v1/streamings/187a294e-8286-11f0-a61c-ef87402cb1a0/say_stop",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeNone,
+			},
+			expectRes: &tmstreaming.Streaming{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("187a294e-8286-11f0-a61c-ef87402cb1a0"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.TTSV1StreamingSayStop(context.Background(), tt.podID, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

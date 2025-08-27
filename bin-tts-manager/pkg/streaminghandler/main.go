@@ -4,7 +4,6 @@ package streaminghandler
 
 import (
 	"context"
-	"net"
 	"sync"
 	"time"
 
@@ -35,6 +34,7 @@ type StreamingHandler interface {
 	Stop(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error)
 
 	Say(ctx context.Context, id uuid.UUID, text string) error
+	SayStop(ctx context.Context, id uuid.UUID) error
 }
 
 // list of default external media channel options.
@@ -54,8 +54,10 @@ const (
 )
 
 type streamer interface {
-	Run(ctx context.Context, st *streaming.Streaming, conn net.Conn) error
-	AddText(ctx context.Context, st *streaming.Streaming, text string) error
+	Init(st *streaming.Streaming) (any, error)
+	Run(vendorConfig any) error
+	SayStop(vendorConfig any)
+	AddText(vendorConfig any, text string) error
 }
 
 type streamingHandler struct {

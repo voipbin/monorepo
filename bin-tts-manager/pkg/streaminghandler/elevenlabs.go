@@ -19,6 +19,16 @@ import (
 	"net/url"
 )
 
+type ElevenlabsConfig struct {
+	Streaming *streaming.Streaming `json:"streaming"`
+
+	Ctx    context.Context    `json:"-"`
+	Cancel context.CancelFunc `json:"-"`
+
+	ConnWebsock *websocket.Conn `json:"-"` // connector between the service and ElevenLabs
+	ConnAst     net.Conn        `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
+}
+
 type ElevenlabsMessage struct {
 	Text                 string `json:"text"`
 	TryTriggerGeneration bool   `json:"try_trigger_generation"`
@@ -138,23 +148,148 @@ func NewElevenlabsHandler(notifyHandler notifyhandler.NotifyHandler, apiKey stri
 	}
 }
 
-func (h *elevenlabsHandler) Run(ctx context.Context, st *streaming.Streaming, conn net.Conn) error {
-	connElevenlabs, err := h.initConn(ctx, st)
+func (h *elevenlabsHandler) Init(st *streaming.Streaming) (any, error) {
+	connWebsock, err := h.connect(st)
 	if err != nil {
-		return errors.Wrapf(err, "failed to initialize ElevenLabs WebSocket connection")
+		return nil, errors.Wrapf(err, "failed to initialize ElevenLabs WebSocket connection")
 	}
-	defer connElevenlabs.Close()
 
-	st.Vendor = streaming.VendorElevenlabs
-	st.ConnVendor = connElevenlabs
-	go h.handleReceivedMessages(ctx, conn, st)
+	ctx, cancel := context.WithCancel(context.Background())
+	res := &ElevenlabsConfig{
+		Streaming: st,
 
-	<-st.ChanDone
+		Ctx:    ctx,
+		Cancel: cancel,
+
+		ConnWebsock: connWebsock,
+		ConnAst:     st.ConnAst,
+	}
+
+	return res, nil
+}
+
+func (h *elevenlabsHandler) SayStop(vendorConfig any) {
+	cf, ok := vendorConfig.(*ElevenlabsConfig)
+	if !ok || cf == nil {
+		return
+	}
+
+	cf.Cancel()
+}
+
+func (h *elevenlabsHandler) Run(vendorConfig any) error {
+	cf, ok := vendorConfig.(*ElevenlabsConfig)
+	if !ok || cf == nil {
+		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
+	}
+	defer h.SayStop(cf)
+
+	go h.readWebsock(cf)
+
+	<-cf.Ctx.Done()
 
 	return nil
 }
 
-func (h *elevenlabsHandler) initConn(ctx context.Context, st *streaming.Streaming) (*websocket.Conn, error) {
+func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "messageHandleFromVendor",
+	})
+
+	msgCh := make(chan []byte)
+	errCh := make(chan error)
+
+	// message read
+	go func() {
+		defer cf.ConnWebsock.Close()
+
+		for {
+			select {
+			case <-cf.Ctx.Done():
+				return
+
+			default:
+				_, msg, err := cf.ConnWebsock.ReadMessage()
+				if err != nil {
+					// non-blocking send to avoid goroutine leak if main loop is gone
+					select {
+					case errCh <- err:
+					default:
+					}
+					return
+				}
+
+				// non-blocking send in case main loop has exited
+				select {
+				case msgCh <- msg:
+				case <-cf.Ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+
+	for {
+		select {
+
+		case <-cf.Ctx.Done():
+			return
+
+		case err := <-errCh:
+			log.Errorf("Error reading websocket message: %v. Exiting handleWebSocketMessages.", err)
+			return
+
+		case message := <-msgCh:
+			log.Debugf("Received WebSocket message (size: %d bytes)", len(message))
+			var response ElevenlabsResponse
+			if errUnmarshal := json.Unmarshal(message, &response); errUnmarshal != nil {
+				log.Errorf("Error parsing response: %v. Message: %s", errUnmarshal, string(message))
+				continue
+			}
+
+			// Process audio data if present.
+			if response.Audio != "" {
+				decodedAudio, errDecode := base64.StdEncoding.DecodeString(response.Audio)
+				if errDecode != nil {
+					log.Errorf("Could not decode base64 audio data: %v. Message: %s", errDecode, response.Audio)
+					return
+				}
+				log.Debugf("Decoded audio chunk size before processing: %d bytes.", len(decodedAudio))
+
+				data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodedAudio)
+				if errProcess != nil {
+					log.Errorf("Could not process PCM data: %v. Message: %s", errProcess, response.Audio)
+					return
+				}
+				log.Debugf("Processed audio chunk of size %d bytes.", len(data))
+
+				// TTS play
+				if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, data); errWrite != nil {
+					log.Errorf("Could not write processed audio data to asterisk connection: %v", errWrite)
+					return
+				}
+			}
+
+			// Check for the 'isFinal' flag, which indicates the end of audio generation.
+			if response.IsFinal {
+				log.Println("Received final message for current generation.")
+				h.notifyHandler.PublishEvent(cf.Ctx, streaming.EventTypeStreamingFinished, cf.Streaming)
+			}
+
+			// Log other control messages like 'status'.
+			if response.Status != "" {
+				log.Debugf("Status: %s", response.Status)
+			}
+
+			// Log any errors reported by the server.
+			if response.Error != "" {
+				log.Debugf("Error from server: %s", response.Error)
+			}
+		}
+	}
+}
+
+func (h *elevenlabsHandler) connect(st *streaming.Streaming) (*websocket.Conn, error) {
 	voiceID := h.getVoiceID(st.Language, st.Gender)
 
 	// Construct the WebSocket URL for ElevenLabs.
@@ -175,7 +310,7 @@ func (h *elevenlabsHandler) initConn(ctx context.Context, st *streaming.Streamin
 	header["xi-api-key"] = []string{h.apiKey}
 
 	// Establish the WebSocket connection.
-	res, _, err := websocket.DefaultDialer.DialContext(ctx, u.String(), header)
+	res, _, err := websocket.DefaultDialer.DialContext(context.Background(), u.String(), header)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to connect to ElevenLabs WebSocket at %s", u.String())
 	}
@@ -183,115 +318,27 @@ func (h *elevenlabsHandler) initConn(ctx context.Context, st *streaming.Streamin
 	return res, nil
 }
 
-func (h *elevenlabsHandler) AddText(ctx context.Context, st *streaming.Streaming, text string) error {
+func (h *elevenlabsHandler) AddText(vendorConfig any, text string) error {
+
+	cf, ok := vendorConfig.(*ElevenlabsConfig)
+	if !ok || cf == nil {
+		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
+	}
+
+	if cf.ConnWebsock == nil {
+		return fmt.Errorf("the ConnWebsock is nil")
+	}
 
 	message := ElevenlabsMessage{
 		Text:                 text,
 		TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
 	}
 
-	conn, ok := st.ConnVendor.(*websocket.Conn)
-	if !ok || conn == nil {
-		return fmt.Errorf("the ConnVendor is not a *websocket.Conn or is nil")
+	if errWrite := cf.ConnWebsock.WriteJSON(message); errWrite != nil {
+		return errors.Wrapf(errWrite, "failed to send text to ElevenLabs WebSocket")
 	}
 
-	return conn.WriteJSON(message)
-}
-
-func (h *elevenlabsHandler) Finish(ctx context.Context, st *streaming.Streaming) error {
-	message := ElevenlabsMessage{
-		Text:                 "", // Empty text signifies the end of input.
-		TryTriggerGeneration: true,
-		Finalize:             true, // Explicitly tells the API to finalize generation.
-	}
-
-	conn, ok := st.ConnVendor.(*websocket.Conn)
-	if !ok || conn == nil {
-		return fmt.Errorf("the ConnVendor is not a *websocket.Conn or is nil")
-	}
-
-	return conn.WriteJSON(message)
-}
-
-func (h *elevenlabsHandler) handleReceivedMessages(ctx context.Context, connAst net.Conn, st *streaming.Streaming) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "handleReceivedMessages",
-		"streaming_id":   st.ID,
-		"reference_id":   st.ReferenceID,
-		"reference_type": st.ReferenceType,
-	})
-
-	defer func() {
-		st.ChanDone <- true
-		log.Debugf("handleWebSocketMessages goroutine signaled done.")
-	}()
-
-	conn, ok := st.ConnVendor.(*websocket.Conn)
-	if !ok || conn == nil {
-		return
-	}
-
-	for {
-		messageType, message, err := conn.ReadMessage()
-		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-				log.Debugf("WebSocket closed normally by server or client. Exiting handleWebSocketMessages.")
-			} else {
-				log.Errorf("Error reading websocket message: %v. Exiting handleWebSocketMessages.", err)
-			}
-			return
-		}
-		log.Debugf("Received WebSocket message (type: %d, size: %d bytes)", messageType, len(message))
-
-		var response ElevenlabsResponse
-		if errUnmarshal := json.Unmarshal(message, &response); errUnmarshal != nil {
-			log.Errorf("Error parsing response: %v. Message: %s", errUnmarshal, string(message))
-			continue
-		}
-
-		// Process audio data if present.
-		if response.Audio != "" {
-			decodedAudio, decodeErr := base64.StdEncoding.DecodeString(response.Audio)
-			if decodeErr != nil {
-				log.Errorf("Could not decode base64 audio data: %v. Message: %s", decodeErr, response.Audio)
-				return
-			}
-			log.Debugf("Decoded audio chunk size before processing: %d bytes.", len(decodedAudio))
-
-			data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodedAudio)
-			if errProcess != nil {
-				log.Errorf("Could not process PCM data: %v. Message: %s", errProcess, response.Audio)
-				return
-			}
-			log.Debugf("Processed audio chunk of size %d bytes.", len(decodedAudio))
-
-			// send it to the asterisk connection.
-			// TTS play!
-			n, err := connAst.Write(data)
-			if err != nil {
-				log.Errorf("Could not write data to asterisk connection: %v", err)
-				return
-			}
-
-			log.Debugf("Wrote %d bytes to asterisk connection", n)
-		}
-
-		// Check for the 'isFinal' flag, which indicates the end of audio generation.
-		if response.IsFinal {
-			log.Println("Received final message for current generation.")
-			h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingFinished, st)
-		}
-
-		// Log other control messages like 'status'.
-		if response.Status != "" {
-			log.Debugf("Status: %s", response.Status)
-		}
-
-		// Log any errors reported by the server.
-		if response.Error != "" {
-			log.Debugf("Error from server: %s", response.Error)
-		}
-	}
+	return nil
 }
 
 // convertAndWrapPCMData converts raw PCM data with the given input format into
@@ -312,14 +359,9 @@ func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byt
 		return nil, fmt.Errorf("unsupported input format: %s", inputFormat)
 	}
 
-	samples, err := h.getDataSamples(inputRate, data)
+	res, err := h.getDataSamples(inputRate, data)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get samples for format %s", inputFormat)
-	}
-
-	res, err := audiosocketWrapDataPCM16Bit(samples)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to wrap data for audiosocket")
 	}
 
 	return res, nil

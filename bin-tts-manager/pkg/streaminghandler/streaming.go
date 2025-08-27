@@ -3,6 +3,8 @@ package streaminghandler
 import (
 	"context"
 	"fmt"
+	"net"
+	"sync"
 
 	"github.com/gofrs/uuid"
 
@@ -37,7 +39,9 @@ func (h *streamingHandler) Create(
 		Gender:    gender,
 		Direction: direction,
 
-		ChanDone: make(chan bool),
+		VendorName:   streaming.VendorNameNone,
+		VendorLock:   sync.Mutex{},
+		VendorConfig: nil,
 	}
 
 	_, ok := h.mapStreaming[id]
@@ -75,4 +79,25 @@ func (h *streamingHandler) Delete(ctx context.Context, streamingID uuid.UUID) {
 
 	delete(h.mapStreaming, streamingID)
 	h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingDeleted, tmp)
+}
+
+func (h *streamingHandler) UpdateConnAst(streamingID uuid.UUID, connAst net.Conn) (*streaming.Streaming, error) {
+	h.muStreaming.Lock()
+	defer h.muStreaming.Unlock()
+
+	res, ok := h.mapStreaming[streamingID]
+	if !ok {
+		return nil, fmt.Errorf("streaming not found. streaming_id: %s", streamingID)
+	}
+
+	res.ConnAst = connAst
+	return res, nil
+}
+
+func (h *streamingHandler) SetVendorInfo(st *streaming.Streaming, venderName streaming.VendorName, vendorConfig any) {
+	st.VendorLock.Lock()
+	defer st.VendorLock.Unlock()
+
+	st.VendorName = venderName
+	st.VendorConfig = vendorConfig
 }
