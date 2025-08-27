@@ -43,12 +43,14 @@ func Test_ChatMessage(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("02732972-96f1-4c51-9f76-38b32377493c"),
 				},
-				ReferenceType: aicall.ReferenceTypeCall,
-				AIID:          uuid.FromStringOrNil("0f7a3d29-fdb5-41ba-8fa9-3a85e02ce17a"),
-				AIEngineType:  ai.EngineTypeNone,
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				ReferenceID:   uuid.FromStringOrNil("some-reference-id"), // Add this
+				ReferenceType:     aicall.ReferenceTypeCall,
+				AIID:              uuid.FromStringOrNil("0f7a3d29-fdb5-41ba-8fa9-3a85e02ce17a"),
+				AIEngineType:      ai.EngineTypeNone,
+				Gender:            aicall.GenderFemale,
+				Language:          "en-US",
+				ReferenceID:       uuid.FromStringOrNil("5d93dd9c-8306-11f0-8abe-23fa7bf3b155"),
+				TTSStreamingPodID: "5dc667bc-8306-11f0-83b7-1fa6cc24ea64",
+				TTSStreamingID:    uuid.FromStringOrNil("5def9556-8306-11f0-a4c9-b7d814746d11"),
 			},
 			text: "hi",
 
@@ -83,9 +85,9 @@ func Test_ChatMessage(t *testing.T) {
 			ctx := context.Background()
 
 			// Set up expectations for the mocks. Make sure arguments match what you're passing.
-			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.aicall.ReferenceID).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSayStop(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID).Return(nil)
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.ID, tt.expectRole, tt.text, true, gomock.Any()).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.aicall.ReferenceID, tt.expectText, string(tt.aicall.Gender), tt.aicall.Language, 10000).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
 
 			if errChat := h.ChatMessage(ctx, tt.aicall, tt.text); errChat != nil {
 				t.Errorf("ChatMessage() error = %v", errChat)
@@ -102,6 +104,7 @@ func Test_ChatInit(t *testing.T) {
 		aicall *aicall.AIcall
 
 		responseInitPrompt string
+		responseMessage    *message.Message
 
 		expectVariables  map[string]string
 		expectInitPrompt string
@@ -119,17 +122,22 @@ func Test_ChatInit(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a5f77d7c-f7e8-11ef-a28e-3babccbf3e47"),
 					CustomerID: uuid.FromStringOrNil("a64db8b8-f7e8-11ef-9a8e-f3357aace0ff"),
 				},
-				AIID:          uuid.FromStringOrNil("a6d0f872-f7e8-11ef-a1fa-8b9babb2a9f5"),
-				ActiveflowID:  uuid.FromStringOrNil("a6aec4b4-f7e8-11ef-9b61-37d5c56e8086"),
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("a6830630-f7e8-11ef-9fc4-7fd9341c5fe5"),
-				ConfbridgeID:  uuid.FromStringOrNil("333d4aea-f7e9-11ef-873e-efd62602ccad"),
-				AIEngineModel: ai.EngineModelOpenaiGPT4,
-				Gender:        aicall.GenderNuetral,
-				Language:      "en-US",
+				AIID:              uuid.FromStringOrNil("a6d0f872-f7e8-11ef-a1fa-8b9babb2a9f5"),
+				ActiveflowID:      uuid.FromStringOrNil("a6aec4b4-f7e8-11ef-9b61-37d5c56e8086"),
+				ReferenceType:     aicall.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("a6830630-f7e8-11ef-9fc4-7fd9341c5fe5"),
+				ConfbridgeID:      uuid.FromStringOrNil("333d4aea-f7e9-11ef-873e-efd62602ccad"),
+				AIEngineModel:     ai.EngineModelOpenaiGPT4,
+				Gender:            aicall.GenderNuetral,
+				Language:          "en-US",
+				TTSStreamingPodID: "3bf63b4e-8306-11f0-8ca6-23223b21657b",
+				TTSStreamingID:    uuid.FromStringOrNil("3c237ec4-8306-11f0-ab5d-b77da11dec7c"),
 			},
 
 			responseInitPrompt: "test init prompt",
+			responseMessage: &message.Message{
+				Content: "Hello, The lame person is the culprit",
+			},
 
 			expectVariables: map[string]string{
 				variableAIcallID:      "a5f77d7c-f7e8-11ef-a28e-3babccbf3e47",
@@ -166,8 +174,8 @@ func Test_ChatInit(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.aicall.ActiveflowID, tt.expectVariables).Return(nil)
 			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.aicall.ActiveflowID, tt.ai.InitPrompt).Return(tt.responseInitPrompt, nil)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.expectInitPrompt, true, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.aicall.ReferenceID, "test assist", string(tt.aicall.Gender), tt.aicall.Language, 10000).Return(nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.expectInitPrompt, true, gomock.Any()).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
 
 			err := h.chatInit(ctx, tt.ai, tt.aicall)
 			if err != nil {
@@ -183,6 +191,8 @@ func Test_ChatInit_without_activeflow_id(t *testing.T) {
 		name   string
 		ai     *ai.AI
 		aicall *aicall.AIcall
+
+		responseMessage *message.Message
 	}{
 		{
 			name: "normal",
@@ -195,10 +205,16 @@ func Test_ChatInit_without_activeflow_id(t *testing.T) {
 					ID:         uuid.FromStringOrNil("9bb7079c-f556-11ed-afbb-0f109793414b"),
 					CustomerID: uuid.FromStringOrNil("123e4567-e89b-12d3-a456-426614174000"),
 				},
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
-				Gender:        aicall.GenderNuetral,
-				Language:      "en-US",
+				ReferenceType:     aicall.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
+				Gender:            aicall.GenderNuetral,
+				Language:          "en-US",
+				TTSStreamingPodID: "c19462e0-8305-11f0-b617-c33d6dbf1d54",
+				TTSStreamingID:    uuid.FromStringOrNil("c1f06f4a-8305-11f0-a32c-9f4c73eee550"),
+			},
+
+			responseMessage: &message.Message{
+				Content: "Hello, Bruce Willis is a ghost.",
 			},
 		},
 	}
@@ -223,8 +239,8 @@ func Test_ChatInit_without_activeflow_id(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.ai.InitPrompt, true, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.aicall.ReferenceID, "test assist", string(tt.aicall.Gender), tt.aicall.Language, 10000).Return(nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.ai.InitPrompt, true, gomock.Any()).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
 
 			err := h.chatInit(ctx, tt.ai, tt.aicall)
 			if err != nil {
@@ -295,6 +311,8 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 		name           string
 		aicall         *aicall.AIcall
 		messageContent string
+
+		resposneMessage *message.Message
 	}{
 		{
 			name: "normal",
@@ -303,14 +321,20 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("47ea05dc-ef4c-11ef-8318-af1841553e05"),
 					CustomerID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
 				},
-				ReferenceType: aicall.ReferenceTypeCall,
-				AIID:          uuid.FromStringOrNil("48445be0-ef4c-11ef-9ac6-f39d9cadacfd"),
-				AIEngineType:  ai.EngineTypeNone,
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				ReferenceID:   uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
+				ReferenceType:     aicall.ReferenceTypeCall,
+				AIID:              uuid.FromStringOrNil("48445be0-ef4c-11ef-9ac6-f39d9cadacfd"),
+				AIEngineType:      ai.EngineTypeNone,
+				Gender:            aicall.GenderFemale,
+				Language:          "en-US",
+				ReferenceID:       uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
+				TTSStreamingPodID: "7088be06-8304-11f0-9297-67f7f030ee2f",
+				TTSStreamingID:    uuid.FromStringOrNil("70b65078-8304-11f0-9405-b397054d69e2"),
 			},
 			messageContent: "hi",
+
+			resposneMessage: &message.Message{
+				Content: "Hello, my name is chat-gpt.",
+			},
 		},
 	}
 
@@ -334,9 +358,9 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.aicall.ReferenceID).Return(nil)
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleUser, tt.messageContent, true, gomock.Any()).Return(&message.Message{Content: "test assist"}, nil)
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.aicall.ReferenceID, "test assist", string(tt.aicall.Gender), tt.aicall.Language, 10000).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSayStop(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID).Return(nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleUser, tt.messageContent, true, gomock.Any()).Return(tt.resposneMessage, nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.resposneMessage.Content).Return(nil)
 
 			errChat := h.chatMessageReferenceTypeCall(ctx, tt.aicall, tt.messageContent)
 			if errChat != nil {
@@ -410,10 +434,12 @@ func Test_chatMessageHandle_text(t *testing.T) {
 		{
 			name: "Text_Message",
 			aicall: &aicall.AIcall{
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
-				Gender:        aicall.GenderNuetral,
-				Language:      "ja-JP",
+				ReferenceType:     aicall.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
+				Gender:            aicall.GenderNuetral,
+				Language:          "ja-JP",
+				TTSStreamingPodID: "8a0f6a10-8303-11f0-8679-f3865a958c33",
+				TTSStreamingID:    uuid.FromStringOrNil("8a53f25c-8303-11f0-b654-8332100a5338"),
 			},
 			message: &message.Message{
 				Content: "Hello",
@@ -441,10 +467,9 @@ func Test_chatMessageHandle_text(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.aicall.ReferenceID, tt.message.Content, string(tt.aicall.Gender), tt.aicall.Language, 10000).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.message.Content).Return(nil)
 
-			errChat := h.chatMessageHandle(ctx, tt.aicall, tt.message)
-			if errChat != nil {
+			if errChat := h.chatMessageHandle(ctx, tt.aicall, tt.message); errChat != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errChat)
 			}
 		})
