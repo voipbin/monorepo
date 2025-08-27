@@ -422,18 +422,12 @@ func (h *elevenlabsHandler) getDataSamples(inputRate int, data []byte) ([]byte, 
 }
 
 func (h *elevenlabsHandler) runKeepAlive(cf *ElevenlabsConfig) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "runKeepAlive",
-		"streaming_id": cf.Streaming.ID,
-	})
-
 	ticker := time.NewTicker(time.Second * 10) // Use configurable interval
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-cf.Ctx.Done():
-			log.Debug("Keep-alive stopped")
 			return
 
 		case <-ticker.C:
