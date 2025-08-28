@@ -19,7 +19,7 @@ func (h *streamingHandler) Say(ctx context.Context, id uuid.UUID, messageID uuid
 
 	st, err := h.UpdateMessageID(ctx, id, messageID)
 	if err != nil {
-		return errors.Wrapf(err, "could not get streaming info. streaming_id: %s", id)
+		return errors.Wrapf(err, "could not update message ID. streaming_id: %s, message_id: %s", id, messageID)
 	}
 	log.WithField("streaming", st).Debugf("Fetched streaming info. streaming_id: %s", id)
 
@@ -39,11 +39,13 @@ func (h *streamingHandler) Say(ctx context.Context, id uuid.UUID, messageID uuid
 	}
 }
 
+// SayStop stops the current message being synthesized
+// and sets the message ID to nil
 func (h *streamingHandler) SayStop(ctx context.Context, id uuid.UUID) error {
 
 	st, err := h.UpdateMessageID(ctx, id, uuid.Nil)
 	if err != nil {
-		return errors.Wrapf(err, "could not get streaming info. streaming_id: %s", id)
+		return errors.Wrapf(err, "could not update message ID. streaming_id: %s, message_id: %s", id, uuid.Nil)
 	}
 
 	switch st.VendorName {
@@ -73,7 +75,7 @@ func (h *streamingHandler) SayAdd(ctx context.Context, id uuid.UUID, messageID u
 
 	st, err := h.Get(ctx, id)
 	if err != nil {
-		return errors.Wrapf(err, "could not get streaming info. streaming_id: %s", id)
+		return errors.Wrapf(err, "could not update message ID. streaming_id: %s, message_id: %s", id, messageID)
 	}
 
 	if st.MessageID != messageID {
