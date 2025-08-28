@@ -150,7 +150,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, true, 30000).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.responseAIcall.TTSStreamingPodID, tt.responseAIcall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.responseAIcall.TTSStreamingPodID, tt.responseAIcall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
 
 			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {

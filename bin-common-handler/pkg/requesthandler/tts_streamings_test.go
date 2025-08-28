@@ -47,13 +47,13 @@ func Test_TTSV1StreamingCreate(t *testing.T) {
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"65251224-5b01-11f0-8b4c-2759d8d6f460"}`),
 			},
+
 			expectRequest: &sock.Request{
 				URI:      "/v1/streamings",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"5d348388-5b01-11f0-bdba-43ddb95acbae","reference_type":"call","reference_id":"6504fcc8-5b01-11f0-9107-2fa36ae9f966","language":"en-US","gender":"male","direction":"out"}`),
 			},
-
 			expectRes: &tmstreaming.Streaming{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("65251224-5b01-11f0-8b4c-2759d8d6f460"),
@@ -150,9 +150,10 @@ func Test_TTSV1StreamingSay(t *testing.T) {
 	tests := []struct {
 		name string
 
-		podID string
-		id    uuid.UUID
-		text  string
+		podID     string
+		id        uuid.UUID
+		messageID uuid.UUID
+		text      string
 
 		response *sock.Response
 
@@ -163,9 +164,10 @@ func Test_TTSV1StreamingSay(t *testing.T) {
 		{
 			name: "normal",
 
-			podID: "7dbd5818-5b02-11f0-b594-c7683b9cdc6e",
-			id:    uuid.FromStringOrNil("65450fca-5b01-11f0-a32f-9b5f26a6e601"),
-			text:  "hello world",
+			podID:     "7dbd5818-5b02-11f0-b594-c7683b9cdc6e",
+			id:        uuid.FromStringOrNil("65450fca-5b01-11f0-a32f-9b5f26a6e601"),
+			messageID: uuid.FromStringOrNil("bb52a61c-83d7-11f0-972b-ebaeb552c271"),
+			text:      "hello world",
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -178,7 +180,7 @@ func Test_TTSV1StreamingSay(t *testing.T) {
 				URI:      "/v1/streamings/65450fca-5b01-11f0-a32f-9b5f26a6e601/say",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"text":"hello world"}`),
+				Data:     []byte(`{"message_id":"bb52a61c-83d7-11f0-972b-ebaeb552c271","text":"hello world"}`),
 			},
 			expectRes: &tmstreaming.Streaming{
 				Identity: identity.Identity{
@@ -200,7 +202,71 @@ func Test_TTSV1StreamingSay(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.TTSV1StreamingSay(context.Background(), tt.podID, tt.id, tt.text); err != nil {
+			if err := reqHandler.TTSV1StreamingSay(context.Background(), tt.podID, tt.id, tt.messageID, tt.text); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_TTSV1StreamingSayAdd(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		podID     string
+		id        uuid.UUID
+		messageID uuid.UUID
+		text      string
+
+		response *sock.Response
+
+		expectQueue   string
+		expectRequest *sock.Request
+		expectRes     *tmstreaming.Streaming
+	}{
+		{
+			name: "normal",
+
+			podID:     "f22f0194-83d7-11f0-9b8c-737f0a365b94",
+			id:        uuid.FromStringOrNil("f25d4e1e-83d7-11f0-92a1-3f6fa96b2ecf"),
+			messageID: uuid.FromStringOrNil("f286eefe-83d7-11f0-971b-d7b8ef521291"),
+			text:      "hello world",
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"f25d4e1e-83d7-11f0-92a1-3f6fa96b2ecf"}`),
+			},
+
+			expectQueue: "bin-manager.tts-manager.request.f22f0194-83d7-11f0-9b8c-737f0a365b94",
+			expectRequest: &sock.Request{
+				URI:      "/v1/streamings/f25d4e1e-83d7-11f0-92a1-3f6fa96b2ecf/say_add",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"message_id":"f286eefe-83d7-11f0-971b-d7b8ef521291","text":"hello world"}`),
+			},
+			expectRes: &tmstreaming.Streaming{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("f25d4e1e-83d7-11f0-92a1-3f6fa96b2ecf"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.TTSV1StreamingSayAdd(context.Background(), tt.podID, tt.id, tt.messageID, tt.text); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

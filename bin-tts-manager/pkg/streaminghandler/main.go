@@ -33,7 +33,8 @@ type StreamingHandler interface {
 	) (*streaming.Streaming, error)
 	Stop(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error)
 
-	Say(ctx context.Context, id uuid.UUID, text string) error
+	Say(ctx context.Context, id uuid.UUID, messageID uuid.UUID, text string) error
+	SayAdd(ctx context.Context, id uuid.UUID, messageID uuid.UUID, text string) error
 	SayStop(ctx context.Context, id uuid.UUID) error
 }
 

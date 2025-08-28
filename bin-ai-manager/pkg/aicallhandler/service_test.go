@@ -164,7 +164,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt, true, 30000).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.responseAIcall.TTSStreamingPodID, tt.responseAIcall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.responseAIcall.TTSStreamingPodID, tt.responseAIcall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
 

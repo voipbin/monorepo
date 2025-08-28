@@ -105,8 +105,42 @@ func (h *listenHandler) v1StreamingsIDSayPost(ctx context.Context, m *sock.Reque
 	}
 	log.WithField("request", req).Debugf("Request detail.")
 
-	if errSay := h.streamingHandler.Say(ctx, streamingID, req.Text); errSay != nil {
+	if errSay := h.streamingHandler.Say(ctx, streamingID, req.MessageID, req.Text); errSay != nil {
 		log.Errorf("Could not say a streaming. err: %v", errSay)
+		return nil, errSay
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// v1StreamingsIDSayAddPost handles /v1/streamings/<id>/say_add POST request
+func (h *listenHandler) v1StreamingsIDSayAddPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1StreamingsIDSayAddPost",
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/streamings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/say"
+	tmpVals := strings.Split(u.Path, "/")
+	streamingID := uuid.FromStringOrNil(tmpVals[3])
+
+	var req request.V1DataStreamingsIDSayAddPost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return nil, err
+	}
+	log.WithField("request", req).Debugf("Request detail.")
+
+	if errSay := h.streamingHandler.SayAdd(ctx, streamingID, req.MessageID, req.Text); errSay != nil {
+		log.Errorf("Could not add to the say streaming. err: %v", errSay)
 		return nil, errSay
 	}
 

@@ -56,8 +56,8 @@ func (h *aicallHandler) chatMessageActionsHandle(ctx context.Context, cc *aicall
 }
 
 // chatMessageTextHandle handles chat message text
-func (h *aicallHandler) chatMessageTextHandle(ctx context.Context, cc *aicall.AIcall, text string) error {
-	if errSay := h.reqHandler.TTSV1StreamingSay(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, text); errSay != nil {
+func (h *aicallHandler) chatMessageTextHandle(ctx context.Context, cc *aicall.AIcall, m *message.Message) error {
+	if errSay := h.reqHandler.TTSV1StreamingSay(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, m.ID, m.Content); errSay != nil {
 		return errors.Wrapf(errSay, "could not say the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
 	}
 
@@ -168,7 +168,7 @@ func (h *aicallHandler) chatMessageHandleReferenceTypeCall(ctx context.Context, 
 		}
 	} else {
 		log.WithField("text", m.Content).Debugf("Got an message text. text: %s", m.Content)
-		if errHandle := h.chatMessageTextHandle(ctx, cc, m.Content); errHandle != nil {
+		if errHandle := h.chatMessageTextHandle(ctx, cc, m); errHandle != nil {
 			return errors.Wrap(errHandle, "could not handle the response message text correctly")
 		}
 	}

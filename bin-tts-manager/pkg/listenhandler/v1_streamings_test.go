@@ -56,7 +56,7 @@ func Test_v1StreamingsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b6dcbc72-5af5-11f0-b0a7-fbe8aae41529","customer_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"b6dcbc72-5af5-11f0-b0a7-fbe8aae41529","customer_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -120,7 +120,7 @@ func Test_v1StreamingsIDDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"08bd5438-5af7-11f0-bac3-77c3230b0c24","customer_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"08bd5438-5af7-11f0-bac3-77c3230b0c24","customer_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -163,9 +163,10 @@ func Test_v1StreamingsIDSayPost(t *testing.T) {
 
 		responseStreaming *streaming.Streaming
 
-		expectID   uuid.UUID
-		expectText string
-		expectRes  *sock.Response
+		expectID        uuid.UUID
+		expectMessageID uuid.UUID
+		expectText      string
+		expectRes       *sock.Response
 	}{
 		{
 			name: "normal test",
@@ -174,7 +175,7 @@ func Test_v1StreamingsIDSayPost(t *testing.T) {
 				URI:      "/v1/streamings/08eff33e-5af7-11f0-9db1-2b502b8be693/say",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"text": "Hello, this is a test message."}`),
+				Data:     []byte(`{"message_id":"ef8d4772-83d0-11f0-b75d-3b9f10aa99fb","text": "Hello, this is a test message."}`),
 			},
 
 			responseStreaming: &streaming.Streaming{
@@ -183,8 +184,9 @@ func Test_v1StreamingsIDSayPost(t *testing.T) {
 				},
 			},
 
-			expectID:   uuid.FromStringOrNil("08eff33e-5af7-11f0-9db1-2b502b8be693"),
-			expectText: "Hello, this is a test message.",
+			expectID:        uuid.FromStringOrNil("08eff33e-5af7-11f0-9db1-2b502b8be693"),
+			expectMessageID: uuid.FromStringOrNil("ef8d4772-83d0-11f0-b75d-3b9f10aa99fb"),
+			expectText:      "Hello, this is a test message.",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 			},
@@ -206,7 +208,75 @@ func Test_v1StreamingsIDSayPost(t *testing.T) {
 				streamingHandler: mockStreaming,
 			}
 
-			mockStreaming.EXPECT().Say(gomock.Any(), tt.expectID, tt.expectText).Return(nil)
+			mockStreaming.EXPECT().Say(gomock.Any(), tt.expectID, tt.expectMessageID, tt.expectText).Return(nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_v1StreamingsIDSayAddPost(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		request *sock.Request
+
+		responseStreaming *streaming.Streaming
+
+		expectID        uuid.UUID
+		expectMessageID uuid.UUID
+		expectText      string
+		expectRes       *sock.Response
+	}{
+		{
+			name: "normal test",
+
+			request: &sock.Request{
+				URI:      "/v1/streamings/4f5cf8c6-83d3-11f0-9853-bf795e7133de/say_add",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"message_id":"4f93bf3c-83d3-11f0-a55e-bbe3bb420e72","text": "Hello, this is a test message."}`),
+			},
+
+			responseStreaming: &streaming.Streaming{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4f5cf8c6-83d3-11f0-9853-bf795e7133de"),
+				},
+			},
+
+			expectID:        uuid.FromStringOrNil("4f5cf8c6-83d3-11f0-9853-bf795e7133de"),
+			expectMessageID: uuid.FromStringOrNil("4f93bf3c-83d3-11f0-a55e-bbe3bb420e72"),
+			expectText:      "Hello, this is a test message.",
+			expectRes: &sock.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockTTS := ttshandler.NewMockTTSHandler(mc)
+			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:      mockSock,
+				ttsHandler:       mockTTS,
+				streamingHandler: mockStreaming,
+			}
+
+			mockStreaming.EXPECT().SayAdd(gomock.Any(), tt.expectID, tt.expectMessageID, tt.expectText).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
