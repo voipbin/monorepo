@@ -75,7 +75,7 @@ func (h *streamingHandler) SayAdd(ctx context.Context, id uuid.UUID, messageID u
 
 	st, err := h.Get(ctx, id)
 	if err != nil {
-		return errors.Wrapf(err, "could not update message ID. streaming_id: %s, message_id: %s", id, messageID)
+		return errors.Wrapf(err, "could not get streaming info. streaming_id: %s, message_id: %s", id, messageID)
 	}
 
 	if st.MessageID != messageID {
