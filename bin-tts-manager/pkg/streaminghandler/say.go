@@ -2,6 +2,7 @@ package streaminghandler
 
 import (
 	"context"
+	"fmt"
 	"monorepo/bin-tts-manager/models/streaming"
 
 	"github.com/gofrs/uuid"
@@ -76,9 +77,9 @@ func (h *streamingHandler) SayAdd(ctx context.Context, id uuid.UUID, messageID u
 	}
 
 	if st.MessageID != messageID {
-		return errors.Wrapf(err, "message ID mismatch. streaming_id: %s, current_message_id: %s, request_message_id: %s", id, st.MessageID, messageID)
+		return fmt.Errorf("message ID mismatch. streaming_id: %s, current_message_id: %s, request_message_id: %s", id, st.MessageID, messageID)
 	} else if st.VendorConfig == nil {
-		return errors.Wrapf(err, "vendor config is nil. streaming_id: %s", id)
+		return fmt.Errorf("vendor config is nil. streaming_id: %s", id)
 	}
 	log.WithField("streaming", st).Debugf("Fetched streaming info. streaming_id: %s", id)
 

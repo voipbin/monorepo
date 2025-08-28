@@ -108,7 +108,7 @@ func (r *requestHandler) TTSV1StreamingSay(ctx context.Context, podID string, st
 	return nil
 }
 
-// TTSV1StreamingSay say text in streaming tts.
+// TTSV1StreamingSayAdd adds text to be said in a streaming tts session.
 func (r *requestHandler) TTSV1StreamingSayAdd(ctx context.Context, podID string, streamingID uuid.UUID, messageID uuid.UUID, text string) error {
 	uri := fmt.Sprintf("/v1/streamings/%s/say_add", streamingID)
 
