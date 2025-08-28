@@ -81,6 +81,19 @@ func (h *streamingHandler) Delete(ctx context.Context, streamingID uuid.UUID) {
 	h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingDeleted, tmp)
 }
 
+func (h *streamingHandler) UpdateMessageID(ctx context.Context, streamingID uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error) {
+	h.muStreaming.Lock()
+	defer h.muStreaming.Unlock()
+
+	res, ok := h.mapStreaming[streamingID]
+	if !ok {
+		return nil, fmt.Errorf("streaming not found. streaming_id: %s", streamingID)
+	}
+
+	res.MessageID = messageID
+	return res, nil
+}
+
 func (h *streamingHandler) UpdateConnAst(streamingID uuid.UUID, connAst net.Conn) (*streaming.Streaming, error) {
 	h.muStreaming.Lock()
 	defer h.muStreaming.Unlock()

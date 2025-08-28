@@ -22,5 +22,14 @@ type V1DataStreamingsPost struct {
 // v1 data type request struct for
 // /v1/streamings/<id>/say POST
 type V1DataStreamingsIDSayPost struct {
-	Text string `json:"text,omitempty"`
+	MessageID uuid.UUID `json:"message_id,omitempty"`
+	Text      string    `json:"text,omitempty"`
+}
+
+// V1DataStreamingsIDSayAddPost is
+// v1 data type request struct for
+// /v1/streamings/<id>/say_add POST
+type V1DataStreamingsIDSayAddPost struct {
+	MessageID uuid.UUID `json:"message_id,omitempty"`
+	Text      string    `json:"text,omitempty"`
 }

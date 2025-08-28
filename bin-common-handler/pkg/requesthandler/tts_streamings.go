@@ -81,11 +81,12 @@ func (r *requestHandler) TTSV1StreamingDelete(ctx context.Context, streamingID u
 }
 
 // TTSV1StreamingSay say text in streaming tts.
-func (r *requestHandler) TTSV1StreamingSay(ctx context.Context, podID string, streamingID uuid.UUID, text string) error {
+func (r *requestHandler) TTSV1StreamingSay(ctx context.Context, podID string, streamingID uuid.UUID, messageID uuid.UUID, text string) error {
 	uri := fmt.Sprintf("/v1/streamings/%s/say", streamingID)
 
 	m, err := json.Marshal(request.V1DataStreamingsIDSayPost{
-		Text: text,
+		MessageID: messageID,
+		Text:      text,
 	})
 	if err != nil {
 		return err
@@ -94,6 +95,34 @@ func (r *requestHandler) TTSV1StreamingSay(ctx context.Context, podID string, st
 	queueName := fmt.Sprintf("bin-manager.tts-manager.request.%s", podID)
 
 	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodPost, "tts/streamings/<streaming-id>/say", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// TTSV1StreamingSayAdd adds text to be said in a streaming tts session.
+func (r *requestHandler) TTSV1StreamingSayAdd(ctx context.Context, podID string, streamingID uuid.UUID, messageID uuid.UUID, text string) error {
+	uri := fmt.Sprintf("/v1/streamings/%s/say_add", streamingID)
+
+	m, err := json.Marshal(request.V1DataStreamingsIDSayAddPost{
+		MessageID: messageID,
+		Text:      text,
+	})
+	if err != nil {
+		return err
+	}
+
+	queueName := fmt.Sprintf("bin-manager.tts-manager.request.%s", podID)
+
+	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodPost, "tts/streamings/<streaming-id>/say_add", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

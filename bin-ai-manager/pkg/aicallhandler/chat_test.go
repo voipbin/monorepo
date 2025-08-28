@@ -87,7 +87,7 @@ func Test_ChatMessage(t *testing.T) {
 			// Set up expectations for the mocks. Make sure arguments match what you're passing.
 			mockReq.EXPECT().TTSV1StreamingSayStop(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID).Return(nil)
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.ID, tt.expectRole, tt.text, true, gomock.Any()).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
 
 			if errChat := h.ChatMessage(ctx, tt.aicall, tt.text); errChat != nil {
 				t.Errorf("ChatMessage() error = %v", errChat)
@@ -175,7 +175,7 @@ func Test_ChatInit(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.aicall.ActiveflowID, tt.ai.InitPrompt).Return(tt.responseInitPrompt, nil)
 
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.expectInitPrompt, true, gomock.Any()).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
 
 			err := h.chatInit(ctx, tt.ai, tt.aicall)
 			if err != nil {
@@ -240,7 +240,7 @@ func Test_ChatInit_without_activeflow_id(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.ai.InitPrompt, true, gomock.Any()).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
 
 			err := h.chatInit(ctx, tt.ai, tt.aicall)
 			if err != nil {
@@ -360,7 +360,7 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 
 			mockReq.EXPECT().TTSV1StreamingSayStop(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID).Return(nil)
 			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleUser, tt.messageContent, true, gomock.Any()).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.Content).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
 
 			errChat := h.chatMessageReferenceTypeCall(ctx, tt.aicall, tt.messageContent)
 			if errChat != nil {
@@ -467,7 +467,7 @@ func Test_chatMessageHandle_text(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.message.Content).Return(nil)
+			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.message.ID, tt.message.Content).Return(nil)
 
 			if errChat := h.chatMessageHandle(ctx, tt.aicall, tt.message); errChat != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errChat)
