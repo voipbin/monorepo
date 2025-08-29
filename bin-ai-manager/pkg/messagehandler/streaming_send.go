@@ -30,6 +30,8 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 
 	if cc.Status == aicall.StatusEnd {
 		return nil, errors.New("aicall is already ended")
+	} else if cc.ReferenceType != aicall.ReferenceTypeCall {
+		return nil, fmt.Errorf("unsupported reference type: %s", cc.ReferenceType)
 	}
 
 	// create a message for outgoing(request)
@@ -39,7 +41,6 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	}
 
 	t1 := time.Now()
-	// var tmpMessage *message.Message
 	chanMsg := make(<-chan string)
 
 	modelTarget := ai.GetEngineModelTarget(cc.AIEngineModel)
@@ -53,24 +54,19 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message correctly")
 	}
-	// log.Debugf("Received response message from the ai engine. message: %v", tmpMessage)
 
 	t2 := time.Since(t1)
 	promMessageProcessTime.WithLabelValues(string(cc.AIEngineType)).Observe(float64(t2.Milliseconds()))
 
 	msgID := h.utilHandler.UUIDCreate()
-	if cc.ReferenceType == aicall.ReferenceTypeCall {
-		if errSay := h.reqHandler.TTSV1StreamingSay(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID, ""); errSay != nil {
-			return nil, errors.Wrapf(errSay, "could not say the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
-		}
+	if errSay := h.reqHandler.TTSV1StreamingSay(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID, ""); errSay != nil {
+		return nil, errors.Wrapf(errSay, "could not say the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
 	}
 
 	totalMessage := ""
 	for msg := range chanMsg {
-		if cc.ReferenceType == aicall.ReferenceTypeCall {
-			if errAdd := h.reqHandler.TTSV1StreamingSayAdd(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID, msg); errAdd != nil {
-				return nil, errors.Wrapf(errAdd, "could not add the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
-			}
+		if errAdd := h.reqHandler.TTSV1StreamingSayAdd(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID, msg); errAdd != nil {
+			return nil, errors.Wrapf(errAdd, "could not add the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
 		}
 
 		totalMessage += msg
@@ -83,32 +79,11 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	}
 	log.WithField("response", tmpResponse).Debugf("Created the response message. message_id: %s", tmpResponse.ID)
 
-	// if len(tmpMessage.Content) == 0 {
-	// 	// if the messsage is empty, return the message as it is
-	// 	return tmpMessage, nil
-	// }
-
-	// create a message for incoming(response)
-	// tmpResponse, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "could not create the recevied message correctly")
-	// }
-
 	if returnResponse {
 		res = tmpResponse
 	}
 
-	// if cc.ReferenceType == aicall.ReferenceTypeConversation {
-	// 	// send it to the conversation
-	// 	cm, err := h.reqHandler.ConversationV1MessageSend(ctx, cc.ReferenceID, tmpMessage.Content, nil)
-	// 	if err != nil {
-	// 		return nil, errors.Wrapf(err, "could not send the message to the conversation correctly")
-	// 	}
-	// 	log.WithField("conversation_message_id", cm.ID).Debugf("Sent the message to the conversation. conversation_id: %s", cc.ReferenceID)
-	// }
-
 	return res, nil
-
 }
 
 func (h *messageHandler) streamingSendOpenai(ctx context.Context, cc *aicall.AIcall) (<-chan string, error) {
@@ -116,12 +91,6 @@ func (h *messageHandler) streamingSendOpenai(ctx context.Context, cc *aicall.AIc
 	switch cc.ReferenceType {
 	case aicall.ReferenceTypeCall:
 		return h.streamingSendOpenaiReferenceTypeCall(ctx, cc)
-
-	// case aicall.ReferenceTypeConversation:
-	// 	return h.sendOpenaiReferenceTypeConversation(ctx, cc)
-
-	// case aicall.ReferenceTypeNone:
-	// 	return h.sendOpenaiReferenceTypeNone(ctx, cc)
 
 	default:
 		return nil, fmt.Errorf("unsupported reference type: %s", cc.ReferenceType)
