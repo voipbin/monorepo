@@ -2,10 +2,7 @@ package aicallhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-
-	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -30,39 +27,39 @@ func (h *aicallHandler) ChatMessage(ctx context.Context, cc *aicall.AIcall, text
 	}
 }
 
-// chatMessageActionsHandle handles chat message actions
-func (h *aicallHandler) chatMessageActionsHandle(ctx context.Context, cc *aicall.AIcall, actions []fmaction.Action) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "chatMessageActionsHandle",
-		"aicall":  cc,
-		"actions": actions,
-	})
+// // chatMessageActionsHandle handles chat message actions
+// func (h *aicallHandler) chatMessageActionsHandle(ctx context.Context, cc *aicall.AIcall, actions []fmaction.Action) error {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":    "chatMessageActionsHandle",
+// 		"aicall":  cc,
+// 		"actions": actions,
+// 	})
 
-	// add the actions
-	af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, cc.ActiveflowID, actions)
-	if err != nil {
-		return errors.Wrap(err, "could not push the actions to the activeflow")
-	}
-	log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", af.ID)
+// 	// add the actions
+// 	af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, cc.ActiveflowID, actions)
+// 	if err != nil {
+// 		return errors.Wrap(err, "could not push the actions to the activeflow")
+// 	}
+// 	log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", af.ID)
 
-	// destroy the confbridge
-	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, cc.ConfbridgeID)
-	if err != nil {
-		return errors.Wrap(err, "could not terminate the aicall confbridge")
-	}
-	log.WithField("confbridge", tmp).Debugf("Terminated confbridge. confbridge_id: %s", tmp.ID)
+// 	// destroy the confbridge
+// 	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, cc.ConfbridgeID)
+// 	if err != nil {
+// 		return errors.Wrap(err, "could not terminate the aicall confbridge")
+// 	}
+// 	log.WithField("confbridge", tmp).Debugf("Terminated confbridge. confbridge_id: %s", tmp.ID)
 
-	return nil
-}
+// 	return nil
+// }
 
-// chatMessageTextHandle handles chat message text
-func (h *aicallHandler) chatMessageTextHandle(ctx context.Context, cc *aicall.AIcall, m *message.Message) error {
-	if errSay := h.reqHandler.TTSV1StreamingSay(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, m.ID, m.Content); errSay != nil {
-		return errors.Wrapf(errSay, "could not say the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
-	}
+// // chatMessageTextHandle handles chat message text
+// func (h *aicallHandler) chatMessageTextHandle(ctx context.Context, cc *aicall.AIcall, m *message.Message) error {
+// 	if errSay := h.reqHandler.TTSV1StreamingSay(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, m.ID, m.Content); errSay != nil {
+// 		return errors.Wrapf(errSay, "could not say the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // chatInit sends the chat's init_prompt
 func (h *aicallHandler) chatInit(ctx context.Context, cb *ai.AI, cc *aicall.AIcall) error {
@@ -133,54 +130,54 @@ func (h *aicallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *ai
 	return nil
 }
 
-func (h *aicallHandler) chatMessageHandle(ctx context.Context, cc *aicall.AIcall, m *message.Message) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":      "chatMessageHandle",
-		"aicall_id": cc.ID,
-	})
+// func (h *aicallHandler) chatMessageHandle(ctx context.Context, cc *aicall.AIcall, m *message.Message) error {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":      "chatMessageHandle",
+// 		"aicall_id": cc.ID,
+// 	})
 
-	if m == nil || len(m.Content) == 0 {
-		log.Debugf("Received response with empty content")
-		return nil
-	}
+// 	if m == nil || len(m.Content) == 0 {
+// 		log.Debugf("Received response with empty content")
+// 		return nil
+// 	}
 
-	switch cc.ReferenceType {
-	case aicall.ReferenceTypeCall:
-		return h.chatMessageHandleReferenceTypeCall(ctx, cc, m)
+// 	switch cc.ReferenceType {
+// 	case aicall.ReferenceTypeCall:
+// 		return h.chatMessageHandleReferenceTypeCall(ctx, cc, m)
 
-	case aicall.ReferenceTypeNone:
-		// nothing todo
-		return nil
+// 	case aicall.ReferenceTypeNone:
+// 		// nothing todo
+// 		return nil
 
-	default:
-		return fmt.Errorf("unsupported reference type. reference_type: %s", cc.ReferenceType)
+// 	default:
+// 		return fmt.Errorf("unsupported reference type. reference_type: %s", cc.ReferenceType)
 
-	}
-}
+// 	}
+// }
 
-func (h *aicallHandler) chatMessageHandleReferenceTypeCall(ctx context.Context, cc *aicall.AIcall, m *message.Message) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":      "chatMessageHandleReferenceTypeCall",
-		"aicall_id": cc.ID,
-	})
+// func (h *aicallHandler) chatMessageHandleReferenceTypeCall(ctx context.Context, cc *aicall.AIcall, m *message.Message) error {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":      "chatMessageHandleReferenceTypeCall",
+// 		"aicall_id": cc.ID,
+// 	})
 
-	// check the response message
-	tmpActions := []fmaction.Action{}
-	errUnmarshal := json.Unmarshal([]byte(m.Content), &tmpActions)
-	if errUnmarshal == nil {
-		log.WithField("actions", tmpActions).Debugf("Got a action arrays. len_actions: %d", len(tmpActions))
-		if errHandle := h.chatMessageActionsHandle(ctx, cc, tmpActions); errHandle != nil {
-			return errors.Wrap(errHandle, "could not handle the response actions correctly")
-		}
-	} else {
-		log.WithField("text", m.Content).Debugf("Got an message text. text: %s", m.Content)
-		if errHandle := h.chatMessageTextHandle(ctx, cc, m); errHandle != nil {
-			return errors.Wrap(errHandle, "could not handle the response message text correctly")
-		}
-	}
+// 	// check the response message
+// 	tmpActions := []fmaction.Action{}
+// 	errUnmarshal := json.Unmarshal([]byte(m.Content), &tmpActions)
+// 	if errUnmarshal == nil {
+// 		log.WithField("actions", tmpActions).Debugf("Got a action arrays. len_actions: %d", len(tmpActions))
+// 		if errHandle := h.chatMessageActionsHandle(ctx, cc, tmpActions); errHandle != nil {
+// 			return errors.Wrap(errHandle, "could not handle the response actions correctly")
+// 		}
+// 	} else {
+// 		log.WithField("text", m.Content).Debugf("Got an message text. text: %s", m.Content)
+// 		if errHandle := h.chatMessageTextHandle(ctx, cc, m); errHandle != nil {
+// 			return errors.Wrap(errHandle, "could not handle the response message text correctly")
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (h *aicallHandler) chatSetVariables(ctx context.Context, cc *aicall.AIcall) error {
 	if cc.ActiveflowID == uuid.Nil {
