@@ -127,17 +127,14 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 
 	payloadLen := len(data)
 	offset := 0
-	for offset < len(data) {
+	for offset < payloadLen {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
 
-		fragmentLen := audiosocketMaxFragmentSize
-		if offset+audiosocketMaxFragmentSize > payloadLen {
-			fragmentLen = payloadLen - offset
-		}
-
+		fragmentLen := min(audiosocketMaxFragmentSize, payloadLen-offset)
 		fragment := data[offset : offset+fragmentLen]
+
 		tmp, err := audiosocketWrapDataPCM16Bit(fragment)
 		if err != nil {
 			return errors.Wrapf(err, "failed to wrap data for audiosocket")
