@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	audiosocketFormatSLIN      = 0x10                  // SLIN format for 16-bit PCM audio
-	audiosocketMaxFragmentSize = 320                   // Maximum fragment size for Audiosocket messages
-	audiosocketWriteDelay      = 20 * time.Millisecond // Delay between writing fragments to avoid flooding the connection
+	audiosocketFormatSLIN      = 0x10                   // SLIN format for 16-bit PCM audio
+	audiosocketMaxFragmentSize = 1600                   // Maximum fragment size for Audiosocket messages
+	audiosocketWriteDelay      = 100 * time.Millisecond // Delay between writing fragments to avoid flooding the connection
 )
 
 // audiosocketGetStreamingID reads the first message from the audiosocket connection

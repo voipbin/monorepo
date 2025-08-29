@@ -120,16 +120,15 @@ func (h *aicallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *ai
 		return errors.Wrap(errStop, "Could not stop the tts streaming")
 	}
 
-	// h.messageHandler.
 	tmp, err := h.messageHandler.StreamingSend(ctx, cc.ID, message.RoleUser, content, true)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the message to the ai. aicall_id: %s", cc.ID)
 	}
 	log.WithField("message", tmp).Debugf("Response message from the ai. aicall_id: %s", cc.ID)
 
-	if errHandle := h.chatMessageHandle(ctx, cc, tmp); errHandle != nil {
-		return errors.Wrap(errHandle, "could not handle the chat message")
-	}
+	// if errHandle := h.chatMessageHandle(ctx, cc, tmp); errHandle != nil {
+	// 	return errors.Wrap(errHandle, "could not handle the chat message")
+	// }
 
 	return nil
 }
