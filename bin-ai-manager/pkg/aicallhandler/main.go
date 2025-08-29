@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	commonservice "monorepo/bin-common-handler/models/service"
 )
 
@@ -90,7 +91,8 @@ type aicallHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
 
-	aiHandler aihandler.AIHandler
+	aiHandler      aihandler.AIHandler
+	messageHandler messagehandler.MessageHandler
 }
 
 var (
@@ -142,6 +144,7 @@ func NewAIcallHandler(
 	notify notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
 	aiHandler aihandler.AIHandler,
+	messageHandler messagehandler.MessageHandler,
 ) AIcallHandler {
 	return &aicallHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -149,6 +152,7 @@ func NewAIcallHandler(
 		notifyHandler: notify,
 		db:            db,
 
-		aiHandler: aiHandler,
+		aiHandler:      aiHandler,
+		messageHandler: messageHandler,
 	}
 }

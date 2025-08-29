@@ -178,7 +178,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 
 	// send the message
-	m, err := h.reqHandler.AIV1MessageSend(ctx, res.ID, message.RoleUser, content, false, 30000)
+	m, err := h.messageHandler.StreamingSend(ctx, res.ID, message.RoleUser, content, false)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message to the ai. aicall_id: %s", res.ID)
 	}

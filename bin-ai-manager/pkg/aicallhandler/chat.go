@@ -16,7 +16,7 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 )
 
-// ChatMessage sends/receives the messages from/to a ai
+// ChatMessage sends/receives the messages from/to an ai
 func (h *aicallHandler) ChatMessage(ctx context.Context, cc *aicall.AIcall, text string) error {
 	switch cc.ReferenceType {
 	case aicall.ReferenceTypeCall:
@@ -83,14 +83,20 @@ func (h *aicallHandler) chatInit(ctx context.Context, cb *ai.AI, cc *aicall.AIca
 		return nil
 	}
 
-	tmp, err := h.reqHandler.AIV1MessageSend(ctx, cc.ID, message.RoleSystem, initPrompt, true, 30000)
+	tmp, err := h.messageHandler.StreamingSend(ctx, cc.ID, message.RoleSystem, initPrompt, true)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the init prompt to the ai. aicall_id: %s", cc.ID)
 	}
+	log.WithField("message", tmp).Debugf("Response message from the ai for init prompt. aicall_id: %s", cc.ID)
 
-	if errHandle := h.chatMessageHandle(ctx, cc, tmp); errHandle != nil {
-		return errors.Wrap(errHandle, "could not handle the chat message")
-	}
+	// tmp, err := h.reqHandler.AIV1MessageSend(ctx, cc.ID, message.RoleSystem, initPrompt, true, 30000)
+	// if err != nil {
+	// 	return errors.Wrapf(err, "could not send the init prompt to the ai. aicall_id: %s", cc.ID)
+	// }
+
+	// if errHandle := h.chatMessageHandle(ctx, cc, tmp); errHandle != nil {
+	// 	return errors.Wrap(errHandle, "could not handle the chat message")
+	// }
 
 	return nil
 }
@@ -114,7 +120,8 @@ func (h *aicallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *ai
 		return errors.Wrap(errStop, "Could not stop the tts streaming")
 	}
 
-	tmp, err := h.reqHandler.AIV1MessageSend(ctx, cc.ID, message.RoleUser, content, true, 30000)
+	// h.messageHandler.
+	tmp, err := h.messageHandler.StreamingSend(ctx, cc.ID, message.RoleUser, content, true)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the message to the ai. aicall_id: %s", cc.ID)
 	}
