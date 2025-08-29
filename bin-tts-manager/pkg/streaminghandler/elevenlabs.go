@@ -247,7 +247,6 @@ func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
 			return
 
 		case message := <-msgCh:
-			log.Debugf("Received WebSocket message (size: %d bytes)", len(message))
 			var response ElevenlabsResponse
 			if errUnmarshal := json.Unmarshal(message, &response); errUnmarshal != nil {
 				log.Errorf("Error parsing response: %v. Message: %s", errUnmarshal, string(message))
@@ -261,14 +260,12 @@ func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
 					log.Errorf("Could not decode base64 audio data: %v. Message: %s", errDecode, response.Audio)
 					return
 				}
-				log.Debugf("Decoded audio chunk size before processing: %d bytes.", len(decodedAudio))
 
 				data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodedAudio)
 				if errProcess != nil {
 					log.Errorf("Could not process PCM data: %v. Message: %s", errProcess, response.Audio)
 					return
 				}
-				log.Debugf("Processed audio chunk of size %d bytes.", len(data))
 
 				// TTS play
 				if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, data); errWrite != nil {

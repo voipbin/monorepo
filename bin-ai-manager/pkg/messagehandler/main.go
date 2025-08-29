@@ -5,7 +5,6 @@ package messagehandler
 import (
 	"context"
 	"monorepo/bin-ai-manager/models/message"
-	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
@@ -22,6 +21,7 @@ type MessageHandler interface {
 	Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error)
 
 	Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error)
+	StreamingSend(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error)
 }
 
 type messageHandler struct {
@@ -29,8 +29,6 @@ type messageHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
-
-	aicallHandler aicallhandler.AIcallHandler
 
 	engineOpenaiHandler     engine_openai_handler.EngineOpenaiHandler
 	engineDialogflowHandler engine_dialogflow_handler.EngineDialogflowHandler
@@ -71,7 +69,6 @@ func NewMessageHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
-	aicallHandler aicallhandler.AIcallHandler,
 
 	engineOpenaiHandler engine_openai_handler.EngineOpenaiHandler,
 	engineDialogflowHandler engine_dialogflow_handler.EngineDialogflowHandler,
@@ -82,8 +79,6 @@ func NewMessageHandler(
 		utilHandler:   utilhandler.NewUtilHandler(),
 		notifyHandler: notifyHandler,
 		db:            db,
-
-		aicallHandler: aicallHandler,
 
 		engineOpenaiHandler:     engineOpenaiHandler,
 		engineDialogflowHandler: engineDialogflowHandler,

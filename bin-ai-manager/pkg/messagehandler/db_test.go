@@ -19,6 +19,7 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id         uuid.UUID
 		customerID uuid.UUID
 		aicallID   uuid.UUID
 		direction  message.Direction
@@ -32,17 +33,16 @@ func Test_Create(t *testing.T) {
 		{
 			name: "have all",
 
+			id:         uuid.FromStringOrNil("751956c2-8482-11f0-846a-c71f69f8c722"),
 			customerID: uuid.FromStringOrNil("f227397c-f260-11ef-b217-4f6ff6930cf2"),
 			aicallID:   uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
 			direction:  message.DirectionIncoming,
 			role:       message.RoleUser,
 			content:    "Hello, world!",
 
-			responseUUID: uuid.FromStringOrNil("f2a827da-f260-11ef-9766-8b270f0b8d97"),
-
 			expectMessage: &message.Message{
 				Identity: identity.Identity{
-					ID:         uuid.FromStringOrNil("f2a827da-f260-11ef-9766-8b270f0b8d97"),
+					ID:         uuid.FromStringOrNil("751956c2-8482-11f0-846a-c71f69f8c722"),
 					CustomerID: uuid.FromStringOrNil("f227397c-f260-11ef-b217-4f6ff6930cf2"),
 				},
 				AIcallID: uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
@@ -82,12 +82,16 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			id := tt.id
+			if tt.id == uuid.Nil {
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+				id = tt.responseUUID
+			}
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.expectMessage, nil)
+			mockDB.EXPECT().MessageGet(ctx, id).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
-			res, err := h.Create(ctx, tt.customerID, tt.aicallID, tt.direction, tt.role, tt.content)
+			res, err := h.Create(ctx, tt.id, tt.customerID, tt.aicallID, tt.direction, tt.role, tt.content)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

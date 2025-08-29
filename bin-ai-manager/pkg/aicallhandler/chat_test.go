@@ -2,16 +2,12 @@ package aicallhandler
 
 import (
 	"context"
-	"encoding/json"
-	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-	fmaction "monorepo/bin-flow-manager/models/action"
-	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
-
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -74,20 +70,21 @@ func Test_ChatMessage(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
 			}
 			ctx := context.Background()
 
 			// Set up expectations for the mocks. Make sure arguments match what you're passing.
 			mockReq.EXPECT().TTSV1StreamingSayStop(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID).Return(nil)
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.ID, tt.expectRole, tt.text, true, gomock.Any()).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
+			mockMessage.EXPECT().StreamingSend(ctx, tt.aicall.ID, tt.expectRole, tt.text, true).Return(tt.responseMessage, nil)
 
 			if errChat := h.ChatMessage(ctx, tt.aicall, tt.text); errChat != nil {
 				t.Errorf("ChatMessage() error = %v", errChat)
@@ -161,21 +158,26 @@ func Test_ChatInit(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
 			}
 			ctx := context.Background()
 
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.aicall.ActiveflowID, tt.expectVariables).Return(nil)
 			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.aicall.ActiveflowID, tt.ai.InitPrompt).Return(tt.responseInitPrompt, nil)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.expectInitPrompt, true, gomock.Any()).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
+			if tt.aicall.ReferenceType == aicall.ReferenceTypeCall {
+				mockMessage.EXPECT().StreamingSend(ctx, tt.aicall.ID, message.RoleSystem, tt.expectInitPrompt, true).Return(tt.responseMessage, nil)
+			} else {
+				mockMessage.EXPECT().Send(ctx, tt.aicall.ID, message.RoleSystem, tt.expectInitPrompt, true).Return(tt.responseMessage, nil)
+			}
 
 			err := h.chatInit(ctx, tt.ai, tt.aicall)
 			if err != nil {
@@ -205,7 +207,7 @@ func Test_ChatInit_without_activeflow_id(t *testing.T) {
 					ID:         uuid.FromStringOrNil("9bb7079c-f556-11ed-afbb-0f109793414b"),
 					CustomerID: uuid.FromStringOrNil("123e4567-e89b-12d3-a456-426614174000"),
 				},
-				ReferenceType:     aicall.ReferenceTypeCall,
+				ReferenceType:     aicall.ReferenceTypeNone,
 				ReferenceID:       uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
 				Gender:            aicall.GenderNuetral,
 				Language:          "en-US",
@@ -229,77 +231,23 @@ func Test_ChatInit_without_activeflow_id(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleSystem, tt.ai.InitPrompt, true, gomock.Any()).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
+			mockMessage.EXPECT().Send(ctx, tt.aicall.ID, message.RoleSystem, tt.ai.InitPrompt, true).Return(tt.responseMessage, nil)
 
 			err := h.chatInit(ctx, tt.ai, tt.aicall)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_chatMessageActionsHandle(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		aicall  *aicall.AIcall
-		actions []fmaction.Action
-	}{
-		{
-			name: "normal",
-
-			aicall: &aicall.AIcall{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("c243f296-fba3-11ed-b685-934f90d45843"),
-				},
-				ActiveflowID: uuid.FromStringOrNil("75496c7e-fba7-11ed-b6a8-f7993d25b0ab"),
-			},
-			actions: []fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockAI := aihandler.NewMockAIHandler(mc)
-
-			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
-			}
-			ctx := context.Background()
-
-			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, tt.actions).Return(&fmactiveflow.Activeflow{}, nil)
-			mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
-
-			if errHandle := h.chatMessageActionsHandle(ctx, tt.aicall, tt.actions); errHandle != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", errHandle)
 			}
 		})
 	}
@@ -348,128 +296,23 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
 			}
 			ctx := context.Background()
 
 			mockReq.EXPECT().TTSV1StreamingSayStop(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID).Return(nil)
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicall.Identity.ID, message.RoleUser, tt.messageContent, true, gomock.Any()).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
+			mockMessage.EXPECT().StreamingSend(ctx, tt.aicall.ID, message.RoleUser, tt.messageContent, true).Return(tt.responseMessage, nil)
 
 			errChat := h.chatMessageReferenceTypeCall(ctx, tt.aicall, tt.messageContent)
 			if errChat != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", errChat)
-			}
-		})
-	}
-}
-
-func Test_chatMessageHandle_actions(t *testing.T) {
-	tests := []struct {
-		name    string
-		aicall  *aicall.AIcall
-		message *message.Message
-	}{
-		{
-			name: "Action_Message",
-			aicall: &aicall.AIcall{
-				ActiveflowID:  uuid.FromStringOrNil("456789ab-1234-6543-3456-89abcdef0124"),
-				ConfbridgeID:  uuid.FromStringOrNil("11223344-5566-7788-9900-aabbccddeef2"),
-				ReferenceType: aicall.ReferenceTypeCall,
-			},
-			message: &message.Message{
-				Content: `[{"type": "some_action"}]`,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockAI := aihandler.NewMockAIHandler(mc)
-
-			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
-			}
-			ctx := context.Background()
-
-			var tmpActions []fmaction.Action
-			errUnmarshal := json.Unmarshal([]byte(tt.message.Content), &tmpActions)
-
-			if errUnmarshal == nil {
-				mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, gomock.Any()).Return(&fmactiveflow.Activeflow{}, nil)
-				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
-			}
-
-			errChat := h.chatMessageHandle(ctx, tt.aicall, tt.message)
-			if errChat != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", errChat)
-			}
-		})
-	}
-}
-
-func Test_chatMessageHandle_text(t *testing.T) {
-	tests := []struct {
-		name    string
-		aicall  *aicall.AIcall
-		message *message.Message
-	}{
-		{
-			name: "Text_Message",
-			aicall: &aicall.AIcall{
-				ReferenceType:     aicall.ReferenceTypeCall,
-				ReferenceID:       uuid.FromStringOrNil("55667788-9900-1122-3344-aabbccddeef1"),
-				Gender:            aicall.GenderNuetral,
-				Language:          "ja-JP",
-				TTSStreamingPodID: "8a0f6a10-8303-11f0-8679-f3865a958c33",
-				TTSStreamingID:    uuid.FromStringOrNil("8a53f25c-8303-11f0-b654-8332100a5338"),
-			},
-			message: &message.Message{
-				Content: "Hello",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockAI := aihandler.NewMockAIHandler(mc)
-
-			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
-			}
-			ctx := context.Background()
-
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID, tt.message.ID, tt.message.Content).Return(nil)
-
-			if errChat := h.chatMessageHandle(ctx, tt.aicall, tt.message); errChat != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errChat)
 			}
 		})

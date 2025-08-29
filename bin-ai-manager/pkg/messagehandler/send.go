@@ -26,7 +26,7 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 	})
 	log.Debugf("Sending ai message.")
 
-	cc, err := h.aicallHandler.Get(ctx, aicallID)
+	cc, err := h.reqHandler.AIV1AIcallGet(ctx, aicallID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the aicall correctly")
 	}
@@ -36,7 +36,7 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 	}
 
 	// create a message for outgoing(request)
-	res, err := h.Create(ctx, cc.CustomerID, aicallID, message.DirectionOutgoing, role, content)
+	res, err := h.Create(ctx, uuid.Nil, cc.CustomerID, aicallID, message.DirectionOutgoing, role, content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the sending message correctly")
 	}
@@ -70,7 +70,7 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 	}
 
 	// create a message for incoming(response)
-	tmpResponse, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
+	tmpResponse, err := h.Create(ctx, uuid.Nil, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the recevied message correctly")
 	}

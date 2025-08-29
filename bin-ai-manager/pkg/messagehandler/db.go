@@ -9,8 +9,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (h *messageHandler) Create(ctx context.Context, customerID uuid.UUID, aicallID uuid.UUID, direction message.Direction, role message.Role, content string) (*message.Message, error) {
-	id := h.utilHandler.UUIDCreate()
+func (h *messageHandler) Create(ctx context.Context, id uuid.UUID, customerID uuid.UUID, aicallID uuid.UUID, direction message.Direction, role message.Role, content string) (*message.Message, error) {
+	if id == uuid.Nil {
+		id = h.utilHandler.UUIDCreate()
+	}
 
 	m := &message.Message{
 		Identity: identity.Identity{

@@ -5,7 +5,6 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
-	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
@@ -230,7 +229,7 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeCall(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockGPT := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &messageHandler{
@@ -238,13 +237,13 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeCall(t *testing.T) {
 				notifyHandler: mockNotify,
 				db:            mockDB,
 
-				aicallHandler:       mockAIcall,
 				engineOpenaiHandler: mockGPT,
+				reqHandler:          mockReq,
 			}
 
 			ctx := context.Background()
 
-			mockAIcall.EXPECT().Get(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID1)
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage1).Return(nil)
@@ -341,7 +340,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 			mockDialogflow := engine_dialogflow_handler.NewMockEngineDialogflowHandler(mc)
 
@@ -349,8 +348,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 				utilHandler:   mockUtil,
 				notifyHandler: mockNotify,
 				db:            mockDB,
-
-				aicallHandler: mockAIcall,
+				reqHandler:    mockReq,
 
 				engineOpenaiHandler:     mockOpenai,
 				engineDialogflowHandler: mockDialogflow,
@@ -358,7 +356,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockAIcall.EXPECT().Get(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID1)
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage1).Return(nil)
@@ -516,7 +514,6 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeConversation(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
 			mockGPT := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
 			h := &messageHandler{
@@ -525,13 +522,12 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeConversation(t *testing.T) {
 				db:            mockDB,
 				reqHandler:    mockReq,
 
-				aicallHandler:       mockAIcall,
 				engineOpenaiHandler: mockGPT,
 			}
 
 			ctx := context.Background()
 
-			mockAIcall.EXPECT().Get(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID1)
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage1).Return(nil)

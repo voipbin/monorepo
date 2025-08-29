@@ -121,7 +121,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	var err error
 	var response *sock.Response
 
-	log.Debug("Received request.")
+	log.Debugf("Received request. uri: %s, method: %s", m.URI, m.Method)
 
 	ctx := context.Background()
 	start := time.Now()

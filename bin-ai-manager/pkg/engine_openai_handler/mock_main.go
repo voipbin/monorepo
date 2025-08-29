@@ -72,3 +72,18 @@ func (mr *MockEngineOpenaiHandlerMockRecorder) Send(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockEngineOpenaiHandler)(nil).Send), ctx, req)
 }
+
+// StreamingSend mocks base method.
+func (m *MockEngineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (<-chan string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamingSend", ctx, cc, messages)
+	ret0, _ := ret[0].(<-chan string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StreamingSend indicates an expected call of StreamingSend.
+func (mr *MockEngineOpenaiHandlerMockRecorder) StreamingSend(ctx, cc, messages any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingSend", reflect.TypeOf((*MockEngineOpenaiHandler)(nil).StreamingSend), ctx, cc, messages)
+}
