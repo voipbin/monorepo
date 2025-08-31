@@ -23,7 +23,7 @@ func (h *listenHandler) v1SpeechesPost(ctx context.Context, m *sock.Request) (*s
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
-	log.WithField("request", req).Debugf("Request detail.")
+	log.WithField("request", req).Debugf("Processing v1SpeechesPost.")
 
 	// create tts
 	tmp, err := h.ttsHandler.Create(ctx, req.CallID, req.Text, req.Language, req.Gender)

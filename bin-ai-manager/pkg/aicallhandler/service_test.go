@@ -8,17 +8,19 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
-	cmcustomer "monorepo/bin-customer-manager/models/customer"
-	fmaction "monorepo/bin-flow-manager/models/action"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 	reflect "reflect"
+
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	fmaction "monorepo/bin-flow-manager/models/action"
 	"testing"
 	"time"
 
@@ -135,15 +137,17 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAI := aihandler.NewMockAIHandler(mc)
 
 			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				messageHandler: mockMessage,
+				aiHandler:      mockAI,
 			}
 
 			ctx := context.Background()
@@ -163,8 +167,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt, true, 30000).Return(tt.responseMessage, nil)
-			mockReq.EXPECT().TTSV1StreamingSay(ctx, tt.responseAIcall.TTSStreamingPodID, tt.responseAIcall.TTSStreamingID, tt.responseMessage.ID, tt.responseMessage.Content).Return(nil)
+			mockMessage.EXPECT().StreamingSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt, true).Return(tt.responseMessage, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
 
@@ -282,13 +285,15 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
 			}
 			ctx := context.Background()
 
@@ -303,7 +308,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
 
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.responseAIcall.ID, message.RoleUser, tt.expectMessageContent, false, 30000).Return(tt.responseMessage, nil)
+			mockMessage.EXPECT().Send(ctx, tt.responseAIcall.ID, message.RoleUser, tt.expectMessageContent, false).Return(tt.responseMessage, nil)
 
 			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.resume)
 			if err != nil {

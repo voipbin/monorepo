@@ -95,8 +95,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(engineKeyChatgpt)
 	engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
 
-	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler)
-	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, aicallHandler, engineOpenaiHandler, engineDialogflowHandler)
+	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler)
+	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, messageHandler)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
 	// run listen

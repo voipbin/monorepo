@@ -30,6 +30,11 @@ func (h *streamingHandler) Say(ctx context.Context, id uuid.UUID, messageID uuid
 		}
 	}
 
+	if text == "" {
+		// nothing to say
+		return nil
+	}
+
 	switch st.VendorName {
 	case streaming.VendorNameElevenlabs:
 		return h.elevenlabsHandler.AddText(st.VendorConfig, text)
