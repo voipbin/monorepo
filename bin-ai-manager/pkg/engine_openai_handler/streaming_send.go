@@ -71,37 +71,42 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 		defer close(outputChan) // Close the channel when done
 
 		var currentSentence strings.Builder
-
 		for {
-			response, err := stream.Recv()
-			if errors.Is(err, io.EOF) {
-				// Stream ended, send any remaining sentence
-				if currentSentence.Len() > 0 {
-					outputChan <- strings.TrimSpace(currentSentence.String())
+			select {
+			case <-ctx.Done():
+				return
+
+			default:
+				response, err := stream.Recv()
+				if errors.Is(err, io.EOF) {
+					// Stream ended, send any remaining sentence
+					if currentSentence.Len() > 0 {
+						outputChan <- strings.TrimSpace(currentSentence.String())
+					}
+					break
 				}
-				break
-			}
-			if err != nil {
-				// Handle stream error
-				log.Errorf("Could not receive from stream. err: %v", err)
-				break
-			}
+				if err != nil {
+					// Handle stream error
+					log.Errorf("Could not receive from stream. err: %v", err)
+					return
+				}
 
-			// Process only the first Choice (usually there's only one)
-			for _, choice := range response.Choices {
-				if choice.Delta.Content != "" {
-					currentSentence.WriteString(choice.Delta.Content)
+				// Process only the first Choice (usually there's only one)
+				for _, choice := range response.Choices {
+					if choice.Delta.Content != "" {
+						currentSentence.WriteString(choice.Delta.Content)
 
-					// Look for sentence-ending characters (period, question mark, exclamation mark, newline)
-					// More sophisticated sentence splitting logic can be implemented here.
-					if strings.ContainsAny(choice.Delta.Content, ".?!\n") && currentSentence.Len() > 0 {
-						sentence := currentSentence.String()
-						trimmedSentence := strings.TrimSpace(sentence)
+						// Look for sentence-ending characters (period, question mark, exclamation mark, newline)
+						// More sophisticated sentence splitting logic can be implemented here.
+						if strings.ContainsAny(choice.Delta.Content, ".?!\n") && currentSentence.Len() > 0 {
+							sentence := currentSentence.String()
+							trimmedSentence := strings.TrimSpace(sentence)
 
-						if trimmedSentence != "" {
-							outputChan <- trimmedSentence // Deliver to the user
+							if trimmedSentence != "" {
+								outputChan <- trimmedSentence // Deliver to the user
+							}
+							currentSentence.Reset() // Reset the buffer
 						}
-						currentSentence.Reset() // Reset the buffer
 					}
 				}
 			}
