@@ -41,7 +41,7 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	}
 
 	t1 := time.Now()
-	chanMsg := make(<-chan string)
+	var chanMsg <-chan string
 
 	modelTarget := ai.GetEngineModelTarget(cc.AIEngineModel)
 	switch modelTarget {
