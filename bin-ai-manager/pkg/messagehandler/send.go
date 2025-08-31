@@ -72,7 +72,7 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 	// create a message for incoming(response)
 	tmpResponse, err := h.Create(ctx, uuid.Nil, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the recevied message correctly")
+		return nil, errors.Wrapf(err, "could not create the received message correctly")
 	}
 	log.WithField("response", tmpResponse).Debugf("Created the response message. message_id: %s", tmpResponse.ID)
 

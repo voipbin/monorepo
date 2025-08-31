@@ -75,7 +75,7 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 
 	tmpResponse, err := h.Create(ctx, msgID, cc.CustomerID, cc.ID, message.DirectionIncoming, role, totalMessage)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the recevied message correctly")
+		return nil, errors.Wrapf(err, "could not create the received message correctly")
 	}
 	log.WithField("response", tmpResponse).Debugf("Created the response message. message_id: %s", tmpResponse.ID)
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
@@ -52,6 +51,10 @@ func (h *engineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIca
 }
 
 func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.ChatCompletionRequest) (<-chan string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "streamingSend",
+	})
+
 	// Set Stream: true for streaming requests
 	req.Stream = true
 
@@ -80,7 +83,7 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 			}
 			if err != nil {
 				// Handle stream error
-				log.Printf("Stream error: %v", err)
+				log.Errorf("Could not receive from stream. err: %v", err)
 				break
 			}
 
