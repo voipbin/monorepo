@@ -150,7 +150,7 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 		select {
 		case <-time.After(audiosocketWriteDelay):
 			// do nothing
-			// continue
+			continue
 
 		case <-ctx.Done():
 			return ctx.Err()
