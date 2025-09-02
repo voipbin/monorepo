@@ -76,8 +76,6 @@ func Test_SayInit(t *testing.T) {
 				h.mapStreaming[s.ID] = s
 			}
 
-			// mockEleven.EXPECT().AddText(gomock.Any(), tt.).Return(nil).Times(1)
-
 			res, err := h.SayInit(ctx, tt.id, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expected: ok, got: %v", err)
