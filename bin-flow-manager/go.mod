@@ -64,7 +64,7 @@ require (
 	github.com/redis/go-redis/v9 v9.12.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
-	github.com/spf13/pflag v1.0.7
+	github.com/spf13/pflag v1.0.9
 	github.com/spf13/viper v1.20.1
 	go.uber.org/mock v0.6.0
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013

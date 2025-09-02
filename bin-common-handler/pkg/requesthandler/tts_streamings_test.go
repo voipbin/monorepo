@@ -145,7 +145,7 @@ func Test_TTSV1StreamingDelete(t *testing.T) {
 	}
 }
 
-func Test_TTSV1StreamingSay(t *testing.T) {
+func Test_TTSV1StreamingSayInit(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -153,7 +153,6 @@ func Test_TTSV1StreamingSay(t *testing.T) {
 		podID     string
 		id        uuid.UUID
 		messageID uuid.UUID
-		text      string
 
 		response *sock.Response
 
@@ -164,27 +163,26 @@ func Test_TTSV1StreamingSay(t *testing.T) {
 		{
 			name: "normal",
 
-			podID:     "7dbd5818-5b02-11f0-b594-c7683b9cdc6e",
-			id:        uuid.FromStringOrNil("65450fca-5b01-11f0-a32f-9b5f26a6e601"),
-			messageID: uuid.FromStringOrNil("bb52a61c-83d7-11f0-972b-ebaeb552c271"),
-			text:      "hello world",
+			podID:     "03ce0a14-87a5-11f0-883e-3f4085c4a940",
+			id:        uuid.FromStringOrNil("040466ae-87a5-11f0-9b76-236f64436c4e"),
+			messageID: uuid.FromStringOrNil("0428ed1c-87a5-11f0-a8e4-9719efbaab7c"),
 
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"65450fca-5b01-11f0-a32f-9b5f26a6e601"}`),
+				Data:       []byte(`{"id":"040466ae-87a5-11f0-9b76-236f64436c4e"}`),
 			},
 
-			expectQueue: "bin-manager.tts-manager.request.7dbd5818-5b02-11f0-b594-c7683b9cdc6e",
+			expectQueue: "bin-manager.tts-manager.request.03ce0a14-87a5-11f0-883e-3f4085c4a940",
 			expectRequest: &sock.Request{
-				URI:      "/v1/streamings/65450fca-5b01-11f0-a32f-9b5f26a6e601/say",
+				URI:      "/v1/streamings/040466ae-87a5-11f0-9b76-236f64436c4e/say_init",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"message_id":"bb52a61c-83d7-11f0-972b-ebaeb552c271","text":"hello world"}`),
+				Data:     []byte(`{"message_id":"0428ed1c-87a5-11f0-a8e4-9719efbaab7c"}`),
 			},
 			expectRes: &tmstreaming.Streaming{
 				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("65450fca-5b01-11f0-a32f-9b5f26a6e601"),
+					ID: uuid.FromStringOrNil("040466ae-87a5-11f0-9b76-236f64436c4e"),
 				},
 			},
 		},
@@ -202,8 +200,13 @@ func Test_TTSV1StreamingSay(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.TTSV1StreamingSay(context.Background(), tt.podID, tt.id, tt.messageID, tt.text); err != nil {
+			res, err := reqHandler.TTSV1StreamingSayInit(context.Background(), tt.podID, tt.id, tt.messageID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

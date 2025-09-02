@@ -7,13 +7,14 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-tts-manager/models/streaming"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_Say(t *testing.T) {
+func Test_SayInit(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -21,23 +22,32 @@ func Test_Say(t *testing.T) {
 
 		id        uuid.UUID
 		messageID uuid.UUID
-		text      string
+
+		expectRes *streaming.Streaming
 	}{
 		{
 			name: "normal",
 			streamings: []*streaming.Streaming{
 				{
 					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("cd6ea4f8-5af2-11f0-9694-5fb9b4e116cb"),
+						ID: uuid.FromStringOrNil("cfbd4912-87a2-11f0-b7c9-f7bb42a8c7db"),
 					},
 					VendorName:   streaming.VendorNameElevenlabs,
 					VendorConfig: &ElevenlabsConfig{},
 				},
 			},
 
-			id:        uuid.FromStringOrNil("cd6ea4f8-5af2-11f0-9694-5fb9b4e116cb"),
-			messageID: uuid.FromStringOrNil("c796296e-83d0-11f0-9666-cb5cc4b71eb0"),
-			text:      "Hello, this is a test message.",
+			id:        uuid.FromStringOrNil("cfbd4912-87a2-11f0-b7c9-f7bb42a8c7db"),
+			messageID: uuid.FromStringOrNil("cfefc05e-87a2-11f0-8fcf-cf9eccb8babf"),
+
+			expectRes: &streaming.Streaming{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cfbd4912-87a2-11f0-b7c9-f7bb42a8c7db"),
+				},
+				MessageID:    uuid.FromStringOrNil("cfefc05e-87a2-11f0-8fcf-cf9eccb8babf"),
+				VendorName:   streaming.VendorNameElevenlabs,
+				VendorConfig: &ElevenlabsConfig{},
+			},
 		},
 	}
 
@@ -66,10 +76,15 @@ func Test_Say(t *testing.T) {
 				h.mapStreaming[s.ID] = s
 			}
 
-			mockEleven.EXPECT().AddText(gomock.Any(), tt.text).Return(nil).Times(1)
+			// mockEleven.EXPECT().AddText(gomock.Any(), tt.).Return(nil).Times(1)
 
-			if err := h.Say(ctx, tt.id, tt.messageID, tt.text); err != nil {
+			res, err := h.SayInit(ctx, tt.id, tt.messageID)
+			if err != nil {
 				t.Errorf("Wrong match. expected: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpected: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

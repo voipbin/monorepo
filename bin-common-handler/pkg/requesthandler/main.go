@@ -1070,7 +1070,7 @@ type RequestHandler interface {
 		direction tmstreaming.Direction,
 	) (*tmstreaming.Streaming, error)
 	TTSV1StreamingDelete(ctx context.Context, streamingID uuid.UUID) (*tmstreaming.Streaming, error)
-	TTSV1StreamingSay(ctx context.Context, podID string, streamingID uuid.UUID, messageID uuid.UUID, text string) error
+	TTSV1StreamingSayInit(ctx context.Context, podID string, streamingID uuid.UUID, messageID uuid.UUID) (*tmstreaming.Streaming, error)
 	TTSV1StreamingSayAdd(ctx context.Context, podID string, streamingID uuid.UUID, messageID uuid.UUID, text string) error
 	TTSV1StreamingSayStop(ctx context.Context, podID string, streamingID uuid.UUID) error
 
