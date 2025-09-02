@@ -59,11 +59,11 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	promMessageProcessTime.WithLabelValues(string(cc.AIEngineType)).Observe(float64(t2.Milliseconds()))
 
 	msgID := h.utilHandler.UUIDCreate()
-	// note: we send an empty text first to create the tts streaming
-	// this is required by the tts streaming api to starts a new streaming say session.
-	if errSay := h.reqHandler.TTSV1StreamingSay(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID, ""); errSay != nil {
-		return nil, errors.Wrapf(errSay, "could not say the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
+	tmp, err := h.reqHandler.TTSV1StreamingSayInit(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not say the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
 	}
+	log.WithField("tts_streaming", tmp).Debugf("Initialized the tts streaming say. tts_streaming_id: %s", cc.TTSStreamingID)
 
 	totalMessage := ""
 	for msg := range chanMsg {

@@ -42,8 +42,8 @@ var (
 	// streamings
 	resV1Streamings          = regexp.MustCompile("/v1/streamings$")
 	resV1StreamingsID        = regexp.MustCompile("/v1/streamings/" + regUUID + "$")
-	resV1StreamingsIDSay     = regexp.MustCompile("/v1/streamings/" + regUUID + "/say$")
 	resV1StreamingsIDSayAdd  = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_add$")
+	resV1StreamingsIDSayInit = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_init$")
 	resV1StreamingsIDSayStop = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_stop$")
 )
 
@@ -143,10 +143,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		requestType = "/streamings/<streaming-id>"
 		response, err = h.v1StreamingsIDDelete(ctx, m)
 
-	// /streamings/<id>/say
-	case resV1StreamingsIDSay.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		requestType = "/streamings/<streaming-id>/say"
-		response, err = h.v1StreamingsIDSayPost(ctx, m)
+	// /streamings/<id>/say_init
+	case resV1StreamingsIDSayInit.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/streamings/<streaming-id>/say_init"
+		response, err = h.v1StreamingsIDSayInitPost(ctx, m)
 
 	// /streamings/<id>/say_add
 	case resV1StreamingsIDSayAdd.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

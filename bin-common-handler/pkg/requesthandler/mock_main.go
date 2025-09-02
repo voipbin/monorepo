@@ -5211,20 +5211,6 @@ func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingDelete(ctx, streamingID 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingDelete", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingDelete), ctx, streamingID)
 }
 
-// TTSV1StreamingSay mocks base method.
-func (m *MockRequestHandler) TTSV1StreamingSay(ctx context.Context, podID string, streamingID, messageID uuid.UUID, text string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TTSV1StreamingSay", ctx, podID, streamingID, messageID, text)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TTSV1StreamingSay indicates an expected call of TTSV1StreamingSay.
-func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingSay(ctx, podID, streamingID, messageID, text any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingSay", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingSay), ctx, podID, streamingID, messageID, text)
-}
-
 // TTSV1StreamingSayAdd mocks base method.
 func (m *MockRequestHandler) TTSV1StreamingSayAdd(ctx context.Context, podID string, streamingID, messageID uuid.UUID, text string) error {
 	m.ctrl.T.Helper()
@@ -5237,6 +5223,21 @@ func (m *MockRequestHandler) TTSV1StreamingSayAdd(ctx context.Context, podID str
 func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingSayAdd(ctx, podID, streamingID, messageID, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingSayAdd", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingSayAdd), ctx, podID, streamingID, messageID, text)
+}
+
+// TTSV1StreamingSayInit mocks base method.
+func (m *MockRequestHandler) TTSV1StreamingSayInit(ctx context.Context, podID string, streamingID, messageID uuid.UUID) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1StreamingSayInit", ctx, podID, streamingID, messageID)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1StreamingSayInit indicates an expected call of TTSV1StreamingSayInit.
+func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingSayInit(ctx, podID, streamingID, messageID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingSayInit", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingSayInit), ctx, podID, streamingID, messageID)
 }
 
 // TTSV1StreamingSayStop mocks base method.

@@ -154,74 +154,6 @@ func Test_v1StreamingsIDDelete(t *testing.T) {
 	}
 }
 
-func Test_v1StreamingsIDSayPost(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		request *sock.Request
-
-		responseStreaming *streaming.Streaming
-
-		expectID        uuid.UUID
-		expectMessageID uuid.UUID
-		expectText      string
-		expectRes       *sock.Response
-	}{
-		{
-			name: "normal test",
-
-			request: &sock.Request{
-				URI:      "/v1/streamings/08eff33e-5af7-11f0-9db1-2b502b8be693/say",
-				Method:   sock.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"message_id":"ef8d4772-83d0-11f0-b75d-3b9f10aa99fb","text": "Hello, this is a test message."}`),
-			},
-
-			responseStreaming: &streaming.Streaming{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("08eff33e-5af7-11f0-9db1-2b502b8be693"),
-				},
-			},
-
-			expectID:        uuid.FromStringOrNil("08eff33e-5af7-11f0-9db1-2b502b8be693"),
-			expectMessageID: uuid.FromStringOrNil("ef8d4772-83d0-11f0-b75d-3b9f10aa99fb"),
-			expectText:      "Hello, this is a test message.",
-			expectRes: &sock.Response{
-				StatusCode: 200,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockTTS := ttshandler.NewMockTTSHandler(mc)
-			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
-
-			h := &listenHandler{
-				sockHandler:      mockSock,
-				ttsHandler:       mockTTS,
-				streamingHandler: mockStreaming,
-			}
-
-			mockStreaming.EXPECT().Say(gomock.Any(), tt.expectID, tt.expectMessageID, tt.expectText).Return(nil)
-
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_v1StreamingsIDSayAddPost(t *testing.T) {
 
 	tests := []struct {
@@ -339,6 +271,74 @@ func Test_v1StreamingsIDSayStopPost(t *testing.T) {
 			}
 
 			mockStreaming.EXPECT().SayStop(gomock.Any(), tt.expectID).Return(nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_v1StreamingsIDSayInitPost(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		request *sock.Request
+
+		responseStreaming *streaming.Streaming
+
+		expectID        uuid.UUID
+		expectMessageID uuid.UUID
+		expectRes       *sock.Response
+	}{
+		{
+			name: "normal test",
+
+			request: &sock.Request{
+				URI:      "/v1/streamings/b7dcc5c6-87a1-11f0-857c-2797bdb40c77/say_init",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"message_id":"b808a9d4-87a1-11f0-9b0c-e3dba6c685da"}`),
+			},
+
+			responseStreaming: &streaming.Streaming{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b7dcc5c6-87a1-11f0-857c-2797bdb40c77"),
+				},
+			},
+
+			expectID:        uuid.FromStringOrNil("b7dcc5c6-87a1-11f0-857c-2797bdb40c77"),
+			expectMessageID: uuid.FromStringOrNil("b808a9d4-87a1-11f0-9b0c-e3dba6c685da"),
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"b7dcc5c6-87a1-11f0-857c-2797bdb40c77","customer_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockTTS := ttshandler.NewMockTTSHandler(mc)
+			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:      mockSock,
+				ttsHandler:       mockTTS,
+				streamingHandler: mockStreaming,
+			}
+
+			mockStreaming.EXPECT().SayInit(gomock.Any(), tt.expectID, tt.expectMessageID).Return(tt.responseStreaming, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

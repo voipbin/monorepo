@@ -18,18 +18,17 @@ type V1DataStreamingsPost struct {
 	Direction     streaming.Direction     `json:"direction,omitempty"` // Direction of the streaming
 }
 
-// V1DataStreamingsIDSayPost is
-// v1 data type request struct for
-// /v1/streamings/<id>/say POST
-type V1DataStreamingsIDSayPost struct {
-	MessageID uuid.UUID `json:"message_id,omitempty"`
-	Text      string    `json:"text,omitempty"`
-}
-
 // V1DataStreamingsIDSayAddPost is
 // v1 data type request struct for
 // /v1/streamings/<id>/say_add POST
 type V1DataStreamingsIDSayAddPost struct {
 	MessageID uuid.UUID `json:"message_id,omitempty"`
 	Text      string    `json:"text,omitempty"`
+}
+
+// V1DataStreamingsIDSayInitPost is
+// v1 data type request struct for
+// /v1/streamings/<id>/say_init POST
+type V1DataStreamingsIDSayInitPost struct {
+	MessageID uuid.UUID `json:"message_id,omitempty"`
 }

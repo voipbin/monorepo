@@ -56,20 +56,6 @@ func (mr *MockStreamingHandlerMockRecorder) Run() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockStreamingHandler)(nil).Run))
 }
 
-// Say mocks base method.
-func (m *MockStreamingHandler) Say(ctx context.Context, id, messageID uuid.UUID, text string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Say", ctx, id, messageID, text)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Say indicates an expected call of Say.
-func (mr *MockStreamingHandlerMockRecorder) Say(ctx, id, messageID, text any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Say", reflect.TypeOf((*MockStreamingHandler)(nil).Say), ctx, id, messageID, text)
-}
-
 // SayAdd mocks base method.
 func (m *MockStreamingHandler) SayAdd(ctx context.Context, id, messageID uuid.UUID, text string) error {
 	m.ctrl.T.Helper()
@@ -82,6 +68,21 @@ func (m *MockStreamingHandler) SayAdd(ctx context.Context, id, messageID uuid.UU
 func (mr *MockStreamingHandlerMockRecorder) SayAdd(ctx, id, messageID, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayAdd", reflect.TypeOf((*MockStreamingHandler)(nil).SayAdd), ctx, id, messageID, text)
+}
+
+// SayInit mocks base method.
+func (m *MockStreamingHandler) SayInit(ctx context.Context, id, messageID uuid.UUID) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SayInit", ctx, id, messageID)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SayInit indicates an expected call of SayInit.
+func (mr *MockStreamingHandlerMockRecorder) SayInit(ctx, id, messageID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayInit", reflect.TypeOf((*MockStreamingHandler)(nil).SayInit), ctx, id, messageID)
 }
 
 // SayStop mocks base method.

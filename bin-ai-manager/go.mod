@@ -65,7 +65,7 @@ require (
 	github.com/sashabaranov/go-openai v1.41.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
-	github.com/spf13/pflag v1.0.7
+	github.com/spf13/pflag v1.0.9
 	github.com/spf13/viper v1.20.1
 	go.uber.org/mock v0.6.0
 	google.golang.org/api v0.248.0

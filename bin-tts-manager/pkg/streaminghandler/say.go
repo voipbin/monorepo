@@ -10,38 +10,27 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *streamingHandler) Say(ctx context.Context, id uuid.UUID, messageID uuid.UUID, text string) error {
+// SayInit initializes the streaming for a new message
+func (h *streamingHandler) SayInit(ctx context.Context, id uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "Say",
+		"func":         "SayInit",
 		"streaming_id": id,
-		"text":         text,
 	})
 
-	st, err := h.UpdateMessageID(ctx, id, messageID)
+	res, err := h.UpdateMessageID(ctx, id, messageID)
 	if err != nil {
-		return errors.Wrapf(err, "could not update message ID. streaming_id: %s, message_id: %s", id, messageID)
+		return nil, errors.Wrapf(err, "could not update message ID. streaming_id: %s, message_id: %s", id, messageID)
 	}
-	log.WithField("streaming", st).Debugf("Fetched streaming info. streaming_id: %s", id)
+	log.WithField("streaming", res).Debugf("Fetched streaming info. streaming_id: %s", id)
 
-	if st.VendorConfig == nil {
-		log.Debugf("Vendor config is nil. initializing the vendor config. vendor: %s", st.VendorName)
-		if errRun := h.runStreamer(st); errRun != nil {
-			return errors.Wrapf(errRun, "could not run streamer. streaming_id: %s", id)
+	if res.VendorConfig == nil {
+		log.Debugf("Vendor config is nil. initializing the vendor config. vendor: %s", res.VendorName)
+		if errRun := h.runStreamer(res); errRun != nil {
+			return nil, errors.Wrapf(errRun, "could not run streamer. streaming_id: %s", id)
 		}
 	}
 
-	if text == "" {
-		// nothing to say
-		return nil
-	}
-
-	switch st.VendorName {
-	case streaming.VendorNameElevenlabs:
-		return h.elevenlabsHandler.AddText(st.VendorConfig, text)
-
-	default:
-		return errors.Errorf("unsupported vendor for text streaming. vendor: %s", st.VendorName)
-	}
+	return res, nil
 }
 
 // SayStop stops the current message being synthesized
