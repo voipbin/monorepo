@@ -156,6 +156,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 			mockReq.EXPECT().TTSV1StreamingCreate(
 				ctx,
 				tt.responseAI.CustomerID,
+				tt.activeflowID,
 				tmstreaming.ReferenceTypeCall,
 				tt.referenceID,
 				tt.language,

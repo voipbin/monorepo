@@ -26,7 +26,7 @@ func (h *listenHandler) v1StreamingsPost(ctx context.Context, m *sock.Request) (
 	}
 	log.WithField("request", req).Debugf("Processing v1StreamingsPost.")
 
-	tmp, err := h.streamingHandler.Start(ctx, req.CustomerID, req.ReferenceType, req.ReferenceID, req.Language, req.Gender, req.Direction)
+	tmp, err := h.streamingHandler.Start(ctx, req.CustomerID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Language, req.Gender, req.Direction)
 	if err != nil {
 		log.Errorf("Could not create a streaming. err: %v", err)
 		return nil, err

@@ -5182,18 +5182,18 @@ func (mr *MockRequestHandlerMockRecorder) TTSV1SpeecheCreate(ctx, callID, text, 
 }
 
 // TTSV1StreamingCreate mocks base method.
-func (m *MockRequestHandler) TTSV1StreamingCreate(ctx context.Context, customerID uuid.UUID, referenceType streaming.ReferenceType, referenceID uuid.UUID, language string, gender streaming.Gender, direction streaming.Direction) (*streaming.Streaming, error) {
+func (m *MockRequestHandler) TTSV1StreamingCreate(ctx context.Context, customerID, activeflowID uuid.UUID, referenceType streaming.ReferenceType, referenceID uuid.UUID, language string, gender streaming.Gender, direction streaming.Direction) (*streaming.Streaming, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TTSV1StreamingCreate", ctx, customerID, referenceType, referenceID, language, gender, direction)
+	ret := m.ctrl.Call(m, "TTSV1StreamingCreate", ctx, customerID, activeflowID, referenceType, referenceID, language, gender, direction)
 	ret0, _ := ret[0].(*streaming.Streaming)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TTSV1StreamingCreate indicates an expected call of TTSV1StreamingCreate.
-func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingCreate(ctx, customerID, referenceType, referenceID, language, gender, direction any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingCreate(ctx, customerID, activeflowID, referenceType, referenceID, language, gender, direction any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingCreate), ctx, customerID, referenceType, referenceID, language, gender, direction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingCreate), ctx, customerID, activeflowID, referenceType, referenceID, language, gender, direction)
 }
 
 // TTSV1StreamingDelete mocks base method.

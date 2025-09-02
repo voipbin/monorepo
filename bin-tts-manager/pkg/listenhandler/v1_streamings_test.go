@@ -24,6 +24,7 @@ func Test_v1StreamingsPost(t *testing.T) {
 		responseStreaming *streaming.Streaming
 
 		expectCustomerID    uuid.UUID
+		expectActiveflowID  uuid.UUID
 		expectReferenceType streaming.ReferenceType
 		expectReferenceID   uuid.UUID
 		expectLanguage      string
@@ -38,7 +39,7 @@ func Test_v1StreamingsPost(t *testing.T) {
 				URI:      "/v1/streamings",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "b685d36c-5af5-11f0-b36b-2be7103890ae", "reference_type": "call", "reference_id": "b6b3ba5c-5af5-11f0-bf7e-438fa6d3dba0", "language": "en-US", "gender": "female", "direction": "out"}`),
+				Data:     []byte(`{"customer_id": "b685d36c-5af5-11f0-b36b-2be7103890ae", "activeflow_id": "a620206c-87c4-11f0-a781-8f2bff99c0ea", "reference_type": "call", "reference_id": "b6b3ba5c-5af5-11f0-bf7e-438fa6d3dba0", "language": "en-US", "gender": "female", "direction": "out"}`),
 			},
 
 			responseStreaming: &streaming.Streaming{
@@ -48,6 +49,7 @@ func Test_v1StreamingsPost(t *testing.T) {
 			},
 
 			expectCustomerID:    uuid.FromStringOrNil("b685d36c-5af5-11f0-b36b-2be7103890ae"),
+			expectActiveflowID:  uuid.FromStringOrNil("a620206c-87c4-11f0-a781-8f2bff99c0ea"),
 			expectReferenceType: streaming.ReferenceTypeCall,
 			expectReferenceID:   uuid.FromStringOrNil("b6b3ba5c-5af5-11f0-bf7e-438fa6d3dba0"),
 			expectLanguage:      "en-US",
@@ -56,7 +58,7 @@ func Test_v1StreamingsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b6dcbc72-5af5-11f0-b0a7-fbe8aae41529","customer_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"b6dcbc72-5af5-11f0-b0a7-fbe8aae41529","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -76,7 +78,7 @@ func Test_v1StreamingsPost(t *testing.T) {
 				streamingHandler: mockStreaming,
 			}
 
-			mockStreaming.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectGender, tt.expectDirection).Return(tt.responseStreaming, nil)
+			mockStreaming.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectGender, tt.expectDirection).Return(tt.responseStreaming, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -120,7 +122,7 @@ func Test_v1StreamingsIDDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"08bd5438-5af7-11f0-bac3-77c3230b0c24","customer_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"08bd5438-5af7-11f0-bac3-77c3230b0c24","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -318,7 +320,7 @@ func Test_v1StreamingsIDSayInitPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b7dcc5c6-87a1-11f0-857c-2797bdb40c77","customer_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"b7dcc5c6-87a1-11f0-857c-2797bdb40c77","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}

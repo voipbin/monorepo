@@ -115,7 +115,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 	}
 
 	// start streaming tts
-	st, err := h.reqHandler.TTSV1StreamingCreate(ctx, c.CustomerID, tmstreaming.ReferenceTypeCall, referenceID, language, tmstreaming.Gender(gender), tmstreaming.DirectionOutgoing)
+	st, err := h.reqHandler.TTSV1StreamingCreate(ctx, c.CustomerID, activeflowID, tmstreaming.ReferenceTypeCall, referenceID, language, tmstreaming.Gender(gender), tmstreaming.DirectionOutgoing)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not create tts streaming")
 	}

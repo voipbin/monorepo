@@ -2,8 +2,13 @@ package streaminghandler
 
 import (
 	"bytes"
+	"context"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-tts-manager/models/streaming"
 	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func Test_getDataSamples(t *testing.T) {
@@ -86,8 +91,7 @@ func Test_getDataSamples(t *testing.T) {
 	}
 }
 
-func Test_getVoiceID(t *testing.T) {
-	handler := &elevenlabsHandler{}
+func Test_getVoiceID_with_no_elevenlabs_voice_id(t *testing.T) {
 
 	tests := []struct {
 		name     string
@@ -135,7 +139,17 @@ func Test_getVoiceID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := handler.getVoiceID(tt.language, tt.gender)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := &elevenlabsHandler{
+				reqHandler: mockReq,
+			}
+			ctx := context.Background()
+
+			result := h.getVoiceID(ctx, uuid.Nil, tt.language, tt.gender)
 			if result != tt.expected {
 				t.Errorf("got %s, expected %s", result, tt.expected)
 			}

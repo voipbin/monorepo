@@ -15,6 +15,7 @@ import (
 func (h *streamingHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
+	activeflowID uuid.UUID,
 	referenceType streaming.ReferenceType,
 	referenceID uuid.UUID,
 	language string,
@@ -32,6 +33,7 @@ func (h *streamingHandler) Create(
 		},
 		PodID: h.podID,
 
+		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 

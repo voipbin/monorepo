@@ -13,6 +13,7 @@ type Streaming struct {
 
 	PodID string `json:"pod_id,omitempty"` // id of the pod where the streaming is running
 
+	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`  // ID of the activeflow associated with the streaming
 	ReferenceType ReferenceType `json:"reference_type,omitempty"` // Type of the reference (e.g., call, confbridge)
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`   // ID of the reference (e.g., call ID, confbridge ID)
 	MessageID     uuid.UUID     `json:"message_id,omitempty"`     // ID of the message associated with the streaming

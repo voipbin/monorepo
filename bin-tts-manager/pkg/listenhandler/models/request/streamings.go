@@ -11,6 +11,7 @@ import (
 // /v1/streamings POST
 type V1DataStreamingsPost struct {
 	CustomerID    uuid.UUID               `json:"customer_id,omitempty"`
+	ActiveflowID  uuid.UUID               `json:"activeflow_id,omitempty"`
 	ReferenceType streaming.ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID               `json:"reference_id,omitempty"`
 	Language      string                  `json:"language,omitempty"`

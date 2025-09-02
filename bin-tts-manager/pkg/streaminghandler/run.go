@@ -64,7 +64,7 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 		return
 	}
 
-	if errStreamer := h.runStreamer(st); errStreamer != nil {
+	if errStreamer := h.runStreamer(ctx, st); errStreamer != nil {
 		log.Errorf("Could not run the streamer. err: %v", errStreamer)
 		return
 	}
@@ -140,18 +140,18 @@ func (h *streamingHandler) retryWithBackoff(operation func() error, maxAttempts 
 	return nil
 }
 
-func (h *streamingHandler) runStreamer(st *streaming.Streaming) error {
+func (h *streamingHandler) runStreamer(ctx context.Context, st *streaming.Streaming) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "runStreamer",
 		"streaming_id": st.ID,
 	})
 
-	initHandlers := map[streaming.VendorName]func(st *streaming.Streaming) (any, error){
+	initHandlers := map[streaming.VendorName]func(ctx context.Context, st *streaming.Streaming) (any, error){
 		streaming.VendorNameElevenlabs: h.elevenlabsHandler.Init,
 	}
 
 	for n, f := range initHandlers {
-		tmp, errInit := f(st)
+		tmp, errInit := f(ctx, st)
 		if errInit != nil {
 			log.Errorf("Handler initialization failed: %v", errInit)
 			continue

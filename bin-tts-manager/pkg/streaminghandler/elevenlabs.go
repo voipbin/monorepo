@@ -8,12 +8,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-tts-manager/models/streaming"
 	"net"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -50,7 +52,7 @@ const (
 	defaultElevenlabsHost    = "api.elevenlabs.io"
 	defaultElevenlabsTTSPath = "/v1/text-to-speech/%s/stream-input"
 
-	defaultElevenlabsVoiceID      = "EXAVITQu4vr4xnSDxMaL"   // Default voice ID for ElevenLabs
+	defaultElevenlabsVoiceID      = "EXAVITQu4vr4xnSDxMaL"   // Default voice ID for ElevenLabs(Rachel)
 	defaultElevenlabsModelID      = "eleven_multilingual_v2" // Default model ID for ElevenLabs
 	defaultConvertSampleRate      = 8000                     // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
 	defaultElevenlabsOutputFormat = "pcm_16000"              // Default output format for ElevenLabs. PCM (S16LE - Signed 16-bit Little Endian), Sample rate: 16kHz, Bit depth: 16-bit as it's the minimum raw PCM output from ElevenLabs.
@@ -139,21 +141,23 @@ var elevenlabsVoiceIDMap = map[string]string{
 }
 
 type elevenlabsHandler struct {
+	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
 	apiKey string
 }
 
-func NewElevenlabsHandler(notifyHandler notifyhandler.NotifyHandler, apiKey string) streamer {
+func NewElevenlabsHandler(reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, apiKey string) streamer {
 	return &elevenlabsHandler{
+		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,
 
 		apiKey: apiKey,
 	}
 }
 
-func (h *elevenlabsHandler) Init(st *streaming.Streaming) (any, error) {
-	connWebsock, err := h.connect(st)
+func (h *elevenlabsHandler) Init(ctx context.Context, st *streaming.Streaming) (any, error) {
+	connWebsock, err := h.connect(ctx, st)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to initialize ElevenLabs WebSocket connection")
 	}
@@ -293,8 +297,8 @@ func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
 	}
 }
 
-func (h *elevenlabsHandler) connect(st *streaming.Streaming) (*websocket.Conn, error) {
-	voiceID := h.getVoiceID(st.Language, st.Gender)
+func (h *elevenlabsHandler) connect(ctx context.Context, st *streaming.Streaming) (*websocket.Conn, error) {
+	voiceID := h.getVoiceID(ctx, st.ActiveflowID, st.Language, st.Gender)
 
 	// Construct the WebSocket URL for ElevenLabs.
 	u := url.URL{
@@ -314,7 +318,7 @@ func (h *elevenlabsHandler) connect(st *streaming.Streaming) (*websocket.Conn, e
 	header["xi-api-key"] = []string{h.apiKey}
 
 	// Establish the WebSocket connection.
-	res, _, err := websocket.DefaultDialer.DialContext(context.Background(), u.String(), header)
+	res, _, err := websocket.DefaultDialer.DialContext(ctx, u.String(), header)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to connect to ElevenLabs WebSocket at %s", u.String())
 	}
@@ -374,23 +378,68 @@ func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byt
 	return res, nil
 }
 
-func (h *elevenlabsHandler) getVoiceID(language string, gender streaming.Gender) string {
+// getVoiceID returns the ElevenLabs voice ID for the tts.
+// if the given activeflow has valid elevenlab voice id as a activeflow variable,
+// it is returned.
+func (h *elevenlabsHandler) getVoiceID(ctx context.Context, activeflowID uuid.UUID, language string, gender streaming.Gender) string {
 
+	if tmpID := h.getVoiceIDByVariable(ctx, activeflowID); tmpID != "" {
+		return tmpID
+	}
+
+	if tmpID := h.getVoiceIDByLangGender(ctx, language, gender); tmpID != "" {
+		return tmpID
+	}
+
+	return defaultElevenlabsVoiceID
+}
+
+// getVoiceID returns the ElevenLabs voice ID for the tts.
+// if the given activeflow has valid elevenlab voice id as a activeflow variable,
+// it is returned.
+func (h *elevenlabsHandler) getVoiceIDByVariable(ctx context.Context, activeflowID uuid.UUID) string {
+	if activeflowID == uuid.Nil {
+		return ""
+	}
+
+	variables, err := h.reqHandler.FlowV1VariableGet(ctx, activeflowID)
+	if err != nil {
+		return ""
+	}
+
+	res, ok := variables.Variables[variableElevenlabsVoiceID]
+	if !ok {
+		return ""
+	}
+
+	// note: simple check to avoid invalid voice ID
+	if len(res) < 20 {
+		return ""
+	}
+
+	return res
+}
+
+// getVoiceID returns the ElevenLabs voice ID for the tts.
+// if the given activeflow has valid elevenlab voice id as a activeflow variable,
+// it is returned.
+func (h *elevenlabsHandler) getVoiceIDByLangGender(ctx context.Context, language string, gender streaming.Gender) string {
 	baseLang := strings.ToLower(strings.SplitN(language, "_", 2)[0])
 	tmpGender := strings.ToLower(string(gender))
 	key := fmt.Sprintf("%s_%s", baseLang, tmpGender)
-
-	if id, ok := elevenlabsVoiceIDMap[key]; ok {
-		return id
+	res, ok := elevenlabsVoiceIDMap[key]
+	if ok {
+		return res
 	}
 
 	// fallback to neutral
 	neutralKey := fmt.Sprintf("%s_neutral", baseLang)
-	if id, ok := elevenlabsVoiceIDMap[neutralKey]; ok {
-		return id
+	res, ok = elevenlabsVoiceIDMap[neutralKey]
+	if ok {
+		return res
 	}
 
-	return defaultElevenlabsVoiceID
+	return ""
 }
 
 // getDataSamples processes 16-bit PCM data with the given inputRate sample rate.

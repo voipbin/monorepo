@@ -15,6 +15,7 @@ import (
 func (h *streamingHandler) Start(
 	ctx context.Context,
 	customerID uuid.UUID,
+	activeflowID uuid.UUID,
 	referenceType streaming.ReferenceType,
 	referenceID uuid.UUID,
 	language string,
@@ -24,6 +25,7 @@ func (h *streamingHandler) Start(
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "Start",
 		"customer_id":      customerID,
+		"activeflow_id":    activeflowID,
 		"reference_type":   referenceType,
 		"reference_id":     referenceID,
 		"language":         language,
@@ -31,7 +33,7 @@ func (h *streamingHandler) Start(
 	})
 
 	// create streaming record
-	res, err := h.Create(ctx, customerID, referenceType, referenceID, language, gender, direction)
+	res, err := h.Create(ctx, customerID, activeflowID, referenceType, referenceID, language, gender, direction)
 	if err != nil {
 		log.Errorf("Could not create streaming. err: %v", err)
 		return nil, err
