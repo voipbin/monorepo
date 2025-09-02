@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	fmvariable "monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-tts-manager/models/streaming"
 	"testing"
 
@@ -91,7 +92,7 @@ func Test_getDataSamples(t *testing.T) {
 	}
 }
 
-func Test_getVoiceID_with_no_elevenlabs_voice_id(t *testing.T) {
+func Test_getVoiceID_getVoiceIDByLangGender(t *testing.T) {
 
 	tests := []struct {
 		name     string
@@ -152,6 +153,52 @@ func Test_getVoiceID_with_no_elevenlabs_voice_id(t *testing.T) {
 			result := h.getVoiceID(ctx, uuid.Nil, tt.language, tt.gender)
 			if result != tt.expected {
 				t.Errorf("got %s, expected %s", result, tt.expected)
+			}
+		})
+	}
+}
+
+func Test_getVoiceID_getVoiceIDByVariable(t *testing.T) {
+
+	tests := []struct {
+		name         string
+		activeflowID uuid.UUID
+
+		responseVariable *fmvariable.Variable
+
+		expectedRes string
+	}{
+		{
+			name:         "exact match: english male",
+			activeflowID: uuid.FromStringOrNil("f05c4fa0-87d0-11f0-9e6c-c393f26cfebb"),
+
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{
+					variableElevenlabsVoiceID: "21m00Tcm4TlvDq8ikWAM",
+				},
+			},
+
+			expectedRes: "21m00Tcm4TlvDq8ikWAM",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := &elevenlabsHandler{
+				reqHandler: mockReq,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
+
+			result := h.getVoiceID(ctx, tt.activeflowID, "", "")
+			if result != tt.expectedRes {
+				t.Errorf("Wrong match. got: %s, expected: %s", result, tt.expectedRes)
 			}
 		})
 	}

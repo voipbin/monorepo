@@ -56,6 +56,8 @@ const (
 	defaultElevenlabsModelID      = "eleven_multilingual_v2" // Default model ID for ElevenLabs
 	defaultConvertSampleRate      = 8000                     // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
 	defaultElevenlabsOutputFormat = "pcm_16000"              // Default output format for ElevenLabs. PCM (S16LE - Signed 16-bit Little Endian), Sample rate: 16kHz, Bit depth: 16-bit as it's the minimum raw PCM output from ElevenLabs.
+
+	defaultElevenlabsVoiceIDLength = 20
 )
 
 var (
@@ -394,9 +396,8 @@ func (h *elevenlabsHandler) getVoiceID(ctx context.Context, activeflowID uuid.UU
 	return defaultElevenlabsVoiceID
 }
 
-// getVoiceID returns the ElevenLabs voice ID for the tts.
-// if the given activeflow has valid elevenlab voice id as a activeflow variable,
-// it is returned.
+// getVoiceIDByVariable retrieves the ElevenLabs voice ID from the activeflow variables.
+// If the activeflow contains a valid ElevenLabs voice ID variable, it is returned; otherwise, an empty string is returned.
 func (h *elevenlabsHandler) getVoiceIDByVariable(ctx context.Context, activeflowID uuid.UUID) string {
 	if activeflowID == uuid.Nil {
 		return ""
@@ -413,16 +414,16 @@ func (h *elevenlabsHandler) getVoiceIDByVariable(ctx context.Context, activeflow
 	}
 
 	// note: simple check to avoid invalid voice ID
-	if len(res) < 20 {
+	if len(res) != defaultElevenlabsVoiceIDLength {
 		return ""
 	}
 
 	return res
 }
 
-// getVoiceID returns the ElevenLabs voice ID for the tts.
-// if the given activeflow has valid elevenlab voice id as a activeflow variable,
-// it is returned.
+// getVoiceIDByLangGender returns the ElevenLabs voice ID for the tts based on language and gender mapping.
+// If no matching voice ID is found for the given language and gender, it falls back to a neutral voice for the language.
+// Returns an empty string if no suitable voice ID is found.
 func (h *elevenlabsHandler) getVoiceIDByLangGender(ctx context.Context, language string, gender streaming.Gender) string {
 	baseLang := strings.ToLower(strings.SplitN(language, "_", 2)[0])
 	tmpGender := strings.ToLower(string(gender))
