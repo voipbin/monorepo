@@ -105,8 +105,7 @@ func Test_StreamingSend(t *testing.T) {
 					ID:         uuid.FromStringOrNil("7786dba8-f2bc-11ef-b9de-4b764cfeef4d"),
 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
 				},
-				AIcallID: uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
-				// ReferenceID: uuid.FromStringOrNil("7786dba8-f2bc-11ef-b9de-4b764cfeef4d"), // TTS msgID becomes ReferenceID
+				AIcallID:  uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
 				Direction: message.DirectionIncoming,
 				Role:      message.RoleAssistant,
 				Content:   "Hi there!",

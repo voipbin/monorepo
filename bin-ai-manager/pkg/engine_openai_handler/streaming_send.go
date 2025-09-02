@@ -83,7 +83,7 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 					if currentSentence.Len() > 0 {
 						outputChan <- strings.TrimSpace(currentSentence.String())
 					}
-					break
+					return
 				}
 				if err != nil {
 					// Handle stream error
