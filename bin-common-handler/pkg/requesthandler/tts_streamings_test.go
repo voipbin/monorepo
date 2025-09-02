@@ -21,6 +21,7 @@ func Test_TTSV1StreamingCreate(t *testing.T) {
 		name string
 
 		customerID    uuid.UUID
+		activeflowID  uuid.UUID
 		referenceType tmstreaming.ReferenceType
 		referenceID   uuid.UUID
 		language      string
@@ -36,6 +37,7 @@ func Test_TTSV1StreamingCreate(t *testing.T) {
 			name: "normal",
 
 			customerID:    uuid.FromStringOrNil("5d348388-5b01-11f0-bdba-43ddb95acbae"),
+			activeflowID:  uuid.FromStringOrNil("7bd9de5e-87cb-11f0-bd50-633c3bd413e3"),
 			referenceType: tmstreaming.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("6504fcc8-5b01-11f0-9107-2fa36ae9f966"),
 			language:      "en-US",
@@ -52,7 +54,7 @@ func Test_TTSV1StreamingCreate(t *testing.T) {
 				URI:      "/v1/streamings",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"5d348388-5b01-11f0-bdba-43ddb95acbae","reference_type":"call","reference_id":"6504fcc8-5b01-11f0-9107-2fa36ae9f966","language":"en-US","gender":"male","direction":"out"}`),
+				Data:     []byte(`{"customer_id":"5d348388-5b01-11f0-bdba-43ddb95acbae","activeflow_id":"7bd9de5e-87cb-11f0-bd50-633c3bd413e3","reference_type":"call","reference_id":"6504fcc8-5b01-11f0-9107-2fa36ae9f966","language":"en-US","gender":"male","direction":"out"}`),
 			},
 			expectRes: &tmstreaming.Streaming{
 				Identity: identity.Identity{
@@ -74,7 +76,7 @@ func Test_TTSV1StreamingCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.tts-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TTSV1StreamingCreate(context.Background(), tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
+			res, err := reqHandler.TTSV1StreamingCreate(context.Background(), tt.customerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

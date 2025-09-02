@@ -25,6 +25,7 @@ type StreamingHandler interface {
 	Start(
 		ctx context.Context,
 		customerID uuid.UUID,
+		activeflowID uuid.UUID,
 		referenceType streaming.ReferenceType,
 		referenceID uuid.UUID,
 		language string,
@@ -54,8 +55,12 @@ const (
 	defaultInitialBackoff    = 100 * time.Millisecond // 100 milliseconds
 )
 
+const (
+	variableElevenlabsVoiceID = "voipbin.tts.elevenlabs.voice_id"
+)
+
 type streamer interface {
-	Init(st *streaming.Streaming) (any, error)
+	Init(ctx context.Context, st *streaming.Streaming) (any, error)
 	Run(vendorConfig any) error
 	SayStop(vendorConfig any)
 	AddText(vendorConfig any, text string) error
@@ -85,7 +90,7 @@ func NewStreamingHandler(
 	elevenlabsAPIKey string,
 ) StreamingHandler {
 
-	elevenlabsHandler := NewElevenlabsHandler(notifyHandler, elevenlabsAPIKey)
+	elevenlabsHandler := NewElevenlabsHandler(reqHandler, notifyHandler, elevenlabsAPIKey)
 
 	return &streamingHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),

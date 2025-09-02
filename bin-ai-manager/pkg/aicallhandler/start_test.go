@@ -144,7 +144,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.ai.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().TTSV1StreamingCreate(ctx, tt.ai.CustomerID, tmstreaming.ReferenceTypeCall, tt.referenceID, tt.language, tmstreaming.Gender(tt.gender), tmstreaming.DirectionOutgoing).Return(tt.responseTTSStreaming, nil)
+			mockReq.EXPECT().TTSV1StreamingCreate(ctx, tt.ai.CustomerID, tt.activeflowID, tmstreaming.ReferenceTypeCall, tt.referenceID, tt.language, tmstreaming.Gender(tt.gender), tmstreaming.DirectionOutgoing).Return(tt.responseTTSStreaming, nil)
 
 			// create
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)

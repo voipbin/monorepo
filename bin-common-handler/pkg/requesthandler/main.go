@@ -1063,6 +1063,7 @@ type RequestHandler interface {
 	TTSV1StreamingCreate(
 		ctx context.Context,
 		customerID uuid.UUID,
+		activeflowID uuid.UUID,
 		referenceType tmstreaming.ReferenceType,
 		referenceID uuid.UUID,
 		language string,

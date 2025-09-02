@@ -20,6 +20,7 @@ func Test_Create(t *testing.T) {
 
 		podID         string
 		customerID    uuid.UUID
+		activeflowID  uuid.UUID
 		referenceType streaming.ReferenceType
 		referenceID   uuid.UUID
 		language      string
@@ -35,6 +36,7 @@ func Test_Create(t *testing.T) {
 
 			podID:         "14b9f816-5af4-11f0-947b-c3120e6156c8",
 			customerID:    uuid.FromStringOrNil("14433528-5af4-11f0-a98c-37f80c2463fe"),
+			activeflowID:  uuid.FromStringOrNil("e0342a78-87c4-11f0-b816-8bfecfb36411"),
 			referenceType: streaming.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("146d1230-5af4-11f0-a19c-fb7727ed4659"),
 			language:      "en-US",
@@ -49,6 +51,7 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("14433528-5af4-11f0-a98c-37f80c2463fe"),
 				},
 				PodID:         "14b9f816-5af4-11f0-947b-c3120e6156c8",
+				ActiveflowID:  uuid.FromStringOrNil("e0342a78-87c4-11f0-b816-8bfecfb36411"),
 				ReferenceType: streaming.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("146d1230-5af4-11f0-a19c-fb7727ed4659"),
 				Gender:        streaming.GenderFemale,
@@ -80,7 +83,7 @@ func Test_Create(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseID)
 			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingCreated, gomock.Any())
 
-			_, err := h.Create(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
+			_, err := h.Create(ctx, tt.customerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expected: ok, got: %v", err)
 			}
