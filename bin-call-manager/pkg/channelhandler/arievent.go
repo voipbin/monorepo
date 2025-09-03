@@ -60,6 +60,7 @@ func (h *channelHandler) getChannelType(chContext channel.Context) channel.Type 
 		channel.ContextConfIncoming:  channel.TypeConfbridge,
 		channel.ContextConfOutgoing:  channel.TypeConfbridge,
 		channel.ContextExternalMedia: channel.TypeExternal,
+		channel.ContextExternalSoop:  channel.TypeExternal,
 		channel.ContextCallIncoming:  channel.TypeCall,
 		channel.ContextCallOutgoing:  channel.TypeCall,
 		channel.ContextCallService:   channel.TypeCall,

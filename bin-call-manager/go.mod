@@ -64,7 +64,7 @@ require (
 	github.com/prometheus/client_golang v1.23.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
-	github.com/spf13/pflag v1.0.9
+	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.20.1
 	github.com/ttacon/libphonenumber v1.2.1
 	go.uber.org/mock v0.6.0
