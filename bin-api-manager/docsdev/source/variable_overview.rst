@@ -7,6 +7,12 @@ VoIPBIN provides a powerful feature called Variables, enabling users to define, 
 
 This mechanism introduces contextual awareness and reactivity to flow logic, allowing users to build intelligent, data-driven call and messaging workflows that adapt in real time to current conditions and external inputs.
 
+.. image:: _static/images/variable_overview_action.png
+   :alt: Variable substitution
+   :width: 300px
+   :align: center
+
+
 .. _variable-overview-variable_use:
 
 Using Variables in Flows

@@ -86,13 +86,37 @@ Built-in ElevenLabs Voice IDs
 ---------------------------------
 VoIPBin uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:
 
-=========================== =============================== ================================= =================================
-Language                    Male Voice ID (Name)            Female Voice ID (Name)            Neutral Voice ID (Name)
-=========================== =============================== ================================= =================================
-English(Default)            ``21m00Tcm4TlvDq8ikWAM`` (Adam) ``EXAVITQu4vr4xnSDxMaL`` (Rachel) ``EXAVITQu4vr4xnSDxMaL`` (Rachel)
---------------------------- ------------------------------- --------------------------------- ---------------------------------
-Japanese                    ``21m00Tcm4TlvDq8ikWAM`` (Adam) ``yoZ06aMxZJJ28mfd3POQ`` (Takumi) ``yoZ06aMxZJJ28mfd3POQ`` (Takumi)
-=========================== =============================== ================================= =================================
+=========================== ==================================== =================================== =================================
+Language                    Male Voice ID (Name)                 Female Voice ID (Name)              Neutral Voice ID (Name)
+=========================== ==================================== =================================== =================================
+English (Default)           ``21m00Tcm4TlvDq8ikWAM`` (Adam)      ``EXAVITQu4vr4xnSDxMaL`` (Rachel)   ``EXAVITQu4vr4xnSDxMaL`` (Rachel)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Japanese                    ``Mv8AjrYZCBkdsmDHNwcB`` (Ishibashi) ``PmgfHCGeS5b7sH90BOOJ`` (Fumi)     ``PmgfHCGeS5b7sH90BOOJ`` (Fumi)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Chinese                     ``MI36FIkp9wRP7cpWKPTl`` (Evan)      ``ZL9dtgFhmkTzAHUUtQL8`` (Xiao)     ``ZL9dtgFhmkTzAHUUtQL8`` (Xiao)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+German                      ``uM8iMoqaSe1eDaJiWfxf`` (Felix)     ``nF7t9cuYo0u3kuVI9q4B`` (Dana)     ``nF7t9cuYo0u3kuVI9q4B`` (Dana)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+French                      ``IPgYtHTNLjC7Bq7IPHrm`` (Alexandre) ``SmWACbi37pETyxxMhSpc``            ``SmWACbi37pETyxxMhSpc``
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Hindi                       ``IvLWq57RKibBrqZGpQrC`` (Leo)       ``MF4J4IDTRo0AxOO4dpFR`` (Devi)     ``MF4J4IDTRo0AxOO4dpFR`` (Devi)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Korean                      ``nbrxrAz3eYm9NgojrmFK`` (Minjoon)   ``AW5wrnG1jVizOYY7R1Oo`` (Jiyoung)  ``AW5wrnG1jVizOYY7R1Oo`` (Jiyoung)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Italian                     ``iLVmqjzCGGvqtMCk6vVQ``             ``b8jhBTcGAq4kQGWmKprT`` (Sami)     ``b8jhBTcGAq4kQGWmKprT`` (Sami)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Spanish (Spain)             ``JjHBC66wF58p4ogebCNA`` (Eduardo)   ``UOIqAnmS11Reiei1Ytkc`` (Carolina) ``UOIqAnmS11Reiei1Ytkc`` (Carolina)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Portuguese (Brazil)         ``NdHRjGnnDKGnnm2c19le`` (Tiago)     ``CZD4BJ803C6T0alQxsR7`` (Andreia)  ``CZD4BJ803C6T0alQxsR7`` (Andreia)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Dutch                       ``G53Wkf3yrsXvhoQsmslL`` (James)     ``YUdpWWny7k5yb4QCeweX`` (Ruth)     ``YUdpWWny7k5yb4QCeweX`` (Ruth)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Russian                     ``qJBO8ZmKp4te7NTtYgzz`` (Egor)      ``ymDCYd8puC7gYjxIamPt``            ``ymDCYd8puC7gYjxIamPt``
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Arabic                      ``s83SAGdFTflAwJcAV81K`` (Adeeb)     ``EXAVITQu4vr4xnSDxMaL`` (Farah)    ``4wf10lgibMnboGJGCLrP`` (Farah)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Polish                      ``H5xTcsAIeS5RAykjz57a`` (Alex)      ``W0sqKm1Sfw1EzlCH14FQ`` (Beata)    ``W0sqKm1Sfw1EzlCH14FQ`` (Beata)
+=========================== ==================================== =================================== =================================
 
 Other ElevenLabs Voice ID Options
 ---------------------------------

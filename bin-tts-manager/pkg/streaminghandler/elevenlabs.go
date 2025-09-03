@@ -77,69 +77,69 @@ var elevenlabsVoiceIDMap = map[string]string{
 	"english_neutral": "EXAVITQu4vr4xnSDxMaL", // Rachel
 
 	// Japanese
-	"japanese_male":    "21m00Tcm4TlvDq8ikWAM", // use Adam if no male Japanese premade
-	"japanese_female":  "yoZ06aMxZJJ28mfd3POQ", // Takumi
-	"japanese_neutral": "yoZ06aMxZJJ28mfd3POQ", // Takumi
+	"japanese_male":    "Mv8AjrYZCBkdsmDHNwcB", // Ishibashi
+	"japanese_female":  "PmgfHCGeS5b7sH90BOOJ", // Fumi
+	"japanese_neutral": "PmgfHCGeS5b7sH90BOOJ", // Fumi
 
 	// Chinese
-	"chinese_male":    "21m00Tcm4TlvDq8ikWAM",
-	"chinese_female":  "EXAVITQu4vr4xnSDxMaL",
-	"chinese_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Chinese
+	"chinese_male":    "MI36FIkp9wRP7cpWKPTl", // Evan
+	"chinese_female":  "ZL9dtgFhmkTzAHUUtQL8", // Xiao
+	"chinese_neutral": "ZL9dtgFhmkTzAHUUtQL8", // Xiao
 
 	// German
-	"german_male":    "21m00Tcm4TlvDq8ikWAM",
-	"german_female":  "EXAVITQu4vr4xnSDxMaL",
-	"german_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral German
+	"german_male":    "uM8iMoqaSe1eDaJiWfxf", // Felix
+	"german_female":  "nF7t9cuYo0u3kuVI9q4B", // Dana
+	"german_neutral": "nF7t9cuYo0u3kuVI9q4B", // Dana
 
 	// French
-	"french_male":    "21m00Tcm4TlvDq8ikWAM",
-	"french_female":  "EXAVITQu4vr4xnSDxMaL",
-	"french_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral French
+	"french_male":    "IPgYtHTNLjC7Bq7IPHrm", // Alexandre
+	"french_female":  "SmWACbi37pETyxxMhSpc",
+	"french_neutral": "SmWACbi37pETyxxMhSpc", //
 
 	// Hindi
-	"hindi_male":    "21m00Tcm4TlvDq8ikWAM",
-	"hindi_female":  "EXAVITQu4vr4xnSDxMaL",
-	"hindi_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Hindi
+	"hindi_male":    "IvLWq57RKibBrqZGpQrC", // Leo
+	"hindi_female":  "MF4J4IDTRo0AxOO4dpFR", // Devi
+	"hindi_neutral": "MF4J4IDTRo0AxOO4dpFR", // Devi
 
 	// Korean
-	"korean_male":    "21m00Tcm4TlvDq8ikWAM",
-	"korean_female":  "EXAVITQu4vr4xnSDxMaL",
-	"korean_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Korean
+	"korean_male":    "nbrxrAz3eYm9NgojrmFK", // Minjoon
+	"korean_female":  "AW5wrnG1jVizOYY7R1Oo", // Jiyoung
+	"korean_neutral": "AW5wrnG1jVizOYY7R1Oo", // Jiyoung
 
 	// Italian
-	"italian_male":    "21m00Tcm4TlvDq8ikWAM",
-	"italian_female":  "EXAVITQu4vr4xnSDxMaL",
-	"italian_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Italian
+	"italian_male":    "iLVmqjzCGGvqtMCk6vVQ",
+	"italian_female":  "b8jhBTcGAq4kQGWmKprT", // Sami
+	"italian_neutral": "b8jhBTcGAq4kQGWmKprT", // Sami
 
 	// Spanish (Spain)
-	"spanish_male":    "21m00Tcm4TlvDq8ikWAM",
-	"spanish_female":  "EXAVITQu4vr4xnSDxMaL",
-	"spanish_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Spanish
+	"spanish_male":    "JjHBC66wF58p4ogebCNA", // Eduardo
+	"spanish_female":  "UOIqAnmS11Reiei1Ytkc", // Carolina
+	"spanish_neutral": "UOIqAnmS11Reiei1Ytkc", // Carolina
 
 	// Portuguese (Brazil)
-	"portuguese_male":    "21m00Tcm4TlvDq8ikWAM",
-	"portuguese_female":  "EXAVITQu4vr4xnSDxMaL",
-	"portuguese_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Portuguese
+	"portuguese_male":    "NdHRjGnnDKGnnm2c19le", // Tiago
+	"portuguese_female":  "CZD4BJ803C6T0alQxsR7", // Andreia
+	"portuguese_neutral": "CZD4BJ803C6T0alQxsR7", // Andreia
 
 	// Dutch
-	"dutch_male":    "21m00Tcm4TlvDq8ikWAM",
-	"dutch_female":  "EXAVITQu4vr4xnSDxMaL",
-	"dutch_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Dutch
+	"dutch_male":    "G53Wkf3yrsXvhoQsmslL", // James
+	"dutch_female":  "YUdpWWny7k5yb4QCeweX", // Ruth
+	"dutch_neutral": "YUdpWWny7k5yb4QCeweX", // Ruth
 
 	// Russian
-	"russian_male":    "21m00Tcm4TlvDq8ikWAM",
-	"russian_female":  "EXAVITQu4vr4xnSDxMaL",
-	"russian_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Russian
+	"russian_male":    "qJBO8ZmKp4te7NTtYgzz", // Egor
+	"russian_female":  "ymDCYd8puC7gYjxIamPt", //
+	"russian_neutral": "ymDCYd8puC7gYjxIamPt", //
 
 	// Arabic
-	"arabic_male":    "21m00Tcm4TlvDq8ikWAM",
-	"arabic_female":  "EXAVITQu4vr4xnSDxMaL",
-	"arabic_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Arabic
+	"arabic_male":    "s83SAGdFTflAwJcAV81K", // Adeeb
+	"arabic_female":  "EXAVITQu4vr4xnSDxMaL", // Farah
+	"arabic_neutral": "4wf10lgibMnboGJGCLrP", // Farah
 
 	// Polish
-	"polish_male":    "21m00Tcm4TlvDq8ikWAM",
-	"polish_female":  "EXAVITQu4vr4xnSDxMaL",
-	"polish_neutral": "EXAVITQu4vr4xnSDxMaL", // Use Rachel for neutral Polish
+	"polish_male":    "H5xTcsAIeS5RAykjz57a", // Alex
+	"polish_female":  "W0sqKm1Sfw1EzlCH14FQ", // Beata
+	"polish_neutral": "W0sqKm1Sfw1EzlCH14FQ", // Beata
 }
 
 type elevenlabsHandler struct {
