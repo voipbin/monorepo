@@ -38,8 +38,7 @@ func (h *bridgeHandler) Play(
 
 	tmp, err := h.reqHandler.AstBridgePlay(ctx, br.AsteriskID, br.ID, medias, language, offsetms, skipms, playbackID)
 	if err != nil {
-		log.Errorf("Could not play the media. media: %v, err: %v", medias, err)
-		return errors.Wrap(err, "could not play the media")
+		return errors.Wrapf(err, "could not play the media on the bridge. media: %v", medias)
 	}
 	log.WithField("playback", tmp).Debugf("Playback requested successfully")
 
