@@ -644,7 +644,7 @@ func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.132-00000000",
 				StasisData: map[channel.StasisDataType]string{
-					"context":   string(channel.ContextExternalSoop),
+					"context":   string(channel.ContextExternalSnoop),
 					"bridge_id": "d6aecd56-0301-11ec-aee0-77d9356147eb",
 					"call_id":   "da646758-0301-11ec-b3eb-f3c05485b756",
 				},

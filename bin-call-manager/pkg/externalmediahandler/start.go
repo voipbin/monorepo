@@ -97,7 +97,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 	// set app args for snoop channel
 	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s",
 		channel.StasisDataTypeContextType, channel.ContextTypeCall,
-		channel.StasisDataTypeContext, channel.ContextExternalSoop,
+		channel.StasisDataTypeContext, channel.ContextExternalSnoop,
 		channel.StasisDataTypeCallID, c.ID,
 		channel.StasisDataTypeBridgeID, br.ID,
 	)

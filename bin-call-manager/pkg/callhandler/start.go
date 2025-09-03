@@ -78,7 +78,7 @@ func (h *callHandler) Start(ctx context.Context, cn *channel.Channel) error {
 	case channel.ContextRecording:
 		return h.startContextRecording(ctx, cn)
 
-	case channel.ContextExternalSoop:
+	case channel.ContextExternalSnoop:
 		return h.startContextExternalSoop(ctx, cn)
 
 	case channel.ContextExternalMedia:
