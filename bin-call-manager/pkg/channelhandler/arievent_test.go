@@ -201,6 +201,12 @@ func Test_getChannelType(t *testing.T) {
 			expectRes: channel.TypeExternal,
 		},
 		{
+			name: "external media snoop",
+
+			context:   channel.ContextExternalSnoop,
+			expectRes: channel.TypeExternal,
+		},
+		{
 			name: "call incoming",
 
 			context:   channel.ContextCallIncoming,

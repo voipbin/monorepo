@@ -88,7 +88,7 @@ const (
 	ContextCallService   Context = "call-svc"           // context for the channel where it came back to stasis from the other asterisk application
 	ContextJoinCall      Context = "call-join"          // context for the channel for conference joining
 	ContextExternalMedia Context = "call-externalmedia" // context for the external media channel. this channel will get the media from the external
-	ContextExternalSoop  Context = "call-externalsnoop" // context for the external snoop channel
+	ContextExternalSnoop Context = "call-externalsnoop" // context for the external snoop channel
 	ContextApplication   Context = "call-application"   // context for dialplan application execution
 
 	// conf
