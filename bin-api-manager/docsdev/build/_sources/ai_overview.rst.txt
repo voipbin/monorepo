@@ -63,55 +63,46 @@ Example Prompt:
 
     Please respond kindly.
 
-    But, if you receive a request to connect to the agent, respond with the next message in JSON format.
-    Do not include any explanations in the response.
-    Only provide an RFC8259-compliant JSON response following this format without deviation.
+AI Talk
+=======
 
-    [
-        {
-            "action": "connect",
-            "option": {
-                "source": {
-                    "type": "tel",
-                    "target": "+821100000001"
-                },
-                "destinations": [
-                    {
-                        "type": "tel",
-                        "target": "+821100000002"
-                    }
-                ]
-            }
-        }
-    ]
+**AI Talk** enables real-time conversational AI with voice in VoIPBin, powered by **ElevenLabs' voice engine** for natural-sounding speech.
 
-Handling Responses
-------------------
+.. image:: _static/images/ai_overview_ai_talk.png
+    :alt: AI Talk component in action builder
+    :align: center
+    :width: 300px
 
-* Text String Response: The AI's response is played as speech using TTS.
-* JSON Response: The AI returns a structured JSON array of action objects, which VoIPBin executes accordingly.
-* Error Handling: If the AI generates an invalid JSON response, VoIPBin treats it as a normal text response and plays it via TTS.
+Key Features
+------------
 
-Multiple AI Actions in a Flow
-----------------------------------
-VoIPBin allows multiple AI actions within a single flow. Developers can configure different AI interactions at various points, enabling flexible and context-aware automation.
+* **Real-time Voice Interaction**: AI generates responses in real-time based on user input and delivers them as speech.
+* **Interruption Detection & Listening**: If the other party speaks while the AI is talking, the system immediately **stops the AI's speech** and switches to capturing the user's voice via STT.  
+  This ensures a smooth and continuous conversation flow.
+* **Low Latency Response**: For longer prompts, AI Talk does not wait for the entire response to finish. Instead, it generates and plays speech in smaller chunks, **reducing perceived response time** for the user.
+* **ElevenLabs Voice Engine**: High-quality, natural-sounding voice output ensures the AI feels like a real conversation partner.
 
-Action Object Structure
------------------------
-See detail :ref:`here <flow-struct-action-action>`.
+Built-in ElevenLabs Voice IDs
+---------------------------------
+VoIPBin uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:
 
-VoIPBin supports a wide range of actions. Developers should refer to VoIPBin's documentation for a complete list of available actions.
+=========================== =============================== ================================= =================================
+Language                    Male Voice ID (Name)            Female Voice ID (Name)            Neutral Voice ID (Name)
+=========================== =============================== ================================= =================================
+English(Default)            ``21m00Tcm4TlvDq8ikWAM`` (Adam) ``EXAVITQu4vr4xnSDxMaL`` (Rachel) ``EXAVITQu4vr4xnSDxMaL`` (Rachel)
+--------------------------- ------------------------------- --------------------------------- ---------------------------------
+Japanese                    ``21m00Tcm4TlvDq8ikWAM`` (Adam) ``yoZ06aMxZJJ28mfd3POQ`` (Takumi) ``yoZ06aMxZJJ28mfd3POQ`` (Takumi)
+=========================== =============================== ================================= =================================
 
-Technical Considerations
-========================
+Other ElevenLabs Voice ID Options
+---------------------------------
+Voipbin allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the *voipbin.tts.elevenlabs.voice_id* variable, you can override the default voice selection.
 
-Escalation to Live Agents
--------------------------
-VoIPBin does not provide an automatic escalation mechanism for transferring calls to human agents. Instead, developers must configure AI responses accordingly by ensuring that AI logic returns a JSON action when escalation is required.
+..
 
-Logging & Debugging
--------------------
-Developers can debug AI interactions using VoIPBin’s transcription logs, which include STT output and AI responses.
+    voipbin.tts.elevenlabs.voice_id: <Your Custom Voice ID>
+
+See how to set the variables :ref:`here <variable_overview>`.
 
 AI Summary
 ==========
