@@ -208,59 +208,117 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pretend</span> <span class="n">you</span> <span class="n">are</span> <span class="n">an</span> <span class="n">expert</span> <span class="n">customer</span> <span class="n">service</span> <span class="n">agent</span><span class="o">.</span>
 
 <span class="n">Please</span> <span class="n">respond</span> <span class="n">kindly</span><span class="o">.</span>
-
-<span class="n">But</span><span class="p">,</span> <span class="k">if</span> <span class="n">you</span> <span class="n">receive</span> <span class="n">a</span> <span class="n">request</span> <span class="n">to</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">the</span> <span class="n">agent</span><span class="p">,</span> <span class="n">respond</span> <span class="k">with</span> <span class="n">the</span> <span class="nb">next</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">JSON</span> <span class="nb">format</span><span class="o">.</span>
-<span class="n">Do</span> <span class="ow">not</span> <span class="n">include</span> <span class="nb">any</span> <span class="n">explanations</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">response</span><span class="o">.</span>
-<span class="n">Only</span> <span class="n">provide</span> <span class="n">an</span> <span class="n">RFC8259</span><span class="o">-</span><span class="n">compliant</span> <span class="n">JSON</span> <span class="n">response</span> <span class="n">following</span> <span class="n">this</span> <span class="nb">format</span> <span class="n">without</span> <span class="n">deviation</span><span class="o">.</span>
-
-<span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
-            <span class="p">},</span>
-            <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000002&quot;</span>
-                <span class="p">}</span>
-            <span class="p">]</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">]</span>
 </pre></div>
 </div>
 </section>
 </section>
-<section id="handling-responses">
-<h3>Handling Responses<a class="headerlink" href="#handling-responses" title="Link to this heading"></a></h3>
+</section>
+<section id="ai-talk">
+<h2>AI Talk<a class="headerlink" href="#ai-talk" title="Link to this heading"></a></h2>
+<p><strong>AI Talk</strong> enables real-time conversational AI with voice in VoIPBin, powered by <strong>ElevenLabs’ voice engine</strong> for natural-sounding speech.</p>
+<a class="reference internal image-reference" href="_images/ai_overview_ai_talk.png"><img alt="AI Talk component in action builder" class="align-center" src="_images/ai_overview_ai_talk.png" style="width: 300px;" /></a>
+<section id="key-features">
+<h3>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>Text String Response: The AI’s response is played as speech using TTS.</p></li>
-<li><p>JSON Response: The AI returns a structured JSON array of action objects, which VoIPBin executes accordingly.</p></li>
-<li><p>Error Handling: If the AI generates an invalid JSON response, VoIPBin treats it as a normal text response and plays it via TTS.</p></li>
+<li><p><strong>Real-time Voice Interaction</strong>: AI generates responses in real-time based on user input and delivers them as speech.</p></li>
+<li><p><strong>Interruption Detection &amp; Listening</strong>: If the other party speaks while the AI is talking, the system immediately <strong>stops the AI’s speech</strong> and switches to capturing the user’s voice via STT.
+This ensures a smooth and continuous conversation flow.</p></li>
+<li><p><strong>Low Latency Response</strong>: For longer prompts, AI Talk does not wait for the entire response to finish. Instead, it generates and plays speech in smaller chunks, <strong>reducing perceived response time</strong> for the user.</p></li>
+<li><p><strong>ElevenLabs Voice Engine</strong>: High-quality, natural-sounding voice output ensures the AI feels like a real conversation partner.</p></li>
 </ul>
 </section>
-<section id="multiple-ai-actions-in-a-flow">
-<h3>Multiple AI Actions in a Flow<a class="headerlink" href="#multiple-ai-actions-in-a-flow" title="Link to this heading"></a></h3>
-<p>VoIPBin allows multiple AI actions within a single flow. Developers can configure different AI interactions at various points, enabling flexible and context-aware automation.</p>
+<section id="built-in-elevenlabs-voice-ids">
+<h3>Built-in ElevenLabs Voice IDs<a class="headerlink" href="#built-in-elevenlabs-voice-ids" title="Link to this heading"></a></h3>
+<p>VoIPBin uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Language</p></th>
+<th class="head"><p>Male Voice ID (Name)</p></th>
+<th class="head"><p>Female Voice ID (Name)</p></th>
+<th class="head"><p>Neutral Voice ID (Name)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>English (Default)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">21m00Tcm4TlvDq8ikWAM</span></code> (Adam)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">EXAVITQu4vr4xnSDxMaL</span></code> (Rachel)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">EXAVITQu4vr4xnSDxMaL</span></code> (Rachel)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Japanese</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Mv8AjrYZCBkdsmDHNwcB</span></code> (Ishibashi)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PmgfHCGeS5b7sH90BOOJ</span></code> (Fumi)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PmgfHCGeS5b7sH90BOOJ</span></code> (Fumi)</p></td>
+</tr>
+<tr class="row-even"><td><p>Chinese</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MI36FIkp9wRP7cpWKPTl</span></code> (Evan)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ZL9dtgFhmkTzAHUUtQL8</span></code> (Xiao)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ZL9dtgFhmkTzAHUUtQL8</span></code> (Xiao)</p></td>
+</tr>
+<tr class="row-odd"><td><p>German</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">uM8iMoqaSe1eDaJiWfxf</span></code> (Felix)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">nF7t9cuYo0u3kuVI9q4B</span></code> (Dana)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">nF7t9cuYo0u3kuVI9q4B</span></code> (Dana)</p></td>
+</tr>
+<tr class="row-even"><td><p>French</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IPgYtHTNLjC7Bq7IPHrm</span></code> (Alexandre)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SmWACbi37pETyxxMhSpc</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SmWACbi37pETyxxMhSpc</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Hindi</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IvLWq57RKibBrqZGpQrC</span></code> (Leo)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MF4J4IDTRo0AxOO4dpFR</span></code> (Devi)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MF4J4IDTRo0AxOO4dpFR</span></code> (Devi)</p></td>
+</tr>
+<tr class="row-even"><td><p>Korean</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">nbrxrAz3eYm9NgojrmFK</span></code> (Minjoon)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">AW5wrnG1jVizOYY7R1Oo</span></code> (Jiyoung)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">AW5wrnG1jVizOYY7R1Oo</span></code> (Jiyoung)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Italian</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">iLVmqjzCGGvqtMCk6vVQ</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">b8jhBTcGAq4kQGWmKprT</span></code> (Sami)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">b8jhBTcGAq4kQGWmKprT</span></code> (Sami)</p></td>
+</tr>
+<tr class="row-even"><td><p>Spanish (Spain)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">JjHBC66wF58p4ogebCNA</span></code> (Eduardo)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">UOIqAnmS11Reiei1Ytkc</span></code> (Carolina)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">UOIqAnmS11Reiei1Ytkc</span></code> (Carolina)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Portuguese (Brazil)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">NdHRjGnnDKGnnm2c19le</span></code> (Tiago)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CZD4BJ803C6T0alQxsR7</span></code> (Andreia)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CZD4BJ803C6T0alQxsR7</span></code> (Andreia)</p></td>
+</tr>
+<tr class="row-even"><td><p>Dutch</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">G53Wkf3yrsXvhoQsmslL</span></code> (James)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">YUdpWWny7k5yb4QCeweX</span></code> (Ruth)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">YUdpWWny7k5yb4QCeweX</span></code> (Ruth)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Russian</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">qJBO8ZmKp4te7NTtYgzz</span></code> (Egor)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ymDCYd8puC7gYjxIamPt</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ymDCYd8puC7gYjxIamPt</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Arabic</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">s83SAGdFTflAwJcAV81K</span></code> (Adeeb)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">EXAVITQu4vr4xnSDxMaL</span></code> (Farah)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">4wf10lgibMnboGJGCLrP</span></code> (Farah)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Polish</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">H5xTcsAIeS5RAykjz57a</span></code> (Alex)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">W0sqKm1Sfw1EzlCH14FQ</span></code> (Beata)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">W0sqKm1Sfw1EzlCH14FQ</span></code> (Beata)</p></td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="action-object-structure">
-<h3>Action Object Structure<a class="headerlink" href="#action-object-structure" title="Link to this heading"></a></h3>
-<p>See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p>
-<p>VoIPBin supports a wide range of actions. Developers should refer to VoIPBin’s documentation for a complete list of available actions.</p>
-</section>
-</section>
-<section id="technical-considerations">
-<h2>Technical Considerations<a class="headerlink" href="#technical-considerations" title="Link to this heading"></a></h2>
-<section id="escalation-to-live-agents">
-<h3>Escalation to Live Agents<a class="headerlink" href="#escalation-to-live-agents" title="Link to this heading"></a></h3>
-<p>VoIPBin does not provide an automatic escalation mechanism for transferring calls to human agents. Instead, developers must configure AI responses accordingly by ensuring that AI logic returns a JSON action when escalation is required.</p>
-</section>
-<section id="logging-debugging">
-<h3>Logging &amp; Debugging<a class="headerlink" href="#logging-debugging" title="Link to this heading"></a></h3>
-<p>Developers can debug AI interactions using VoIPBin’s transcription logs, which include STT output and AI responses.</p>
+<section id="other-elevenlabs-voice-id-options">
+<h3>Other ElevenLabs Voice ID Options<a class="headerlink" href="#other-elevenlabs-voice-id-options" title="Link to this heading"></a></h3>
+<p>Voipbin allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the <em>voipbin.tts.elevenlabs.voice_id</em> variable, you can override the default voice selection.</p>
+<blockquote>
+<div><p>voipbin.tts.elevenlabs.voice_id: &lt;Your Custom Voice ID&gt;</p>
+</div></blockquote>
+<p>See how to set the variables <a class="reference internal" href="variable_overview.html#variable-overview"><span class="std std-ref">here</span></a>.</p>
 </section>
 </section>
 <section id="ai-summary">
@@ -346,7 +404,7 @@
 <li><p>customer_id: Customer’s ID.</p></li>
 <li><p>name: AI’s name.</p></li>
 <li><p>detail: AI’s detail.</p></li>
-<li><p><em>engine_type</em>: AI’s engine type. See detail <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-engine-type"><span class="std std-ref">here</span></a></p></li>
+<li><p><em>engine_type</em>: AI’s engine type. See detail <a class="reference internal" href="#ai-struct-ai-engine-type"><span class="std std-ref">here</span></a></p></li>
 <li><p>init_prompt: Defines AI’s initial prompt. It will define the AI engine’s behavior.</p></li>
 </ul>
 <section id="example">
@@ -419,14 +477,12 @@
 <li><a class="reference internal" href="#example-prompt">Example Prompt:</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#handling-responses">Handling Responses</a></li>
-<li><a class="reference internal" href="#multiple-ai-actions-in-a-flow">Multiple AI Actions in a Flow</a></li>
-<li><a class="reference internal" href="#action-object-structure">Action Object Structure</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#technical-considerations">Technical Considerations</a><ul>
-<li><a class="reference internal" href="#escalation-to-live-agents">Escalation to Live Agents</a></li>
-<li><a class="reference internal" href="#logging-debugging">Logging &amp; Debugging</a></li>
+<li><a class="reference internal" href="#ai-talk">AI Talk</a><ul>
+<li><a class="reference internal" href="#key-features">Key Features</a></li>
+<li><a class="reference internal" href="#built-in-elevenlabs-voice-ids">Built-in ElevenLabs Voice IDs</a></li>
+<li><a class="reference internal" href="#other-elevenlabs-voice-id-options">Other ElevenLabs Voice ID Options</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ai-summary">AI Summary</a><ul>

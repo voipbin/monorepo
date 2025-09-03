@@ -66,7 +66,7 @@ require (
 	github.com/prometheus/client_golang v1.23.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggo/files v1.0.1
-	github.com/swaggo/gin-swagger v1.6.0
+	github.com/swaggo/gin-swagger v1.6.1
 	github.com/swaggo/swag v1.16.6 // indirect
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.41.0 // indirect
@@ -85,7 +85,7 @@ require (
 	github.com/pebbe/zmq4 v1.4.0
 	github.com/pion/rtp v1.8.21
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/pflag v1.0.9
+	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b

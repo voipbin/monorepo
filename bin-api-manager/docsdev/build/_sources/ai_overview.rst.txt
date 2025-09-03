@@ -63,55 +63,70 @@ Example Prompt:
 
     Please respond kindly.
 
-    But, if you receive a request to connect to the agent, respond with the next message in JSON format.
-    Do not include any explanations in the response.
-    Only provide an RFC8259-compliant JSON response following this format without deviation.
+AI Talk
+=======
 
-    [
-        {
-            "action": "connect",
-            "option": {
-                "source": {
-                    "type": "tel",
-                    "target": "+821100000001"
-                },
-                "destinations": [
-                    {
-                        "type": "tel",
-                        "target": "+821100000002"
-                    }
-                ]
-            }
-        }
-    ]
+**AI Talk** enables real-time conversational AI with voice in VoIPBin, powered by **ElevenLabs' voice engine** for natural-sounding speech.
 
-Handling Responses
-------------------
+.. image:: _static/images/ai_overview_ai_talk.png
+    :alt: AI Talk component in action builder
+    :align: center
+    :width: 300px
 
-* Text String Response: The AI's response is played as speech using TTS.
-* JSON Response: The AI returns a structured JSON array of action objects, which VoIPBin executes accordingly.
-* Error Handling: If the AI generates an invalid JSON response, VoIPBin treats it as a normal text response and plays it via TTS.
+Key Features
+------------
 
-Multiple AI Actions in a Flow
-----------------------------------
-VoIPBin allows multiple AI actions within a single flow. Developers can configure different AI interactions at various points, enabling flexible and context-aware automation.
+* **Real-time Voice Interaction**: AI generates responses in real-time based on user input and delivers them as speech.
+* **Interruption Detection & Listening**: If the other party speaks while the AI is talking, the system immediately **stops the AI's speech** and switches to capturing the user's voice via STT.  
+  This ensures a smooth and continuous conversation flow.
+* **Low Latency Response**: For longer prompts, AI Talk does not wait for the entire response to finish. Instead, it generates and plays speech in smaller chunks, **reducing perceived response time** for the user.
+* **ElevenLabs Voice Engine**: High-quality, natural-sounding voice output ensures the AI feels like a real conversation partner.
 
-Action Object Structure
------------------------
-See detail :ref:`here <flow-struct-action-action>`.
+Built-in ElevenLabs Voice IDs
+---------------------------------
+VoIPBin uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:
 
-VoIPBin supports a wide range of actions. Developers should refer to VoIPBin's documentation for a complete list of available actions.
+=========================== ==================================== =================================== =================================
+Language                    Male Voice ID (Name)                 Female Voice ID (Name)              Neutral Voice ID (Name)
+=========================== ==================================== =================================== =================================
+English (Default)           ``21m00Tcm4TlvDq8ikWAM`` (Adam)      ``EXAVITQu4vr4xnSDxMaL`` (Rachel)   ``EXAVITQu4vr4xnSDxMaL`` (Rachel)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Japanese                    ``Mv8AjrYZCBkdsmDHNwcB`` (Ishibashi) ``PmgfHCGeS5b7sH90BOOJ`` (Fumi)     ``PmgfHCGeS5b7sH90BOOJ`` (Fumi)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Chinese                     ``MI36FIkp9wRP7cpWKPTl`` (Evan)      ``ZL9dtgFhmkTzAHUUtQL8`` (Xiao)     ``ZL9dtgFhmkTzAHUUtQL8`` (Xiao)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+German                      ``uM8iMoqaSe1eDaJiWfxf`` (Felix)     ``nF7t9cuYo0u3kuVI9q4B`` (Dana)     ``nF7t9cuYo0u3kuVI9q4B`` (Dana)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+French                      ``IPgYtHTNLjC7Bq7IPHrm`` (Alexandre) ``SmWACbi37pETyxxMhSpc``            ``SmWACbi37pETyxxMhSpc``
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Hindi                       ``IvLWq57RKibBrqZGpQrC`` (Leo)       ``MF4J4IDTRo0AxOO4dpFR`` (Devi)     ``MF4J4IDTRo0AxOO4dpFR`` (Devi)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Korean                      ``nbrxrAz3eYm9NgojrmFK`` (Minjoon)   ``AW5wrnG1jVizOYY7R1Oo`` (Jiyoung)  ``AW5wrnG1jVizOYY7R1Oo`` (Jiyoung)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Italian                     ``iLVmqjzCGGvqtMCk6vVQ``             ``b8jhBTcGAq4kQGWmKprT`` (Sami)     ``b8jhBTcGAq4kQGWmKprT`` (Sami)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Spanish (Spain)             ``JjHBC66wF58p4ogebCNA`` (Eduardo)   ``UOIqAnmS11Reiei1Ytkc`` (Carolina) ``UOIqAnmS11Reiei1Ytkc`` (Carolina)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Portuguese (Brazil)         ``NdHRjGnnDKGnnm2c19le`` (Tiago)     ``CZD4BJ803C6T0alQxsR7`` (Andreia)  ``CZD4BJ803C6T0alQxsR7`` (Andreia)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Dutch                       ``G53Wkf3yrsXvhoQsmslL`` (James)     ``YUdpWWny7k5yb4QCeweX`` (Ruth)     ``YUdpWWny7k5yb4QCeweX`` (Ruth)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Russian                     ``qJBO8ZmKp4te7NTtYgzz`` (Egor)      ``ymDCYd8puC7gYjxIamPt``            ``ymDCYd8puC7gYjxIamPt``
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Arabic                      ``s83SAGdFTflAwJcAV81K`` (Adeeb)     ``EXAVITQu4vr4xnSDxMaL`` (Farah)    ``4wf10lgibMnboGJGCLrP`` (Farah)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Polish                      ``H5xTcsAIeS5RAykjz57a`` (Alex)      ``W0sqKm1Sfw1EzlCH14FQ`` (Beata)    ``W0sqKm1Sfw1EzlCH14FQ`` (Beata)
+=========================== ==================================== =================================== =================================
 
-Technical Considerations
-========================
+Other ElevenLabs Voice ID Options
+---------------------------------
+Voipbin allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the *voipbin.tts.elevenlabs.voice_id* variable, you can override the default voice selection.
 
-Escalation to Live Agents
--------------------------
-VoIPBin does not provide an automatic escalation mechanism for transferring calls to human agents. Instead, developers must configure AI responses accordingly by ensuring that AI logic returns a JSON action when escalation is required.
+..
 
-Logging & Debugging
--------------------
-Developers can debug AI interactions using VoIPBin’s transcription logs, which include STT output and AI responses.
+    voipbin.tts.elevenlabs.voice_id: <Your Custom Voice ID>
+
+See how to set the variables :ref:`here <variable_overview>`.
 
 AI Summary
 ==========

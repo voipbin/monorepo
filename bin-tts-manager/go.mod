@@ -79,7 +79,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.12.1
-	github.com/spf13/pflag v1.0.9
+	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.11.1
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a

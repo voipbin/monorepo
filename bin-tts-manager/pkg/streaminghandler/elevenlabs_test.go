@@ -110,13 +110,13 @@ func Test_getVoiceID_getVoiceIDByLangGender(t *testing.T) {
 			name:     "exact match: japanese female",
 			language: "japanese",
 			gender:   streaming.GenderFemale,
-			expected: "yoZ06aMxZJJ28mfd3POQ",
+			expected: "PmgfHCGeS5b7sH90BOOJ",
 		},
 		{
 			name:     "fallback to neutral",
 			language: "french",
 			gender:   streaming.GenderNeutral,
-			expected: "EXAVITQu4vr4xnSDxMaL",
+			expected: "SmWACbi37pETyxxMhSpc",
 		},
 		{
 			name:     "language with region code, fallback works",
@@ -134,7 +134,7 @@ func Test_getVoiceID_getVoiceIDByLangGender(t *testing.T) {
 			name:     "case insensitivity",
 			language: "JAPANESE",
 			gender:   streaming.GenderMale,
-			expected: "21m00Tcm4TlvDq8ikWAM",
+			expected: "Mv8AjrYZCBkdsmDHNwcB",
 		},
 	}
 
