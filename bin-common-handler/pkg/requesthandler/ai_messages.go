@@ -23,19 +23,13 @@ func (r *requestHandler) AIV1MessageGetsByAIcallID(ctx context.Context, aicallID
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/messages", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []cbmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -61,19 +55,13 @@ func (r *requestHandler) AIV1MessageSend(ctx context.Context, aicallID uuid.UUID
 	}
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/messages", timeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cbmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -89,13 +77,9 @@ func (r *requestHandler) AIV1MessageGet(ctx context.Context, messageID uuid.UUID
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get conference. status: %d", tmp.StatusCode)
-	}
-
 	var res cbmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -108,19 +92,13 @@ func (r *requestHandler) AIV1MessageDelete(ctx context.Context, messageID uuid.U
 	uri := fmt.Sprintf("/v1/messages/%s", messageID)
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "ai/messages/<message-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cbmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

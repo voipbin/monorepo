@@ -78,11 +78,12 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gorilla/websocket v1.5.3
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.12.1
+	github.com/redis/go-redis/v9 v9.13.0
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.11.1
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
+	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4
 )
 
 require (
@@ -124,6 +125,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
+	github.com/grafana/regexp v0.0.0-20240518133315-a468a5bfb3bc // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -131,7 +133,7 @@ require (
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.65.0 // indirect
+	github.com/prometheus/common v0.66.0 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/sagikazarmark/locafero v0.10.0 // indirect
@@ -159,6 +161,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20250826171959-ef028d996bc1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250826171959-ef028d996bc1 // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
@@ -169,7 +172,6 @@ require (
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984 // indirect
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
-	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268 // indirect
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183 // indirect
