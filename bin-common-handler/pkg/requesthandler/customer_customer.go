@@ -21,23 +21,17 @@ import (
 func (r *requestHandler) CustomerV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", customerID)
 
-	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData cscustomer.Customer
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // CustomerV1CustomerGets sends a request to customer-manager
@@ -49,23 +43,17 @@ func (r *requestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken s
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData []cscustomer.Customer
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return resData, nil
+	var res []cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }
 
 // CustomerV1CustomerCreate sends the request to create the customer
@@ -98,44 +86,36 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData cscustomer.Customer
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+
 }
 
 // CustomerV1CustomerDelete sends the request to delete the customer
 func (r *requestHandler) CustomerV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", id)
 
-	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodDelete, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData cscustomer.Customer
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodDelete, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+
 }
 
 // CustomerV1CustomerUpdate sends a request to customer-manager
@@ -168,22 +148,17 @@ func (r *requestHandler) CustomerV1CustomerUpdate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPut, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData cscustomer.Customer
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPut, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // CustomerV1CustomerIsValidBalance sends a request to customer-manager
@@ -202,22 +177,17 @@ func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, c
 		return false, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/<customer-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return false, err
-	case res == nil:
-		return false, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return false, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData csresponse.V1ResponseCustomersIDIsValidBalancePost
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/<customer-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return false, err
 	}
 
-	return resData.Valid, nil
+	var res csresponse.V1ResponseCustomersIDIsValidBalancePost
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return false, errParse
+	}
+
+	return res.Valid, nil
 }
 
 // CustomerV1CustomerUpdateBillingAccountID sends a request to customer-manager
@@ -234,20 +204,15 @@ func (r *requestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Co
 		return nil, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPut, "customer/customers/<customer-id>/billing_account_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData cscustomer.Customer
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPut, "customer/customers/<customer-id>/billing_account_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }

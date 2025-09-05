@@ -2,7 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"monorepo/bin-common-handler/models/sock"
@@ -16,19 +15,15 @@ func (r *requestHandler) FlowV1ActionGet(ctx context.Context, flowID, actionID u
 
 	uri := fmt.Sprintf("/flows/%s/actions/%s", flowID, actionID)
 
-	res, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodGet, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodGet, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	if res.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get action. status: %d", res.StatusCode)
+	var res action.Action
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
-	var action action.Action
-	if err := json.Unmarshal([]byte(res.Data), &action); err != nil {
-		return nil, err
-	}
-
-	return &action, nil
+	return &res, nil
 }

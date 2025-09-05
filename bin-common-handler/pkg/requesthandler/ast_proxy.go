@@ -3,7 +3,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/pkg/errors"
@@ -24,12 +23,14 @@ func (r *requestHandler) AstProxyRecordingFileMove(ctx context.Context, asterisk
 		return errors.Wrapf(err, "failed to marshal data")
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/proxy/recording_file_move", timeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/proxy/recording_file_move", timeout, 0, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }

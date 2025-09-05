@@ -50,19 +50,13 @@ func (r *requestHandler) CallV1GroupcallCreate(
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmgroupcall.Groupcall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -78,19 +72,13 @@ func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, pageToken stri
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/groupcalls", 30000, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []cmgroupcall.Groupcall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -103,19 +91,13 @@ func (r *requestHandler) CallV1GroupcallGet(ctx context.Context, groupcallID uui
 	uri := fmt.Sprintf("/v1/groupcalls/%s", groupcallID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/groupcalls/<groupcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmgroupcall.Groupcall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -128,19 +110,13 @@ func (r *requestHandler) CallV1GroupcallDelete(ctx context.Context, groupcallID 
 	uri := fmt.Sprintf("/v1/groupcalls/%s", groupcallID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/groupcalls/<groupcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmgroupcall.Groupcall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -153,19 +129,13 @@ func (r *requestHandler) CallV1GroupcallHangup(ctx context.Context, groupcallID 
 	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup", groupcallID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmgroupcall.Groupcall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -189,19 +159,13 @@ func (r *requestHandler) CallV1GroupcallUpdateAnswerGroupcallID(ctx context.Cont
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/answer_groupcall_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmgroupcall.Groupcall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -214,14 +178,12 @@ func (r *requestHandler) CallV1GroupcallHangupOthers(ctx context.Context, groupc
 	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup_others", groupcallID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_others", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -234,14 +196,12 @@ func (r *requestHandler) CallV1GroupcallHangupCall(ctx context.Context, groupcal
 	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup_call", groupcallID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_call", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -254,14 +214,12 @@ func (r *requestHandler) CallV1GroupcallHangupGroupcall(ctx context.Context, gro
 	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup_groupcall", groupcallID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_groupcall", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

@@ -24,13 +24,9 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get conference. status: %d", tmp.StatusCode)
-	}
-
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -46,19 +42,13 @@ func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, pageTok
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodGet, "conference/conferences", 30000, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -71,19 +61,13 @@ func (r *requestHandler) ConferenceV1ConferenceDelete(ctx context.Context, confe
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodDelete, "conference/conferences/<conference-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -95,15 +79,13 @@ func (r *requestHandler) ConferenceV1ConferenceDelete(ctx context.Context, confe
 func (r *requestHandler) ConferenceV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestConference(ctx, uri, sock.RequestMethodDelete, "conference/conferences", requestTimeoutDefault, delay, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodDelete, "conference/conferences", requestTimeoutDefault, delay, ContentTypeNone, nil)
+	if err != nil {
 		return err
-	case res == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -117,18 +99,13 @@ func (r *requestHandler) ConferenceV1ConferenceStop(ctx context.Context, confere
 	uri := fmt.Sprintf("/v1/conferences/%s/stop", conferenceID)
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferences/<conference-id>", requestTimeoutDefault, delay, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, nil
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -171,19 +148,13 @@ func (r *requestHandler) ConferenceV1ConferenceCreate(
 	}
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferences", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -219,19 +190,13 @@ func (r *requestHandler) ConferenceV1ConferenceUpdate(
 	}
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPut, "conference/conferences", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -253,19 +218,13 @@ func (r *requestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Con
 	}
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPut, "conference/conferences", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -297,19 +256,13 @@ func (r *requestHandler) ConferenceV1ConferenceRecordingStart(
 	}
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferences/<conference-id>/recording_start", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -322,19 +275,13 @@ func (r *requestHandler) ConferenceV1ConferenceRecordingStop(ctx context.Context
 	uri := fmt.Sprintf("/v1/conferences/%s/recording_stop", conferenceID.String())
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferences/<conference-id>/recording_stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -356,19 +303,13 @@ func (r *requestHandler) ConferenceV1ConferenceTranscribeStart(ctx context.Conte
 	}
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferences/<conference-id>/transdribe_start", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -381,19 +322,13 @@ func (r *requestHandler) ConferenceV1ConferenceTranscribeStop(ctx context.Contex
 	uri := fmt.Sprintf("/v1/conferences/%s/transcribe_stop", conferenceID.String())
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferences/<conference-id>/transcribe_stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

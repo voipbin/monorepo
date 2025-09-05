@@ -2,7 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"monorepo/bin-common-handler/models/sock"
@@ -18,23 +17,17 @@ import (
 func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
-	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/recording", requestTimeout, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var data smbucketfile.BucketFile
-	if err := json.Unmarshal([]byte(res.Data), &data); err != nil {
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/recording", requestTimeout, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return &data, nil
+	var res smbucketfile.BucketFile
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // StorageV1RecordingDelete sends a request to storage-manager
@@ -43,15 +36,13 @@ func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID
 func (r *requestHandler) StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/recordings/%s", recordingID)
 
-	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodDelete, "storage/recording", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodDelete, "storage/recording", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return err
-	case res == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

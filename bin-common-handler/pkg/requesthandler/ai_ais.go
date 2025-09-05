@@ -23,19 +23,13 @@ func (r *requestHandler) AIV1AIGets(ctx context.Context, pageToken string, pageS
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/ais", 30000, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []amai.AI
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -51,13 +45,9 @@ func (r *requestHandler) AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*amai.A
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get conference. status: %d", tmp.StatusCode)
-	}
-
 	var res amai.AI
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -96,19 +86,13 @@ func (r *requestHandler) AIV1AICreate(
 	}
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/ais", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amai.AI
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -121,19 +105,13 @@ func (r *requestHandler) AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*ama
 	uri := fmt.Sprintf("/v1/ais/%s", aiID)
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "ai/ais/<ai-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amai.AI
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -171,19 +149,13 @@ func (r *requestHandler) AIV1AIUpdate(
 	}
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPut, "ai/ais/<ai-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amai.AI
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

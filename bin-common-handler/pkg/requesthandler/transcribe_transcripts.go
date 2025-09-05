@@ -2,7 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -20,19 +19,13 @@ func (r *requestHandler) TranscribeV1TranscriptGets(ctx context.Context, pageTok
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodGet, "transcribe/transcripts", 30000, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []tmtranscript.Transcript
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil

@@ -21,19 +21,13 @@ func (r *requestHandler) AIV1SummaryGets(ctx context.Context, pageToken string, 
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/summaries", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []amsummary.Summary
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -72,19 +66,13 @@ func (r *requestHandler) AIV1SummaryCreate(
 	}
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/summaries", timeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amsummary.Summary
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -100,13 +88,9 @@ func (r *requestHandler) AIV1SummaryGet(ctx context.Context, summaryID uuid.UUID
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get conference. status: %d", tmp.StatusCode)
-	}
-
 	var res amsummary.Summary
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -119,19 +103,13 @@ func (r *requestHandler) AIV1SummaryDelete(ctx context.Context, aiID uuid.UUID) 
 	uri := fmt.Sprintf("/v1/summaries/%s", aiID)
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "ai/summaries/<summary-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amsummary.Summary
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

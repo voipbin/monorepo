@@ -49,19 +49,13 @@ func (r *requestHandler) StorageV1FileCreate(
 	}
 
 	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/files", requestTimeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res smfile.File
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -103,8 +97,16 @@ func (r *requestHandler) StorageV1FileCreateWithDelay(
 		return err
 	}
 
-	_, err = r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/files", requestTimeoutDefault, delay, ContentTypeJSON, m)
-	return err
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/files", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	if err != nil {
+		return err
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
+	return nil
 }
 
 // StorageV1FileGets sends a request to storage-manager
@@ -117,19 +119,13 @@ func (r *requestHandler) StorageV1FileGets(ctx context.Context, pageToken string
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/files", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []smfile.File
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -141,23 +137,17 @@ func (r *requestHandler) StorageV1FileGets(ctx context.Context, pageToken string
 func (r *requestHandler) StorageV1FileGet(ctx context.Context, fileID uuid.UUID) (*smfile.File, error) {
 	uri := fmt.Sprintf("/v1/files/%s", fileID)
 
-	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/files/<file-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var data smfile.File
-	if err := json.Unmarshal([]byte(res.Data), &data); err != nil {
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/files/<file-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return &data, nil
+	var res smfile.File
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // StorageV1FileDelete sends a request to storage-manager
@@ -166,21 +156,15 @@ func (r *requestHandler) StorageV1FileGet(ctx context.Context, fileID uuid.UUID)
 func (r *requestHandler) StorageV1FileDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smfile.File, error) {
 	uri := fmt.Sprintf("/v1/files/%s", fileID)
 
-	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodDelete, "storage/files/<file-id>", requestTimeout, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var data smfile.File
-	if err := json.Unmarshal([]byte(res.Data), &data); err != nil {
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodDelete, "storage/files/<file-id>", requestTimeout, 0, ContentTypeNone, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return &data, nil
+	var res smfile.File
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }

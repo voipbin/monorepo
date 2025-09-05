@@ -23,18 +23,13 @@ func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, pageToken str
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -47,19 +42,13 @@ func (r *requestHandler) QueueV1QueuecallGet(ctx context.Context, queuecallID uu
 	uri := fmt.Sprintf("/v1/queuecalls/%s", queuecallID)
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queuecalls/<queuecall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -72,19 +61,13 @@ func (r *requestHandler) QueueV1QueuecallGetByReferenceID(ctx context.Context, r
 	uri := fmt.Sprintf("/v1/queuecalls/reference_id/%s", referenceID)
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queuecalls/<queuecall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -96,19 +79,13 @@ func (r *requestHandler) QueueV1QueuecallDelete(ctx context.Context, queuecallID
 	uri := fmt.Sprintf("/v1/queuecalls/%s", queuecallID)
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodDelete, "queue/queuecalls/<queuecall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -120,19 +97,13 @@ func (r *requestHandler) QueueV1QueuecallKick(ctx context.Context, queuecallID u
 	uri := fmt.Sprintf("/v1/queuecalls/%s/kick", queuecallID)
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/kick", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -144,19 +115,13 @@ func (r *requestHandler) QueueV1QueuecallKickByReferenceID(ctx context.Context, 
 	uri := fmt.Sprintf("/v1/queuecalls/reference_id/%s/kick", referenceID)
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/reference_id/<reference-id>/kick", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -168,15 +133,15 @@ func (r *requestHandler) QueueV1QueuecallKickByReferenceID(ctx context.Context, 
 func (r *requestHandler) QueueV1QueuecallTimeoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/timeout_wait", queuecallID)
 
-	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/timeout_wait", requestTimeoutDefault, delay, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/timeout_wait", requestTimeoutDefault, delay, ContentTypeNone, nil)
+	if err != nil {
 		return err
-	case res == nil:
-		return nil
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -186,15 +151,15 @@ func (r *requestHandler) QueueV1QueuecallTimeoutWait(ctx context.Context, queuec
 func (r *requestHandler) QueueV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/timeout_service", queuecallID)
 
-	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/timeout_service", requestTimeoutDefault, delay, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/timeout_service", requestTimeoutDefault, delay, ContentTypeNone, nil)
+	if err != nil {
 		return err
-	case res == nil:
-		return nil
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -203,19 +168,13 @@ func (r *requestHandler) QueueV1QueuecallUpdateStatusWaiting(ctx context.Context
 	uri := fmt.Sprintf("/v1/queuecalls/%s/status_waiting", queuecallID)
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -235,19 +194,13 @@ func (r *requestHandler) QueueV1QueuecallExecute(ctx context.Context, queuecallI
 	}
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -266,14 +219,14 @@ func (r *requestHandler) QueueV1QueuecallHealthCheck(ctx context.Context, id uui
 		return err
 	}
 
-	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res == nil:
-		return nil
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }

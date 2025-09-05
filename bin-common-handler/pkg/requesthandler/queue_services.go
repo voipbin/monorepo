@@ -3,7 +3,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/models/sock"
@@ -32,19 +31,13 @@ func (r *requestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, q
 	}
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/services/type/queuecall", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res service.Service
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

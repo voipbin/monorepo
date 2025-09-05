@@ -20,19 +20,13 @@ func (r *requestHandler) TranscribeV1TranscribeGet(ctx context.Context, transcri
 	uri := fmt.Sprintf("/v1/transcribes/%s", transcribeID)
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodGet, "transcribe/transcribes/<transcribe-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res tmtranscribe.Transcribe
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -48,19 +42,13 @@ func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageTok
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodGet, "transcribe/transcribes", 30000, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []tmtranscribe.Transcribe
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -98,19 +86,13 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 	}
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes", timeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res tmtranscribe.Transcribe
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -123,19 +105,13 @@ func (r *requestHandler) TranscribeV1TranscribeStop(ctx context.Context, transcr
 	uri := fmt.Sprintf("/v1/transcribes/%s/stop", transcribeID)
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes", 30000, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res tmtranscribe.Transcribe
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -147,19 +123,13 @@ func (r *requestHandler) TranscribeV1TranscribeDelete(ctx context.Context, trans
 	uri := fmt.Sprintf("/v1/transcribes/%s", transcribeID)
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodDelete, "transcribe/transcribes/<transcribe-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res tmtranscribe.Transcribe
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -182,14 +152,14 @@ func (r *requestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, 
 		return err
 	}
 
-	res, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes/<transcribe-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes/<transcribe-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res == nil:
-		return nil
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }

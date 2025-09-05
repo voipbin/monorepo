@@ -28,19 +28,13 @@ func (r *requestHandler) StorageV1AccountCreate(ctx context.Context, customerID 
 	}
 
 	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res smaccount.Account
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -56,19 +50,13 @@ func (r *requestHandler) StorageV1AccountGets(ctx context.Context, pageToken str
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/accounts", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []smaccount.Account
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -80,23 +68,17 @@ func (r *requestHandler) StorageV1AccountGets(ctx context.Context, pageToken str
 func (r *requestHandler) StorageV1AccountGet(ctx context.Context, accountID uuid.UUID) (*smaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
-	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var data smaccount.Account
-	if err := json.Unmarshal([]byte(res.Data), &data); err != nil {
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return &data, nil
+	var res smaccount.Account
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // StorageV1AccountDelete sends a request to storage-manager
@@ -105,21 +87,15 @@ func (r *requestHandler) StorageV1AccountGet(ctx context.Context, accountID uuid
 func (r *requestHandler) StorageV1AccountDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", fileID)
 
-	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodDelete, "storage/accounts/<account-id>", requestTimeout, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var data smaccount.Account
-	if err := json.Unmarshal([]byte(res.Data), &data); err != nil {
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodDelete, "storage/accounts/<account-id>", requestTimeout, 0, ContentTypeNone, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return &data, nil
+	var res smaccount.Account
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }

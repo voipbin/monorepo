@@ -63,7 +63,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/prometheus/client_golang v1.23.0
+	github.com/prometheus/client_golang v1.23.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.1
@@ -83,7 +83,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/pebbe/zmq4 v1.4.0
-	github.com/pion/rtp v1.8.21
+	github.com/pion/rtp v1.8.22
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.20.1
@@ -117,7 +117,7 @@ require (
 
 require (
 	cel.dev/expr v0.24.0 // indirect
-	cloud.google.com/go v0.121.6 // indirect
+	cloud.google.com/go v0.122.0 // indirect
 	cloud.google.com/go/auth v0.16.5 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.8.0 // indirect
@@ -169,6 +169,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
+	github.com/grafana/regexp v0.0.0-20240518133315-a468a5bfb3bc // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -183,7 +184,7 @@ require (
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.65.0 // indirect
+	github.com/prometheus/common v0.66.0 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/sagikazarmark/locafero v0.10.0 // indirect
@@ -213,6 +214,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250826171959-ef028d996bc1 // indirect
 	google.golang.org/grpc v1.75.0 // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect

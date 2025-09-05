@@ -53,7 +53,7 @@ replace monorepo/bin-tts-manager => ../bin-tts-manager
 replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
-	cloud.google.com/go v0.121.6 // indirect
+	cloud.google.com/go v0.122.0 // indirect
 	cloud.google.com/go/speech v1.28.0
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.5
@@ -61,8 +61,8 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/prometheus/client_golang v1.23.0
-	github.com/prometheus/common v0.65.0 // indirect
+	github.com/prometheus/client_golang v1.23.1
+	github.com/prometheus/common v0.66.0 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
@@ -86,9 +86,9 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.38.3
 	github.com/aws/aws-sdk-go-v2/config v1.31.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.10
-	github.com/aws/aws-sdk-go-v2/service/transcribestreaming v1.31.2
+	github.com/aws/aws-sdk-go-v2/service/transcribestreaming v1.32.0
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/pflag v1.0.9
+	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.11.1
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
@@ -126,6 +126,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
+	github.com/grafana/regexp v0.0.0-20240518133315-a468a5bfb3bc // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -152,6 +153,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20250826171959-ef028d996bc1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250826171959-ef028d996bc1 // indirect
 	google.golang.org/grpc v1.75.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect

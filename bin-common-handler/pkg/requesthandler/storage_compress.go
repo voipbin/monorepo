@@ -3,7 +3,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"monorepo/bin-common-handler/models/sock"
 	smcompressfile "monorepo/bin-storage-manager/models/compressfile"
 	smrequest "monorepo/bin-storage-manager/pkg/listenhandler/models/request"
@@ -29,19 +28,13 @@ func (r *requestHandler) StorageV1CompressfileCreate(ctx context.Context, refere
 	}
 
 	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/compressfiles", requestTimeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res smcompressfile.CompressFile
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

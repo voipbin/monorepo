@@ -3,7 +3,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"monorepo/bin-common-handler/models/sock"
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
@@ -29,13 +28,13 @@ func (r *requestHandler) WebhookV1WebhookSend(ctx context.Context, customerID uu
 		return err
 	}
 
-	res, err := r.sendRequestWebhook(ctx, uri, sock.RequestMethodPost, "webhook/webhooks", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestWebhook(ctx, uri, sock.RequestMethodPost, "webhook/webhooks", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
 
-	if res.StatusCode >= 299 {
-		return fmt.Errorf("could not send an webhook. status: %d", res.StatusCode)
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -57,13 +56,13 @@ func (r *requestHandler) WebhookV1WebhookSendToDestination(ctx context.Context, 
 		return err
 	}
 
-	res, err := r.sendRequestWebhook(ctx, uri, sock.RequestMethodPost, "webhook/webhooks", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestWebhook(ctx, uri, sock.RequestMethodPost, "webhook/webhooks", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
 
-	if res.StatusCode >= 299 {
-		return fmt.Errorf("could not send the webhook. status: %d", res.StatusCode)
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

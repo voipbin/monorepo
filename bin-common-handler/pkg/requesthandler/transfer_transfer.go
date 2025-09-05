@@ -3,7 +3,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 	tmrequest "monorepo/bin-transfer-manager/pkg/listenhandler/models/request"
@@ -32,19 +31,13 @@ func (r *requestHandler) TransferV1TransferStart(ctx context.Context, transferTy
 	}
 
 	tmp, err := r.sendRequestTransfer(ctx, uri, sock.RequestMethodPost, "transfer/transfer", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res tmtransfer.Transfer
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

@@ -20,14 +20,13 @@ func (r *requestHandler) CallV1ChannelHealth(ctx context.Context, channelID stri
 		return err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/channels/health", requestTimeoutDefault, delay, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/channels/health", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res == nil:
-		return nil
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

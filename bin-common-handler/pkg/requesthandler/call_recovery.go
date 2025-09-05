@@ -3,7 +3,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
 )
@@ -23,14 +22,12 @@ func (r *requestHandler) CallV1RecoveryStart(ctx context.Context, asteriskID str
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/recovery", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

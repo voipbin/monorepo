@@ -3,7 +3,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/models/sock"
@@ -38,19 +37,13 @@ func (r *requestHandler) ConferenceV1ServiceTypeConferencecallStart(
 	}
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/services/type/conferencecall", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res service.Service
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

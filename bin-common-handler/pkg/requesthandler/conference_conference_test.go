@@ -235,44 +235,40 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 		expectRes     *cfconference.Conference
 	}{
 		{
-			"normal",
-			uuid.FromStringOrNil("9df75377-cffe-448a-825e-7afc7f86f9e6"),
-			0,
+			name:         "normal",
+			conferenceID: uuid.FromStringOrNil("9df75377-cffe-448a-825e-7afc7f86f9e6"),
+			delay:        0,
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9df75377-cffe-448a-825e-7afc7f86f9e6"}`),
 			},
 
-			"bin-manager.conference-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.conference-manager.request",
+			expectRequest: &sock.Request{
 				URI:    "/v1/conferences/9df75377-cffe-448a-825e-7afc7f86f9e6/stop",
 				Method: sock.RequestMethodPost,
 			},
-			&cfconference.Conference{
+			expectRes: &cfconference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("9df75377-cffe-448a-825e-7afc7f86f9e6"),
 				},
 			},
 		},
 		{
-			"delay stop",
-			uuid.FromStringOrNil("7b85487d-d251-44e6-b7c6-8cee606c9d00"),
-			100000,
+			name:         "delay stop",
+			conferenceID: uuid.FromStringOrNil("7b85487d-d251-44e6-b7c6-8cee606c9d00"),
+			delay:        100000,
 
-			&sock.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"7b85487d-d251-44e6-b7c6-8cee606c9d00"}`),
-			},
+			response: nil,
 
-			"bin-manager.conference-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.conference-manager.request",
+			expectRequest: &sock.Request{
 				URI:    "/v1/conferences/7b85487d-d251-44e6-b7c6-8cee606c9d00/stop",
 				Method: sock.RequestMethodPost,
 			},
-			nil,
+			expectRes: &cfconference.Conference{},
 		},
 	}
 

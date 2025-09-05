@@ -37,19 +37,13 @@ func (r *requestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID 
 	}
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPost, "registrar/trunks", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res rmtrunk.Trunk
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -65,19 +59,13 @@ func (r *requestHandler) RegistrarV1TrunkGets(ctx context.Context, pageToken str
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/trunks", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []rmtrunk.Trunk
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -90,19 +78,13 @@ func (r *requestHandler) RegistrarV1TrunkGet(ctx context.Context, trunkID uuid.U
 	uri := fmt.Sprintf("/v1/trunks/%s", trunkID)
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/trunks/<trunk-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res rmtrunk.Trunk
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -115,19 +97,13 @@ func (r *requestHandler) RegistrarV1TrunkGetByDomainName(ctx context.Context, do
 	uri := fmt.Sprintf("/v1/trunks/domain_name/%s", domainName)
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/trunks/domain_name", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res rmtrunk.Trunk
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -140,19 +116,13 @@ func (r *requestHandler) RegistrarV1TrunkDelete(ctx context.Context, trunkID uui
 	uri := fmt.Sprintf("/v1/trunks/%s", trunkID)
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodDelete, "registrar/trunks/<trunk-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res rmtrunk.Trunk
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -179,19 +149,13 @@ func (r *requestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, tr
 	}
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPut, "registrar/trunks/<trunk-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res rmtrunk.Trunk
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

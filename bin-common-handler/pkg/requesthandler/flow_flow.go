@@ -39,13 +39,9 @@ func (r *requestHandler) FlowV1FlowCreate(ctx context.Context, customerID uuid.U
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not create flow. status: %d", tmp.StatusCode)
-	}
-
 	var res fmflow.Flow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -58,19 +54,13 @@ func (r *requestHandler) FlowV1FlowGet(ctx context.Context, flowID uuid.UUID) (*
 	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodGet, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res fmflow.Flow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -82,19 +72,13 @@ func (r *requestHandler) FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID)
 	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodDelete, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res fmflow.Flow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -118,19 +102,13 @@ func (r *requestHandler) FlowV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (
 	}
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPut, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res fmflow.Flow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -152,19 +130,13 @@ func (r *requestHandler) FlowV1FlowUpdateActions(ctx context.Context, flowID uui
 	}
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPut, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res fmflow.Flow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -182,19 +154,13 @@ func (r *requestHandler) FlowV1FlowGets(ctx context.Context, pageToken string, p
 	}
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodGet, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []fmflow.Flow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil

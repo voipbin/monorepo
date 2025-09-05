@@ -54,19 +54,13 @@ func (r *requestHandler) AgentV1AgentCreate(
 	}
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPost, "agent/agents", timeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -79,19 +73,13 @@ func (r *requestHandler) AgentV1AgentGet(ctx context.Context, agentID uuid.UUID)
 	uri := fmt.Sprintf("/v1/agents/%s", agentID)
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodGet, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -113,19 +101,13 @@ func (r *requestHandler) AgentV1AgentGetByCustomerIDAndAddress(ctx context.Conte
 	}
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPost, "agent/agents/get_by_customer_id_address", timeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -141,19 +123,13 @@ func (r *requestHandler) AgentV1AgentGets(ctx context.Context, pageToken string,
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -176,19 +152,13 @@ func (r *requestHandler) AgentV1AgentGetsByTagIDs(ctx context.Context, customerI
 	uri := fmt.Sprintf("/v1/agents?customer_id=%s&tag_ids=%s", customerID, tagStr)
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -211,19 +181,13 @@ func (r *requestHandler) AgentV1AgentGetsByTagIDsAndStatus(ctx context.Context, 
 	uri := fmt.Sprintf("/v1/agents?customer_id=%s&tag_ids=%s&status=%s", customerID, tagStr, status)
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -236,19 +200,13 @@ func (r *requestHandler) AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (
 	uri := fmt.Sprintf("/v1/agents/%s", id)
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodDelete, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -270,19 +228,13 @@ func (r *requestHandler) AgentV1AgentUpdateAddresses(ctx context.Context, id uui
 	}
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPut, "agent/agents/<agent-id>/addresses", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -305,19 +257,13 @@ func (r *requestHandler) AgentV1AgentUpdatePassword(ctx context.Context, timeout
 	}
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPut, "agent/agents/<agent-id>/password", timeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -341,19 +287,13 @@ func (r *requestHandler) AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, n
 	}
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPut, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -375,19 +315,13 @@ func (r *requestHandler) AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.U
 	}
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPut, "agent/agents/<agent-id>/tag_ids", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -409,19 +343,13 @@ func (r *requestHandler) AgentV1AgentUpdateStatus(ctx context.Context, id uuid.U
 	}
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPut, "agent/agents/<agent-id>/status", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -443,19 +371,13 @@ func (r *requestHandler) AgentV1AgentUpdatePermission(ctx context.Context, id uu
 	}
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPut, "agent/agents/<agent-id>/permission", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

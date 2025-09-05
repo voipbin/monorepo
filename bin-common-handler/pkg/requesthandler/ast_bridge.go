@@ -35,13 +35,15 @@ func (r *requestHandler) AstBridgeCreate(ctx context.Context, asteriskID, bridge
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -49,13 +51,15 @@ func (r *requestHandler) AstBridgeCreate(ctx context.Context, asteriskID, bridge
 func (r *requestHandler) AstBridgeDelete(ctx context.Context, asteriskID, bridgeID string) error {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodDelete, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodDelete, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -63,20 +67,17 @@ func (r *requestHandler) AstBridgeDelete(ctx context.Context, asteriskID, bridge
 func (r *requestHandler) AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*cmbridge.Bridge, error) {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodGet, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	tmpBridge, err := cmari.ParseBridge([]byte(res.Data))
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodGet, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	bridge := cmbridge.NewBridgeByARIBridge(tmpBridge)
+	var tmpBridge cmari.Bridge
+	if errParse := parseResponse(tmp, &tmpBridge); errParse != nil {
+		return nil, errParse
+	}
+
+	bridge := cmbridge.NewBridgeByARIBridge(&tmpBridge)
 	return bridge, nil
 }
 
@@ -101,13 +102,15 @@ func (r *requestHandler) AstBridgeAddChannel(ctx context.Context, asteriskID, br
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/addchannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/addchannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -126,13 +129,15 @@ func (r *requestHandler) AstBridgeRemoveChannel(ctx context.Context, asteriskID,
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/removechannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/removechannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -163,13 +168,15 @@ func (r *requestHandler) AstBridgeRecord(ctx context.Context, asteriskID string,
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/record", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/record", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -205,18 +212,15 @@ func (r *requestHandler) AstBridgePlay(
 		return nil, err
 	}
 
-	resp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/play", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case resp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", resp.StatusCode)
-	}
-
-	res, err := cmari.ParsePlayback([]byte(resp.Data))
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/play", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
 
-	return res, nil
+	var res cmari.Playback
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }

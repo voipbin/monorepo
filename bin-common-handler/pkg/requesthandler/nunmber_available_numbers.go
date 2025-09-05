@@ -2,7 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"monorepo/bin-common-handler/models/sock"
@@ -16,20 +15,15 @@ import (
 func (r *requestHandler) NumberV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error) {
 	uri := fmt.Sprintf("/v1/available_numbers?page_size=%d&customer_id=%s&country_code=%s", pageSize, customerID, countryCode)
 
-	res, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodGet, "number/available-number", 15000, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var data []nmavailablenumber.AvailableNumber
-	if err := json.Unmarshal([]byte(res.Data), &data); err != nil {
+	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodGet, "number/available-number", 15000, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return data, nil
+	var res []nmavailablenumber.AvailableNumber
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }

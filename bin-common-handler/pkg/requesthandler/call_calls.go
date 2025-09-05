@@ -34,15 +34,15 @@ func (r *requestHandler) CallV1CallHealth(ctx context.Context, id uuid.UUID, del
 		return err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/health", requestTimeoutDefault, delay, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/health", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res == nil:
-		return nil
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -61,15 +61,15 @@ func (r *requestHandler) CallV1CallActionTimeout(ctx context.Context, id uuid.UU
 		return err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/action-timeout", requestTimeoutDefault, delay, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/action-timeout", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res == nil:
-		return nil
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -86,15 +86,15 @@ func (r *requestHandler) CallV1CallActionNext(ctx context.Context, callID uuid.U
 		return err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/action-next", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/action-next", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res == nil:
-		return nil
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -127,19 +127,13 @@ func (r *requestHandler) CallV1CallsCreate(
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, nil, err
-	case tmp == nil:
-		// not found
-		return nil, nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	res := &cmresponse.V1ResponseCallsPost{}
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, nil, err
+	var res cmresponse.V1ResponseCallsPost
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, nil, errParse
 	}
 
 	return res.Calls, res.Groupcalls, nil
@@ -178,23 +172,17 @@ func (r *requestHandler) CallV1CallCreateWithID(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var c cmcall.Call
-	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	var res cmcall.Call
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // CallV1CallGet sends a request to call-manager
@@ -204,19 +192,13 @@ func (r *requestHandler) CallV1CallGet(ctx context.Context, callID uuid.UUID) (*
 	uri := fmt.Sprintf("/v1/calls/%s", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/calls", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmcall.Call
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -232,19 +214,13 @@ func (r *requestHandler) CallV1CallGets(ctx context.Context, pageToken string, p
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/calls", 30000, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []cmcall.Call
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -257,19 +233,13 @@ func (r *requestHandler) CallV1CallDelete(ctx context.Context, callID uuid.UUID)
 	uri := fmt.Sprintf("/v1/calls/%s", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmcall.Call
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -282,19 +252,13 @@ func (r *requestHandler) CallV1CallHangup(ctx context.Context, callID uuid.UUID)
 	uri := fmt.Sprintf("/v1/calls/%s/hangup", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmcall.Call
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -313,23 +277,17 @@ func (r *requestHandler) CallV1CallAddChainedCall(ctx context.Context, callID uu
 		return nil, err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var c cmcall.Call
-	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	var res cmcall.Call
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // CallV1CallRemoveChainedCall sends a request to call-manager
@@ -338,23 +296,17 @@ func (r *requestHandler) CallV1CallAddChainedCall(ctx context.Context, callID uu
 func (r *requestHandler) CallV1CallRemoveChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/chained-call-ids/%s", callID, chainedCallID)
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var c cmcall.Call
-	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	var res cmcall.Call
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // CallV1CallExternalMediaStart sends a request to call-manager
@@ -389,19 +341,13 @@ func (r *requestHandler) CallV1CallExternalMediaStart(
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmcall.Call
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -414,19 +360,13 @@ func (r *requestHandler) CallV1CallExternalMediaStop(ctx context.Context, callID
 	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls/<call-id>/external-media", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmcall.Call
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -438,23 +378,17 @@ func (r *requestHandler) CallV1CallExternalMediaStop(ctx context.Context, callID
 func (r *requestHandler) CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/digits", callID)
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return "", err
-	case res == nil:
-		// not found
-		return "", fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return "", fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData cmresponse.V1ResponseCallsIDDigitsGet
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return "", err
 	}
 
-	return resData.Digits, nil
+	var res cmresponse.V1ResponseCallsIDDigitsGet
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return "", errParse
+	}
+
+	return res.Digits, nil
 }
 
 // CallV1CallSendDigits sends a request to call-manager
@@ -470,15 +404,13 @@ func (r *requestHandler) CallV1CallSendDigits(ctx context.Context, callID uuid.U
 		return err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return err
-	case res == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -510,19 +442,13 @@ func (r *requestHandler) CallV1CallRecordingStart(
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/recording-start", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmcall.Call
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -535,19 +461,13 @@ func (r *requestHandler) CallV1CallRecordingStop(ctx context.Context, callID uui
 	uri := fmt.Sprintf("/v1/calls/%s/recording_stop", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/recording-stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmcall.Call
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -567,19 +487,13 @@ func (r *requestHandler) CallV1CallUpdateConfbridgeID(ctx context.Context, callI
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPut, "call/calls/<call-id>/confbirdge_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmcall.Call
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -602,14 +516,12 @@ func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, t
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/talk", rqeuestTimeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -629,14 +541,12 @@ func (r *requestHandler) CallV1CallPlay(ctx context.Context, callID uuid.UUID, m
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/play", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -649,14 +559,12 @@ func (r *requestHandler) CallV1CallMediaStop(ctx context.Context, callID uuid.UU
 	uri := fmt.Sprintf("/v1/calls/%s/media_stop", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/play", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -669,14 +577,12 @@ func (r *requestHandler) CallV1CallHoldOn(ctx context.Context, callID uuid.UUID)
 	uri := fmt.Sprintf("/v1/calls/%s/hold", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/hold", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -689,14 +595,12 @@ func (r *requestHandler) CallV1CallHoldOff(ctx context.Context, callID uuid.UUID
 	uri := fmt.Sprintf("/v1/calls/%s/hold", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls/<call-id>/hold", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -716,14 +620,12 @@ func (r *requestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID,
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/mute", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -743,14 +645,12 @@ func (r *requestHandler) CallV1CallMuteOff(ctx context.Context, callID uuid.UUID
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls/<call-id>/mute", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -763,14 +663,12 @@ func (r *requestHandler) CallV1CallMusicOnHoldOn(ctx context.Context, callID uui
 	uri := fmt.Sprintf("/v1/calls/%s/moh", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/moh", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -783,14 +681,12 @@ func (r *requestHandler) CallV1CallMusicOnHoldOff(ctx context.Context, callID uu
 	uri := fmt.Sprintf("/v1/calls/%s/moh", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls/<call-id>/moh", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -803,14 +699,12 @@ func (r *requestHandler) CallV1CallSilenceOn(ctx context.Context, callID uuid.UU
 	uri := fmt.Sprintf("/v1/calls/%s/silence", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/silence", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -823,14 +717,12 @@ func (r *requestHandler) CallV1CallSilenceOff(ctx context.Context, callID uuid.U
 	uri := fmt.Sprintf("/v1/calls/%s/silence", callID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls/<call-id>/silence", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

@@ -2,7 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -22,13 +21,9 @@ func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, customerID 
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get contact. status: %d", tmp.StatusCode)
-	}
-
 	var res []astcontact.AstContact
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -40,13 +35,12 @@ func (r *requestHandler) RegistrarV1ContactRefresh(ctx context.Context, customer
 	uri := fmt.Sprintf("/v1/contacts?customer_id=%s&extension=%s", customerID, url.QueryEscape(extension))
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPut, "call/channels/health", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		return nil
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

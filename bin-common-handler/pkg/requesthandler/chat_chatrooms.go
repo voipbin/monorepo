@@ -20,19 +20,13 @@ func (r *requestHandler) ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.
 	uri := fmt.Sprintf("/v1/chatrooms/%s", chatroomID)
 
 	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodGet, "chat/chatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res chatchatroom.Chatroom
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -48,19 +42,13 @@ func (r *requestHandler) ChatV1ChatroomGets(ctx context.Context, pageToken strin
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodGet, "chat/chatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []chatchatroom.Chatroom
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -73,19 +61,13 @@ func (r *requestHandler) ChatV1ChatroomDelete(ctx context.Context, chatroomID uu
 	uri := fmt.Sprintf("/v1/chatrooms/%s", chatroomID)
 
 	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodDelete, "chat/chatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res chatchatroom.Chatroom
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -107,19 +89,13 @@ func (r *requestHandler) ChatV1ChatroomUpdateBasicInfo(ctx context.Context, id u
 	}
 
 	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodPut, "chat/chats", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res chatchatroom.Chatroom
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

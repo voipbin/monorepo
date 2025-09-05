@@ -24,13 +24,9 @@ func (r *requestHandler) FlowV1VariableGet(ctx context.Context, variableID uuid.
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get variable. status: %d", tmp.StatusCode)
-	}
-
 	var res flowVariable.Variable
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -52,14 +48,12 @@ func (r *requestHandler) FlowV1VariableSetVariable(ctx context.Context, variable
 	}
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/variables", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -71,14 +65,12 @@ func (r *requestHandler) FlowV1VariableDeleteVariable(ctx context.Context, varia
 	uri := fmt.Sprintf("/v1/variables/%s/variables/%s", variableID, url.QueryEscape(key))
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodDelete, "flow/variables", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -100,21 +92,14 @@ func (r *requestHandler) FlowV1VariableSubstitute(ctx context.Context, variableI
 	}
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/variables/<variable-id>/substitute", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return "", err
-	case tmp == nil:
-		// not found
-		return "", fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return "", fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var tmpData fmresponse.V1ResponseVariablesIDSubstitutePost
-	if err := json.Unmarshal([]byte(tmp.Data), &tmpData); err != nil {
+	if err != nil {
 		return "", err
 	}
 
-	res := tmpData.Data
-	return res, nil
+	var res fmresponse.V1ResponseVariablesIDSubstitutePost
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return "", errParse
+	}
+
+	return res.Data, nil
 }

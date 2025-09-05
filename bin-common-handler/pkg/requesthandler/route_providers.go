@@ -44,19 +44,13 @@ func (r *requestHandler) RouteV1ProviderCreate(
 	}
 
 	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodPost, "route/providers", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res rmprovider.Provider
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -69,19 +63,13 @@ func (r *requestHandler) RouteV1ProviderGet(ctx context.Context, providerID uuid
 	uri := fmt.Sprintf("/v1/providers/%s", providerID)
 
 	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodGet, "route/providers/<provider-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res rmprovider.Provider
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -93,19 +81,13 @@ func (r *requestHandler) RouteV1ProviderDelete(ctx context.Context, providerID u
 	uri := fmt.Sprintf("/v1/providers/%s", providerID)
 
 	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodDelete, "route/providers/<provider-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res rmprovider.Provider
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -143,19 +125,13 @@ func (r *requestHandler) RouteV1ProviderUpdate(
 	}
 
 	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodPut, "route/providers/<provider-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res rmprovider.Provider
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -168,19 +144,13 @@ func (r *requestHandler) RouteV1ProviderGets(ctx context.Context, pageToken stri
 	uri := fmt.Sprintf("/v1/providers?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodGet, "route/providers", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []rmprovider.Provider
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
