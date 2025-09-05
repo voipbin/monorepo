@@ -3,7 +3,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"monorepo/bin-common-handler/models/sock"
 	hmhook "monorepo/bin-hook-manager/models/hook"
 )
@@ -23,8 +22,8 @@ func (r *requestHandler) EmailV1Hooks(ctx context.Context, hm *hmhook.Hook) erro
 		return err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return fmt.Errorf("could not send the message")
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

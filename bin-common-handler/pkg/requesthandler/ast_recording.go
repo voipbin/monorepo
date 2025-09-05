@@ -10,13 +10,15 @@ import (
 func (r *requestHandler) AstRecordingStop(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/stop", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/recording/<recording_name>/stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/recording/<recording_name>/stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -24,13 +26,15 @@ func (r *requestHandler) AstRecordingStop(ctx context.Context, asteriskID, recor
 func (r *requestHandler) AstRecordingPause(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/pause", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/recording/<recording_name>/pause", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/recording/<recording_name>/pause", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -38,13 +42,15 @@ func (r *requestHandler) AstRecordingPause(ctx context.Context, asteriskID, reco
 func (r *requestHandler) AstRecordingUnpause(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/pause", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodDelete, "ast/recording/<recording_name>/unpause", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodDelete, "ast/recording/<recording_name>/unpause", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -52,13 +58,15 @@ func (r *requestHandler) AstRecordingUnpause(ctx context.Context, asteriskID, re
 func (r *requestHandler) AstRecordingMute(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/mute", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/recording/<recording_name>/mute", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/recording/<recording_name>/mute", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }
 
@@ -66,12 +74,14 @@ func (r *requestHandler) AstRecordingMute(ctx context.Context, asteriskID, recor
 func (r *requestHandler) AstRecordingUnmute(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/mute", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodDelete, "ast/recording/<recording_name>/unmute", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodDelete, "ast/recording/<recording_name>/unmute", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
 		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
 	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
 	return nil
 }

@@ -26,22 +26,17 @@ func (r *requestHandler) QueueV1QueueGets(ctx context.Context, pageToken string,
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData []qmqueue.Queue
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return resData, nil
+	var res []qmqueue.Queue
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }
 
 // QueueV1QueueGet sends a request to queue-manager
@@ -51,19 +46,13 @@ func (r *requestHandler) QueueV1QueueGet(ctx context.Context, queueID uuid.UUID)
 	uri := fmt.Sprintf("/v1/queues/%s", queueID)
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueue.Queue
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -99,22 +88,17 @@ func (r *requestHandler) QueueV1QueueCreate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var c qmqueue.Queue
-	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	var res qmqueue.Queue
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // QueueV1QueueDelete sends a request to queue-manager
@@ -124,18 +108,13 @@ func (r *requestHandler) QueueV1QueueDelete(ctx context.Context, queueID uuid.UU
 	uri := fmt.Sprintf("/v1/queues/%s", queueID)
 
 	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodDelete, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueue.Queue
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -170,19 +149,14 @@ func (r *requestHandler) QueueV1QueueUpdate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues/<queue-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueue.Queue
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -201,19 +175,14 @@ func (r *requestHandler) QueueV1QueueUpdateTagIDs(ctx context.Context, queueID u
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues/<queue-id>/tag_ids", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueue.Queue
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -223,19 +192,14 @@ func (r *requestHandler) QueueV1QueueUpdateTagIDs(ctx context.Context, queueID u
 func (r *requestHandler) QueueV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/queues/%s/agents?status=%s", queueID, status)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues/<queue-id>/agents", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -254,19 +218,14 @@ func (r *requestHandler) QueueV1QueueUpdateRoutingMethod(ctx context.Context, qu
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues/<queue-id>/routing_method", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res qmqueue.Queue
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -295,23 +254,17 @@ func (r *requestHandler) QueueV1QueueCreateQueuecall(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var c qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &c); err != nil {
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues/<queue-id>/queuecalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	var res qmqueuecall.Queuecall
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // QueueV1QueueExecute sends the request to execute the queue.
@@ -319,14 +272,13 @@ func (r *requestHandler) QueueV1QueueCreateQueuecall(
 func (r *requestHandler) QueueV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
 	uri := fmt.Sprintf("/v1/queues/%s/execute_run", queueID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues", requestTimeoutDefault, executeDelay, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues/<queue-id>/execute_run", requestTimeoutDefault, executeDelay, ContentTypeJSON, nil)
+	if err != nil {
 		return err
-	case tmp == nil:
-		return nil
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -345,21 +297,15 @@ func (r *requestHandler) QueueV1QueueUpdateExecute(ctx context.Context, queueID 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var c qmqueue.Queue
-	if err := json.Unmarshal([]byte(tmp.Data), &c); err != nil {
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues/<queue-id>/execute", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	var res qmqueue.Queue
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }

@@ -25,13 +25,9 @@ func (r *requestHandler) ConversationV1MessageGet(ctx context.Context, messageID
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not send the message")
-	}
-
 	var res cvmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -55,19 +51,13 @@ func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversa
 	}
 
 	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPost, "conversation/messages", 30000, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cvmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -85,19 +75,13 @@ func (r *requestHandler) ConversationV1MessageGets(ctx context.Context, pageToke
 	}
 
 	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/messages", 30000, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []cvmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -140,19 +124,13 @@ func (r *requestHandler) ConversationV1MessageCreate(
 	}
 
 	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPost, "conversation/messages", 3000, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cvmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

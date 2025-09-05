@@ -31,19 +31,13 @@ func (r *requestHandler) TagV1TagCreate(ctx context.Context, customerID uuid.UUI
 	}
 
 	tmp, err := r.sendRequestTag(ctx, uri, sock.RequestMethodPost, "tag/tags", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res tmtag.Tag
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -66,19 +60,13 @@ func (r *requestHandler) TagV1TagUpdate(ctx context.Context, tagID uuid.UUID, na
 	}
 
 	tmp, err := r.sendRequestTag(ctx, uri, sock.RequestMethodPut, "tag/tags", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res tmtag.Tag
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -90,19 +78,13 @@ func (r *requestHandler) TagV1TagDelete(ctx context.Context, tagID uuid.UUID) (*
 	uri := fmt.Sprintf("/v1/tags/%s", tagID)
 
 	tmp, err := r.sendRequestTag(ctx, uri, sock.RequestMethodDelete, "tag/tags", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res tmtag.Tag
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -114,19 +96,13 @@ func (r *requestHandler) TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmt
 	uri := fmt.Sprintf("/v1/tags/%s", tagID)
 
 	tmp, err := r.sendRequestTag(ctx, uri, sock.RequestMethodGet, "tag/tags", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res tmtag.Tag
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -138,19 +114,13 @@ func (r *requestHandler) TagV1TagGets(ctx context.Context, customerID uuid.UUID,
 	uri := fmt.Sprintf("/v1/tags?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestTag(ctx, uri, sock.RequestMethodGet, "tag/tags", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []tmtag.Tag
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil

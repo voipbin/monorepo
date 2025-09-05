@@ -57,13 +57,9 @@ func (r *requestHandler) CampaignV1OutplanCreate(
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not create an campaign outplan. status: %d", tmp.StatusCode)
-	}
-
 	var res caoutplan.Outplan
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -76,19 +72,13 @@ func (r *requestHandler) CampaignV1OutplanGetsByCustomerID(ctx context.Context, 
 	uri := fmt.Sprintf("/v1/outplans?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/outplans", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []caoutplan.Outplan
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -101,19 +91,13 @@ func (r *requestHandler) CampaignV1OutplanGet(ctx context.Context, id uuid.UUID)
 	uri := fmt.Sprintf("/v1/outplans/%s", id)
 
 	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/outplans", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res caoutplan.Outplan
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -125,19 +109,13 @@ func (r *requestHandler) CampaignV1OutplanDelete(ctx context.Context, outplanID 
 	uri := fmt.Sprintf("/v1/outplans/%s", outplanID)
 
 	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodDelete, "campaign/outplans", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res caoutplan.Outplan
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -160,19 +138,13 @@ func (r *requestHandler) CampaignV1OutplanUpdateBasicInfo(ctx context.Context, i
 	}
 
 	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPut, "campaign/outplans", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res caoutplan.Outplan
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -212,19 +184,13 @@ func (r *requestHandler) CampaignV1OutplanUpdateDialInfo(
 	}
 
 	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPut, "campaign/outplans", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res caoutplan.Outplan
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

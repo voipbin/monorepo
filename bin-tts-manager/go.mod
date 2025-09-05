@@ -53,10 +53,10 @@ replace monorepo/bin-tts-manager => ../bin-tts-manager
 replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
-	cloud.google.com/go v0.121.6 // indirect
+	cloud.google.com/go v0.122.0 // indirect
 	cloud.google.com/go/storage v1.56.1
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
-	github.com/prometheus/client_golang v1.23.0
+	github.com/prometheus/client_golang v1.23.1
 	github.com/sirupsen/logrus v1.9.3
 	go.uber.org/mock v0.6.0
 	golang.org/x/oauth2 v0.30.0
@@ -68,7 +68,7 @@ require (
 )
 
 require (
-	cloud.google.com/go/texttospeech v1.13.0
+	cloud.google.com/go/texttospeech v1.14.0
 	github.com/CyCoreSystems/audiosocket v0.3.0
 	github.com/aws/aws-sdk-go-v2 v1.38.3
 	github.com/aws/aws-sdk-go-v2/config v1.31.6

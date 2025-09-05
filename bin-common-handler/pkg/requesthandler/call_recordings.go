@@ -22,23 +22,17 @@ func (r *requestHandler) CallV1RecordingGets(ctx context.Context, pageToken stri
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var recordings []cmrecording.Recording
-	if err := json.Unmarshal([]byte(res.Data), &recordings); err != nil {
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return recordings, nil
+	var res []cmrecording.Recording
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }
 
 // CallV1RecordingGet sends a request to call-manager
@@ -47,23 +41,17 @@ func (r *requestHandler) CallV1RecordingGets(ctx context.Context, pageToken stri
 func (r *requestHandler) CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var c cmrecording.Recording
-	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	var res cmrecording.Recording
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // CallV1RecordingDelete sends a request to call-manager
@@ -73,19 +61,13 @@ func (r *requestHandler) CallV1RecordingDelete(ctx context.Context, id uuid.UUID
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmrecording.Recording
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -124,19 +106,13 @@ func (r *requestHandler) CallV1RecordingStart(
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmrecording.Recording
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -149,19 +125,13 @@ func (r *requestHandler) CallV1RecordingStop(ctx context.Context, recordingID uu
 	uri := fmt.Sprintf("/v1/recordings/%s/stop", recordingID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/recordings", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmrecording.Recording
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

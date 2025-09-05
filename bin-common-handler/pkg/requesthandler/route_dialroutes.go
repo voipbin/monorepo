@@ -2,7 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -18,21 +17,15 @@ import (
 func (r *requestHandler) RouteV1DialrouteGets(ctx context.Context, customerID uuid.UUID, target string) ([]rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/dialroutes?customer_id=%s&target=%s", customerID, url.QueryEscape(target))
 
-	res, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodGet, "route/dialroutes", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var f []rmroute.Route
-	if err := json.Unmarshal([]byte(res.Data), &f); err != nil {
+	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodGet, "route/dialroutes", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return f, nil
+	var res []rmroute.Route
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }

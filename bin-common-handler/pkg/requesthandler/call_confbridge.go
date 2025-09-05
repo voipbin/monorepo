@@ -36,18 +36,13 @@ func (r *requestHandler) CallV1ConfbridgeCreate(
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("no response found")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if errUnmarshal := json.Unmarshal([]byte(tmp.Data), &res); errUnmarshal != nil {
-		return nil, errUnmarshal
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -58,18 +53,13 @@ func (r *requestHandler) CallV1ConfbridgeDelete(ctx context.Context, confbridgeI
 	uri := fmt.Sprintf("/v1/confbridges/%s", confbridgeID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("no response found")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if errUnmarshal := json.Unmarshal([]byte(tmp.Data), &res); errUnmarshal != nil {
-		return nil, errUnmarshal
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -82,19 +72,13 @@ func (r *requestHandler) CallV1ConfbridgeGet(ctx context.Context, confbridgeID u
 	uri := fmt.Sprintf("/v1/confbridges/%s", confbridgeID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -104,14 +88,13 @@ func (r *requestHandler) CallV1ConfbridgeGet(ctx context.Context, confbridgeID u
 func (r *requestHandler) CallV1ConfbridgeCallKick(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s/calls/%s", confbridgeID, callID)
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return err
-	case res == nil:
-		return fmt.Errorf("no response found")
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -121,14 +104,13 @@ func (r *requestHandler) CallV1ConfbridgeCallKick(ctx context.Context, confbridg
 func (r *requestHandler) CallV1ConfbridgeCallAdd(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s/calls/%s", confbridgeID, callID)
 
-	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return err
-	case res == nil:
-		return fmt.Errorf("no response found")
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -164,19 +146,13 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges/<confbridge-id>/external-media", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -189,19 +165,13 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStop(ctx context.Context, 
 	uri := fmt.Sprintf("/v1/confbridges/%s/external-media", confbridgeID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/confbridges/<confbridge-id>/external-media", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -235,19 +205,13 @@ func (r *requestHandler) CallV1ConfbridgeRecordingStart(
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges/<confbridge-id>/recording-start", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -260,19 +224,13 @@ func (r *requestHandler) CallV1ConfbridgeRecordingStop(ctx context.Context, conf
 	uri := fmt.Sprintf("/v1/confbridges/%s/recording_stop", confbridgeID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges/<confbridge-id>/recording-stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -294,19 +252,13 @@ func (r *requestHandler) CallV1ConfbridgeFlagAdd(ctx context.Context, confbridge
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges/<confbridge-id>/recording-stop", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -328,19 +280,13 @@ func (r *requestHandler) CallV1ConfbridgeFlagRemove(ctx context.Context, confbri
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/confbridges/<confbridge-id>/recording-stop", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -353,19 +299,13 @@ func (r *requestHandler) CallV1ConfbridgeTerminate(ctx context.Context, confbrid
 	uri := fmt.Sprintf("/v1/confbridges/%s/terminate", confbridgeID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges/<confbridge-id>/terminate", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cmconfbridge.Confbridge
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -378,14 +318,12 @@ func (r *requestHandler) CallV1ConfbridgeRing(ctx context.Context, confbridgeID 
 	uri := fmt.Sprintf("/v1/confbridges/%s/ring", confbridgeID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges/<confbridge-id>/ring", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -398,14 +336,12 @@ func (r *requestHandler) CallV1ConfbridgeAnswer(ctx context.Context, confbridgeI
 	uri := fmt.Sprintf("/v1/confbridges/%s/answer", confbridgeID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/confbridges/<confbridge-id>/answer", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

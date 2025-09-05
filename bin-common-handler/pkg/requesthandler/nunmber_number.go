@@ -20,18 +20,13 @@ func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UU
 	uri := fmt.Sprintf("/v1/numbers/%s", numberID)
 
 	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodGet, "number/numbers", 15000, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res nmnumber.Number
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -48,18 +43,13 @@ func (r *requestHandler) NumberV1NumberGets(ctx context.Context, pageToken strin
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodGet, "number/numbers", 15000, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []nmnumber.Number
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -86,18 +76,13 @@ func (r *requestHandler) NumberV1NumberCreate(ctx context.Context, customerID uu
 	}
 
 	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodPost, "number/numbers", 15000, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res nmnumber.Number
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -110,18 +95,13 @@ func (r *requestHandler) NumberV1NumberDelete(ctx context.Context, id uuid.UUID)
 	uri := fmt.Sprintf("/v1/numbers/%s", id)
 
 	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodDelete, "number/numbers", 15000, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res nmnumber.Number
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -146,18 +126,13 @@ func (r *requestHandler) NumberV1NumberUpdate(ctx context.Context, id uuid.UUID,
 	}
 
 	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodPut, "number/numbers", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res nmnumber.Number
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -180,18 +155,13 @@ func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id uuid
 	}
 
 	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodPut, "number/numbers", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res nmnumber.Number
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -213,18 +183,13 @@ func (r *requestHandler) NumberV1NumberRenewByTmRenew(ctx context.Context, tmRen
 	}
 
 	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodPost, "number/numbers/renew", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []nmnumber.Number
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -246,18 +211,13 @@ func (r *requestHandler) NumberV1NumberRenewByDays(ctx context.Context, days int
 	}
 
 	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodPost, "number/numbers/renew", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []nmnumber.Number
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -279,18 +239,13 @@ func (r *requestHandler) NumberV1NumberRenewByHours(ctx context.Context, hours i
 	}
 
 	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodPost, "number/numbers/renew", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []nmnumber.Number
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil

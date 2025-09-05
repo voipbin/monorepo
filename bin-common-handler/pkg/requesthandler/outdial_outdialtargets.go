@@ -53,13 +53,9 @@ func (r *requestHandler) OutdialV1OutdialtargetCreate(
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not send the message")
-	}
-
 	var res omoutdialtarget.OutdialTarget
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -93,13 +89,9 @@ func (r *requestHandler) OutdialV1OutdialtargetGetsAvailable(
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not send the message")
-	}
-
 	var res []omoutdialtarget.OutdialTarget
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -111,19 +103,13 @@ func (r *requestHandler) OutdialV1OutdialtargetDelete(ctx context.Context, outdi
 	uri := fmt.Sprintf("/v1/outdialtargets/%s", outdialtargetID)
 
 	tmp, err := r.sendRequestOutdial(ctx, uri, sock.RequestMethodDelete, "outdial/outdial_targets", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res omoutdialtarget.OutdialTarget
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -134,22 +120,17 @@ func (r *requestHandler) OutdialV1OutdialtargetDelete(ctx context.Context, outdi
 func (r *requestHandler) OutdialV1OutdialtargetGetsByOutdialID(ctx context.Context, outdialtargetID uuid.UUID, pageToken string, pageSize uint64) ([]omoutdialtarget.OutdialTarget, error) {
 	uri := fmt.Sprintf("/v1/outdials/%s/targets?page_token=%s&page_size=%d", outdialtargetID, url.QueryEscape(pageToken), pageSize)
 
-	res, err := r.sendRequestOutdial(ctx, uri, sock.RequestMethodGet, "outdial/outdials", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData []omoutdialtarget.OutdialTarget
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	tmp, err := r.sendRequestOutdial(ctx, uri, sock.RequestMethodGet, "outdial/outdials", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return resData, nil
+	var res []omoutdialtarget.OutdialTarget
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }
 
 // OutdialV1OutdialtargetGet returns an outdialtarget
@@ -163,13 +144,9 @@ func (r *requestHandler) OutdialV1OutdialtargetGet(ctx context.Context, outdialt
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not send the message")
-	}
-
 	var res omoutdialtarget.OutdialTarget
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -191,19 +168,13 @@ func (r *requestHandler) OutdialV1OutdialtargetUpdateStatusProgressing(ctx conte
 	}
 
 	tmp, err := r.sendRequestOutdial(ctx, uri, sock.RequestMethodPost, "outdial/outdials", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res omoutdialtarget.OutdialTarget
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -229,19 +200,13 @@ func (r *requestHandler) OutdialV1OutdialtargetUpdateStatus(ctx context.Context,
 	}
 
 	tmp, err := r.sendRequestOutdial(ctx, uri, sock.RequestMethodPut, "outdial/outdials", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res omoutdialtarget.OutdialTarget
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

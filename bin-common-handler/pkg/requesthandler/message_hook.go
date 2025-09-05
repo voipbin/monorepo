@@ -3,7 +3,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"monorepo/bin-common-handler/models/sock"
 	hmhook "monorepo/bin-hook-manager/models/hook"
@@ -19,13 +18,13 @@ func (r *requestHandler) MessageV1Hook(ctx context.Context, hm *hmhook.Hook) err
 		return err
 	}
 
-	tmp, err := r.sendRequestMessage(ctx, uri, sock.RequestMethodPost, "message/messages", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestMessage(ctx, uri, sock.RequestMethodPost, "message/hooks", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return fmt.Errorf("could not send the message")
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

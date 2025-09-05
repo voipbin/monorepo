@@ -38,13 +38,9 @@ func (r *requestHandler) MessageV1MessageSend(ctx context.Context, id uuid.UUID,
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not send the message")
-	}
-
 	var res mmmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -54,23 +50,17 @@ func (r *requestHandler) MessageV1MessageSend(ctx context.Context, id uuid.UUID,
 func (r *requestHandler) MessageV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestMessage(ctx, uri, sock.RequestMethodGet, "message/messages", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var f []mmmessage.Message
-	if err := json.Unmarshal([]byte(res.Data), &f); err != nil {
+	tmp, err := r.sendRequestMessage(ctx, uri, sock.RequestMethodGet, "message/messages", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return f, nil
+	var res []mmmessage.Message
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }
 
 // MessageV1MessageGet gets the message
@@ -83,13 +73,9 @@ func (r *requestHandler) MessageV1MessageGet(ctx context.Context, id uuid.UUID) 
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get a message")
-	}
-
 	var res mmmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -105,13 +91,9 @@ func (r *requestHandler) MessageV1MessageDelete(ctx context.Context, id uuid.UUI
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get a message")
-	}
-
 	var res mmmessage.Message
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

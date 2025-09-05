@@ -42,16 +42,12 @@ func (r *requestHandler) FlowV1ActiveflowCreate(
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not send the request")
-	}
-
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not create the activeflow. status_code: %d", tmp.StatusCode)
+		return nil, err
 	}
 
 	var res fmactiveflow.Activeflow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the response")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -64,19 +60,13 @@ func (r *requestHandler) FlowV1ActiveflowGet(ctx context.Context, activeflowID u
 	uri := fmt.Sprintf("/v1/activeflows/%s", activeflowID)
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodGet, "flow/activeflows", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res fmactiveflow.Activeflow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -94,19 +84,13 @@ func (r *requestHandler) FlowV1ActiveflowGets(ctx context.Context, pageToken str
 	}
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodGet, "call/calls", 30000, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []fmactiveflow.Activeflow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -122,13 +106,9 @@ func (r *requestHandler) FlowV1ActiveflowDelete(ctx context.Context, activeflowI
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get next action")
-	}
-
 	var res fmactiveflow.Activeflow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -151,13 +131,9 @@ func (r *requestHandler) FlowV1ActiveflowGetNextAction(ctx context.Context, acti
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get next action")
-	}
-
 	var res fmaction.Action
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -176,13 +152,13 @@ func (r *requestHandler) FlowV1ActiveflowUpdateForwardActionID(ctx context.Conte
 		return err
 	}
 
-	res, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPut, "flow/activeflows", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPut, "flow/activeflows", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
 
-	if res.StatusCode >= 299 {
-		return fmt.Errorf("could not get next action")
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -193,14 +169,13 @@ func (r *requestHandler) FlowV1ActiveflowExecute(ctx context.Context, activeflow
 
 	uri := fmt.Sprintf("/v1/activeflows/%s/execute", activeflowID)
 
-	res, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
 		return err
-	case res == nil:
-		return nil
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
@@ -213,16 +188,12 @@ func (r *requestHandler) FlowV1ActiveflowStop(ctx context.Context, activeflowID 
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/actions", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not send the request")
-	}
-
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not stop the activeflow")
+		return nil, err
 	}
 
 	var res fmactiveflow.Activeflow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the response")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -242,16 +213,12 @@ func (r *requestHandler) FlowV1ActiveflowAddActions(ctx context.Context, activef
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/add_actions", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not add the activeflow")
-	}
-
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not add the activeflow")
+		return nil, err
 	}
 
 	var res fmactiveflow.Activeflow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the response")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -271,16 +238,12 @@ func (r *requestHandler) FlowV1ActiveflowPushActions(ctx context.Context, active
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/push_actions", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not send the request")
-	}
-
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not push the actions")
+		return nil, err
 	}
 
 	var res fmactiveflow.Activeflow
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the response")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -300,11 +263,11 @@ func (r *requestHandler) FlowV1ActiveflowServiceStop(ctx context.Context, active
 
 	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/service_stop", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
-		return errors.Wrapf(err, "could not send the request")
+		return err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return fmt.Errorf("could not stop the service")
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil

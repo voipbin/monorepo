@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
-	"github.com/pkg/errors"
 )
 
 // BillingV1AccountGets returns list of billing accounts.
@@ -24,18 +23,13 @@ func (r *requestHandler) BillingV1AccountGets(ctx context.Context, pageToken str
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodGet, "billing/accounts", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []bmaccount.Account
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -57,18 +51,13 @@ func (r *requestHandler) BillingV1AccountCreate(ctx context.Context, custoerID u
 	}
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res bmaccount.Account
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -79,18 +68,13 @@ func (r *requestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodGet, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res bmaccount.Account
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -109,18 +93,13 @@ func (r *requestHandler) BillingV1AccountUpdateBasicInfo(ctx context.Context, ac
 	}
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPut, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res bmaccount.Account
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -139,18 +118,13 @@ func (r *requestHandler) BillingV1AccountUpdatePaymentInfo(ctx context.Context, 
 	}
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPut, "billing/accounts/<account-id>/payment_info", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res bmaccount.Account
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -161,18 +135,13 @@ func (r *requestHandler) BillingV1AccountDelete(ctx context.Context, accountID u
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodDelete, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res bmaccount.Account
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -190,18 +159,13 @@ func (r *requestHandler) BillingV1AccountAddBalanceForce(ctx context.Context, ac
 	}
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts/<account-id>/balance_add", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	res := bmaccount.Account{}
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	var res bmaccount.Account
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -219,18 +183,13 @@ func (r *requestHandler) BillingV1AccountSubtractBalanceForce(ctx context.Contex
 	}
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts/<account-id>/balance_subtract", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	res := bmaccount.Account{}
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	var res bmaccount.Account
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -250,19 +209,14 @@ func (r *requestHandler) BillingV1AccountIsValidBalance(ctx context.Context, acc
 	}
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts/<account-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return false, err
-	case tmp == nil:
-		return false, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return false, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var resData bmresponse.V1ResponseAccountsIDIsValidBalance
-	if err := json.Unmarshal([]byte(tmp.Data), &resData); err != nil {
+	if err != nil {
 		return false, err
 	}
 
-	return resData.Valid, nil
+	var res bmresponse.V1ResponseAccountsIDIsValidBalance
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return false, errParse
+	}
+
+	return res.Valid, nil
 }

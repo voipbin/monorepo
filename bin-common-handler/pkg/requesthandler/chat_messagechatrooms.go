@@ -2,7 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -22,19 +21,13 @@ func (r *requestHandler) ChatV1MessagechatroomGets(ctx context.Context, pageToke
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodGet, "chat/messagechatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []chatmessagechatroom.Messagechatroom
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -47,19 +40,13 @@ func (r *requestHandler) ChatV1MessagechatroomGet(ctx context.Context, messagech
 	uri := fmt.Sprintf("/v1/messagechatrooms/%s", messagechatroomID)
 
 	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodGet, "chat/messagechatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res chatmessagechatroom.Messagechatroom
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -72,19 +59,13 @@ func (r *requestHandler) ChatV1MessagechatroomDelete(ctx context.Context, messag
 	uri := fmt.Sprintf("/v1/messagechatrooms/%s", messagechatroomID)
 
 	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodDelete, "chat/messagechatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res chatmessagechatroom.Messagechatroom
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil

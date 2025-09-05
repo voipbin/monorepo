@@ -60,7 +60,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/prometheus/client_golang v1.23.0
+	github.com/prometheus/client_golang v1.23.1
 	github.com/sirupsen/logrus v1.9.3
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.41.0 // indirect

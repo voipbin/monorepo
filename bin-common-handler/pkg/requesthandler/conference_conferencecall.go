@@ -23,19 +23,13 @@ func (r *requestHandler) ConferenceV1ConferencecallGets(ctx context.Context, pag
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodGet, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res []cfconferencecall.Conferencecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return res, nil
@@ -51,13 +45,9 @@ func (r *requestHandler) ConferenceV1ConferencecallGet(ctx context.Context, conf
 		return nil, err
 	}
 
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get conference. status: %d", tmp.StatusCode)
-	}
-
 	var res cfconferencecall.Conferencecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -70,16 +60,13 @@ func (r *requestHandler) ConferenceV1ConferencecallKick(ctx context.Context, con
 	uri := fmt.Sprintf("/v1/conferencecalls/%s", conferencecallID)
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodDelete, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, err
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
 	var res cfconferencecall.Conferencecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
 	}
 
 	return &res, nil
@@ -102,13 +89,12 @@ func (r *requestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Conte
 	}
 
 	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferencecalls", requestTimeoutDefault, delay, ContentTypeJSON, m)
-	switch {
-	case err != nil:
+	if err != nil {
 		return err
-	case tmp == nil:
-		return nil
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
 	return nil
