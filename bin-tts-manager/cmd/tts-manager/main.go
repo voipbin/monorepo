@@ -72,7 +72,7 @@ func run() error {
 	podID := os.Getenv("HOSTNAME")
 	listenAddress := fmt.Sprintf("%s:8080", localAddress)
 
-	ttsHandler := ttshandler.NewTTSHandler(awsAccessKey, awsSecretKey, gcpCredentialBase64, gcpProjectID, gcpBucketName, "/shared-data", localAddress, reqHandler, notifyHandler)
+	ttsHandler := ttshandler.NewTTSHandler(awsAccessKey, awsSecretKey, gcpCredentialBase64, gcpProjectID, gcpBucketName, "/tmp", localAddress, reqHandler, notifyHandler)
 	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, listenAddress, podID, elevenlabsAPIKey)
 
 	// run listener

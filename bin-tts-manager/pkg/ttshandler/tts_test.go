@@ -39,7 +39,7 @@ func Test_Create(t *testing.T) {
 			gender:   tts.GenderFemale,
 			language: "en-US",
 
-			responseFilePath:      "/shared-data/766e587168455d862b8ef2a931341e7adaa106e1.wav",
+			responseFilePath:      "/tmp/766e587168455d862b8ef2a931341e7adaa106e1.wav",
 			responseMediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/766e587168455d862b8ef2a931341e7adaa106e1.wav",
 
 			expectFilename: "766e587168455d862b8ef2a931341e7adaa106e1.wav",

@@ -89,7 +89,7 @@ spec:
             - 'http.server'
             - '80'
             - '-d'
-            - '/shared-data'
+            - '/tmp'
           ports:
             - name: http
               protocol: "TCP"
