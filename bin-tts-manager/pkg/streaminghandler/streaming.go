@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-tts-manager/models/streaming"
@@ -111,15 +110,9 @@ func (h *streamingHandler) UpdateConnAst(streamingID uuid.UUID, connAst net.Conn
 }
 
 func (h *streamingHandler) SetVendorInfo(st *streaming.Streaming, venderName streaming.VendorName, vendorConfig any) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "SetVendorInfo",
-		"streaming":   st,
-		"vendor_name": venderName,
-	})
 	st.VendorLock.Lock()
 	defer st.VendorLock.Unlock()
 
-	log.Debugf("Setting vendor info. vendor_name: %s", venderName)
 	st.VendorName = venderName
 	st.VendorConfig = vendorConfig
 }
