@@ -178,6 +178,7 @@ func (h *streamingHandler) runStreamer(ctx context.Context, st *streaming.Stream
 			if errRun := h.elevenlabsHandler.Run(s.VendorConfig); errRun != nil {
 				log.Errorf("Could not run the elevenlabs handler. err: %v", errRun)
 			}
+			log.Debugf("ElevenLabs handler finished for streaming_id: %s, message_id: %s", s.ID, s.MessageID)
 
 		default:
 			log.Errorf("Unsupported vendor: %s for streaming ID: %s", s.VendorName, s.ID)

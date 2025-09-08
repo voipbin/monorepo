@@ -63,17 +63,19 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not say the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
 	}
+	log = log.WithField("message_id", msgID)
 	log.WithField("tts_streaming", tmp).Debugf("Initialized the tts streaming say. tts_streaming_id: %s", cc.TTSStreamingID)
 
 	totalMessage := ""
 	for msg := range chanMsg {
+		log.Debugf("Sending the streaming message to tts streaming. message: %s", msg)
 		if errAdd := h.reqHandler.TTSV1StreamingSayAdd(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID, msg); errAdd != nil {
 			return nil, errors.Wrapf(errAdd, "could not add the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
 		}
 
 		totalMessage += msg
 	}
-	log.Debugf("Finished receiving the streaming message from the ai engine. total_message: %s", totalMessage)
+	log.Debugf("Finished sending the streaming message to tts streaming. total_message: %s", totalMessage)
 
 	// create a message for incoming(response)
 	tmpResponse, err := h.Create(ctx, msgID, cc.CustomerID, cc.ID, message.DirectionIncoming, message.RoleAssistant, totalMessage)
