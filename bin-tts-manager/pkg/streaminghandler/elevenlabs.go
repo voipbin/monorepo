@@ -35,10 +35,12 @@ type ElevenlabsConfig struct {
 	muConnWebsock sync.Mutex `json:"-"`
 }
 
+// ElevenlabsMessage represents the message format sent to ElevenLabs WebSocket API.
+// https://elevenlabs.io/docs/api-reference/text-to-speech/v-1-text-to-speech-voice-id-stream-input
 type ElevenlabsMessage struct {
 	Text                 string `json:"text"`
-	TryTriggerGeneration bool   `json:"try_trigger_generation"`
-	Finalize             bool   `json:"finalize"`
+	TryTriggerGeneration bool   `json:"try_trigger_generation,omitempty"`
+	Flush                bool   `json:"flush,omitempty"`
 }
 
 type ElevenlabsResponse struct {
@@ -343,8 +345,8 @@ func (h *elevenlabsHandler) AddText(vendorConfig any, text string) error {
 	defer cf.muConnWebsock.Unlock()
 
 	message := ElevenlabsMessage{
-		Text:                 text,
-		TryTriggerGeneration: true, // Suggests to the API to start generation if enough text is buffered.
+		Text:  text,
+		Flush: true,
 	}
 
 	if errWrite := cf.ConnWebsock.WriteJSON(message); errWrite != nil {
