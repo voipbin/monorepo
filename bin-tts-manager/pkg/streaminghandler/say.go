@@ -77,10 +77,10 @@ func (h *streamingHandler) SayAdd(ctx context.Context, id uuid.UUID, messageID u
 	} else if st.VendorConfig == nil {
 		return fmt.Errorf("vendor config is nil. streaming_id: %s", id)
 	}
-	log.WithField("streaming", st).Debugf("Fetched streaming info. streaming_id: %s", id)
 
 	switch st.VendorName {
 	case streaming.VendorNameElevenlabs:
+		log.Debugf("Adding text to ElevenLabs streaming. streaming_id: %s, message_id: %s, text: %s", id, messageID, text)
 		return h.elevenlabsHandler.AddText(st.VendorConfig, text)
 
 	default:
