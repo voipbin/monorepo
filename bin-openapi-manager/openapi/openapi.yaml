@@ -3887,6 +3887,9 @@ paths:
   /groupcalls:
     $ref: './paths/groupcalls/main.yaml'
 
+  /mcp:
+    $ref: './paths/mcp/main.yaml'
+
   /me:
     $ref: './paths/me/main.yaml'
 
