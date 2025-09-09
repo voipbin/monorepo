@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/externalmedia"
 )
@@ -30,12 +29,6 @@ func (h *externalMediaHandler) Create(
 	directionListen externalmedia.Direction,
 	directionSpeak externalmedia.Direction,
 ) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "Create",
-		"reference_type": referenceType,
-		"reference_id":   referenceID,
-	})
-
 	if id == uuid.Nil {
 		id = h.utilHandler.UUIDCreate()
 	}
@@ -64,8 +57,7 @@ func (h *externalMediaHandler) Create(
 	}
 
 	if errDB := h.db.ExternalMediaSet(ctx, extMedia); errDB != nil {
-		log.Errorf("Could not create the external media info to the database. err: %v", errDB)
-		return nil, errDB
+		return nil, errors.Wrapf(errDB, "could not create the external media info to the database")
 	}
 
 	return extMedia, nil
@@ -73,15 +65,9 @@ func (h *externalMediaHandler) Create(
 
 // Get returns external media info
 func (h *externalMediaHandler) Get(ctx context.Context, id uuid.UUID) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":              "Get",
-		"external_media_id": id,
-	})
-
 	res, err := h.db.ExternalMediaGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get external media. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get external media with id: %s", id)
 	}
 
 	return res, nil
@@ -109,19 +95,19 @@ func (h *externalMediaHandler) Gets(ctx context.Context, size uint64, token stri
 func (h *externalMediaHandler) UpdateLocalAddress(ctx context.Context, id uuid.UUID, localIP string, localPort int) (*externalmedia.ExternalMedia, error) {
 	tmp, err := h.db.ExternalMediaGet(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get external media with id: %s", id)
 	}
 
 	tmp.LocalIP = localIP
 	tmp.LocalPort = localPort
 
 	if errDB := h.db.ExternalMediaSet(ctx, tmp); errDB != nil {
-		return nil, errDB
+		return nil, errors.Wrapf(errDB, "could not update external media local address")
 	}
 
 	res, err := h.db.ExternalMediaGet(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get external media with id: %s after set", id)
 	}
 
 	return res, nil
@@ -140,7 +126,7 @@ func (h *externalMediaHandler) UpdateStatus(ctx context.Context, id uuid.UUID, s
 
 	res, err := h.db.ExternalMediaGet(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get external media with id: %s after set", id)
 	}
 
 	return res, nil

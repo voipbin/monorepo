@@ -32,8 +32,7 @@ func (h *externalMediaHandler) Stop(ctx context.Context, externalMediaID uuid.UU
 
 	// delete external media info
 	if errExtDelete := h.db.ExternalMediaDelete(ctx, externalMediaID); errExtDelete != nil {
-		log.Errorf("Could not delete external media info. err: %v", errExtDelete)
-		return nil, fmt.Errorf("could not delete external media")
+		return nil, errors.Wrapf(errExtDelete, "could not delete external media info from db")
 	}
 
 	return res, nil
