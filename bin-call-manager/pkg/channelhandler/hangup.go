@@ -3,13 +3,14 @@ package channelhandler
 import (
 	"context"
 	"fmt"
-	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
 // Hangup deletes the channel.
@@ -21,7 +22,7 @@ func (h *channelHandler) Hangup(ctx context.Context, id string, cause ari.Channe
 
 	res, err := h.Delete(ctx, id, cause)
 	if err != nil {
-		log.Errorf("Could not deletes the channel. err: %v", err)
+		log.Errorf("Could not delete the channel. err: %v", err)
 		return nil, err
 	}
 
@@ -49,7 +50,6 @@ func (h *channelHandler) HangingUp(ctx context.Context, id string, cause ari.Cha
 	}
 
 	if errHangup := h.HangingUpWithAsteriskID(ctx, res.AsteriskID, res.ID, cause); errHangup != nil {
-		log.Errorf("Could not hangup the channel. err: %v", errHangup)
 		return nil, errHangup
 	}
 
@@ -67,9 +67,8 @@ func (h *channelHandler) HangingUpWithAsteriskID(ctx context.Context, asteriskID
 	log.Debugf("Hanging up channel with asteriskID: %s, channelID: %s, cause: %d", asteriskID, id, cause)
 
 	if errHangup := h.reqHandler.AstChannelHangup(ctx, asteriskID, id, cause, 0); errHangup != nil {
-		if strings.Contains(errHangup.Error(), "404") {
+		if errors.Cause(errHangup) == requesthandler.ErrNotFound {
 			// channel doesn't exist. consider it hungup already.
-			log.Debugf("The channel doesn't exist. Consider it hungup already.")
 			return nil
 		}
 
