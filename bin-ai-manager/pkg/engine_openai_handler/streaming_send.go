@@ -37,6 +37,7 @@ func (h *engineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIca
 	req := &openai.ChatCompletionRequest{
 		Model:    string(model),
 		Messages: tmpMessages,
+		Tools:    tools,
 	}
 	log = log.WithField("request", req)
 
@@ -93,6 +94,10 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 
 				// Process only the first Choice (usually there's only one)
 				for _, choice := range response.Choices {
+					if choice.Delta.FunctionCall != nil {
+						log.Debugf("Function call: %v", choice.Delta.FunctionCall)
+					}
+
 					if choice.Delta.Content != "" {
 						currentSentence.WriteString(choice.Delta.Content)
 
