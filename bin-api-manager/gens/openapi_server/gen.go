@@ -3917,6 +3917,14 @@ type PostGroupcallsJSONBody struct {
 	Source CommonAddress `json:"source"`
 }
 
+// PostMcpJSONBody defines parameters for PostMcp.
+type PostMcpJSONBody struct {
+	Id      *string                 `json:"id,omitempty"`
+	Jsonrpc *string                 `json:"jsonrpc,omitempty"`
+	Method  *string                 `json:"method,omitempty"`
+	Params  *map[string]interface{} `json:"params,omitempty"`
+}
+
 // GetMessagesParams defines parameters for GetMessages.
 type GetMessagesParams struct {
 	// PageSize The size of results.
@@ -4729,6 +4737,9 @@ type PutFlowsIdJSONRequestBody PutFlowsIdJSONBody
 // PostGroupcallsJSONRequestBody defines body for PostGroupcalls for application/json ContentType.
 type PostGroupcallsJSONRequestBody PostGroupcallsJSONBody
 
+// PostMcpJSONRequestBody defines body for PostMcp for application/json ContentType.
+type PostMcpJSONRequestBody PostMcpJSONBody
+
 // PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
 type PostMessagesJSONRequestBody PostMessagesJSONBody
 
@@ -5307,6 +5318,9 @@ type ServerInterface interface {
 	// Hangup the groupcall
 	// (POST /groupcalls/{id}/hangup)
 	PostGroupcallsIdHangup(c *gin.Context, id string)
+	// Call MCP server
+	// (POST /mcp)
+	PostMcp(c *gin.Context)
 	// Get the logged-in agent
 	// (GET /me)
 	GetMe(c *gin.Context)
@@ -9497,6 +9511,19 @@ func (siw *ServerInterfaceWrapper) PostGroupcallsIdHangup(c *gin.Context) {
 	siw.Handler.PostGroupcallsIdHangup(c, id)
 }
 
+// PostMcp operation middleware
+func (siw *ServerInterfaceWrapper) PostMcp(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostMcp(c)
+}
+
 // GetMe operation middleware
 func (siw *ServerInterfaceWrapper) GetMe(c *gin.Context) {
 
@@ -12383,6 +12410,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/groupcalls/:id", wrapper.DeleteGroupcallsId)
 	router.GET(options.BaseURL+"/groupcalls/:id", wrapper.GetGroupcallsId)
 	router.POST(options.BaseURL+"/groupcalls/:id/hangup", wrapper.PostGroupcallsIdHangup)
+	router.POST(options.BaseURL+"/mcp", wrapper.PostMcp)
 	router.GET(options.BaseURL+"/me", wrapper.GetMe)
 	router.GET(options.BaseURL+"/messages", wrapper.GetMessages)
 	router.POST(options.BaseURL+"/messages", wrapper.PostMessages)
@@ -15335,6 +15363,27 @@ func (response PostGroupcallsIdHangup200JSONResponse) VisitPostGroupcallsIdHangu
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostMcpRequestObject struct {
+	Body *PostMcpJSONRequestBody
+}
+
+type PostMcpResponseObject interface {
+	VisitPostMcpResponse(w http.ResponseWriter) error
+}
+
+type PostMcp200JSONResponse struct {
+	Id      *string                 `json:"id,omitempty"`
+	Jsonrpc *string                 `json:"jsonrpc,omitempty"`
+	Result  *map[string]interface{} `json:"result,omitempty"`
+}
+
+func (response PostMcp200JSONResponse) VisitPostMcpResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetMeRequestObject struct {
 }
 
@@ -17842,6 +17891,9 @@ type StrictServerInterface interface {
 	// Hangup the groupcall
 	// (POST /groupcalls/{id}/hangup)
 	PostGroupcallsIdHangup(ctx context.Context, request PostGroupcallsIdHangupRequestObject) (PostGroupcallsIdHangupResponseObject, error)
+	// Call MCP server
+	// (POST /mcp)
+	PostMcp(ctx context.Context, request PostMcpRequestObject) (PostMcpResponseObject, error)
 	// Get the logged-in agent
 	// (GET /me)
 	GetMe(ctx context.Context, request GetMeRequestObject) (GetMeResponseObject, error)
@@ -22777,6 +22829,39 @@ func (sh *strictHandler) PostGroupcallsIdHangup(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostGroupcallsIdHangupResponseObject); ok {
 		if err := validResponse.VisitPostGroupcallsIdHangupResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostMcp operation middleware
+func (sh *strictHandler) PostMcp(ctx *gin.Context) {
+	var request PostMcpRequestObject
+
+	var body PostMcpJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostMcp(ctx, request.(PostMcpRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostMcp")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostMcpResponseObject); ok {
+		if err := validResponse.VisitPostMcpResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

@@ -1,0 +1,43 @@
+ post:
+  summary: Call MCP server
+  description: |
+    Example of representing an MCP server in OpenAPI format.
+    In practice, you need to send JSON-RPC 2.0 requests to `POST /mcp`.
+  tags:
+    - MCP
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            jsonrpc:
+              type: string
+              example: "2.0"
+            id:
+              type: string
+              example: "1"
+            method:
+              type: string
+              example: "tools/list"
+            params:
+              type: object
+              example: {}
+  responses:
+    "200":
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              jsonrpc:
+                type: string
+                example: "2.0"
+              id:
+                type: string
+                example: "2"
+              result:
+                type: object
+                example: {}

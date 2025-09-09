@@ -3908,6 +3908,14 @@ type PostGroupcallsJSONBody struct {
 	Source CommonAddress `json:"source"`
 }
 
+// PostMcpJSONBody defines parameters for PostMcp.
+type PostMcpJSONBody struct {
+	Id      *string                 `json:"id,omitempty"`
+	Jsonrpc *string                 `json:"jsonrpc,omitempty"`
+	Method  *string                 `json:"method,omitempty"`
+	Params  *map[string]interface{} `json:"params,omitempty"`
+}
+
 // GetMessagesParams defines parameters for GetMessages.
 type GetMessagesParams struct {
 	// PageSize The size of results.
@@ -4719,6 +4727,9 @@ type PutFlowsIdJSONRequestBody PutFlowsIdJSONBody
 
 // PostGroupcallsJSONRequestBody defines body for PostGroupcalls for application/json ContentType.
 type PostGroupcallsJSONRequestBody PostGroupcallsJSONBody
+
+// PostMcpJSONRequestBody defines body for PostMcp for application/json ContentType.
+type PostMcpJSONRequestBody PostMcpJSONBody
 
 // PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
 type PostMessagesJSONRequestBody PostMessagesJSONBody
