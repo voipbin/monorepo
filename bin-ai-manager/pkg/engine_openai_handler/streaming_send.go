@@ -94,8 +94,14 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 
 				// Process only the first Choice (usually there's only one)
 				for _, choice := range response.Choices {
+					log.Debugf("Received choice. choice: %v", choice.Delta)
+
 					if choice.Delta.FunctionCall != nil {
 						log.Debugf("Function call: %v", choice.Delta.FunctionCall)
+					}
+
+					if choice.Delta.ToolCalls != nil {
+						log.Debugf("Tool calls: %v", choice.Delta.ToolCalls)
 					}
 
 					if choice.Delta.Content != "" {
