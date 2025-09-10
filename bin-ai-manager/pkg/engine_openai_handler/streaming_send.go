@@ -80,6 +80,8 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 		defer close(outputChan) // Close the channel when done
 
 		var currentSentence strings.Builder
+		var currentTool strings.Builder
+		var currentName string
 		for {
 			select {
 			case <-ctx.Done():
@@ -113,7 +115,53 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 						log.WithField("toolcalls", choice.Delta.ToolCalls).Debugf("Tool calls: %v", choice.Delta.ToolCalls)
 					}
 
+					for _, toolCall := range choice.Delta.ToolCalls {
+						if toolCall.Function.Name != "" {
+
+							if currentTool.Len() > 0 {
+								log.Debugf("Current tool before reset. name: %s, argument: %s", currentName, currentTool.String())
+							}
+
+							currentName = toolCall.Function.Name
+						}
+
+						if toolCall.Function.Arguments != "" {
+							currentTool.WriteString(toolCall.Function.Arguments)
+						}
+
+						// if toolCall.Function != nil {
+						// 	if toolCall.Function.Name != "" {
+						// 		if currentTool.Len() > 0 {
+						// 			// If we were already processing a tool, send it out before starting a new one
+						// 			outputChan <- currentTool.String()
+						// 			currentTool.Reset()
+						// 		}
+						// 		currentTool.WriteString(fmt.Sprintf("\n[TOOL CALL START: %s]\n", toolCall.Function.Name))
+						// 	}
+						// 	if toolCall.Function.Arguments != "" {
+						// 		currentTool.WriteString(toolCall.Function.Arguments)
+						// 	}
+						// }
+					}
+
+					// if choice.Delta.ToolCalls != nil && len(choice.Delta.ToolCalls) > 0 {
+					// 	toolCall := choice.Delta.ToolCalls[0]
+					// 	if toolCall.Function != nil {
+					// 		if toolCall.Function.Name != "" {
+					// 			fmt.Printf("\n[TOOL CALL START: %s]\n", toolCall.Function.Name)
+					// 		}
+					// 		if toolCall.Function.Arguments != "" {
+					// 			toolCallBuilder.WriteString(toolCall.Function.Arguments)
+					// 		}
+					// 	}
+					// }
+
 					if choice.Delta.Content != "" {
+						if currentTool.Len() > 0 {
+							fmt.Printf("[TOOL ARGUMENTS: %s]\n[TOOL CALL END]\n", currentTool.String())
+							currentTool.Reset()
+						}
+
 						currentSentence.WriteString(choice.Delta.Content)
 
 						// Look for sentence-ending characters (period, question mark, exclamation mark, newline)
@@ -128,6 +176,13 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 							currentSentence.Reset() // Reset the buffer
 						}
 					}
+
+					if choice.FinishReason != "" {
+						log.Debugf("Choice finished with reason: %s", choice.FinishReason)
+						log.Debugf("current_sentence: %s", &currentSentence)
+						log.Debugf("current_name: %s, current_tool: %s", currentName, currentTool.String())
+					}
+
 				}
 			}
 		}
