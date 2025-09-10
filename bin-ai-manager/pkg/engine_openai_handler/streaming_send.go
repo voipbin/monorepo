@@ -99,8 +99,6 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 						if errTool := h.toolHandle(currentName, []byte(currentTool.String())); errTool != nil {
 							log.Errorf("Could not handle tool at the end of stream. err: %v", errTool)
 						}
-						currentName = ""
-						currentTool.Reset()
 					}
 
 					return
@@ -120,11 +118,10 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 								if errTool := h.toolHandle(currentName, []byte(currentTool.String())); errTool != nil {
 									log.Errorf("Could not handle tool at the end of stream. err: %v", errTool)
 								}
-								currentName = ""
-								currentTool.Reset()
 							}
 
 							currentName = toolCall.Function.Name
+							currentTool.Reset()
 						}
 
 						if toolCall.Function.Arguments != "" {
