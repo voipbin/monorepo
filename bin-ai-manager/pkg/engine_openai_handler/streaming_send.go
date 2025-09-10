@@ -94,6 +94,15 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 					if currentSentence.Len() > 0 {
 						outputChan <- strings.TrimSpace(currentSentence.String())
 					}
+
+					if currentTool.Len() > 0 {
+						if errTool := h.toolHandle(currentName, []byte(currentTool.String())); errTool != nil {
+							log.Errorf("Could not handle tool at the end of stream. err: %v", errTool)
+						}
+						currentName = ""
+						currentTool.Reset()
+					}
+
 					return
 				}
 				if err != nil {
@@ -101,25 +110,18 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 					log.Errorf("Could not receive from stream. err: %v", err)
 					return
 				}
-				log.WithField("response", response).Debugf("Received response from stream: %v", response)
 
 				// Process only the first Choice (usually there's only one)
 				for _, choice := range response.Choices {
-					log.WithField("choice", choice).Debugf("Received choice. choice: %v", choice.Delta)
-
-					if choice.Delta.FunctionCall != nil {
-						log.Debugf("Function call: %v", choice.Delta.FunctionCall)
-					}
-
-					if choice.Delta.ToolCalls != nil {
-						log.WithField("toolcalls", choice.Delta.ToolCalls).Debugf("Tool calls: %v", choice.Delta.ToolCalls)
-					}
-
 					for _, toolCall := range choice.Delta.ToolCalls {
 						if toolCall.Function.Name != "" {
 
 							if currentTool.Len() > 0 {
-								log.Debugf("Current tool before reset. name: %s, argument: %s", currentName, currentTool.String())
+								if errTool := h.toolHandle(currentName, []byte(currentTool.String())); errTool != nil {
+									log.Errorf("Could not handle tool at the end of stream. err: %v", errTool)
+								}
+								currentName = ""
+								currentTool.Reset()
 							}
 
 							currentName = toolCall.Function.Name
@@ -128,37 +130,15 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 						if toolCall.Function.Arguments != "" {
 							currentTool.WriteString(toolCall.Function.Arguments)
 						}
-
-						// if toolCall.Function != nil {
-						// 	if toolCall.Function.Name != "" {
-						// 		if currentTool.Len() > 0 {
-						// 			// If we were already processing a tool, send it out before starting a new one
-						// 			outputChan <- currentTool.String()
-						// 			currentTool.Reset()
-						// 		}
-						// 		currentTool.WriteString(fmt.Sprintf("\n[TOOL CALL START: %s]\n", toolCall.Function.Name))
-						// 	}
-						// 	if toolCall.Function.Arguments != "" {
-						// 		currentTool.WriteString(toolCall.Function.Arguments)
-						// 	}
-						// }
 					}
-
-					// if choice.Delta.ToolCalls != nil && len(choice.Delta.ToolCalls) > 0 {
-					// 	toolCall := choice.Delta.ToolCalls[0]
-					// 	if toolCall.Function != nil {
-					// 		if toolCall.Function.Name != "" {
-					// 			fmt.Printf("\n[TOOL CALL START: %s]\n", toolCall.Function.Name)
-					// 		}
-					// 		if toolCall.Function.Arguments != "" {
-					// 			toolCallBuilder.WriteString(toolCall.Function.Arguments)
-					// 		}
-					// 	}
-					// }
 
 					if choice.Delta.Content != "" {
 						if currentTool.Len() > 0 {
-							fmt.Printf("[TOOL ARGUMENTS: %s]\n[TOOL CALL END]\n", currentTool.String())
+							// fmt.Printf("[TOOL ARGUMENTS: %s]\n[TOOL CALL END]\n", currentTool.String())
+							if errTool := h.toolHandle(currentName, []byte(currentTool.String())); errTool != nil {
+								log.Errorf("Could not handle tool at the end of stream. err: %v", errTool)
+							}
+							currentName = ""
 							currentTool.Reset()
 						}
 
@@ -178,9 +158,12 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 					}
 
 					if choice.FinishReason != "" {
-						log.Debugf("Choice finished with reason: %s", choice.FinishReason)
-						log.Debugf("current_sentence: %s", &currentSentence)
-						log.Debugf("current_name: %s, current_tool: %s", currentName, currentTool.String())
+						if errTool := h.toolHandle(currentName, []byte(currentTool.String())); errTool != nil {
+							log.Errorf("Could not handle tool at the end of stream. err: %v", errTool)
+						}
+						currentName = ""
+						currentTool.Reset()
+						currentSentence.Reset()
 					}
 
 				}

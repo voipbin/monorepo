@@ -1,6 +1,9 @@
 package engine_openai_handler
 
-import "github.com/sashabaranov/go-openai"
+import (
+	"github.com/sashabaranov/go-openai"
+	"github.com/sirupsen/logrus"
+)
 
 var (
 	tools = []openai.Tool{
@@ -123,3 +126,14 @@ var (
 	// 	},
 	// }
 )
+
+func (h *engineOpenaiHandler) toolHandle(actionName string, opt []byte) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "toolHandle",
+		"action_name": actionName,
+		"opt":         string(opt),
+	})
+	log.Debugf("Handling the tool action. action_name: %s, opt: %s", actionName, opt)
+
+	return nil
+}
