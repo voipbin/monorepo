@@ -21,6 +21,13 @@ func (h *engineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIca
 	})
 
 	tmpMessages := []openai.ChatCompletionMessage{}
+
+	defaultMssage := openai.ChatCompletionMessage{
+		Role:    string(message.RoleSystem),
+		Content: defaultSystemPrompt,
+	}
+	tmpMessages = append(tmpMessages, defaultMssage)
+
 	for _, m := range messages {
 		tmp := openai.ChatCompletionMessage{
 			Role:    string(m.Role),
@@ -92,6 +99,7 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 					log.Errorf("Could not receive from stream. err: %v", err)
 					return
 				}
+				log.WithField("response", response).Debugf("Received response from stream: %v", response)
 
 				// Process only the first Choice (usually there's only one)
 				for _, choice := range response.Choices {
