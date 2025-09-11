@@ -70,6 +70,21 @@ func (mr *MockStreamingHandlerMockRecorder) SayAdd(ctx, id, messageID, text any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayAdd", reflect.TypeOf((*MockStreamingHandler)(nil).SayAdd), ctx, id, messageID, text)
 }
 
+// SayFinish mocks base method.
+func (m *MockStreamingHandler) SayFinish(ctx context.Context, id, messageID uuid.UUID) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SayFinish", ctx, id, messageID)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SayFinish indicates an expected call of SayFinish.
+func (mr *MockStreamingHandlerMockRecorder) SayFinish(ctx, id, messageID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayFinish", reflect.TypeOf((*MockStreamingHandler)(nil).SayFinish), ctx, id, messageID)
+}
+
 // SayInit mocks base method.
 func (m *MockStreamingHandler) SayInit(ctx context.Context, id, messageID uuid.UUID) (*streaming.Streaming, error) {
 	m.ctrl.T.Helper()
@@ -153,20 +168,6 @@ func (m *Mockstreamer) EXPECT() *MockstreamerMockRecorder {
 	return m.recorder
 }
 
-// AddText mocks base method.
-func (m *Mockstreamer) AddText(vendorConfig any, text string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddText", vendorConfig, text)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddText indicates an expected call of AddText.
-func (mr *MockstreamerMockRecorder) AddText(vendorConfig, text any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddText", reflect.TypeOf((*Mockstreamer)(nil).AddText), vendorConfig, text)
-}
-
 // Init mocks base method.
 func (m *Mockstreamer) Init(ctx context.Context, st *streaming.Streaming) (any, error) {
 	m.ctrl.T.Helper()
@@ -196,10 +197,40 @@ func (mr *MockstreamerMockRecorder) Run(vendorConfig any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*Mockstreamer)(nil).Run), vendorConfig)
 }
 
-// SayStop mocks base method.
-func (m *Mockstreamer) SayStop(vendorConfig any) {
+// SayAdd mocks base method.
+func (m *Mockstreamer) SayAdd(vendorConfig any, text string) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SayStop", vendorConfig)
+	ret := m.ctrl.Call(m, "SayAdd", vendorConfig, text)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SayAdd indicates an expected call of SayAdd.
+func (mr *MockstreamerMockRecorder) SayAdd(vendorConfig, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayAdd", reflect.TypeOf((*Mockstreamer)(nil).SayAdd), vendorConfig, text)
+}
+
+// SayFinish mocks base method.
+func (m *Mockstreamer) SayFinish(vendorConfig any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SayFinish", vendorConfig)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SayFinish indicates an expected call of SayFinish.
+func (mr *MockstreamerMockRecorder) SayFinish(vendorConfig any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayFinish", reflect.TypeOf((*Mockstreamer)(nil).SayFinish), vendorConfig)
+}
+
+// SayStop mocks base method.
+func (m *Mockstreamer) SayStop(vendorConfig any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SayStop", vendorConfig)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SayStop indicates an expected call of SayStop.

@@ -2,10 +2,13 @@ package messagehandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"slices"
 	"time"
 
@@ -42,11 +45,12 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 
 	t1 := time.Now()
 	var chanMsg <-chan string
+	var chanAction <-chan *fmaction.Action
 
 	modelTarget := ai.GetEngineModelTarget(cc.AIEngineModel)
 	switch modelTarget {
 	case ai.EngineModelTargetOpenai:
-		chanMsg, err = h.streamingSendOpenai(ctx, cc)
+		chanMsg, chanAction, err = h.streamingSendOpenai(ctx, cc)
 
 	default:
 		err = fmt.Errorf("unsupported ai engine model: %s", cc.AIEngineModel)
@@ -84,6 +88,30 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	}
 	log.WithField("response", tmpResponse).Debugf("Created the response message. message_id: %s", tmpResponse.ID)
 
+	actions := []fmaction.Action{}
+	for act := range chanAction {
+		actions = append(actions, *act)
+	}
+	if len(actions) > 0 {
+		af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, cc.ActiveflowID, actions)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not add actions to the activeflow. activeflow_id: %s", cc.ActiveflowID)
+		}
+		log.Debugf("Added actions to the activeflow. activeflow_id: %s, actions: %v", cc.ActiveflowID, af)
+
+		tmpContent, err := json.Marshal(actions)
+		if err != nil {
+			log.Errorf("Could not marshal the actions. err: %v", err)
+		} else {
+			tmpMessage, errCreate := h.Create(ctx, msgID, cc.CustomerID, cc.ID, message.DirectionNone, message.RoleTool, string(tmpContent))
+			if errCreate != nil {
+				log.Errorf("Could not create the tool message. err: %v", errCreate)
+			} else {
+				log.WithField("message", tmpMessage).Debugf("Created the tool message for the actions. message_id: %s", tmpMessage.ID)
+			}
+		}
+	}
+
 	if returnResponse {
 		res = tmpResponse
 	}
@@ -91,18 +119,18 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	return res, nil
 }
 
-func (h *messageHandler) streamingSendOpenai(ctx context.Context, cc *aicall.AIcall) (<-chan string, error) {
+func (h *messageHandler) streamingSendOpenai(ctx context.Context, cc *aicall.AIcall) (<-chan string, <-chan *fmaction.Action, error) {
 
 	switch cc.ReferenceType {
 	case aicall.ReferenceTypeCall:
 		return h.streamingSendOpenaiReferenceTypeCall(ctx, cc)
 
 	default:
-		return nil, fmt.Errorf("unsupported reference type: %s", cc.ReferenceType)
+		return nil, nil, fmt.Errorf("unsupported reference type: %s", cc.ReferenceType)
 	}
 }
 
-func (h *messageHandler) streamingSendOpenaiReferenceTypeCall(ctx context.Context, cc *aicall.AIcall) (<-chan string, error) {
+func (h *messageHandler) streamingSendOpenaiReferenceTypeCall(ctx context.Context, cc *aicall.AIcall) (<-chan string, <-chan *fmaction.Action, error) {
 	filters := map[string]string{
 		"deleted": "false",
 	}
@@ -110,14 +138,14 @@ func (h *messageHandler) streamingSendOpenaiReferenceTypeCall(ctx context.Contex
 	// note: because of chatgpt needs entire message history, we need to send all messages
 	messages, err := h.Gets(ctx, cc.ID, 1000, "", filters)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not get the messages correctly")
+		return nil, nil, errors.Wrapf(err, "could not get the messages correctly")
 	}
 
 	slices.Reverse(messages)
-	res, err := h.engineOpenaiHandler.StreamingSend(ctx, cc, messages)
+	chanMsg, chanAction, err := h.engineOpenaiHandler.StreamingSend(ctx, cc, messages)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not send the message correctly")
+		return nil, nil, errors.Wrapf(err, "could not send the message correctly")
 	}
 
-	return res, nil
+	return chanMsg, chanAction, nil
 }

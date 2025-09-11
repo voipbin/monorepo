@@ -38,4 +38,5 @@ type Direction string
 const (
 	DirectionIncoming Direction = "incoming"
 	DirectionOutgoing Direction = "outgoing"
+	DirectionNone     Direction = ""
 )

@@ -37,6 +37,7 @@ type StreamingHandler interface {
 	SayInit(ctx context.Context, id uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error)
 	SayAdd(ctx context.Context, id uuid.UUID, messageID uuid.UUID, text string) error
 	SayStop(ctx context.Context, id uuid.UUID) error
+	SayFinish(ctx context.Context, id uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error)
 }
 
 // list of default external media channel options.
@@ -62,8 +63,10 @@ const (
 type streamer interface {
 	Init(ctx context.Context, st *streaming.Streaming) (any, error)
 	Run(vendorConfig any) error
-	SayStop(vendorConfig any)
-	AddText(vendorConfig any, text string) error
+
+	SayStop(vendorConfig any) error
+	SayAdd(vendorConfig any, text string) error
+	SayFinish(vendorConfig any) error
 }
 
 type streamingHandler struct {

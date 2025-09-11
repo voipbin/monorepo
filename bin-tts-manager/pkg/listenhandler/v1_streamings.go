@@ -186,3 +186,46 @@ func (h *listenHandler) v1StreamingsIDSayStopPost(ctx context.Context, m *sock.R
 
 	return res, nil
 }
+
+// v1StreamingsIDSayFinishPost handles /v1/streamings/<id>/message_finish POST request
+func (h *listenHandler) v1StreamingsIDSayFinishPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1StreamingsIDSayFinishPost",
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/streamings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/say"
+	tmpVals := strings.Split(u.Path, "/")
+	streamingID := uuid.FromStringOrNil(tmpVals[3])
+
+	var req request.V1DataStreamingsIDSayFinishPost
+	if errUnmarshal := json.Unmarshal(m.Data, &req); errUnmarshal != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
+		return nil, errUnmarshal
+	}
+	log.WithField("request", req).Debugf("Processing v1StreamingsIDSayFinishPost. streaming_id: %s", streamingID)
+
+	tmp, err := h.streamingHandler.SayFinish(ctx, streamingID, req.MessageID)
+	if err != nil {
+		log.Errorf("Could not add to the say streaming. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
