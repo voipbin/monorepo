@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
 	tmStreaming "monorepo/bin-tts-manager/models/streaming"
 	"reflect"
 	"testing"
@@ -34,7 +35,8 @@ func Test_StreamingSend(t *testing.T) {
 		responseUUID1         uuid.UUID // For outgoing message
 		responseUUID2         uuid.UUID // For TTSStreamingSayInit msgID
 		responseMessages      []*message.Message
-		responseChan          <-chan string
+		responseChanMessage   <-chan string
+		responseChanAction    <-chan *fmaction.Action
 		responseStreaming     *tmStreaming.Streaming
 		responseStreamingMsgs []string
 
@@ -75,11 +77,16 @@ func Test_StreamingSend(t *testing.T) {
 					},
 				},
 			},
-			responseChan: func() <-chan string {
+			responseChanMessage: func() <-chan string {
 				ch := make(chan string, 3)
 				ch <- "Hi"
 				ch <- " there"
 				ch <- "!"
+				close(ch)
+				return ch
+			}(),
+			responseChanAction: func() <-chan *fmaction.Action {
+				ch := make(chan *fmaction.Action, 3)
 				close(ch)
 				return ch
 			}(),
@@ -164,7 +171,7 @@ func Test_StreamingSend(t *testing.T) {
 
 			// streamingSendOpenai
 			mockDB.EXPECT().MessageGets(ctx, tt.responseAIcall.ID, uint64(1000), "", gomock.Any()).Return(tt.responseMessages, nil)
-			mockGPT.EXPECT().StreamingSend(ctx, tt.responseAIcall, tt.expectMessages).Return(tt.responseChan, nil)
+			mockGPT.EXPECT().StreamingSend(ctx, tt.responseAIcall, tt.expectMessages).Return(tt.responseChanMessage, tt.responseChanAction, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID2) // TTS msgID
 			mockReq.EXPECT().TTSV1StreamingSayInit(ctx, tt.responseAIcall.TTSStreamingPodID, tt.responseAIcall.TTSStreamingID, tt.responseUUID2).Return(tt.responseStreaming, nil)

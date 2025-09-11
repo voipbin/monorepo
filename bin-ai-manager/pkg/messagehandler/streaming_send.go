@@ -91,11 +91,13 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	for act := range chanAction {
 		actions = append(actions, *act)
 	}
-	af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, cc.ActiveflowID, actions)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not add actions to the activeflow. activeflow_id: %s", cc.ActiveflowID)
+	if len(actions) > 0 {
+		af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, cc.ActiveflowID, actions)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not add actions to the activeflow. activeflow_id: %s", cc.ActiveflowID)
+		}
+		log.Debugf("Added actions to the activeflow. activeflow_id: %s, actions: %v", cc.ActiveflowID, af)
 	}
-	log.Debugf("Added actions to the activeflow. activeflow_id: %s, actions: %v", cc.ActiveflowID, af)
 
 	if returnResponse {
 		res = tmpResponse
