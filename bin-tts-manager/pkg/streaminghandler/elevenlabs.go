@@ -364,9 +364,6 @@ func (h *elevenlabsHandler) readConnWebsock(ctx context.Context, messageID uuid.
 			case <-ctx.Done():
 				log.Debug("Dropping message as main loop context is cancelled.")
 				return
-
-			default:
-				log.Warn("Message channel full. Dropping websocket message.")
 			}
 		}
 	}
