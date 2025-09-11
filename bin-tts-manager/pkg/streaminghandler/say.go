@@ -102,7 +102,10 @@ func (h *streamingHandler) SayFinish(ctx context.Context, id uuid.UUID, messageI
 
 	switch st.VendorName {
 	case streaming.VendorNameElevenlabs:
-		return nil, h.elevenlabsHandler.SayFinish(st.VendorConfig)
+		if errFinish := h.elevenlabsHandler.SayFinish(st.VendorConfig); errFinish != nil {
+			return nil, errors.Wrapf(errFinish, "could not finish the elevenlabs streaming. streaming_id: %s, message_id: %s", id, messageID)
+		}
+		return st, nil
 
 	default:
 		return nil, errors.Errorf("unsupported vendor for text streaming. vendor: %s", st.VendorName)

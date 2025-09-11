@@ -238,7 +238,6 @@ func (h *elevenlabsHandler) Run(vendorConfig any) error {
 
 	<-cf.Ctx.Done()
 
-	// clean up the vendoer config
 	h.terminate(cf)
 
 	return nil
