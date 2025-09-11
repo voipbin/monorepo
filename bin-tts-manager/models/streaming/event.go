@@ -5,4 +5,7 @@ const (
 
 	EventTypeStreamingCreated string = "streaming_created"
 	EventTypeStreamingDeleted string = "streaming_deleted"
+
+	EventTypeStreamingPlayStarted  string = "streaming_play_started"
+	EventTypeStreamingPlayFinished string = "streaming_play_finished"
 )

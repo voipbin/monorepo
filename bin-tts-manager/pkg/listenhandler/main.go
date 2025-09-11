@@ -40,11 +40,12 @@ var (
 	regV1Speeches = regexp.MustCompile("/v1/speeches")
 
 	// streamings
-	resV1Streamings          = regexp.MustCompile("/v1/streamings$")
-	resV1StreamingsID        = regexp.MustCompile("/v1/streamings/" + regUUID + "$")
-	resV1StreamingsIDSayAdd  = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_add$")
-	resV1StreamingsIDSayInit = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_init$")
-	resV1StreamingsIDSayStop = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_stop$")
+	resV1Streamings            = regexp.MustCompile("/v1/streamings$")
+	resV1StreamingsID          = regexp.MustCompile("/v1/streamings/" + regUUID + "$")
+	resV1StreamingsIDSayAdd    = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_add$")
+	resV1StreamingsIDSayInit   = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_init$")
+	resV1StreamingsIDSayStop   = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_stop$")
+	resV1StreamingsIDSayFinish = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_finish$")
 )
 
 var (

@@ -51,8 +51,7 @@ func (h *streamingHandler) SayStop(ctx context.Context, id uuid.UUID) error {
 			return nil
 		}
 
-		h.elevenlabsHandler.SayStop(st.VendorConfig)
-		return nil
+		return h.elevenlabsHandler.SayStop(st.VendorConfig)
 
 	default:
 		return nil
@@ -81,9 +80,31 @@ func (h *streamingHandler) SayAdd(ctx context.Context, id uuid.UUID, messageID u
 	switch st.VendorName {
 	case streaming.VendorNameElevenlabs:
 		log.Debugf("Adding text to ElevenLabs streaming. streaming_id: %s, message_id: %s, text: %s", id, messageID, text)
-		return h.elevenlabsHandler.AddText(st.VendorConfig, text)
+		return h.elevenlabsHandler.SayAdd(st.VendorConfig, text)
 
 	default:
 		return errors.Errorf("unsupported vendor for text streaming. vendor: %s", st.VendorName)
+	}
+}
+
+// SayFinish set finish flag to true for the current message being synthesized
+func (h *streamingHandler) SayFinish(ctx context.Context, id uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error) {
+	st, err := h.Get(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get streaming info. streaming_id: %s, message_id: %s", id, messageID)
+	}
+
+	if st.MessageID != messageID {
+		return nil, fmt.Errorf("message ID mismatch. streaming_id: %s, current_message_id: %s, request_message_id: %s", id, st.MessageID, messageID)
+	} else if st.VendorConfig == nil {
+		return nil, fmt.Errorf("vendor config is nil. streaming_id: %s", id)
+	}
+
+	switch st.VendorName {
+	case streaming.VendorNameElevenlabs:
+		return nil, h.elevenlabsHandler.SayFinish(st.VendorConfig)
+
+	default:
+		return nil, errors.Errorf("unsupported vendor for text streaming. vendor: %s", st.VendorName)
 	}
 }

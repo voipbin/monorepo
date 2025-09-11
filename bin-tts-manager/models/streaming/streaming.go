@@ -16,11 +16,12 @@ type Streaming struct {
 	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`  // ID of the activeflow associated with the streaming
 	ReferenceType ReferenceType `json:"reference_type,omitempty"` // Type of the reference (e.g., call, confbridge)
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`   // ID of the reference (e.g., call ID, confbridge ID)
-	MessageID     uuid.UUID     `json:"message_id,omitempty"`     // ID of the message associated with the streaming
 
 	Language  string    `json:"language,omitempty"` // Language of the streaming
 	Gender    Gender    `json:"gender,omitempty"`
 	Direction Direction `json:"direction,omitempty"` // Direction of the streaming
+
+	MessageID uuid.UUID `json:"message_id,omitempty"` // ID of the message associated with the streaming
 
 	VendorLock   sync.Mutex `json:"-"` // Lock for synchronizing access to VendorConfig
 	VendorName   VendorName `json:"-"` // Vendor of the service (e.g., gcp, aws)

@@ -33,3 +33,10 @@ type V1DataStreamingsIDSayAddPost struct {
 type V1DataStreamingsIDSayInitPost struct {
 	MessageID uuid.UUID `json:"message_id,omitempty"`
 }
+
+// V1DataStreamingsIDSayFinishPost is
+// v1 data type request struct for
+// /v1/streamings/<id>/say_finish POST
+type V1DataStreamingsIDSayFinishPost struct {
+	MessageID uuid.UUID `json:"message_id,omitempty"`
+}

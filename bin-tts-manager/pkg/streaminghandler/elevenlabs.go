@@ -7,8 +7,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-tts-manager/models/message"
 	"monorepo/bin-tts-manager/models/streaming"
 	"net"
 	"strings"
@@ -24,13 +26,22 @@ import (
 )
 
 type ElevenlabsConfig struct {
-	Streaming *streaming.Streaming `json:"streaming"`
+	Streaming *streaming.Streaming `json:"-"`
 
 	Ctx    context.Context    `json:"-"`
 	Cancel context.CancelFunc `json:"-"`
 
 	ConnWebsock *websocket.Conn `json:"-"` // connector between the service and ElevenLabs
 	ConnAst     net.Conn        `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
+
+	Message *message.Message `json:"message,omitempty"` // Current message being synthesized
+
+	// StreamingID uuid.UUID `json:"streaming_id,omitempty"` // Current streaming session
+
+	// MessageID     uuid.UUID `json:"message_id,omitempty"`     // Current message being synthesized
+	// MessageTotal  string    `json:"message_total,omitempty"`  // Total message
+	// MessagePlayed string    `json:"message_played,omitempty"` // Played message to be synthesized
+	// MessageFinish bool      `json:"message_finish,omitempty"` // Whether the message has finished playing
 
 	muConnWebsock sync.Mutex `json:"-"`
 }
@@ -185,19 +196,33 @@ func (h *elevenlabsHandler) Init(ctx context.Context, st *streaming.Streaming) (
 		ConnWebsock: connWebsock,
 		ConnAst:     st.ConnAst,
 
+		Message: &message.Message{
+			Identity: commonidentity.Identity{
+				ID:         st.MessageID,
+				CustomerID: st.CustomerID,
+			},
+			StreamingID:   st.ID,
+			TotalMessage:  "",
+			PlayedMessage: "",
+			Finish:        false,
+		},
+
 		muConnWebsock: sync.Mutex{},
 	}
+
+	h.notifyHandler.PublishEvent(ctx, message.EventTypeInitiated, res.Message)
 
 	return res, nil
 }
 
-func (h *elevenlabsHandler) SayStop(vendorConfig any) {
-	cf, ok := vendorConfig.(*ElevenlabsConfig)
-	if !ok || cf == nil {
-		return
-	}
+func (h *elevenlabsHandler) terminate(cf *ElevenlabsConfig) {
+	cf.muConnWebsock.Lock()
+	defer cf.muConnWebsock.Unlock()
 
-	cf.Cancel()
+	if cf.ConnWebsock != nil {
+		cf.ConnWebsock.Close()
+		cf.ConnWebsock = nil
+	}
 }
 
 func (h *elevenlabsHandler) Run(vendorConfig any) error {
@@ -207,51 +232,39 @@ func (h *elevenlabsHandler) Run(vendorConfig any) error {
 	}
 	defer h.SayStop(cf)
 
-	go h.readWebsock(cf)
+	go h.runProcess(cf)
 	go h.runKeepAlive(cf)
 
 	<-cf.Ctx.Done()
 
+	// clean up the vendoer config
+	h.terminate(cf)
+
 	return nil
 }
 
-func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
+func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "messageHandleFromVendor",
+		"func":    "runProcess",
+		"message": cf.Message,
 	})
 
+	msg := cf.Message
+	h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayStarted, msg)
+
 	msgCh := make(chan []byte)
-	errCh := make(chan error)
+	errCh := make(chan error, 1)
 
-	// message read
-	go func() {
-		defer cf.ConnWebsock.Close()
+	defer func() {
+		close(msgCh)
+		close(errCh)
+		cf.Cancel()
 
-		for {
-			select {
-			case <-cf.Ctx.Done():
-				return
-
-			default:
-				_, msg, err := cf.ConnWebsock.ReadMessage()
-				if err != nil {
-					// non-blocking send to avoid goroutine leak if main loop is gone
-					select {
-					case errCh <- err:
-					default:
-					}
-					return
-				}
-
-				// non-blocking send in case main loop has exited
-				select {
-				case msgCh <- msg:
-				case <-cf.Ctx.Done():
-					return
-				}
-			}
-		}
+		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
 	}()
+
+	// read from elevenlabs websocket
+	go h.readConnWebsock(cf.Ctx, msg.ID, cf.ConnWebsock, msgCh, errCh)
 
 	for {
 		select {
@@ -292,10 +305,14 @@ func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
 				}
 			}
 
-			// Check for the 'isFinal' flag, which indicates the end of audio generation.
-			if response.IsFinal {
-				log.Println("Received final message for current generation.")
-				h.notifyHandler.PublishEvent(cf.Ctx, streaming.EventTypeStreamingFinished, cf.Streaming)
+			// update message
+			if len(response.Alignment.Chars) > 0 {
+				msg.TotalMessage += strings.Join(response.Alignment.Chars, "")
+
+				if msg.Finish && msg.PlayedMessage == msg.TotalMessage {
+					log.Debugf("Message finished. Played: %d, Total: %d", len(msg.PlayedMessage), len(msg.TotalMessage))
+					return
+				}
 			}
 
 			// Log other control messages like 'status'.
@@ -309,6 +326,47 @@ func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
 			}
 		}
 	}
+}
+
+func (h *elevenlabsHandler) readConnWebsock(ctx context.Context, messageID uuid.UUID, connWebsock *websocket.Conn, msgCh chan<- []byte, errCh chan<- error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "readConnWebsock",
+		"message_id": messageID,
+	})
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+
+		default:
+			_, msg, err := connWebsock.ReadMessage()
+			if err != nil {
+				// non-blocking send to avoid goroutine leak if main loop is gone
+				select {
+				case errCh <- err:
+					log.Errorf("Error from websocket ReadMessage: %v", err)
+
+				default:
+					log.Warnf("Error channel full. Dropping websocket read error: %v", err)
+				}
+
+				return
+			}
+
+			// non-blocking send in case main loop has exited
+			select {
+			case msgCh <- msg:
+			case <-ctx.Done():
+				log.Debug("Dropping message as main loop context is cancelled.")
+				return
+
+			default:
+				log.Warn("Message channel full. Dropping websocket message.")
+			}
+		}
+	}
+
 }
 
 func (h *elevenlabsHandler) connect(ctx context.Context, st *streaming.Streaming) (*websocket.Conn, error) {
@@ -340,19 +398,19 @@ func (h *elevenlabsHandler) connect(ctx context.Context, st *streaming.Streaming
 	return res, nil
 }
 
-func (h *elevenlabsHandler) AddText(vendorConfig any, text string) error {
+func (h *elevenlabsHandler) SayAdd(vendorConfig any, text string) error {
 
 	cf, ok := vendorConfig.(*ElevenlabsConfig)
 	if !ok || cf == nil {
 		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
 	}
 
+	cf.muConnWebsock.Lock()
+	defer cf.muConnWebsock.Unlock()
+
 	if cf.ConnWebsock == nil {
 		return fmt.Errorf("the ConnWebsock is nil")
 	}
-
-	cf.muConnWebsock.Lock()
-	defer cf.muConnWebsock.Unlock()
 
 	message := ElevenlabsMessage{
 		Text:  text,
@@ -363,6 +421,26 @@ func (h *elevenlabsHandler) AddText(vendorConfig any, text string) error {
 		return errors.Wrapf(errWrite, "failed to send text to ElevenLabs WebSocket")
 	}
 
+	return nil
+}
+
+func (h *elevenlabsHandler) SayStop(vendorConfig any) error {
+	cf, ok := vendorConfig.(*ElevenlabsConfig)
+	if !ok || cf == nil {
+		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
+	}
+
+	cf.Cancel()
+	return nil
+}
+
+func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
+	cf, ok := vendorConfig.(*ElevenlabsConfig)
+	if !ok || cf == nil {
+		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
+	}
+
+	cf.Message.Finish = true
 	return nil
 }
 
@@ -490,7 +568,7 @@ func (h *elevenlabsHandler) runKeepAlive(cf *ElevenlabsConfig) {
 			return
 
 		case <-ticker.C:
-			if errSend := h.AddText(cf, " "); errSend != nil {
+			if errSend := h.SayAdd(cf, " "); errSend != nil {
 				return
 			}
 		}
