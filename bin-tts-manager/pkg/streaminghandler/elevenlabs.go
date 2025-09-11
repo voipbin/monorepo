@@ -223,6 +223,8 @@ func (h *elevenlabsHandler) terminate(cf *ElevenlabsConfig) {
 		cf.ConnWebsock.Close()
 		cf.ConnWebsock = nil
 	}
+
+	cf.Cancel()
 }
 
 func (h *elevenlabsHandler) Run(vendorConfig any) error {
@@ -230,7 +232,6 @@ func (h *elevenlabsHandler) Run(vendorConfig any) error {
 	if !ok || cf == nil {
 		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
 	}
-	defer h.SayStop(cf)
 
 	go h.runProcess(cf)
 	go h.runKeepAlive(cf)

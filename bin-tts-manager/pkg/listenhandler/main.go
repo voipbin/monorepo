@@ -159,6 +159,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		requestType = "/streamings/<streaming-id>/say_stop"
 		response, err = h.v1StreamingsIDSayStopPost(ctx, m)
 
+	// /streamings/<id>/say_finish
+	case resV1StreamingsIDSayFinish.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/streamings/<streaming-id>/say_finish"
+		response, err = h.v1StreamingsIDSayFinishPost(ctx, m)
+
 	default:
 		log.Errorf("Could not find corresponded message handler. data: %s", m.Data)
 		response = simpleResponse(404)

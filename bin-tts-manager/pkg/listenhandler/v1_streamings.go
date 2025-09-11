@@ -187,10 +187,10 @@ func (h *listenHandler) v1StreamingsIDSayStopPost(ctx context.Context, m *sock.R
 	return res, nil
 }
 
-// v1StreamingsIDMessageFinishPost handles /v1/streamings/<id>/message_finish POST request
-func (h *listenHandler) v1StreamingsIDMessageFinishPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+// v1StreamingsIDSayFinishPost handles /v1/streamings/<id>/message_finish POST request
+func (h *listenHandler) v1StreamingsIDSayFinishPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "v1StreamingsIDMessageFinishPost",
+		"func": "v1StreamingsIDSayFinishPost",
 	})
 
 	u, err := url.Parse(m.URI)
@@ -207,7 +207,7 @@ func (h *listenHandler) v1StreamingsIDMessageFinishPost(ctx context.Context, m *
 		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
 		return nil, errUnmarshal
 	}
-	log.WithField("request", req).Debugf("Processing v1StreamingsIDMessageFinishPost. streaming_id: %s", streamingID)
+	log.WithField("request", req).Debugf("Processing v1StreamingsIDSayFinishPost. streaming_id: %s", streamingID)
 
 	tmp, err := h.streamingHandler.SayFinish(ctx, streamingID, req.MessageID)
 	if err != nil {
