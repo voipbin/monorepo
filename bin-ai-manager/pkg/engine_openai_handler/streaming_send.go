@@ -75,129 +75,21 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 
 	// Channel to deliver streamed tokens
 	chanMsg := make(chan string)
-	chanAction := make(chan *fmaction.Action)
+	chanTool := make(chan *fmaction.Action)
 
-	go h.streamingResponseHandle(ctx, stream, chanMsg, chanAction)
+	go h.streamingResponseHandle(ctx, stream, chanMsg, chanTool)
 
-	// go func() {
-	// 	defer stream.Close() // Close the stream when done
-	// 	defer close(chanMsg) // Close the channel when done
-	// 	defer close(chanAction)
-
-	// 	var currentSentence strings.Builder
-	// 	var currentTool strings.Builder
-	// 	var currentName string
-	// 	for {
-	// 		select {
-	// 		case <-ctx.Done():
-	// 			return
-
-	// 		default:
-	// 			response, err := stream.Recv()
-	// 			if errors.Is(err, io.EOF) {
-	// 				// Stream ended, send any remaining sentence
-	// 				if currentSentence.Len() > 0 {
-	// 					chanMsg <- strings.TrimSpace(currentSentence.String())
-	// 				}
-
-	// 				if currentTool.Len() > 0 {
-	// 					act, err := h.toolHandle(currentName, []byte(currentTool.String()))
-	// 					if err != nil {
-	// 						log.Errorf("Could not handle tool at the end of stream. err: %v", err)
-	// 					} else {
-	// 						chanAction <- act
-	// 					}
-	// 				}
-
-	// 				return
-	// 			}
-	// 			if err != nil {
-	// 				// Handle stream error
-	// 				log.Errorf("Could not receive from stream. err: %v", err)
-	// 				return
-	// 			}
-
-	// 			for _, choice := range response.Choices {
-	// 				for _, toolCall := range choice.Delta.ToolCalls {
-	// 					if toolCall.Function.Name != "" {
-	// 						if currentTool.Len() > 0 {
-	// 							act, err := h.toolHandle(currentName, []byte(currentTool.String()))
-	// 							if err != nil {
-	// 								log.Errorf("Could not handle tool at the end of stream. err: %v", err)
-	// 							} else {
-	// 								chanAction <- act
-	// 							}
-	// 						}
-
-	// 						currentName = toolCall.Function.Name
-	// 						currentTool.Reset()
-	// 					}
-
-	// 					if toolCall.Function.Arguments != "" {
-	// 						currentTool.WriteString(toolCall.Function.Arguments)
-	// 					}
-	// 				}
-
-	// 				if choice.Delta.Content != "" {
-	// 					if currentTool.Len() > 0 {
-	// 						act, err := h.toolHandle(currentName, []byte(currentTool.String()))
-	// 						if err != nil {
-	// 							log.Errorf("Could not handle tool at the end of stream. err: %v", err)
-	// 						} else {
-	// 							chanAction <- act
-	// 						}
-
-	// 						currentName = ""
-	// 						currentTool.Reset()
-	// 					}
-
-	// 					currentSentence.WriteString(choice.Delta.Content)
-
-	// 					// Look for sentence-ending characters (period, question mark, exclamation mark, newline)
-	// 					// More sophisticated sentence splitting logic can be implemented here.
-	// 					if strings.ContainsAny(choice.Delta.Content, ".?!\n") && currentSentence.Len() > 0 {
-	// 						sentence := currentSentence.String()
-	// 						trimmedSentence := strings.TrimSpace(sentence)
-
-	// 						if trimmedSentence != "" {
-	// 							chanMsg <- trimmedSentence // Deliver to the user
-	// 						}
-	// 						currentSentence.Reset() // Reset the buffer
-	// 					}
-	// 				}
-
-	// 				if choice.FinishReason != "" {
-	// 					if currentTool.Len() > 0 {
-	// 						act, err := h.toolHandle(currentName, []byte(currentTool.String()))
-	// 						if err != nil {
-	// 							log.Errorf("Could not handle tool at the end of stream. err: %v", err)
-	// 						} else {
-	// 							chanAction <- act
-	// 						}
-
-	// 						currentName = ""
-	// 						currentTool.Reset()
-	// 					}
-
-	// 					currentSentence.Reset()
-	// 				}
-
-	// 			}
-	// 		}
-	// 	}
-	// }()
-
-	return chanMsg, chanAction, nil
+	return chanMsg, chanTool, nil
 }
 
-func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, stream *openai.ChatCompletionStream, chanMsg chan string, chanAction chan *fmaction.Action) {
+func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, stream *openai.ChatCompletionStream, chanMsg chan string, chanTool chan *fmaction.Action) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "streamingResponseHandle",
 	})
 
 	defer stream.Close() // Close the stream when done
 	defer close(chanMsg) // Close the channel when done
-	defer close(chanAction)
+	defer close(chanTool)
 
 	var currentSentence strings.Builder
 	var currentTool strings.Builder
@@ -221,7 +113,7 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 						if err != nil {
 							log.Errorf("Could not handle tool at the end of stream. err: %v", err)
 						} else {
-							chanAction <- act
+							chanTool <- act
 						}
 					}
 					return
@@ -239,7 +131,7 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 							if err != nil {
 								log.Errorf("Could not handle tool at the end of stream. err: %v", err)
 							} else {
-								chanAction <- act
+								chanTool <- act
 							}
 						}
 
@@ -258,7 +150,7 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 						if err != nil {
 							log.Errorf("Could not handle tool at the end of stream. err: %v", err)
 						} else {
-							chanAction <- act
+							chanTool <- act
 						}
 
 						currentName = ""
@@ -286,7 +178,7 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 						if err != nil {
 							log.Errorf("Could not handle tool at the end of stream. err: %v", err)
 						} else {
-							chanAction <- act
+							chanTool <- act
 						}
 
 						currentName = ""

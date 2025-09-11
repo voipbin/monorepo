@@ -2,6 +2,7 @@ package messagehandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
@@ -97,6 +98,18 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 			return nil, errors.Wrapf(err, "could not add actions to the activeflow. activeflow_id: %s", cc.ActiveflowID)
 		}
 		log.Debugf("Added actions to the activeflow. activeflow_id: %s, actions: %v", cc.ActiveflowID, af)
+
+		tmpContent, err := json.Marshal(actions)
+		if err != nil {
+			log.Errorf("Could not marshal the actions. err: %v", err)
+		} else {
+			tmpMessage, errCreate := h.Create(ctx, msgID, cc.CustomerID, cc.ID, message.DirectionNone, message.RoleTool, string(tmpContent))
+			if errCreate != nil {
+				log.Errorf("Could not create the tool message. err: %v", errCreate)
+			} else {
+				log.WithField("message", tmpMessage).Debugf("Created the tool message for the actions. message_id: %s", tmpMessage.ID)
+			}
+		}
 	}
 
 	if returnResponse {

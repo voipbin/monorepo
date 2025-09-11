@@ -261,7 +261,9 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 		close(errCh)
 		cf.Cancel()
 
-		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
+		if msg.Finish {
+			h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
+		}
 	}()
 
 	// read from elevenlabs websocket
