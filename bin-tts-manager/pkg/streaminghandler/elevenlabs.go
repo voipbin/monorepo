@@ -43,11 +43,20 @@ type ElevenlabsMessage struct {
 	Flush                bool   `json:"flush,omitempty"`
 }
 
+type ElevenlabsAlignment struct {
+	CharStartTimesMs []int    `json:"charStartTimesMs,omitempty"`
+	CharsDurationsMs []int    `json:"charsDurationsMs,omitempty"`
+	Chars            []string `json:"chars,omitempty"`
+}
+
 type ElevenlabsResponse struct {
-	Audio   string `json:"audio,omitempty"`   // Base64 encoded audio data
-	IsFinal bool   `json:"isFinal,omitempty"` // Indicates if this is the final message in the stream
-	Status  string `json:"status,omitempty"`  // Status message from the server
-	Error   string `json:"error,omitempty"`   // Error message if any
+	Audio               string              `json:"audio,omitempty"`   // Base64 encoded audio data
+	IsFinal             bool                `json:"isFinal,omitempty"` // Indicates if this is the final message in the stream
+	NormalizedAlignment ElevenlabsAlignment `json:"normalizedAlignment,omitempty"`
+	Alignment           ElevenlabsAlignment `json:"alignment,omitempty"`
+
+	Status string `json:"status,omitempty"` // Status message from the server
+	Error  string `json:"error,omitempty"`  // Error message if any
 }
 
 const (
@@ -255,13 +264,12 @@ func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
 			return
 
 		case message := <-msgCh:
-			log.WithField("message", message).Debugf("Received message!!!!!!")
-
 			var response ElevenlabsResponse
 			if errUnmarshal := json.Unmarshal(message, &response); errUnmarshal != nil {
 				log.Errorf("Error parsing response: %v. Message: %s", errUnmarshal, string(message))
 				continue
 			}
+			log.WithField("response", response).Debug("Received message from ElevenLabs WebSocket.")
 
 			// Process audio data if present.
 			if response.Audio != "" {
