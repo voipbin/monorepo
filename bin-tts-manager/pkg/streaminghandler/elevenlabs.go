@@ -255,6 +255,8 @@ func (h *elevenlabsHandler) readWebsock(cf *ElevenlabsConfig) {
 			return
 
 		case message := <-msgCh:
+			log.WithField("message", message).Debugf("Received message!!!!!!")
+
 			var response ElevenlabsResponse
 			if errUnmarshal := json.Unmarshal(message, &response); errUnmarshal != nil {
 				log.Errorf("Error parsing response: %v. Message: %s", errUnmarshal, string(message))

@@ -13,6 +13,7 @@ import (
 	context "context"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
+	action "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
 
 	openai "github.com/sashabaranov/go-openai"
@@ -74,12 +75,13 @@ func (mr *MockEngineOpenaiHandlerMockRecorder) Send(ctx, req any) *gomock.Call {
 }
 
 // StreamingSend mocks base method.
-func (m *MockEngineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (<-chan string, error) {
+func (m *MockEngineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (<-chan string, <-chan *action.Action, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StreamingSend", ctx, cc, messages)
 	ret0, _ := ret[0].(<-chan string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(<-chan *action.Action)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // StreamingSend indicates an expected call of StreamingSend.

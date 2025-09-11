@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	fmaction "monorepo/bin-flow-manager/models/action"
 )
 
 const (
@@ -20,7 +21,7 @@ type EngineOpenaiHandler interface {
 	MessageSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (*message.Message, error)
 
 	Send(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error)
-	StreamingSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (<-chan string, error)
+	StreamingSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (<-chan string, <-chan *fmaction.Action, error)
 }
 
 // engineOpenaiHandler define
