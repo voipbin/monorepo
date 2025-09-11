@@ -257,8 +257,6 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 	errCh := make(chan error, 1)
 
 	defer func() {
-		close(msgCh)
-		close(errCh)
 		cf.Cancel()
 
 		if msg.Finish {
@@ -336,6 +334,9 @@ func (h *elevenlabsHandler) readConnWebsock(ctx context.Context, messageID uuid.
 		"func":       "readConnWebsock",
 		"message_id": messageID,
 	})
+
+	defer close(msgCh)
+	defer close(errCh)
 
 	for {
 		select {
