@@ -15,19 +15,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	defaultMessage = openai.ChatCompletionMessage{
+		Role:    string(message.RoleSystem),
+		Content: defaultSystemPrompt,
+	}
+)
+
 func (h *engineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (<-chan string, <-chan *fmaction.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "StreamingSend",
 		"aicall_id": cc.ID,
 	})
 
-	tmpMessages := []openai.ChatCompletionMessage{}
-
-	defaultMssage := openai.ChatCompletionMessage{
-		Role:    string(message.RoleSystem),
-		Content: defaultSystemPrompt,
+	tmpMessages := []openai.ChatCompletionMessage{
+		defaultMessage,
 	}
-	tmpMessages = append(tmpMessages, defaultMssage)
 
 	for _, m := range messages {
 		tmp := openai.ChatCompletionMessage{
