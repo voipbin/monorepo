@@ -36,13 +36,6 @@ type ElevenlabsConfig struct {
 
 	Message *message.Message `json:"message,omitempty"` // Current message being synthesized
 
-	// StreamingID uuid.UUID `json:"streaming_id,omitempty"` // Current streaming session
-
-	// MessageID     uuid.UUID `json:"message_id,omitempty"`     // Current message being synthesized
-	// MessageTotal  string    `json:"message_total,omitempty"`  // Total message
-	// MessagePlayed string    `json:"message_played,omitempty"` // Played message to be synthesized
-	// MessageFinish bool      `json:"message_finish,omitempty"` // Whether the message has finished playing
-
 	muConnWebsock sync.Mutex `json:"-"`
 }
 
@@ -441,6 +434,11 @@ func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
 	}
 
 	cf.Message.Finish = true
+
+	if cf.Message.TotalMessage == cf.Message.PlayedMessage {
+		// we've played all messages already. no need to wait.
+		h.terminate(cf)
+	}
 	return nil
 }
 
