@@ -93,6 +93,8 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 		actions = append(actions, *act)
 	}
 	if len(actions) > 0 {
+		log.WithField("actions", actions).Debugf("Received actions from the ai. aicall_id: %s", cc.ID)
+
 		af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, cc.ActiveflowID, actions)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not add actions to the activeflow. activeflow_id: %s", cc.ActiveflowID)

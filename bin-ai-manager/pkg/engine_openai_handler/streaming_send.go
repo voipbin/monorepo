@@ -176,6 +176,8 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 				}
 
 				if choice.FinishReason != "" {
+					log.Debugf("Stream finished. reason: %s", choice.FinishReason)
+
 					if currentTool.Len() > 0 {
 						act, err := h.toolHandle(currentName, []byte(currentTool.String()))
 						if err != nil {
