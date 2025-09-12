@@ -336,3 +336,70 @@ func Test_TTSV1StreamingSayStop(t *testing.T) {
 		})
 	}
 }
+
+func Test_TTSV1StreamingSayFinish(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		podID     string
+		id        uuid.UUID
+		messageID uuid.UUID
+
+		response *sock.Response
+
+		expectQueue   string
+		expectRequest *sock.Request
+		expectRes     *tmstreaming.Streaming
+	}{
+		{
+			name: "normal",
+
+			podID:     "0b6b0b86-8f71-11f0-a681-e32847bff3cf",
+			id:        uuid.FromStringOrNil("0bb7991a-8f71-11f0-a095-5737c10593c8"),
+			messageID: uuid.FromStringOrNil("0be56264-8f71-11f0-ad02-8f39fbde2186"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0bb7991a-8f71-11f0-a095-5737c10593c8"}`),
+			},
+
+			expectQueue: "bin-manager.tts-manager.request.0b6b0b86-8f71-11f0-a681-e32847bff3cf",
+			expectRequest: &sock.Request{
+				URI:      "/v1/streamings/0bb7991a-8f71-11f0-a095-5737c10593c8/say_finish",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"message_id":"0be56264-8f71-11f0-ad02-8f39fbde2186"}`),
+			},
+			expectRes: &tmstreaming.Streaming{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("0bb7991a-8f71-11f0-a095-5737c10593c8"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.TTSV1StreamingSayFinish(context.Background(), tt.podID, tt.id, tt.messageID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

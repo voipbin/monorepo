@@ -123,6 +123,7 @@ func (r *requestHandler) TTSV1StreamingSayAdd(ctx context.Context, podID string,
 }
 
 // TTSV1StreamingSayStop stops the saying streaming tts.
+// The current saying will be stopped immediately.
 func (r *requestHandler) TTSV1StreamingSayStop(ctx context.Context, podID string, streamingID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/streamings/%s/say_stop", streamingID)
 
@@ -138,4 +139,31 @@ func (r *requestHandler) TTSV1StreamingSayStop(ctx context.Context, podID string
 	}
 
 	return nil
+}
+
+// TTSV1StreamingSayFinish finishes the saying in a streaming tts session.
+// The say will be marked as finished and no more text can be added.
+func (r *requestHandler) TTSV1StreamingSayFinish(ctx context.Context, podID string, streamingID uuid.UUID, messageID uuid.UUID) (*tmstreaming.Streaming, error) {
+	uri := fmt.Sprintf("/v1/streamings/%s/say_finish", streamingID)
+
+	m, err := json.Marshal(request.V1DataStreamingsIDSayFinishPost{
+		MessageID: messageID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	queueName := fmt.Sprintf("bin-manager.tts-manager.request.%s", podID)
+
+	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodPost, "tts/streamings/<streaming-id>/say_finish", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res tmstreaming.Streaming
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
