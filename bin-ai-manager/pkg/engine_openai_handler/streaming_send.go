@@ -178,6 +178,10 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 				if choice.FinishReason != "" {
 					log.Debugf("Stream finished. reason: %s", choice.FinishReason)
 
+					if currentSentence.Len() > 0 {
+						chanMsg <- strings.TrimSpace(currentSentence.String())
+					}
+
 					if currentTool.Len() > 0 {
 						act, err := h.toolHandle(currentName, []byte(currentTool.String()))
 						if err != nil {
@@ -185,12 +189,9 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 						} else {
 							chanTool <- act
 						}
-
-						currentName = ""
-						currentTool.Reset()
 					}
 
-					currentSentence.Reset()
+					return
 				}
 			}
 		}
