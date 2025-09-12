@@ -15,6 +15,7 @@ func (h *subscribeHandler) processEventTMPlayFinished(ctx context.Context, m *so
 		"func":  "processEventTMPlayFinished",
 		"event": m,
 	})
+	log.Debugf("Received the tts-manager's message_play_finished event.")
 
 	var evt tmmessage.Message
 	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
