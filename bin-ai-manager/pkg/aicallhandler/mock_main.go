@@ -16,6 +16,7 @@ import (
 	call "monorepo/bin-call-manager/models/call"
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	service "monorepo/bin-common-handler/models/service"
+	message "monorepo/bin-tts-manager/models/message"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -126,6 +127,18 @@ func (mr *MockAIcallHandlerMockRecorder) EventCMConfbridgeLeaved(ctx, evt any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMConfbridgeLeaved", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMConfbridgeLeaved), ctx, evt)
 }
 
+// EventTMPlayFinished mocks base method.
+func (m *MockAIcallHandler) EventTMPlayFinished(ctx context.Context, evt *message.Message) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventTMPlayFinished", ctx, evt)
+}
+
+// EventTMPlayFinished indicates an expected call of EventTMPlayFinished.
+func (mr *MockAIcallHandlerMockRecorder) EventTMPlayFinished(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventTMPlayFinished", reflect.TypeOf((*MockAIcallHandler)(nil).EventTMPlayFinished), ctx, evt)
+}
+
 // Get mocks base method.
 func (m *MockAIcallHandler) Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -154,6 +167,21 @@ func (m *MockAIcallHandler) GetByReferenceID(ctx context.Context, referenceID uu
 func (mr *MockAIcallHandlerMockRecorder) GetByReferenceID(ctx, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockAIcallHandler)(nil).GetByReferenceID), ctx, referenceID)
+}
+
+// GetByStreamingID mocks base method.
+func (m *MockAIcallHandler) GetByStreamingID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByStreamingID", ctx, transcribeID)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByStreamingID indicates an expected call of GetByStreamingID.
+func (mr *MockAIcallHandlerMockRecorder) GetByStreamingID(ctx, transcribeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByStreamingID", reflect.TypeOf((*MockAIcallHandler)(nil).GetByStreamingID), ctx, transcribeID)
 }
 
 // GetByTranscribeID mocks base method.

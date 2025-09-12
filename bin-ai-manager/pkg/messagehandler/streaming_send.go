@@ -99,6 +99,13 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 		}
 		log.Debugf("Added actions to the activeflow. activeflow_id: %s, actions: %v", cc.ActiveflowID, af)
 
+		tmp, err := h.reqHandler.TTSV1StreamingSayFinish(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID)
+		if err != nil {
+			log.Errorf("Could not finish the tts streaming say. err: %v", err)
+			return nil, errors.Wrapf(err, "could not finish the tts streaming say. tts_streaming_id: %s", cc.TTSStreamingID)
+		}
+		log.WithField("tts_streaming", tmp).Debugf("Finished the tts streaming say. tts_streaming_id: %s", cc.TTSStreamingID)
+
 		tmpContent, err := json.Marshal(actions)
 		if err != nil {
 			log.Errorf("Could not marshal the actions. err: %v", err)

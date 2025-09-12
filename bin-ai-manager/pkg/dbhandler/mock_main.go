@@ -175,6 +175,21 @@ func (mr *MockDBHandlerMockRecorder) AIcallGetByReferenceID(ctx, referenceID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).AIcallGetByReferenceID), ctx, referenceID)
 }
 
+// AIcallGetByStreamingID mocks base method.
+func (m *MockDBHandler) AIcallGetByStreamingID(ctx context.Context, streamingID uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallGetByStreamingID", ctx, streamingID)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIcallGetByStreamingID indicates an expected call of AIcallGetByStreamingID.
+func (mr *MockDBHandlerMockRecorder) AIcallGetByStreamingID(ctx, streamingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByStreamingID", reflect.TypeOf((*MockDBHandler)(nil).AIcallGetByStreamingID), ctx, streamingID)
+}
+
 // AIcallGetByTranscribeID mocks base method.
 func (m *MockDBHandler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()

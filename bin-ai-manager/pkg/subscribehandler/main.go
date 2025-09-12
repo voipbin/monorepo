@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
+	tmmessage "monorepo/bin-tts-manager/models/message"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -28,6 +29,7 @@ import (
 const (
 	publisherCallManager       = string(commonoutline.ServiceNameCallManager)
 	publisherTranscribeManager = string(commonoutline.ServiceNameTranscribeManager)
+	publisherTTSManager        = string(commonoutline.ServiceNameTTSManager)
 )
 
 // SubscribeHandler intreface for subscribed event listen handler
@@ -157,6 +159,10 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	// transcribe-manager
 	case m.Publisher == publisherTranscribeManager && m.Type == string(tmtranscript.EventTypeTranscriptCreated):
 		err = h.processEventTMTranscriptCreated(ctx, m)
+
+	// tts-manager
+	case m.Publisher == string(commonoutline.ServiceNameTTSManager) && m.Type == string(tmmessage.EventTypePlayFinished):
+		err = h.processEventTMPlayFinished(ctx, m)
 
 	default:
 		// ignore the event.

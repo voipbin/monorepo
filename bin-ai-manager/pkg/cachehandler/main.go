@@ -32,6 +32,7 @@ type CacheHandler interface {
 	AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
+	AIcallGetByStreamingID(ctx context.Context, streamingID uuid.UUID) (*aicall.AIcall, error)
 	AIcallSet(ctx context.Context, data *aicall.AIcall) error
 
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)

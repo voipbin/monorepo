@@ -294,6 +294,37 @@ func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.U
 	return res, nil
 }
 
+// AIcallGetByStreamingID gets aicall of the given streaming_id.
+func (h *handler) AIcallGetByStreamingID(ctx context.Context, streamingID uuid.UUID) (*aicall.AIcall, error) {
+
+	tmp, err := h.cache.AIcallGetByStreamingID(ctx, streamingID)
+	if err == nil {
+		return tmp, nil
+	}
+
+	// prepare
+	q := fmt.Sprintf("%s where tts_streaming_id = ? order by tm_create desc", aicallSelect)
+
+	row, err := h.db.Query(q, streamingID.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AIcallGetByStreamingID. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.aicallGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get call. AIcallGetByStreamingID, err: %v", err)
+	}
+
+	_ = h.aicallSetToCache(ctx, res)
+
+	return res, nil
+}
+
 // AIcallGetByTranscribeID gets aicall of the given transcribe_id.
 func (h *handler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
 

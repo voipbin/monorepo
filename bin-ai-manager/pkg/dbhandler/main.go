@@ -30,6 +30,7 @@ type DBHandler interface {
 	AIcallDelete(ctx context.Context, id uuid.UUID) error
 	AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
+	AIcallGetByStreamingID(ctx context.Context, streamingID uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error)
 	AIcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error)
 	AIcallUpdateStatusPausing(ctx context.Context, id uuid.UUID) error
