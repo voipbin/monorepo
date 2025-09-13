@@ -90,6 +90,7 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 
 	actions := []fmaction.Action{}
 	for act := range chanAction {
+		log.WithField("action", act).Debugf("Received action from the ai. aicall_id: %s", cc.ID)
 		actions = append(actions, *act)
 	}
 	if len(actions) > 0 {

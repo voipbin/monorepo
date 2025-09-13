@@ -95,6 +95,8 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 	var toolName string
 
 	defer func() {
+		log.Debugf("Streaming response handler is done.")
+
 		h.streamingResponseHandleText(chanMsg, text)
 		h.streamingResponseHandleTool(chanTool, toolName, toolArg)
 
@@ -114,6 +116,7 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 				if !errors.Is(err, io.EOF) {
 					log.Errorf("Could not receive from stream. err: %v", err)
 				}
+
 				return
 			}
 
