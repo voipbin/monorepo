@@ -90,13 +90,19 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 		"func": "streamingResponseHandle",
 	})
 
-	defer stream.Close() // Close the stream when done
-	defer close(chanMsg) // Close the channel when done
-	defer close(chanTool)
+	var text strings.Builder
+	var toolArg strings.Builder
+	var toolName string
 
-	var currentSentence strings.Builder
-	var currentTool strings.Builder
-	var currentName string
+	defer func() {
+		h.streamingResponseHandleText(chanMsg, text)
+		h.streamingResponseHandleTool(chanTool, toolName, toolArg)
+
+		stream.Close()  // Close the stream when done
+		close(chanMsg)  // Close the channel when done
+		close(chanTool) // Close the channel when done
+	}()
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -105,95 +111,70 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 		default:
 			response, err := stream.Recv()
 			if err != nil {
-				if errors.Is(err, io.EOF) {
-					// Stream ended, send any remaining sentence
-					if currentSentence.Len() > 0 {
-						chanMsg <- strings.TrimSpace(currentSentence.String())
-					}
-
-					if currentTool.Len() > 0 {
-						act, err := h.toolHandle(currentName, []byte(currentTool.String()))
-						if err != nil {
-							log.Errorf("Could not handle tool at the end of stream. err: %v", err)
-						} else {
-							chanTool <- act
-						}
-					}
-					return
+				if !errors.Is(err, io.EOF) {
+					log.Errorf("Could not receive from stream. err: %v", err)
 				}
-
-				log.Errorf("Could not receive from stream. err: %v", err)
 				return
 			}
 
 			for _, choice := range response.Choices {
 				for _, toolCall := range choice.Delta.ToolCalls {
 					if toolCall.Function.Name != "" {
-						if currentTool.Len() > 0 {
-							act, err := h.toolHandle(currentName, []byte(currentTool.String()))
-							if err != nil {
-								log.Errorf("Could not handle tool at the end of stream. err: %v", err)
-							} else {
-								chanTool <- act
-							}
-						}
+						h.streamingResponseHandleTool(chanTool, toolName, toolArg)
 
-						currentName = toolCall.Function.Name
-						currentTool.Reset()
+						toolName = toolCall.Function.Name
+						toolArg.Reset()
 					}
 
 					if toolCall.Function.Arguments != "" {
-						currentTool.WriteString(toolCall.Function.Arguments)
+						toolArg.WriteString(toolCall.Function.Arguments)
 					}
 				}
 
 				if choice.Delta.Content != "" {
-					if currentTool.Len() > 0 {
-						act, err := h.toolHandle(currentName, []byte(currentTool.String()))
-						if err != nil {
-							log.Errorf("Could not handle tool at the end of stream. err: %v", err)
-						} else {
-							chanTool <- act
-						}
+					if toolName != "" {
+						h.streamingResponseHandleTool(chanTool, toolName, toolArg)
 
-						currentName = ""
-						currentTool.Reset()
+						toolName = ""
+						toolArg.Reset()
 					}
 
-					currentSentence.WriteString(choice.Delta.Content)
+					text.WriteString(choice.Delta.Content)
 
 					// Look for sentence-ending characters (period, question mark, exclamation mark, newline)
 					// More sophisticated sentence splitting logic can be implemented here.
-					if strings.ContainsAny(choice.Delta.Content, ".?!\n") && currentSentence.Len() > 0 {
-						sentence := currentSentence.String()
-						trimmedSentence := strings.TrimSpace(sentence)
-
-						if trimmedSentence != "" {
-							chanMsg <- trimmedSentence // Deliver to the user
-						}
-						currentSentence.Reset() // Reset the buffer
+					if strings.ContainsAny(choice.Delta.Content, ".?!\n") && text.Len() > 0 {
+						h.streamingResponseHandleText(chanMsg, text)
+						text.Reset() // Reset the buffer
 					}
 				}
 
 				if choice.FinishReason != "" {
 					log.Debugf("Stream finished. reason: %s", choice.FinishReason)
-
-					if currentSentence.Len() > 0 {
-						chanMsg <- strings.TrimSpace(currentSentence.String())
-					}
-
-					if currentTool.Len() > 0 {
-						act, err := h.toolHandle(currentName, []byte(currentTool.String()))
-						if err != nil {
-							log.Errorf("Could not handle tool at the end of stream. err: %v", err)
-						} else {
-							chanTool <- act
-						}
-					}
-
 					return
 				}
 			}
 		}
 	}
+}
+
+func (h *engineOpenaiHandler) streamingResponseHandleText(chanMsg chan string, text strings.Builder) {
+	if text.Len() == 0 {
+		return
+	}
+
+	chanMsg <- strings.TrimSpace(text.String())
+}
+
+func (h *engineOpenaiHandler) streamingResponseHandleTool(chanTool chan *fmaction.Action, name string, arg strings.Builder) {
+	if name == "" {
+		return
+	}
+
+	act, err := h.toolHandle(name, []byte(arg.String()))
+	if err != nil {
+		return
+	}
+
+	chanTool <- act
 }
