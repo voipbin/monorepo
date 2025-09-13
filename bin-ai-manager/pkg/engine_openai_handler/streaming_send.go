@@ -99,10 +99,12 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 
 		h.streamingResponseHandleText(chanMsg, text)
 		h.streamingResponseHandleTool(chanTool, toolName, toolArg)
+		log.Debugf("Flushed remaining text and tool action.")
 
 		stream.Close()  // Close the stream when done
 		close(chanMsg)  // Close the channel when done
 		close(chanTool) // Close the channel when done
+		log.Debugf("Closed channels and stream.")
 	}()
 
 	for {
