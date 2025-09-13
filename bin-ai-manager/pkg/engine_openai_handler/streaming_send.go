@@ -167,14 +167,21 @@ func (h *engineOpenaiHandler) streamingResponseHandleText(chanMsg chan string, t
 }
 
 func (h *engineOpenaiHandler) streamingResponseHandleTool(chanTool chan *fmaction.Action, name string, arg strings.Builder) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "streamingResponseHandleTool",
+		"tool_name": name,
+		"tool_arg":  arg.String(),
+	})
 	if name == "" {
 		return
 	}
 
 	act, err := h.toolHandle(name, []byte(arg.String()))
 	if err != nil {
+		log.Errorf("Could not handle the tool action. err: %v", err)
 		return
 	}
+	log.WithField("action", act).Debugf("Handled the tool action.")
 
 	chanTool <- act
 }
