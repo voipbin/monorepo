@@ -77,8 +77,8 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 	}
 
 	// Channel to deliver streamed tokens
-	chanMsg := make(chan string)
-	chanTool := make(chan *fmaction.Action)
+	chanMsg := make(chan string, 10)
+	chanTool := make(chan *fmaction.Action, 10)
 
 	go h.streamingResponseHandle(ctx, stream, chanMsg, chanTool)
 
