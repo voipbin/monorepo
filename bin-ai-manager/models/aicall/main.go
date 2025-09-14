@@ -57,6 +57,7 @@ const (
 	StatusProgressing Status = "progressing"
 	StatusPausing     Status = "pausing"
 	StatusResuming    Status = "resuming"
+	StatusFinish      Status = "finish" // the call is finished, but the resources may not be released yet.
 	StatusEnd         Status = "end"
 )
 
