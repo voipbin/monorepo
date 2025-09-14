@@ -88,11 +88,30 @@ func (r *requestHandler) AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) 
 
 // AIV1AIcallDelete sends a request to ai-manager
 // to deleting a aicall.
-// it returns deleted conference if it succeed.
+// it returns deleted aicall if it succeed.
 func (r *requestHandler) AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error) {
 	uri := fmt.Sprintf("/v1/aicalls/%s", aicallID)
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodDelete, "ai/aicalls/<aicall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res amaicall.AIcall
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
+// AIV1AIcallTerminate sends a request to ai-manager
+// to terminate an aicall.
+// it returns aicall if it succeed.
+func (r *requestHandler) AIV1AIcallTerminate(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error) {
+	uri := fmt.Sprintf("/v1/aicalls/%s/terminate", aicallID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/aicalls/<aicall-id>/terminate", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}

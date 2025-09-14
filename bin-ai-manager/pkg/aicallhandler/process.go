@@ -88,7 +88,7 @@ func (h *aicallHandler) ProcessEnd(ctx context.Context, ac *aicall.AIcall) (*aic
 		}
 	}
 
-	res, err := h.UpdateStatusEnd(ctx, ac.ID)
+	res, err := h.UpdateStatusFinished(ctx, ac.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not end the aicall")
 	}
@@ -101,6 +101,16 @@ func (h *aicallHandler) ProcessEnd(ctx context.Context, ac *aicall.AIcall) (*aic
 		log.Errorf("Could not delete the confbridge. err: %v", err)
 	}
 	log.WithField("confbridge", tmp).Debugf("Destroyed the confbridge. confbridge_id: %s", tmp.ID)
+
+	return res, nil
+}
+
+// ProcessTerminating starts the aicall terminating process.
+func (h *aicallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	res, err := h.UpdateStatusFinishing(ctx, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not terminating the aicall")
+	}
 
 	return res, nil
 }

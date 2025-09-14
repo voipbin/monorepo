@@ -32,7 +32,7 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 		return nil, errors.Wrapf(err, "could not get the aicall correctly")
 	}
 
-	if cc.Status == aicall.StatusEnd {
+	if cc.Status == aicall.StatusFinished {
 		return nil, errors.New("aicall is already ended")
 	} else if cc.ReferenceType != aicall.ReferenceTypeCall {
 		return nil, fmt.Errorf("unsupported reference type: %s", cc.ReferenceType)

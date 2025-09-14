@@ -36,7 +36,8 @@ type DBHandler interface {
 	AIcallUpdateStatusPausing(ctx context.Context, id uuid.UUID) error
 	AIcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
 	AIcallUpdateStatusResuming(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) error
-	AIcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error
+	AIcallUpdateStatusFinishing(ctx context.Context, id uuid.UUID) error
+	AIcallUpdateStatusFinished(ctx context.Context, id uuid.UUID) error
 
 	MessageCreate(ctx context.Context, c *message.Message) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)

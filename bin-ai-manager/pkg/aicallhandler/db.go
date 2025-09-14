@@ -197,10 +197,26 @@ func (h *aicallHandler) UpdateStatusResuming(ctx context.Context, id uuid.UUID, 
 	return res, nil
 }
 
-// UpdateStatusEnd updates the status to end
-func (h *aicallHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+// UpdateStatusFinishing updates the status to finishing
+func (h *aicallHandler) UpdateStatusFinishing(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 
-	if errUpdate := h.db.AIcallUpdateStatusEnd(ctx, id); errUpdate != nil {
+	if errUpdate := h.db.AIcallUpdateStatusFinishing(ctx, id); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the status to finishing. aicall_id: %s", id)
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusFinishing, res)
+
+	return res, nil
+}
+
+// UpdateStatusFinished updates the status to end
+func (h *aicallHandler) UpdateStatusFinished(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+
+	if errUpdate := h.db.AIcallUpdateStatusFinished(ctx, id); errUpdate != nil {
 		return nil, errors.Wrapf(errUpdate, "could not update the status to end. aicall_id: %s", id)
 	}
 
@@ -208,7 +224,7 @@ func (h *aicallHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID) (*aic
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusEnd, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusFinished, res)
 
 	return res, nil
 }

@@ -220,18 +220,32 @@ func (mr *MockDBHandlerMockRecorder) AIcallGets(ctx, size, token, filters any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGets", reflect.TypeOf((*MockDBHandler)(nil).AIcallGets), ctx, size, token, filters)
 }
 
-// AIcallUpdateStatusEnd mocks base method.
-func (m *MockDBHandler) AIcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error {
+// AIcallUpdateStatusFinished mocks base method.
+func (m *MockDBHandler) AIcallUpdateStatusFinished(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallUpdateStatusEnd", ctx, id)
+	ret := m.ctrl.Call(m, "AIcallUpdateStatusFinished", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AIcallUpdateStatusEnd indicates an expected call of AIcallUpdateStatusEnd.
-func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusEnd(ctx, id any) *gomock.Call {
+// AIcallUpdateStatusFinished indicates an expected call of AIcallUpdateStatusFinished.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusFinished(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusEnd", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusEnd), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusFinished", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusFinished), ctx, id)
+}
+
+// AIcallUpdateStatusFinishing mocks base method.
+func (m *MockDBHandler) AIcallUpdateStatusFinishing(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallUpdateStatusFinishing", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIcallUpdateStatusFinishing indicates an expected call of AIcallUpdateStatusFinishing.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusFinishing(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusFinishing", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusFinishing), ctx, id)
 }
 
 // AIcallUpdateStatusPausing mocks base method.

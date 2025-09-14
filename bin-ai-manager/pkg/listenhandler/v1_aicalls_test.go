@@ -276,3 +276,62 @@ func Test_processV1AIcallsIDGet(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1AIcallsIDTerminatePost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		responseAIcall *aicall.AIcall
+
+		expectedID  uuid.UUID
+		expectedRes *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/24a00d20-9199-11f0-b036-f7aebbe6e8f8/terminate",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseAIcall: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("24a00d20-9199-11f0-b036-f7aebbe6e8f8"),
+				},
+			},
+
+			expectedID: uuid.FromStringOrNil("24a00d20-9199-11f0-b036-f7aebbe6e8f8"),
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"24a00d20-9199-11f0-b036-f7aebbe6e8f8","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","tts_streaming_id":"00000000-0000-0000-0000-000000000000"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:   mockSock,
+				aicallHandler: mockAIcall,
+			}
+
+			mockAIcall.EXPECT().ProcessTerminating(gomock.Any(), tt.expectedID).Return(tt.responseAIcall, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}

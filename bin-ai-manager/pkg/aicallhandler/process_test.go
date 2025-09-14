@@ -151,10 +151,10 @@ func Test_ProcessEnd(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.aicall.TranscribeID).Return(&tmtranscribe.Transcribe{}, nil)
-			mockDB.EXPECT().AIcallUpdateStatusEnd(ctx, tt.aicall.ID).Return(nil)
+			mockDB.EXPECT().AIcallUpdateStatusFinished(ctx, tt.aicall.ID).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
 			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusEnd, tt.aicall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusFinished, tt.aicall)
 
 			res, err := h.ProcessEnd(ctx, tt.aicall)
 			if err != nil {
