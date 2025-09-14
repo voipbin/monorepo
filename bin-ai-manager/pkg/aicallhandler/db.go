@@ -208,7 +208,7 @@ func (h *aicallHandler) UpdateStatusFinishing(ctx context.Context, id uuid.UUID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusFinished, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusFinishing, res)
 
 	return res, nil
 }

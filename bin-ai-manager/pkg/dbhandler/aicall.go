@@ -413,7 +413,7 @@ func (h *handler) AIcallUpdateStatusResuming(ctx context.Context, id uuid.UUID, 
 	return nil
 }
 
-// AIcallUpdateStAIcallUpdateStatusFinishingatusPausing updates the aicall's status to finishing
+// AIcallUpdateStatusFinishing updates the aicall's status to finishing
 func (h *handler) AIcallUpdateStatusFinishing(ctx context.Context, id uuid.UUID) error {
 	return h.aicallUpdateStatus(ctx, id, uuid.Nil, aicall.StatusFinishing)
 }
