@@ -95,6 +95,10 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 			errs <- errors.Wrapf(err, "could not handle the tool response")
 			return
 		}
+
+		if tmp == nil {
+			return
+		}
 		log.WithField("response_message", tmp).Debugf("Handled the text response tool. message: %s", tmp.Content)
 	}()
 
