@@ -32,7 +32,7 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 		return nil, errors.Wrapf(err, "could not get the aicall correctly")
 	}
 
-	if cc.Status == aicall.StatusFinished {
+	if cc.Status == aicall.StatusTerminated {
 		return nil, errors.New("aicall is already ended")
 	} else if cc.ReferenceType != aicall.ReferenceTypeCall {
 		return nil, fmt.Errorf("unsupported reference type: %s", cc.ReferenceType)
@@ -118,66 +118,6 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 	log.WithField("tts_streaming", tmpFinish).Debugf("Finished the tts streaming say. tts_streaming_id: %s", cc.TTSStreamingID)
 
 	return res, nil
-
-	// responseText, errText :=
-
-	// totalMessage := ""
-	// for msg := range chanText {
-	// 	log.Debugf("Sending the streaming message to tts streaming. message: %s", msg)
-	// 	if errAdd := h.reqHandler.TTSV1StreamingSayAdd(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID, msg); errAdd != nil {
-	// 		return nil, errors.Wrapf(errAdd, "could not add the text via tts streaming. tts_streaming_id: %s", cc.TTSStreamingID)
-	// 	}
-
-	// 	totalMessage += msg
-	// }
-	// log.Debugf("Finished sending the streaming message to tts streaming. total_message: %s", totalMessage)
-
-	// // create a message for incoming(response)
-	// tmpResponse, err := h.Create(ctx, msgID, cc.CustomerID, cc.ID, message.DirectionIncoming, message.RoleAssistant, totalMessage)
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "could not create the received message correctly")
-	// }
-	// log.WithField("response", tmpResponse).Debugf("Created the response message. message_id: %s", tmpResponse.ID)
-
-	// actions := []fmaction.Action{}
-	// for act := range chanAction {
-	// 	log.WithField("action", act).Debugf("Received action from the ai. aicall_id: %s", cc.ID)
-	// 	actions = append(actions, *act)
-	// }
-	// if len(actions) > 0 {
-	// 	log.WithField("actions", actions).Debugf("Received actions from the ai. aicall_id: %s", cc.ID)
-
-	// 	af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, cc.ActiveflowID, actions)
-	// 	if err != nil {
-	// 		return nil, errors.Wrapf(err, "could not add actions to the activeflow. activeflow_id: %s", cc.ActiveflowID)
-	// 	}
-	// 	log.Debugf("Added actions to the activeflow. activeflow_id: %s, actions: %v", cc.ActiveflowID, af)
-
-	// 	tmp, err := h.reqHandler.TTSV1StreamingSayFinish(ctx, cc.TTSStreamingPodID, cc.TTSStreamingID, msgID)
-	// 	if err != nil {
-	// 		log.Errorf("Could not finish the tts streaming say. err: %v", err)
-	// 		return nil, errors.Wrapf(err, "could not finish the tts streaming say. tts_streaming_id: %s", cc.TTSStreamingID)
-	// 	}
-	// 	log.WithField("tts_streaming", tmp).Debugf("Finished the tts streaming say. tts_streaming_id: %s", cc.TTSStreamingID)
-
-	// 	tmpContent, err := json.Marshal(actions)
-	// 	if err != nil {
-	// 		log.Errorf("Could not marshal the actions. err: %v", err)
-	// 	} else {
-	// 		tmpMessage, errCreate := h.Create(ctx, msgID, cc.CustomerID, cc.ID, message.DirectionNone, message.RoleTool, string(tmpContent))
-	// 		if errCreate != nil {
-	// 			log.Errorf("Could not create the tool message. err: %v", errCreate)
-	// 		} else {
-	// 			log.WithField("message", tmpMessage).Debugf("Created the tool message for the actions. message_id: %s", tmpMessage.ID)
-	// 		}
-	// 	}
-	// }
-
-	// if returnResponse {
-	// 	res = tmpResponse
-	// }
-
-	// return res, nil
 }
 
 func (h *messageHandler) streamingSendOpenai(ctx context.Context, cc *aicall.AIcall) (<-chan string, <-chan *fmaction.Action, error) {
@@ -271,9 +211,14 @@ func (h *messageHandler) streamingSendResponseHandleTool(ctx context.Context, cc
 	if errCreate != nil {
 		return nil, errors.Wrapf(errCreate, "could not create the tool message")
 	}
-
-	// send the finish signal to aicall
-
 	log.WithField("message", res).Debugf("Created the tool message for the actions. message_id: %s", res.ID)
+
+	// send the terminate signal to aicall
+	tmp, err := h.reqHandler.AIV1AIcallTerminate(ctx, cc.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not terminate the aicall. aicall_id: %s", cc.ID)
+	}
+	log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", cc.ID)
+
 	return res, nil
 }

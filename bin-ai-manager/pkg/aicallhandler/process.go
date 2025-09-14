@@ -72,8 +72,8 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 	return res, nil
 }
 
-// ProcessEnd ends a aicall process
-func (h *aicallHandler) ProcessEnd(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
+// ProcessTerminate ends a aicall process
+func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "ProcessEnd",
 		"aicall_id": ac.ID,
@@ -88,19 +88,18 @@ func (h *aicallHandler) ProcessEnd(ctx context.Context, ac *aicall.AIcall) (*aic
 		}
 	}
 
-	res, err := h.UpdateStatusFinished(ctx, ac.ID)
+	// terminate the confbridge
+	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, ac.ConfbridgeID)
+	if err != nil {
+		log.Errorf("Could not terminate the confbridge. err: %v", err)
+		return nil, errors.Wrap(err, "could not terminate the confbridge")
+	}
+	log.WithField("confbridge", tmp).Debugf("Terminated the confbridge. confbridge_id: %s", tmp.ID)
+
+	res, err := h.UpdateStatusTerminated(ctx, ac.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not end the aicall")
 	}
-
-	// destroy the confbridge
-	tmp, err := h.reqHandler.CallV1ConfbridgeDelete(ctx, ac.ConfbridgeID)
-	if err != nil {
-		// we couldn't delete the confbridge here.
-		// but we don't return any error here because it doesn't affect to the activeflow execution.
-		log.Errorf("Could not delete the confbridge. err: %v", err)
-	}
-	log.WithField("confbridge", tmp).Debugf("Destroyed the confbridge. confbridge_id: %s", tmp.ID)
 
 	return res, nil
 }

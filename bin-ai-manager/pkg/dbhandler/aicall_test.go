@@ -483,7 +483,7 @@ func Test_AIcallUpdateStatusEnd(t *testing.T) {
 				},
 				AIEngineData: map[string]any{},
 				TranscribeID: uuid.Nil,
-				Status:       aicall.StatusFinished,
+				Status:       aicall.StatusTerminated,
 				TMEnd:        "2023-01-03 21:35:02.809",
 				TMCreate:     "2023-01-03 21:35:02.809",
 				TMUpdate:     "2023-01-03 21:35:02.809",
@@ -516,7 +516,7 @@ func Test_AIcallUpdateStatusEnd(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			if err := h.AIcallUpdateStatusFinished(ctx, tt.id); err != nil {
+			if err := h.AIcallUpdateStatusTerminated(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

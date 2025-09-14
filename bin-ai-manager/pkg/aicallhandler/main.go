@@ -47,7 +47,7 @@ type AIcallHandler interface {
 	ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
 	ProcessPause(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error)
 	ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
-	ProcessEnd(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
+	ProcessTerminate(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
 
 	Start(
 		ctx context.Context,

@@ -57,8 +57,8 @@ const (
 	StatusProgressing Status = "progressing"
 	StatusPausing     Status = "pausing"
 	StatusResuming    Status = "resuming"
-	StatusFinishing   Status = "finishing" // the call is being finished.
-	StatusFinished    Status = "finished"
+	StatusTerminating Status = "terminating" // the call is terminating.
+	StatusTerminated  Status = "terminated"
 )
 
 // Gender define

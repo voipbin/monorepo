@@ -413,13 +413,13 @@ func (h *handler) AIcallUpdateStatusResuming(ctx context.Context, id uuid.UUID, 
 	return nil
 }
 
-// AIcallUpdateStatusFinishing updates the aicall's status to finishing
-func (h *handler) AIcallUpdateStatusFinishing(ctx context.Context, id uuid.UUID) error {
-	return h.aicallUpdateStatus(ctx, id, uuid.Nil, aicall.StatusFinishing)
+// AIcallUpdateStatusTerminating updates the aicall's status to finishing
+func (h *handler) AIcallUpdateStatusTerminating(ctx context.Context, id uuid.UUID) error {
+	return h.aicallUpdateStatus(ctx, id, uuid.Nil, aicall.StatusTerminating)
 }
 
-// AIcallUpdateStatusFinished updates the aicall's status to end
-func (h *handler) AIcallUpdateStatusFinished(ctx context.Context, id uuid.UUID) error {
+// AIcallUpdateStatusTerminated updates the aicall's status to end
+func (h *handler) AIcallUpdateStatusTerminated(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
 	update ai_aicalls set
@@ -432,7 +432,7 @@ func (h *handler) AIcallUpdateStatusFinished(ctx context.Context, id uuid.UUID) 
 	`
 
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, aicall.StatusFinished, uuid.Nil.Bytes(), ts, ts, id.Bytes())
+	_, err := h.db.Exec(q, aicall.StatusTerminated, uuid.Nil.Bytes(), ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AIcallUpdateStatusFinished. err: %v", err)
 	}
