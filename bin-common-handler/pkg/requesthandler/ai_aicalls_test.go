@@ -251,22 +251,22 @@ func Test_AIV1AIcallDelete(t *testing.T) {
 		expectRes     *amaicall.AIcall
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("6078c492-25e6-4f31-baa0-2fef98379db7"),
+			aicallID: uuid.FromStringOrNil("6078c492-25e6-4f31-baa0-2fef98379db7"),
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"6078c492-25e6-4f31-baa0-2fef98379db7"}`),
 			},
 
-			string(outline.QueueNameAIRequest),
-			&sock.Request{
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
 				URI:    "/v1/aicalls/6078c492-25e6-4f31-baa0-2fef98379db7",
 				Method: sock.RequestMethodDelete,
 			},
-			&amaicall.AIcall{
+			expectRes: &amaicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("6078c492-25e6-4f31-baa0-2fef98379db7"),
 				},
@@ -288,6 +288,68 @@ func Test_AIV1AIcallDelete(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AIV1AIcallDelete(ctx, tt.aicallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AIV1AIcallTerminate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		aicallID uuid.UUID
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *amaicall.AIcall
+	}{
+		{
+			name: "normal",
+
+			aicallID: uuid.FromStringOrNil("a0a4ef26-9199-11f0-97c6-870fb70436ad"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"a0a4ef26-9199-11f0-97c6-870fb70436ad"}`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:    "/v1/aicalls/a0a4ef26-9199-11f0-97c6-870fb70436ad/terminate",
+				Method: sock.RequestMethodPost,
+			},
+			expectRes: &amaicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a0a4ef26-9199-11f0-97c6-870fb70436ad"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AIV1AIcallTerminate(ctx, tt.aicallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

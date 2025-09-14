@@ -165,3 +165,38 @@ func (h *listenHandler) processV1AIcallsIDDelete(ctx context.Context, m *sock.Re
 
 	return res, nil
 }
+
+// processV1AIcallsPost handles POST /v1/aicalls/<aicall-id>/terminate request
+func (h *listenHandler) processV1AIcallsIDTerminatePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1AIcallsIDTerminatePost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.aicallHandler.ProcessTerminating(ctx, id)
+	if err != nil {
+		log.Errorf("Could not terminate aicall. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

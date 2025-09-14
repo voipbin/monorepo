@@ -406,11 +406,11 @@ func Test_UpdateStatusEnd(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallUpdateStatusEnd(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AIcallUpdateStatusFinished(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusEnd, tt.responseAIcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusFinished, tt.responseAIcall)
 
-			res, err := h.UpdateStatusEnd(ctx, tt.id)
+			res, err := h.UpdateStatusFinished(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

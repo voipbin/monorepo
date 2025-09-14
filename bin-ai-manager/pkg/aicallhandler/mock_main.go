@@ -259,6 +259,21 @@ func (mr *MockAIcallHandlerMockRecorder) ProcessStart(ctx, cb any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessStart", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessStart), ctx, cb)
 }
 
+// ProcessTerminating mocks base method.
+func (m *MockAIcallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProcessTerminating", ctx, id)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProcessTerminating indicates an expected call of ProcessTerminating.
+func (mr *MockAIcallHandlerMockRecorder) ProcessTerminating(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessTerminating", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessTerminating), ctx, id)
+}
+
 // ServiceStart mocks base method.
 func (m *MockAIcallHandler) ServiceStart(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string, resuming bool) (*service.Service, error) {
 	m.ctrl.T.Helper()

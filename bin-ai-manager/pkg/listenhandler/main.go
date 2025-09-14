@@ -57,9 +57,10 @@ var (
 	regV1AIsID  = regexp.MustCompile("/v1/ais/" + regUUID + "$")
 
 	// aicalls
-	regV1AIcallsGet = regexp.MustCompile(`/v1/aicalls\?`)
-	regV1AIcalls    = regexp.MustCompile(`/v1/aicalls$`)
-	regV1AIcallsID  = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
+	regV1AIcallsGet         = regexp.MustCompile(`/v1/aicalls\?`)
+	regV1AIcalls            = regexp.MustCompile(`/v1/aicalls$`)
+	regV1AIcallsID          = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
+	regV1AIcallsIDTerminate = regexp.MustCompile("/v1/aicalls/" + regUUID + "/terminate$")
 
 	// messages
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
@@ -237,6 +238,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AIcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1AIcallsIDDelete(ctx, m)
 		requestType = "/v1/aicalls/<aicall-id>"
+
+	// POST /aicalls/<aicall-id>/terminate
+	case regV1AIcallsIDTerminate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIcallsIDTerminatePost(ctx, m)
+		requestType = "/v1/aicalls/<aicall-id>/terminate"
 
 	///////////////
 	// messages

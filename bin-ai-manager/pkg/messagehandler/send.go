@@ -31,7 +31,7 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 		return nil, errors.Wrapf(err, "could not get the aicall correctly")
 	}
 
-	if cc.Status == aicall.StatusEnd {
+	if cc.Status == aicall.StatusFinished {
 		return nil, errors.New("aicall is already ended")
 	}
 

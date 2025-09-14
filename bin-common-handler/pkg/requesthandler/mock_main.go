@@ -242,6 +242,21 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallStart(ctx, activeflowID, aiI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallStart), ctx, activeflowID, aiID, referenceType, referenceID, gender, language)
 }
 
+// AIV1AIcallTerminate mocks base method.
+func (m *MockRequestHandler) AIV1AIcallTerminate(ctx context.Context, aicallID uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIcallTerminate", ctx, aicallID)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIcallTerminate indicates an expected call of AIV1AIcallTerminate.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallTerminate(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallTerminate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallTerminate), ctx, aicallID)
+}
+
 // AIV1MessageDelete mocks base method.
 func (m *MockRequestHandler) AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*message.Message, error) {
 	m.ctrl.T.Helper()
