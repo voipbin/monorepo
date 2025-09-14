@@ -168,7 +168,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			mockMessage.EXPECT().StreamingSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt, true).Return(tt.responseMessage, nil)
+			mockMessage.EXPECT().StreamingSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt).Return(tt.responseMessage, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
 

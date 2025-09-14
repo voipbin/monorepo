@@ -124,6 +124,7 @@ func runSubscribe(
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
 		string(commonoutline.QueueNameTranscribeEvent),
+		string(commonoutline.QueueNameTTSEvent),
 	}
 
 	subHandler := subscribehandler.NewSubscribeHandler(

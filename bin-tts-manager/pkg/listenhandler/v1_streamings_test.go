@@ -353,3 +353,71 @@ func Test_v1StreamingsIDSayInitPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_v1StreamingsIDSayFinishPost(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		request *sock.Request
+
+		responseStreaming *streaming.Streaming
+
+		expectID        uuid.UUID
+		expectMessageID uuid.UUID
+		expectRes       *sock.Response
+	}{
+		{
+			name: "normal test",
+
+			request: &sock.Request{
+				URI:      "/v1/streamings/11f7c5a0-90c2-11f0-9d16-83cd6acac47f/say_finish",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"message_id":"122eb4a2-90c2-11f0-9b40-cb5a0c396cce"}`),
+			},
+
+			responseStreaming: &streaming.Streaming{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("11f7c5a0-90c2-11f0-9d16-83cd6acac47f"),
+				},
+			},
+
+			expectID:        uuid.FromStringOrNil("11f7c5a0-90c2-11f0-9d16-83cd6acac47f"),
+			expectMessageID: uuid.FromStringOrNil("122eb4a2-90c2-11f0-9b40-cb5a0c396cce"),
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"11f7c5a0-90c2-11f0-9d16-83cd6acac47f","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","message_id":"00000000-0000-0000-0000-000000000000"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockTTS := ttshandler.NewMockTTSHandler(mc)
+			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:      mockSock,
+				ttsHandler:       mockTTS,
+				streamingHandler: mockStreaming,
+			}
+
+			mockStreaming.EXPECT().SayFinish(gomock.Any(), tt.expectID, tt.expectMessageID).Return(tt.responseStreaming, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

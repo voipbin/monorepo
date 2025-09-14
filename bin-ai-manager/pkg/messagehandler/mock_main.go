@@ -88,16 +88,16 @@ func (mr *MockMessageHandlerMockRecorder) Send(ctx, aicallID, role, content, ret
 }
 
 // StreamingSend mocks base method.
-func (m *MockMessageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error) {
+func (m *MockMessageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StreamingSend", ctx, aicallID, role, content, returnResponse)
+	ret := m.ctrl.Call(m, "StreamingSend", ctx, aicallID, role, content)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // StreamingSend indicates an expected call of StreamingSend.
-func (mr *MockMessageHandlerMockRecorder) StreamingSend(ctx, aicallID, role, content, returnResponse any) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) StreamingSend(ctx, aicallID, role, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingSend", reflect.TypeOf((*MockMessageHandler)(nil).StreamingSend), ctx, aicallID, role, content, returnResponse)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingSend", reflect.TypeOf((*MockMessageHandler)(nil).StreamingSend), ctx, aicallID, role, content)
 }

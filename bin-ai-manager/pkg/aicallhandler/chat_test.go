@@ -84,7 +84,7 @@ func Test_ChatMessage(t *testing.T) {
 
 			// Set up expectations for the mocks. Make sure arguments match what you're passing.
 			mockReq.EXPECT().TTSV1StreamingSayStop(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID).Return(nil)
-			mockMessage.EXPECT().StreamingSend(ctx, tt.aicall.ID, tt.expectRole, tt.text, true).Return(tt.responseMessage, nil)
+			mockMessage.EXPECT().StreamingSend(ctx, tt.aicall.ID, tt.expectRole, tt.text).Return(tt.responseMessage, nil)
 
 			if errChat := h.ChatMessage(ctx, tt.aicall, tt.text); errChat != nil {
 				t.Errorf("ChatMessage() error = %v", errChat)
@@ -174,7 +174,7 @@ func Test_ChatInit(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.aicall.ActiveflowID, tt.ai.InitPrompt).Return(tt.responseInitPrompt, nil)
 
 			if tt.aicall.ReferenceType == aicall.ReferenceTypeCall {
-				mockMessage.EXPECT().StreamingSend(ctx, tt.aicall.ID, message.RoleSystem, tt.expectInitPrompt, true).Return(tt.responseMessage, nil)
+				mockMessage.EXPECT().StreamingSend(ctx, tt.aicall.ID, message.RoleSystem, tt.expectInitPrompt).Return(tt.responseMessage, nil)
 			} else {
 				mockMessage.EXPECT().Send(ctx, tt.aicall.ID, message.RoleSystem, tt.expectInitPrompt, true).Return(tt.responseMessage, nil)
 			}
@@ -309,7 +309,7 @@ func Test_chatMessageReferenceTypeCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().TTSV1StreamingSayStop(ctx, tt.aicall.TTSStreamingPodID, tt.aicall.TTSStreamingID).Return(nil)
-			mockMessage.EXPECT().StreamingSend(ctx, tt.aicall.ID, message.RoleUser, tt.messageContent, true).Return(tt.responseMessage, nil)
+			mockMessage.EXPECT().StreamingSend(ctx, tt.aicall.ID, message.RoleUser, tt.messageContent).Return(tt.responseMessage, nil)
 
 			errChat := h.chatMessageReferenceTypeCall(ctx, tt.aicall, tt.messageContent)
 			if errChat != nil {

@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	tmmessage "monorepo/bin-tts-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -39,6 +40,7 @@ type AIcallHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
+	GetByStreamingID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error)
 	GetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error)
 	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error)
 
@@ -73,6 +75,7 @@ type AIcallHandler interface {
 	EventCMCallHangup(ctx context.Context, c *cmcall.Call)
 	EventCMConfbridgeJoined(ctx context.Context, evt *cmconfbridge.EventConfbridgeJoined)
 	EventCMConfbridgeLeaved(ctx context.Context, evt *cmconfbridge.EventConfbridgeLeaved)
+	EventTMPlayFinished(ctx context.Context, evt *tmmessage.Message)
 }
 
 const (

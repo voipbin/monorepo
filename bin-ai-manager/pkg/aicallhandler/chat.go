@@ -50,7 +50,7 @@ func (h *aicallHandler) chatInit(ctx context.Context, cb *ai.AI, cc *aicall.AIca
 	var err error
 	switch cc.ReferenceType {
 	case aicall.ReferenceTypeCall:
-		tmp, err = h.messageHandler.StreamingSend(ctx, cc.ID, message.RoleSystem, initPrompt, true)
+		tmp, err = h.messageHandler.StreamingSend(ctx, cc.ID, message.RoleSystem, initPrompt)
 		if err != nil {
 			return errors.Wrapf(err, "could not send the init prompt to the ai. aicall_id: %s", cc.ID)
 		}
@@ -85,7 +85,7 @@ func (h *aicallHandler) chatMessageReferenceTypeCall(ctx context.Context, cc *ai
 		return errors.Wrap(errStop, "Could not stop the tts streaming")
 	}
 
-	tmp, err := h.messageHandler.StreamingSend(ctx, cc.ID, message.RoleUser, content, true)
+	tmp, err := h.messageHandler.StreamingSend(ctx, cc.ID, message.RoleUser, content)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the message to the ai. aicall_id: %s", cc.ID)
 	}

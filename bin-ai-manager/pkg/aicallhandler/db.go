@@ -139,6 +139,16 @@ func (h *aicallHandler) GetByTranscribeID(ctx context.Context, transcribeID uuid
 	return res, nil
 }
 
+// GetByStreamingID returns a aicall by the tts_streaming_id.
+func (h *aicallHandler) GetByStreamingID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
+	res, err := h.db.AIcallGetByTranscribeID(ctx, transcribeID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // UpdateStatusStartProgressing updates the status to start
 func (h *aicallHandler) UpdateStatusStartProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) (*aicall.AIcall, error) {
 

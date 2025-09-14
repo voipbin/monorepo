@@ -36,13 +36,6 @@ type ElevenlabsConfig struct {
 
 	Message *message.Message `json:"message,omitempty"` // Current message being synthesized
 
-	// StreamingID uuid.UUID `json:"streaming_id,omitempty"` // Current streaming session
-
-	// MessageID     uuid.UUID `json:"message_id,omitempty"`     // Current message being synthesized
-	// MessageTotal  string    `json:"message_total,omitempty"`  // Total message
-	// MessagePlayed string    `json:"message_played,omitempty"` // Played message to be synthesized
-	// MessageFinish bool      `json:"message_finish,omitempty"` // Whether the message has finished playing
-
 	muConnWebsock sync.Mutex `json:"-"`
 }
 
@@ -282,19 +275,18 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 				log.Errorf("Error parsing response: %v. Message: %s", errUnmarshal, string(message))
 				continue
 			}
-			log.WithField("response", response).Debug("Received message from ElevenLabs WebSocket.")
 
 			// Process audio data if present.
 			if response.Audio != "" {
 				decodedAudio, errDecode := base64.StdEncoding.DecodeString(response.Audio)
 				if errDecode != nil {
-					log.Errorf("Could not decode base64 audio data: %v. Message: %s", errDecode, response.Audio)
+					log.Errorf("Could not decode base64 audio data. audio_len: %d, err: %v", len(response.Audio), errDecode)
 					return
 				}
 
 				data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodedAudio)
 				if errProcess != nil {
-					log.Errorf("Could not process PCM data: %v. Message: %s", errProcess, response.Audio)
+					log.Errorf("Could not process PCM data. audio_len: %d, err: %v", len(response.Audio), errProcess)
 					return
 				}
 
@@ -441,6 +433,11 @@ func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
 	}
 
 	cf.Message.Finish = true
+
+	if cf.Message.TotalMessage == cf.Message.PlayedMessage {
+		// we've played all messages already. no need to wait.
+		h.terminate(cf)
+	}
 	return nil
 }
 
