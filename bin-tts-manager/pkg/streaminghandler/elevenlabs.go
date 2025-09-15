@@ -266,6 +266,10 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 			return
 
 		case err := <-errCh:
+			if errors.Cause(err) == net.ErrClosed {
+				return
+			}
+
 			log.Errorf("Error reading websocket message: %v. Exiting handleWebSocketMessages.", err)
 			return
 
@@ -300,6 +304,7 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 			// update message
 			if len(response.Alignment.Chars) > 0 {
 				msg.PlayedMessage += strings.Join(response.Alignment.Chars, "")
+				log.Debugf("Updated played message. Played: %s, Total: %s", msg.PlayedMessage, msg.TotalMessage)
 
 				if msg.Finish && msg.PlayedMessage == msg.TotalMessage {
 					log.Debugf("Message finished. Played: %d, Total: %d", len(msg.PlayedMessage), len(msg.TotalMessage))
@@ -440,9 +445,10 @@ func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
 	cf.Message.Finish = true
 	if cf.Message.TotalMessage == cf.Message.PlayedMessage {
 		// we've played all messages already. no need to wait.
-		log.Debugf("Message already finished. Played: %s, Total: %s", cf.Message.PlayedMessage, cf.Message.TotalMessage)
+		log.Debugf("Message already finished. Played: %d, Total: %d", len(cf.Message.PlayedMessage), len(cf.Message.TotalMessage))
 		h.terminate(cf)
 	}
+
 	return nil
 }
 

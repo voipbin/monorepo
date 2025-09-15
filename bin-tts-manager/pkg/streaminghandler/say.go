@@ -24,7 +24,7 @@ func (h *streamingHandler) SayInit(ctx context.Context, id uuid.UUID, messageID 
 	log.WithField("streaming", res).Debugf("Fetched streaming info. streaming_id: %s", id)
 
 	if res.VendorConfig == nil {
-		log.Debugf("Vendor config is nil. initializing the vendor config. vendor: %s", res.VendorName)
+		log.Debugf("Vendor config is nil. Initializing the vendor config.")
 		if errRun := h.runStreamer(ctx, res); errRun != nil {
 			return nil, errors.Wrapf(errRun, "could not run streamer. streaming_id: %s", id)
 		}
