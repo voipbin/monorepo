@@ -83,6 +83,10 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 			errs <- errors.Wrapf(err, "could not handle the text response")
 			return
 		}
+
+		if tmp == nil {
+			return
+		}
 		log.WithField("response_message", tmp).Debugf("Handled the text response message. message: %s", tmp.Content)
 	}()
 
@@ -171,6 +175,11 @@ func (h *messageHandler) streamingSendResponseHandleText(ctx context.Context, cc
 		totalMessage += msg
 	}
 	log.Debugf("Finished sending the streaming message to tts streaming. total_message: %s", totalMessage)
+
+	if totalMessage == "" {
+		// nothing to do
+		return nil, nil
+	}
 
 	// create a message for incoming(response)
 	res, err := h.Create(ctx, msgID, cc.CustomerID, cc.ID, message.DirectionIncoming, message.RoleAssistant, totalMessage)

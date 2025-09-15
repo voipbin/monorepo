@@ -415,7 +415,24 @@ func (h *handler) AIcallUpdateStatusResuming(ctx context.Context, id uuid.UUID, 
 
 // AIcallUpdateStatusTerminating updates the aicall's status to finishing
 func (h *handler) AIcallUpdateStatusTerminating(ctx context.Context, id uuid.UUID) error {
-	return h.aicallUpdateStatus(ctx, id, uuid.Nil, aicall.StatusTerminating)
+	//prepare
+	q := `
+		update ai_aicalls set
+			status = ?,
+			tm_update = ?
+		where
+			id = ?
+		`
+
+	_, err := h.db.Exec(q, aicall.StatusTerminating, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	if err != nil {
+		return errors.Wrapf(err, "could not execute. AIcallUpdateStatusTerminating")
+	}
+
+	// update the cache
+	_ = h.aicallUpdateToCache(ctx, id)
+
+	return nil
 }
 
 // AIcallUpdateStatusTerminated updates the aicall's status to end
