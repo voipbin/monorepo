@@ -18,11 +18,11 @@ func (h *aicallHandler) EventCMConfbridgeJoined(ctx context.Context, evt *cmconf
 		return
 	}
 
-	if cc.Status != aicall.StatusPausing {
+	if cc.Status == aicall.StatusTerminated || cc.Status == aicall.StatusTerminating {
 		return
 	}
 
-	_, err = h.startResume(ctx, cc.ActiveflowID)
+	_, err = h.ProcessStart(ctx, cc)
 	if err != nil {
 		return
 	}
