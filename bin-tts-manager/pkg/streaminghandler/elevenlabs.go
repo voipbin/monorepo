@@ -299,7 +299,7 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 
 			// update message
 			if len(response.Alignment.Chars) > 0 {
-				msg.TotalMessage += strings.Join(response.Alignment.Chars, "")
+				msg.PlayedMessage += strings.Join(response.Alignment.Chars, "")
 
 				if msg.Finish && msg.PlayedMessage == msg.TotalMessage {
 					log.Debugf("Message finished. Played: %d, Total: %d", len(msg.PlayedMessage), len(msg.TotalMessage))
@@ -404,11 +404,12 @@ func (h *elevenlabsHandler) SayAdd(vendorConfig any, text string) error {
 		return fmt.Errorf("the ConnWebsock is nil")
 	}
 
+	cf.Message.TotalMessage += text
+
 	message := ElevenlabsMessage{
 		Text:  text,
 		Flush: true,
 	}
-
 	if errWrite := cf.ConnWebsock.WriteJSON(message); errWrite != nil {
 		return errors.Wrapf(errWrite, "failed to send text to ElevenLabs WebSocket")
 	}
@@ -427,15 +428,19 @@ func (h *elevenlabsHandler) SayStop(vendorConfig any) error {
 }
 
 func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "SayFinish",
+	})
+
 	cf, ok := vendorConfig.(*ElevenlabsConfig)
 	if !ok || cf == nil {
 		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
 	}
 
 	cf.Message.Finish = true
-
 	if cf.Message.TotalMessage == cf.Message.PlayedMessage {
 		// we've played all messages already. no need to wait.
+		log.Debugf("Message already finished. Played: %s, Total: %s", cf.Message.PlayedMessage, cf.Message.TotalMessage)
 		h.terminate(cf)
 	}
 	return nil
