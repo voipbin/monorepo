@@ -451,7 +451,7 @@ func (h *handler) AIcallUpdateStatusTerminated(ctx context.Context, id uuid.UUID
 	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, aicall.StatusTerminated, uuid.Nil.Bytes(), ts, ts, id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. AIcallUpdateStatusFinished. err: %v", err)
+		return fmt.Errorf("could not execute. AIcallUpdateStatusTerminated. err: %v", err)
 	}
 
 	// update the cache
