@@ -101,7 +101,7 @@ func Test_ProcessStart(t *testing.T) {
 	}
 }
 
-func Test_ProcessEnd(t *testing.T) {
+func Test_ProcessTerminated(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -151,12 +151,12 @@ func Test_ProcessEnd(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.aicall.TranscribeID).Return(&tmtranscribe.Transcribe{}, nil)
-			mockDB.EXPECT().AIcallUpdateStatusFinished(ctx, tt.aicall.ID).Return(nil)
+			mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
+			mockDB.EXPECT().AIcallUpdateStatusTerminated(ctx, tt.aicall.ID).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
-			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusFinished, tt.aicall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusTerminated, tt.aicall)
 
-			res, err := h.ProcessEnd(ctx, tt.aicall)
+			res, err := h.ProcessTerminate(ctx, tt.aicall)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

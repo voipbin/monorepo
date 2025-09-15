@@ -21,8 +21,13 @@ var (
 	toolConnect = openai.Tool{
 		Type: openai.ToolTypeFunction,
 		Function: &openai.FunctionDefinition{
-			Name:        "connect",
-			Description: "creates a new call to the destinations and connects to them",
+			Name: "connect",
+			Description: `
+				Establishes a call from a source endpoint to one or more destination endpoints. 
+				Use this when you need to connect a caller to specific endpoints like agents, conferences, or lines. 
+				The source and destination types can be agent, conference, extension, sip, or tel. 
+				Each endpoint must include a type and target, and optionally a target_name for display purposes.
+			`,
 			Parameters: map[string]any{
 				"type": "object",
 				"properties": map[string]any{
@@ -31,7 +36,7 @@ var (
 						"properties": map[string]any{
 							"type": map[string]any{
 								"type":        "string",
-								"description": "one of agent/conference/email/extension/line/sip/tel",
+								"description": "one of agent/conference/extension/sip/tel",
 							},
 							"target": map[string]any{
 								"type":        "string",

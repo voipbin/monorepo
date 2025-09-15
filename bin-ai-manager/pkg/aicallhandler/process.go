@@ -18,6 +18,7 @@ func (h *aicallHandler) ProcessStart(ctx context.Context, ac *aicall.AIcall) (*a
 		"func":      "ProcessStart",
 		"aicall_id": ac.ID,
 	})
+	log.WithField("aicall", ac).Debug("Starting aicall process")
 
 	referenceType := tmtranscribe.ReferenceTypeCall
 
@@ -54,6 +55,7 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 		"func":      "ProcessPause",
 		"aicall_id": ac.ID,
 	})
+	log.WithField("aicall", ac).Debug("Pausing aicall process")
 
 	// stop the transcribe
 	if ac.TranscribeID != uuid.Nil {
@@ -72,8 +74,8 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 	return res, nil
 }
 
-// ProcessEnd ends a aicall process
-func (h *aicallHandler) ProcessEnd(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
+// ProcessTerminate ends a aicall process
+func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "ProcessEnd",
 		"aicall_id": ac.ID,
@@ -88,26 +90,25 @@ func (h *aicallHandler) ProcessEnd(ctx context.Context, ac *aicall.AIcall) (*aic
 		}
 	}
 
-	res, err := h.UpdateStatusFinished(ctx, ac.ID)
+	// terminate the confbridge
+	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, ac.ConfbridgeID)
+	if err != nil {
+		log.Errorf("Could not terminate the confbridge. err: %v", err)
+		return nil, errors.Wrap(err, "could not terminate the confbridge")
+	}
+	log.WithField("confbridge", tmp).Debugf("Terminated the confbridge. confbridge_id: %s", tmp.ID)
+
+	res, err := h.UpdateStatusTerminated(ctx, ac.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not end the aicall")
 	}
-
-	// destroy the confbridge
-	tmp, err := h.reqHandler.CallV1ConfbridgeDelete(ctx, ac.ConfbridgeID)
-	if err != nil {
-		// we couldn't delete the confbridge here.
-		// but we don't return any error here because it doesn't affect to the activeflow execution.
-		log.Errorf("Could not delete the confbridge. err: %v", err)
-	}
-	log.WithField("confbridge", tmp).Debugf("Destroyed the confbridge. confbridge_id: %s", tmp.ID)
 
 	return res, nil
 }
 
 // ProcessTerminating starts the aicall terminating process.
 func (h *aicallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-	res, err := h.UpdateStatusFinishing(ctx, id)
+	res, err := h.UpdateStatusTerminating(ctx, id)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not terminating the aicall")
 	}

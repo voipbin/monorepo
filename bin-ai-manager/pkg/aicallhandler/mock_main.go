@@ -214,21 +214,6 @@ func (mr *MockAIcallHandlerMockRecorder) Gets(ctx, size, token, filters any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAIcallHandler)(nil).Gets), ctx, size, token, filters)
 }
 
-// ProcessEnd mocks base method.
-func (m *MockAIcallHandler) ProcessEnd(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProcessEnd", ctx, cb)
-	ret0, _ := ret[0].(*aicall.AIcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ProcessEnd indicates an expected call of ProcessEnd.
-func (mr *MockAIcallHandlerMockRecorder) ProcessEnd(ctx, cb any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessEnd", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessEnd), ctx, cb)
-}
-
 // ProcessPause mocks base method.
 func (m *MockAIcallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -257,6 +242,21 @@ func (m *MockAIcallHandler) ProcessStart(ctx context.Context, cb *aicall.AIcall)
 func (mr *MockAIcallHandlerMockRecorder) ProcessStart(ctx, cb any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessStart", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessStart), ctx, cb)
+}
+
+// ProcessTerminate mocks base method.
+func (m *MockAIcallHandler) ProcessTerminate(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProcessTerminate", ctx, cb)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProcessTerminate indicates an expected call of ProcessTerminate.
+func (mr *MockAIcallHandlerMockRecorder) ProcessTerminate(ctx, cb any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessTerminate", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessTerminate), ctx, cb)
 }
 
 // ProcessTerminating mocks base method.

@@ -220,34 +220,6 @@ func (mr *MockDBHandlerMockRecorder) AIcallGets(ctx, size, token, filters any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGets", reflect.TypeOf((*MockDBHandler)(nil).AIcallGets), ctx, size, token, filters)
 }
 
-// AIcallUpdateStatusFinished mocks base method.
-func (m *MockDBHandler) AIcallUpdateStatusFinished(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallUpdateStatusFinished", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AIcallUpdateStatusFinished indicates an expected call of AIcallUpdateStatusFinished.
-func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusFinished(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusFinished", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusFinished), ctx, id)
-}
-
-// AIcallUpdateStatusFinishing mocks base method.
-func (m *MockDBHandler) AIcallUpdateStatusFinishing(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallUpdateStatusFinishing", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AIcallUpdateStatusFinishing indicates an expected call of AIcallUpdateStatusFinishing.
-func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusFinishing(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusFinishing", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusFinishing), ctx, id)
-}
-
 // AIcallUpdateStatusPausing mocks base method.
 func (m *MockDBHandler) AIcallUpdateStatusPausing(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -288,6 +260,34 @@ func (m *MockDBHandler) AIcallUpdateStatusResuming(ctx context.Context, id, conf
 func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusResuming(ctx, id, confbridgeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusResuming", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusResuming), ctx, id, confbridgeID)
+}
+
+// AIcallUpdateStatusTerminated mocks base method.
+func (m *MockDBHandler) AIcallUpdateStatusTerminated(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallUpdateStatusTerminated", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIcallUpdateStatusTerminated indicates an expected call of AIcallUpdateStatusTerminated.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusTerminated(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusTerminated", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusTerminated), ctx, id)
+}
+
+// AIcallUpdateStatusTerminating mocks base method.
+func (m *MockDBHandler) AIcallUpdateStatusTerminating(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallUpdateStatusTerminating", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIcallUpdateStatusTerminating indicates an expected call of AIcallUpdateStatusTerminating.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatusTerminating(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatusTerminating", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatusTerminating), ctx, id)
 }
 
 // MessageCreate mocks base method.

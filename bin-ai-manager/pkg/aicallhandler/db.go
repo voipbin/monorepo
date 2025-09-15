@@ -141,7 +141,7 @@ func (h *aicallHandler) GetByTranscribeID(ctx context.Context, transcribeID uuid
 
 // GetByStreamingID returns a aicall by the tts_streaming_id.
 func (h *aicallHandler) GetByStreamingID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
-	res, err := h.db.AIcallGetByTranscribeID(ctx, transcribeID)
+	res, err := h.db.AIcallGetByStreamingID(ctx, transcribeID)
 	if err != nil {
 		return nil, err
 	}
@@ -197,34 +197,34 @@ func (h *aicallHandler) UpdateStatusResuming(ctx context.Context, id uuid.UUID, 
 	return res, nil
 }
 
-// UpdateStatusFinishing updates the status to finishing
-func (h *aicallHandler) UpdateStatusFinishing(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+// UpdateStatusTerminating updates the status to terminating
+func (h *aicallHandler) UpdateStatusTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 
-	if errUpdate := h.db.AIcallUpdateStatusFinishing(ctx, id); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "could not update the status to finishing. aicall_id: %s", id)
+	if errUpdate := h.db.AIcallUpdateStatusTerminating(ctx, id); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the status to terminating. aicall_id: %s", id)
 	}
 
 	res, err := h.Get(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusFinishing, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminating, res)
 
 	return res, nil
 }
 
-// UpdateStatusFinished updates the status to end
-func (h *aicallHandler) UpdateStatusFinished(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+// UpdateStatusTerminated updates the status to end
+func (h *aicallHandler) UpdateStatusTerminated(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 
-	if errUpdate := h.db.AIcallUpdateStatusFinished(ctx, id); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "could not update the status to end. aicall_id: %s", id)
+	if errUpdate := h.db.AIcallUpdateStatusTerminated(ctx, id); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the status to terminated. aicall_id: %s", id)
 	}
 
 	res, err := h.Get(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusFinished, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminated, res)
 
 	return res, nil
 }

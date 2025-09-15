@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"monorepo/bin-ai-manager/models/aicall"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	tmmessage "monorepo/bin-tts-manager/models/message"
@@ -14,6 +15,10 @@ func (h *aicallHandler) EventCMConfbridgeJoined(ctx context.Context, evt *cmconf
 	// get aicall
 	cc, err := h.GetByReferenceID(ctx, evt.JoinedCallID)
 	if err != nil {
+		return
+	}
+
+	if cc.Status == aicall.StatusTerminated || cc.Status == aicall.StatusTerminating {
 		return
 	}
 
@@ -31,6 +36,10 @@ func (h *aicallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *cmconf
 		return
 	}
 
+	if cc.Status != aicall.StatusPausing {
+		return
+	}
+
 	_, err = h.ProcessPause(ctx, cc)
 	if err != nil {
 		return
@@ -45,7 +54,7 @@ func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call)
 		return
 	}
 
-	_, err = h.ProcessEnd(ctx, cc)
+	_, err = h.ProcessTerminate(ctx, cc)
 	if err != nil {
 		return
 	}
@@ -59,16 +68,19 @@ func (h *aicallHandler) EventTMPlayFinished(ctx context.Context, evt *tmmessage.
 	})
 
 	// get aicall
-	cc, err := h.GetByStreamingID(ctx, evt.ID)
+	cc, err := h.GetByStreamingID(ctx, evt.StreamingID)
 	if err != nil {
 		return
 	}
 
-	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, cc.ConfbridgeID)
-	if err != nil {
-		log.Errorf("Could not terminate the confbridge. err: %v", err)
+	if cc.Status != aicall.StatusTerminating {
 		return
 	}
-	log.WithField("ai_call", cc).Debugf("Terminated the confbridge. confbridge: %v", tmp)
 
+	tmp, err := h.ProcessTerminate(ctx, cc)
+	if err != nil {
+		log.Errorf("Could not terminate the aicall. err: %v", err)
+		return
+	}
+	log.WithField("aicall", tmp).Debugf("Terminated the aicall. aicall: %v", tmp)
 }

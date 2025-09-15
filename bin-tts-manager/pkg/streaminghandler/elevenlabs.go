@@ -250,10 +250,7 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 
 	defer func() {
 		cf.Cancel()
-
-		if msg.Finish {
-			h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
-		}
+		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
 	}()
 
 	// read from elevenlabs websocket
@@ -266,6 +263,10 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 			return
 
 		case err := <-errCh:
+			if errors.Cause(err) == net.ErrClosed {
+				return
+			}
+
 			log.Errorf("Error reading websocket message: %v. Exiting handleWebSocketMessages.", err)
 			return
 
@@ -299,9 +300,10 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 
 			// update message
 			if len(response.Alignment.Chars) > 0 {
-				msg.TotalMessage += strings.Join(response.Alignment.Chars, "")
+				msg.PlayedMessage += strings.Join(response.Alignment.Chars, "")
+				msg.PlayedCount++
 
-				if msg.Finish && msg.PlayedMessage == msg.TotalMessage {
+				if msg.Finish && msg.TotalCount == msg.PlayedCount {
 					log.Debugf("Message finished. Played: %d, Total: %d", len(msg.PlayedMessage), len(msg.TotalMessage))
 					return
 				}
@@ -408,10 +410,12 @@ func (h *elevenlabsHandler) SayAdd(vendorConfig any, text string) error {
 		Text:  text,
 		Flush: true,
 	}
-
 	if errWrite := cf.ConnWebsock.WriteJSON(message); errWrite != nil {
 		return errors.Wrapf(errWrite, "failed to send text to ElevenLabs WebSocket")
 	}
+
+	cf.Message.TotalMessage += text
+	cf.Message.TotalCount++
 
 	return nil
 }
@@ -427,17 +431,22 @@ func (h *elevenlabsHandler) SayStop(vendorConfig any) error {
 }
 
 func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "SayFinish",
+	})
+
 	cf, ok := vendorConfig.(*ElevenlabsConfig)
 	if !ok || cf == nil {
 		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
 	}
 
 	cf.Message.Finish = true
-
-	if cf.Message.TotalMessage == cf.Message.PlayedMessage {
+	if cf.Message.TotalCount == cf.Message.PlayedCount {
 		// we've played all messages already. no need to wait.
+		log.Debugf("Message already finished. Played: %d, Total: %d", len(cf.Message.PlayedMessage), len(cf.Message.TotalMessage))
 		h.terminate(cf)
 	}
+
 	return nil
 }
 
