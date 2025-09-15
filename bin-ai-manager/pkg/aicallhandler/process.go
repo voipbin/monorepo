@@ -18,6 +18,7 @@ func (h *aicallHandler) ProcessStart(ctx context.Context, ac *aicall.AIcall) (*a
 		"func":      "ProcessStart",
 		"aicall_id": ac.ID,
 	})
+	log.WithField("aicall", ac).Debug("Starting aicall process")
 
 	referenceType := tmtranscribe.ReferenceTypeCall
 
