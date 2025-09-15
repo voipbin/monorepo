@@ -75,6 +75,7 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 	if err != nil {
 		return nil, nil, fmt.Errorf("CreateChatCompletionStream error: %w", err)
 	}
+	log.Debugf("Chat completion stream created successfully.")
 
 	// Channel to deliver streamed tokens
 	chanMsg := make(chan string, 10)

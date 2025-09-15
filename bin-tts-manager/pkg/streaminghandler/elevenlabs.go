@@ -304,9 +304,9 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 			// update message
 			if len(response.Alignment.Chars) > 0 {
 				msg.PlayedMessage += strings.Join(response.Alignment.Chars, "")
-				log.Debugf("Updated played message. Played: %s, Total: %s", msg.PlayedMessage, msg.TotalMessage)
+				msg.PlayedCount++
 
-				if msg.Finish && msg.PlayedMessage == msg.TotalMessage {
+				if msg.Finish && msg.TotalCount == msg.PlayedCount {
 					log.Debugf("Message finished. Played: %d, Total: %d", len(msg.PlayedMessage), len(msg.TotalMessage))
 					return
 				}
@@ -409,8 +409,6 @@ func (h *elevenlabsHandler) SayAdd(vendorConfig any, text string) error {
 		return fmt.Errorf("the ConnWebsock is nil")
 	}
 
-	cf.Message.TotalMessage += text
-
 	message := ElevenlabsMessage{
 		Text:  text,
 		Flush: true,
@@ -418,6 +416,9 @@ func (h *elevenlabsHandler) SayAdd(vendorConfig any, text string) error {
 	if errWrite := cf.ConnWebsock.WriteJSON(message); errWrite != nil {
 		return errors.Wrapf(errWrite, "failed to send text to ElevenLabs WebSocket")
 	}
+
+	cf.Message.TotalMessage += text
+	cf.Message.TotalCount++
 
 	return nil
 }
