@@ -36,6 +36,10 @@ func (h *aicallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *cmconf
 		return
 	}
 
+	if cc.Status != aicall.StatusPausing {
+		return
+	}
+
 	_, err = h.ProcessPause(ctx, cc)
 	if err != nil {
 		return
