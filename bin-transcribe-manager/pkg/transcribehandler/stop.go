@@ -24,6 +24,7 @@ func (h *transcribeHandler) Stop(ctx context.Context, id uuid.UUID) (*transcribe
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the transcribe. transcribe_id: %s", id)
 	}
+	log.WithField("transcribe", tr).Debugf("Found the transcribe. transcribe_id: %s", tr.ID)
 
 	if tr.Status == transcribe.StatusDone {
 		// already stopped
