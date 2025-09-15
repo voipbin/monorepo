@@ -106,7 +106,7 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall)
 
 // ProcessTerminating starts the aicall terminating process.
 func (h *aicallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-	res, err := h.UpdateStatusFinishing(ctx, id)
+	res, err := h.UpdateStatusTerminating(ctx, id)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not terminating the aicall")
 	}

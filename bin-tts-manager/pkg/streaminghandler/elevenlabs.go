@@ -250,10 +250,7 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 
 	defer func() {
 		cf.Cancel()
-
-		if msg.Finish {
-			h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
-		}
+		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
 	}()
 
 	// read from elevenlabs websocket
@@ -444,7 +441,7 @@ func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
 	}
 
 	cf.Message.Finish = true
-	if cf.Message.TotalMessage == cf.Message.PlayedMessage {
+	if cf.Message.TotalCount == cf.Message.PlayedCount {
 		// we've played all messages already. no need to wait.
 		log.Debugf("Message already finished. Played: %d, Total: %d", len(cf.Message.PlayedMessage), len(cf.Message.TotalMessage))
 		h.terminate(cf)

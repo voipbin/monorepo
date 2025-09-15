@@ -197,11 +197,11 @@ func (h *aicallHandler) UpdateStatusResuming(ctx context.Context, id uuid.UUID, 
 	return res, nil
 }
 
-// UpdateStatusFinishing updates the status to finishing
-func (h *aicallHandler) UpdateStatusFinishing(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+// UpdateStatusTerminating updates the status to terminating
+func (h *aicallHandler) UpdateStatusTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 
 	if errUpdate := h.db.AIcallUpdateStatusTerminating(ctx, id); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "could not update the status to finishing. aicall_id: %s", id)
+		return nil, errors.Wrapf(errUpdate, "could not update the status to terminating. aicall_id: %s", id)
 	}
 
 	res, err := h.Get(ctx, id)
