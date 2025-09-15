@@ -55,6 +55,7 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 		"func":      "ProcessPause",
 		"aicall_id": ac.ID,
 	})
+	log.WithField("aicall", ac).Debug("Pausing aicall process")
 
 	// stop the transcribe
 	if ac.TranscribeID != uuid.Nil {
