@@ -220,7 +220,7 @@ func (h *messageHandler) streamingSendResponseHandleTool(ctx context.Context, cc
 	}
 
 	msgID := h.utilHandler.UUIDCreate()
-	res, errCreate := h.Create(ctx, msgID, cc.CustomerID, cc.ID, message.DirectionNone, message.RoleTool, string(tmpContent))
+	res, errCreate := h.Create(ctx, msgID, cc.CustomerID, cc.ID, message.DirectionNone, message.RoleAssistant, string(tmpContent))
 	if errCreate != nil {
 		return nil, errors.Wrapf(errCreate, "could not create the tool message")
 	}
