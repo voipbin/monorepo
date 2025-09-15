@@ -74,17 +74,20 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 }
 
 func (h *streamingHandler) runKeepConsume(ctx context.Context, cancel context.CancelFunc, conn net.Conn) {
+	log := logrus.WithField("func", "runKeepConsume")
+
 	defer cancel()
 
-	buffer := make([]byte, 1024)
-
+	buffer := make([]byte, 10240)
 	for {
 		select {
 		case <-ctx.Done():
+			log.Debugf("Keep-consume stopped")
 			return
 		default:
 			_, err := conn.Read(buffer)
 			if err != nil {
+				log.Errorf("Error reading from connection: %v", err)
 				return
 			}
 		}
