@@ -1,175 +1,189 @@
 package messagehandler
 
-// package handler
+import (
+	"context"
+	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
+	"monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+	"reflect"
+	"testing"
 
-// func Test_StreamingSend(t *testing.T) {
-// 	tests := []struct {
-// 		name string
+	"github.com/gofrs/uuid"
+	"go.uber.org/mock/gomock"
+)
 
-// 		aicallID uuid.UUID
-// 		role     message.Role
-// 		content  string
+func Test_streamingSendResponseHandleTool(t *testing.T) {
+	tests := []struct {
+		name string
 
-// 		responseAIcall        *aicall.AIcall
-// 		responseUUID1         uuid.UUID // For outgoing message
-// 		responseUUID2         uuid.UUID // For TTSStreamingSayInit msgID
-// 		responseMessages      []*message.Message
-// 		responseChanMessage   <-chan string
-// 		responseChanAction    <-chan *fmaction.Action
-// 		responseStreaming     *tmStreaming.Streaming
-// 		responseStreamingMsgs []string
+		cc           *aicall.AIcall
+		chanToolCall chan *message.ToolCall
 
-// 		// Expected created messages
-// 		expectOutgoingMessage *message.Message
-// 		expectIncomingMessage *message.Message
+		responseActiveflow *fmactiveflow.Activeflow
 
-// 		expectMessages []*message.Message
+		expectedActions              []fmaction.Action
+		expectedMessageToolRequest   *message.Message
+		expectedMessagesToolResponse []*message.Message
+		expectedTerminate            bool
 
-// 		expectReturnMessage *message.Message
-// 		expectError         error
-// 	}{
-// 		{
-// 			name: "normal openai streaming send",
+		expectedRes *message.Message
+	}{
+		{
+			name: "normal",
 
-// 			aicallID: uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
-// 			role:     message.RoleUser,
-// 			content:  "hello world!",
+			cc: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("1178198a-9451-11f0-b070-677fbb141403"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("aaccbdb4-9453-11f0-9537-fb7307d705d5"),
+			},
+			chanToolCall: func() chan *message.ToolCall {
+				ch := make(chan *message.ToolCall, 10)
+				ch <- &message.ToolCall{
+					ID:   "aa9101f2-9453-11f0-9a77-fbab20dbb541",
+					Type: message.ToolTypeFunction,
+					Function: message.FunctionCall{
+						Name:      string(fmaction.TypeConnect),
+						Arguments: `{"destinations": [{"target":"+1234567890"}]}`,
+					},
+				}
+				return ch
+			}(),
 
-// 			responseAIcall: &aicall.AIcall{
-// 				Identity: identity.Identity{
-// 					ID:         uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
-// 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
-// 				},
-// 				ReferenceType:     aicall.ReferenceTypeCall,
-// 				Status:            aicall.StatusProgressing,
-// 				AIEngineModel:     ai.EngineModelOpenaiGPT3Dot5Turbo,
-// 				TTSStreamingID:    uuid.FromStringOrNil("e22f1d9c-87a6-11f0-94ca-b32bb1be78da"),
-// 				TTSStreamingPodID: "tts-pod-id-456",
-// 			},
-// 			responseUUID1: uuid.FromStringOrNil("7734c35e-f2bc-11ef-a0ec-afc67dff1ffc"), // Outgoing message ID
-// 			responseUUID2: uuid.FromStringOrNil("7786dba8-f2bc-11ef-b9de-4b764cfeef4d"), // TTS msgID
-// 			responseMessages: []*message.Message{
-// 				{
-// 					Identity: identity.Identity{
-// 						ID: uuid.FromStringOrNil("7734c35e-f2bc-11ef-a0ec-afc67dff1ffc"),
-// 					},
-// 				},
-// 			},
-// 			responseChanMessage: func() <-chan string {
-// 				ch := make(chan string, 3)
-// 				ch <- "Hi"
-// 				ch <- " there"
-// 				ch <- "!"
-// 				close(ch)
-// 				return ch
-// 			}(),
-// 			responseChanAction: func() <-chan *fmaction.Action {
-// 				ch := make(chan *fmaction.Action, 3)
-// 				close(ch)
-// 				return ch
-// 			}(),
-// 			responseStreaming: &tmStreaming.Streaming{
-// 				Identity: identity.Identity{
-// 					ID: uuid.FromStringOrNil("7786dba8-f2bc-11ef-b9de-4b764cfeef4d"),
-// 				},
-// 			},
-// 			responseStreamingMsgs: []string{"Hi", " there", "!"},
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("aaccbdb4-9453-11f0-9537-fb7307d705d5"),
+				},
+			},
 
-// 			expectOutgoingMessage: &message.Message{
-// 				Identity: identity.Identity{
-// 					ID:         uuid.FromStringOrNil("7734c35e-f2bc-11ef-a0ec-afc67dff1ffc"),
-// 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
-// 				},
-// 				AIcallID:  uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
-// 				Direction: message.DirectionOutgoing,
-// 				Role:      message.RoleUser,
-// 				Content:   "hello world!",
-// 			},
-// 			expectIncomingMessage: &message.Message{
-// 				Identity: identity.Identity{
-// 					ID:         uuid.FromStringOrNil("7786dba8-f2bc-11ef-b9de-4b764cfeef4d"),
-// 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
-// 				},
-// 				AIcallID:  uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
-// 				Direction: message.DirectionIncoming,
-// 				Role:      message.RoleAssistant,
-// 				Content:   "Hi there!",
-// 			},
+			expectedActions: []fmaction.Action{
+				{
+					Type: fmaction.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{},
+						"destinations": []any{
+							map[string]any{
+								"target": "+1234567890",
+							},
+						},
+					},
+				},
+			},
+			expectedMessageToolRequest: &message.Message{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e4e311fe-94af-11f0-a70a-871c7d4f55db"),
+				},
+				AIcallID: uuid.FromStringOrNil("1178198a-9451-11f0-b070-677fbb141403"),
 
-// 			expectMessages: []*message.Message{
-// 				{
-// 					Identity: identity.Identity{
-// 						ID: uuid.FromStringOrNil("7734c35e-f2bc-11ef-a0ec-afc67dff1ffc"),
-// 					},
-// 				},
-// 			},
+				Direction: message.DirectionIncoming,
+				Role:      message.RoleAssistant,
+				Content:   "",
+				ToolCalls: []message.ToolCall{
+					{
+						ID:   "aa9101f2-9453-11f0-9a77-fbab20dbb541",
+						Type: message.ToolTypeFunction,
+						Function: message.FunctionCall{
+							Name:      string(fmaction.TypeConnect),
+							Arguments: `{"destinations": [{"target":"+1234567890"}]}`,
+						},
+					},
+				},
+			},
+			expectedMessagesToolResponse: []*message.Message{
+				{
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("e5280250-94af-11f0-9bbe-8b0c7e647091"),
+					},
+					AIcallID: uuid.FromStringOrNil("1178198a-9451-11f0-b070-677fbb141403"),
 
-// 			expectReturnMessage: &message.Message{
-// 				Identity: identity.Identity{
-// 					ID:         uuid.FromStringOrNil("7734c35e-f2bc-11ef-a0ec-afc67dff1ffc"),
-// 					CustomerID: uuid.FromStringOrNil("7760703a-f2bc-11ef-b42a-33c238392350"),
-// 				},
-// 				AIcallID:  uuid.FromStringOrNil("76af2cf8-f2bc-11ef-bd4b-a7015b14c0f2"),
-// 				Direction: message.DirectionOutgoing,
-// 				Role:      message.RoleUser,
-// 				Content:   "hello world!",
-// 			},
-// 			expectError: nil,
-// 		},
-// 	}
+					Direction:  message.DirectionOutgoing,
+					Role:       message.RoleTool,
+					Content:    `{"result": "success"}`,
+					ToolCalls:  []message.ToolCall{},
+					ToolCallID: "aa9101f2-9453-11f0-9a77-fbab20dbb541",
+				},
+			},
+			expectedTerminate: true,
+			expectedRes: &message.Message{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e4e311fe-94af-11f0-a70a-871c7d4f55db"),
+				},
+				AIcallID: uuid.FromStringOrNil("1178198a-9451-11f0-b070-677fbb141403"),
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+				Direction: message.DirectionIncoming,
+				Role:      message.RoleAssistant,
+				Content:   "",
+				ToolCalls: []message.ToolCall{
+					{
+						ID:   "aa9101f2-9453-11f0-9a77-fbab20dbb541",
+						Type: message.ToolTypeFunction,
+						Function: message.FunctionCall{
+							Name:      string(fmaction.TypeConnect),
+							Arguments: `{"destinations": [{"target":"+1234567890"}]}`,
+						},
+					},
+				},
+			},
+		},
+	}
 
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockGPT := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-// 			h := &messageHandler{
-// 				utilHandler:   mockUtil,
-// 				notifyHandler: mockNotify,
-// 				db:            mockDB,
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockGPT := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
 
-// 				engineOpenaiHandler: mockGPT,
-// 				reqHandler:          mockReq,
-// 			}
-// 			ctx := context.Background()
+			h := &messageHandler{
+				utilHandler:   mockUtil,
+				notifyHandler: mockNotify,
+				db:            mockDB,
 
-// 			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
+				engineOpenaiHandler: mockGPT,
+				reqHandler:          mockReq,
+			}
+			ctx := context.Background()
 
-// 			// create
-// 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID1) // Outgoing message ID
-// 			mockDB.EXPECT().MessageCreate(ctx, tt.expectOutgoingMessage).Return(nil)
-// 			mockDB.EXPECT().MessageGet(ctx, tt.expectOutgoingMessage.ID).Return(tt.expectOutgoingMessage, nil)
-// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectOutgoingMessage.CustomerID, message.EventTypeMessageCreated, tt.expectOutgoingMessage)
+			close(tt.chanToolCall)
 
-// 			// streamingSendOpenai
-// 			mockDB.EXPECT().MessageGets(ctx, tt.responseAIcall.ID, uint64(1000), "", gomock.Any()).Return(tt.responseMessages, nil)
-// 			mockGPT.EXPECT().StreamingSend(ctx, tt.responseAIcall, tt.expectMessages).Return(tt.responseChanMessage, tt.responseChanAction, nil)
+			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.cc.ActiveflowID, tt.expectedActions).Return(tt.responseActiveflow, nil)
 
-// 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID2) // TTS msgID
-// 			mockReq.EXPECT().TTSV1StreamingSayInit(ctx, tt.responseAIcall.TTSStreamingPodID, tt.responseAIcall.TTSStreamingID, tt.responseUUID2).Return(tt.responseStreaming, nil)
+			// create message for tool call request
+			mockUtil.EXPECT().UUIDCreate().Return(tt.expectedMessageToolRequest.ID)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectedMessageToolRequest).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.expectedMessageToolRequest.ID).Return(tt.expectedMessageToolRequest, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedMessageToolRequest.CustomerID, message.EventTypeMessageCreated, tt.expectedMessageToolRequest)
 
-// 			for _, msg := range tt.responseStreamingMsgs {
-// 				mockReq.EXPECT().TTSV1StreamingSayAdd(ctx, tt.responseAIcall.TTSStreamingPodID, tt.responseAIcall.TTSStreamingID, tt.responseUUID2, msg).Return(nil)
-// 			}
+			for _, msg := range tt.expectedMessagesToolResponse {
+				mockUtil.EXPECT().UUIDCreate().Return(msg.ID)
+				mockDB.EXPECT().MessageCreate(ctx, msg).Return(nil)
+				mockDB.EXPECT().MessageGet(ctx, msg.ID).Return(msg, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, msg.CustomerID, message.EventTypeMessageCreated, msg)
+			}
 
-// 			mockDB.EXPECT().MessageCreate(ctx, tt.expectIncomingMessage).Return(nil)
-// 			mockDB.EXPECT().MessageGet(ctx, tt.expectIncomingMessage.ID).Return(tt.expectIncomingMessage, nil)
-// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectIncomingMessage.CustomerID, message.EventTypeMessageCreated, tt.expectIncomingMessage)
+			if tt.expectedTerminate {
+				mockReq.EXPECT().AIV1AIcallTerminate(ctx, tt.cc.ID).Return(tt.cc, nil)
+			}
 
-// 			res, err := h.StreamingSend(ctx, tt.aicallID, tt.role, tt.content)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expected ok, got: %v", err)
-// 			}
+			res, err := h.streamingSendResponseHandleTool(ctx, tt.cc, tt.chanToolCall)
+			if err != nil {
+				t.Errorf("Wrong match. expected ok, got: %v", err)
+			}
 
-// 			if !reflect.DeepEqual(res, tt.expectReturnMessage) {
-// 				t.Errorf("Wrong return message match.\nexpect: %v\ngot: %v", tt.expectReturnMessage, res)
-// 			}
-// 		})
-// 	}
-// }
+			if !reflect.DeepEqual(res, tt.expectedRes) {
+				t.Errorf("Wrong match.\nexpected: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}

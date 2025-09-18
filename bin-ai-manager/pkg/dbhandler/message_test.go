@@ -36,6 +36,18 @@ func Test_MessageCreate(t *testing.T) {
 
 				Role:    message.RoleUser,
 				Content: "Hello",
+
+				ToolCalls: []message.ToolCall{
+					{
+						ID:   "44e89598-9324-11f0-aa28-1f3b222aa599",
+						Type: message.ToolTypeFunction,
+						Function: message.FunctionCall{
+							Name:      "get_current_weather",
+							Arguments: `{"location":"Boston, MA","unit":"celsius"}`,
+						},
+					},
+				},
+				ToolCallID: "6798165e-9324-11f0-91a4-c7ebb2a64dfd",
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -46,8 +58,21 @@ func Test_MessageCreate(t *testing.T) {
 				},
 				AIcallID: uuid.FromStringOrNil("d6555614-f22b-11ef-96c2-e7d5f61b54dd"),
 
-				Role:     message.RoleUser,
-				Content:  "Hello",
+				Role:    message.RoleUser,
+				Content: "Hello",
+
+				ToolCalls: []message.ToolCall{
+					{
+						ID:   "44e89598-9324-11f0-aa28-1f3b222aa599",
+						Type: message.ToolTypeFunction,
+						Function: message.FunctionCall{
+							Name:      "get_current_weather",
+							Arguments: `{"location":"Boston, MA","unit":"celsius"}`,
+						},
+					},
+				},
+				ToolCallID: "6798165e-9324-11f0-91a4-c7ebb2a64dfd",
+
 				TMCreate: "2023-01-03 21:35:02.809",
 				TMDelete: DefaultTimeStamp,
 			},
@@ -67,9 +92,10 @@ func Test_MessageCreate(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("d62e7a58-f22b-11ef-8edc-9b57d94ff8fc"),
 				},
-				AIcallID: uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
-				TMCreate: "2023-01-03 21:35:02.809",
-				TMDelete: DefaultTimeStamp,
+				AIcallID:  uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
+				ToolCalls: []message.ToolCall{},
+				TMCreate:  "2023-01-03 21:35:02.809",
+				TMDelete:  DefaultTimeStamp,
 			},
 		},
 	}

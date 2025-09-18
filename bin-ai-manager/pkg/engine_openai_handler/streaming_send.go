@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
-	fmaction "monorepo/bin-flow-manager/models/action"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -22,7 +21,7 @@ var (
 	}
 )
 
-func (h *engineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (<-chan string, <-chan *fmaction.Action, error) {
+func (h *engineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (<-chan string, <-chan *message.ToolCall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "StreamingSend",
 		"aicall_id": cc.ID,
@@ -53,16 +52,16 @@ func (h *engineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIca
 	log = log.WithField("request", req)
 
 	// send the request
-	chanMsg, chanAction, err := h.streamingSend(ctx, req)
+	chanMsg, chanTool, err := h.streamingSend(ctx, req)
 	if err != nil {
 		log.Debugf("Could not send the request. err: %v\n", err)
 		return nil, nil, errors.Wrap(err, "could not send the request")
 	}
 
-	return chanMsg, chanAction, nil
+	return chanMsg, chanTool, nil
 }
 
-func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.ChatCompletionRequest) (<-chan string, <-chan *fmaction.Action, error) {
+func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.ChatCompletionRequest) (<-chan string, <-chan *message.ToolCall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "streamingSend",
 	})
@@ -79,14 +78,14 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 
 	// Channel to deliver streamed tokens
 	chanMsg := make(chan string, 10)
-	chanTool := make(chan *fmaction.Action, 10)
+	chanTool := make(chan *message.ToolCall, 10)
 
 	go h.streamingResponseHandle(ctx, stream, chanMsg, chanTool)
 
 	return chanMsg, chanTool, nil
 }
 
-func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, stream *openai.ChatCompletionStream, chanMsg chan string, chanTool chan *fmaction.Action) {
+func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, stream *openai.ChatCompletionStream, chanMsg chan string, chanTool chan *message.ToolCall) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "streamingResponseHandle",
 	})
@@ -94,12 +93,13 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 	var text strings.Builder
 	var toolArg strings.Builder
 	var toolName string
+	var toolID string
 
 	defer func() {
 		log.Debugf("Streaming response handler is done.")
 
 		h.streamingResponseHandleText(chanMsg, text)
-		h.streamingResponseHandleTool(chanTool, toolName, toolArg)
+		h.streamingResponseHandleTool(chanTool, toolID, toolName, toolArg)
 		log.Debugf("Flushed remaining text and tool action.")
 
 		stream.Close()  // Close the stream when done
@@ -126,8 +126,9 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 			for _, choice := range response.Choices {
 				for _, toolCall := range choice.Delta.ToolCalls {
 					if toolCall.Function.Name != "" {
-						h.streamingResponseHandleTool(chanTool, toolName, toolArg)
+						h.streamingResponseHandleTool(chanTool, toolID, toolName, toolArg)
 
+						toolID = toolCall.ID
 						toolName = toolCall.Function.Name
 						toolArg.Reset()
 					}
@@ -139,8 +140,9 @@ func (h *engineOpenaiHandler) streamingResponseHandle(ctx context.Context, strea
 
 				if choice.Delta.Content != "" {
 					if toolName != "" {
-						h.streamingResponseHandleTool(chanTool, toolName, toolArg)
+						h.streamingResponseHandleTool(chanTool, toolID, toolName, toolArg)
 
+						toolID = ""
 						toolName = ""
 						toolArg.Reset()
 					}
@@ -172,7 +174,7 @@ func (h *engineOpenaiHandler) streamingResponseHandleText(chanMsg chan string, t
 	chanMsg <- strings.TrimSpace(text.String())
 }
 
-func (h *engineOpenaiHandler) streamingResponseHandleTool(chanTool chan *fmaction.Action, name string, arg strings.Builder) {
+func (h *engineOpenaiHandler) streamingResponseHandleTool(chanTool chan *message.ToolCall, id string, name string, arg strings.Builder) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "streamingResponseHandleTool",
 		"tool_name": name,
@@ -182,12 +184,15 @@ func (h *engineOpenaiHandler) streamingResponseHandleTool(chanTool chan *fmactio
 		return
 	}
 
-	act, err := h.toolHandle(name, []byte(arg.String()))
-	if err != nil {
-		log.Errorf("Could not handle the tool action. err: %v", err)
-		return
+	toolCall := &message.ToolCall{
+		ID:   id,
+		Type: message.ToolTypeFunction,
+		Function: message.FunctionCall{
+			Name:      name,
+			Arguments: arg.String(),
+		},
 	}
-	log.WithField("action", act).Debugf("Handled the tool action.")
+	log.WithField("tool_call", toolCall).Debugf("Prepared the tool call.")
 
-	chanTool <- act
+	chanTool <- toolCall
 }

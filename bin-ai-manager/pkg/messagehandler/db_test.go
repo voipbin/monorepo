@@ -25,6 +25,8 @@ func Test_Create(t *testing.T) {
 		direction  message.Direction
 		role       message.Role
 		content    string
+		toolCalls  []message.ToolCall
+		toolCallID string
 
 		responseUUID uuid.UUID
 
@@ -39,6 +41,17 @@ func Test_Create(t *testing.T) {
 			direction:  message.DirectionIncoming,
 			role:       message.RoleUser,
 			content:    "Hello, world!",
+			toolCalls: []message.ToolCall{
+				{
+					ID:   "62bfd2da-943b-11f0-9375-c711ec2159d9",
+					Type: message.ToolTypeFunction,
+					Function: message.FunctionCall{
+						Name:      "get_current_weather",
+						Arguments: `{"location":"Boston, MA","unit":"celsius"}`,
+					},
+				},
+			},
+			toolCallID: "62ed2280-943b-11f0-b762-4f0b5a0bd115",
 
 			expectMessage: &message.Message{
 				Identity: identity.Identity{
@@ -50,6 +63,17 @@ func Test_Create(t *testing.T) {
 				Direction: message.DirectionIncoming,
 				Role:      message.RoleUser,
 				Content:   "Hello, world!",
+				ToolCalls: []message.ToolCall{
+					{
+						ID:   "62bfd2da-943b-11f0-9375-c711ec2159d9",
+						Type: message.ToolTypeFunction,
+						Function: message.FunctionCall{
+							Name:      "get_current_weather",
+							Arguments: `{"location":"Boston, MA","unit":"celsius"}`,
+						},
+					},
+				},
+				ToolCallID: "62ed2280-943b-11f0-b762-4f0b5a0bd115",
 			},
 		},
 		{
@@ -61,6 +85,7 @@ func Test_Create(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("0812955a-f262-11ef-a3a2-1bee273dee65"),
 				},
+				ToolCalls: []message.ToolCall{},
 			},
 		},
 	}
@@ -91,7 +116,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, id).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
-			res, err := h.Create(ctx, tt.id, tt.customerID, tt.aicallID, tt.direction, tt.role, tt.content)
+			res, err := h.Create(ctx, tt.id, tt.customerID, tt.aicallID, tt.direction, tt.role, tt.content, tt.toolCalls, tt.toolCallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
