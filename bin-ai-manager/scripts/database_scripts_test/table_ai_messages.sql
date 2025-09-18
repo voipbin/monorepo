@@ -8,6 +8,10 @@ create table ai_messages(
   role          varchar(255),   -- role
   content       text,           -- content
 
+  -- tool
+  tool_calls    json,
+  tool_call_id  varchar(255),
+
   -- timestamps
   tm_create datetime(6),  --
   tm_delete datetime(6),

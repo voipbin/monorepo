@@ -189,6 +189,7 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeCall(t *testing.T) {
 				Direction: message.DirectionOutgoing,
 				Role:      message.RoleUser,
 				Content:   "hello world!",
+				ToolCalls: []message.ToolCall{},
 			},
 			expectMessage2: &message.Message{
 				Identity: identity.Identity{
@@ -200,6 +201,7 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeCall(t *testing.T) {
 				Direction: message.DirectionIncoming,
 				Role:      message.RoleAssistant,
 				Content:   "Hi there!",
+				ToolCalls: []message.ToolCall{},
 			},
 
 			expectSize: 1000,
@@ -317,6 +319,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 				Direction: message.DirectionOutgoing,
 				Role:      message.RoleUser,
 				Content:   "hello world!",
+				ToolCalls: []message.ToolCall{},
 			},
 			expectMessage2: &message.Message{
 				Identity: identity.Identity{
@@ -328,6 +331,7 @@ func Test_Send_sendDialogflow(t *testing.T) {
 				Direction: message.DirectionIncoming,
 				Role:      message.RoleAssistant,
 				Content:   "Hi there!",
+				ToolCalls: []message.ToolCall{},
 			},
 		},
 	}
@@ -468,6 +472,7 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeConversation(t *testing.T) {
 				Direction: message.DirectionOutgoing,
 				Role:      message.RoleUser,
 				Content:   "hello world!",
+				ToolCalls: []message.ToolCall{},
 			},
 			expectMessage2: &message.Message{
 				Identity: identity.Identity{
@@ -479,6 +484,7 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeConversation(t *testing.T) {
 				Direction: message.DirectionIncoming,
 				Role:      message.RoleAssistant,
 				Content:   "Hi there!",
+				ToolCalls: []message.ToolCall{},
 			},
 
 			expectSize: 100,

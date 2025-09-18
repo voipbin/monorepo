@@ -50,6 +50,46 @@ func Test_ConvertOption(t *testing.T) {
 				"language":       "en-US",
 			},
 		},
+		{
+			name: "OptionConnect",
+
+			option: OptionConnect{
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000002",
+					},
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000003",
+					},
+				},
+				EarlyMedia:  true,
+				RelayReason: true,
+			},
+			expectedRes: map[string]any{
+				"source": map[string]any{
+					"type":   "tel",
+					"target": "+821100000001",
+				},
+				"destinations": []any{
+					map[string]any{
+						"type":   "tel",
+						"target": "+821100000002",
+					},
+					map[string]any{
+						"type":   "tel",
+						"target": "+821100000003",
+					},
+				},
+				"early_media":  true,
+				"relay_reason": true,
+			},
+		},
 	}
 
 	for _, tt := range tests {

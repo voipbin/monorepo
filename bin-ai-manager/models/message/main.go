@@ -16,6 +16,9 @@ type Message struct {
 	Role      Role      `json:"role,omitempty"`
 	Content   string    `json:"content,omitempty"`
 
+	ToolCalls  []ToolCall `json:"tool_calls,omitempty"`
+	ToolCallID string     `json:"tool_call_id,omitempty"`
+
 	TMCreate string `json:"tm_create,omitempty"`
 	TMDelete string `json:"tm_delete,omitempty"`
 }

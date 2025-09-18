@@ -9,9 +9,24 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (h *messageHandler) Create(ctx context.Context, id uuid.UUID, customerID uuid.UUID, aicallID uuid.UUID, direction message.Direction, role message.Role, content string) (*message.Message, error) {
+func (h *messageHandler) Create(
+	ctx context.Context,
+	id uuid.UUID,
+	customerID uuid.UUID,
+	aicallID uuid.UUID,
+	direction message.Direction,
+	role message.Role,
+	content string,
+	toolCalls []message.ToolCall,
+	toolCallID string,
+) (*message.Message, error) {
 	if id == uuid.Nil {
 		id = h.utilHandler.UUIDCreate()
+	}
+
+	tmpToolCalls := toolCalls
+	if tmpToolCalls == nil {
+		tmpToolCalls = []message.ToolCall{}
 	}
 
 	m := &message.Message{
@@ -21,9 +36,11 @@ func (h *messageHandler) Create(ctx context.Context, id uuid.UUID, customerID uu
 		},
 		AIcallID: aicallID,
 
-		Direction: direction,
-		Role:      role,
-		Content:   content,
+		Direction:  direction,
+		Role:       role,
+		Content:    content,
+		ToolCalls:  tmpToolCalls,
+		ToolCallID: toolCallID,
 	}
 	if err := h.db.MessageCreate(ctx, m); err != nil {
 		return nil, err

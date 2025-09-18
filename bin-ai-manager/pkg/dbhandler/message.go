@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"monorepo/bin-ai-manager/models/message"
 	"strconv"
@@ -23,6 +24,9 @@ const (
 		role,
 		content,
 
+		tool_calls,
+		tool_call_id,
+
 		tm_create,
 		tm_delete
 	from
@@ -32,6 +36,8 @@ const (
 
 // messageGetFromRow gets the message from the row.
 func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
+	var tmpToolCalls sql.NullString
+
 	res := &message.Message{}
 	if err := row.Scan(
 		&res.ID,
@@ -42,10 +48,22 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 		&res.Role,
 		&res.Content,
 
+		&tmpToolCalls,
+		&res.ToolCallID,
+
 		&res.TMCreate,
 		&res.TMDelete,
 	); err != nil {
 		return nil, errors.Wrap(err, "messageGetFromRow: Could not scan the row")
+	}
+
+	if tmpToolCalls.Valid {
+		if err := json.Unmarshal([]byte(tmpToolCalls.String), &res.ToolCalls); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the data. messageGetFromRow. err: %v", err)
+		}
+	}
+	if res.ToolCalls == nil {
+		res.ToolCalls = []message.ToolCall{}
 	}
 
 	return res, nil
@@ -62,16 +80,25 @@ func (h *handler) MessageCreate(ctx context.Context, c *message.Message) error {
 		role,
 		content,
 
+		tool_calls,
+		tool_call_id,
+
 		tm_create,
 		tm_delete
 	) values (
-		?, ?, ?, 
-		?, ?, ?, 
+		?, ?, ?,
+		?, ?, ?,
+		?, ?,
 		?, ?
 		)
 	`
 
-	_, err := h.db.Exec(q,
+	tmpToolCalls, err := json.Marshal(c.ToolCalls)
+	if err != nil {
+		return fmt.Errorf("MessageCreate: Could not marshal the data. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
 		c.AIcallID.Bytes(),
@@ -79,6 +106,9 @@ func (h *handler) MessageCreate(ctx context.Context, c *message.Message) error {
 		c.Direction,
 		c.Role,
 		c.Content,
+
+		tmpToolCalls,
+		c.ToolCallID,
 
 		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
