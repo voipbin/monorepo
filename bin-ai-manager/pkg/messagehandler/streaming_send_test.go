@@ -19,6 +19,95 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+func Test_streamingSendResponseHandleText(t *testing.T) {
+	tests := []struct {
+		name string
+
+		cc       *aicall.AIcall
+		msgID    uuid.UUID
+		chanText chan string
+
+		expectedTexts   []string
+		expectedMessage *message.Message
+	}{
+		{
+			name: "normal",
+
+			cc: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("4526df10-9522-11f0-927b-e7d26d7d0671"),
+					CustomerID: uuid.FromStringOrNil("457d5d5e-9522-11f0-895e-3b40dece012e"),
+				},
+			},
+			msgID: uuid.FromStringOrNil("4559a184-9522-11f0-bb51-e7e121b7e5a9"),
+			chanText: func() chan string {
+				ch := make(chan string, 10)
+				ch <- "hello world"
+				return ch
+			}(),
+
+			expectedTexts: []string{
+				"hello world",
+			},
+			expectedMessage: &message.Message{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("4559a184-9522-11f0-bb51-e7e121b7e5a9"),
+					CustomerID: uuid.FromStringOrNil("457d5d5e-9522-11f0-895e-3b40dece012e"),
+				},
+				AIcallID: uuid.FromStringOrNil("4526df10-9522-11f0-927b-e7d26d7d0671"),
+
+				Direction: message.DirectionIncoming,
+				Role:      message.RoleAssistant,
+				Content:   "hello world",
+				ToolCalls: []message.ToolCall{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockGPT := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+
+			h := &messageHandler{
+				utilHandler:   mockUtil,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+
+				engineOpenaiHandler: mockGPT,
+				reqHandler:          mockReq,
+			}
+			ctx := context.Background()
+
+			close(tt.chanText)
+
+			for _, msg := range tt.expectedTexts {
+				mockReq.EXPECT().TTSV1StreamingSayAdd(ctx, tt.cc.TTSStreamingPodID, tt.cc.TTSStreamingID, tt.msgID, msg).Return(nil)
+			}
+
+			// create message for tool call request
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectedMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.expectedMessage.ID).Return(tt.expectedMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedMessage.CustomerID, message.EventTypeMessageCreated, tt.expectedMessage)
+
+			res, err := h.streamingSendResponseHandleText(ctx, tt.cc, tt.msgID, tt.chanText)
+			if err != nil {
+				t.Errorf("Wrong match. expected ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectedMessage) {
+				t.Errorf("Wrong match.\nexpected: %v\ngot: %v", tt.expectedMessage, res)
+			}
+		})
+	}
+}
+
 func Test_streamingSendResponseHandleTool(t *testing.T) {
 	tests := []struct {
 		name string

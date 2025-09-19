@@ -200,3 +200,29 @@ func (h *listenHandler) processV1AIcallsIDTerminatePost(ctx context.Context, m *
 
 	return res, nil
 }
+
+// processV1AIcallsIDSendAllPost handles POST /v1/aicalls/<aicall-id>/send_all request
+func (h *listenHandler) processV1AIcallsIDSendAllPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1AIcallsIDSendAllPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if errSend := h.messageHandler.StreamingSendAll(ctx, id); errSend != nil {
+		log.Errorf("Could not send the aicall message. err: %v", errSend)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}

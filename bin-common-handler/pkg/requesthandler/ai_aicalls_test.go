@@ -360,3 +360,52 @@ func Test_AIV1AIcallTerminate(t *testing.T) {
 		})
 	}
 }
+
+func Test_AIV1AIcallSendAll(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		aicallID uuid.UUID
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+	}{
+		{
+			name: "normal",
+
+			aicallID: uuid.FromStringOrNil("23754b40-958b-11f0-9d00-0b3acce8ba68"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:    "/v1/aicalls/23754b40-958b-11f0-9d00-0b3acce8ba68/send_all",
+				Method: sock.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if errSend := reqHandler.AIV1AIcallSendAll(ctx, tt.aicallID); errSend != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", errSend)
+			}
+		})
+	}
+}

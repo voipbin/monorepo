@@ -22,6 +22,7 @@ type MessageHandler interface {
 
 	Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error)
 	StreamingSend(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error)
+	StreamingSendAll(ctx context.Context, aicallID uuid.UUID) error
 }
 
 type messageHandler struct {
