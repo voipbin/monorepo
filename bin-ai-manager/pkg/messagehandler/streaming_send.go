@@ -281,6 +281,11 @@ func (h *messageHandler) streamingSendResponseHandleTool(ctx context.Context, cc
 		return res, nil
 	}
 
-	// todo: consider send the tool response back to the ai.
+	go func() {
+		if errSend := h.reqHandler.AIV1AIcallSendAll(ctx, cc.ID); errSend != nil {
+			log.Errorf("Could not send all the messages after tool action. err: %v", errSend)
+		}
+	}()
+
 	return res, nil
 }

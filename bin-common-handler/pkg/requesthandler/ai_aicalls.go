@@ -123,3 +123,21 @@ func (r *requestHandler) AIV1AIcallTerminate(ctx context.Context, aicallID uuid.
 
 	return &res, nil
 }
+
+// AIV1AIcallSendAll sends a request to ai-manager
+// to send all messages of the ai call to the ai engine.
+// it returns aicall if it succeed.
+func (r *requestHandler) AIV1AIcallSendAll(ctx context.Context, aicallID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/aicalls/%s/send_all", aicallID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/aicalls/<aicall-id>/send_all", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return err
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
+	return nil
+}
