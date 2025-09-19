@@ -101,3 +101,17 @@ func (mr *MockMessageHandlerMockRecorder) StreamingSend(ctx, aicallID, role, con
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingSend", reflect.TypeOf((*MockMessageHandler)(nil).StreamingSend), ctx, aicallID, role, content)
 }
+
+// StreamingSendAll mocks base method.
+func (m *MockMessageHandler) StreamingSendAll(ctx context.Context, aicallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamingSendAll", ctx, aicallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StreamingSendAll indicates an expected call of StreamingSendAll.
+func (mr *MockMessageHandlerMockRecorder) StreamingSendAll(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingSendAll", reflect.TypeOf((*MockMessageHandler)(nil).StreamingSendAll), ctx, aicallID)
+}

@@ -13,6 +13,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 )
 
 func Test_processV1AIcallsGet(t *testing.T) {
@@ -324,6 +325,57 @@ func Test_processV1AIcallsIDTerminatePost(t *testing.T) {
 			}
 
 			mockAIcall.EXPECT().ProcessTerminating(gomock.Any(), tt.expectedID).Return(tt.responseAIcall, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1AIcallsIDSendAllPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		expectedID  uuid.UUID
+		expectedRes *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/3c77f28e-9525-11f0-8139-5b1970217821/send_all",
+				Method: sock.RequestMethodPost,
+			},
+
+			expectedID: uuid.FromStringOrNil("3c77f28e-9525-11f0-8139-5b1970217821"),
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:    mockSock,
+				aicallHandler:  mockAIcall,
+				messageHandler: mockMessage,
+			}
+
+			mockMessage.EXPECT().StreamingSendAll(gomock.Any(), tt.expectedID).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
