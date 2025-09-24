@@ -70,9 +70,12 @@ func (h *messageHandler) StreamingSendAll(ctx context.Context, aicallID uuid.UUI
 		return fmt.Errorf("unsupported reference type: %s", cc.ReferenceType)
 	}
 
-	if errSend := h.streamingSend(ctx, cc); errSend != nil {
-		return errors.Wrapf(errSend, "could not send the message correctly")
-	}
+	go func() {
+		// note: we're running this in a goroutine to not block the caller
+		if errSend := h.streamingSend(ctx, cc); errSend != nil {
+			log.Errorf("Could not send all the messages after tool action. err: %v", errSend)
+		}
+	}()
 
 	return nil
 }
@@ -282,12 +285,11 @@ func (h *messageHandler) streamingSendResponseHandleTool(ctx context.Context, cc
 		return res, nil
 	}
 
-	go func() {
-		// note: we've just processed tool actions, so we need to send all the messages again to the ai engine
-		if errSend := h.reqHandler.AIV1AIcallSendAll(ctx, cc.ID); errSend != nil {
-			log.Errorf("Could not send all the messages after tool action. err: %v", errSend)
-		}
-	}()
+	// note: we've just processed tool actions, so we need to send all the messages again to the ai engine
+	if errSend := h.reqHandler.AIV1AIcallSendAll(ctx, cc.ID); errSend != nil {
+		// we're logging the error here, but we're not returning it
+		log.Errorf("Could not send all the messages after tool action. err: %v", errSend)
+	}
 
 	return res, nil
 }

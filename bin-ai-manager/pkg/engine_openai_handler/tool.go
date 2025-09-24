@@ -113,7 +113,7 @@ var (
 								},
 								"target": map[string]any{
 									"type":        "string",
-									"description": "+E.164 formatted phone number",
+									"description": "E.164 formatted phone number",
 								},
 								"target_name": map[string]any{
 									"type":        "string",
