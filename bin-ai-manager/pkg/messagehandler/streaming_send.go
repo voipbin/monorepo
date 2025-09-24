@@ -70,7 +70,6 @@ func (h *messageHandler) StreamingSendAll(ctx context.Context, aicallID uuid.UUI
 		return fmt.Errorf("unsupported reference type: %s", cc.ReferenceType)
 	}
 
-	// send
 	if errSend := h.streamingSend(ctx, cc); errSend != nil {
 		return errors.Wrapf(errSend, "could not send the message correctly")
 	}
@@ -272,6 +271,8 @@ func (h *messageHandler) streamingSendResponseHandleTool(ctx context.Context, cc
 	}
 
 	if terminate {
+		// we've got a terminate signal from the tool action, so we need to terminate the aicall
+		// this will stop the aicall and will continue the next action in the activeflow
 		// send the terminate signal to aicall
 		tmp, err := h.reqHandler.AIV1AIcallTerminate(ctx, cc.ID)
 		if err != nil {
@@ -282,6 +283,7 @@ func (h *messageHandler) streamingSendResponseHandleTool(ctx context.Context, cc
 	}
 
 	go func() {
+		// note: we've just processed tool actions, so we need to send all the messages again to the ai engine
 		if errSend := h.reqHandler.AIV1AIcallSendAll(ctx, cc.ID); errSend != nil {
 			log.Errorf("Could not send all the messages after tool action. err: %v", errSend)
 		}

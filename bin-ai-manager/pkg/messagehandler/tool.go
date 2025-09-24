@@ -86,14 +86,27 @@ func (h *messageHandler) toolMessageHandleMessageSend(ctx context.Context, cc *a
 	}
 
 	// send the message right away
+	result := "success"
+	tmpContent := ""
 	tmpMessage, err := h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, cc.CustomerID, tmpOpt.Source, tmpOpt.Destinations, tmpOpt.Text)
 	if err != nil {
 		log.WithField("tool_call", toolCall).Errorf("Could not send the message correctly. err: %v", err)
-		return false, errors.Wrapf(err, "could not send the message correctly")
+		result = "error"
+		tmpContent = "{}"
+	} else {
+		log.WithField("message", tmpMessage).Infof("Sent the message. message_id: %s", tmpMessage.ID)
+		tmpRes, errUnmarshal := json.Marshal(tmpMessage)
+		if errUnmarshal != nil {
+			log.Errorf("Could not marshal the sent message correctly. err: %v", errUnmarshal)
+			tmpContent = "{}"
+		} else {
+			tmpContent = string(tmpRes)
+		}
 	}
-	log.WithField("message", tmpMessage).Debugf("Sent the message. message_id: %s", tmpMessage.ID)
+	log.Debugf("Message sent. result: %s, content: %s", result, tmpContent)
 
-	tmp, err := h.Create(ctx, uuid.Nil, cc.CustomerID, cc.ID, message.DirectionOutgoing, message.RoleTool, `{"result": "success"}`, nil, toolCall.ID)
+	content := fmt.Sprintf(`{"result": "%s", "message": %s}`, result, tmpContent)
+	tmp, err := h.Create(ctx, uuid.Nil, cc.CustomerID, cc.ID, message.DirectionOutgoing, message.RoleTool, content, nil, toolCall.ID)
 	if err != nil {
 		log.Errorf("Could not create the tool response message correctly. err: %v", err)
 		return false, errors.Wrapf(err, "could not create the tool message")
