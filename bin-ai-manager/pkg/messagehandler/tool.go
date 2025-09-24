@@ -27,7 +27,7 @@ func (h *messageHandler) toolMessageHandle(ctx context.Context, cc *aicall.AIcal
 		return h.toolMessageHandleMessageSend(ctx, cc, toolCall)
 
 	default:
-		log.WithField("tool_call", toolCall).Warnf("Unsupported action type received: %s", toolCall.Function.Name)
+		log.Warnf("Unsupported action type received: %s", toolCall.Function.Name)
 		return false, fmt.Errorf("unsupported action type: %s", toolCall.Function.Name)
 	}
 }
@@ -88,7 +88,8 @@ func (h *messageHandler) toolMessageHandleMessageSend(ctx context.Context, cc *a
 	// send the message right away
 	result := "success"
 	tmpContent := ""
-	tmpMessage, err := h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, cc.CustomerID, tmpOpt.Source, tmpOpt.Destinations, tmpOpt.Text)
+	msgID := h.utilHandler.UUIDCreate()
+	tmpMessage, err := h.reqHandler.MessageV1MessageSend(ctx, msgID, cc.CustomerID, tmpOpt.Source, tmpOpt.Destinations, tmpOpt.Text)
 	if err != nil {
 		log.WithField("tool_call", toolCall).Errorf("Could not send the message correctly. err: %v", err)
 		result = "error"

@@ -54,7 +54,7 @@ func (h *messageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, 
 // used for tool response back to the ai engine
 func (h *messageHandler) StreamingSendAll(ctx context.Context, aicallID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "StreamingSend",
+		"func":      "StreamingSendAll",
 		"aicall_id": aicallID,
 	})
 	log.Debugf("Sending all ai messages.")
