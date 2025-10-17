@@ -15,7 +15,7 @@ RUN cp -r bin-pipecat-manager/scripts/pipecat /app/scripts/pipecat
 # run
 FROM python:3.12-slim
 
-WORKDIR /app
+WORKDIR /app/bin/
 
 COPY --from=build /app/bin /app/bin
 COPY --from=build /app/scripts/pipecat /app/scripts/pipecat
