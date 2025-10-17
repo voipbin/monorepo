@@ -28,31 +28,15 @@ async def python_client_main():
     parser.add_argument("--messages_file", type=str, required=True, help="Path to the JSON file containing initial messages for the LLM context.")
     args = parser.parse_args()
 
-    # load messages from messages_file
-    messages = []
-    try:
-        with open(args.messages_file, "r", encoding="utf-8") as f:
-            messages = json.load(f)
-        logger.info(f"✅ Loaded {len(messages)} initial messages from {args.messages_file}")
-    except FileNotFoundError:
-        logger.info(f"⚠️ Warning: messages_file not found at {args.messages_file}. Starting with empty messages.")
-    except json.JSONDecodeError:
-        logger.info(f"❌ Error decoding JSON from {args.messages_file}. Starting with empty messages.")
-
-
     logger.info(f"Go WebSocket Server URL: {args.ws_server_url}")
     logger.info(f"LLM: {args.llm}")
     logger.info(f"TTS: {args.tts}")
     logger.info(f"STT: {args.stt}")
-
-    # for debugging, print first 2 messages if available
-    if messages:
-        logger.info(f"Initial Messages (first 2): {messages[:2]}")
-    else:
-        logger.info("No initial messages loaded.")
+    logger.info(f"Voice ID: {args.voice_id}")
+    logger.info(f"Messages File: {args.messages_file}")
 
     # run the pipeline with the loaded messages
-    await run_pipeline(args, messages)
+    await run_pipeline(args)
 
 
 if __name__ == "__main__":

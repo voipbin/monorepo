@@ -41,7 +41,7 @@ func main() {
 	}
 	<-chDone
 
-	log.Info("Finished ai-manager.")
+	log.Info("Finished pipecat-manager.")
 }
 
 // signalHandler catches signals and set the done

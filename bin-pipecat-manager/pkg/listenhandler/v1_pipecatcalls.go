@@ -78,7 +78,7 @@ func (h *listenHandler) processV1PipecatcallsIDGet(ctx context.Context, m *sock.
 
 	c, err := h.pipecatcallHandler.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get transcribe. err: %v", err)
+		log.Errorf("Could not get resource. err: %v", err)
 		return simpleResponse(404), nil
 	}
 

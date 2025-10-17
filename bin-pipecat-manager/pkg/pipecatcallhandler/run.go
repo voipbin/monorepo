@@ -145,7 +145,7 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 
 	for {
 		if ctx.Err() != nil {
-			log.Debugf("Context has finsished. pipecatcall_id: %s", pc.ID)
+			log.Debugf("Context has finished. pipecatcall_id: %s", pc.ID)
 			return
 		}
 

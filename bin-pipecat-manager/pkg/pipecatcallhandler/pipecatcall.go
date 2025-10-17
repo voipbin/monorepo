@@ -6,7 +6,6 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"monorepo/bin-tts-manager/models/streaming"
 
 	"github.com/gofrs/uuid"
 )
@@ -77,5 +76,5 @@ func (h *pipecatcallHandler) Delete(ctx context.Context, streamingID uuid.UUID) 
 	}
 
 	delete(h.mapPipecatcall, streamingID)
-	h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingDeleted, tmp)
+	h.notifyHandler.PublishEvent(ctx, pipecatcall.EventTypeDeleted, tmp)
 }

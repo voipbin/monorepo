@@ -33,7 +33,7 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-async def run_pipeline(args, initial_messages):
+async def run_pipeline(args):
     logger.info(f"Connecting Pipecat client to Go WebSocket server at: {args.ws_server_url}")
 
     ws_transport = WebsocketClientTransport(
@@ -56,10 +56,8 @@ async def run_pipeline(args, initial_messages):
     )
 
     llm = create_llm_server(args.llm)
-
-    context_aggregator = llm.create_context_aggregator(OpenAILLMContext(
-        messages=initial_messages
-    ))
+    
+    context_aggregator = create_context_aggregator(llm, args.messages_file)
 
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
 
@@ -166,16 +164,22 @@ def create_llm_server(name: str, **options):
     return llm
 
 
-def create_context_and_aggregator(llm, file_path: str):
-    print("Executing create_context_and_aggregator. file_path:", file_path)
-    
-    with open(file_path, "r", encoding="utf-8") as f:
-        messages = json.load(f)
+def create_context_aggregator(llm, filepath: str):
+    logger.info("Executing create_context_and_aggregator. filepath:", filepath)
+
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            messages = json.load(f)
+        logger.info(f"Loaded {len(messages)} initial messages from {filepath}")
+    except FileNotFoundError:
+        logger.info(f"Could not find messages_file. {filepath}. Starting with empty messages.")
+    except json.JSONDecodeError:
+        logger.info(f"Could notd ecoding JSON from {filepath}. Starting with empty messages.")
 
     for msg in messages:
         if "role" not in msg or "content" not in msg:
             raise ValueError("Each message must contain 'role' and 'content'")
-
+    logger.info(f"Initial Messages (first 2): {messages[:2]}")
 
     context = llm.context_class(messages)
     context_aggregator = llm.create_context_aggregator(context)
