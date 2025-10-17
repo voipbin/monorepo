@@ -13,7 +13,7 @@ RUN mkdir -p /app/scripts
 RUN cp -r bin-pipecat-manager/scripts/pipecat /app/scripts/pipecat
 
 # run
-FROM python:3.12-alpine
+FROM python:3.12-slim
 
 WORKDIR /app
 
