@@ -30,7 +30,7 @@ type PipecatcallHandler interface {
 		voiceID string,
 		messages []map[string]any,
 	) (*pipecatcall.Pipecatcall, error)
-	Stop(ctx context.Context, id uuid.UUID)
+	Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)
 
 	Get(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)
 }
@@ -58,6 +58,8 @@ type pipecatcallHandler struct {
 	requestHandler requesthandler.RequestHandler
 	notifyHandler  notifyhandler.NotifyHandler
 
+	pythonRunner PythonRunner
+
 	listenAddress string
 	podID         uuid.UUID
 
@@ -76,6 +78,8 @@ func NewPipecatcallHandler(
 		utilHandler:    utilhandler.NewUtilHandler(),
 		requestHandler: reqHandler,
 		notifyHandler:  notifyHandler,
+
+		pythonRunner: NewPythonRunner(),
 
 		listenAddress: listenAddress,
 		podID:         podID,

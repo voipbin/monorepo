@@ -73,9 +73,12 @@ func (mr *MockPipecatcallHandlerMockRecorder) Start(ctx, customerID, activeflowI
 }
 
 // Stop mocks base method.
-func (m *MockPipecatcallHandler) Stop(ctx context.Context, id uuid.UUID) {
+func (m *MockPipecatcallHandler) Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Stop", ctx, id)
+	ret := m.ctrl.Call(m, "Stop", ctx, id)
+	ret0, _ := ret[0].(*pipecatcall.Pipecatcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Stop indicates an expected call of Stop.

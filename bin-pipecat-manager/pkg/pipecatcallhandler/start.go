@@ -71,14 +71,14 @@ func (h *pipecatcallHandler) Start(
 	return res, nil
 }
 
-func (h *pipecatcallHandler) Stop(ctx context.Context, id uuid.UUID) {
-	pc, err := h.Get(ctx, id)
+func (h *pipecatcallHandler) Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
+	res, err := h.Get(ctx, id)
 	if err != nil {
-		logrus.Errorf("Could not get pipecatcall. err: %v", err)
-		return
+		return nil, errors.Wrapf(err, "could not get pipecatcall info")
 	}
 
-	h.stop(ctx, pc)
+	h.stop(ctx, res)
+	return res, nil
 }
 
 func (h *pipecatcallHandler) stop(ctx context.Context, pc *pipecatcall.Pipecatcall) {

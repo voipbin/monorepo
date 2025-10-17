@@ -1,7 +1,6 @@
 package pipecatcallhandler
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/gorilla/websocket"
@@ -311,49 +309,12 @@ func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, mess
 	}
 
 	cmdArgs := append([]string{pythonScript}, args...)
-	cmd := exec.Command(pythonInterpreter, cmdArgs...)
-
-	stdoutPipe, err := cmd.StdoutPipe()
+	cmd, err := h.pythonRunner.Start(pythonInterpreter, cmdArgs)
 	if err != nil {
-		return errors.Wrapf(err, "could to get stdout pipe for python")
+		return errors.Wrapf(err, "could not start python client")
 	}
-	stderrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		return errors.Wrapf(err, "could to get stderr pipe for python")
-	}
+	log.Debugf("Started Python script with PID %d", cmd.Process.Pid)
 
-	log.Debugf("Executing pipecat python script: %s %v", pythonInterpreter, cmdArgs)
-	if errStart := cmd.Start(); errStart != nil {
-		return errors.Wrapf(errStart, "could not start python client")
-	}
-	log.Debugf("Python client process started with PID: %d", cmd.Process.Pid)
-
-	go func() {
-		scanner := bufio.NewScanner(stdoutPipe)
-		for scanner.Scan() {
-			log.Debugf("[PYTHON-CLIENT-STDOUT] %s\n", scanner.Text())
-		}
-		if err := scanner.Err(); err != nil {
-			log.Errorf("Error reading Python client stdout: %v", err)
-		}
-	}()
-
-	go func() {
-		scanner := bufio.NewScanner(stderrPipe)
-		for scanner.Scan() {
-			log.Debugf("[PYTHON-CLIENT-STDERR] %s\n", scanner.Text())
-		}
-		if err := scanner.Err(); err != nil {
-			log.Errorf("Error reading Python client stderr: %v", err)
-		}
-	}()
-
-	go func() {
-		// wait for the python process to exit
-		if errPython := cmd.Wait(); errPython != nil {
-			log.Errorf("Python client process exited with error: %v", errPython)
-		}
-	}()
-
+	h.setRunnerCMD(pc, cmd)
 	return nil
 }

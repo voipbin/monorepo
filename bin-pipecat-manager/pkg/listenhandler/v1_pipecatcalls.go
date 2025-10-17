@@ -110,10 +110,20 @@ func (h *listenHandler) processV1PipecatcallsIDStopPost(ctx context.Context, m *
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	h.pipecatcallHandler.Stop(ctx, id)
+	tmp, err := h.pipecatcallHandler.Stop(ctx, id)
+	if err != nil {
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
 
 	res := &sock.Response{
 		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
