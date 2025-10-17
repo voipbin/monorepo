@@ -173,9 +173,9 @@ def create_context_aggregator(llm, filepath: str):
             messages = json.load(f)
         logger.info(f"Loaded {len(messages)} initial messages from {filepath}")
     except FileNotFoundError:
-        logger.info(f"Could not find messages_file. {filepath}. Starting with empty messages.")
+        logger.warning(f"Could not find messages_file. {filepath}. Starting with empty messages.")
     except json.JSONDecodeError:
-        logger.info(f"Could not decode JSON from {filepath}. Starting with empty messages.")
+        logger.error(f"Could not decode JSON from {filepath}. Starting with empty messages.")
 
     for msg in messages:
         if "role" not in msg or "content" not in msg:
