@@ -86,6 +86,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-pipecat-manager:
+    type: boolean
+    default: false
+
   run-bin-queue-manager:
     type: boolean
     default: false
@@ -467,6 +471,25 @@ workflows:
           <<: *context_production
           requires:
             - bin-outdial-manager-build
+            - release-approval
+
+  bin-pipecat-manager:
+    when:
+      or: [<< pipeline.parameters.run-bin-pipecat-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-pipecat-manager-test
+      - bin-pipecat-manager-build:
+          <<: *context_production
+          requires:
+            - bin-pipecat-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-pipecat-manager-build
+      - bin-pipecat-manager-release:
+          <<: *context_production
+          requires:
+            - bin-pipecat-manager-build
             - release-approval
 
   bin-queue-manager:
@@ -1131,6 +1154,32 @@ jobs:
           source-directory: bin-outdial-manager
           image-name: outdial-manager
 
+  # bin-pipecat-manager
+  bin-pipecat-manager-test:
+    docker:
+      - image: cimg/go:1.24
+    steps:
+      - go-test:
+          source-directory: bin-pipecat-manager
+
+  bin-pipecat-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-pipecat-manager
+          image-name: pipecat-manager
+
+  bin-pipecat-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-pipecat-manager
+          image-name: pipecat-manager
+
   # bin-queue-manager
   bin-queue-manager-test:
     docker:
@@ -1598,6 +1647,8 @@ commands:
             find . -type f -exec sed -i -e "s|\${HOMER_AUTH_TOKEN}|$CC_HOMER_AUTH_TOKEN|g" {} +
             find . -type f -exec sed -i -e "s|\${HOMER_WHITELIST}|$CC_HOMER_WHITELIST|g" {} +
             find . -type f -exec sed -i -e "s|\${ELEVENLABS_API_KEY}|$CC_ELEVENLABS_API_KEY|g" {} +
+            find . -type f -exec sed -i -e "s|\${CARTESIA_API_KEY}|$CC_CARTESIA_API_KEY|g" {} +
+            find . -type f -exec sed -i -e "s|\${DEEPGRAM_API_KEY}|$CC_DEEPGRAM_API_KEY|g" {} +
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 

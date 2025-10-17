@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipecat-manager
+  labels:
+    app: pipecat-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pipecat-manager
+  template:
+    metadata:
+      labels:
+        app: pipecat-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      containers:
+        - name: pipecat-manager
+          image: pipecat-manager-image
+          command:
+            - './pipecat-manager'
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
+            - name: REDIS_DATABASE
+              value: "1"
+
+            - name: CARTESIA_API_KEY
+              value: ${CARTESIA_API_KEY}
+            - name: ELEVENLABS_API_KEY
+              value: ${ELEVENLABS_API_KEY}
+            - name: OPENAI_API_KEY
+              value: ${AUTHTOKEN_OPENAI}
+            - name: DEEPGRAM_API_KEY
+              value: ${DEEPGRAM_API_KEY}
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+            - name: audiosocket
+              protocol: "TCP"
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "100Mi"
