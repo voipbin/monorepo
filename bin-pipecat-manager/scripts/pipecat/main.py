@@ -45,4 +45,4 @@ if __name__ == "__main__":
     except asyncio.CancelledError:
         logger.info("Python client tasks cancelled.")
     except Exception as e:
-        logger.info(f"Python client encountered an error: {e}")
+        logger.error(f"Python client encountered an error: {e}")

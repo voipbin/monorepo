@@ -165,8 +165,9 @@ def create_llm_server(name: str, **options):
 
 
 def create_context_aggregator(llm, filepath: str):
-    logger.info("Executing create_context_and_aggregator. filepath:", filepath)
+    logger.info("Executing create_context_aggregator. filepath:", filepath)
 
+    messages = []
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             messages = json.load(f)
