@@ -9,7 +9,7 @@ COPY ./ .
 RUN mkdir -p /app/bin
 RUN cd bin-pipecat-manager && go build -o /app/bin/ ./cmd/...
 
-RUN mkdir -p /app/scripts/pipecat
+RUN mkdir -p /app/scripts
 RUN cp -r bin-pipecat-manager/scripts/pipecat /app/scripts/pipecat
 
 # run
