@@ -19,7 +19,7 @@ const (
 	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
 )
 
-// proces init
+// process init
 func init() {
 	initVariable()
 
