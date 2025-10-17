@@ -94,7 +94,7 @@ func runListen(
 	listenHandler := listenhandler.NewListenHandler(sockHandler, pipecatcallHandler)
 
 	// run
-	listenQueue := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
+	listenQueue := fmt.Sprintf("bin-manager.pipecat-manager-%s.request", hostID)
 	if err := listenHandler.Run(string("bin-manager.pipecat-manager.request"), listenQueue, string(commonoutline.QueueNameDelay)); err != nil {
 		return errors.Wrapf(err, "could not run the listenhandler correctly")
 	}
