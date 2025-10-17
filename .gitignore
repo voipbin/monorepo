@@ -1,2 +1,50 @@
-vendor
-.vscode
+
+# Go build artifacts
+vendor/
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Go coverage files
+*.out
+
+# IDE / Editor settings
+.vscode/
+.idea/
+
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python packaging
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Logs / temp files
+*.log
+*.tmp
+*.bak
+*.swp
+.DS_Store
+
+# pytest / coverage
+.cache/
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Environment files
+.env

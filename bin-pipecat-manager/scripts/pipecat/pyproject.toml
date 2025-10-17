@@ -1,0 +1,20 @@
+[project]
+name = "pipecat-quickstart"
+version = "0.1.0"
+description = "Quickstart example for building voice AI bots with Pipecat"
+requires-python = ">=3.10"
+dependencies = [
+    "pipecat-ai[cartesia,daily,deepgram,local-smart-turn-v3,openai,runner,silero,webrtc]>=0.0.82",
+    "pipecatcloud>=0.2.4",
+]
+# NOTE: To avoid version conflicts, requirements.txt should be generated from pyproject.toml using pip-compile or poetry export.
+
+[dependency-groups]
+dev = [
+    "ruff~=0.12.1",
+]
+
+[tool.ruff]
+line-length = 100
+[tool.ruff.lint]
+select = ["I"]

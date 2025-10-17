@@ -1,0 +1,5 @@
+python-dotenv
+uvicorn
+pipecat-ai[silero,deepgram,openai,cartesia,websocket,google]>=0.0.82
+onnxruntime==1.20.1
+loguru
