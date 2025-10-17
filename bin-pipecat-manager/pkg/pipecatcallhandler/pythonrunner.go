@@ -32,11 +32,11 @@ func (h *pythonRunner) Start(interpreter string, args []string) (*exec.Cmd, erro
 
 	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
-		return nil, errors.Wrapf(err, "could to get stdout pipe for python")
+		return nil, errors.Wrapf(err, "could not get stdout pipe for python")
 	}
 	stderrPipe, err := cmd.StderrPipe()
 	if err != nil {
-		return nil, errors.Wrapf(err, "could to get stderr pipe for python")
+		return nil, errors.Wrapf(err, "could not get stderr pipe for python")
 	}
 
 	log.Debugf("Executing pipecat python script...")

@@ -42,7 +42,7 @@ const (
 )
 
 // LLM
-// consit of (vendor) + . + (model)
+// consist of (vendor) + . + (model)
 // e.g. openai.gpt-4, anthropic.claude-2
 type LLM string
 

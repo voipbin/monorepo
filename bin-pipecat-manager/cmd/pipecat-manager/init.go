@@ -84,7 +84,7 @@ func initLog() {
 	logrus.SetLevel(logrus.DebugLevel)
 }
 
-// initSignal inits sinal settings.
+// initSignal inits signal settings.
 func initSignal() {
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()

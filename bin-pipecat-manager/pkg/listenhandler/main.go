@@ -22,7 +22,7 @@ const (
 )
 
 const (
-	constCosumerName = "pipecat-manager"
+	constConsumerName = "pipecat-manager"
 )
 
 // ListenHandler interface
@@ -104,7 +104,7 @@ func (h *listenHandler) runListenQueue(queue string) error {
 
 	// receive requests
 	go func() {
-		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, constCosumerName, false, false, false, 10, h.processRequest); errConsume != nil {
+		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, constConsumerName, false, false, false, 10, h.processRequest); errConsume != nil {
 			logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 		}
 	}()
@@ -125,7 +125,7 @@ func (h *listenHandler) runListenQueueVolatile(queue string) error {
 
 	// receive requests
 	go func() {
-		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, constCosumerName, false, false, false, 10, h.processRequest); errConsume != nil {
+		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, constConsumerName, false, false, false, 10, h.processRequest); errConsume != nil {
 			logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 		}
 	}()
