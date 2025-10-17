@@ -27,39 +27,14 @@ var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
 var (
-	databaseDSN             = ""
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
 	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-
-	// service api keys
-	elevenlabsAPIKey = ""
-	cartesiaAPIKey   = ""
-	deepgramAPIKey   = ""
-	openaiAPIKey     = ""
 )
 
 func main() {
 	log := logrus.WithField("func", "main")
 	log.Info("Starting pipecat-manager.")
-
-	// // connect to database
-	// sqlDB, err := sql.Open("mysql", databaseDSN)
-	// if err != nil {
-	// 	logrus.Errorf("Could not access to database. err: %v", err)
-	// 	return
-	// }
-	// defer sqlDB.Close()
-
-	// // connect to cache
-	// cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
-	// if err := cache.Connect(); err != nil {
-	// 	logrus.Errorf("Could not connect to cache server. err: %v", err)
-	// 	return
-	// }
 
 	if errRun := run(); errRun != nil {
 		log.Errorf("Could not run the main thread. err: %v", errRun)

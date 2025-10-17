@@ -68,6 +68,7 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 		log.Errorf("Could not get streaming: %v", err)
 		return
 	}
+	h.setAsteriskInfo(pc, streamingID, conn)
 	log.WithField("streaming", pc).Debugf("Streaming info retrieved. streaming_id: %s", pc.ID)
 
 	go func() {

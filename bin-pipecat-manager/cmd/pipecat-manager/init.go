@@ -14,16 +14,9 @@ import (
 )
 
 const (
-	defaultDatabaseDSN             = "testid:testpassword@tcp(127.0.0.1:3306)/test"
 	defaultPrometheusEndpoint      = "/metrics"
 	defaultPrometheusListenAddress = ":2112"
 	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
-	defaultRedisAddress            = "127.0.0.1:6379"
-	defaultRedisDatabase           = 1
-	defaultRedisPassword           = ""
-	defaultGCPCredentialBase64     = ""
-	defaultAWSAccessKey            = ""
-	defaultAWSSecretKey            = ""
 )
 
 // proces init
@@ -49,14 +42,6 @@ func initVariable() {
 	pflag.String("rabbitmq_address", defaultRabbitMQAddress, "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
 	pflag.String("prometheus_endpoint", defaultPrometheusEndpoint, "URL for the Prometheus metrics endpoint")
 	pflag.String("prometheus_listen_address", defaultPrometheusListenAddress, "Address for Prometheus to listen on (e.g., localhost:8080)")
-	pflag.String("database_dsn", defaultDatabaseDSN, "Data Source Name for database connection (e.g., user:password@tcp(localhost:3306)/dbname)")
-	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
-	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
-	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
-	pflag.String("elevenlabs_api_key", "", "Elevenlabs api key.")
-	pflag.String("cartesia_api_key", "", "Cartesia api key.")
-	pflag.String("deepgram_api_key", "", "Deepgram api key.")
-	pflag.String("openai_api_key", "", "OpenAI api key.")
 	pflag.Parse()
 
 	// rabbitmq_address
@@ -91,95 +76,6 @@ func initVariable() {
 		panic(errEnv)
 	}
 	prometheusListenAddress = viper.GetString("prometheus_listen_address")
-
-	// database_dsn
-	if errFlag := viper.BindPFlag("database_dsn", pflag.Lookup("database_dsn")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("database_dsn", "DATABASE_DSN"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	databaseDSN = viper.GetString("database_dsn")
-
-	// redis_address
-	if errFlag := viper.BindPFlag("redis_address", pflag.Lookup("redis_address")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("redis_address", "REDIS_ADDRESS"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	redisAddress = viper.GetString("redis_address")
-
-	// redis_password
-	if errFlag := viper.BindPFlag("redis_password", pflag.Lookup("redis_password")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("redis_password", "REDIS_PASSWORD"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	redisPassword = viper.GetString("redis_password")
-
-	// redis_database
-	if errFlag := viper.BindPFlag("redis_database", pflag.Lookup("redis_database")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("redis_database", "REDIS_DATABASE"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	redisDatabase = viper.GetInt("redis_database")
-
-	// elevenlabs_api_key
-	if errFlag := viper.BindPFlag("elevenlabs_api_key", pflag.Lookup("elevenlabs_api_key")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("elevenlabs_api_key", "ELEVENLABS_API_KEY"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	elevenlabsAPIKey = viper.GetString("elevenlabs_api_key")
-
-	// cartesia_api_key
-	if errFlag := viper.BindPFlag("cartesia_api_key", pflag.Lookup("cartesia_api_key")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("cartesia_api_key", "CARTESIA_API_KEY"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	cartesiaAPIKey = viper.GetString("cartesia_api_key")
-
-	// deepgramAPIKey
-	if errFlag := viper.BindPFlag("deepgram_api_key", pflag.Lookup("deepgram_api_key")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("deepgram_api_key", "DEEPGRAM_API_KEY"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	deepgramAPIKey = viper.GetString("deepgram_api_key")
-
-	// openaiAPIKey
-	if errFlag := viper.BindPFlag("openai_api_key", pflag.Lookup("openai_api_key")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("openai_api_key", "OPENAI_API_KEY"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	openaiAPIKey = viper.GetString("openai_api_key")
-
 }
 
 // initLog inits log settings.
