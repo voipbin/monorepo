@@ -7,6 +7,7 @@ dependencies = [
     "pipecat-ai[cartesia,daily,deepgram,local-smart-turn-v3,openai,runner,silero,webrtc]>=0.0.82",
     "pipecatcloud>=0.2.4",
 ]
+# NOTE: To avoid version conflicts, requirements.txt should be generated from pyproject.toml using pip-compile or poetry export.
 
 [dependency-groups]
 dev = [
