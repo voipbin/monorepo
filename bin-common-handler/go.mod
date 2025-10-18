@@ -1,6 +1,6 @@
 module monorepo/bin-common-handler
 
-go 1.24.2
+go 1.25.3
 
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
@@ -34,6 +34,8 @@ replace monorepo/bin-number-manager => ../bin-number-manager
 
 replace monorepo/bin-outdial-manager => ../bin-outdial-manager
 
+replace monorepo/bin-pipecat-manager => ../bin-pipecat-manager
+
 replace monorepo/bin-queue-manager => ../bin-queue-manager
 
 replace monorepo/bin-registrar-manager => ../bin-registrar-manager
@@ -55,7 +57,7 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 require (
 	github.com/sirupsen/logrus v1.9.3
 	go.uber.org/mock v0.6.0
-	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/sys v0.37.0 // indirect
 )
 
 require (
@@ -64,8 +66,8 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rabbitmq/amqp091-go v1.10.0
-	golang.org/x/crypto v0.42.0
-	golang.org/x/exp v0.0.0-20250911091902-df9299821621
+	golang.org/x/crypto v0.43.0
+	golang.org/x/exp v0.0.0-20251017212417-90e834f514db
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab
@@ -81,6 +83,7 @@ require (
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646
+	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24
@@ -95,13 +98,15 @@ require (
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.66.1 // indirect
+	github.com/prometheus/common v0.67.1 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	google.golang.org/protobuf v1.36.9 // indirect
+	golang.org/x/net v0.46.0 // indirect
+	google.golang.org/protobuf v1.36.10 // indirect
 )

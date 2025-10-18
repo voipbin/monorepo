@@ -56,6 +56,7 @@ import (
 
 	omoutdial "monorepo/bin-outdial-manager/models/outdial"
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
@@ -894,6 +895,22 @@ type RequestHandler interface {
 	) ([]omoutdialtarget.OutdialTarget, error)
 	OutdialV1OutdialtargetUpdateStatusProgressing(ctx context.Context, outdialtargetID uuid.UUID, destinationIndex int) (*omoutdialtarget.OutdialTarget, error)
 	OutdialV1OutdialtargetUpdateStatus(ctx context.Context, outdialtargetID uuid.UUID, status omoutdialtarget.Status) (*omoutdialtarget.OutdialTarget, error)
+
+	// pipecat-manager pipecatcall
+	PipecatV1PipecatcallStart(
+		ctx context.Context,
+		customerID uuid.UUID,
+		activeflowID uuid.UUID,
+		referenceType pmpipecatcall.ReferenceType,
+		referenceID uuid.UUID,
+		llm pmpipecatcall.LLM,
+		stt pmpipecatcall.STT,
+		tts pmpipecatcall.TTS,
+		voiceID string,
+		messages []map[string]any,
+	) (*pmpipecatcall.Pipecatcall, error)
+	PipecatV1PipecatcallGet(ctx context.Context, pipecallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
+	PipecatV1PipecatcallTerminate(ctx context.Context, aicallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
 
 	// queue-manager queue
 	QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]qmqueue.Queue, error)
