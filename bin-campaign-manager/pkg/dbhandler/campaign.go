@@ -136,7 +136,9 @@ func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) erro
 	if err != nil {
 		return fmt.Errorf("could not prepare. CampaignCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	actions, err := json.Marshal(t.Actions)
 	if err != nil {
@@ -226,7 +228,9 @@ func (h *handler) campaignGetFromDB(ctx context.Context, id uuid.UUID) (*campaig
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. campaignGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())

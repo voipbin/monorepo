@@ -142,7 +142,9 @@ func (h *handler) EmailCreate(ctx context.Context, e *email.Email) error {
 	if err != nil {
 		return errors.Wrapf(err, "could not prepare query.")
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	tmpSource, err := json.Marshal(e.Source)
 	if err != nil {
@@ -236,7 +238,9 @@ func (h *handler) emailGetFromDB(ctx context.Context, id uuid.UUID) (*email.Emai
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not prepare query.")
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())

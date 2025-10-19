@@ -115,7 +115,9 @@ func (h *handler) MessagechatroomCreate(ctx context.Context, m *messagechatroom.
 	if err != nil {
 		return fmt.Errorf("could not prepare. MessagechatroomCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	source, err := json.Marshal(m.Source)
 	if err != nil {
@@ -200,7 +202,9 @@ func (h *handler) messagechatroomGetFromDB(ctx context.Context, id uuid.UUID) (*
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. messagechatroomGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())

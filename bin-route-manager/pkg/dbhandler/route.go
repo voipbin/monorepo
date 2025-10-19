@@ -87,7 +87,9 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 	if err != nil {
 		return fmt.Errorf("could not prepare. RouteCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	ts := h.utilHandler.TimeGetCurTime()
 	_, err = stmt.ExecContext(ctx,
@@ -161,7 +163,9 @@ func (h *handler) routeGetFromDB(ctx context.Context, id uuid.UUID) (*route.Rout
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. routeGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())

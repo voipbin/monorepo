@@ -71,7 +71,9 @@ func (h *handler) AccountCreate(ctx context.Context, f *account.Account) error {
 	if err != nil {
 		return fmt.Errorf("could not prepare. AccountCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	_, err = stmt.ExecContext(ctx,
 		f.ID.Bytes(),
@@ -139,7 +141,9 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. accountGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())

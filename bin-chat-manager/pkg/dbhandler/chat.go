@@ -97,7 +97,9 @@ func (h *handler) ChatCreate(ctx context.Context, c *chat.Chat) error {
 	if err != nil {
 		return fmt.Errorf("could not prepare. ChatCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	tmpParticipantIDs := sortUUIDs(c.ParticipantIDs)
 	participantIDs, err := json.Marshal(tmpParticipantIDs)
@@ -176,7 +178,9 @@ func (h *handler) chatGetFromDB(ctx context.Context, id uuid.UUID) (*chat.Chat, 
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. chatGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())

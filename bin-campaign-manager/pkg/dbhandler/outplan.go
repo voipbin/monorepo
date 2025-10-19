@@ -115,7 +115,9 @@ func (h *handler) OutplanCreate(ctx context.Context, t *outplan.Outplan) error {
 	if err != nil {
 		return fmt.Errorf("could not prepare. OutplanCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	source, err := json.Marshal(t.Source)
 	if err != nil {
@@ -199,7 +201,9 @@ func (h *handler) outplanGetFromDB(ctx context.Context, id uuid.UUID) (*outplan.
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. outplanGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())

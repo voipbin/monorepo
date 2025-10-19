@@ -137,7 +137,9 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 	if err != nil {
 		return fmt.Errorf("could not prepare. CampaigncallCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	source, err := json.Marshal(t.Source)
 	if err != nil {
@@ -232,7 +234,9 @@ func (h *handler) campaigncallGetFromDB(ctx context.Context, id uuid.UUID) (*cam
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. campaigncallGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
@@ -283,7 +287,9 @@ func (h *handler) CampaigncallGetByReferenceID(ctx context.Context, referenceID 
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. CampaigncallGetByReferenceID. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, referenceID.Bytes())
@@ -316,7 +322,9 @@ func (h *handler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowI
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. CampaigncallGetByReferenceID. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, activeflowID.Bytes())

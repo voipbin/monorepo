@@ -97,7 +97,9 @@ func (h *handler) ProviderCreate(ctx context.Context, p *provider.Provider) erro
 	if err != nil {
 		return fmt.Errorf("could not prepare. ProviderCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	techHeaders, err := json.Marshal(p.TechHeaders)
 	if err != nil {
@@ -177,7 +179,9 @@ func (h *handler) providerGetFromDB(ctx context.Context, id uuid.UUID) (*provide
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. providerGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())

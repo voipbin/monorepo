@@ -109,7 +109,9 @@ func (h *handler) OutdialTargetCallCreate(ctx context.Context, t *outdialtargetc
 	if err != nil {
 		return fmt.Errorf("could not prepare. OutdialTargetCallCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	destination, err := json.Marshal(t.Destination)
 	if err != nil {
@@ -228,7 +230,9 @@ func (h *handler) outdialTargetCallGetFromDB(ctx context.Context, id uuid.UUID) 
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. outdialTargetCallGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
@@ -290,7 +294,9 @@ func (h *handler) OutdialTargetCallGetByReferenceID(ctx context.Context, referen
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. OutdialTargetCallGetByReferenceID. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, referenceID.Bytes())
@@ -336,7 +342,9 @@ func (h *handler) OutdialTargetCallGetByActiveflowID(ctx context.Context, active
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. OutdialTargetCallGetByActiveflowID. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, activeflowID.Bytes())
