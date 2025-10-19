@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -95,7 +96,7 @@ func (h *websockHandler) sendDataToExternalMediaSock(ctx context.Context, data [
 	})
 	log.WithField("external_media", externalMedia).Debugf("Sending data to external media socket. reference_id: %s, local_ip: %s, local_port: %d", externalMedia.ReferenceID, externalMedia.LocalIP, externalMedia.LocalPort)
 
-	targetAddress := fmt.Sprintf("%s:%d", externalMedia.LocalIP, externalMedia.LocalPort)
+	targetAddress := net.JoinHostPort(externalMedia.LocalIP, strconv.Itoa(externalMedia.LocalPort))
 	lenSent := 0
 	lenTotal := len(data)
 	for {
