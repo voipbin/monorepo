@@ -1,5 +1,5 @@
 # base
-FROM golang:1.24-bookworm AS base
+FROM golang:1.25-bookworm AS base
 
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
     apt-utils \
