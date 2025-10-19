@@ -172,7 +172,9 @@ func (h *handler) billingGetFromDB(ctx context.Context, id uuid.UUID) (*billing.
 	if err != nil {
 		return nil, fmt.Errorf("could not query. billingGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -196,7 +198,9 @@ func (h *handler) billingGetByReferenceIDFromDB(ctx context.Context, referenceID
 	if err != nil {
 		return nil, fmt.Errorf("could not query. billingGetByReferenceIDFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -315,7 +319,9 @@ func (h *handler) BillingGets(ctx context.Context, size uint64, token string, fi
 	if err != nil {
 		return nil, fmt.Errorf("could not query. BillingGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*billing.Billing{}
 	for rows.Next() {

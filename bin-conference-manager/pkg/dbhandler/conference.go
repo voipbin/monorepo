@@ -251,7 +251,9 @@ func (h *handler) conferenceGetFromDB(ctx context.Context, id uuid.UUID) (*confe
 	if err != nil {
 		return nil, fmt.Errorf("could not query. conferenceGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -348,7 +350,9 @@ func (h *handler) ConferenceGets(ctx context.Context, size uint64, token string,
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferenceGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*conference.Conference{}
 	for rows.Next() {
@@ -373,7 +377,9 @@ func (h *handler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferenceGet. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound

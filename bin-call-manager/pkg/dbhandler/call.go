@@ -394,7 +394,9 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGetByChannelID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -451,7 +453,9 @@ func (h *handler) CallGets(ctx context.Context, size uint64, token string, filte
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*call.Call{}
 	for rows.Next() {
@@ -698,7 +702,9 @@ func (h *handler) callGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. callGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -933,7 +939,9 @@ func (h *handler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
 		_ = tx.Rollback()
 		return nil, nil, fmt.Errorf("could not query. CallTXStart. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		_ = tx.Rollback()

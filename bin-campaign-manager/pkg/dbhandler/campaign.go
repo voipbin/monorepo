@@ -233,7 +233,9 @@ func (h *handler) campaignGetFromDB(ctx context.Context, id uuid.UUID) (*campaig
 	if err != nil {
 		return nil, fmt.Errorf("could not query. campaignGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -305,7 +307,9 @@ func (h *handler) CampaignGetsByCustomerID(ctx context.Context, customerID uuid.
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CampaignGetsByCustomerID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*campaign.Campaign
 	for rows.Next() {

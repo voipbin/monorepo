@@ -137,7 +137,9 @@ func (h *handler) astAORGetFromDB(ctx context.Context, id string) (*astaor.AstAO
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AstAORGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound

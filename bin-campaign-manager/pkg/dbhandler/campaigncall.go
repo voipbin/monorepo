@@ -239,7 +239,9 @@ func (h *handler) campaigncallGetFromDB(ctx context.Context, id uuid.UUID) (*cam
 	if err != nil {
 		return nil, fmt.Errorf("could not query. campaigncallGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -288,7 +290,9 @@ func (h *handler) CampaigncallGetByReferenceID(ctx context.Context, referenceID 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CampaigncallGetByReferenceID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -319,7 +323,9 @@ func (h *handler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowI
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CampaigncallGetByReferenceID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -351,7 +357,9 @@ func (h *handler) CampaigncallGetsByCustomerID(ctx context.Context, customerID u
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CampaigncallGetsByCustomerID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*campaigncall.Campaigncall
 	for rows.Next() {
@@ -384,7 +392,9 @@ func (h *handler) CampaigncallGetsByCampaignID(ctx context.Context, campaignID u
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CampaigncallGetsByCampaignID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*campaigncall.Campaigncall
 	for rows.Next() {
@@ -418,7 +428,9 @@ func (h *handler) CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, cam
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CampaigncallGetsByCampaignIDAndStatus. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*campaigncall.Campaigncall
 	for rows.Next() {
@@ -452,7 +464,9 @@ func (h *handler) CampaigncallGetsOngoingByCampaignID(ctx context.Context, campa
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CampaigncallGetsOngoingByCampaignID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*campaigncall.Campaigncall
 	for rows.Next() {

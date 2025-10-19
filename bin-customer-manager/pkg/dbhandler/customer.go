@@ -173,7 +173,9 @@ func (h *handler) customerGetFromDB(ctx context.Context, id uuid.UUID) (*custome
 	if err != nil {
 		return nil, fmt.Errorf("could not query. customerGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -249,7 +251,9 @@ func (h *handler) CustomerGets(ctx context.Context, size uint64, token string, f
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CustomerGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*customer.Customer
 	for rows.Next() {

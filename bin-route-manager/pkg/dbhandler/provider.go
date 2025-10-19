@@ -184,7 +184,9 @@ func (h *handler) providerGetFromDB(ctx context.Context, id uuid.UUID) (*provide
 	if err != nil {
 		return nil, fmt.Errorf("could not query. providerGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -234,7 +236,9 @@ func (h *handler) ProviderGets(ctx context.Context, token string, limit uint64) 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ProviderGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*provider.Provider
 	for rows.Next() {

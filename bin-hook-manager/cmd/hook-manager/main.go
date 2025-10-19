@@ -58,7 +58,9 @@ func main() {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
-	defer sqlDB.Close()
+	defer func() {
+		_ = sqlDB.Close()
+	}()
 
 	// connect to rabbitmq
 	sock := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)

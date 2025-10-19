@@ -116,7 +116,9 @@ func (h *handler) astAuthGetFromDB(ctx context.Context, id string) (*astauth.Ast
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AstAuthGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound

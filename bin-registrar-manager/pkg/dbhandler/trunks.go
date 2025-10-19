@@ -172,7 +172,9 @@ func (h *handler) trunkGetFromDB(ctx context.Context, id uuid.UUID) (*trunk.Trun
 	if err != nil {
 		return nil, fmt.Errorf("could not query. trunkGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -392,7 +394,9 @@ func (h *handler) TrunkGets(ctx context.Context, size uint64, token string, filt
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TrunkGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*trunk.Trunk
 	for rows.Next() {

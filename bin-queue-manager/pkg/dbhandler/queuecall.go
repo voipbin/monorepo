@@ -257,7 +257,9 @@ func (h *handler) queuecallGetFromDB(ctx context.Context, id uuid.UUID) (*queuec
 	if err != nil {
 		return nil, fmt.Errorf("could not query. queueCallGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -303,7 +305,9 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueuecallGetByReferenceID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -362,7 +366,9 @@ func (h *handler) QueuecallGets(ctx context.Context, size uint64, token string, 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueuecallGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*queuecall.Queuecall
 	for rows.Next() {
@@ -424,7 +430,9 @@ func (h *handler) QueuecallGets(ctx context.Context, size uint64, token string, 
 // 	if err != nil {
 // 		return nil, fmt.Errorf("could not query. QueuecallGetsByCustomerID. err: %v", err)
 // 	}
-// 	defer rows.Close()
+// 	defer func() {
+		_ = rows.Close()
+	}()
 
 // 	var res []*queuecall.Queuecall
 // 	for rows.Next() {

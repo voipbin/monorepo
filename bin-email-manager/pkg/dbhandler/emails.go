@@ -243,7 +243,9 @@ func (h *handler) emailGetFromDB(ctx context.Context, id uuid.UUID) (*email.Emai
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not query.")
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -316,7 +318,9 @@ func (h *handler) EmailGets(ctx context.Context, token string, size uint64, filt
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not query. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*email.Email{}
 	for rows.Next() {

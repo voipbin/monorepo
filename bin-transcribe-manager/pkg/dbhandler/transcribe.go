@@ -226,7 +226,9 @@ func (h *handler) transcribeGetFromDB(id uuid.UUID) (*transcribe.Transcribe, err
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TranscribeGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -334,7 +336,9 @@ func (h *handler) TranscribeGets(ctx context.Context, size uint64, token string,
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TranscribeGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*transcribe.Transcribe{}
 	for rows.Next() {
@@ -367,7 +371,9 @@ func (h *handler) TranscribeGetByReferenceIDAndLanguage(ctx context.Context, ref
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TranscribeGetByReferenceIDAndLanguage. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound

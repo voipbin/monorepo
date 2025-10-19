@@ -183,7 +183,9 @@ func (h *handler) chatGetFromDB(ctx context.Context, id uuid.UUID) (*chat.Chat, 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. chatGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -273,7 +275,9 @@ func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filte
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*chat.Chat
 	for rows.Next() {

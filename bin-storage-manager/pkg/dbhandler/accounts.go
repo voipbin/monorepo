@@ -146,7 +146,9 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 	if err != nil {
 		return nil, fmt.Errorf("could not query. accountGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -219,7 +221,9 @@ func (h *handler) AccountGets(ctx context.Context, token string, size uint64, fi
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AccountGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*account.Account{}
 	for rows.Next() {

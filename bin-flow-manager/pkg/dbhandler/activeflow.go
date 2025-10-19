@@ -172,7 +172,9 @@ func (h *handler) activeflowGetFromDB(ctx context.Context, id uuid.UUID) (*activ
 	if err != nil {
 		return nil, fmt.Errorf("could not query. activeflowGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
@@ -296,7 +298,9 @@ func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64,
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ActiveflowGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*activeflow.Activeflow{}
 	for rows.Next() {

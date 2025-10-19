@@ -168,7 +168,9 @@ func (h *handler) routeGetFromDB(ctx context.Context, id uuid.UUID) (*route.Rout
 	if err != nil {
 		return nil, fmt.Errorf("could not query. routeGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -218,7 +220,9 @@ func (h *handler) RouteGets(ctx context.Context, token string, limit uint64) ([]
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RouteGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*route.Route
 	for rows.Next() {
@@ -252,7 +256,9 @@ func (h *handler) RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUI
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RouteGetsByCustomerID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*route.Route
 	for rows.Next() {
@@ -285,7 +291,9 @@ func (h *handler) RouteGetsByCustomerIDWithTarget(ctx context.Context, customerI
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RouteGetsByCustomerIDWithTarget. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*route.Route
 	for rows.Next() {

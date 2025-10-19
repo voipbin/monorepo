@@ -153,7 +153,9 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not query. messageGetFromDB. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	if !rows.Next() {
 		if err := rows.Err(); err != nil {
@@ -253,7 +255,9 @@ func (h *handler) MessageGets(ctx context.Context, token string, size uint64, fi
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessageGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*message.Message{}
 	for rows.Next() {
@@ -289,7 +293,9 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessageGetsByTransactionID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*message.Message
 	for rows.Next() {

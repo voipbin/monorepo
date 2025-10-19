@@ -49,7 +49,9 @@ func main() {
 		logrus.Errorf("Could not access to database. err: %v", err)
 		return
 	}
-	defer sqlDB.Close()
+	defer func() {
+		_ = sqlDB.Close()
+	}()
 
 	// connect to cache
 	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)

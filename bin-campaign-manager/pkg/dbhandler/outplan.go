@@ -206,7 +206,9 @@ func (h *handler) outplanGetFromDB(ctx context.Context, id uuid.UUID) (*outplan.
 	if err != nil {
 		return nil, fmt.Errorf("could not query. outplanGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -278,7 +280,9 @@ func (h *handler) OutplanGetsByCustomerID(ctx context.Context, customerID uuid.U
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutplanGetsByCustomerID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*outplan.Outplan
 	for rows.Next() {

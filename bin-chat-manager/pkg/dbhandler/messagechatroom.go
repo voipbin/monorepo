@@ -207,7 +207,9 @@ func (h *handler) messagechatroomGetFromDB(ctx context.Context, id uuid.UUID) (*
 	if err != nil {
 		return nil, fmt.Errorf("could not query. messagechatroomGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -280,7 +282,9 @@ func (h *handler) MessagechatroomGets(ctx context.Context, token string, size ui
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessagechatroomGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*messagechatroom.Messagechatroom
 	for rows.Next() {
@@ -314,7 +318,9 @@ func (h *handler) MessagechatroomGetsByChatroomID(ctx context.Context, chatroomI
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessagechatroomGetsByChatroomID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*messagechatroom.Messagechatroom
 	for rows.Next() {
@@ -348,7 +354,9 @@ func (h *handler) MessagechatroomGetsByMessagechatID(ctx context.Context, messag
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessagechatroomGetsByMessagechatID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*messagechatroom.Messagechatroom
 	for rows.Next() {

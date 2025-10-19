@@ -157,7 +157,9 @@ func (h *handler) TranscriptGetFromDB(ctx context.Context, id uuid.UUID) (*trans
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TranscriptGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -212,7 +214,9 @@ func (h *handler) TranscriptGets(ctx context.Context, size uint64, token string,
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TranscriptGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*transcript.Transcript{}
 	for rows.Next() {

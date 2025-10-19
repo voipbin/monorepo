@@ -413,7 +413,9 @@ func (h *handler) outdialTargetGetFromDB(ctx context.Context, id uuid.UUID) (*ou
 	if err != nil {
 		return nil, fmt.Errorf("could not query. outdialTargetGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -464,7 +466,9 @@ func (h *handler) OutdialTargetGetsByOutdialID(ctx context.Context, outdialID uu
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialTargetGetsByOutdialID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*outdialtarget.OutdialTarget
 	for rows.Next() {
@@ -689,7 +693,9 @@ func (h *handler) OutdialTargetGetAvailable(
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialTargetGetAvailable. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*outdialtarget.OutdialTarget{}
 	for rows.Next() {

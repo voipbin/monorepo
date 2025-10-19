@@ -214,7 +214,9 @@ func (h *handler) recordingGetFromDB(ctx context.Context, id uuid.UUID) (*record
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RecordingGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -281,7 +283,9 @@ func (h *handler) RecordingGetByRecordingName(ctx context.Context, recordingName
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RecordingGetByRecordingName. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -338,7 +342,9 @@ func (h *handler) RecordingGets(ctx context.Context, size uint64, token string, 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RecordingGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*recording.Recording{}
 	for rows.Next() {

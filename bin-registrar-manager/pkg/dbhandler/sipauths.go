@@ -210,7 +210,9 @@ func (h *handler) SIPAuthGet(ctx context.Context, id uuid.UUID) (*sipauth.SIPAut
 	if err != nil {
 		return nil, fmt.Errorf("could not query. SIPAuthGet. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound

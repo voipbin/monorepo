@@ -86,7 +86,9 @@ func (h *handler) astEndpointGetFromDB(ctx context.Context, id string) (*astendp
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AstEndpointGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound

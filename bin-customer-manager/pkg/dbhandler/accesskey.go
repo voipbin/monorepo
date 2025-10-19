@@ -153,7 +153,9 @@ func (h *handler) accesskeyGetFromDB(ctx context.Context, id uuid.UUID) (*access
 	if err != nil {
 		return nil, fmt.Errorf("could not query. accesskeyGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -233,7 +235,9 @@ func (h *handler) AccesskeyGets(ctx context.Context, size uint64, token string, 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AccesskeyGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*accesskey.Accesskey
 	for rows.Next() {

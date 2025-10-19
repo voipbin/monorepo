@@ -318,7 +318,9 @@ func (h *handler) GroupcallGets(ctx context.Context, size uint64, token string, 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. GroupcallGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*groupcall.Groupcall{}
 	for rows.Next() {
@@ -403,7 +405,9 @@ func (h *handler) groupcallGetFromDB(ctx context.Context, id uuid.UUID) (*groupc
 	if err != nil {
 		return nil, fmt.Errorf("could not query. groupcallGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
