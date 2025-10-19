@@ -1404,7 +1404,6 @@ commands:
       - run:
           name: Install latest golangci-lint
           command: |
-            golangci-lint version
             curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
             sudo mv ./bin/golangci-lint /usr/local/bin/
             golangci-lint version
@@ -1452,6 +1451,13 @@ commands:
           name: Install extra dependencies
           command: |
             sudo apt-get update && sudo apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
+
+      - run:
+          name: Install latest golangci-lint
+          command: |
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+            sudo mv ./bin/golangci-lint /usr/local/bin/
+            golangci-lint version
 
       - run:
           name: Linting and vet
