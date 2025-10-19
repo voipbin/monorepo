@@ -7,5 +7,5 @@ func (h *handler) Close() {
 	log := logrus.WithField("func", "Close")
 
 	log.Debug("Closing database connection.")
-	h.db.Close()
+	_ = h.db.Close()
 }

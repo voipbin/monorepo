@@ -51,9 +51,10 @@ func (t *AvailableNumber) ConvertAvailableNumber() *availablenumber.AvailableNum
 	}
 
 	for _, tmp := range t.RegionInformation {
-		if tmp.RegionType == "country_code" {
+		switch tmp.RegionType {
+		case "country_code":
 			res.Country = tmp.RegionName
-		} else if tmp.RegionType == "state" {
+		case "state":
 			res.Region = tmp.RegionName
 		}
 	}

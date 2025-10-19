@@ -343,7 +343,9 @@ package requestexternal
 // 	if err != nil {
 // 		t.Errorf("could not get correct response. err: %v", err)
 // 	}
-// 	defer resp.Body.Close()
+// 	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 // 	if resp.StatusCode != 200 {
 // 		t.Errorf("could not get correct response. status: %d", resp.StatusCode)

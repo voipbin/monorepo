@@ -108,7 +108,9 @@ func (h *recoveryHandler) getSIPMessages(ctx context.Context, callID string) ([]
 	if err != nil {
 		return nil, errors.Wrapf(err, "error sending request for call ID %s", callID)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode >= 300 {
 		return nil, errors.Errorf("Homer API request failed for call ID %s: status %s", callID, resp.Status)
