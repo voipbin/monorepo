@@ -4,6 +4,15 @@ context_production: &context_production
   context: 
     - production
 
+references:
+  go_image: &go_image
+    - image: cimg/go:1.24
+  gcp_image: &gcp_image
+    - image: cimg/gcp:2024.03
+  gcloud_image: &gcloud_image
+    - image: google/cloud-sdk:debian_component_based
+
+
 parameters:
 
   ############################################
@@ -706,15 +715,13 @@ jobs:
 
   # bin-agent-manager
   bin-agent-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-agent-manager
 
   bin-agent-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -722,8 +729,7 @@ jobs:
           image-name: agent-manager
 
   bin-agent-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -732,15 +738,13 @@ jobs:
 
   # bin-api-manager
   bin-api-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test-api-manager:
           source-directory: bin-api-manager
 
   bin-api-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -748,8 +752,7 @@ jobs:
           image-name: api-manager
 
   bin-api-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -758,15 +761,13 @@ jobs:
 
   # bin-billing-manager
   bin-billing-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-billing-manager
 
   bin-billing-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -774,8 +775,7 @@ jobs:
           image-name: billing-manager
 
   bin-billing-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -784,15 +784,13 @@ jobs:
 
   # bin-call-manager
   bin-call-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-call-manager
 
   bin-call-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -800,8 +798,7 @@ jobs:
           image-name: call-manager
 
   bin-call-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -811,15 +808,13 @@ jobs:
 
   # bin-campaign-manager
   bin-campaign-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-campaign-manager
 
   bin-campaign-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -827,8 +822,7 @@ jobs:
           image-name: campaign-manager
 
   bin-campaign-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -838,15 +832,13 @@ jobs:
 
   # bin-chat-manager
   bin-chat-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-chat-manager
 
   bin-chat-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -854,8 +846,7 @@ jobs:
           image-name: chat-manager
 
   bin-chat-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -864,15 +855,13 @@ jobs:
 
   # bin-ai-manager
   bin-ai-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-ai-manager
 
   bin-ai-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -880,8 +869,7 @@ jobs:
           image-name: ai-manager
 
   bin-ai-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -890,23 +878,20 @@ jobs:
 
   # bin-common-handler
   bin-common-handler-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-common-handler
 
   # bin-conference-manager
   bin-conference-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-conference-manager
 
   bin-conference-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -914,8 +899,7 @@ jobs:
           image-name: conference-manager
 
   bin-conference-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -924,15 +908,13 @@ jobs:
 
   # bin-conversation-manager
   bin-conversation-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-conversation-manager
 
   bin-conversation-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -940,8 +922,7 @@ jobs:
           image-name: conversation-manager
 
   bin-conversation-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -950,15 +931,13 @@ jobs:
 
   # bin-customer-manager
   bin-customer-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-customer-manager
 
   bin-customer-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -966,8 +945,7 @@ jobs:
           image-name: customer-manager
 
   bin-customer-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1000,15 +978,13 @@ jobs:
 
   # bin-email-manager
   bin-email-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-email-manager
 
   bin-email-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1016,8 +992,7 @@ jobs:
           image-name: email-manager
 
   bin-email-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1026,15 +1001,13 @@ jobs:
 
   # bin-flow-manager
   bin-flow-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-flow-manager
 
   bin-flow-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1042,8 +1015,7 @@ jobs:
           image-name: flow-manager
 
   bin-flow-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1052,15 +1024,13 @@ jobs:
 
   # bin-hook-manager
   bin-hook-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-hook-manager
 
   bin-hook-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1068,8 +1038,7 @@ jobs:
           image-name: hook-manager
 
   bin-hook-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1078,15 +1047,13 @@ jobs:
 
   # bin-message-manager
   bin-message-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-message-manager
 
   bin-message-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1094,8 +1061,7 @@ jobs:
           image-name: message-manager
 
   bin-message-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1104,15 +1070,13 @@ jobs:
 
   # bin-number-manager
   bin-number-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-number-manager
 
   bin-number-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1120,8 +1084,7 @@ jobs:
           image-name: number-manager
 
   bin-number-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1130,15 +1093,13 @@ jobs:
 
   # bin-outdial-manager
   bin-outdial-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-outdial-manager
 
   bin-outdial-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1146,8 +1107,7 @@ jobs:
           image-name: outdial-manager
 
   bin-outdial-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1156,15 +1116,13 @@ jobs:
 
   # bin-pipecat-manager
   bin-pipecat-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-pipecat-manager
 
   bin-pipecat-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1172,8 +1130,7 @@ jobs:
           image-name: pipecat-manager
 
   bin-pipecat-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1182,15 +1139,13 @@ jobs:
 
   # bin-queue-manager
   bin-queue-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-queue-manager
 
   bin-queue-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1198,8 +1153,7 @@ jobs:
           image-name: queue-manager
 
   bin-queue-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1208,15 +1162,13 @@ jobs:
 
   # bin-registrar-manager
   bin-registrar-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-registrar-manager
 
   bin-registrar-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1224,8 +1176,7 @@ jobs:
           image-name: registrar-manager
 
   bin-registrar-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1234,15 +1185,13 @@ jobs:
 
   # bin-route-manager
   bin-route-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-route-manager
 
   bin-route-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1250,8 +1199,7 @@ jobs:
           image-name: route-manager
 
   bin-route-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1260,15 +1208,13 @@ jobs:
 
   # bin-sentinel-manager
   bin-sentinel-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-sentinel-manager
 
   bin-sentinel-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1276,8 +1222,7 @@ jobs:
           image-name: sentinel-manager
 
   bin-sentinel-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1286,15 +1231,13 @@ jobs:
 
   # bin-storage-manager
   bin-storage-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-storage-manager
 
   bin-storage-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1302,8 +1245,7 @@ jobs:
           image-name: storage-manager
 
   bin-storage-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1312,15 +1254,13 @@ jobs:
 
   # bin-tag-manager
   bin-tag-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-tag-manager
 
   bin-tag-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1328,8 +1268,7 @@ jobs:
           image-name: tag-manager
 
   bin-tag-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1338,15 +1277,13 @@ jobs:
 
   # bin-transcribe-manager
   bin-transcribe-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-transcribe-manager
 
   bin-transcribe-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1354,8 +1291,7 @@ jobs:
           image-name: transcribe-manager
 
   bin-transcribe-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1364,15 +1300,13 @@ jobs:
 
   # bin-transfer-manager
   bin-transfer-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-transfer-manager
 
   bin-transfer-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1380,8 +1314,7 @@ jobs:
           image-name: transfer-manager
 
   bin-transfer-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1390,15 +1323,13 @@ jobs:
 
   # bin-tts-manager
   bin-tts-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-tts-manager
 
   bin-tts-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1406,8 +1337,7 @@ jobs:
           image-name: tts-manager
 
   bin-tts-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1416,15 +1346,13 @@ jobs:
 
   # bin-webhook-manager
   bin-webhook-manager-test:
-    docker:
-      - image: cimg/go:1.24
+    docker: *go_image
     steps:
       - go-test:
           source-directory: bin-webhook-manager
 
   bin-webhook-manager-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: bin-manager
@@ -1432,8 +1360,7 @@ jobs:
           image-name: webhook-manager
 
   bin-webhook-manager-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
+    docker: *gcloud_image
     steps:
       - go-release:
           namespace: bin-manager
@@ -1446,8 +1373,7 @@ jobs:
 
   # voip-asterisk-proxy
   voip-asterisk-proxy-build:
-    docker:
-      - image: cimg/gcp:2024.03
+    docker: *gcp_image
     steps:
       - go-build:
           namespace: voip
