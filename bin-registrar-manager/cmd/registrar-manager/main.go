@@ -52,7 +52,9 @@ func main() {
 		log.Errorf("Could not access to database asterisk. err: %v", err)
 		return
 	}
-	defer sqlAst.Close()
+	defer func() {
+		_ = sqlAst.Close()
+	}()
 
 	// connect to the database bin-manager
 	sqlBin, err := sql.Open("mysql", databaseDSNBin)
@@ -60,7 +62,9 @@ func main() {
 		log.Errorf("Could not access to database bin-manager. err: %v", err)
 		return
 	}
-	defer sqlBin.Close()
+	defer func() {
+		_ = sqlBin.Close()
+	}()
 
 	// connect to cache
 	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)

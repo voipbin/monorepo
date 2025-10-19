@@ -110,7 +110,9 @@ func (h *bucketHandler) FileGet(ctx context.Context, target string) ([]byte, err
 		log.Errorf("Could not get object info. err: %v", err)
 		return nil, err
 	}
-	defer rc.Close()
+	defer func() {
+		_ = rc.Close()
+	}()
 
 	// read the data
 	data, err := io.ReadAll(rc)

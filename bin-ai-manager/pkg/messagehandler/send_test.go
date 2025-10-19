@@ -16,7 +16,6 @@ import (
 	"testing"
 
 	cmmessage "monorepo/bin-conversation-manager/models/message"
-	cvmessage "monorepo/bin-conversation-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -408,7 +407,7 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeConversation(t *testing.T) {
 		expectMessage2 *message.Message
 
 		expectSize     uint64
-		expectFilters  map[cvmessage.Field]any
+		expectFilters  map[cmmessage.Field]any
 		expectMessages []*message.Message
 	}{
 		{
@@ -488,9 +487,9 @@ func Test_Send_sendOpenai_sendOpenaiReferenceTypeConversation(t *testing.T) {
 			},
 
 			expectSize: 100,
-			expectFilters: map[cvmessage.Field]any{
-				cvmessage.FieldDeleted:        false,
-				cvmessage.FieldConversationID: uuid.FromStringOrNil("cddc72ba-30f6-11f0-85c7-e307c3cfd78e"),
+			expectFilters: map[cmmessage.Field]any{
+				cmmessage.FieldDeleted:        false,
+				cmmessage.FieldConversationID: uuid.FromStringOrNil("cddc72ba-30f6-11f0-85c7-e307c3cfd78e"),
 			},
 			expectMessages: []*message.Message{
 				{

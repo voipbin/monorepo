@@ -114,7 +114,9 @@ func (h *websockHandler) sendDataToExternalMediaSock(ctx context.Context, data [
 			log.Errorf("Could not connect to the asterisk. err: %v", err)
 			return errors.Wrapf(err, "could not connect to asterisk. err: %v", err)
 		}
-		defer conn.Close()
+		defer func() {
+			_ = conn.Close()
+		}()
 
 		l, err := bufio.NewReader(conn).Read(data)
 		if err != nil {

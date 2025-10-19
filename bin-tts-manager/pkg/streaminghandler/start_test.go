@@ -2,7 +2,6 @@ package streaminghandler
 
 import (
 	"context"
-	"monorepo/bin-call-manager/models/externalmedia"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -97,8 +96,8 @@ func Test_Start(t *testing.T) {
 				defaultTransport,
 				defaultConnectionType,
 				defaultFormat,
-				externalmedia.DirectionNone,
-				externalmedia.Direction(tt.direction),
+				cmexternalmedia.DirectionNone,
+				cmexternalmedia.Direction(tt.direction),
 			).Return(tt.responseExternalMedia, nil)
 
 			_, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)

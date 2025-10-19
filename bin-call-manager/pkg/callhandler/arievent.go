@@ -108,11 +108,13 @@ func (h *callHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Cha
 	}
 
 	// we care only ringing/progress at here.
-	if status == call.StatusRinging {
+	switch status {
+	case call.StatusRinging:
 		return h.updateStatusRinging(ctx, cn, c)
-	} else if status == call.StatusProgressing {
+	case call.StatusProgressing:
 		return h.updateStatusProgressing(ctx, cn, c)
 	}
+
 	return nil
 }
 

@@ -73,7 +73,7 @@ type handler struct {
 
 // handler errors
 var (
-	ErrNotFound = errors.New("Record not found")
+	ErrNotFound = errors.New("record not found")
 )
 
 // list of default values

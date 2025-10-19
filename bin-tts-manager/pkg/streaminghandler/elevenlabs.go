@@ -213,7 +213,7 @@ func (h *elevenlabsHandler) terminate(cf *ElevenlabsConfig) {
 	defer cf.muConnWebsock.Unlock()
 
 	if cf.ConnWebsock != nil {
-		cf.ConnWebsock.Close()
+		_ = cf.ConnWebsock.Close()
 		cf.ConnWebsock = nil
 	}
 
