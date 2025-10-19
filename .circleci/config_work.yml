@@ -1402,6 +1402,14 @@ commands:
             go mod vendor          
 
       - run:
+          name: Install latest golangci-lint
+          command: |
+            golangci-lint version
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+            sudo mv ./bin/golangci-lint /usr/local/bin/
+            golangci-lint version
+
+      - run:
           name: Linting and vet
           command: |
             cd << parameters.source-directory >>
