@@ -82,7 +82,7 @@ require (
 	cloud.google.com/go/storage v1.57.0
 	github.com/CyCoreSystems/audiosocket v0.3.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	github.com/gorilla/websocket v1.5.3
+	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/pebbe/zmq4 v1.4.0
 	github.com/pion/rtp v1.8.24
