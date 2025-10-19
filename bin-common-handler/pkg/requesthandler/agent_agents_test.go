@@ -10,7 +10,6 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
-	"monorepo/bin-common-handler/models/address"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
@@ -31,7 +30,7 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 		ringMethod amagent.RingMethod
 		permission amagent.Permission
 		tagIDs     []uuid.UUID
-		addresses  []address.Address
+		addresses  []commonaddress.Address
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -51,9 +50,9 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 			tagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"),
 			},
-			addresses: []address.Address{
+			addresses: []commonaddress.Address{
 				{
-					Type:   address.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -83,9 +82,9 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 				Status:       amagent.StatusOffline,
 				Permission:   1,
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
-				Addresses: []address.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   address.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 					},
 				},
@@ -624,7 +623,7 @@ func Test_AgentV1AgentUpdateAddresses(t *testing.T) {
 		name string
 
 		id        uuid.UUID
-		addresses []address.Address
+		addresses []commonaddress.Address
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -636,9 +635,9 @@ func Test_AgentV1AgentUpdateAddresses(t *testing.T) {
 			name: "normal",
 
 			id: uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
-			addresses: []address.Address{
+			addresses: []commonaddress.Address{
 				{
-					Type:   address.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},

@@ -15,7 +15,7 @@ import (
 func Test_ActionFetchGet(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, `[{"type":"hangup"}]`)
+		_, _ = fmt.Fprintln(w, `[{"type":"hangup"}]`)
 	}))
 	defer ts.Close()
 

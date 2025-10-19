@@ -14,7 +14,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/identity"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -221,7 +220,7 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					Identity: commonidentity.Identity{
+					Identity: identity.Identity{
 						ID: uuid.FromStringOrNil("2faae1f4-b4a2-11ec-a519-77ff3160d5e2"),
 					},
 				},
@@ -246,7 +245,7 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					Identity: commonidentity.Identity{
+					Identity: identity.Identity{
 						ID: uuid.FromStringOrNil("300c0740-b4a2-11ec-9751-632ef9ed0b46"),
 					},
 				},

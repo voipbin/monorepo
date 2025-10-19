@@ -40,7 +40,7 @@ func (h *zmq) Connect(sockType zmq4.Type, addr string) error {
 
 // Terminate terminates the zmq socket.
 func (h *zmq) Terminate() {
-	h.socket.Close()
+	_ = h.socket.Close()
 }
 
 // Subscribe subscribes the given topic.

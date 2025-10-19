@@ -120,7 +120,9 @@ func writeBase64(filename string, data string) error {
 		log.Errorf("Could not create a file. err: %v", err)
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	tmp, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {

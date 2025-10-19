@@ -30,7 +30,9 @@ func (h *websockHandler) RunExternalMedia(ctx context.Context, w http.ResponseWr
 		log.Errorf("Could not create websocket. err: %v", err)
 		return err
 	}
-	defer ws.Close()
+	defer func() {
+		_ = ws.Close()
+	}()
 	log.Debugf("Created a new websocket correctly.")
 
 	// get the external media info

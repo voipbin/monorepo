@@ -33,7 +33,7 @@ import (
 	chatmedia "monorepo/bin-chat-manager/models/media"
 	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
-	"monorepo/bin-common-handler/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/service"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
@@ -90,7 +90,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -752,8 +751,8 @@ type RequestHandler interface {
 		detail string,
 		conversationType cvconversation.Type,
 		dialogID string,
-		self address.Address,
-		peer address.Address,
+		self commonaddress.Address,
+		peer commonaddress.Address,
 	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)
 	ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error)
@@ -786,7 +785,7 @@ type RequestHandler interface {
 		ctx context.Context,
 		customerID uuid.UUID,
 		activeflowID uuid.UUID,
-		destinations []address.Address,
+		destinations []commonaddress.Address,
 		subject string,
 		content string,
 		attachments []ememail.Attachment,

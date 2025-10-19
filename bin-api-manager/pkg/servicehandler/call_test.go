@@ -13,7 +13,6 @@ import (
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-	"monorepo/bin-common-handler/models/identity"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -198,7 +197,7 @@ func Test_CallCreate(t *testing.T) {
 			},
 
 			responseFlow: &fmflow.Flow{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
@@ -262,7 +261,7 @@ func Test_CallCreate(t *testing.T) {
 			},
 
 			responseFlow: &fmflow.Flow{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
@@ -326,7 +325,7 @@ func Test_CallCreate(t *testing.T) {
 			},
 
 			responseFlow: &fmflow.Flow{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2ca43d36-8df9-11ec-846a-ebf271da36c8"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},

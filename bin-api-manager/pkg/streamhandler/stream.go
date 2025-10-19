@@ -77,11 +77,11 @@ func (h *streamHandler) Terminate(id uuid.UUID) {
 	}
 
 	if st.ConnAsterisk != nil {
-		st.ConnAsterisk.Close()
+		_ = st.ConnAsterisk.Close()
 		st.ConnAsterisk = nil
 	}
 	if st.ConnWebsocket != nil {
-		st.ConnWebsocket.Close()
+		_ = st.ConnWebsocket.Close()
 		st.ConnWebsocket = nil
 	}
 

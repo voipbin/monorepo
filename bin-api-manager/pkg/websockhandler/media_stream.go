@@ -26,7 +26,9 @@ func (h *websockHandler) mediaStreamRun(ctx context.Context, w http.ResponseWrit
 		log.Errorf("Could not create websocket. err: %v", err)
 		return err
 	}
-	defer ws.Close()
+	defer func() {
+		_ = ws.Close()
+	}()
 	log.Debugf("Created a new websocket correctly.")
 
 	st, err := h.streamHandler.Start(ctx, ws, referenceType, referenceID, stream.Encapsulation(encapsulation))

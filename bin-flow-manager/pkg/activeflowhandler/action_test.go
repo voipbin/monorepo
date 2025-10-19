@@ -186,7 +186,7 @@ func Test_updateNextAction(t *testing.T) {
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.Identity.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
 			res, err := h.updateNextAction(ctx, tt.activeflowID, tt.currentActionID)
 			if err != nil {

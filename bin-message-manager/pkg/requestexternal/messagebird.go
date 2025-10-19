@@ -62,7 +62,9 @@ func (h *requestExternal) MessagebirdSendMessage(ctx context.Context, sender str
 		log.Errorf("Could not send the request. err: %v", err)
 		return nil, errors.Wrap(err, "Could not send the request.")
 	}
-	defer response.Body.Close()
+	defer func() {
+		_ = response.Body.Close()
+	}()
 
 	if response.StatusCode > 299 {
 		log.Errorf("Could not send the message request. status_code: %d, err: %v", response.StatusCode, response.Body)

@@ -32,7 +32,8 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *amagent.Agent, t
 			return false
 		}
 
-		if tmps[0] == "customer_id" {
+		switch tmps[0] {
+		case "customer_id":
 			if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
 				// the agent has no permission for this topic
 				return false
@@ -42,12 +43,14 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *amagent.Agent, t
 				// the customer id must be the same
 				return false
 			}
-		} else if tmps[0] == "agent_id" {
+
+		case "agent_id":
 			if tmpID != a.ID {
 				//
 				return false
 			}
-		} else {
+
+		default:
 			// the first part should be "customer_id" or "agent_id"
 			return false
 		}
@@ -71,7 +74,8 @@ func (h *websockHandler) validateTopic(ctx context.Context, a *amagent.Agent, to
 		return false
 	}
 
-	if tmps[0] == "customer_id" {
+	switch tmps[0] {
+	case "customer_id":
 		if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
 			// the agent has no permission for this topic
 			return false
@@ -81,12 +85,14 @@ func (h *websockHandler) validateTopic(ctx context.Context, a *amagent.Agent, to
 			// the customer id must be the same
 			return false
 		}
-	} else if tmps[0] == "agent_id" {
+
+	case "agent_id":
 		if tmpID != a.ID {
 			//
 			return false
 		}
-	} else {
+
+	default:
 		// the first part should be "customer_id" or "agent_id"
 		return false
 	}

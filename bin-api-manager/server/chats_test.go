@@ -5,7 +5,6 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
-	chatchat "monorepo/bin-chat-manager/models/chat"
 	chchat "monorepo/bin-chat-manager/models/chat"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"net/http"
@@ -26,7 +25,7 @@ func Test_chatsPOST(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseChat *chatchat.WebhookMessage
+		responseChat *chchat.WebhookMessage
 
 		expectName           string
 		expectDetail         string
@@ -46,7 +45,7 @@ func Test_chatsPOST(t *testing.T) {
 			reqQuery: "/chats",
 			reqBody:  []byte(`{"type":"normal","owner_id":"b044e2a8-38a3-11ed-8427-dfcc31e2715d","participant_ids":["b044e2a8-38a3-11ed-8427-dfcc31e2715d","b93d4e5e-38a3-11ed-ab61-4352c92e28e8"],"name":"test name","detail":"test detail"}`),
 
-			responseChat: &chatchat.WebhookMessage{
+			responseChat: &chchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("daddd81c-38a3-11ed-91bd-3b29b0d8de2d"),
 				},
@@ -116,7 +115,7 @@ func Test_chatsGET(t *testing.T) {
 
 		reqQuery string
 
-		responseChats []*chatchat.WebhookMessage
+		responseChats []*chchat.WebhookMessage
 
 		expectPageSize  uint64
 		expectpageToken string
@@ -134,7 +133,7 @@ func Test_chatsGET(t *testing.T) {
 
 			reqQuery: "/chats?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 
-			responseChats: []*chatchat.WebhookMessage{
+			responseChats: []*chchat.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("370254c4-38a4-11ed-b2a5-37ed1141a85e"),
@@ -157,7 +156,7 @@ func Test_chatsGET(t *testing.T) {
 
 			reqQuery: "/chats?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 
-			responseChats: []*chatchat.WebhookMessage{
+			responseChats: []*chchat.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("37280f2a-38a4-11ed-86cf-43452b441d43"),
@@ -227,7 +226,7 @@ func Test_chatsIDGET(t *testing.T) {
 
 		reqQuery string
 
-		responseChatmessage *chatchat.WebhookMessage
+		responseChatmessage *chchat.WebhookMessage
 
 		expectChatID uuid.UUID
 		expectRes    string
@@ -242,7 +241,7 @@ func Test_chatsIDGET(t *testing.T) {
 
 			reqQuery: "/chats/66f4fc5e-38a4-11ed-9898-4fe958a93f32",
 
-			responseChatmessage: &chatchat.WebhookMessage{
+			responseChatmessage: &chchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("66f4fc5e-38a4-11ed-9898-4fe958a93f32"),
 				},
@@ -296,7 +295,7 @@ func Test_chatsIDDELETE(t *testing.T) {
 
 		reqQuery string
 
-		responseChat *chatchat.WebhookMessage
+		responseChat *chchat.WebhookMessage
 
 		expectChatID uuid.UUID
 		expectRes    string
@@ -311,7 +310,7 @@ func Test_chatsIDDELETE(t *testing.T) {
 
 			reqQuery: "/chats/bb04bc12-38a4-11ed-83a7-2f3469ac49d8",
 
-			responseChat: &chatchat.WebhookMessage{
+			responseChat: &chchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bb04bc12-38a4-11ed-83a7-2f3469ac49d8"),
 				},
@@ -366,7 +365,7 @@ func Test_chatsIDPUT(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseChat *chatchat.WebhookMessage
+		responseChat *chchat.WebhookMessage
 
 		expectChatID uuid.UUID
 		expectName   string
@@ -384,7 +383,7 @@ func Test_chatsIDPUT(t *testing.T) {
 			reqQuery: "/chats/493c3ece-38a5-11ed-a068-3b268867512b",
 			reqBody:  []byte(`{"name": "test name", "detail":"test detail"}`),
 
-			responseChat: &chatchat.WebhookMessage{
+			responseChat: &chchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("493c3ece-38a5-11ed-a068-3b268867512b"),
 				},
@@ -442,7 +441,7 @@ func Test_chatsIDRoomOwnerIDPUT(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseChat *chatchat.WebhookMessage
+		responseChat *chchat.WebhookMessage
 
 		expectChatID      uuid.UUID
 		expectRoomOwnerID uuid.UUID
@@ -459,7 +458,7 @@ func Test_chatsIDRoomOwnerIDPUT(t *testing.T) {
 			reqQuery: "/chats/71e7f444-38a5-11ed-ada5-7b100414c281/room_owner_id",
 			reqBody:  []byte(`{"room_owner_id":"720f35a4-38a5-11ed-8d75-b7dc3e2589d1"}`),
 
-			responseChat: &chatchat.WebhookMessage{
+			responseChat: &chchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("71e7f444-38a5-11ed-ada5-7b100414c281"),
 				},
@@ -516,7 +515,7 @@ func Test_chatsIDParticipantIDsPOST(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseChat *chatchat.WebhookMessage
+		responseChat *chchat.WebhookMessage
 
 		expectChatID        uuid.UUID
 		expectParticipantID uuid.UUID
@@ -533,7 +532,7 @@ func Test_chatsIDParticipantIDsPOST(t *testing.T) {
 			reqQuery: "/chats/9e543ff6-38a5-11ed-9e73-6f0b324904e7/participant_ids",
 			reqBody:  []byte(`{"participant_id":"9e7e032c-38a5-11ed-96c4-0f8ebc10e7f4"}`),
 
-			responseChat: &chatchat.WebhookMessage{
+			responseChat: &chchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("9e543ff6-38a5-11ed-9e73-6f0b324904e7"),
 				},
@@ -589,7 +588,7 @@ func Test_chatsIDParticipantIDsIDDELETE(t *testing.T) {
 
 		reqQuery string
 
-		responseChat *chatchat.WebhookMessage
+		responseChat *chchat.WebhookMessage
 
 		expectChatID        uuid.UUID
 		expectParticipantID uuid.UUID
@@ -605,7 +604,7 @@ func Test_chatsIDParticipantIDsIDDELETE(t *testing.T) {
 
 			reqQuery: "/chats/c8a77ab6-38a5-11ed-b33f-137843123dff/participant_ids/c8d869fa-38a5-11ed-9fa4-0ba3841352ee",
 
-			responseChat: &chatchat.WebhookMessage{
+			responseChat: &chchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c8a77ab6-38a5-11ed-b33f-137843123dff"),
 				},

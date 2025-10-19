@@ -122,7 +122,9 @@ func writeBase64(filename string, data string) error {
 		log.Errorf("Could not create a file. err: %v", err)
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	tmp, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
@@ -229,7 +231,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 
 	appServer := server.NewServer(serviceHandler)
 
-	v1 := app.RouterGroup.Group("v1.0")
+	v1 := app.Group("v1.0")
 	v1.Use(middleware.Authenticate())
 	openapi_server.RegisterHandlers(v1, appServer)
 
@@ -311,7 +313,9 @@ func runListenStreamsock(ctx context.Context, streamHandler streamhandler.Stream
 		log.Errorf("Could not listen the address. err: %v", err)
 		return
 	}
-	defer listen.Close()
+	defer func() {
+		_ = listen.Close()
+	}()
 
 	for {
 		if ctx.Err() != nil {
