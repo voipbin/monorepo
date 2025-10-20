@@ -4,7 +4,6 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"net"
 	"net/http"
-	"os/exec"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -30,6 +29,6 @@ func (h *pipecatcallHandler) setAsteriskInfo(pc *pipecatcall.Pipecatcall, stream
 	pc.AsteriskStreamingID = streamingID
 }
 
-func (h *pipecatcallHandler) setRunnerCMD(pc *pipecatcall.Pipecatcall, cmd *exec.Cmd) {
-	pc.RunnerCMD = cmd
-}
+// func (h *pipecatcallHandler) setRunnerCMD(pc *pipecatcall.Pipecatcall, cmd *exec.Cmd) {
+// 	pc.RunnerCMD = cmd
+// }
