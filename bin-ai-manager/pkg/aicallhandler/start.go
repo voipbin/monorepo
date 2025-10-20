@@ -9,7 +9,6 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
-	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -203,52 +202,52 @@ Constraints:
 	return res, nil
 }
 
-// startReferenceTypeCall starts a new aicall with reference type call
-func (h *aicallHandler) startReferenceTypeCallOld(
-	ctx context.Context,
-	c *ai.AI,
-	activeflowID uuid.UUID,
-	referenceID uuid.UUID,
-	gender aicall.Gender,
-	language string,
-) (*aicall.AIcall, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "startNew",
-		"ai":            c,
-		"activeflow_id": activeflowID,
-	})
-	log.Debugf("Starting a new aicall")
+// // startReferenceTypeCall starts a new aicall with reference type call
+// func (h *aicallHandler) startReferenceTypeCallOld(
+// 	ctx context.Context,
+// 	c *ai.AI,
+// 	activeflowID uuid.UUID,
+// 	referenceID uuid.UUID,
+// 	gender aicall.Gender,
+// 	language string,
+// ) (*aicall.AIcall, error) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":          "startNew",
+// 		"ai":            c,
+// 		"activeflow_id": activeflowID,
+// 	})
+// 	log.Debugf("Starting a new aicall")
 
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, c.ID, cmconfbridge.TypeConference)
-	if err != nil {
-		log.Errorf("Could not create confbridge. err: %v", err)
-		return nil, errors.Wrap(err, "Could not create confbridge")
-	}
+// 	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, c.ID, cmconfbridge.TypeConference)
+// 	if err != nil {
+// 		log.Errorf("Could not create confbridge. err: %v", err)
+// 		return nil, errors.Wrap(err, "Could not create confbridge")
+// 	}
 
-	// start streaming tts
-	st, err := h.reqHandler.TTSV1StreamingCreate(ctx, c.CustomerID, activeflowID, tmstreaming.ReferenceTypeCall, referenceID, language, tmstreaming.Gender(gender), tmstreaming.DirectionOutgoing)
-	if err != nil {
-		return nil, errors.Wrap(err, "Could not create tts streaming")
-	}
-	log.WithField("streaming", st).Debugf("Created tts streaming. streaming_id: %s", st.ID)
+// 	// start streaming tts
+// 	st, err := h.reqHandler.TTSV1StreamingCreate(ctx, c.CustomerID, activeflowID, tmstreaming.ReferenceTypeCall, referenceID, language, tmstreaming.Gender(gender), tmstreaming.DirectionOutgoing)
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "Could not create tts streaming")
+// 	}
+// 	log.WithField("streaming", st).Debugf("Created tts streaming. streaming_id: %s", st.ID)
 
-	// create ai call
-	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, st.ID, st.PodID)
-	if err != nil {
-		log.Errorf("Could not create aicall. err: %v", err)
-		return nil, errors.Wrap(err, "Could not create aicall.")
-	}
-	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
+// 	// create ai call
+// 	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, st.ID, st.PodID)
+// 	if err != nil {
+// 		log.Errorf("Could not create aicall. err: %v", err)
+// 		return nil, errors.Wrap(err, "Could not create aicall.")
+// 	}
+// 	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
 
-	go func(cctx context.Context) {
-		if errInit := h.chatInit(cctx, c, res); errInit != nil {
-			log.Errorf("Could not initialize chat. err: %v", errInit)
-		}
+// 	go func(cctx context.Context) {
+// 		if errInit := h.chatInit(cctx, c, res); errInit != nil {
+// 			log.Errorf("Could not initialize chat. err: %v", errInit)
+// 		}
 
-	}(context.Background())
+// 	}(context.Background())
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
 // startReferenceTypeConversation starts a new aicall with reference type conversation
 func (h *aicallHandler) startReferenceTypeConversation(
