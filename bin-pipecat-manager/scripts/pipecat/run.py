@@ -33,11 +33,11 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-async def run_pipeline(args):
-    logger.info(f"Connecting Pipecat client to Go WebSocket server at: {args.ws_server_url}")
+async def run_pipeline(ws_server_url: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = []):
+    logger.info(f"Connecting Pipecat client to Go WebSocket server at: {ws_server_url}")
 
     ws_transport = WebsocketClientTransport(
-        uri=args.ws_server_url,
+        uri=ws_server_url,
         params=WebsocketClientParams(
             serializer=ProtobufFrameSerializer(),
             audio_in_enabled=True,
@@ -48,16 +48,16 @@ async def run_pipeline(args):
         )
     )
 
-    stt = create_stt_service(args.stt)
+    stt_service = create_stt_service(stt)
 
-    tts = create_tts_service(
-        args.tts,
-        voice_id=args.voice_id if args.voice_id else None,
+    tts_service = create_tts_service(
+        tts,
+        voice_id=voice_id if voice_id else None,
     )
 
-    llm = create_llm_server(args.llm)
+    llm_service = create_llm_server(llm)
     
-    context_aggregator = create_context_aggregator(llm, args.messages_file)
+    context_aggregator = create_context_aggregator(llm, messages)
 
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
 
@@ -65,10 +65,10 @@ async def run_pipeline(args):
         [
             ws_transport.input(),
             rtvi,
-            stt,
+            stt_service,
             context_aggregator.user(),
-            llm,
-            tts,
+            llm_service,
+            tts_service,
             context_aggregator.assistant(),
             ws_transport.output(),
         ]
@@ -164,18 +164,18 @@ def create_llm_server(name: str, **options):
     return llm
 
 
-def create_context_aggregator(llm, filepath: str):
-    logger.info(f"Executing create_context_aggregator. filepath: {filepath}")
+def create_context_aggregator(llm, messages):
+    # logger.info(f"Executing create_context_aggregator. filepath: {filepath}")
 
-    messages = []
-    try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            messages = json.load(f)
-        logger.info(f"Loaded {len(messages)} initial messages from {filepath}")
-    except FileNotFoundError:
-        logger.warning(f"Could not find messages_file. {filepath}. Starting with empty messages.")
-    except json.JSONDecodeError:
-        logger.error(f"Could not decode JSON from {filepath}. Starting with empty messages.")
+    # messages = []
+    # try:
+    #     with open(filepath, "r", encoding="utf-8") as f:
+    #         messages = json.load(f)
+    #     logger.info(f"Loaded {len(messages)} initial messages from {filepath}")
+    # except FileNotFoundError:
+    #     logger.warning(f"Could not find messages_file. {filepath}. Starting with empty messages.")
+    # except json.JSONDecodeError:
+    #     logger.error(f"Could not decode JSON from {filepath}. Starting with empty messages.")
 
     for msg in messages:
         if "role" not in msg or "content" not in msg:

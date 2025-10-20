@@ -303,24 +303,31 @@ func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, mess
 		"func": "runnerStartPython",
 	})
 
-	pythonInterpreter := "python"
-	pythonScript := "/app/scripts/pipecat/main.py"
-
-	args := []string{
-		"--ws_server_url", url,
-		"--llm", string(pc.LLM),
-		"--stt", string(pc.STT),
-		"--tts", string(pc.TTS),
-		"--messages_file", message_file,
+	if errStart := h.pythonRunner.Start(context.Background(), url, string(pc.LLM), string(pc.STT), string(pc.TTS), pc.VoiceID, pc.Messages); errStart != nil {
+		return errors.Wrapf(errStart, "could not start python client")
 	}
+	log.Debugf("Pipecat Python runner process started with PID: %d", pc.RunnerCMD.Process.Pid)
 
-	cmdArgs := append([]string{pythonScript}, args...)
-	cmd, err := h.pythonRunner.Start(pythonInterpreter, cmdArgs)
-	if err != nil {
-		return errors.Wrapf(err, "could not start python client")
-	}
-	log.Debugf("Started Python script with PID %d", cmd.Process.Pid)
-
-	h.setRunnerCMD(pc, cmd)
 	return nil
+
+	// pythonInterpreter := "python"
+	// pythonScript := "/app/scripts/pipecat/main.py"
+
+	// args := []string{
+	// 	"--ws_server_url", url,
+	// 	"--llm", string(pc.LLM),
+	// 	"--stt", string(pc.STT),
+	// 	"--tts", string(pc.TTS),
+	// 	"--messages_file", message_file,
+	// }
+
+	// cmdArgs := append([]string{pythonScript}, args...)
+	// cmd, err := h.pythonRunner.Start(pythonInterpreter, cmdArgs)
+	// if err != nil {
+	// 	return errors.Wrapf(err, "could not start python client")
+	// }
+	// log.Debugf("Started Python script with PID %d", cmd.Process.Pid)
+
+	// h.setRunnerCMD(pc, cmd)
+	// return nil
 }
