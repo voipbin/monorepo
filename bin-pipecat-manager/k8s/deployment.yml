@@ -70,7 +70,8 @@ spec:
         - name: pipecat-script-runner
           image: pipecat-manager-image
           command:
-            - 'python /app/scripts/pipecat/main.py'
+            - 'python'
+            - '/app/scripts/pipecat/main.py'
           env:
             - name: CARTESIA_API_KEY
               value: ${CARTESIA_API_KEY}
