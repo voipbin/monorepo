@@ -297,7 +297,7 @@ func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, mess
 		"func": "runnerStartPython",
 	})
 
-	pythonInterpreter := "/app/bin/scripts/pipecat/venv/bin/python3"
+	pythonInterpreter := "python"
 	pythonScript := "/app/bin/scripts/pipecat/main.py"
 
 	args := []string{
