@@ -18,6 +18,8 @@ import (
 )
 
 type PipecatcallHandler interface {
+	Run() error
+
 	Start(
 		ctx context.Context,
 		customerID uuid.UUID,

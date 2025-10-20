@@ -78,7 +78,13 @@ func run() error {
 	// run listen
 	if errListen := runListen(sockHandler, hostID, pipecatcallHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
-		return errListen
+		return errors.Wrapf(errListen, "could not start runListen")
+	}
+
+	// run streaming
+	if errStreaming := runStreaming(pipecatcallHandler); errStreaming != nil {
+		log.Errorf("Could not start runStreaming. err: %v", errStreaming)
+		return errors.Wrapf(errStreaming, "could not start runStreaming")
 	}
 
 	return nil
@@ -97,6 +103,20 @@ func runListen(
 	if err := listenHandler.Run(string("bin-manager.pipecat-manager.request"), listenQueue, string(commonoutline.QueueNameDelay)); err != nil {
 		return errors.Wrapf(err, "could not run the listenhandler correctly")
 	}
+
+	return nil
+}
+
+func runStreaming(pipecatcallHandler pipecatcallhandler.PipecatcallHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runStreaming",
+	})
+
+	go func() {
+		if errRun := pipecatcallHandler.Run(); errRun != nil {
+			log.Errorf("Could not run the streaming handler correctly. err: %v", errRun)
+		}
+	}()
 
 	return nil
 }
