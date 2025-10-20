@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 
 	"github.com/gofrs/uuid"
@@ -94,6 +95,116 @@ func (h *aicallHandler) startResume(ctx context.Context, activeflowID uuid.UUID)
 
 // startReferenceTypeCall starts a new aicall with reference type call
 func (h *aicallHandler) startReferenceTypeCall(
+	ctx context.Context,
+	c *ai.AI,
+	activeflowID uuid.UUID,
+	referenceID uuid.UUID,
+	gender aicall.Gender,
+	language string,
+) (*aicall.AIcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "startNew",
+		"ai":            c,
+		"activeflow_id": activeflowID,
+	})
+	log.Debugf("Starting a new aicall")
+
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, c.ID, cmconfbridge.TypeConference)
+	if err != nil {
+		log.Errorf("Could not create confbridge. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create confbridge")
+	}
+
+	// get messages
+	messages := []map[string]any{
+		{
+			"role": "system",
+			"content": `
+Role:
+You are an AI assistant integrated with voipbin. 
+Your role is to follow the user's system or custom prompt strictly, provide natural responses, and call external tools when necessary.
+
+Context:
+- Users will set their own instructions (persona, style, context).
+- You must adapt to those instructions consistently.
+- If user requests or situation requires, use available tools to gather data or perform actions.
+
+Input Values:
+- User-provided system/custom prompt
+- User query
+- Available tools list
+
+Instructions:
+- Always prioritize the user's provided prompt instructions.
+- Generate a helpful, coherent, and contextually appropriate response.
+- If tools are available and required, call them responsibly and return results clearly.
+- **Do not mention tool names or the fact that a tool is being used in the user-facing response.**
+- Maintain consistency with the user-defined tone and role.
+- If ambiguity exists, ask clarifying questions before answering.
+- Before giving the final answer, outline a short execution plan (2–4 steps), then provide a concise summary (1–2 sentences) and the final answer.  
+- For each Input Value, ask clarifying questions **one at a time in sequence**. Wait for the user's answer before moving to the next question.  
+
+Constraints:
+- Avoid hallucination; use tools for factual queries.  
+- Keep answers aligned with user's persona and tone.  
+- Respect conversation history and continuity.  
+	`,
+		},
+		{
+			"role":    "system",
+			"content": c.EngineData,
+		},
+	}
+	// messagestt, err := h.messageHandler.Gets(ctx, c.ID, 100, "", map[string]string{})
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "Could not get messages")
+	// }
+
+	pc, err := h.reqHandler.PipecatV1PipecatcallStart(
+		ctx,
+		c.CustomerID,
+		activeflowID,
+		pmpipecatcall.ReferenceTypeCall,
+		referenceID,
+		pmpipecatcall.LLM(c.EngineModel),
+		pmpipecatcall.STTDeepgram,
+		pmpipecatcall.TTSCartesia,
+		"71a7ad14-091c-4e8e-a314-022ece01c121",
+		messages,
+	)
+	if err != nil {
+		log.Errorf("Could not start pipecatcall. err: %v", err)
+		return nil, errors.Wrap(err, "could not start pipecatcall")
+	}
+	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall. pipecatcall_id: %s", pc.ID)
+
+	// // start streaming tts
+	// st, err := h.reqHandler.TTSV1StreamingCreate(ctx, c.CustomerID, activeflowID, tmstreaming.ReferenceTypeCall, referenceID, language, tmstreaming.Gender(gender), tmstreaming.DirectionOutgoing)
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "Could not create tts streaming")
+	// }
+	// log.WithField("streaming", st).Debugf("Created tts streaming. streaming_id: %s", st.ID)
+
+	// create ai call
+	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, uuid.Nil, "")
+	if err != nil {
+		log.Errorf("Could not create aicall. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create aicall.")
+	}
+	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
+
+	// go func(cctx context.Context) {
+	// 	if errInit := h.chatInit(cctx, c, res); errInit != nil {
+	// 		log.Errorf("Could not initialize chat. err: %v", errInit)
+	// 	}
+
+	// }(context.Background())
+
+	return res, nil
+}
+
+// startReferenceTypeCall starts a new aicall with reference type call
+func (h *aicallHandler) startReferenceTypeCallOld(
 	ctx context.Context,
 	c *ai.AI,
 	activeflowID uuid.UUID,
