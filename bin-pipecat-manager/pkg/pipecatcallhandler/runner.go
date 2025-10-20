@@ -44,6 +44,12 @@ func (h *pipecatcallHandler) RunnerStart(ctx context.Context, pc *pipecatcall.Pi
 		return
 	}
 	log.Debugf("Pipecat runner script started.")
+
+	// wait
+	if errWait := pc.RunnerCMD.Wait(); errWait != nil {
+		log.Errorf("Could not wait for the pipecat runner script to finish: %v", errWait)
+	}
+	log.Debugf("Pipecat runner script finished.")
 }
 
 func (h *pipecatcallHandler) runnerStartWebsocket(ctx context.Context, pc *pipecatcall.Pipecatcall) error {
