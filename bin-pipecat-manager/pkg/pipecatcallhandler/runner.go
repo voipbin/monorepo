@@ -297,8 +297,8 @@ func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, mess
 		"func": "runnerStartPython",
 	})
 
-	pythonInterpreter := "../../scripts/pipecat/venv/bin/python3"
-	pythonScript := "../../scripts/pipecat/main.py"
+	pythonInterpreter := "/app/bin/scripts/pipecat/venv/bin/python3"
+	pythonScript := "/app/bin/scripts/pipecat/main.py"
 
 	args := []string{
 		"--ws_server_url", url,
