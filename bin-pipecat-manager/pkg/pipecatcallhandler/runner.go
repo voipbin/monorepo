@@ -304,7 +304,7 @@ func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, mess
 	})
 
 	pythonInterpreter := "python"
-	pythonScript := "/app/bin/scripts/pipecat/main.py"
+	pythonScript := "/app/scripts/pipecat/main.py"
 
 	args := []string{
 		"--ws_server_url", url,
