@@ -591,7 +591,9 @@ func (h *handler) channelGetFromDB(ctx context.Context, id string) (*channel.Cha
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChannelGet. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -687,7 +689,9 @@ func (h *handler) ChannelGets(ctx context.Context, size uint64, token string, fi
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not query. ChannelGets. query: %s, err: %v", q, err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*channel.Channel{}
 	for rows.Next() {
@@ -734,7 +738,9 @@ func (h *handler) ChannelGetsForRecovery(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not query. query: %s, err: %v", q, err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*channel.Channel{}
 	for rows.Next() {

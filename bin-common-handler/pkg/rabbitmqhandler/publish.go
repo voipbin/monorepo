@@ -17,7 +17,9 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 	if err != nil {
 		return fmt.Errorf("could not create a channel for PublishMessage. err: %v", err)
 	}
-	defer channel.Close()
+	defer func() {
+		_ = channel.Close()
+	}()
 
 	err = channel.PublishWithContext(
 		context.Background(),
@@ -50,7 +52,9 @@ func (r *rabbit) RequestPublish(ctx context.Context, queueName string, req *sock
 	if err != nil {
 		return nil, fmt.Errorf("could not create a channel for PublishRPC. err: %v", err)
 	}
-	defer channel.Close()
+	defer func() {
+		_ = channel.Close()
+	}()
 
 	// declare the response queue
 	resQueue, err := channel.QueueDeclare(

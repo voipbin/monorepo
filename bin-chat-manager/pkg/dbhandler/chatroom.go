@@ -104,7 +104,9 @@ func (h *handler) ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) erro
 	if err != nil {
 		return fmt.Errorf("could not prepare. ChatroomCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	participantIDs, err := json.Marshal(c.ParticipantIDs)
 	if err != nil {
@@ -185,14 +187,18 @@ func (h *handler) chatroomGetFromDB(ctx context.Context, id uuid.UUID) (*chatroo
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. chatroomGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. chatroomGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -263,7 +269,9 @@ func (h *handler) ChatroomGets(ctx context.Context, token string, size uint64, f
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatroomGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*chatroom.Chatroom
 	for rows.Next() {

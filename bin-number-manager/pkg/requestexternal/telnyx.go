@@ -52,7 +52,9 @@ func (h *requestExternal) TelnyxAvailableNumberGets(token, countryCode, locality
 	if err != nil {
 		return nil, fmt.Errorf("could not get correct response. err: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
@@ -121,7 +123,9 @@ func (h *requestExternal) TelnyxNumberOrdersPost(token string, numbers []string,
 	if err != nil {
 		return nil, fmt.Errorf("could not get correct response. err: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
@@ -166,7 +170,9 @@ func (h *requestExternal) TelnyxPhoneNumbersGetByNumber(token string, number str
 	if err != nil {
 		return nil, fmt.Errorf("could not get correct response. err: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	log.WithField("response", resp).Debugf("Received response.")
 
 	if resp.StatusCode != 200 {
@@ -207,7 +213,9 @@ func (h *requestExternal) TelnyxPhoneNumbersIDGet(token, id string) (*telnyx.Pho
 	if err != nil {
 		return nil, fmt.Errorf("could not get correct response. err: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
@@ -247,7 +255,9 @@ func (h *requestExternal) TelnyxPhoneNumbersIDDelete(token, id string) (*telnyx.
 	if err != nil {
 		return nil, fmt.Errorf("could not get correct response. err: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
@@ -297,7 +307,9 @@ func (h *requestExternal) TelnyxPhoneNumbersGet(token string, size uint, tag, nu
 	if err != nil {
 		return nil, fmt.Errorf("could not get correct response. err: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
@@ -356,7 +368,9 @@ func (h *requestExternal) TelnyxPhoneNumbersIDUpdate(token, id string, data map[
 	if err != nil {
 		return nil, fmt.Errorf("could not get correct response. err: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)

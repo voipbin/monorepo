@@ -142,7 +142,7 @@ func Test_tmpariSendRequestToAsterisk(t *testing.T) {
 					"language": "en"
 				}
 				`
-				fmt.Fprintln(w, res)
+				_, _ = fmt.Fprintln(w, res)
 			}))
 			defer ts.Close()
 

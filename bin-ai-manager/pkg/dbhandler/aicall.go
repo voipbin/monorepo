@@ -206,7 +206,9 @@ func (h *handler) aicallGetFromDB(id uuid.UUID) (*aicall.AIcall, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not query. aicallGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -278,7 +280,9 @@ func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.U
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AIcallGetByReferenceID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -309,7 +313,9 @@ func (h *handler) AIcallGetByStreamingID(ctx context.Context, streamingID uuid.U
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AIcallGetByStreamingID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -340,7 +346,9 @@ func (h *handler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AIcallGetByTranscribeID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -524,7 +532,9 @@ func (h *handler) AIcallGets(ctx context.Context, size uint64, token string, fil
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AIcallGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*aicall.AIcall{}
 	for rows.Next() {

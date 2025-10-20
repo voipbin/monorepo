@@ -116,7 +116,9 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 	if err != nil {
 		return fmt.Errorf("could not prepare. FileCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	_, err = stmt.ExecContext(ctx,
 		f.ID.Bytes(),
@@ -210,14 +212,18 @@ func (h *handler) fileGetFromDB(ctx context.Context, id uuid.UUID) (*file.File, 
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. fileGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. fileGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -290,7 +296,9 @@ func (h *handler) FileGets(ctx context.Context, token string, size uint64, filte
 	if err != nil {
 		return nil, fmt.Errorf("could not query. FileGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*file.File{}
 	for rows.Next() {

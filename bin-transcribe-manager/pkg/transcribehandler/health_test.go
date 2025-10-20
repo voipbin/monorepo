@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"monorepo/bin-call-manager/models/call"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
@@ -99,11 +98,11 @@ func Test_HealthCheck(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("6f459316-678f-4c22-aa16-5f91cd8c4a2d"),
 				TMDelete:      dbhandler.DefaultTimeStamp,
 			},
-			responseCall: &call.Call{
+			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("6f459316-678f-4c22-aa16-5f91cd8c4a2d"),
 				},
-				Status:   call.StatusHangup,
+				Status:   cmcall.StatusHangup,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 

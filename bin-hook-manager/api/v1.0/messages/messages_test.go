@@ -16,7 +16,7 @@ import (
 )
 
 func setupServer(app *gin.Engine) {
-	v1 := app.RouterGroup.Group("/v1.0")
+	v1 := app.Group("/v1.0")
 	ApplyRoutes(v1)
 }
 

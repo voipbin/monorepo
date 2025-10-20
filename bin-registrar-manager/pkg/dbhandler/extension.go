@@ -144,7 +144,9 @@ func (h *handler) extensionGetFromDB(ctx context.Context, id uuid.UUID) (*extens
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ExtensionGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -259,7 +261,9 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ExtensionGetByEndpointID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -299,7 +303,9 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ExtensionGetByExtension. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -407,7 +413,9 @@ func (h *handler) ExtensionGets(ctx context.Context, size uint64, token string, 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ExtensionGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*extension.Extension
 	for rows.Next() {

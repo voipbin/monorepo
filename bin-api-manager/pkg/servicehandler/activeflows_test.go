@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"monorepo/bin-common-handler/models/identity"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -45,7 +44,7 @@ func Test_activeflowGet(t *testing.T) {
 			activeflowID: uuid.FromStringOrNil("306d40a4-cb22-11ed-a796-4776eeb9578e"),
 
 			responseActiveflow: &fmactiveflow.Activeflow{
-				Identity: identity.Identity{
+				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("306d40a4-cb22-11ed-a796-4776eeb9578e"),
 					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				},

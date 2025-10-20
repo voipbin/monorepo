@@ -1,6 +1,6 @@
 module monorepo/bin-openapi-manager
 
-go 1.24.2
+go 1.25.3
 
 require github.com/oapi-codegen/runtime v1.1.2
 

@@ -17,14 +17,14 @@ func (h *streamHandler) Process(conn net.Conn) {
 	mediaID, err := h.getMediaID(conn)
 	if err != nil {
 		log.Errorf("Could not get media ID. err: %v", err)
-		conn.Close()
+		_ = conn.Close()
 		return
 	}
 
 	st, err := h.SetAudiosock(mediaID, conn)
 	if err != nil {
 		log.Errorf("Could not set audiosock. err: %v", err)
-		conn.Close()
+		_ = conn.Close()
 		return
 	}
 

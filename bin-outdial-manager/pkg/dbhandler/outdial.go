@@ -80,7 +80,9 @@ func (h *handler) OutdialCreate(ctx context.Context, f *outdial.Outdial) error {
 	if err != nil {
 		return fmt.Errorf("could not prepare. OutdialCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	_, err = stmt.ExecContext(ctx,
 		f.ID.Bytes(),
@@ -151,14 +153,18 @@ func (h *handler) outdialGetFromDB(ctx context.Context, id uuid.UUID) (*outdial.
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. outdialGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. outdialGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -234,7 +240,9 @@ func (h *handler) OutdialGetsByCustomerID(ctx context.Context, customerID uuid.U
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialGetsByCustomerID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*outdial.Outdial
 	for rows.Next() {

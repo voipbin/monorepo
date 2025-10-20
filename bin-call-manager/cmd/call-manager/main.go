@@ -59,7 +59,9 @@ func main() {
 		log.Errorf("Could not set the connection correctly. err: %v", err)
 		return
 	}
-	defer sqlDB.Close()
+	defer func() {
+		_ = sqlDB.Close()
+	}()
 
 	// connect to cache
 	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)

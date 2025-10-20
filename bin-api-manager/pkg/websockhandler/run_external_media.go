@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -30,7 +31,9 @@ func (h *websockHandler) RunExternalMedia(ctx context.Context, w http.ResponseWr
 		log.Errorf("Could not create websocket. err: %v", err)
 		return err
 	}
-	defer ws.Close()
+	defer func() {
+		_ = ws.Close()
+	}()
 	log.Debugf("Created a new websocket correctly.")
 
 	// get the external media info
@@ -93,7 +96,7 @@ func (h *websockHandler) sendDataToExternalMediaSock(ctx context.Context, data [
 	})
 	log.WithField("external_media", externalMedia).Debugf("Sending data to external media socket. reference_id: %s, local_ip: %s, local_port: %d", externalMedia.ReferenceID, externalMedia.LocalIP, externalMedia.LocalPort)
 
-	targetAddress := fmt.Sprintf("%s:%d", externalMedia.LocalIP, externalMedia.LocalPort)
+	targetAddress := net.JoinHostPort(externalMedia.LocalIP, strconv.Itoa(externalMedia.LocalPort))
 	lenSent := 0
 	lenTotal := len(data)
 	for {
@@ -114,7 +117,9 @@ func (h *websockHandler) sendDataToExternalMediaSock(ctx context.Context, data [
 			log.Errorf("Could not connect to the asterisk. err: %v", err)
 			return errors.Wrapf(err, "could not connect to asterisk. err: %v", err)
 		}
-		defer conn.Close()
+		defer func() {
+			_ = conn.Close()
+		}()
 
 		l, err := bufio.NewReader(conn).Read(data)
 		if err != nil {

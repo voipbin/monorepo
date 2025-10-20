@@ -154,7 +154,9 @@ func (h *handler) conversationGetFromDB(ctx context.Context, id uuid.UUID) (*con
 	if err != nil {
 		return nil, err
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -241,7 +243,9 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commona
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConversationGetBySelfAndPeer. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	if !rows.Next() {
 		return nil, ErrNotFound
@@ -282,7 +286,9 @@ func (h *handler) ConversationGets(ctx context.Context, size uint64, token strin
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConversationGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*conversation.Conversation{}
 	for rows.Next() {

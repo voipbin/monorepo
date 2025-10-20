@@ -154,7 +154,9 @@ func (h *handler) aiGetFromDB(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. aiGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -272,7 +274,9 @@ func (h *handler) AIGets(ctx context.Context, size uint64, token string, filters
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AIGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*ai.AI{}
 	for rows.Next() {

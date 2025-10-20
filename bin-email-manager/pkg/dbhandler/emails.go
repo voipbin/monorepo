@@ -142,7 +142,9 @@ func (h *handler) EmailCreate(ctx context.Context, e *email.Email) error {
 	if err != nil {
 		return errors.Wrapf(err, "could not prepare query.")
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	tmpSource, err := json.Marshal(e.Source)
 	if err != nil {
@@ -236,14 +238,18 @@ func (h *handler) emailGetFromDB(ctx context.Context, id uuid.UUID) (*email.Emai
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not prepare query.")
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not query.")
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -316,7 +322,9 @@ func (h *handler) EmailGets(ctx context.Context, token string, size uint64, filt
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not query. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*email.Email{}
 	for rows.Next() {

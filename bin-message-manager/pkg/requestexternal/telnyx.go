@@ -46,7 +46,9 @@ func (h *requestExternal) TelnyxSendMessage(ctx context.Context, source string, 
 	if err != nil {
 		return nil, errors.Wrapf(err, "error making request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {

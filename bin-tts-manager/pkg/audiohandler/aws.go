@@ -133,7 +133,9 @@ func (h *audioHandler) savePCMAsWAV(pcmStream io.Reader, filename string, sample
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	// Convert sample rate & channels to WAV format parameters
 	bitsPerSample := 16

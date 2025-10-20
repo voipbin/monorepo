@@ -26,11 +26,15 @@ func (h *bucketHandler) FileUpload(ctx context.Context, src string, dest string)
 		log.Errorf("Could not open the target file. err: %v", err)
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	// create a session
 	wc := h.client.Bucket(h.bucketName).Object(dest).NewWriter(ctx)
-	defer wc.Close()
+	defer func() {
+		_ = wc.Close()
+	}()
 
 	// upload the file
 	if _, err = io.Copy(wc, f); err != nil {
@@ -110,7 +114,9 @@ func (h *bucketHandler) FileGet(ctx context.Context, target string) ([]byte, err
 		log.Errorf("Could not get object info. err: %v", err)
 		return nil, err
 	}
-	defer rc.Close()
+	defer func() {
+		_ = rc.Close()
+	}()
 
 	// read the data
 	data, err := io.ReadAll(rc)

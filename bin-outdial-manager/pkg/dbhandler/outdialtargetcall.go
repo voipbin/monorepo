@@ -109,7 +109,9 @@ func (h *handler) OutdialTargetCallCreate(ctx context.Context, t *outdialtargetc
 	if err != nil {
 		return fmt.Errorf("could not prepare. OutdialTargetCallCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	destination, err := json.Marshal(t.Destination)
 	if err != nil {
@@ -228,14 +230,18 @@ func (h *handler) outdialTargetCallGetFromDB(ctx context.Context, id uuid.UUID) 
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. outdialTargetCallGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. outdialTargetCallGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -288,14 +294,18 @@ func (h *handler) OutdialTargetCallGetByReferenceID(ctx context.Context, referen
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. OutdialTargetCallGetByReferenceID. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, referenceID.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialTargetCallGetByReferenceID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -332,14 +342,18 @@ func (h *handler) OutdialTargetCallGetByActiveflowID(ctx context.Context, active
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. OutdialTargetCallGetByActiveflowID. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, activeflowID.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialTargetCallGetByActiveflowID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -372,7 +386,9 @@ func (h *handler) OutdialTargetCallGetsByOutdialIDAndStatus(ctx context.Context,
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialTargetCallGetsByOutdialIDAndStatus. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*outdialtargetcall.OutdialTargetCall
 	for rows.Next() {
@@ -404,7 +420,9 @@ func (h *handler) OutdialTargetCallGetsByCampaignIDAndStatus(ctx context.Context
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialTargetCallGetsByCampaignIDAndStatus. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*outdialtargetcall.OutdialTargetCall
 	for rows.Next() {

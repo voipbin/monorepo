@@ -107,7 +107,9 @@ func (h *handler) MessagechatCreate(ctx context.Context, m *messagechat.Messagec
 	if err != nil {
 		return fmt.Errorf("could not prepare. MessagechatCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	source, err := json.Marshal(m.Source)
 	if err != nil {
@@ -189,14 +191,18 @@ func (h *handler) messagechatGetFromDB(ctx context.Context, id uuid.UUID) (*mess
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. messagechatGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. messagechatGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -273,7 +279,9 @@ func (h *handler) MessagechatGets(ctx context.Context, token string, size uint64
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessagechatGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*messagechat.Messagechat
 	for rows.Next() {

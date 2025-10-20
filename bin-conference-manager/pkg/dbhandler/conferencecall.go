@@ -134,7 +134,9 @@ func (h *handler) conferencecallGetFromDB(ctx context.Context, id uuid.UUID) (*c
 	if err != nil {
 		return nil, fmt.Errorf("could not query. conferencecallGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -206,7 +208,9 @@ func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceI
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferencecallGetByReferenceID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -262,7 +266,9 @@ func (h *handler) ConferencecallGets(ctx context.Context, size uint64, token str
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferencecallGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*conferencecall.Conferencecall{}
 	for rows.Next() {

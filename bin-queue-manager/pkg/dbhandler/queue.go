@@ -239,7 +239,9 @@ func (h *handler) queueGetFromDB(ctx context.Context, id uuid.UUID) (*queue.Queu
 	if err != nil {
 		return nil, fmt.Errorf("could not query. queueGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -314,7 +316,9 @@ func (h *handler) QueueGets(ctx context.Context, size uint64, token string, filt
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueueGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*queue.Queue
 	for rows.Next() {

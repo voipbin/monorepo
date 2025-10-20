@@ -157,7 +157,9 @@ func (h *handler) bridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 	if err != nil {
 		return nil, fmt.Errorf("could not query. bridgeGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound

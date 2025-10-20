@@ -204,7 +204,9 @@ func (h *handler) agentGetFromDB(id uuid.UUID) (*agent.Agent, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not query. agentGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -303,7 +305,9 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*agent.Agent{}
 	for rows.Next() {
@@ -350,7 +354,9 @@ func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGetsByCustomerIDAndAddress. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound

@@ -146,7 +146,9 @@ func (h *engineSendgrid) downloadToBase64(ctx context.Context, downloadURI strin
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to download file")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", errors.Wrapf(err, "failed to download file, status code: %d", resp.StatusCode)

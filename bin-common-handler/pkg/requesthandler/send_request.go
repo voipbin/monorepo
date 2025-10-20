@@ -265,3 +265,11 @@ func (r *requestHandler) sendRequestTag(ctx context.Context, uri string, method 
 
 	return r.sendRequest(ctx, commonoutline.QueueNameTagRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestPipecat send a request to the pipecat-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestPipecat(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout, delayed int, dataType string, data json.RawMessage) (*sock.Response, error) {
+
+	return r.sendRequest(ctx, commonoutline.QueueNamePipecatRequest, uri, method, resource, timeout, delayed, dataType, data)
+}

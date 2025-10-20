@@ -12,7 +12,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/identity"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -51,7 +50,7 @@ func Test_ConversationV1MessageGet(t *testing.T) {
 				Data:       []byte(`{"id":"8a910178-1ae0-11f0-ab95-67636c5f3084"}`),
 			},
 			expectRes: &cvmessage.Message{
-				Identity: commonidentity.Identity{
+				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("8a910178-1ae0-11f0-ab95-67636c5f3084"),
 				},
 			},
@@ -194,12 +193,12 @@ func Test_ConversationV1MessageGets(t *testing.T) {
 			},
 			expectRes: []cvmessage.Message{
 				{
-					Identity: commonidentity.Identity{
+					Identity: identity.Identity{
 						ID: uuid.FromStringOrNil("8ad602dc-1ae0-11f0-8b78-57f87f455d8c"),
 					},
 				},
 				{
-					Identity: commonidentity.Identity{
+					Identity: identity.Identity{
 						ID: uuid.FromStringOrNil("8afa8b48-1ae0-11f0-8e81-4715950aa160"),
 					},
 				},

@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"testing"
 
-	"monorepo/bin-common-handler/models/identity"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -37,7 +36,7 @@ func Test_RecordingCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
 					CustomerID: uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
 				},
-				Owner: identity.Owner{
+				Owner: commonidentity.Owner{
 					OwnerType: commonidentity.OwnerTypeAgent,
 					OwnerID:   uuid.FromStringOrNil("a19704ac-2bf9-11ef-9691-7768f2e4877f"),
 				},

@@ -101,7 +101,7 @@ func (r *rabbit) Close() {
 	}).Info("Close the rabbitmq connection.")
 
 	r.closed = true
-	r.connection.Close()
+	_ = r.connection.Close()
 }
 
 // receonnector reconnects the rabbitmq

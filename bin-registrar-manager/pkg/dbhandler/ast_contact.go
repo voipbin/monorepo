@@ -96,7 +96,9 @@ func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AstContactGetsByEndpoint. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*astcontact.AstContact{}
 	for rows.Next() {

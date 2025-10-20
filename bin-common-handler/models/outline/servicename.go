@@ -24,6 +24,7 @@ const (
 	ServiceNameMessageManager    ServiceName = "message-manager"
 	ServiceNameNumberManager     ServiceName = "number-manager"
 	ServiceNameOutdialManager    ServiceName = "outdial-manager"
+	ServiceNamePipecatManager    ServiceName = "pipecat-manager"
 	ServiceNameQueueManager      ServiceName = "queue-manager"
 	ServiceNameRegistrarManager  ServiceName = "registrar-manager"
 	ServiceNameRouteManager      ServiceName = "route-manager"

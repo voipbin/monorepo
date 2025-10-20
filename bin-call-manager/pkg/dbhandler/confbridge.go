@@ -218,7 +218,9 @@ func (h *handler) confbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confb
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConfbridgeGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -287,7 +289,9 @@ func (h *handler) ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConfbridgeGetByBridgeID. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -344,7 +348,9 @@ func (h *handler) ConfbridgeGets(ctx context.Context, size uint64, token string,
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConfbridgeGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*confbridge.Confbridge{}
 	for rows.Next() {

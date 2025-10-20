@@ -155,7 +155,9 @@ func (h *handler) flowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. flowGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
@@ -217,7 +219,9 @@ func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filte
 	if err != nil {
 		return nil, fmt.Errorf("could not query. FlowGets. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*flow.Flow{}
 	for rows.Next() {

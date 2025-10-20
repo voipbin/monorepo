@@ -47,7 +47,9 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 		log.Errorf("Could not send the request. err: %v", err)
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	log.WithFields(
 		logrus.Fields{

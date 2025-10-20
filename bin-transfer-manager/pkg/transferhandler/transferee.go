@@ -104,7 +104,7 @@ func (h *transferHandler) TransfereeAnswer(ctx context.Context, tr *transfer.Tra
 
 	default:
 		log.Errorf("Unsupported transfer type. transfer_type: %v", tr.Type)
-		return fmt.Errorf("Unsupported transfer type")
+		return fmt.Errorf("unsupported transfer type")
 	}
 }
 

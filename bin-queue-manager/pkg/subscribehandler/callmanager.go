@@ -46,7 +46,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 		return err
 	}
 
-	h.queuecallHandler.EventCallConfbridgeJoined(ctx, e.JoinedCallID, e.Confbridge.ID)
+	h.queuecallHandler.EventCallConfbridgeJoined(ctx, e.JoinedCallID, e.ID)
 
 	return nil
 }
@@ -66,7 +66,7 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 		return err
 	}
 
-	h.queuecallHandler.EventCallConfbridgeLeaved(ctx, e.LeavedCallID, e.Confbridge.ID)
+	h.queuecallHandler.EventCallConfbridgeLeaved(ctx, e.LeavedCallID, e.ID)
 
 	return nil
 }

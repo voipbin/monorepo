@@ -11,7 +11,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-common-handler/models/address"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
 )
@@ -31,7 +30,7 @@ func (r *requestHandler) AgentV1AgentCreate(
 	ringMethod amagent.RingMethod,
 	permission amagent.Permission,
 	tagIDs []uuid.UUID,
-	addresses []address.Address,
+	addresses []commonaddress.Address,
 ) (*amagent.Agent, error) {
 	uri := "/v1/agents"
 
@@ -215,7 +214,7 @@ func (r *requestHandler) AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (
 // AgentV1AgentLogin sends a request to agent-manager
 // to login the agent
 // it returns error if something went wrong.
-func (r *requestHandler) AgentV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/addresses", id)
 
 	data := &amrequest.V1DataAgentsIDAddressesPut{

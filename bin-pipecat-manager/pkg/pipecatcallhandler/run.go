@@ -47,7 +47,7 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer func() {
 		cancel()
-		conn.Close()
+		_ = conn.Close()
 	}()
 
 	// Get streamingID

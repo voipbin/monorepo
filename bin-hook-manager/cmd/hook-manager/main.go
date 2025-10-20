@@ -58,7 +58,9 @@ func main() {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
-	defer sqlDB.Close()
+	defer func() {
+		_ = sqlDB.Close()
+	}()
 
 	// connect to rabbitmq
 	sock := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
@@ -118,7 +120,9 @@ func writeBase64(filename string, data string) error {
 		log.Errorf("Could not create a file. err: %v", err)
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	tmp, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {

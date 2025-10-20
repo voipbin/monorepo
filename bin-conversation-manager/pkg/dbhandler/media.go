@@ -71,7 +71,9 @@ func (h *handler) MediaCreate(ctx context.Context, m *media.Media) error {
 	if err != nil {
 		return fmt.Errorf("could not prepare. MediaCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	_, err = stmt.ExecContext(ctx,
 		m.ID.Bytes(),
@@ -103,14 +105,18 @@ func (h *handler) mediaGetFromDB(ctx context.Context, id uuid.UUID) (*media.Medi
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. mediaGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. mediaGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound

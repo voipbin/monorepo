@@ -18,8 +18,7 @@ import (
 )
 
 const (
-	// serviceName = commonoutline.ServiceNamePipecatManager
-	serviceName = "pipecat-manager"
+	serviceName = commonoutline.ServiceNamePipecatManager
 )
 
 // channels

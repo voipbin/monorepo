@@ -79,7 +79,9 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 	}()
 
 	fw := fo.NewWriter(ctx)
-	defer fw.Close()
+	defer func() {
+		_ = fw.Close()
+	}()
 
 	// create a zip
 	zw := zip.NewWriter(fw)
@@ -100,7 +102,9 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 			log.Errorf("Could not create a reader. err: %v", err)
 			continue
 		}
-		defer reader.Close()
+		defer func() {
+			_ = reader.Close()
+		}()
 
 		// add the filename to the result file
 		fp, err := zw.Create(f.Filename)

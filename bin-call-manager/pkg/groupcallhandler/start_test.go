@@ -228,9 +228,10 @@ func Test_Start_ringall(t *testing.T) {
 			}
 
 			// getDialAddressesAndRingMethod
-			if tt.destinations[0].Type == commonaddress.TypeAgent {
+			switch tt.destinations[0].Type {
+			case commonaddress.TypeAgent:
 				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
-			} else if tt.destinations[0].Type == commonaddress.TypeExtension {
+			case commonaddress.TypeExtension:
 				mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.customerID, tt.destinations[0].Target).Return(tt.responseAgent, nil)
 			}
 

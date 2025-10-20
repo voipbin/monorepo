@@ -47,8 +47,10 @@ func (h *serviceHandler) recordingFileUpload(ctx context.Context, filename strin
 	if err != nil {
 		return errors.Wrapf(err, "failed to copy data. source_filepath: %s, destination_filepath: %s", sourceFilepath, destinationFilepath)
 	}
-	defer wc.Close()
 	log.Debugf("Uploaded the file to bucket. source_filepath: %s, destination_filepath: %s", sourceFilepath, destinationFilepath)
+	defer func() {
+		_ = wc.Close()
+	}()
 
 	// Remove the original file
 	if errRemove := os.Remove(sourceFilepath); errRemove != nil {

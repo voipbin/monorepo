@@ -95,7 +95,9 @@ func (h *streamingHandler) awsProcessResult(ctx context.Context, cancel context.
 	}()
 
 	stream := streamClient.GetStream()
-	defer stream.Close()
+	defer func() {
+		_ = stream.Close()
+	}()
 
 	t1 := time.Now()
 	for {
@@ -156,7 +158,9 @@ func (h *streamingHandler) awsProcessMedia(ctx context.Context, cancel context.C
 	}()
 
 	stream := streamClient.GetStream()
-	defer stream.Close()
+	defer func() {
+		_ = stream.Close()
+	}()
 
 	for {
 		if ctx.Err() != nil {

@@ -212,7 +212,9 @@ func (h *handler) numberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Nu
 	if err != nil {
 		return nil, fmt.Errorf("could not query. numberGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -292,7 +294,9 @@ func (h *handler) NumberGets(ctx context.Context, size uint64, token string, fil
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGets err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*number.Number{}
 	for rows.Next() {
@@ -491,7 +495,9 @@ func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size 
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGetsByTMRenew. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*number.Number{}
 	for rows.Next() {

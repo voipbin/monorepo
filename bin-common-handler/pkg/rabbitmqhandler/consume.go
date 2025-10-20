@@ -158,7 +158,9 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRP
 	if err != nil {
 		return fmt.Errorf("could not create a channel. err: %v", err)
 	}
-	defer channel.Close()
+	defer func() {
+		_ = channel.Close()
+	}()
 
 	resMsg, err := json.Marshal(res)
 	if err != nil {

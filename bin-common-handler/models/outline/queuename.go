@@ -90,6 +90,11 @@ const (
 	QueueNameOutdialRequest   QueueName = "bin-manager.outdial-manager.request"
 	QueueNameOutdialSubscribe QueueName = "bin-manager.outdial-manager.subscribe"
 
+	// pipecat-manager
+	QueueNamePipecatEvent     QueueName = "bin-manager.pipecat-manager.event"
+	QueueNamePipecatRequest   QueueName = "bin-manager.pipecat-manager.request"
+	QueueNamePipecatSubscribe QueueName = "bin-manager.pipecat-manager.subscribe"
+
 	// queue-manager
 	QueueNameQueueEvent     QueueName = "bin-manager.queue-manager.event"
 	QueueNameQueueRequest   QueueName = "bin-manager.queue-manager.request"

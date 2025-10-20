@@ -283,7 +283,9 @@ func (h *handler) OutdialTargetCreate(ctx context.Context, t *outdialtarget.Outd
 	if err != nil {
 		return fmt.Errorf("could not prepare. OutdialTargetCreate. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	var destination0 []byte = nil
 	if t.Destination0 != nil {
@@ -406,14 +408,18 @@ func (h *handler) outdialTargetGetFromDB(ctx context.Context, id uuid.UUID) (*ou
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. outdialTargetGetFromDB. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("could not query. outdialTargetGetFromDB. err: %v", err)
 	}
-	defer row.Close()
+	defer func() {
+		_ = row.Close()
+	}()
 
 	if !row.Next() {
 		return nil, ErrNotFound
@@ -464,7 +470,9 @@ func (h *handler) OutdialTargetGetsByOutdialID(ctx context.Context, outdialID uu
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialTargetGetsByOutdialID. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res []*outdialtarget.OutdialTarget
 	for rows.Next() {
@@ -682,14 +690,18 @@ func (h *handler) OutdialTargetGetAvailable(
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare. OutdialTargetGetAvailable. err: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	// query
 	rows, err := stmt.QueryContext(ctx, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, outdialID.Bytes(), limit)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialTargetGetAvailable. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	res := []*outdialtarget.OutdialTarget{}
 	for rows.Next() {
