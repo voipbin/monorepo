@@ -122,7 +122,9 @@ func (h *pythonRunner) Start(ctx context.Context, uri string, llm string, stt st
 	if err != nil {
 		return errors.Wrapf(err, "could not send request to python runner")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	body, _ := io.ReadAll(resp.Body)
 	log.Debugf("Response status: %s", resp.Status)
