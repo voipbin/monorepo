@@ -82,6 +82,32 @@ func audiosocketGetDataSamples(inputRate int, data []byte) ([]byte, error) {
 	return res, nil
 }
 
+func audiosocketUpsample8kTo16k(data []byte) []byte {
+	if len(data)%2 != 0 {
+		return data // odd length guard
+	}
+
+	inputSamples := make([]int16, len(data)/2)
+	for i := 0; i < len(inputSamples); i++ {
+		inputSamples[i] = int16(binary.LittleEndian.Uint16(data[i*2 : i*2+2]))
+	}
+
+	var out bytes.Buffer
+	for i := 0; i < len(inputSamples)-1; i++ {
+		s1 := inputSamples[i]
+		s2 := inputSamples[i+1]
+
+		binary.Write(&out, binary.LittleEndian, s1)
+		mid := int16((int32(s1) + int32(s2)) / 2)
+		binary.Write(&out, binary.LittleEndian, mid)
+	}
+
+	last := inputSamples[len(inputSamples)-1]
+	binary.Write(&out, binary.LittleEndian, last)
+
+	return out.Bytes()
+}
+
 // audiosocketWrapDataPCM16Bit wraps raw 16-bit PCM audio data into the Audiosocket transmission format.
 //
 // The wrapped byte slice has the following structure:
