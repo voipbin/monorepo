@@ -11,7 +11,6 @@ import (
 	"github.com/CyCoreSystems/audiosocket"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -151,9 +150,9 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 // Returns:
 //   - error: Returns an error if the context is cancelled, the data is invalid, or writing fails.
 func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "audiosocketWrite",
-	})
+	// log := logrus.WithFields(logrus.Fields{
+	// 	"func": "audiosocketWrite",
+	// })
 	if len(data) == 0 {
 		// nothing to send
 		return nil
@@ -162,7 +161,7 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 	payloadLen := len(data)
 	offset := 0
 
-	log.Debugf("Sending %d bytes of audio data in fragments", payloadLen)
+	// log.Debugf("Sending %d bytes of audio data in fragments", payloadLen)
 	for offset < payloadLen {
 		if ctx.Err() != nil {
 			return ctx.Err()
