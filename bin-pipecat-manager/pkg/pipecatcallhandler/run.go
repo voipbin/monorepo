@@ -154,7 +154,6 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 			log.Infof("Connection has closed. err: %v", err)
 			return
 		}
-		log.Debugf("Received audio frame from asterisk. frame_size: %d", len(m.Payload()))
 
 		pipecatFrame := &pipecatframe.Frame{
 			Frame: &pipecatframe.Frame_Audio{

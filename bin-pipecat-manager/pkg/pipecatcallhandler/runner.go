@@ -113,6 +113,8 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 		log.Errorf("Could not upgrade to WebSocket: %v", err)
 		return
 	}
+
+	log.Debugf("WebSocket connection established with pipecat runner.")
 	h.setRunnerWebsocket(pc, ws)
 
 	for {
