@@ -25,12 +25,6 @@ class PipelineRequest(BaseModel):
     voice_id: Optional[str] = None
     messages: Optional[List[Message]] = None
 
-def schedule_async_task(coro):
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.get_event_loop()
-    loop.call_soon_threadsafe(asyncio.create_task, coro)
 
 async def run_pipeline_wrapper(*args, **kwargs):
     try:
@@ -52,8 +46,7 @@ async def run_pipeline_endpoint(req: PipelineRequest, background_tasks: Backgrou
         logger.info(f"voice_id: {req.voice_id}")
         logger.info(f"messages_length: {len(req.messages) if req.messages else 0}")
 
-        background_tasks.add_task(
-            schedule_async_task,
+        asyncio.create_task(
             run_pipeline_wrapper(
                 req.id,
                 req.ws_server_url,
@@ -62,7 +55,7 @@ async def run_pipeline_endpoint(req: PipelineRequest, background_tasks: Backgrou
                 req.stt,
                 req.voice_id,
                 [m.model_dump() for m in (req.messages or [])],
-            ),
+            )
         )
 
         return {"status": "ok", "message": "Pipeline executed successfully"}
