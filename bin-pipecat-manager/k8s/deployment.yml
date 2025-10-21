@@ -5,7 +5,7 @@ metadata:
   labels:
     app: pipecat-manager
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: pipecat-manager
@@ -65,7 +65,7 @@ spec:
           resources:
             limits:
               cpu: "100m"
-              memory: "50Mi"
+              memory: "100Mi"
 
         - name: pipecat-script-runner
           image: pipecat-manager-image
