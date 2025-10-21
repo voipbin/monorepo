@@ -57,7 +57,7 @@ async def run_pipeline(ws_server_url: str, llm: str, tts: str, stt: str, voice_i
 
     llm_service = create_llm_server(llm)
     
-    context_aggregator = create_context_aggregator(llm, messages)
+    context_aggregator = create_context_aggregator(llm_service, messages)
 
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
 

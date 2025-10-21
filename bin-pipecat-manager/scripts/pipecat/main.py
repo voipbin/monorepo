@@ -33,7 +33,7 @@ async def run_pipeline_endpoint(req: PipelineRequest):
         logger.info(f"tts: {req.tts}")
         logger.info(f"stt: {req.stt}")
         logger.info(f"voice_id: {req.voice_id}")
-        logger.info(f"messages: {json.dumps([m.dict() for m in req.messages], indent=2)}")
+        logger.info(f"messages_length: {len(req.messages) if req.messages else 0}")
 
         await run_pipeline(
             req.ws_server_url,
@@ -41,7 +41,7 @@ async def run_pipeline_endpoint(req: PipelineRequest):
             req.tts,
             req.stt,
             req.voice_id,
-            [m.dict() for m in req.messages],
+            [m.model_dump() for m in req.messages],
             )
 
         return {"status": "ok", "message": "Pipeline executed successfully"}
