@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultMediaSampleRate = 8000
+	defaultMediaSampleRate = 16000
 	defaultMediaNumChannel = 1
 )
 
@@ -157,15 +157,12 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 		}
 
 		data := audiosocketUpsample8kTo16k(m.Payload())
-
 		pipecatFrame := &pipecatframe.Frame{
 			Frame: &pipecatframe.Frame_Audio{
 				Audio: &pipecatframe.AudioRawFrame{
-					Id:         packetID,
-					Name:       "test-audio-frame",
-					Audio:      data,
-					SampleRate: 16000,
-					// SampleRate:  16000,
+					Id:          packetID,
+					Audio:       data,
+					SampleRate:  defaultMediaSampleRate,
 					NumChannels: defaultMediaNumChannel,
 				},
 			},

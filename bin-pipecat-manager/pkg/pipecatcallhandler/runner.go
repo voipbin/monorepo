@@ -43,10 +43,6 @@ func (h *pipecatcallHandler) RunnerStart(ctx context.Context, pc *pipecatcall.Pi
 	}
 	log.Debugf("Pipecat runner script started.")
 
-	// // wait
-	// if errWait := pc.RunnerCMD.Wait(); errWait != nil {
-	// 	log.Errorf("Could not wait for the pipecat runner script to finish: %v", errWait)
-	// }
 	<-ctx.Done()
 	log.Debugf("Pipecat runner script finished.")
 }
@@ -180,18 +176,9 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 
 			case *pipecatframe.Frame_Message:
 				log.Debugf("Received MessageFrame: Data='%s'", x.Message.Data)
-				if errMessage := h.receiveMessageFrameMessage([]byte(x.Message.Data)); errMessage != nil {
+				if errMessage := h.receiveMessageFrameMessage(ctx, []byte(x.Message.Data)); errMessage != nil {
 					log.Errorf("Could not process MessageFrame: %v", errMessage)
 				}
-				// MessageFrame에 대한 응답 (예시)
-				// responseFrame := &pipecatframe.Frame{
-				// 	Frame: &pipecatframe.Frame_Message{
-				// 		Message: &pipecatframe.MessageFrame{
-				// 			Data: fmt.Sprintf("Go server received generic message: '%s'", x.Message.Data),
-				// 		},
-				// 	},
-				// }
-				// sendProtobufFrame(ws, responseFrame, clientAddr)
 
 			default:
 				log.Errorf("Could not recognize the Protobuf Frame type. type: %T", x)
@@ -229,7 +216,7 @@ func (h *pipecatcallHandler) sendProtobufFrame(ws *websocket.Conn, frame *pipeca
 	return nil
 }
 
-func (h *pipecatcallHandler) receiveMessageFrameMessage(message []byte) error {
+func (h *pipecatcallHandler) receiveMessageFrameMessage(ctx context.Context, message []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "receiveMessageFrameMessage",
 	})
@@ -248,6 +235,20 @@ func (h *pipecatcallHandler) receiveMessageFrameMessage(message []byte) error {
 	}
 
 	switch frame.Type {
+	case "bot-transcription":
+		msg := pipecatframe.RTVIBotTranscriptionMessage{}
+		if errUnmarshal := json.Unmarshal(message, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-transcription message")
+		}
+		h.notifyHandler.PublishEvent(ctx, "bot-transcription", msg.Data)
+
+	case "user-transcription":
+		msg := pipecatframe.RTVIUserTranscriptionMessage{}
+		if errUnmarshal := json.Unmarshal(message, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal user-transcription message")
+		}
+		h.notifyHandler.PublishEvent(ctx, "user-transcription", msg.Data)
+
 	default:
 		log.Errorf("Unrecognized RTVI message type: %s", frame.Type)
 	}
@@ -271,23 +272,6 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(ctx context.Context, pc 
 
 	return nil
 }
-
-// func (h *pipecatcallHandler) runnerCreateMessageFile(messages []map[string]any) (string, error) {
-
-// 	data, err := json.Marshal(messages)
-// 	if err != nil {
-// 		return "", errors.Wrapf(err, "could not marshal messages to JSON")
-// 	}
-
-// 	// Write the JSON data to the file
-// 	fileName := filepath.Join("/tmp", fmt.Sprintf("%s.json", h.utilHandler.UUIDCreate()))
-// 	err = os.WriteFile(fileName, data, 0644) // 0644 are the file permissions
-// 	if err != nil {
-// 		return "", errors.Wrapf(err, "could not write messages to file: %s", fileName)
-// 	}
-
-// 	return fileName, nil
-// }
 
 func (h *pipecatcallHandler) runnerGetURL(pc *pipecatcall.Pipecatcall) string {
 	return fmt.Sprintf("ws://localhost:%d/ws", pc.RunnerPort)

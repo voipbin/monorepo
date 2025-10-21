@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/CyCoreSystems/audiosocket"
 	"github.com/gofrs/uuid"
@@ -14,10 +13,9 @@ import (
 )
 
 const (
-	defaultAudiosocketFormatSLIN        = 0x10                  // SLIN format for 16-bit PCM audio
-	defaultAudiosocketMaxFragmentSize   = 320                   // Maximum fragment size for Audiosocket messages
-	defaultAudiosocketWriteDelay        = 20 * time.Millisecond // Delay between writing fragments to avoid flooding the connection
-	defaultAudiosocketConvertSampleRate = 8000                  // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
+	defaultAudiosocketFormatSLIN        = 0x10 // SLIN format for 16-bit PCM audio
+	defaultAudiosocketMaxFragmentSize   = 320  // Maximum fragment size for Audiosocket messages
+	defaultAudiosocketConvertSampleRate = 8000 // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
 )
 
 // audiosocketGetStreamingID gets the streaming id from the connection
@@ -82,6 +80,16 @@ func audiosocketGetDataSamples(inputRate int, data []byte) ([]byte, error) {
 	return res, nil
 }
 
+// audiosocketUpsample8kTo16k performs a simple 2× upsampling from 8 kHz to 16 kHz.
+//
+// It assumes the input is 16-bit little-endian PCM mono audio (int16 per sample).
+// The algorithm uses linear interpolation: for each original sample pair (s1, s2),
+// it inserts one midpoint sample (average of s1 and s2), effectively doubling
+// the sample rate. This produces smoother playback than simple duplication while
+// remaining computationally lightweight.
+//
+// Note: This method is designed for low-latency real-time audio streaming, not
+// high-fidelity resampling. For higher quality, consider using a windowed
 func audiosocketUpsample8kTo16k(data []byte) []byte {
 	if len(data)%2 != 0 {
 		return data // odd length guard
@@ -207,15 +215,6 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 		}
 
 		offset += fragmentLen
-
-		// select {
-		// case <-time.After(defaultAudiosocketWriteDelay):
-		// 	// do nothing
-		// 	continue
-
-		// case <-ctx.Done():
-		// 	return ctx.Err()
-		// }
 	}
 
 	return nil
