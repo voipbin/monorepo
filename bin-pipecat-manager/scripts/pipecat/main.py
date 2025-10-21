@@ -1,7 +1,7 @@
 import asyncio
 import json
 from typing import Optional, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from loguru import logger
 from dotenv import load_dotenv
@@ -25,8 +25,16 @@ class PipelineRequest(BaseModel):
     voice_id: Optional[str] = None
     messages: Optional[List[Message]] = None
 
+async def run_pipeline_wrapper(*args, **kwargs):
+    try:
+        await run_pipeline(*args, **kwargs)
+        logger.info("Pipeline finished successfully")
+    except Exception as e:
+        logger.exception(f"Pipeline failed in background: {e}")
+
+
 @app.post("/run")
-async def run_pipeline_endpoint(req: PipelineRequest):
+async def run_pipeline_endpoint(req: PipelineRequest, background_tasks: BackgroundTasks):
     try:
         logger.info("=== Received /run request ===")
         logger.info(f"ws_server_url: {req.ws_server_url}")
@@ -36,15 +44,19 @@ async def run_pipeline_endpoint(req: PipelineRequest):
         logger.info(f"voice_id: {req.voice_id}")
         logger.info(f"messages_length: {len(req.messages) if req.messages else 0}")
 
-        await run_pipeline(
-            req.id,
-            req.ws_server_url,
-            req.llm,
-            req.tts,
-            req.stt,
-            req.voice_id,
-            [m.model_dump() for m in req.messages],
+        background_tasks.add_task(
+            lambda: asyncio.create_task(
+                run_pipeline_wrapper(
+                    req.id,
+                    req.ws_server_url,
+                    req.llm,
+                    req.tts,
+                    req.stt,
+                    req.voice_id,
+                    [m.model_dump() for m in req.messages],
+                )
             )
+        )
 
         return {"status": "ok", "message": "Pipeline executed successfully"}
 

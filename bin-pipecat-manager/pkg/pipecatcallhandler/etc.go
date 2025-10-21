@@ -28,7 +28,3 @@ func (h *pipecatcallHandler) setAsteriskInfo(pc *pipecatcall.Pipecatcall, stream
 	pc.AsteriskConn = conn
 	pc.AsteriskStreamingID = streamingID
 }
-
-// func (h *pipecatcallHandler) setRunnerCMD(pc *pipecatcall.Pipecatcall, cmd *exec.Cmd) {
-// 	pc.RunnerCMD = cmd
-// }
