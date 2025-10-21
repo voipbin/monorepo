@@ -89,12 +89,20 @@ func (h *pipecatcallHandler) runnerStartScript(ctx context.Context, pc *pipecatc
 	url := h.runnerGetURL(pc)
 	log.Debugf("Pipecat WebSocket server URL: %s", url)
 
-	if errPython := h.runnerStartPython(ctx, pc, url); errPython != nil {
-		log.Errorf("Error starting Pipecat Python runner: %v", errPython)
-		return errors.Wrapf(errPython, "could not start the pipecat python runner")
+	if errStart := h.pythonRunner.Start(
+		ctx,
+		pc.ID,
+		url,
+		string(pc.LLM),
+		string(pc.STT),
+		string(pc.TTS),
+		pc.VoiceID,
+		pc.Messages,
+	); errStart != nil {
+		return errors.Wrapf(errStart, "could not start python client")
 	}
-
 	log.Debugf("Pipecat runner started successfully.")
+
 	return nil
 }
 
@@ -275,17 +283,4 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(ctx context.Context, pc 
 
 func (h *pipecatcallHandler) runnerGetURL(pc *pipecatcall.Pipecatcall) string {
 	return fmt.Sprintf("ws://localhost:%d/ws", pc.RunnerPort)
-}
-
-func (h *pipecatcallHandler) runnerStartPython(ctx context.Context, pc *pipecatcall.Pipecatcall, url string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "runnerStartPython",
-	})
-
-	if errStart := h.pythonRunner.Start(ctx, pc.ID, url, string(pc.LLM), string(pc.STT), string(pc.TTS), pc.VoiceID, pc.Messages); errStart != nil {
-		return errors.Wrapf(errStart, "could not start python client")
-	}
-	log.Debugf("Pipecat Python runner process started.")
-
-	return nil
 }
