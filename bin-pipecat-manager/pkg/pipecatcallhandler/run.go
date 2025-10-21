@@ -143,6 +143,7 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 		"pipecatcall": pc.ID,
 	})
 
+	packetID := uint64(0)
 	for {
 		if ctx.Err() != nil {
 			log.Debugf("Context has finished. pipecatcall_id: %s", pc.ID)
@@ -158,6 +159,7 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 		pipecatFrame := &pipecatframe.Frame{
 			Frame: &pipecatframe.Frame_Audio{
 				Audio: &pipecatframe.AudioRawFrame{
+					Id:          packetID,
 					Audio:       m.Payload(),
 					SampleRate:  defaultMediaSampleRate,
 					NumChannels: defaultMediaNumChannel,
@@ -166,10 +168,10 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 		}
 
 		if pc.RunnerWebsocket != nil {
-			log.Debugf("Sending audio frame to pipecat runner. pipecatcall_id: %s, frame_size: %d", pc.ID, len(m.Payload()))
 			if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
 				log.Errorf("Could not send the frame. err: %v", errSend)
 			}
 		}
+		packetID++
 	}
 }
