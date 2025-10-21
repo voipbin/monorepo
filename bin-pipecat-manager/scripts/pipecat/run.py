@@ -165,22 +165,16 @@ def create_llm_server(name: str, **options):
 
 
 def create_context_aggregator(llm, messages):
-    # logger.info(f"Executing create_context_aggregator. filepath: {filepath}")
+    logger.info(f"Executing create_context_aggregator. LLM: {llm}, Initial Messages Count: {len(messages)}")
 
-    # messages = []
-    # try:
-    #     with open(filepath, "r", encoding="utf-8") as f:
-    #         messages = json.load(f)
-    #     logger.info(f"Loaded {len(messages)} initial messages from {filepath}")
-    # except FileNotFoundError:
-    #     logger.warning(f"Could not find messages_file. {filepath}. Starting with empty messages.")
-    # except json.JSONDecodeError:
-    #     logger.error(f"Could not decode JSON from {filepath}. Starting with empty messages.")
-
+    valid_messages = []
     for msg in messages:
         if "role" not in msg or "content" not in msg:
-            raise ValueError("Each message must contain 'role' and 'content'")
-    logger.info(f"Initial Messages (first 2): {messages[:2]}")
+            logger.warning(f"Skipping invalid message format: {msg}")
+            continue
+        valid_messages.append(msg)
+    logger.info(f"Valid Messages Count: {len(valid_messages)}")
+    logger.info(f"Initial Messages (first 2): {valid_messages[:2]}")
 
     context = llm.context_class(messages)
     context_aggregator = llm.create_context_aggregator(context)
