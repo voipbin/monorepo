@@ -8,8 +8,6 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -45,10 +43,11 @@ func (h *pipecatcallHandler) RunnerStart(ctx context.Context, pc *pipecatcall.Pi
 	}
 	log.Debugf("Pipecat runner script started.")
 
-	// wait
-	if errWait := pc.RunnerCMD.Wait(); errWait != nil {
-		log.Errorf("Could not wait for the pipecat runner script to finish: %v", errWait)
-	}
+	// // wait
+	// if errWait := pc.RunnerCMD.Wait(); errWait != nil {
+	// 	log.Errorf("Could not wait for the pipecat runner script to finish: %v", errWait)
+	// }
+	<-ctx.Done()
 	log.Debugf("Pipecat runner script finished.")
 }
 
@@ -91,16 +90,16 @@ func (h *pipecatcallHandler) runnerStartScript(ctx context.Context, pc *pipecatc
 	})
 	log.Debugf("Starting pipecat runner. pipecatcall_id: %s", pc.ID)
 
-	filepath, err := h.runnerCreateMessageFile(pc.Messages)
-	if err != nil {
-		return errors.Wrapf(err, "could not create message file")
-	}
-	log.Debugf("Message file created at: %s", filepath)
+	// filepath, err := h.runnerCreateMessageFile(pc.Messages)
+	// if err != nil {
+	// 	return errors.Wrapf(err, "could not create message file")
+	// }
+	// log.Debugf("Message file created at: %s", filepath)
 
 	url := h.runnerGetURL(pc)
 	log.Debugf("Pipecat WebSocket server URL: %s", url)
 
-	if errPython := h.runnerStartPython(pc, filepath, url); errPython != nil {
+	if errPython := h.runnerStartPython(pc, url); errPython != nil {
 		log.Errorf("Error starting Pipecat Python runner: %v", errPython)
 		return errors.Wrapf(errPython, "could not start the pipecat python runner")
 	}
@@ -277,28 +276,28 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(ctx context.Context, pc 
 	return nil
 }
 
-func (h *pipecatcallHandler) runnerCreateMessageFile(messages []map[string]any) (string, error) {
+// func (h *pipecatcallHandler) runnerCreateMessageFile(messages []map[string]any) (string, error) {
 
-	data, err := json.Marshal(messages)
-	if err != nil {
-		return "", errors.Wrapf(err, "could not marshal messages to JSON")
-	}
+// 	data, err := json.Marshal(messages)
+// 	if err != nil {
+// 		return "", errors.Wrapf(err, "could not marshal messages to JSON")
+// 	}
 
-	// Write the JSON data to the file
-	fileName := filepath.Join("/tmp", fmt.Sprintf("%s.json", h.utilHandler.UUIDCreate()))
-	err = os.WriteFile(fileName, data, 0644) // 0644 are the file permissions
-	if err != nil {
-		return "", errors.Wrapf(err, "could not write messages to file: %s", fileName)
-	}
+// 	// Write the JSON data to the file
+// 	fileName := filepath.Join("/tmp", fmt.Sprintf("%s.json", h.utilHandler.UUIDCreate()))
+// 	err = os.WriteFile(fileName, data, 0644) // 0644 are the file permissions
+// 	if err != nil {
+// 		return "", errors.Wrapf(err, "could not write messages to file: %s", fileName)
+// 	}
 
-	return fileName, nil
-}
+// 	return fileName, nil
+// }
 
 func (h *pipecatcallHandler) runnerGetURL(pc *pipecatcall.Pipecatcall) string {
 	return fmt.Sprintf("ws://localhost:%d/ws", pc.RunnerPort)
 }
 
-func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, message_file string, url string) error {
+func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, url string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runnerStartPython",
 	})
@@ -306,7 +305,7 @@ func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, mess
 	if errStart := h.pythonRunner.Start(context.Background(), url, string(pc.LLM), string(pc.STT), string(pc.TTS), pc.VoiceID, pc.Messages); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}
-	log.Debugf("Pipecat Python runner process started with PID: %d", pc.RunnerCMD.Process.Pid)
+	log.Debugf("Pipecat Python runner process started.")
 
 	return nil
 

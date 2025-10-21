@@ -95,13 +95,13 @@ func (h *pipecatcallHandler) stop(ctx context.Context, pc *pipecatcall.Pipecatca
 	}
 	log.WithField("external_media", em).Info("Stopped external media. external_media_id: ", em.ID)
 
-	if pc.RunnerCMD != nil {
-		if errKill := pc.RunnerCMD.Process.Kill(); errKill != nil {
-			log.Errorf("Could not kill the pipecat runner process. err: %v", errKill)
-		} else {
-			log.Infof("Killed the pipecat runner process.")
-		}
-	}
+	// if pc.RunnerCMD != nil {
+	// 	if errKill := pc.RunnerCMD.Process.Kill(); errKill != nil {
+	// 		log.Errorf("Could not kill the pipecat runner process. err: %v", errKill)
+	// 	} else {
+	// 		log.Infof("Killed the pipecat runner process.")
+	// 	}
+	// }
 
 	if pc.RunnerWebsocket != nil {
 		if errClose := pc.RunnerWebsocket.Close(); errClose != nil {

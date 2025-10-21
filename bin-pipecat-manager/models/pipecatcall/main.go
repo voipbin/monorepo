@@ -4,7 +4,6 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 	"net"
 	"net/http"
-	"os/exec"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -24,10 +23,10 @@ type Pipecatcall struct {
 	Messages []map[string]any `json:"-"`
 
 	// pipecat runner
-	RunnerListener  net.Listener    `json:"-"`
-	RunnerPort      int             `json:"-"`
-	RunnerServer    *http.Server    `json:"-"`
-	RunnerCMD       *exec.Cmd       `json:"-"`
+	RunnerListener net.Listener `json:"-"`
+	RunnerPort     int          `json:"-"`
+	RunnerServer   *http.Server `json:"-"`
+	// RunnerCMD       *exec.Cmd       `json:"-"`
 	RunnerWebsocket *websocket.Conn `json:"-"`
 
 	// asterisk info

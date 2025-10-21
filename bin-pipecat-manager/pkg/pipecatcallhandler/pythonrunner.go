@@ -117,6 +117,7 @@ func (h *pythonRunner) Start(ctx context.Context, uri string, llm string, stt st
 	}
 	req.Header.Set("Content-Type", "application/json")
 
+	log.WithField("request_body", string(jsonData)).Debugf("Sending request to python runner")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
