@@ -83,5 +83,5 @@ spec:
               value: ${DEEPGRAM_API_KEY}
           resources:
             limits:
-              cpu: "100m"
-              memory: "200Mi"
+              cpu: "200m"
+              memory: "400Mi"
