@@ -97,13 +97,13 @@ func audiosocketUpsample8kTo16k(data []byte) []byte {
 		s1 := inputSamples[i]
 		s2 := inputSamples[i+1]
 
-		binary.Write(&out, binary.LittleEndian, s1)
+		_ = binary.Write(&out, binary.LittleEndian, s1)
 		mid := int16((int32(s1) + int32(s2)) / 2)
-		binary.Write(&out, binary.LittleEndian, mid)
+		_ = binary.Write(&out, binary.LittleEndian, mid)
 	}
 
 	last := inputSamples[len(inputSamples)-1]
-	binary.Write(&out, binary.LittleEndian, last)
+	_ = binary.Write(&out, binary.LittleEndian, last)
 
 	return out.Bytes()
 }
