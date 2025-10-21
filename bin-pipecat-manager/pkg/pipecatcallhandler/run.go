@@ -159,10 +159,11 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 		pipecatFrame := &pipecatframe.Frame{
 			Frame: &pipecatframe.Frame_Audio{
 				Audio: &pipecatframe.AudioRawFrame{
-					Id:    packetID,
-					Audio: m.Payload(),
-					// SampleRate:  defaultMediaSampleRate,
-					SampleRate:  16000,
+					Id:         packetID,
+					Name:       "test-audio-frame",
+					Audio:      m.Payload(),
+					SampleRate: defaultMediaSampleRate,
+					// SampleRate:  16000,
 					NumChannels: defaultMediaNumChannel,
 				},
 			},
