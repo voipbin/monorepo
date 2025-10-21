@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -21,74 +22,20 @@ type pythonRunner struct {
 }
 
 type PythonRunner interface {
-	// Start(interpreter string, args []string) (*exec.Cmd, error)
-	Start(ctx context.Context, uri string, llm string, stt string, tts string, voiceID string, messages []map[string]any) error
+	Start(ctx context.Context, pipecatcallID uuid.UUID, uri string, llm string, stt string, tts string, voiceID string, messages []map[string]any) error
 }
 
 func NewPythonRunner() PythonRunner {
 	return &pythonRunner{}
 }
 
-// func (h *pythonRunner) Start(interpreter string, args []string) (*exec.Cmd, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":        "Start",
-// 		"interpreter": interpreter,
-// 		"args":        args,
-// 	})
-
-// 	cmd := exec.Command(interpreter, args...)
-
-// 	stdoutPipe, err := cmd.StdoutPipe()
-// 	if err != nil {
-// 		return nil, errors.Wrapf(err, "could not get stdout pipe for python")
-// 	}
-// 	stderrPipe, err := cmd.StderrPipe()
-// 	if err != nil {
-// 		return nil, errors.Wrapf(err, "could not get stderr pipe for python")
-// 	}
-
-// 	log.Debugf("Executing pipecat python script...")
-// 	if errStart := cmd.Start(); errStart != nil {
-// 		return nil, errors.Wrapf(errStart, "could not start python client")
-// 	}
-// 	log.Debugf("Python client process started with PID: %d", cmd.Process.Pid)
-
-// 	go func() {
-// 		scanner := bufio.NewScanner(stdoutPipe)
-// 		for scanner.Scan() {
-// 			log.Debugf("[PYTHON-CLIENT-STDOUT] %s\n", scanner.Text())
-// 		}
-// 		if err := scanner.Err(); err != nil {
-// 			log.Errorf("Error reading Python client stdout: %v", err)
-// 		}
-// 	}()
-
-// 	go func() {
-// 		scanner := bufio.NewScanner(stderrPipe)
-// 		for scanner.Scan() {
-// 			log.Debugf("[PYTHON-CLIENT-STDERR] %s\n", scanner.Text())
-// 		}
-// 		if err := scanner.Err(); err != nil {
-// 			log.Errorf("Error reading Python client stderr: %v", err)
-// 		}
-// 	}()
-
-// 	go func() {
-// 		// wait for the python process to exit
-// 		if errPython := cmd.Wait(); errPython != nil {
-// 			log.Errorf("Python client process exited with error: %v", errPython)
-// 		}
-// 	}()
-
-// 	return cmd, nil
-// }
-
-func (h *pythonRunner) Start(ctx context.Context, uri string, llm string, stt string, tts string, voiceID string, messages []map[string]any) error {
+func (h *pythonRunner) Start(ctx context.Context, pipecatcallID uuid.UUID, uri string, llm string, stt string, tts string, voiceID string, messages []map[string]any) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Start",
 	})
 
 	type PipelineRequest struct {
+		ID          uuid.UUID        `json:"id,omitempty"`
 		WsServerURL string           `json:"ws_server_url,omitempty"`
 		LLM         string           `json:"llm,omitempty"`
 		TTS         string           `json:"tts,omitempty"`
@@ -98,6 +45,7 @@ func (h *pythonRunner) Start(ctx context.Context, uri string, llm string, stt st
 	}
 
 	reqBody := PipelineRequest{
+		ID:          pipecatcallID,
 		WsServerURL: uri,
 		LLM:         llm,
 		STT:         stt,

@@ -90,16 +90,10 @@ func (h *pipecatcallHandler) runnerStartScript(ctx context.Context, pc *pipecatc
 	})
 	log.Debugf("Starting pipecat runner. pipecatcall_id: %s", pc.ID)
 
-	// filepath, err := h.runnerCreateMessageFile(pc.Messages)
-	// if err != nil {
-	// 	return errors.Wrapf(err, "could not create message file")
-	// }
-	// log.Debugf("Message file created at: %s", filepath)
-
 	url := h.runnerGetURL(pc)
 	log.Debugf("Pipecat WebSocket server URL: %s", url)
 
-	if errPython := h.runnerStartPython(pc, url); errPython != nil {
+	if errPython := h.runnerStartPython(ctx, pc, url); errPython != nil {
 		log.Errorf("Error starting Pipecat Python runner: %v", errPython)
 		return errors.Wrapf(errPython, "could not start the pipecat python runner")
 	}
@@ -297,36 +291,15 @@ func (h *pipecatcallHandler) runnerGetURL(pc *pipecatcall.Pipecatcall) string {
 	return fmt.Sprintf("ws://localhost:%d/ws", pc.RunnerPort)
 }
 
-func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, url string) error {
+func (h *pipecatcallHandler) runnerStartPython(ctx context.Context, pc *pipecatcall.Pipecatcall, url string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runnerStartPython",
 	})
 
-	if errStart := h.pythonRunner.Start(context.Background(), url, string(pc.LLM), string(pc.STT), string(pc.TTS), pc.VoiceID, pc.Messages); errStart != nil {
+	if errStart := h.pythonRunner.Start(ctx, pc.ID, url, string(pc.LLM), string(pc.STT), string(pc.TTS), pc.VoiceID, pc.Messages); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}
 	log.Debugf("Pipecat Python runner process started.")
 
 	return nil
-
-	// pythonInterpreter := "python"
-	// pythonScript := "/app/scripts/pipecat/main.py"
-
-	// args := []string{
-	// 	"--ws_server_url", url,
-	// 	"--llm", string(pc.LLM),
-	// 	"--stt", string(pc.STT),
-	// 	"--tts", string(pc.TTS),
-	// 	"--messages_file", message_file,
-	// }
-
-	// cmdArgs := append([]string{pythonScript}, args...)
-	// cmd, err := h.pythonRunner.Start(pythonInterpreter, cmdArgs)
-	// if err != nil {
-	// 	return errors.Wrapf(err, "could not start python client")
-	// }
-	// log.Debugf("Started Python script with PID %d", cmd.Process.Pid)
-
-	// h.setRunnerCMD(pc, cmd)
-	// return nil
 }

@@ -33,8 +33,8 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-async def run_pipeline(ws_server_url: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = []):
-    logger.info(f"Connecting Pipecat client to Go WebSocket server at: {ws_server_url}")
+async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = []):
+    logger.info(f"Connecting Pipecat client to Go WebSocket server at: {ws_server_url}. id: {id}")
 
     ws_transport = WebsocketClientTransport(
         uri=ws_server_url,
@@ -169,14 +169,14 @@ def create_context_aggregator(llm, messages):
 
     valid_messages = []
     for msg in messages:
-        if "role" not in msg or "content" not in msg:
+        if "role" not in msg or "content" not in msg or msg["role"] is None or msg["content"] is None:
             logger.warning(f"Skipping invalid message format: {msg}")
             continue
         valid_messages.append(msg)
     logger.info(f"Valid Messages Count: {len(valid_messages)}")
     logger.info(f"Initial Messages (first 2): {valid_messages[:2]}")
 
-    context = llm.context_class(messages)
+    context = llm.context_class(valid_messages)
     context_aggregator = llm.create_context_aggregator(context)
     
     return context_aggregator

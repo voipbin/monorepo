@@ -17,6 +17,7 @@ class Message(BaseModel):
     content: Optional[str] = None
 
 class PipelineRequest(BaseModel):
+    id: Optional[str] = None
     ws_server_url: Optional[str] = None
     llm: Optional[str] = None
     tts: Optional[str] = None
@@ -36,6 +37,7 @@ async def run_pipeline_endpoint(req: PipelineRequest):
         logger.info(f"messages_length: {len(req.messages) if req.messages else 0}")
 
         await run_pipeline(
+            req.id,
             req.ws_server_url,
             req.llm,
             req.tts,

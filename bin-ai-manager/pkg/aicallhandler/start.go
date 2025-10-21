@@ -151,7 +151,7 @@ Constraints:
 		},
 		{
 			"role":    "system",
-			"content": c.EngineData,
+			"content": c.InitPrompt,
 		},
 	}
 	// messagestt, err := h.messageHandler.Gets(ctx, c.ID, 100, "", map[string]string{})
