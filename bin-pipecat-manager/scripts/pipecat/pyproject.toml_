@@ -16,7 +16,8 @@ pydantic = ">=2.5.0"
 asyncio = "*"
 
 # === Pipecat stack ===
-pipecat-ai = {extras = ["cartesia", "daily", "deepgram", "local-smart-turn-v3", "openai", "runner", "silero", "webrtc"], version = ">=0.0.82"}
+pipecat-ai = {extras = ["cartesia", "daily", "deepgram", "local-smart-turn-v3", "openai", "runner", "silero", "webrtc", 
+google"], version = ">=0.0.82"}
 pipecatcloud = ">=0.2.4"
 
 # === Others ===
