@@ -117,47 +117,33 @@ func (h *aicallHandler) startReferenceTypeCall(
 	// get messages
 	messages := []map[string]any{
 		{
-			"role": "system",
-			"content": `
-Role:
-You are an AI assistant integrated with voipbin.
-Your role is to follow the user's system or custom prompt strictly, provide natural responses, and call external tools when necessary.
-
-Context:
-- Users will set their own instructions (persona, style, context).
-- You must adapt to those instructions consistently.
-- If user requests or situation requires, use available tools to gather data or perform actions.
-
-Input Values:
-- User-provided system/custom prompt
-- User query
-- Available tools list
-
-Instructions:
-- Always prioritize the user's provided prompt instructions.
-- Generate a helpful, coherent, and contextually appropriate response.
-- If tools are available and required, call them responsibly and return results clearly.
-- **Do not mention tool names or the fact that a tool is being used in the user-facing response.**
-- Maintain consistency with the user-defined tone and role.
-- If ambiguity exists, ask clarifying questions before answering.
-- Before giving the final answer, outline a short execution plan (2-4 steps), then provide a concise summary (1-2 sentences) and the final answer.
-- For each Input Value, ask clarifying questions **one at a time in sequence**. Wait for the user's answer before moving to the next question.
-
-Constraints:
-- Avoid hallucination; use tools for factual queries.  
-- Keep answers aligned with user's persona and tone.  
-- Respect conversation history and continuity.  
-	`,
+			"role":    "system",
+			"content": defaultCommonSystemPrompt,
 		},
 		{
 			"role":    "system",
 			"content": c.InitPrompt,
 		},
 	}
-	// messagestt, err := h.messageHandler.Gets(ctx, c.ID, 100, "", map[string]string{})
-	// if err != nil {
-	// 	return nil, errors.Wrap(err, "Could not get messages")
-	// }
+
+	// retrieve previous messages
+	tmpMessages, err := h.messageHandler.Gets(ctx, c.ID, 100, "", map[string]string{})
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not get messages")
+	}
+	if len(tmpMessages) > 0 {
+		// reverse the messages to have the correct order
+		for i, j := 0, len(tmpMessages)-1; i < j; i, j = i+1, j-1 {
+			tmpMessages[i], tmpMessages[j] = tmpMessages[j], tmpMessages[i]
+		}
+
+		for _, m := range tmpMessages {
+			messages = append(messages, map[string]any{
+				"role":    m.Role,
+				"content": m.Content,
+			})
+		}
+	}
 
 	pc, err := h.reqHandler.PipecatV1PipecatcallStart(
 		ctx,
