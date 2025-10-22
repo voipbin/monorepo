@@ -78,6 +78,7 @@ require (
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4
+	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996
 )
@@ -128,9 +129,9 @@ require (
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/genproto v0.0.0-20251014184007-4626949a642f // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20251014184007-4626949a642f // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251014184007-4626949a642f // indirect
+	google.golang.org/genproto v0.0.0-20251020155222-88f65dc88635 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20251020155222-88f65dc88635 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251020155222-88f65dc88635 // indirect
 	google.golang.org/grpc v1.76.0 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
@@ -141,7 +142,6 @@ require (
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268 // indirect
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183 // indirect
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect
-	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect

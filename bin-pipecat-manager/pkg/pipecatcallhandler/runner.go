@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
@@ -146,19 +148,6 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 			case *pipecatframe.Frame_Text:
 				log.Debugf("Received TextFrame: ID=%d, Name=%s, Text='%s'", x.Text.Id, x.Text.Name, x.Text.Text)
 
-				// responseFrame := &pipecatframe.Frame{
-				// 	Frame: &pipecatframe.Frame_Text{
-				// 		Text: &pipecatframe.TextFrame{
-				// 			Id:   x.Text.Id + 1, // ID를 증가시키는 예시
-				// 			Name: "GoServerResponse",
-				// 			Text: fmt.Sprintf("Go server received your text: '%s'", x.Text.Text),
-				// 		},
-				// 	},
-				// }
-				// if errSend := h.sendProtobufFrame(ws, responseFrame); errSend != nil {
-				// 	log.Errorf("Could not send the frame.")
-				// }
-
 			case *pipecatframe.Frame_Audio:
 				audio := x.Audio
 				if errAudio := h.runnerWebsocketHandleAudio(ctx, pc, int(audio.SampleRate), int(audio.NumChannels), audio.Audio); errAudio != nil {
@@ -167,28 +156,14 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 
 			case *pipecatframe.Frame_Transcription:
 				log.Debugf("Received TranscriptionFrame: ID=%d, Name=%s, Text='%s', UserID=%s, Timestamp=%s", x.Transcription.Id, x.Transcription.Name, x.Transcription.Text, x.Transcription.UserId, x.Transcription.Timestamp)
-				// responseFrame := &pipecatframe.Frame{
-				// 	Frame: &pipecatframe.Frame_Transcription{
-				// 		Transcription: &pipecatframe.TranscriptionFrame{
-				// 			Id:        x.Transcription.Id + 1,
-				// 			Name:      "GoServerTranscriptionResponse",
-				// 			Text:      fmt.Sprintf("Go server heard: '%s'", x.Transcription.Text),
-				// 			UserId:    x.Transcription.UserId,
-				// 			Timestamp: time.Now().Format(time.RFC3339),
-				// 		},
-				// 	},
-				// }
-				// if errSend := h.sendProtobufFrame(ws, responseFrame); errSend != nil {
-				// 	log.Errorf("Could not send the frame.")
-				// }
 
 			case *pipecatframe.Frame_Message:
-				log.Debugf("Received MessageFrame: Data='%s'", x.Message.Data)
-				if errMessage := h.receiveMessageFrameMessage(ctx, []byte(x.Message.Data)); errMessage != nil {
+				if errMessage := h.receiveMessageFrameTypeMessage(ctx, pc, []byte(x.Message.Data)); errMessage != nil {
 					log.Errorf("Could not process MessageFrame: %v", errMessage)
 				}
 
 			default:
+
 				log.Errorf("Could not recognize the Protobuf Frame type. type: %T", x)
 			}
 
@@ -224,13 +199,14 @@ func (h *pipecatcallHandler) sendProtobufFrame(ws *websocket.Conn, frame *pipeca
 	return nil
 }
 
-func (h *pipecatcallHandler) receiveMessageFrameMessage(ctx context.Context, message []byte) error {
+func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context, pc *pipecatcall.Pipecatcall, m []byte) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "receiveMessageFrameMessage",
+		"func":           "receiveMessageFrameMessage",
+		"pipecatcall_id": pc.ID,
 	})
 
 	frame := pipecatframe.CommonFrameMessage{}
-	if errUnmarshal := json.Unmarshal(message, &frame); errUnmarshal != nil {
+	if errUnmarshal := json.Unmarshal(m, &frame); errUnmarshal != nil {
 		log.Errorf("Error unmarshaling JSON message: %v", errUnmarshal)
 		return errUnmarshal
 	}
@@ -245,17 +221,35 @@ func (h *pipecatcallHandler) receiveMessageFrameMessage(ctx context.Context, mes
 	switch frame.Type {
 	case "bot-transcription":
 		msg := pipecatframe.RTVIBotTranscriptionMessage{}
-		if errUnmarshal := json.Unmarshal(message, &msg); errUnmarshal != nil {
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-transcription message")
 		}
-		h.notifyHandler.PublishEvent(ctx, "bot-transcription", msg.Data)
+
+		id := h.utilHandler.UUIDCreate()
+		event := message.Message{
+			Identity: commonidentity.Identity{
+				ID:         id,
+				CustomerID: pc.CustomerID,
+			},
+			PipecatCallID: pc.ID,
+		}
+		h.notifyHandler.PublishEvent(ctx, message.EventTypeBotTranscription, event)
 
 	case "user-transcription":
 		msg := pipecatframe.RTVIUserTranscriptionMessage{}
-		if errUnmarshal := json.Unmarshal(message, &msg); errUnmarshal != nil {
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
 			return errors.Wrapf(errUnmarshal, "could not unmarshal user-transcription message")
 		}
-		h.notifyHandler.PublishEvent(ctx, "user-transcription", msg.Data)
+
+		id := h.utilHandler.UUIDCreate()
+		event := message.Message{
+			Identity: commonidentity.Identity{
+				ID:         id,
+				CustomerID: pc.CustomerID,
+			},
+			PipecatCallID: pc.ID,
+		}
+		h.notifyHandler.PublishEvent(ctx, message.EventTypeUserTranscription, event)
 
 	default:
 		log.Errorf("Unrecognized RTVI message type: %s", frame.Type)

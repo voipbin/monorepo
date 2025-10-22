@@ -23,10 +23,9 @@ type Pipecatcall struct {
 	Messages []map[string]any `json:"-"`
 
 	// pipecat runner
-	RunnerListener net.Listener `json:"-"`
-	RunnerPort     int          `json:"-"`
-	RunnerServer   *http.Server `json:"-"`
-	// RunnerCMD       *exec.Cmd       `json:"-"`
+	RunnerListener  net.Listener    `json:"-"`
+	RunnerPort      int             `json:"-"`
+	RunnerServer    *http.Server    `json:"-"`
 	RunnerWebsocket *websocket.Conn `json:"-"`
 
 	// asterisk info
@@ -37,7 +36,8 @@ type Pipecatcall struct {
 type ReferenceType string
 
 const (
-	ReferenceTypeCall ReferenceType = "call"
+	ReferenceTypeCall   ReferenceType = "call"
+	ReferenceTypeAICall ReferenceType = "ai_call"
 )
 
 // LLM

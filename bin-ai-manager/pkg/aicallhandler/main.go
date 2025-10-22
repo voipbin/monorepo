@@ -88,6 +88,12 @@ const (
 	variableLanguage      = "voipbin.aicall.language"
 )
 
+const (
+	defaultTTSVoiceIDElevenlabs = "EXAVITQu4vr4xnSDxMaL"                 // Rachel
+	defaultTTSVoiceIDCartesia   = "71a7ad14-091c-4e8e-a314-022ece01c121" // British Reading Lady(https://developer.signalwire.com/voice/tts/cartesia/)
+	defaultTTSVoiceIDDeepgram   = "aura-2-thalia-en"                     // thalia(https://developers.deepgram.com/docs/tts-models#aura-2-all-available-spanish-voices)
+)
+
 // aicallHandler define
 type aicallHandler struct {
 	utilHandler   utilhandler.UtilHandler

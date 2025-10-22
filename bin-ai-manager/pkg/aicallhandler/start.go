@@ -114,47 +114,31 @@ func (h *aicallHandler) startReferenceTypeCall(
 		return nil, errors.Wrap(err, "Could not create confbridge")
 	}
 
-	// get messages
-	messages := []map[string]any{
-		{
-			"role":    "system",
-			"content": defaultCommonSystemPrompt,
-		},
-		{
-			"role":    "system",
-			"content": c.InitPrompt,
-		},
-	}
+	// note: currently, we only support deepgram + elevenlabs for pipecatcall
+	c.STTType = ai.STTTypeDeepgram
+	c.TTSType = ai.TTSTypeElevenLabs
+	c.TTSVoiceID = defaultTTSVoiceIDElevenlabs
 
-	// retrieve previous messages
-	tmpMessages, err := h.messageHandler.Gets(ctx, c.ID, 100, "", map[string]string{})
+	messages, err := h.getMessages(ctx, c)
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not get messages")
+		return nil, errors.Wrapf(err, "could not get the messages for pipecatcall")
 	}
-	if len(tmpMessages) > 0 {
-		// reverse the messages to have the correct order
-		for i, j := 0, len(tmpMessages)-1; i < j; i, j = i+1, j-1 {
-			tmpMessages[i], tmpMessages[j] = tmpMessages[j], tmpMessages[i]
-		}
 
-		for _, m := range tmpMessages {
-			messages = append(messages, map[string]any{
-				"role":    m.Role,
-				"content": m.Content,
-			})
-		}
+	voiceID, err := h.getVoiceID(c)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the voice id for pipecatcall")
 	}
 
 	pc, err := h.reqHandler.PipecatV1PipecatcallStart(
 		ctx,
 		c.CustomerID,
 		activeflowID,
-		pmpipecatcall.ReferenceTypeCall,
-		referenceID,
+		pmpipecatcall.ReferenceTypeAICall,
+		c.ID,
 		pmpipecatcall.LLM(c.EngineModel),
-		pmpipecatcall.STTDeepgram,
-		pmpipecatcall.TTSCartesia,
-		"71a7ad14-091c-4e8e-a314-022ece01c121",
+		pmpipecatcall.STT(c.STTType),
+		pmpipecatcall.TTS(c.TTSType),
+		voiceID,
 		messages,
 	)
 	if err != nil {
@@ -162,13 +146,6 @@ func (h *aicallHandler) startReferenceTypeCall(
 		return nil, errors.Wrap(err, "could not start pipecatcall")
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall. pipecatcall_id: %s", pc.ID)
-
-	// // start streaming tts
-	// st, err := h.reqHandler.TTSV1StreamingCreate(ctx, c.CustomerID, activeflowID, tmstreaming.ReferenceTypeCall, referenceID, language, tmstreaming.Gender(gender), tmstreaming.DirectionOutgoing)
-	// if err != nil {
-	// 	return nil, errors.Wrap(err, "Could not create tts streaming")
-	// }
-	// log.WithField("streaming", st).Debugf("Created tts streaming. streaming_id: %s", st.ID)
 
 	// create ai call
 	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, uuid.Nil, "")
@@ -178,62 +155,8 @@ func (h *aicallHandler) startReferenceTypeCall(
 	}
 	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
 
-	// go func(cctx context.Context) {
-	// 	if errInit := h.chatInit(cctx, c, res); errInit != nil {
-	// 		log.Errorf("Could not initialize chat. err: %v", errInit)
-	// 	}
-
-	// }(context.Background())
-
 	return res, nil
 }
-
-// // startReferenceTypeCall starts a new aicall with reference type call
-// func (h *aicallHandler) startReferenceTypeCallOld(
-// 	ctx context.Context,
-// 	c *ai.AI,
-// 	activeflowID uuid.UUID,
-// 	referenceID uuid.UUID,
-// 	gender aicall.Gender,
-// 	language string,
-// ) (*aicall.AIcall, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":          "startNew",
-// 		"ai":            c,
-// 		"activeflow_id": activeflowID,
-// 	})
-// 	log.Debugf("Starting a new aicall")
-
-// 	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, activeflowID, cmconfbridge.ReferenceTypeAI, c.ID, cmconfbridge.TypeConference)
-// 	if err != nil {
-// 		log.Errorf("Could not create confbridge. err: %v", err)
-// 		return nil, errors.Wrap(err, "Could not create confbridge")
-// 	}
-
-// 	// start streaming tts
-// 	st, err := h.reqHandler.TTSV1StreamingCreate(ctx, c.CustomerID, activeflowID, tmstreaming.ReferenceTypeCall, referenceID, language, tmstreaming.Gender(gender), tmstreaming.DirectionOutgoing)
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, "Could not create tts streaming")
-// 	}
-// 	log.WithField("streaming", st).Debugf("Created tts streaming. streaming_id: %s", st.ID)
-
-// 	// create ai call
-// 	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, st.ID, st.PodID)
-// 	if err != nil {
-// 		log.Errorf("Could not create aicall. err: %v", err)
-// 		return nil, errors.Wrap(err, "Could not create aicall.")
-// 	}
-// 	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
-
-// 	go func(cctx context.Context) {
-// 		if errInit := h.chatInit(cctx, c, res); errInit != nil {
-// 			log.Errorf("Could not initialize chat. err: %v", errInit)
-// 		}
-
-// 	}(context.Background())
-
-// 	return res, nil
-// }
 
 // startReferenceTypeConversation starts a new aicall with reference type conversation
 func (h *aicallHandler) startReferenceTypeConversation(
@@ -315,4 +238,59 @@ func (h *aicallHandler) startReferenceTypeNone(
 	}
 
 	return res, nil
+}
+
+func (h *aicallHandler) getMessages(ctx context.Context, c *ai.AI) ([]map[string]any, error) {
+	res := []map[string]any{
+		{
+			"role":    "system",
+			"content": defaultCommonSystemPrompt,
+		},
+		{
+			"role":    "system",
+			"content": c.InitPrompt,
+		},
+	}
+
+	// retrieve previous messages
+	tmpMessages, err := h.messageHandler.Gets(ctx, c.ID, 100, "", map[string]string{})
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not get messages")
+	}
+	if len(tmpMessages) > 0 {
+		// reverse the messages to have the correct order
+		for i, j := 0, len(tmpMessages)-1; i < j; i, j = i+1, j-1 {
+			tmpMessages[i], tmpMessages[j] = tmpMessages[j], tmpMessages[i]
+		}
+
+		for _, m := range tmpMessages {
+			res = append(res, map[string]any{
+				"role":    m.Role,
+				"content": m.Content,
+			})
+		}
+	}
+
+	return res, nil
+}
+
+func (h *aicallHandler) getVoiceID(c *ai.AI) (string, error) {
+	if c.TTSVoiceID != "" {
+		return c.TTSVoiceID, nil
+	}
+
+	// find default voice id
+	switch c.TTSType {
+	case ai.TTSTypeElevenLabs:
+		return defaultTTSVoiceIDElevenlabs, nil
+
+	case ai.TTSTypeCartesia:
+		return defaultTTSVoiceIDCartesia, nil
+
+	case ai.TTSTypeDeepgram:
+		return defaultTTSVoiceIDDeepgram, nil
+
+	default:
+		return "", fmt.Errorf("unsupported tts type: %s", c.TTSType)
+	}
 }

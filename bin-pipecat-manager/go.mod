@@ -66,6 +66,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	go.uber.org/mock v0.6.0
 	google.golang.org/protobuf v1.36.10
+	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
@@ -96,7 +97,6 @@ require (
 	golang.org/x/text v0.30.0 // indirect
 	google.golang.org/genproto v0.0.0-20251014184007-4626949a642f // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
-	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
 	monorepo/bin-chat-manager v0.0.0-20240313050741-a2ced5030a06 // indirect
