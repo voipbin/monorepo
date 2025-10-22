@@ -171,7 +171,7 @@ func (h *audiosocketHandler) WrapDataPCM16Bit(data []byte) ([]byte, error) {
 	}
 
 	// Write sample count
-	payloadLength := uint16(len(data) / 2)
+	payloadLength := uint16(len(data))
 	if errWrite := binary.Write(buf, binary.BigEndian, payloadLength); errWrite != nil {
 		return nil, errors.Wrapf(errWrite, "could not write sample count")
 	}
