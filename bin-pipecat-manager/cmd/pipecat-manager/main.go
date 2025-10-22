@@ -71,7 +71,7 @@ func run() error {
 	listenAddress := fmt.Sprintf("%s:%d", listenIP, 8080)
 
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNameAIEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName)
 
 	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, listenAddress, hostID)
 

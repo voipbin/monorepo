@@ -205,9 +205,6 @@ func (h *audiosocketHandler) WrapDataPCM16Bit(data []byte) ([]byte, error) {
 // Returns:
 //   - error: Returns an error if the context is cancelled, the data is invalid, or writing fails.
 func (h *audiosocketHandler) Write(ctx context.Context, conn net.Conn, data []byte) error {
-	// log := logrus.WithFields(logrus.Fields{
-	// 	"func": "audiosocketWrite",
-	// })
 	if len(data) == 0 {
 		// nothing to send
 		return nil
@@ -216,7 +213,6 @@ func (h *audiosocketHandler) Write(ctx context.Context, conn net.Conn, data []by
 	payloadLen := len(data)
 	offset := 0
 
-	// log.Debugf("Sending %d bytes of audio data in fragments", payloadLen)
 	for offset < payloadLen {
 		if ctx.Err() != nil {
 			return ctx.Err()
