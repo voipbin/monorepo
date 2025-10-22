@@ -132,9 +132,9 @@ func Test_audiosocketWrapDataPCM16Bit(t *testing.T) {
 			name:      "normal pcm data",
 			inputData: []int16{1000, 2000},
 			// 0x10                : format byte (defaultAudiosocketFormatSLIN)
-			// 0x00, 0x02          : sample count (BigEndian, 2)
+			// 0x00, 0x04          : sample count (BigEndian, 2)
 			// 0xE8, 0x03, 0xD0, 0x07 : PCM16 LE(1000, 2000)
-			expectRes: []byte{0x10, 0x00, 0x02, 0xE8, 0x03, 0xD0, 0x07},
+			expectRes: []byte{0x10, 0x00, 0x04, 0xE8, 0x03, 0xD0, 0x07},
 		},
 		{
 			name:      "empty pcm data",
@@ -150,7 +150,7 @@ func Test_audiosocketWrapDataPCM16Bit(t *testing.T) {
 			// 0x10 : format
 			// 0x00, 0x01 : sample count = 1
 			// 0xD2, 0x04 : PCM16 LE(1234)
-			expectRes: []byte{0x10, 0x00, 0x01, 0xD2, 0x04},
+			expectRes: []byte{0x10, 0x00, 0x02, 0xD2, 0x04},
 		},
 	}
 
