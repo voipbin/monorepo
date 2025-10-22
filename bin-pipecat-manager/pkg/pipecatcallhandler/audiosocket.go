@@ -100,6 +100,10 @@ func audiosocketUpsample8kTo16k(data []byte) []byte {
 		inputSamples[i] = int16(binary.LittleEndian.Uint16(data[i*2 : i*2+2]))
 	}
 
+	if len(inputSamples) == 0 {
+		return []byte{}
+	}
+
 	var out bytes.Buffer
 	for i := 0; i < len(inputSamples)-1; i++ {
 		s1 := inputSamples[i]
@@ -150,7 +154,7 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 	}
 
 	// Write sample count
-	payloadLength := uint16(len(data))
+	payloadLength := uint16(len(data) / 2)
 	if errWrite := binary.Write(buf, binary.BigEndian, payloadLength); errWrite != nil {
 		return nil, errors.Wrapf(errWrite, "could not write sample count")
 	}

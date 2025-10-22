@@ -114,6 +114,14 @@ func (h *aicallHandler) startReferenceTypeCall(
 		return nil, errors.Wrap(err, "Could not create confbridge")
 	}
 
+	// create ai call
+	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, uuid.Nil, "")
+	if err != nil {
+		log.Errorf("Could not create aicall. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create aicall.")
+	}
+	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
+
 	// note: currently, we only support deepgram + elevenlabs for pipecatcall
 	c.STTType = ai.STTTypeDeepgram
 	c.TTSType = ai.TTSTypeElevenLabs
@@ -134,7 +142,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 		c.CustomerID,
 		activeflowID,
 		pmpipecatcall.ReferenceTypeAICall,
-		c.ID,
+		res.ID,
 		pmpipecatcall.LLM(c.EngineModel),
 		pmpipecatcall.STT(c.STTType),
 		pmpipecatcall.TTS(c.TTSType),
@@ -146,14 +154,6 @@ func (h *aicallHandler) startReferenceTypeCall(
 		return nil, errors.Wrap(err, "could not start pipecatcall")
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall. pipecatcall_id: %s", pc.ID)
-
-	// create ai call
-	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, uuid.Nil, "")
-	if err != nil {
-		log.Errorf("Could not create aicall. err: %v", err)
-		return nil, errors.Wrap(err, "Could not create aicall.")
-	}
-	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
 
 	return res, nil
 }
