@@ -17,14 +17,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
 func (h *pipecatcallHandler) RunnerStart(ctx context.Context, pc *pipecatcall.Pipecatcall) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "RunnerStart",
@@ -114,7 +106,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 		"pipecatcall_id": pc.ID,
 	})
 
-	ws, err := upgrader.Upgrade(w, r, nil)
+	ws, err := h.websocketHandler.Upgrade(w, r, nil)
 	if err != nil {
 		log.Errorf("Could not upgrade to WebSocket: %v", err)
 		return
@@ -124,7 +116,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 	h.setRunnerWebsocket(pc, ws)
 
 	for {
-		msgType, message, err := ws.ReadMessage()
+		msgType, message, err := h.websocketHandler.ReadMessage(ws)
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
 				log.Debugf("Client disconnected gracefully.")
@@ -175,7 +167,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 			return
 		case websocket.PingMessage:
 			log.Debugf("Received Ping message from client. Sending Pong.")
-			if errWrite := ws.WriteMessage(websocket.PongMessage, []byte{}); errWrite != nil {
+			if errWrite := h.websocketHandler.WriteMessage(ws, websocket.PongMessage, []byte{}); errWrite != nil {
 				log.Errorf("Could not send Pong message: %v", errWrite)
 				return
 			}
@@ -192,8 +184,9 @@ func (h *pipecatcallHandler) sendProtobufFrame(ws *websocket.Conn, frame *pipeca
 	if err != nil {
 		return errors.Wrapf(err, "could not marshaling the protobuf frame")
 	}
-	if err := ws.WriteMessage(websocket.BinaryMessage, marshaledFrame); err != nil {
-		return errors.Wrapf(err, "could not write message")
+
+	if errWrite := h.websocketHandler.WriteMessage(ws, websocket.BinaryMessage, marshaledFrame); errWrite != nil {
+		return errors.Wrapf(errWrite, "could not write message")
 	}
 
 	return nil
@@ -219,7 +212,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 	}
 
 	switch frame.Type {
-	case "bot-transcription":
+	case pipecatframe.RTVIFrameTypeBotTranscription:
 		msg := pipecatframe.RTVIBotTranscriptionMessage{}
 		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-transcription message")
@@ -232,13 +225,19 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 				CustomerID: pc.CustomerID,
 			},
 			PipecatCallID: pc.ID,
+			Text:          msg.Data.Text,
 		}
 		h.notifyHandler.PublishEvent(ctx, message.EventTypeBotTranscription, event)
 
-	case "user-transcription":
+	case pipecatframe.RTVIFrameTypeUserTranscription:
 		msg := pipecatframe.RTVIUserTranscriptionMessage{}
 		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
 			return errors.Wrapf(errUnmarshal, "could not unmarshal user-transcription message")
+		}
+
+		if !msg.Data.Final {
+			// ignore non-final transcriptions
+			return nil
 		}
 
 		id := h.utilHandler.UUIDCreate()
@@ -248,6 +247,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 				CustomerID: pc.CustomerID,
 			},
 			PipecatCallID: pc.ID,
+			Text:          msg.Data.Text,
 		}
 		h.notifyHandler.PublishEvent(ctx, message.EventTypeUserTranscription, event)
 
@@ -263,12 +263,12 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(ctx context.Context, pc 
 		return errors.Errorf("only mono audio is supported. num_channels: %d", numChannels)
 	}
 
-	audioData, err := audiosocketGetDataSamples(sampleRate, data)
+	audioData, err := h.audiosocketHandler.GetDataSamples(sampleRate, data)
 	if err != nil {
 		return errors.Wrapf(err, "could not get audio data samples")
 	}
 
-	if errWrite := audiosocketWrite(ctx, pc.AsteriskConn, audioData); errWrite != nil {
+	if errWrite := h.audiosocketHandler.Write(ctx, pc.AsteriskConn, audioData); errWrite != nil {
 		return errors.Wrapf(errWrite, "could not write processed audio data to asterisk connection")
 	}
 

@@ -164,6 +164,10 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	case m.Publisher == string(commonoutline.ServiceNameTTSManager) && m.Type == string(tmmessage.EventTypePlayFinished):
 		err = h.processEventTMPlayFinished(ctx, m)
 
+	// pipecat-manager
+	case m.Publisher == string(commonoutline.ServiceNamePipecatManager):
+		log.WithField("event", m).Debugf("Received pipecat-manager event. Ignoring it. type: %s", m.Type)
+
 	default:
 		// ignore the event.
 		return

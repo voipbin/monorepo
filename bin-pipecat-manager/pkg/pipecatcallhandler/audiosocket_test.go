@@ -3,19 +3,19 @@ package pipecatcallhandler
 import (
 	"bytes"
 	"encoding/binary"
+	reflect "reflect"
 	"testing"
 )
 
 func Test_audiosocketGetDataSamples(t *testing.T) {
-	type test struct {
+
+	tests := []struct {
 		name        string
 		inputRate   int
 		inputData   []byte
 		expectData  []byte
 		expectError bool
-	}
-
-	tests := []test{
+	}{
 		{
 			name:        "no conversion needed (same sample rate)",
 			inputRate:   defaultAudiosocketConvertSampleRate,
@@ -46,7 +46,9 @@ func Test_audiosocketGetDataSamples(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := audiosocketGetDataSamples(tt.inputRate, tt.inputData)
+			h := &audiosocketHandler{}
+
+			res, err := h.GetDataSamples(tt.inputRate, tt.inputData)
 			if tt.expectError {
 				if err == nil {
 					t.Fatalf("expected error but got none")
@@ -64,13 +66,12 @@ func Test_audiosocketGetDataSamples(t *testing.T) {
 }
 
 func Test_audiosocketUpsample8kTo16k(t *testing.T) {
-	type test struct {
+
+	tests := []struct {
 		name       string
 		inputData  []int16
 		expectData []int16
-	}
-
-	tests := []test{
+	}{
 		{
 			name:      "normal upsample",
 			inputData: []int16{1000, 2000, 3000, 4000},
@@ -94,12 +95,14 @@ func Test_audiosocketUpsample8kTo16k(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			h := &audiosocketHandler{}
+
 			var inputBytes bytes.Buffer
 			for _, v := range tt.inputData {
 				_ = binary.Write(&inputBytes, binary.LittleEndian, v)
 			}
 
-			out := audiosocketUpsample8kTo16k(inputBytes.Bytes())
+			out := h.Upsample8kTo16k(inputBytes.Bytes())
 
 			outSamples := make([]int16, len(out)/2)
 			for i := 0; i < len(outSamples); i++ {
@@ -120,59 +123,53 @@ func Test_audiosocketUpsample8kTo16k(t *testing.T) {
 }
 
 func Test_audiosocketWrapDataPCM16Bit(t *testing.T) {
-	type test struct {
-		name        string
-		inputData   []byte
-		expectError bool
-	}
-
-	tests := []test{
+	tests := []struct {
+		name      string
+		inputData []int16
+		expectRes []byte
+	}{
 		{
-			name:        "normal case even length",
-			inputData:   []byte{0x01, 0x02, 0x03, 0x04}, // 2 샘플
-			expectError: false,
+			name:      "normal pcm data",
+			inputData: []int16{1000, 2000},
+			// 0x10                : format byte (defaultAudiosocketFormatSLIN)
+			// 0x00, 0x02          : sample count (BigEndian, 2)
+			// 0xE8, 0x03, 0xD0, 0x07 : PCM16 LE(1000, 2000)
+			expectRes: []byte{0x10, 0x00, 0x02, 0xE8, 0x03, 0xD0, 0x07},
 		},
 		{
-			name:        "error case odd length",
-			inputData:   []byte{0x01, 0x02, 0x03}, // 1.5 샘플 → error
-			expectError: true,
+			name:      "empty pcm data",
+			inputData: []int16{},
+			// 0x10 : format
+			// 0x00, 0x01 : sample count = 1
+			// 0xD2, 0x04 : PCM16 LE(1234)
+			expectRes: []byte{0x10, 0x00, 0x00},
+		},
+		{
+			name:      "single sample",
+			inputData: []int16{1234},
+			// 0x10 : format
+			// 0x00, 0x01 : sample count = 1
+			// 0xD2, 0x04 : PCM16 LE(1234)
+			expectRes: []byte{0x10, 0x00, 0x01, 0xD2, 0x04},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			wrapped, err := audiosocketWrapDataPCM16Bit(tt.inputData)
-			if tt.expectError {
-				if err == nil {
-					t.Fatalf("expected error but got none")
-				}
-				return
+			h := &audiosocketHandler{}
+
+			var inputBuf bytes.Buffer
+			for _, v := range tt.inputData {
+				_ = binary.Write(&inputBuf, binary.LittleEndian, v)
 			}
 
+			out, err := h.WrapDataPCM16Bit(inputBuf.Bytes())
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			// 최소 길이 체크: 1 byte format + 2 byte sample count + payload
-			if len(wrapped) < 3 {
-				t.Fatalf("wrapped data too short: %d", len(wrapped))
-			}
-
-			// 첫 바이트: format
-			if wrapped[0] != defaultAudiosocketFormatSLIN {
-				t.Errorf("wrong format byte: expect 0x%x, got 0x%x", defaultAudiosocketFormatSLIN, wrapped[0])
-			}
-
-			// 다음 2 바이트: sample count
-			sampleCount := binary.BigEndian.Uint16(wrapped[1:3])
-			expectedSampleCount := uint16(len(tt.inputData) / 2)
-			if sampleCount != expectedSampleCount {
-				t.Errorf("wrong sample count: expect %d, got %d", expectedSampleCount, sampleCount)
-			}
-
-			// 나머지 payload: 입력과 동일
-			if !bytes.Equal(tt.inputData, wrapped[3:]) {
-				t.Errorf("payload mismatch: expect %v, got %v", tt.inputData, wrapped[3:])
+			if !reflect.DeepEqual(out, tt.expectRes) {
+				t.Errorf("output mismatch\nexpect: %v\ngot:    %v", tt.expectRes, out)
 			}
 		})
 	}

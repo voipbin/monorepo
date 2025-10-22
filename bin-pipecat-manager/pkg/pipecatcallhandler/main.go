@@ -60,7 +60,9 @@ type pipecatcallHandler struct {
 	requestHandler requesthandler.RequestHandler
 	notifyHandler  notifyhandler.NotifyHandler
 
-	pythonRunner PythonRunner
+	pythonRunner       PythonRunner
+	audiosocketHandler AudiosocketHandler
+	websocketHandler   WebsocketHandler
 
 	listenAddress string
 	podID         uuid.UUID
@@ -81,7 +83,9 @@ func NewPipecatcallHandler(
 		requestHandler: reqHandler,
 		notifyHandler:  notifyHandler,
 
-		pythonRunner: NewPythonRunner(),
+		pythonRunner:       NewPythonRunner(),
+		audiosocketHandler: NewAudiosocketHandler(),
+		websocketHandler:   NewWebsocketHandler(),
 
 		listenAddress: listenAddress,
 		podID:         podID,

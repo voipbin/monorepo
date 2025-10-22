@@ -51,7 +51,7 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	}()
 
 	// Get streamingID
-	streamingID, err := audiosocketGetStreamingID(conn)
+	streamingID, err := h.audiosocketHandler.GetStreamingID(conn)
 	if err != nil {
 		log.Errorf("Could not get streaming ID. err: %v", err)
 		return
@@ -150,13 +150,13 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 			return
 		}
 
-		m, err := audiosocketGetNextMedia(pc.AsteriskConn)
+		m, err := h.audiosocketHandler.GetNextMedia(pc.AsteriskConn)
 		if err != nil {
 			log.Infof("Connection has closed. err: %v", err)
 			return
 		}
 
-		data := audiosocketUpsample8kTo16k(m.Payload())
+		data := h.audiosocketHandler.Upsample8kTo16k(m.Payload())
 		pipecatFrame := &pipecatframe.Frame{
 			Frame: &pipecatframe.Frame_Audio{
 				Audio: &pipecatframe.AudioRawFrame{
