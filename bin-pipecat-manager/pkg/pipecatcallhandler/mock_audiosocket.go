@@ -89,11 +89,12 @@ func (mr *MockAudiosocketHandlerMockRecorder) GetStreamingID(conn any) *gomock.C
 }
 
 // Upsample8kTo16k mocks base method.
-func (m *MockAudiosocketHandler) Upsample8kTo16k(data []byte) []byte {
+func (m *MockAudiosocketHandler) Upsample8kTo16k(data []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Upsample8kTo16k", data)
 	ret0, _ := ret[0].([]byte)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Upsample8kTo16k indicates an expected call of Upsample8kTo16k.

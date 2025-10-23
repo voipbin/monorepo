@@ -18,7 +18,7 @@ type AudiosocketHandler interface {
 	GetStreamingID(conn net.Conn) (uuid.UUID, error)
 	GetNextMedia(conn net.Conn) (audiosocket.Message, error)
 	GetDataSamples(inputRate int, data []byte) ([]byte, error)
-	Upsample8kTo16k(data []byte) []byte
+	Upsample8kTo16k(data []byte) ([]byte, error)
 	WrapDataPCM16Bit(data []byte) ([]byte, error)
 	Write(ctx context.Context, conn net.Conn, data []byte) error
 }
@@ -107,9 +107,9 @@ func (h *audiosocketHandler) GetDataSamples(inputRate int, data []byte) ([]byte,
 //
 // Note: This method is designed for low-latency real-time audio streaming, not
 // high-fidelity resampling. For higher quality, consider using a windowed
-func (h *audiosocketHandler) Upsample8kTo16k(data []byte) []byte {
+func (h *audiosocketHandler) Upsample8kTo16k(data []byte) ([]byte, error) {
 	if len(data)%2 != 0 {
-		return data // odd length guard
+		return nil, fmt.Errorf("the PCM data must be 16-bit aligned (even number of bytes). bytes: %d", len(data))
 	}
 
 	inputSamples := make([]int16, len(data)/2)
@@ -118,7 +118,7 @@ func (h *audiosocketHandler) Upsample8kTo16k(data []byte) []byte {
 	}
 
 	if len(inputSamples) == 0 {
-		return []byte{}
+		return []byte{}, nil
 	}
 
 	var out bytes.Buffer
@@ -134,7 +134,7 @@ func (h *audiosocketHandler) Upsample8kTo16k(data []byte) []byte {
 	last := inputSamples[len(inputSamples)-1]
 	_ = binary.Write(&out, binary.LittleEndian, last)
 
-	return out.Bytes()
+	return out.Bytes(), nil
 }
 
 // WrapDataPCM16Bit wraps raw 16-bit PCM audio data into the Audiosocket transmission format.

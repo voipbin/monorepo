@@ -156,7 +156,12 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 			return
 		}
 
-		data := h.audiosocketHandler.Upsample8kTo16k(m.Payload())
+		data, err := h.audiosocketHandler.Upsample8kTo16k(m.Payload())
+		if err != nil {
+			// invalid audio data, skip this packet
+			continue
+		}
+
 		pipecatFrame := &pipecatframe.Frame{
 			Frame: &pipecatframe.Frame_Audio{
 				Audio: &pipecatframe.AudioRawFrame{

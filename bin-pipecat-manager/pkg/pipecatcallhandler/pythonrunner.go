@@ -75,7 +75,11 @@ func (h *pythonRunner) Start(ctx context.Context, pipecatcallID uuid.UUID, uri s
 		_ = resp.Body.Close()
 	}()
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Wrapf(err, "could not read response body from python runner")
+	}
+
 	log.Debugf("Response status: %s", resp.Status)
 	log.Debugf("Response body: %v", body)
 

@@ -102,7 +102,10 @@ func Test_audiosocketUpsample8kTo16k(t *testing.T) {
 				_ = binary.Write(&inputBytes, binary.LittleEndian, v)
 			}
 
-			out := h.Upsample8kTo16k(inputBytes.Bytes())
+			out, err := h.Upsample8kTo16k(inputBytes.Bytes())
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
 
 			outSamples := make([]int16, len(out)/2)
 			for i := 0; i < len(outSamples); i++ {
