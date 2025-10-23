@@ -2,6 +2,7 @@ package message
 
 import (
 	"monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
 )
@@ -9,7 +10,11 @@ import (
 type Message struct {
 	identity.Identity
 
-	PipecatCallID uuid.UUID `json:"pipecat_call_id,omitempty"`
+	// referenced pipecatcall info
+	// this is used for simplifying queries.
+	PipecatcallID            uuid.UUID                 `json:"pipecatcall_id,omitempty"`
+	PipecatcallReferenceType pipecatcall.ReferenceType `json:"pipecatcall_reference_type,omitempty"`
+	PipecatcallReferenceID   uuid.UUID                 `json:"pipecatcall_reference_id,omitempty"`
 
 	Text string `json:"text,omitempty"`
 }

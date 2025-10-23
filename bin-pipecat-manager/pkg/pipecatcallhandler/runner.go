@@ -224,8 +224,12 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 				ID:         id,
 				CustomerID: pc.CustomerID,
 			},
-			PipecatCallID: pc.ID,
-			Text:          msg.Data.Text,
+
+			PipecatcallID:            pc.ID,
+			PipecatcallReferenceType: pc.ReferenceType,
+			PipecatcallReferenceID:   pc.ReferenceID,
+
+			Text: msg.Data.Text,
 		}
 		h.notifyHandler.PublishEvent(ctx, message.EventTypeBotTranscription, event)
 
@@ -246,8 +250,12 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 				ID:         id,
 				CustomerID: pc.CustomerID,
 			},
-			PipecatCallID: pc.ID,
-			Text:          msg.Data.Text,
+
+			PipecatcallID:            pc.ID,
+			PipecatcallReferenceType: pc.ReferenceType,
+			PipecatcallReferenceID:   pc.ReferenceID,
+
+			Text: msg.Data.Text,
 		}
 		h.notifyHandler.PublishEvent(ctx, message.EventTypeUserTranscription, event)
 
