@@ -239,7 +239,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 		}
 
 		if !msg.Data.Final {
-			// ignore non-final transcriptions
+			// ignore non-final user transcriptions
 			return nil
 		}
 
