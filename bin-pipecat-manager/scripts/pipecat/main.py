@@ -65,7 +65,7 @@ async def run_pipeline_endpoint(req: PipelineRequest, background_tasks: Backgrou
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# --- 서버 실행 ---
+# --- run server ---
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

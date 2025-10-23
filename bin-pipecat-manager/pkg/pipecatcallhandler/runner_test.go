@@ -60,7 +60,7 @@ func Test_sendProtobufFrame(t *testing.T) {
 					Audio: &pipecatframe.AudioRawFrame{
 						Id:          1,
 						Name:        "test-audio",
-						Audio:       []byte{0x01, 0x02, 0x03, 0x04}, // PCM16 예시
+						Audio:       []byte{0x01, 0x02, 0x03, 0x04}, // PCM16 example
 						SampleRate:  16000,
 						NumChannels: 1,
 					},

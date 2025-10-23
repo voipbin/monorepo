@@ -155,7 +155,6 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 				}
 
 			default:
-
 				log.Errorf("Could not recognize the Protobuf Frame type. type: %T", x)
 			}
 

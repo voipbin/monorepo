@@ -33,7 +33,7 @@ func Test_runKeepAlive(t *testing.T) {
 			h.runKeepAlive(ctx, conn, tt.interval, tt.streamingID)
 
 			expectMessage := []byte{0x10, 0x00, 0x01, 0x00}
-			if reflect.DeepEqual(conn.Written, [][]byte{expectMessage}) {
+			if !reflect.DeepEqual(conn.Written[0], expectMessage) {
 				t.Errorf("KeepAlive message mismatch.\nexpect: %v\ngot:    %v", expectMessage, conn.Written)
 			}
 

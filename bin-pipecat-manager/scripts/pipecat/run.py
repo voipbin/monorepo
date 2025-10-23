@@ -33,7 +33,7 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = []):
+async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
     logger.info(f"Connecting Pipecat client to Go WebSocket server at: {ws_server_url}. id: {id}")
 
     ws_transport = WebsocketClientTransport(
