@@ -1,65 +1,45 @@
 package pipecatcallhandler
 
-// func Test_runnerStartPython(t *testing.T) {
+import (
+	"context"
+	"reflect"
+	"testing"
+	"time"
 
-// 	type test struct {
-// 		name string
+	"github.com/gofrs/uuid"
+)
 
-// 		request *sock.Request
+func Test_runKeepAlive(t *testing.T) {
+	tests := []struct {
+		name        string
+		interval    time.Duration
+		streamingID uuid.UUID
+	}{
+		{
+			name:        "send keep-alive once",
+			interval:    10 * time.Millisecond,
+			streamingID: uuid.FromStringOrNil("10c6616e-af26-11f0-9407-e352eaba2dd0"),
+		},
+	}
 
-// 		responsePipecatcall *pipecatcall.Pipecatcall
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+			defer cancel()
 
-// 		expectPipecatcallID uuid.UUID
-// 		expectRes           *sock.Response
-// 	}
+			h := &pipecatcallHandler{}
 
-// 	tests := []test{
-// 		{
-// 			name: "normal",
+			conn := &DummyConn{}
+			h.runKeepAlive(ctx, conn, tt.interval, tt.streamingID)
 
-// 			request: &sock.Request{
-// 				URI:    "/v1/pipecatcalls/e594fff6-ab0a-11f0-8220-1fe5a6807315/stop",
-// 				Method: sock.RequestMethodPost,
-// 			},
+			expectMessage := []byte{0x10, 0x00, 0x01, 0x00}
+			if !reflect.DeepEqual(conn.Written[0], expectMessage) {
+				t.Errorf("KeepAlive message mismatch.\nexpect: %v\ngot:    %v", expectMessage, conn.Written)
+			}
 
-// 			responsePipecatcall: &pipecatcall.Pipecatcall{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("e594fff6-ab0a-11f0-8220-1fe5a6807315"),
-// 				},
-// 			},
-
-// 			expectPipecatcallID: uuid.FromStringOrNil("e594fff6-ab0a-11f0-8220-1fe5a6807315"),
-// 			expectRes: &sock.Response{
-// 				StatusCode: 200,
-// 				DataType:   "application/json",
-// 				Data:       []byte(`{"id":"e594fff6-ab0a-11f0-8220-1fe5a6807315","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`),
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockSock := sockhandler.NewMockSockHandler(mc)
-// 			mockPipecatcall := pipecatcallhandler.NewMockPipecatcallHandler(mc)
-
-// 			h := &listenHandler{
-// 				sockHandler:        mockSock,
-// 				pipecatcallHandler: mockPipecatcall,
-// 			}
-// 			ctx := context.Background()
-
-// 			mockPipecatcall.EXPECT().Stop(ctx, tt.expectPipecatcallID).Return(tt.responsePipecatcall, nil)
-// 			res, err := h.processRequest(tt.request)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if reflect.DeepEqual(res, tt.expectRes) != true {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
+			if len(conn.Written) == 0 {
+				t.Errorf("No keep-alive messages were written to DummyConn")
+			}
+		})
+	}
+}

@@ -5,7 +5,7 @@ metadata:
   labels:
     app: pipecat-manager
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: pipecat-manager
@@ -66,3 +66,22 @@ spec:
             limits:
               cpu: "100m"
               memory: "100Mi"
+
+        - name: pipecat-script-runner
+          image: pipecat-manager-image
+          command:
+            - 'python'
+            - '/app/scripts/pipecat/main.py'
+          env:
+            - name: CARTESIA_API_KEY
+              value: ${CARTESIA_API_KEY}
+            - name: ELEVENLABS_API_KEY
+              value: ${ELEVENLABS_API_KEY}
+            - name: OPENAI_API_KEY
+              value: ${AUTHTOKEN_OPENAI}
+            - name: DEEPGRAM_API_KEY
+              value: ${DEEPGRAM_API_KEY}
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "400Mi"

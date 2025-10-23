@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	pmmessage "monorepo/bin-pipecat-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -23,6 +24,9 @@ type MessageHandler interface {
 	Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error)
 	StreamingSend(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error)
 	StreamingSendAll(ctx context.Context, aicallID uuid.UUID) error
+
+	EventPMMessageBotTranscription(ctx context.Context, evt *pmmessage.Message)
+	EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message)
 }
 
 type messageHandler struct {

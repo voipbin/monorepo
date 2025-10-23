@@ -108,7 +108,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	}
 
 	// run subscribe
-	if errSubscribe := runSubscribe(sockHandler, aicallHandler, summaryHandler); errSubscribe != nil {
+	if errSubscribe := runSubscribe(sockHandler, aicallHandler, summaryHandler, messageHandler); errSubscribe != nil {
 		log.Errorf("Could not start runSubscribe. err: %v", errSubscribe)
 		return errSubscribe
 	}
@@ -121,12 +121,14 @@ func runSubscribe(
 	sockHandler sockhandler.SockHandler,
 	aicallHandler aicallhandler.AIcallHandler,
 	summaryHandler summaryhandler.SummaryHandler,
+	messageHandler messagehandler.MessageHandler,
 ) error {
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
 		string(commonoutline.QueueNameTranscribeEvent),
 		string(commonoutline.QueueNameTTSEvent),
+		string(commonoutline.QueueNamePipecatEvent),
 	}
 
 	subHandler := subscribehandler.NewSubscribeHandler(
@@ -136,6 +138,7 @@ func runSubscribe(
 		subscribeTargets,
 		aicallHandler,
 		summaryHandler,
+		messageHandler,
 	)
 
 	// run

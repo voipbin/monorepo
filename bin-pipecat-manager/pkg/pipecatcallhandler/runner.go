@@ -4,26 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 )
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
 
 func (h *pipecatcallHandler) RunnerStart(ctx context.Context, pc *pipecatcall.Pipecatcall) {
 	log := logrus.WithFields(logrus.Fields{
@@ -44,6 +36,9 @@ func (h *pipecatcallHandler) RunnerStart(ctx context.Context, pc *pipecatcall.Pi
 		return
 	}
 	log.Debugf("Pipecat runner script started.")
+
+	<-ctx.Done()
+	log.Debugf("Pipecat runner script finished.")
 }
 
 func (h *pipecatcallHandler) runnerStartWebsocket(ctx context.Context, pc *pipecatcall.Pipecatcall) error {
@@ -85,21 +80,23 @@ func (h *pipecatcallHandler) runnerStartScript(ctx context.Context, pc *pipecatc
 	})
 	log.Debugf("Starting pipecat runner. pipecatcall_id: %s", pc.ID)
 
-	filepath, err := h.runnerCreateMessageFile(pc.Messages)
-	if err != nil {
-		return errors.Wrapf(err, "could not create message file")
-	}
-	log.Debugf("Message file created at: %s", filepath)
-
 	url := h.runnerGetURL(pc)
 	log.Debugf("Pipecat WebSocket server URL: %s", url)
 
-	if errPython := h.runnerStartPython(pc, filepath, url); errPython != nil {
-		log.Errorf("Error starting Pipecat Python runner: %v", errPython)
-		return errors.Wrapf(errPython, "could not start the pipecat python runner")
+	if errStart := h.pythonRunner.Start(
+		ctx,
+		pc.ID,
+		url,
+		string(pc.LLM),
+		string(pc.STT),
+		string(pc.TTS),
+		pc.VoiceID,
+		pc.Messages,
+	); errStart != nil {
+		return errors.Wrapf(errStart, "could not start python client")
 	}
-
 	log.Debugf("Pipecat runner started successfully.")
+
 	return nil
 }
 
@@ -109,15 +106,17 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 		"pipecatcall_id": pc.ID,
 	})
 
-	ws, err := upgrader.Upgrade(w, r, nil)
+	ws, err := h.websocketHandler.Upgrade(w, r, nil)
 	if err != nil {
 		log.Errorf("Could not upgrade to WebSocket: %v", err)
 		return
 	}
+
+	log.Debugf("WebSocket connection established with pipecat runner.")
 	h.setRunnerWebsocket(pc, ws)
 
 	for {
-		msgType, message, err := ws.ReadMessage()
+		msgType, message, err := h.websocketHandler.ReadMessage(ws)
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
 				log.Debugf("Client disconnected gracefully.")
@@ -141,19 +140,6 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 			case *pipecatframe.Frame_Text:
 				log.Debugf("Received TextFrame: ID=%d, Name=%s, Text='%s'", x.Text.Id, x.Text.Name, x.Text.Text)
 
-				// responseFrame := &pipecatframe.Frame{
-				// 	Frame: &pipecatframe.Frame_Text{
-				// 		Text: &pipecatframe.TextFrame{
-				// 			Id:   x.Text.Id + 1, // ID를 증가시키는 예시
-				// 			Name: "GoServerResponse",
-				// 			Text: fmt.Sprintf("Go server received your text: '%s'", x.Text.Text),
-				// 		},
-				// 	},
-				// }
-				// if errSend := h.sendProtobufFrame(ws, responseFrame); errSend != nil {
-				// 	log.Errorf("Could not send the frame.")
-				// }
-
 			case *pipecatframe.Frame_Audio:
 				audio := x.Audio
 				if errAudio := h.runnerWebsocketHandleAudio(ctx, pc, int(audio.SampleRate), int(audio.NumChannels), audio.Audio); errAudio != nil {
@@ -162,35 +148,11 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 
 			case *pipecatframe.Frame_Transcription:
 				log.Debugf("Received TranscriptionFrame: ID=%d, Name=%s, Text='%s', UserID=%s, Timestamp=%s", x.Transcription.Id, x.Transcription.Name, x.Transcription.Text, x.Transcription.UserId, x.Transcription.Timestamp)
-				// responseFrame := &pipecatframe.Frame{
-				// 	Frame: &pipecatframe.Frame_Transcription{
-				// 		Transcription: &pipecatframe.TranscriptionFrame{
-				// 			Id:        x.Transcription.Id + 1,
-				// 			Name:      "GoServerTranscriptionResponse",
-				// 			Text:      fmt.Sprintf("Go server heard: '%s'", x.Transcription.Text),
-				// 			UserId:    x.Transcription.UserId,
-				// 			Timestamp: time.Now().Format(time.RFC3339),
-				// 		},
-				// 	},
-				// }
-				// if errSend := h.sendProtobufFrame(ws, responseFrame); errSend != nil {
-				// 	log.Errorf("Could not send the frame.")
-				// }
 
 			case *pipecatframe.Frame_Message:
-				log.Debugf("Received MessageFrame: Data='%s'", x.Message.Data)
-				if errMessage := h.receiveMessageFrameMessage([]byte(x.Message.Data)); errMessage != nil {
+				if errMessage := h.receiveMessageFrameTypeMessage(ctx, pc, []byte(x.Message.Data)); errMessage != nil {
 					log.Errorf("Could not process MessageFrame: %v", errMessage)
 				}
-				// MessageFrame에 대한 응답 (예시)
-				// responseFrame := &pipecatframe.Frame{
-				// 	Frame: &pipecatframe.Frame_Message{
-				// 		Message: &pipecatframe.MessageFrame{
-				// 			Data: fmt.Sprintf("Go server received generic message: '%s'", x.Message.Data),
-				// 		},
-				// 	},
-				// }
-				// sendProtobufFrame(ws, responseFrame, clientAddr)
 
 			default:
 				log.Errorf("Could not recognize the Protobuf Frame type. type: %T", x)
@@ -204,7 +166,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 			return
 		case websocket.PingMessage:
 			log.Debugf("Received Ping message from client. Sending Pong.")
-			if errWrite := ws.WriteMessage(websocket.PongMessage, []byte{}); errWrite != nil {
+			if errWrite := h.websocketHandler.WriteMessage(ws, websocket.PongMessage, []byte{}); errWrite != nil {
 				log.Errorf("Could not send Pong message: %v", errWrite)
 				return
 			}
@@ -221,20 +183,22 @@ func (h *pipecatcallHandler) sendProtobufFrame(ws *websocket.Conn, frame *pipeca
 	if err != nil {
 		return errors.Wrapf(err, "could not marshaling the protobuf frame")
 	}
-	if err := ws.WriteMessage(websocket.BinaryMessage, marshaledFrame); err != nil {
-		return errors.Wrapf(err, "could not write message")
+
+	if errWrite := h.websocketHandler.WriteMessage(ws, websocket.BinaryMessage, marshaledFrame); errWrite != nil {
+		return errors.Wrapf(errWrite, "could not write message")
 	}
 
 	return nil
 }
 
-func (h *pipecatcallHandler) receiveMessageFrameMessage(message []byte) error {
+func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context, pc *pipecatcall.Pipecatcall, m []byte) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "receiveMessageFrameMessage",
+		"func":           "receiveMessageFrameMessage",
+		"pipecatcall_id": pc.ID,
 	})
 
 	frame := pipecatframe.CommonFrameMessage{}
-	if errUnmarshal := json.Unmarshal(message, &frame); errUnmarshal != nil {
+	if errUnmarshal := json.Unmarshal(m, &frame); errUnmarshal != nil {
 		log.Errorf("Error unmarshaling JSON message: %v", errUnmarshal)
 		return errUnmarshal
 	}
@@ -247,6 +211,53 @@ func (h *pipecatcallHandler) receiveMessageFrameMessage(message []byte) error {
 	}
 
 	switch frame.Type {
+	case pipecatframe.RTVIFrameTypeBotTranscription:
+		msg := pipecatframe.RTVIBotTranscriptionMessage{}
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-transcription message")
+		}
+
+		id := h.utilHandler.UUIDCreate()
+		event := message.Message{
+			Identity: commonidentity.Identity{
+				ID:         id,
+				CustomerID: pc.CustomerID,
+			},
+
+			PipecatcallID:            pc.ID,
+			PipecatcallReferenceType: pc.ReferenceType,
+			PipecatcallReferenceID:   pc.ReferenceID,
+
+			Text: msg.Data.Text,
+		}
+		h.notifyHandler.PublishEvent(ctx, message.EventTypeBotTranscription, event)
+
+	case pipecatframe.RTVIFrameTypeUserTranscription:
+		msg := pipecatframe.RTVIUserTranscriptionMessage{}
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal user-transcription message")
+		}
+
+		if !msg.Data.Final {
+			// ignore non-final user transcriptions
+			return nil
+		}
+
+		id := h.utilHandler.UUIDCreate()
+		event := message.Message{
+			Identity: commonidentity.Identity{
+				ID:         id,
+				CustomerID: pc.CustomerID,
+			},
+
+			PipecatcallID:            pc.ID,
+			PipecatcallReferenceType: pc.ReferenceType,
+			PipecatcallReferenceID:   pc.ReferenceID,
+
+			Text: msg.Data.Text,
+		}
+		h.notifyHandler.PublishEvent(ctx, message.EventTypeUserTranscription, event)
+
 	default:
 		log.Errorf("Unrecognized RTVI message type: %s", frame.Type)
 	}
@@ -259,62 +270,18 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(ctx context.Context, pc 
 		return errors.Errorf("only mono audio is supported. num_channels: %d", numChannels)
 	}
 
-	audioData, err := audiosocketGetDataSamples(sampleRate, data)
+	audioData, err := h.audiosocketHandler.GetDataSamples(sampleRate, data)
 	if err != nil {
 		return errors.Wrapf(err, "could not get audio data samples")
 	}
 
-	if errWrite := audiosocketWrite(ctx, pc.AsteriskConn, audioData); errWrite != nil {
+	if errWrite := h.audiosocketHandler.Write(ctx, pc.AsteriskConn, audioData); errWrite != nil {
 		return errors.Wrapf(errWrite, "could not write processed audio data to asterisk connection")
 	}
 
 	return nil
 }
 
-func (h *pipecatcallHandler) runnerCreateMessageFile(messages []map[string]any) (string, error) {
-
-	data, err := json.Marshal(messages)
-	if err != nil {
-		return "", errors.Wrapf(err, "could not marshal messages to JSON")
-	}
-
-	// Write the JSON data to the file
-	fileName := filepath.Join("/tmp", fmt.Sprintf("%s.json", h.utilHandler.UUIDCreate()))
-	err = os.WriteFile(fileName, data, 0644) // 0644 are the file permissions
-	if err != nil {
-		return "", errors.Wrapf(err, "could not write messages to file: %s", fileName)
-	}
-
-	return fileName, nil
-}
-
 func (h *pipecatcallHandler) runnerGetURL(pc *pipecatcall.Pipecatcall) string {
 	return fmt.Sprintf("ws://localhost:%d/ws", pc.RunnerPort)
-}
-
-func (h *pipecatcallHandler) runnerStartPython(pc *pipecatcall.Pipecatcall, message_file string, url string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "runnerStartPython",
-	})
-
-	pythonInterpreter := "../../scripts/pipecat/venv/bin/python3"
-	pythonScript := "../../scripts/pipecat/main.py"
-
-	args := []string{
-		"--ws_server_url", url,
-		"--llm", string(pc.LLM),
-		"--stt", string(pc.STT),
-		"--tts", string(pc.TTS),
-		"--messages_file", message_file,
-	}
-
-	cmdArgs := append([]string{pythonScript}, args...)
-	cmd, err := h.pythonRunner.Start(pythonInterpreter, cmdArgs)
-	if err != nil {
-		return errors.Wrapf(err, "could not start python client")
-	}
-	log.Debugf("Started Python script with PID %d", cmd.Process.Pid)
-
-	h.setRunnerCMD(pc, cmd)
-	return nil
 }

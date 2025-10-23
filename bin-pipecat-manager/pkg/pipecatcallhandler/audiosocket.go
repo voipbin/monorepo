@@ -1,29 +1,43 @@
 package pipecatcallhandler
 
+//go:generate mockgen -package pipecatcallhandler -destination ./mock_audiosocket.go -source audiosocket.go -build_flags=-mod=mod
+
 import (
 	"bytes"
 	"context"
 	"encoding/binary"
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/CyCoreSystems/audiosocket"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
+
+type AudiosocketHandler interface {
+	GetStreamingID(conn net.Conn) (uuid.UUID, error)
+	GetNextMedia(conn net.Conn) (audiosocket.Message, error)
+	GetDataSamples(inputRate int, data []byte) ([]byte, error)
+	Upsample8kTo16k(data []byte) ([]byte, error)
+	WrapDataPCM16Bit(data []byte) ([]byte, error)
+	Write(ctx context.Context, conn net.Conn, data []byte) error
+}
 
 const (
-	defaultAudiosocketFormatSLIN        = 0x10                  // SLIN format for 16-bit PCM audio
-	defaultAudiosocketMaxFragmentSize   = 320                   // Maximum fragment size for Audiosocket messages
-	defaultAudiosocketWriteDelay        = 20 * time.Millisecond // Delay between writing fragments to avoid flooding the connection
-	defaultAudiosocketConvertSampleRate = 8000                  // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
+	defaultAudiosocketFormatSLIN        = 0x10 // SLIN format for 16-bit PCM audio
+	defaultAudiosocketMaxFragmentSize   = 320  // Maximum fragment size for Audiosocket messages
+	defaultAudiosocketConvertSampleRate = 8000 // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
 )
 
-// audiosocketGetStreamingID gets the streaming id from the connection
+type audiosocketHandler struct{}
+
+func NewAudiosocketHandler() AudiosocketHandler {
+	return &audiosocketHandler{}
+}
+
+// GetStreamingID gets the streaming id from the connection
 // the first message of the audiosocket should be the streaming id
-func audiosocketGetStreamingID(conn net.Conn) (uuid.UUID, error) {
+func (h *audiosocketHandler) GetStreamingID(conn net.Conn) (uuid.UUID, error) {
 	m, err := audiosocket.NextMessage(conn)
 	if err != nil {
 		return uuid.Nil, err
@@ -37,7 +51,7 @@ func audiosocketGetStreamingID(conn net.Conn) (uuid.UUID, error) {
 	return res, nil
 }
 
-func audiosocketGetNextMedia(conn net.Conn) (audiosocket.Message, error) {
+func (h *audiosocketHandler) GetNextMedia(conn net.Conn) (audiosocket.Message, error) {
 	m, err := audiosocket.NextMessage(conn)
 	if err != nil {
 		return nil, err
@@ -58,11 +72,11 @@ func audiosocketGetNextMedia(conn net.Conn) (audiosocket.Message, error) {
 	return m, nil
 }
 
-// audiosocketGetDataSamples processes 16-bit PCM data with the given inputRate sample rate.
+// GetDataSamples processes 16-bit PCM data with the given inputRate sample rate.
 // If inputRate equals defaultConvertSampleRate, it returns data as is.
 // If inputRate is an integer multiple of defaultConvertSampleRate, it downsamples accordingly.
 // Otherwise, it returns an error because only integer downsampling is supported.
-func audiosocketGetDataSamples(inputRate int, data []byte) ([]byte, error) {
+func (h *audiosocketHandler) GetDataSamples(inputRate int, data []byte) ([]byte, error) {
 	if inputRate == defaultAudiosocketConvertSampleRate {
 		// No conversion needed
 		return data, nil
@@ -83,7 +97,47 @@ func audiosocketGetDataSamples(inputRate int, data []byte) ([]byte, error) {
 	return res, nil
 }
 
-// audiosocketWrapDataPCM16Bit wraps raw 16-bit PCM audio data into the Audiosocket transmission format.
+// Upsample8kTo16k performs a simple 2× upsampling from 8 kHz to 16 kHz.
+//
+// It assumes the input is 16-bit little-endian PCM mono audio (int16 per sample).
+// The algorithm uses linear interpolation: for each original sample pair (s1, s2),
+// it inserts one midpoint sample (average of s1 and s2), effectively doubling
+// the sample rate. This produces smoother playback than simple duplication while
+// remaining computationally lightweight.
+//
+// Note: This method is designed for low-latency real-time audio streaming, not
+// high-fidelity resampling. For higher quality, consider using a windowed
+func (h *audiosocketHandler) Upsample8kTo16k(data []byte) ([]byte, error) {
+	if len(data)%2 != 0 {
+		return nil, fmt.Errorf("the PCM data must be 16-bit aligned (even number of bytes). bytes: %d", len(data))
+	}
+
+	inputSamples := make([]int16, len(data)/2)
+	for i := 0; i < len(inputSamples); i++ {
+		inputSamples[i] = int16(binary.LittleEndian.Uint16(data[i*2 : i*2+2]))
+	}
+
+	if len(inputSamples) == 0 {
+		return []byte{}, nil
+	}
+
+	var out bytes.Buffer
+	for i := 0; i < len(inputSamples)-1; i++ {
+		s1 := inputSamples[i]
+		s2 := inputSamples[i+1]
+
+		_ = binary.Write(&out, binary.LittleEndian, s1)
+		mid := int16((int32(s1) + int32(s2)) / 2)
+		_ = binary.Write(&out, binary.LittleEndian, mid)
+	}
+
+	last := inputSamples[len(inputSamples)-1]
+	_ = binary.Write(&out, binary.LittleEndian, last)
+
+	return out.Bytes(), nil
+}
+
+// WrapDataPCM16Bit wraps raw 16-bit PCM audio data into the Audiosocket transmission format.
 //
 // The wrapped byte slice has the following structure:
 //   - 2 bytes: Audio format identifier (uint16, BigEndian), fixed to audiosocketFormatSLIN (0x10 for signed linear PCM)
@@ -104,7 +158,7 @@ func audiosocketGetDataSamples(inputRate int, data []byte) ([]byte, error) {
 //     since this function only wraps data without conversion).
 //   - The sample count is calculated as len(data) / 2 because each sample consists of 2 bytes.
 //   - The resulting byte slice can be directly transmitted over Audiosocket protocol.
-func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
+func (h *audiosocketHandler) WrapDataPCM16Bit(data []byte) ([]byte, error) {
 	if len(data)%2 != 0 {
 		return nil, fmt.Errorf("the PCM data must be 16-bit aligned (even number of bytes). bytes: %d", len(data))
 	}
@@ -131,7 +185,7 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// audiosocketWrite fragments and sends large 16-bit PCM audio data over an Audiosocket connection.
+// Write fragments and sends large 16-bit PCM audio data over an Audiosocket connection.
 //
 // Purpose:
 //   - To avoid overwhelming the connection, this function splits the input audio data into smaller fragments,
@@ -150,10 +204,7 @@ func audiosocketWrapDataPCM16Bit(data []byte) ([]byte, error) {
 //
 // Returns:
 //   - error: Returns an error if the context is cancelled, the data is invalid, or writing fails.
-func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "audiosocketWrite",
-	})
+func (h *audiosocketHandler) Write(ctx context.Context, conn net.Conn, data []byte) error {
 	if len(data) == 0 {
 		// nothing to send
 		return nil
@@ -162,7 +213,6 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 	payloadLen := len(data)
 	offset := 0
 
-	log.Debugf("Sending %d bytes of audio data in fragments", payloadLen)
 	for offset < payloadLen {
 		if ctx.Err() != nil {
 			return ctx.Err()
@@ -171,7 +221,7 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 		fragmentLen := min(defaultAudiosocketMaxFragmentSize, payloadLen-offset)
 		fragment := data[offset : offset+fragmentLen]
 
-		tmp, err := audiosocketWrapDataPCM16Bit(fragment)
+		tmp, err := h.WrapDataPCM16Bit(fragment)
 		if err != nil {
 			return errors.Wrapf(err, "failed to wrap data for audiosocket")
 		}
@@ -182,15 +232,6 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 		}
 
 		offset += fragmentLen
-
-		select {
-		case <-time.After(defaultAudiosocketWriteDelay):
-			// do nothing
-			continue
-
-		case <-ctx.Done():
-			return ctx.Err()
-		}
 	}
 
 	return nil

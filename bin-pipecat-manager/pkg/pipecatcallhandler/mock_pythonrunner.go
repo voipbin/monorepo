@@ -10,9 +10,10 @@
 package pipecatcallhandler
 
 import (
-	exec "os/exec"
+	context "context"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,16 +42,15 @@ func (m *MockPythonRunner) EXPECT() *MockPythonRunnerMockRecorder {
 }
 
 // Start mocks base method.
-func (m *MockPythonRunner) Start(interpreter string, args []string) (*exec.Cmd, error) {
+func (m *MockPythonRunner) Start(ctx context.Context, pipecatcallID uuid.UUID, uri, llm, stt, tts, voiceID string, messages []map[string]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", interpreter, args)
-	ret0, _ := ret[0].(*exec.Cmd)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "Start", ctx, pipecatcallID, uri, llm, stt, tts, voiceID, messages)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockPythonRunnerMockRecorder) Start(interpreter, args any) *gomock.Call {
+func (mr *MockPythonRunnerMockRecorder) Start(ctx, pipecatcallID, uri, llm, stt, tts, voiceID, messages any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPythonRunner)(nil).Start), interpreter, args)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPythonRunner)(nil).Start), ctx, pipecatcallID, uri, llm, stt, tts, voiceID, messages)
 }

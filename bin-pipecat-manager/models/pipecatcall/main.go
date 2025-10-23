@@ -4,7 +4,6 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 	"net"
 	"net/http"
-	"os/exec"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -27,7 +26,6 @@ type Pipecatcall struct {
 	RunnerListener  net.Listener    `json:"-"`
 	RunnerPort      int             `json:"-"`
 	RunnerServer    *http.Server    `json:"-"`
-	RunnerCMD       *exec.Cmd       `json:"-"`
 	RunnerWebsocket *websocket.Conn `json:"-"`
 
 	// asterisk info
@@ -38,7 +36,8 @@ type Pipecatcall struct {
 type ReferenceType string
 
 const (
-	ReferenceTypeCall ReferenceType = "call"
+	ReferenceTypeCall   ReferenceType = "call"
+	ReferenceTypeAICall ReferenceType = "ai_call"
 )
 
 // LLM

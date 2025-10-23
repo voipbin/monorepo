@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
+	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 	tmmessage "monorepo/bin-tts-manager/models/message"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
 )
 
@@ -47,6 +49,7 @@ type subscribeHandler struct {
 
 	aicallHandler  aicallhandler.AIcallHandler
 	summaryHandler summaryhandler.SummaryHandler
+	messageHandler messagehandler.MessageHandler
 }
 
 var (
@@ -79,6 +82,7 @@ func NewSubscribeHandler(
 	subscribeTargets []string,
 	aicallHandler aicallhandler.AIcallHandler,
 	summaryHandler summaryhandler.SummaryHandler,
+	messageHandler messagehandler.MessageHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		serviceName:      serviceName,
@@ -87,6 +91,7 @@ func NewSubscribeHandler(
 		subscribeTargets: subscribeTargets,
 		aicallHandler:    aicallHandler,
 		summaryHandler:   summaryHandler,
+		messageHandler:   messageHandler,
 	}
 
 	return h
@@ -163,6 +168,13 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	// tts-manager
 	case m.Publisher == string(commonoutline.ServiceNameTTSManager) && m.Type == string(tmmessage.EventTypePlayFinished):
 		err = h.processEventTMPlayFinished(ctx, m)
+
+	// pipecat-manager
+	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmmessage.EventTypeBotTranscription):
+		err = h.processEventPMMessageBotTranscription(ctx, m)
+
+	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmmessage.EventTypeUserTranscription):
+		err = h.processEventPMMessageUserTranscription(ctx, m)
 
 	default:
 		// ignore the event.

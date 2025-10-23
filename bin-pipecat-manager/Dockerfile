@@ -23,4 +23,6 @@ COPY --from=build /app/scripts/pipecat /app/scripts/pipecat
 COPY --from=build /app/scripts/pipecat/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
+RUN apt-get update && apt-get install -y ffmpeg
+
 ENV PATH="/app/bin:${PATH}"

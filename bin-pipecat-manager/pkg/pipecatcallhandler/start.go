@@ -2,6 +2,7 @@ package pipecatcallhandler
 
 import (
 	"context"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
@@ -47,13 +48,41 @@ func (h *pipecatcallHandler) Start(
 	}
 	log.WithField("pipecatcall", res).Info("Created pipecatcall. pipecatcall_id: ", res.ID)
 
+	// get callID info
+	var callID uuid.UUID
+	switch referenceType {
+	case pipecatcall.ReferenceTypeCall:
+		callID = referenceID
+
+	case pipecatcall.ReferenceTypeAICall:
+		tmp, err := h.requestHandler.AIV1AIcallGet(ctx, referenceID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get ai call info")
+		}
+		if tmp.ReferenceType != amaicall.ReferenceTypeCall {
+			return nil, errors.Errorf("invalid ai call reference type: %v", tmp.ReferenceType)
+		}
+
+		callID = tmp.ReferenceID
+
+	default:
+		log.Errorf("Invalid reference type. reference_type: %v", referenceType)
+		return nil, errors.Errorf("invalid reference type: %v", referenceType)
+	}
+
+	if callID == uuid.Nil {
+		log.Errorf("Invalid call ID retrieved from reference. reference_type: %v, reference_id: %v", referenceType, referenceID)
+		return nil, errors.Errorf("invalid call ID retrieved from reference")
+	}
+
 	// start the external media
 	// send request to the call-manager
+	// currently only supporting call reference type
 	em, err := h.requestHandler.CallV1ExternalMediaStart(
 		ctx,
 		res.ID,
-		cmexternalmedia.ReferenceType(referenceType),
-		referenceID,
+		cmexternalmedia.ReferenceTypeCall,
+		callID,
 		h.listenAddress,
 		defaultEncapsulation,
 		defaultTransport,
@@ -94,14 +123,6 @@ func (h *pipecatcallHandler) stop(ctx context.Context, pc *pipecatcall.Pipecatca
 		return
 	}
 	log.WithField("external_media", em).Info("Stopped external media. external_media_id: ", em.ID)
-
-	if pc.RunnerCMD != nil {
-		if errKill := pc.RunnerCMD.Process.Kill(); errKill != nil {
-			log.Errorf("Could not kill the pipecat runner process. err: %v", errKill)
-		} else {
-			log.Infof("Killed the pipecat runner process.")
-		}
-	}
 
 	if pc.RunnerWebsocket != nil {
 		if errClose := pc.RunnerWebsocket.Close(); errClose != nil {

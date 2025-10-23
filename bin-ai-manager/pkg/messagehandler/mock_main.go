@@ -12,6 +12,7 @@ package messagehandler
 import (
 	context "context"
 	message "monorepo/bin-ai-manager/models/message"
+	message0 "monorepo/bin-pipecat-manager/models/message"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -40,6 +41,30 @@ func NewMockMessageHandler(ctrl *gomock.Controller) *MockMessageHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 	return m.recorder
+}
+
+// EventPMMessageBotTranscription mocks base method.
+func (m *MockMessageHandler) EventPMMessageBotTranscription(ctx context.Context, evt *message0.Message) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMMessageBotTranscription", ctx, evt)
+}
+
+// EventPMMessageBotTranscription indicates an expected call of EventPMMessageBotTranscription.
+func (mr *MockMessageHandlerMockRecorder) EventPMMessageBotTranscription(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageBotTranscription", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageBotTranscription), ctx, evt)
+}
+
+// EventPMMessageUserTranscription mocks base method.
+func (m *MockMessageHandler) EventPMMessageUserTranscription(ctx context.Context, evt *message0.Message) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMMessageUserTranscription", ctx, evt)
+}
+
+// EventPMMessageUserTranscription indicates an expected call of EventPMMessageUserTranscription.
+func (mr *MockMessageHandlerMockRecorder) EventPMMessageUserTranscription(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageUserTranscription", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageUserTranscription), ctx, evt)
 }
 
 // Get mocks base method.

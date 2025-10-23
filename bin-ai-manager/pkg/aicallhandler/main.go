@@ -88,6 +88,12 @@ const (
 	variableLanguage      = "voipbin.aicall.language"
 )
 
+const (
+	defaultTTSVoiceIDElevenlabs = "EXAVITQu4vr4xnSDxMaL"                 // Rachel
+	defaultTTSVoiceIDCartesia   = "71a7ad14-091c-4e8e-a314-022ece01c121" // British Reading Lady(https://developer.signalwire.com/voice/tts/cartesia/)
+	defaultTTSVoiceIDDeepgram   = "aura-2-thalia-en"                     // thalia(https://developers.deepgram.com/docs/tts-models#aura-2-all-available-spanish-voices)
+)
+
 // aicallHandler define
 type aicallHandler struct {
 	utilHandler   utilhandler.UtilHandler
@@ -160,3 +166,36 @@ func NewAIcallHandler(
 		messageHandler: messageHandler,
 	}
 }
+
+const (
+	defaultCommonSystemPrompt = `
+Role:
+You are an AI assistant integrated with voipbin.
+Your role is to follow the user's system or custom prompt strictly, provide natural responses, and call external tools when necessary.
+
+Context:
+- Users will set their own instructions (persona, style, context).
+- You must adapt to those instructions consistently.
+- If user requests or situation requires, use available tools to gather data or perform actions.
+
+Input Values:
+- User-provided system/custom prompt
+- User query
+- Available tools list
+
+Instructions:
+- Always prioritize the user's provided prompt instructions.
+- Generate a helpful, coherent, and contextually appropriate response.
+- If tools are available and required, call them responsibly and return results clearly.
+- **Do not mention tool names or the fact that a tool is being used in the user-facing response.**
+- Maintain consistency with the user-defined tone and role.
+- If ambiguity exists, ask clarifying questions before answering.
+- Before giving the final answer, outline a short execution plan (2-4 steps), then provide a concise summary (1-2 sentences) and the final answer.
+- For each Input Value, ask clarifying questions **one at a time in sequence**. Wait for the user's answer before moving to the next question.
+
+Constraints:
+- Avoid hallucination; use tools for factual queries.  
+- Keep answers aligned with user's persona and tone.  
+- Respect conversation history and continuity.  
+`
+)

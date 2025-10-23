@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultMediaSampleRate = 8000
+	defaultMediaSampleRate = 16000
 	defaultMediaNumChannel = 1
 )
 
@@ -51,7 +51,7 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	}()
 
 	// Get streamingID
-	streamingID, err := audiosocketGetStreamingID(conn)
+	streamingID, err := h.audiosocketHandler.GetStreamingID(conn)
 	if err != nil {
 		log.Errorf("Could not get streaming ID. err: %v", err)
 		return
@@ -143,22 +143,30 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 		"pipecatcall": pc.ID,
 	})
 
+	packetID := uint64(0)
 	for {
 		if ctx.Err() != nil {
 			log.Debugf("Context has finished. pipecatcall_id: %s", pc.ID)
 			return
 		}
 
-		m, err := audiosocketGetNextMedia(pc.AsteriskConn)
+		m, err := h.audiosocketHandler.GetNextMedia(pc.AsteriskConn)
 		if err != nil {
 			log.Infof("Connection has closed. err: %v", err)
 			return
 		}
 
+		data, err := h.audiosocketHandler.Upsample8kTo16k(m.Payload())
+		if err != nil {
+			// invalid audio data, skip this packet
+			continue
+		}
+
 		pipecatFrame := &pipecatframe.Frame{
 			Frame: &pipecatframe.Frame_Audio{
 				Audio: &pipecatframe.AudioRawFrame{
-					Audio:       m.Payload(),
+					Id:          packetID,
+					Audio:       data,
 					SampleRate:  defaultMediaSampleRate,
 					NumChannels: defaultMediaNumChannel,
 				},
@@ -170,5 +178,6 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 				log.Errorf("Could not send the frame. err: %v", errSend)
 			}
 		}
+		packetID++
 	}
 }

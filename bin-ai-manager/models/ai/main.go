@@ -18,6 +18,11 @@ type AI struct {
 
 	InitPrompt string `json:"init_prompt,omitempty"`
 
+	TTSType    TTSType `json:"tts_type,omitempty"`
+	TTSVoiceID string  `json:"tts_voice_id,omitempty"`
+
+	STTType STTType `json:"stt_type,omitempty"`
+
 	// timestamp
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
@@ -91,3 +96,23 @@ func GetEngineModelName(engineModel EngineModel) string {
 	}
 	return tmp[1]
 }
+
+// TTSType define
+type TTSType string
+
+const (
+	TTSTypeNone       TTSType = ""
+	TTSTypeCartesia   TTSType = "cartesia"
+	TTSTypeDeepgram   TTSType = "deepgram"
+	TTSTypeElevenLabs TTSType = "elevenlabs"
+)
+
+// STTType define
+type STTType string
+
+const (
+	STTTypeNone       STTType = ""
+	STTTypeCartesia   STTType = "cartesia"
+	STTTypeDeepgram   STTType = "deepgram"
+	STTTypeElevenLabs TTSType = "elevenlabs"
+)

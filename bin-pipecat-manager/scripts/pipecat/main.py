@@ -1,48 +1,71 @@
 import asyncio
-import os
-from contextlib import asynccontextmanager
-from typing import Any, Dict
-
-import argparse
 import json
-
-from dotenv import load_dotenv
-import sys
+from typing import Optional, List
+from fastapi import FastAPI, HTTPException, BackgroundTasks
+from pydantic import BaseModel
 from loguru import logger
-
-load_dotenv(override=True)
+from dotenv import load_dotenv
 
 from run import run_pipeline
 
-async def python_client_main():
-    logger.info("--- Received raw arguments ---")
-    logger.info(f"sys.argv: {sys.argv}")
-    logger.info("----------------------------")
+load_dotenv(override=True)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ws_server_url", type=str, required=True, help="WebSocket URL of the Go server (e.g., ws://localhost:8080/ws)")
-    parser.add_argument("--llm", type=str, required=True)
-    parser.add_argument("--tts", type=str, required=True)
-    parser.add_argument("--stt", type=str, required=True)
-    parser.add_argument("--voice_id", type=str, required=False)
-    parser.add_argument("--messages_file", type=str, required=True, help="Path to the JSON file containing initial messages for the LLM context.")
-    args = parser.parse_args()
+app = FastAPI(title="Python Pipeline API")
 
-    logger.info(f"Go WebSocket Server URL: {args.ws_server_url}")
-    logger.info(f"LLM: {args.llm}")
-    logger.info(f"TTS: {args.tts}")
-    logger.info(f"STT: {args.stt}")
-    logger.info(f"Voice ID: {args.voice_id}")
-    logger.info(f"Messages File: {args.messages_file}")
+class Message(BaseModel):
+    role: Optional[str] = None
+    content: Optional[str] = None
 
-    # run the pipeline with the loaded messages
-    await run_pipeline(args)
+class PipelineRequest(BaseModel):
+    id: Optional[str] = None
+    ws_server_url: Optional[str] = None
+    llm: Optional[str] = None
+    tts: Optional[str] = None
+    stt: Optional[str] = None
+    voice_id: Optional[str] = None
+    messages: Optional[List[Message]] = None
 
 
-if __name__ == "__main__":
+async def run_pipeline_wrapper(*args, **kwargs):
     try:
-        asyncio.run(python_client_main())
-    except asyncio.CancelledError:
-        logger.info("Python client tasks cancelled.")
+        logger.info("Pipeline started")
+        await run_pipeline(*args, **kwargs)
+        logger.info("Pipeline finished successfully")
     except Exception as e:
-        logger.error(f"Python client encountered an error: {e}")
+        logger.exception(f"Pipeline failed in background: {e}")
+
+
+@app.post("/run")
+async def run_pipeline_endpoint(req: PipelineRequest, background_tasks: BackgroundTasks):
+    try:
+        logger.info("=== Received /run request ===")
+        logger.info(f"ws_server_url: {req.ws_server_url}")
+        logger.info(f"llm: {req.llm}")
+        logger.info(f"tts: {req.tts}")
+        logger.info(f"stt: {req.stt}")
+        logger.info(f"voice_id: {req.voice_id}")
+        logger.info(f"messages_length: {len(req.messages) if req.messages else 0}")
+
+        asyncio.create_task(
+            run_pipeline_wrapper(
+                req.id,
+                req.ws_server_url,
+                req.llm,
+                req.tts,
+                req.stt,
+                req.voice_id,
+                [m.model_dump() for m in (req.messages or [])],
+            )
+        )
+
+        return {"status": "ok", "message": "Pipeline executed successfully"}
+
+    except Exception as e:
+        logger.exception(f"Pipeline execution failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- run server ---
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
