@@ -6,6 +6,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 func (h *aiHandler) Create(
@@ -16,15 +17,28 @@ func (h *aiHandler) Create(
 	engineType ai.EngineType,
 	engineModel ai.EngineModel,
 	engineData map[string]any,
+	engineKey string,
 	initPrompt string,
+	ttsType ai.TTSType,
+	ttsVoiceID string,
+	sttType ai.STTType,
 ) (*ai.AI, error) {
 
-	target := ai.GetEngineModelTarget(engineModel)
-	if target == ai.EngineModelTargetNone {
+	if !ai.IsValidEngineModel(engineModel) {
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
-	return h.dbCreate(ctx, customerID, name, detail, engineType, engineModel, engineData, initPrompt)
+	// target := ai.GetEngineModelTarget(engineModel)
+	// if target == ai.EngineModelTargetNone {
+	// 	return nil, fmt.Errorf("invalid engine model: %s", engineModel)
+	// }
+
+	res, err := h.dbCreate(ctx, customerID, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create ai")
+	}
+
+	return res, nil
 }
 
 // Update updates the ai info
@@ -36,13 +50,26 @@ func (h *aiHandler) Update(
 	engineType ai.EngineType,
 	engineModel ai.EngineModel,
 	engineData map[string]any,
+	engineKey string,
 	initPrompt string,
+	ttsType ai.TTSType,
+	ttsVoiceID string,
+	sttType ai.STTType,
 ) (*ai.AI, error) {
 
-	target := ai.GetEngineModelTarget(engineModel)
-	if target == ai.EngineModelTargetNone {
+	// target := ai.GetEngineModelTarget(engineModel)
+	// if target == ai.EngineModelTargetNone {
+	// 	return nil, fmt.Errorf("invalid engine model: %s", engineModel)
+	// }
+
+	if !ai.IsValidEngineModel(engineModel) {
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
-	return h.dbUpdate(ctx, id, name, detail, engineType, engineModel, engineData, initPrompt)
+	res, err := h.dbUpdate(ctx, id, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not update ai")
+	}
+
+	return res, nil
 }

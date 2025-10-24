@@ -32,7 +32,6 @@ func Test_processV1ServicesTypeAIcallPost(t *testing.T) {
 		expectedReferenceID   uuid.UUID
 		expectedGender        aicall.Gender
 		expectedLanguage      string
-		expectedResume        bool
 
 		expectRes *sock.Response
 	}
@@ -44,7 +43,7 @@ func Test_processV1ServicesTypeAIcallPost(t *testing.T) {
 				URI:      "/v1/services/type/aicall",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"71db8f9c-abde-475e-a060-dc95e63281c3","ai_id":"e7f085d0-c7d9-4da4-9992-eda14282cb86","activeflow_id":"80a5199e-fba5-11ed-90aa-6b9821d2ad5b","reference_type":"call","reference_id":"10662882-5ff8-4788-a605-55614dc8d330","gender":"female","language":"en-US","resume":true}`),
+				Data:     []byte(`{"customer_id":"71db8f9c-abde-475e-a060-dc95e63281c3","ai_id":"e7f085d0-c7d9-4da4-9992-eda14282cb86","activeflow_id":"80a5199e-fba5-11ed-90aa-6b9821d2ad5b","reference_type":"call","reference_id":"10662882-5ff8-4788-a605-55614dc8d330","gender":"female","language":"en-US"}`),
 			},
 
 			responseService: &commonservice.Service{
@@ -57,7 +56,6 @@ func Test_processV1ServicesTypeAIcallPost(t *testing.T) {
 			expectedReferenceID:   uuid.FromStringOrNil("10662882-5ff8-4788-a605-55614dc8d330"),
 			expectedGender:        aicall.GenderFemale,
 			expectedLanguage:      "en-US",
-			expectedResume:        true,
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -79,7 +77,7 @@ func Test_processV1ServicesTypeAIcallPost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ServiceStart(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage, tt.expectedResume).Return(tt.responseService, nil)
+			mockAIcall.EXPECT().ServiceStart(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage).Return(tt.responseService, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

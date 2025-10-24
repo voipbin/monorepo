@@ -46,7 +46,7 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 
 	modelTarget := ai.GetEngineModelTarget(cc.AIEngineModel)
 	switch modelTarget {
-	case ai.EngineModelTargetOpenai:
+	case ai.EngineModelTargetOpenAI:
 		tmpMessage, err = h.sendOpenai(ctx, cc)
 
 	case ai.EngineModelTargetDialogflow:

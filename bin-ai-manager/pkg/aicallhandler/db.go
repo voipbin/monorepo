@@ -23,8 +23,6 @@ func (h *aicallHandler) Create(
 	confbridgeID uuid.UUID,
 	gender aicall.Gender,
 	language string,
-	ttsStreamingID uuid.UUID,
-	ttsStreamingPodID string,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Create",
@@ -53,9 +51,6 @@ func (h *aicallHandler) Create(
 		Language: language,
 
 		Status: aicall.StatusInitiating,
-
-		TTSStreamingID:    ttsStreamingID,
-		TTSStreamingPodID: ttsStreamingPodID,
 	}
 	log = log.WithField("aicall_id", id.String())
 	log.WithField("aicall", tmp).Debugf("Creating aicall. aicall_id: %s", tmp.ID)
@@ -129,105 +124,69 @@ func (h *aicallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.U
 	return res, nil
 }
 
-// GetByTranscribeID returns a aicall by the transcribe_id.
-func (h *aicallHandler) GetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
-	res, err := h.db.AIcallGetByTranscribeID(ctx, transcribeID)
-	if err != nil {
-		return nil, err
-	}
+// // UpdateStatusPausing updates the status to pausing
+// func (h *aicallHandler) UpdateStatusPausing(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 
-	return res, nil
-}
+// 	if errUpdate := h.db.AIcallUpdateStatusPausing(ctx, id); errUpdate != nil {
+// 		return nil, errors.Wrapf(errUpdate, "could not update the status to pausing. aicall_id: %s", id)
+// 	}
 
-// GetByStreamingID returns a aicall by the tts_streaming_id.
-func (h *aicallHandler) GetByStreamingID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
-	res, err := h.db.AIcallGetByStreamingID(ctx, transcribeID)
-	if err != nil {
-		return nil, err
-	}
+// 	res, err := h.Get(ctx, id)
+// 	if err != nil {
+// 		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+// 	}
+// 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusPausing, res)
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
-// UpdateStatusStartProgressing updates the status to start
-func (h *aicallHandler) UpdateStatusStartProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) (*aicall.AIcall, error) {
+// // UpdateStatusResuming updates the status to resuming
+// func (h *aicallHandler) UpdateStatusResuming(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) (*aicall.AIcall, error) {
 
-	if errUpdate := h.db.AIcallUpdateStatusProgressing(ctx, id, transcribeID); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "could not update the status to start. aicall_id: %s", id)
-	}
+// 	if errUpdate := h.db.AIcallUpdateStatusResuming(ctx, id, confbridgeID); errUpdate != nil {
+// 		return nil, errors.Wrapf(errUpdate, "could not update the status to resuming. aicall_id: %s", id)
+// 	}
 
-	res, err := h.Get(ctx, id)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusProgressing, res)
+// 	res, err := h.Get(ctx, id)
+// 	if err != nil {
+// 		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+// 	}
+// 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusResuming, res)
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
-// UpdateStatusPausing updates the status to pausing
-func (h *aicallHandler) UpdateStatusPausing(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+// // UpdateStatusTerminating updates the status to terminating
+// func (h *aicallHandler) UpdateStatusTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 
-	if errUpdate := h.db.AIcallUpdateStatusPausing(ctx, id); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "could not update the status to pausing. aicall_id: %s", id)
-	}
+// 	if errUpdate := h.db.AIcallUpdateStatusTerminating(ctx, id); errUpdate != nil {
+// 		return nil, errors.Wrapf(errUpdate, "could not update the status to terminating. aicall_id: %s", id)
+// 	}
 
-	res, err := h.Get(ctx, id)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusPausing, res)
+// 	res, err := h.Get(ctx, id)
+// 	if err != nil {
+// 		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+// 	}
+// 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminating, res)
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
-// UpdateStatusResuming updates the status to resuming
-func (h *aicallHandler) UpdateStatusResuming(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) (*aicall.AIcall, error) {
+// // UpdateStatusTerminated updates the status to end
+// func (h *aicallHandler) UpdateStatusTerminated(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 
-	if errUpdate := h.db.AIcallUpdateStatusResuming(ctx, id, confbridgeID); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "could not update the status to resuming. aicall_id: %s", id)
-	}
+// 	if errUpdate := h.db.AIcallUpdateStatusTerminated(ctx, id); errUpdate != nil {
+// 		return nil, errors.Wrapf(errUpdate, "could not update the status to terminated. aicall_id: %s", id)
+// 	}
 
-	res, err := h.Get(ctx, id)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusResuming, res)
+// 	res, err := h.Get(ctx, id)
+// 	if err != nil {
+// 		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+// 	}
+// 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminated, res)
 
-	return res, nil
-}
-
-// UpdateStatusTerminating updates the status to terminating
-func (h *aicallHandler) UpdateStatusTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-
-	if errUpdate := h.db.AIcallUpdateStatusTerminating(ctx, id); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "could not update the status to terminating. aicall_id: %s", id)
-	}
-
-	res, err := h.Get(ctx, id)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminating, res)
-
-	return res, nil
-}
-
-// UpdateStatusTerminated updates the status to end
-func (h *aicallHandler) UpdateStatusTerminated(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-
-	if errUpdate := h.db.AIcallUpdateStatusTerminated(ctx, id); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "could not update the status to terminated. aicall_id: %s", id)
-	}
-
-	res, err := h.Get(ctx, id)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminated, res)
-
-	return res, nil
-}
+// 	return res, nil
+// }
 
 // Gets returns list of aicalls.
 func (h *aicallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
@@ -242,6 +201,38 @@ func (h *aicallHandler) Gets(ctx context.Context, size uint64, token string, fil
 	if err != nil {
 		log.Errorf("Could not get aicalls. err: %v", err)
 		return nil, err
+	}
+
+	return res, nil
+}
+
+func (h *aicallHandler) UpdatePipecatcallID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID) error {
+	return h.db.AIcallUpdatePipecatcallID(ctx, id, pipecatcallID)
+}
+
+// UpdateStatusTerminating updates the status to terminating
+func (h *aicallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status aicall.Status) (*aicall.AIcall, error) {
+
+	if errUpdate := h.db.AIcallUpdateStatus(ctx, id, status); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the status to terminating. aicall_id: %s", id)
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+	}
+
+	switch res.Status {
+	case aicall.StatusProgressing:
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusProgressing, res)
+	case aicall.StatusPausing:
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusPausing, res)
+	case aicall.StatusResuming:
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusResuming, res)
+	case aicall.StatusTerminating:
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminating, res)
+	case aicall.StatusTerminated:
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminated, res)
 	}
 
 	return res, nil

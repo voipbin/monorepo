@@ -26,8 +26,14 @@ const (
 		engine_type,
 		engine_model,
 		engine_data,
+		engine_key,
 
 		init_prompt,
+
+		tts_type,
+		tts_voice_id,
+
+		stt_type,
 
 		tm_create,
 		tm_update,
@@ -52,8 +58,14 @@ func (h *handler) aiGetFromRow(row *sql.Rows) (*ai.AI, error) {
 		&res.EngineType,
 		&res.EngineModel,
 		&tmpEngineData,
+		&res.EngineKey,
 
 		&res.InitPrompt,
+
+		&res.TTSType,
+		&res.TTSVoiceID,
+
+		&res.STTType,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -86,8 +98,14 @@ func (h *handler) AICreate(ctx context.Context, c *ai.AI) error {
 		engine_type,
 		engine_model,
 		engine_data,
+		engine_key,
 
 		init_prompt,
+
+		tts_type,
+		tts_voice_id,
+
+		stt_type,
 
 		tm_create,
 		tm_update,
@@ -95,7 +113,9 @@ func (h *handler) AICreate(ctx context.Context, c *ai.AI) error {
 	) values (
 		?, ?,
 		?, ?,
-		?, ?, ?,
+		?, ?, ?, ?,
+		?,
+		?, ?,
 		?,
 		?, ?, ?
 		)
@@ -115,8 +135,14 @@ func (h *handler) AICreate(ctx context.Context, c *ai.AI) error {
 		c.EngineType,
 		c.EngineModel,
 		tmpEngineData,
+		c.EngineKey,
 
 		c.InitPrompt,
+
+		c.TTSType,
+		c.TTSVoiceID,
+
+		c.STTType,
 
 		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
@@ -292,7 +318,20 @@ func (h *handler) AIGets(ctx context.Context, size uint64, token string, filters
 }
 
 // AISetInfo sets the ai info
-func (h *handler) AISetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType ai.EngineType, engineModel ai.EngineModel, engineData map[string]any, initPrompt string) error {
+func (h *handler) AISetInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	engineType ai.EngineType,
+	engineModel ai.EngineModel,
+	engineData map[string]any,
+	engineKey string,
+	initPrompt string,
+	ttsType ai.TTSType,
+	ttsVoiceID string,
+	sttType ai.STTType,
+) error {
 	q := `
 	update ai_ais set
 		name = ?,
@@ -300,7 +339,11 @@ func (h *handler) AISetInfo(ctx context.Context, id uuid.UUID, name string, deta
 		engine_type = ?,
 		engine_model = ?,
 		engine_data = ?,
+		engine_key = ?,
 		init_prompt = ?,
+		tts_type = ?,
+		tts_voice_id = ?,
+		stt_type = ?,
 		tm_update = ?
 	where
 		id = ?
@@ -312,7 +355,7 @@ func (h *handler) AISetInfo(ctx context.Context, id uuid.UUID, name string, deta
 	}
 
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err = h.db.Exec(q, name, detail, engineType, engineModel, tmpEngineData, initPrompt, ts, id.Bytes())
+	_, err = h.db.Exec(q, name, detail, engineType, engineModel, tmpEngineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AISetInfo. err: %v", err)
 	}

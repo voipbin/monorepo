@@ -83,27 +83,22 @@ func (h *handler) AIcallSet(ctx context.Context, data *aicall.AIcall) error {
 		return err
 	}
 
-	keyWithTranscribeID := fmt.Sprintf("ai:aicall:transcribe_id:%s", data.TranscribeID)
-	if err := h.setSerialize(ctx, keyWithTranscribeID, data); err != nil {
-		return err
-	}
-
-	keyWithReferenceID := fmt.Sprintf("ai:aicall:transcribe_id:%s", data.TranscribeID)
+	keyWithReferenceID := fmt.Sprintf("ai:aicall:reference_id:%s", data.ReferenceID)
 	if err := h.setSerialize(ctx, keyWithReferenceID, data); err != nil {
 		return err
 	}
 
-	keyWithStreamingID := fmt.Sprintf("ai:aicall:streaming_id:%s", data.TTSStreamingID)
-	if err := h.setSerialize(ctx, keyWithStreamingID, data); err != nil {
+	keyWithPipecatcallID := fmt.Sprintf("ai:aicall:pipecatcall_id:%s", data.PipecatcallID)
+	if err := h.setSerialize(ctx, keyWithPipecatcallID, data); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// AIcallGetByTranscribeID returns cached aicall info of the given transcribe id.
-func (h *handler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
-	key := fmt.Sprintf("ai:aicall:transcribe_id:%s", transcribeID)
+// AIcallGetByPipecatcallID returns cached aicall info of the given pipecatcall id.
+func (h *handler) AIcallGetByPipecatcallID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
+	key := fmt.Sprintf("ai:aicall:pipecatcall_id:%s", transcribeID)
 
 	var res aicall.AIcall
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -116,18 +111,6 @@ func (h *handler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid
 // AIcallGetByReferenceID returns cached aicall info of the given reference id.
 func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error) {
 	key := fmt.Sprintf("ai:aicall:reference_id:%s", referenceID)
-
-	var res aicall.AIcall
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// AIcallGetByStreamingID returns cached aicall info of the given streaming id.
-func (h *handler) AIcallGetByStreamingID(ctx context.Context, streamingID uuid.UUID) (*aicall.AIcall, error) {
-	key := fmt.Sprintf("ai:aicall:streaming_id:%s", streamingID)
 
 	var res aicall.AIcall
 	if err := h.getSerialize(ctx, key, &res); err != nil {

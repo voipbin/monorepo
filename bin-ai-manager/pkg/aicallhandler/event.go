@@ -6,8 +6,6 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	tmmessage "monorepo/bin-tts-manager/models/message"
-
-	"github.com/sirupsen/logrus"
 )
 
 // EventCMConfbridgeJoined handles the call-manager's confbridge_joined event
@@ -62,25 +60,26 @@ func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call)
 
 // EventTMPlayFinished handles the tts-manager's play finished event
 func (h *aicallHandler) EventTMPlayFinished(ctx context.Context, evt *tmmessage.Message) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "EventTMPlayFinished",
-		"streaming_id": evt.StreamingID,
-	})
 
-	// get aicall
-	cc, err := h.GetByStreamingID(ctx, evt.StreamingID)
-	if err != nil {
-		return
-	}
+	// log := logrus.WithFields(logrus.Fields{
+	// 	"func":         "EventTMPlayFinished",
+	// 	"streaming_id": evt.StreamingID,
+	// })
 
-	if cc.Status != aicall.StatusTerminating {
-		return
-	}
+	// // get aicall
+	// cc, err := h.GetByStreamingID(ctx, evt.StreamingID)
+	// if err != nil {
+	// 	return
+	// }
 
-	tmp, err := h.ProcessTerminate(ctx, cc)
-	if err != nil {
-		log.Errorf("Could not terminate the aicall. err: %v", err)
-		return
-	}
-	log.WithField("aicall", tmp).Debugf("Terminated the aicall. aicall: %v", tmp)
+	// if cc.Status != aicall.StatusTerminating {
+	// 	return
+	// }
+
+	// tmp, err := h.ProcessTerminate(ctx, cc)
+	// if err != nil {
+	// 	log.Errorf("Could not terminate the aicall. err: %v", err)
+	// 	return
+	// }
+	// log.WithField("aicall", tmp).Debugf("Terminated the aicall. aicall: %v", tmp)
 }

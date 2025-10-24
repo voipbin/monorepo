@@ -253,7 +253,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 
 			mockMessage.EXPECT().Send(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, true).Return(tt.responseMessage, nil)
 
-			mockDB.EXPECT().AIcallUpdateStatusProgressing(ctx, tt.responseAIcall.ID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.responseAIcall.ID, aicall.StatusProgressing).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 

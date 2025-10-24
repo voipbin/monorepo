@@ -16,7 +16,6 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
-	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 	tmmessage "monorepo/bin-tts-manager/models/message"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -161,9 +160,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	case m.Publisher == string(commonoutline.ServiceNameConferenceManager) && m.Type == string(cfconference.EventTypeConferenceUpdated):
 		err = h.processEventCMConferenceUpdated(ctx, m)
 
-	// transcribe-manager
-	case m.Publisher == publisherTranscribeManager && m.Type == string(tmtranscript.EventTypeTranscriptCreated):
-		err = h.processEventTMTranscriptCreated(ctx, m)
+	// // transcribe-manager
+	// case m.Publisher == publisherTranscribeManager && m.Type == string(tmtranscript.EventTypeTranscriptCreated):
+	// 	err = h.processEventTMTranscriptCreated(ctx, m)
 
 	// tts-manager
 	case m.Publisher == string(commonoutline.ServiceNameTTSManager) && m.Type == string(tmmessage.EventTypePlayFinished):

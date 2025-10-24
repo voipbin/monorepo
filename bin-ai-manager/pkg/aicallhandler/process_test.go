@@ -85,7 +85,7 @@ func Test_ProcessStart(t *testing.T) {
 				tmtranscribe.DirectionIn,
 				30000,
 			).Return(tt.responseTranscribe, nil)
-			mockDB.EXPECT().AIcallUpdateStatusProgressing(ctx, tt.aicall.ID, tt.responseTranscribe.ID).Return(nil)
+			mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.aicall.ID, aicall.StatusProgressing).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusProgressing, tt.aicall)
 
@@ -118,7 +118,6 @@ func Test_ProcessTerminated(t *testing.T) {
 					ID: uuid.FromStringOrNil("a7c462f8-a706-11ed-9461-cbd173399722"),
 				},
 				ConfbridgeID: uuid.FromStringOrNil("fe18ea48-e12d-43cb-8b40-48caeed6d67b"),
-				TranscribeID: uuid.FromStringOrNil("a7f1d814-a706-11ed-9af7-3f37982d3546"),
 			},
 
 			responseTranscribe: &tmtranscribe.Transcribe{
@@ -150,9 +149,8 @@ func Test_ProcessTerminated(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.aicall.TranscribeID).Return(&tmtranscribe.Transcribe{}, nil)
 			mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
-			mockDB.EXPECT().AIcallUpdateStatusTerminated(ctx, tt.aicall.ID).Return(nil)
+			mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.aicall.ID, aicall.StatusTerminated).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusTerminated, tt.aicall)
 

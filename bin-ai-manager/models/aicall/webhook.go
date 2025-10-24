@@ -21,7 +21,6 @@ type WebhookMessage struct {
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
 	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty"`
-	TranscribeID uuid.UUID `json:"transcribe_id,omitempty"`
 
 	Status Status `json:"status,omitempty"`
 
@@ -48,7 +47,6 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceID:   h.ReferenceID,
 
 		ConfbridgeID: h.ConfbridgeID,
-		TranscribeID: h.TranscribeID,
 
 		Status: h.Status,
 

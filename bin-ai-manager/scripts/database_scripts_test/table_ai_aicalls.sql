@@ -13,15 +13,12 @@ create table ai_aicalls(
   reference_id      binary(16),
 
   confbridge_id     binary(16),
-  transcribe_id     binary(16),
+  pipecatcall_id    binary(16),
 
   status  varchar(255),   -- status
 
   gender    varchar(255), -- gender
   language  varchar(255), -- language
-
-  tts_streaming_id      binary(16),     -- tts streaming id
-  tts_streaming_pod_id  varchar(255),   -- tts streaming pod id
 
   -- timestamps
   tm_end    datetime(6),  --

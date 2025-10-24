@@ -42,16 +42,14 @@ func Test_AIcallCreate(t *testing.T) {
 					"key1": "val1",
 					"key2": 2.0,
 				},
-				ActiveflowID:      uuid.FromStringOrNil("d23695e0-fba4-11ed-a802-4ba57348a125"),
-				ReferenceType:     aicall.ReferenceTypeCall,
-				ReferenceID:       uuid.FromStringOrNil("b198e572-a5e1-11ed-acc0-5fc5c1482647"),
-				ConfbridgeID:      uuid.FromStringOrNil("24c07cfb-92b0-4334-b5e8-fea9b8c5fdbd"),
-				TranscribeID:      uuid.FromStringOrNil("e2c7cd7a-a5e1-11ed-9c3a-ef9305cb70cd"),
-				Status:            aicall.StatusInitiating,
-				Gender:            aicall.GenderFemale,
-				Language:          "en-US",
-				TTSStreamingID:    uuid.FromStringOrNil("4c120406-5ba9-11f0-836b-039c8c430c18"),
-				TTSStreamingPodID: "4c3f9c22-5ba9-11f0-bd29-e3a3162f5277",
+				ActiveflowID:  uuid.FromStringOrNil("d23695e0-fba4-11ed-a802-4ba57348a125"),
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("b198e572-a5e1-11ed-acc0-5fc5c1482647"),
+				ConfbridgeID:  uuid.FromStringOrNil("24c07cfb-92b0-4334-b5e8-fea9b8c5fdbd"),
+				PipecatcallID: uuid.FromStringOrNil("c8f5048e-afbc-11f0-b7de-3f3a52b42500"),
+				Status:        aicall.StatusInitiating,
+				Gender:        aicall.GenderFemale,
+				Language:      "en-US",
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -67,20 +65,18 @@ func Test_AIcallCreate(t *testing.T) {
 					"key1": "val1",
 					"key2": 2.0,
 				},
-				ActiveflowID:      uuid.FromStringOrNil("d23695e0-fba4-11ed-a802-4ba57348a125"),
-				ReferenceType:     aicall.ReferenceTypeCall,
-				ReferenceID:       uuid.FromStringOrNil("b198e572-a5e1-11ed-acc0-5fc5c1482647"),
-				ConfbridgeID:      uuid.FromStringOrNil("24c07cfb-92b0-4334-b5e8-fea9b8c5fdbd"),
-				TranscribeID:      uuid.FromStringOrNil("e2c7cd7a-a5e1-11ed-9c3a-ef9305cb70cd"),
-				Status:            aicall.StatusInitiating,
-				Gender:            aicall.GenderFemale,
-				Language:          "en-US",
-				TTSStreamingID:    uuid.FromStringOrNil("4c120406-5ba9-11f0-836b-039c8c430c18"),
-				TTSStreamingPodID: "4c3f9c22-5ba9-11f0-bd29-e3a3162f5277",
-				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          DefaultTimeStamp,
-				TMDelete:          DefaultTimeStamp,
+				ActiveflowID:  uuid.FromStringOrNil("d23695e0-fba4-11ed-a802-4ba57348a125"),
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("b198e572-a5e1-11ed-acc0-5fc5c1482647"),
+				ConfbridgeID:  uuid.FromStringOrNil("24c07cfb-92b0-4334-b5e8-fea9b8c5fdbd"),
+				PipecatcallID: uuid.FromStringOrNil("c8f5048e-afbc-11f0-b7de-3f3a52b42500"),
+				Status:        aicall.StatusInitiating,
+				Gender:        aicall.GenderFemale,
+				Language:      "en-US",
+				TMEnd:         DefaultTimeStamp,
+				TMCreate:      "2023-01-03 21:35:02.809",
+				TMUpdate:      DefaultTimeStamp,
+				TMDelete:      DefaultTimeStamp,
 			},
 		},
 		{
@@ -217,40 +213,42 @@ func Test_AIcallGetByReferenceID(t *testing.T) {
 	}
 }
 
-func Test_AIcallGetByTranscribeID(t *testing.T) {
+func Test_AIcallUpdatePipecatcallID(t *testing.T) {
 
 	tests := []struct {
 		name string
 		ai   *aicall.AIcall
 
-		transcribeID uuid.UUID
+		id            uuid.UUID
+		pipecatcallID uuid.UUID
 
 		responseCurTime string
 
 		expectRes *aicall.AIcall
 	}{
 		{
-			"normal",
-			&aicall.AIcall{
+			name: "normal",
+			ai: &aicall.AIcall{
 				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("ee65f8bc-a5e3-11ed-bc48-4fd434eda48d"),
+					ID: uuid.FromStringOrNil("f6c9d56a-afbc-11f0-bb5f-1b20049b3cfb"),
 				},
-				TranscribeID: uuid.FromStringOrNil("ee91df04-a5e3-11ed-91f2-a36948c67a14"),
+				PipecatcallID: uuid.FromStringOrNil("f6ee5c0a-afbc-11f0-8049-c7a79d2e4fe8"),
 			},
 
-			uuid.FromStringOrNil("ee91df04-a5e3-11ed-91f2-a36948c67a14"),
+			id:            uuid.FromStringOrNil("f6c9d56a-afbc-11f0-bb5f-1b20049b3cfb"),
+			pipecatcallID: uuid.FromStringOrNil("f720a0d4-afbc-11f0-954f-6ff64a2d4520"),
 
-			"2023-01-03 21:35:02.809",
-			&aicall.AIcall{
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes: &aicall.AIcall{
 				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("ee65f8bc-a5e3-11ed-bc48-4fd434eda48d"),
+					ID: uuid.FromStringOrNil("f6c9d56a-afbc-11f0-bb5f-1b20049b3cfb"),
 				},
-				AIEngineData: map[string]any{},
-				TranscribeID: uuid.FromStringOrNil("ee91df04-a5e3-11ed-91f2-a36948c67a14"),
-				TMEnd:        DefaultTimeStamp,
-				TMCreate:     "2023-01-03 21:35:02.809",
-				TMUpdate:     DefaultTimeStamp,
-				TMDelete:     DefaultTimeStamp,
+				AIEngineData:  map[string]any{},
+				PipecatcallID: uuid.FromStringOrNil("f720a0d4-afbc-11f0-954f-6ff64a2d4520"),
+				TMEnd:         DefaultTimeStamp,
+				TMCreate:      "2023-01-03 21:35:02.809",
+				TMUpdate:      "2023-01-03 21:35:02.809",
+				TMDelete:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -277,9 +275,15 @@ func Test_AIcallGetByTranscribeID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AIcallGetByTranscribeID(ctx, tt.transcribeID).Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			res, err := h.AIcallGetByTranscribeID(ctx, tt.transcribeID)
+			if err := h.AIcallUpdatePipecatcallID(ctx, tt.id, tt.pipecatcallID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AIcallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+			res, err := h.AIcallGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -291,14 +295,14 @@ func Test_AIcallGetByTranscribeID(t *testing.T) {
 	}
 }
 
-func Test_AIcallUpdateStatusProgressing(t *testing.T) {
+func Test_AIcallUpdateStatus(t *testing.T) {
 
 	tests := []struct {
 		name string
 		ai   *aicall.AIcall
 
-		id           uuid.UUID
-		transcribeID uuid.UUID
+		id     uuid.UUID
+		status aicall.Status
 
 		responseCurTime string
 
@@ -308,20 +312,19 @@ func Test_AIcallUpdateStatusProgressing(t *testing.T) {
 			name: "normal",
 			ai: &aicall.AIcall{
 				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("e5f5d64e-a5e2-11ed-bd71-538bb8b1fd91"),
+					ID: uuid.FromStringOrNil("f7c0bf02-b083-11f0-99e0-ffcbb19dc61e"),
 				},
 			},
 
-			id:           uuid.FromStringOrNil("e5f5d64e-a5e2-11ed-bd71-538bb8b1fd91"),
-			transcribeID: uuid.FromStringOrNil("e6342714-a5e2-11ed-a3dd-cbe7bf0cbcb0"),
+			id:     uuid.FromStringOrNil("f7c0bf02-b083-11f0-99e0-ffcbb19dc61e"),
+			status: aicall.StatusProgressing,
 
 			responseCurTime: "2023-01-03 21:35:02.809",
 			expectRes: &aicall.AIcall{
 				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("e5f5d64e-a5e2-11ed-bd71-538bb8b1fd91"),
+					ID: uuid.FromStringOrNil("f7c0bf02-b083-11f0-99e0-ffcbb19dc61e"),
 				},
 				AIEngineData: map[string]any{},
-				TranscribeID: uuid.FromStringOrNil("e6342714-a5e2-11ed-a3dd-cbe7bf0cbcb0"),
 				Status:       aicall.StatusProgressing,
 				TMEnd:        DefaultTimeStamp,
 				TMCreate:     "2023-01-03 21:35:02.809",
@@ -355,168 +358,7 @@ func Test_AIcallUpdateStatusProgressing(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			if err := h.AIcallUpdateStatusProgressing(ctx, tt.id, tt.transcribeID); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().AIcallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			res, err := h.AIcallGet(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_AIcallUpdateStatusPausing(t *testing.T) {
-
-	tests := []struct {
-		name string
-		ai   *aicall.AIcall
-
-		id uuid.UUID
-
-		responseCurTime string
-
-		expectRes *aicall.AIcall
-	}{
-		{
-			name: "normal",
-			ai: &aicall.AIcall{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("7664a584-0414-11f0-9866-0ff182c4e5cd"),
-				},
-			},
-
-			id: uuid.FromStringOrNil("7664a584-0414-11f0-9866-0ff182c4e5cd"),
-
-			responseCurTime: "2023-01-03 21:35:02.809",
-			expectRes: &aicall.AIcall{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("7664a584-0414-11f0-9866-0ff182c4e5cd"),
-				},
-				AIEngineData: map[string]any{},
-				TranscribeID: uuid.Nil,
-				Status:       aicall.StatusPausing,
-				TMEnd:        DefaultTimeStamp,
-				TMCreate:     "2023-01-03 21:35:02.809",
-				TMUpdate:     "2023-01-03 21:35:02.809",
-				TMDelete:     DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			if err := h.AIcallCreate(ctx, tt.ai); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			if err := h.AIcallUpdateStatusPausing(ctx, tt.id); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().AIcallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			res, err := h.AIcallGet(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_AIcallUpdateStatusEnd(t *testing.T) {
-
-	tests := []struct {
-		name string
-		ai   *aicall.AIcall
-
-		id uuid.UUID
-
-		responseCurTime string
-
-		expectRes *aicall.AIcall
-	}{
-		{
-			name: "normal",
-			ai: &aicall.AIcall{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("a210c140-a5e3-11ed-80e0-b726a1acfc64"),
-				},
-				TranscribeID: uuid.FromStringOrNil("e9a4d8c2-e7ca-11ef-b80a-43dbe39bcce9"),
-			},
-
-			id: uuid.FromStringOrNil("a210c140-a5e3-11ed-80e0-b726a1acfc64"),
-
-			responseCurTime: "2023-01-03 21:35:02.809",
-			expectRes: &aicall.AIcall{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("a210c140-a5e3-11ed-80e0-b726a1acfc64"),
-				},
-				AIEngineData: map[string]any{},
-				TranscribeID: uuid.Nil,
-				Status:       aicall.StatusTerminated,
-				TMEnd:        "2023-01-03 21:35:02.809",
-				TMCreate:     "2023-01-03 21:35:02.809",
-				TMUpdate:     "2023-01-03 21:35:02.809",
-				TMDelete:     DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			if err := h.AIcallCreate(ctx, tt.ai); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			if err := h.AIcallUpdateStatusTerminated(ctx, tt.id); err != nil {
+			if err := h.AIcallUpdateStatus(ctx, tt.id, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

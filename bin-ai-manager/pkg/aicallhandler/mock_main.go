@@ -47,33 +47,19 @@ func (m *MockAIcallHandler) EXPECT() *MockAIcallHandlerMockRecorder {
 	return m.recorder
 }
 
-// ChatMessage mocks base method.
-func (m *MockAIcallHandler) ChatMessage(ctx context.Context, cb *aicall.AIcall, text string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatMessage", ctx, cb, text)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ChatMessage indicates an expected call of ChatMessage.
-func (mr *MockAIcallHandlerMockRecorder) ChatMessage(ctx, cb, text any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMessage", reflect.TypeOf((*MockAIcallHandler)(nil).ChatMessage), ctx, cb, text)
-}
-
 // Create mocks base method.
-func (m *MockAIcallHandler) Create(ctx context.Context, c *ai.AI, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID, confbridgeID uuid.UUID, gender aicall.Gender, language string, ttsStreamingID uuid.UUID, ttsStreamingPodID string) (*aicall.AIcall, error) {
+func (m *MockAIcallHandler) Create(ctx context.Context, c *ai.AI, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID, confbridgeID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language, ttsStreamingID, ttsStreamingPodID)
+	ret := m.ctrl.Call(m, "Create", ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language)
 	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockAIcallHandlerMockRecorder) Create(ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language, ttsStreamingID, ttsStreamingPodID any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) Create(ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAIcallHandler)(nil).Create), ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language, ttsStreamingID, ttsStreamingPodID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAIcallHandler)(nil).Create), ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language)
 }
 
 // Delete mocks base method.
@@ -169,36 +155,6 @@ func (mr *MockAIcallHandlerMockRecorder) GetByReferenceID(ctx, referenceID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockAIcallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
-// GetByStreamingID mocks base method.
-func (m *MockAIcallHandler) GetByStreamingID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByStreamingID", ctx, transcribeID)
-	ret0, _ := ret[0].(*aicall.AIcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByStreamingID indicates an expected call of GetByStreamingID.
-func (mr *MockAIcallHandlerMockRecorder) GetByStreamingID(ctx, transcribeID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByStreamingID", reflect.TypeOf((*MockAIcallHandler)(nil).GetByStreamingID), ctx, transcribeID)
-}
-
-// GetByTranscribeID mocks base method.
-func (m *MockAIcallHandler) GetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByTranscribeID", ctx, transcribeID)
-	ret0, _ := ret[0].(*aicall.AIcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByTranscribeID indicates an expected call of GetByTranscribeID.
-func (mr *MockAIcallHandlerMockRecorder) GetByTranscribeID(ctx, transcribeID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTranscribeID", reflect.TypeOf((*MockAIcallHandler)(nil).GetByTranscribeID), ctx, transcribeID)
-}
-
 // Gets mocks base method.
 func (m *MockAIcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -275,31 +231,31 @@ func (mr *MockAIcallHandlerMockRecorder) ProcessTerminating(ctx, id any) *gomock
 }
 
 // ServiceStart mocks base method.
-func (m *MockAIcallHandler) ServiceStart(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string, resuming bool) (*service.Service, error) {
+func (m *MockAIcallHandler) ServiceStart(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*service.Service, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceStart", ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resuming)
+	ret := m.ctrl.Call(m, "ServiceStart", ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
 	ret0, _ := ret[0].(*service.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceStart indicates an expected call of ServiceStart.
-func (mr *MockAIcallHandlerMockRecorder) ServiceStart(ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resuming any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) ServiceStart(ctx, aiID, activeflowID, referenceType, referenceID, gender, language any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockAIcallHandler)(nil).ServiceStart), ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resuming)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockAIcallHandler)(nil).ServiceStart), ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
 }
 
 // Start mocks base method.
-func (m *MockAIcallHandler) Start(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string, resume bool) (*aicall.AIcall, error) {
+func (m *MockAIcallHandler) Start(ctx context.Context, aiID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resume)
+	ret := m.ctrl.Call(m, "Start", ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
 	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockAIcallHandlerMockRecorder) Start(ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resume any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) Start(ctx, aiID, activeflowID, referenceType, referenceID, gender, language any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockAIcallHandler)(nil).Start), ctx, aiID, activeflowID, referenceType, referenceID, gender, language, resume)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockAIcallHandler)(nil).Start), ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
 }

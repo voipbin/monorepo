@@ -3,8 +3,6 @@ package aicallhandler
 import (
 	"context"
 
-	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -20,27 +18,8 @@ func (h *aicallHandler) ProcessStart(ctx context.Context, ac *aicall.AIcall) (*a
 	})
 	log.WithField("aicall", ac).Debug("Starting aicall process")
 
-	referenceType := tmtranscribe.ReferenceTypeCall
-
-	// create transcribe
-	tr, err := h.reqHandler.TranscribeV1TranscribeStart(
-		ctx,
-		ac.CustomerID,
-		ac.ActiveflowID,
-		uuid.Nil,
-		referenceType,
-		ac.ReferenceID,
-		ac.Language,
-		tmtranscribe.DirectionIn,
-		30000,
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not start the transcribe")
-	}
-	log.WithField("transcribe", tr).Debugf("Started transcribe. transcribe_id: %s", tr.ID)
-
 	// update status
-	res, err := h.UpdateStatusStartProgressing(ctx, ac.ID, tr.ID)
+	res, err := h.UpdateStatus(ctx, ac.ID, aicall.StatusProgressing)
 	if err != nil {
 		log.Errorf("Could not update the status to start. err: %v", err)
 		return nil, err
@@ -57,16 +36,16 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 	})
 	log.WithField("aicall", ac).Debug("Pausing aicall process")
 
-	// stop the transcribe
-	if ac.TranscribeID != uuid.Nil {
-		_, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, ac.TranscribeID)
+	// stop pipecatcall
+	if ac.PipecatcallID != uuid.Nil {
+		_, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, ac.PipecatcallID)
 		if err != nil {
-			// failed to stop the transcribe but we keep move
-			log.Errorf("Could not stop the transcribe. err: %v", err)
+			// failed to stop the pipecatcall but we keep move
+			log.Errorf("Could not terminate the pipecatcall. err: %v", err)
 		}
 	}
 
-	res, err := h.UpdateStatusPausing(ctx, ac.ID)
+	res, err := h.UpdateStatus(ctx, ac.ID, aicall.StatusPausing)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not end the aicall")
 	}
@@ -81,12 +60,12 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall)
 		"aicall_id": ac.ID,
 	})
 
-	// stop the transcribe
-	if ac.TranscribeID != uuid.Nil {
-		_, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, ac.TranscribeID)
+	// stop the pipecatcall
+	if ac.PipecatcallID != uuid.Nil {
+		_, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, ac.PipecatcallID)
 		if err != nil {
-			// failed to stop the transcribe but we keep move
-			log.Errorf("Could not stop the transcribe. err: %v", err)
+			// failed to stop the pipecatcall but we keep move
+			log.Errorf("Could not terminate the pipecatcall. err: %v", err)
 		}
 	}
 
@@ -98,7 +77,7 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall)
 	}
 	log.WithField("confbridge", tmp).Debugf("Terminated the confbridge. confbridge_id: %s", tmp.ID)
 
-	res, err := h.UpdateStatusTerminated(ctx, ac.ID)
+	res, err := h.UpdateStatus(ctx, ac.ID, aicall.StatusTerminated)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not end the aicall")
 	}
@@ -108,7 +87,7 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall)
 
 // ProcessTerminating starts the aicall terminating process.
 func (h *aicallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-	res, err := h.UpdateStatusTerminating(ctx, id)
+	res, err := h.UpdateStatus(ctx, id, aicall.StatusTerminating)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not terminating the aicall")
 	}
