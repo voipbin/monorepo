@@ -260,7 +260,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 		h.notifyHandler.PublishEvent(ctx, message.EventTypeUserTranscription, event)
 
 	default:
-		log.Errorf("Unrecognized RTVI message type: %s", frame.Type)
+		log.WithField("frame", frame).Errorf("Unrecognized RTVI message type: %s", frame.Type)
 	}
 
 	return nil
