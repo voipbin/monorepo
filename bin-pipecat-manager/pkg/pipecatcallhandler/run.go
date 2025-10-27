@@ -106,8 +106,9 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 			case <-ctx.Done():
 				return
 			case <-time.After(10 * time.Second):
-				text := fmt.Sprintf("This is a rtvi text test message number %d.", count)
-				_ = h.pipecatframeSendRTVIText(pc, text, false, false)
+				id := h.utilHandler.UUIDCreate()
+				text := fmt.Sprintf("This is a rtvi text test message number %d. id: %s", count, id)
+				_ = h.pipecatframeSendRTVIText(pc, id.String(), text, false, false)
 				log.Debugf("Sent test message: %s", text)
 				count++
 			}

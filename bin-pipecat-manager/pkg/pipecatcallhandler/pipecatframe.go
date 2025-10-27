@@ -47,8 +47,9 @@ func (h *pipecatcallHandler) pipecatframeSendText(pc *pipecatcall.Pipecatcall, t
 	return nil
 }
 
-func (h *pipecatcallHandler) pipecatframeSendRTVIText(pc *pipecatcall.Pipecatcall, text string, runImmediately bool, audioResponse bool) error {
+func (h *pipecatcallHandler) pipecatframeSendRTVIText(pc *pipecatcall.Pipecatcall, id string, text string, runImmediately bool, audioResponse bool) error {
 	tmp := pipecatframe.CommonFrameMessage{
+		ID:    id,
 		Label: pipecatframe.RTVIMessageLabel,
 		Type:  pipecatframe.RTVIFrameTypeSendText,
 		Data: pipecatframe.RTVISendTextData{
