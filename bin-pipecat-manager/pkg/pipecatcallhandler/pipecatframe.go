@@ -21,6 +21,9 @@ func (h *pipecatcallHandler) pipecatframeSendAudio(pc *pipecatcall.Pipecatcall, 
 	}
 
 	if pc.RunnerWebsocket != nil {
+		pc.RunnerWebsocketMu.Lock()
+		defer pc.RunnerWebsocketMu.Unlock()
+
 		if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
 			return errors.Wrapf(errSend, "could not send the frame")
 		}
@@ -39,6 +42,9 @@ func (h *pipecatcallHandler) pipecatframeSendText(pc *pipecatcall.Pipecatcall, t
 	}
 
 	if pc.RunnerWebsocket != nil {
+		pc.RunnerWebsocketMu.Lock()
+		defer pc.RunnerWebsocketMu.Unlock()
+
 		if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
 			return errors.Wrapf(errSend, "could not send the frame")
 		}
@@ -75,6 +81,9 @@ func (h *pipecatcallHandler) pipecatframeSendRTVIText(pc *pipecatcall.Pipecatcal
 	}
 
 	if pc.RunnerWebsocket != nil {
+		pc.RunnerWebsocketMu.Lock()
+		defer pc.RunnerWebsocketMu.Unlock()
+
 		if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
 			return errors.Wrapf(errSend, "could not send the frame")
 		}

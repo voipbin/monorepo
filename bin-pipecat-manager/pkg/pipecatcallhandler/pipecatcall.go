@@ -3,6 +3,7 @@ package pipecatcallhandler
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
@@ -41,6 +42,8 @@ func (h *pipecatcallHandler) Create(
 		TTS:      tts,
 		VoiceID:  voiceID,
 		Messages: messages,
+
+		RunnerWebsocketMu: sync.Mutex{},
 	}
 
 	_, ok := h.mapPipecatcall[id]
