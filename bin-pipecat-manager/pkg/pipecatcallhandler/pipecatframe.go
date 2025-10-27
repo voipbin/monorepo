@@ -26,18 +26,18 @@ func (h *pipecatcallHandler) pipecatframeSendAudio(pc *pipecatcall.Pipecatcall, 
 	return nil
 }
 
-func (h *pipecatcallHandler) pipecatframeSendText(pc *pipecatcall.Pipecatcall, text string) error {
-	frame := &pipecatframe.Frame{
-		Frame: &pipecatframe.Frame_Text{
-			Text: &pipecatframe.TextFrame{
-				Text: text,
-			},
-		},
-	}
+// func (h *pipecatcallHandler) pipecatframeSendText(pc *pipecatcall.Pipecatcall, text string) error {
+// 	frame := &pipecatframe.Frame{
+// 		Frame: &pipecatframe.Frame_Text{
+// 			Text: &pipecatframe.TextFrame{
+// 				Text: text,
+// 			},
+// 		},
+// 	}
 
-	h.pipecatFramePush(pc, frame)
-	return nil
-}
+// 	h.pipecatFramePush(pc, frame)
+// 	return nil
+// }
 
 func (h *pipecatcallHandler) pipecatframeSendRTVIText(pc *pipecatcall.Pipecatcall, id string, text string, runImmediately bool, audioResponse bool) error {
 	tmp := pipecatframe.CommonFrameMessage{
