@@ -1,6 +1,7 @@
 package pipecatcallhandler
 
 import (
+	"encoding/json"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 
@@ -33,6 +34,37 @@ func (h *pipecatcallHandler) pipecatframeSendText(pc *pipecatcall.Pipecatcall, t
 		Frame: &pipecatframe.Frame_Text{
 			Text: &pipecatframe.TextFrame{
 				Text: text,
+			},
+		},
+	}
+
+	if pc.RunnerWebsocket != nil {
+		if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
+			return errors.Wrapf(errSend, "could not send the frame")
+		}
+	}
+
+	return nil
+}
+
+func (h *pipecatcallHandler) pipecatframeSendRTVIText(pc *pipecatcall.Pipecatcall, text string, runImmediately bool, audioResponse bool) error {
+	tmp := pipecatframe.RTVISendTextData{
+		Content: text,
+		Options: &pipecatframe.RTVISendTextOptions{
+			RunImmediately: runImmediately,
+			AudioResponse:  audioResponse,
+		},
+	}
+
+	data, err := json.Marshal(&tmp)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal RTVISendTextData")
+	}
+
+	pipecatFrame := &pipecatframe.Frame{
+		Frame: &pipecatframe.Frame_Message{
+			Message: &pipecatframe.MessageFrame{
+				Data: string(data),
 			},
 		},
 	}

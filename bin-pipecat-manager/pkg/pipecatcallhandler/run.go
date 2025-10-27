@@ -90,8 +90,24 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 			case <-ctx.Done():
 				return
 			case <-time.After(10 * time.Second):
-				text := fmt.Sprintf("This is a test message number %d.", count)
+				text := fmt.Sprintf("This is a send text test message number %d.", count)
 				_ = h.pipecatframeSendText(pc, text)
+				log.Debugf("Sent test message: %s", text)
+				count++
+			}
+		}
+	}()
+
+	go func() {
+		count := 0
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(10 * time.Second):
+				text := fmt.Sprintf("This is a rtvi text test message number %d.", count)
+				_ = h.pipecatframeSendRTVIText(pc, text, false, false)
 				log.Debugf("Sent test message: %s", text)
 				count++
 			}
