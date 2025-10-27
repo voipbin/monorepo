@@ -3,10 +3,10 @@ package pipecatcallhandler
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	"monorepo/bin-pipecat-manager/models/pipecatframe"
 
 	"github.com/gofrs/uuid"
 )
@@ -43,7 +43,7 @@ func (h *pipecatcallHandler) Create(
 		VoiceID:  voiceID,
 		Messages: messages,
 
-		RunnerWebsocketMu: sync.Mutex{},
+		RunnerWebsocketChan: make(chan *pipecatframe.Frame, 100),
 	}
 
 	_, ok := h.mapPipecatcall[id]

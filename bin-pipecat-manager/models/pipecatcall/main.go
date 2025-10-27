@@ -2,9 +2,9 @@ package pipecatcall
 
 import (
 	"monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
 	"net/http"
-	"sync"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -24,11 +24,11 @@ type Pipecatcall struct {
 	Messages []map[string]any `json:"-"`
 
 	// pipecat runner
-	RunnerListener    net.Listener    `json:"-"`
-	RunnerPort        int             `json:"-"`
-	RunnerServer      *http.Server    `json:"-"`
-	RunnerWebsocket   *websocket.Conn `json:"-"`
-	RunnerWebsocketMu sync.Mutex      `json:"-"`
+	RunnerListener      net.Listener             `json:"-"`
+	RunnerPort          int                      `json:"-"`
+	RunnerServer        *http.Server             `json:"-"`
+	RunnerWebsocket     *websocket.Conn          `json:"-"`
+	RunnerWebsocketChan chan *pipecatframe.Frame `json:"-"`
 
 	// asterisk info
 	AsteriskStreamingID uuid.UUID `json:"-"`

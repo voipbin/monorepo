@@ -114,6 +114,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 
 	log.Debugf("WebSocket connection established with pipecat runner.")
 	h.setRunnerWebsocket(pc, ws)
+	go h.pipecatFrameSendRun(ctx, pc)
 
 	for {
 		msgType, message, err := h.websocketHandler.ReadMessage(ws)

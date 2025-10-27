@@ -1,15 +1,17 @@
 package pipecatcallhandler
 
 import (
+	"context"
 	"encoding/json"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 func (h *pipecatcallHandler) pipecatframeSendAudio(pc *pipecatcall.Pipecatcall, packetID uint64, data []byte) error {
-	pipecatFrame := &pipecatframe.Frame{
+	frame := &pipecatframe.Frame{
 		Frame: &pipecatframe.Frame_Audio{
 			Audio: &pipecatframe.AudioRawFrame{
 				Id:          packetID,
@@ -20,20 +22,12 @@ func (h *pipecatcallHandler) pipecatframeSendAudio(pc *pipecatcall.Pipecatcall, 
 		},
 	}
 
-	if pc.RunnerWebsocket != nil {
-		pc.RunnerWebsocketMu.Lock()
-		defer pc.RunnerWebsocketMu.Unlock()
-
-		if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
-			return errors.Wrapf(errSend, "could not send the frame")
-		}
-	}
-
+	h.pipecatFramePush(pc, frame)
 	return nil
 }
 
 func (h *pipecatcallHandler) pipecatframeSendText(pc *pipecatcall.Pipecatcall, text string) error {
-	pipecatFrame := &pipecatframe.Frame{
+	frame := &pipecatframe.Frame{
 		Frame: &pipecatframe.Frame_Text{
 			Text: &pipecatframe.TextFrame{
 				Text: text,
@@ -41,15 +35,7 @@ func (h *pipecatcallHandler) pipecatframeSendText(pc *pipecatcall.Pipecatcall, t
 		},
 	}
 
-	if pc.RunnerWebsocket != nil {
-		pc.RunnerWebsocketMu.Lock()
-		defer pc.RunnerWebsocketMu.Unlock()
-
-		if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
-			return errors.Wrapf(errSend, "could not send the frame")
-		}
-	}
-
+	h.pipecatFramePush(pc, frame)
 	return nil
 }
 
@@ -72,7 +58,7 @@ func (h *pipecatcallHandler) pipecatframeSendRTVIText(pc *pipecatcall.Pipecatcal
 		return errors.Wrapf(err, "could not marshal RTVISendTextData")
 	}
 
-	pipecatFrame := &pipecatframe.Frame{
+	frame := &pipecatframe.Frame{
 		Frame: &pipecatframe.Frame_Message{
 			Message: &pipecatframe.MessageFrame{
 				Data: string(data),
@@ -80,14 +66,23 @@ func (h *pipecatcallHandler) pipecatframeSendRTVIText(pc *pipecatcall.Pipecatcal
 		},
 	}
 
-	if pc.RunnerWebsocket != nil {
-		pc.RunnerWebsocketMu.Lock()
-		defer pc.RunnerWebsocketMu.Unlock()
-
-		if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
-			return errors.Wrapf(errSend, "could not send the frame")
-		}
-	}
+	h.pipecatFramePush(pc, frame)
 
 	return nil
+}
+
+func (h *pipecatcallHandler) pipecatFramePush(pc *pipecatcall.Pipecatcall, frame *pipecatframe.Frame) {
+	pc.RunnerWebsocketChan <- frame
+}
+func (h *pipecatcallHandler) pipecatFrameSendRun(ctx context.Context, pc *pipecatcall.Pipecatcall) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "runnerStartFrameSend",
+		"pipecatcall_id": pc.ID,
+	})
+
+	for frame := range pc.RunnerWebsocketChan {
+		if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, frame); errSend != nil {
+			log.Errorf("could not send the frame: %v", errSend)
+		}
+	}
 }

@@ -130,6 +130,9 @@ func (h *pipecatcallHandler) stop(ctx context.Context, pc *pipecatcall.Pipecatca
 		} else {
 			log.Infof("Closed the pipecat runner websocket.")
 		}
+
+		log.Debugf("Closed the pipecat runner websocket.")
+		_ = pc.RunnerWebsocket.Close()
 	}
 
 	if pc.RunnerServer != nil {
