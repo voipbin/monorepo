@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
 	"time"
 
@@ -83,6 +82,22 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 		cancel()
 	}()
 
+	go func() {
+		count := 0
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(10 * time.Second):
+				text := fmt.Sprintf("This is a test message number %d.", count)
+				_ = h.pipecatframeSendText(pc, text)
+				log.Debugf("Sent test message: %s", text)
+				count++
+			}
+		}
+	}()
+
 	<-ctx.Done()
 
 	log.Debugf("Context done, stopping pipecatcall. pipecatcall_id: %s", pc.ID)
@@ -156,28 +171,20 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 			return
 		}
 
+		if pc.RunnerWebsocket == nil {
+			continue
+		}
+
 		data, err := h.audiosocketHandler.Upsample8kTo16k(m.Payload())
 		if err != nil {
 			// invalid audio data, skip this packet
 			continue
 		}
 
-		pipecatFrame := &pipecatframe.Frame{
-			Frame: &pipecatframe.Frame_Audio{
-				Audio: &pipecatframe.AudioRawFrame{
-					Id:          packetID,
-					Audio:       data,
-					SampleRate:  defaultMediaSampleRate,
-					NumChannels: defaultMediaNumChannel,
-				},
-			},
+		if errSend := h.pipecatframeSendAudio(pc, packetID, data); errSend != nil {
+			log.Errorf("Could not send audio frame. err: %v", errSend)
 		}
 
-		if pc.RunnerWebsocket != nil {
-			if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
-				log.Errorf("Could not send the frame. err: %v", errSend)
-			}
-		}
 		packetID++
 	}
 }
