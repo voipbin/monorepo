@@ -48,11 +48,15 @@ func (h *pipecatcallHandler) pipecatframeSendText(pc *pipecatcall.Pipecatcall, t
 }
 
 func (h *pipecatcallHandler) pipecatframeSendRTVIText(pc *pipecatcall.Pipecatcall, text string, runImmediately bool, audioResponse bool) error {
-	tmp := pipecatframe.RTVISendTextData{
-		Content: text,
-		Options: &pipecatframe.RTVISendTextOptions{
-			RunImmediately: runImmediately,
-			AudioResponse:  audioResponse,
+	tmp := pipecatframe.CommonFrameMessage{
+		Label: pipecatframe.RTVIMessageLabel,
+		Type:  pipecatframe.RTVIFrameTypeSendText,
+		Data: pipecatframe.RTVISendTextData{
+			Content: text,
+			Options: &pipecatframe.RTVISendTextOptions{
+				RunImmediately: runImmediately,
+				AudioResponse:  audioResponse,
+			},
 		},
 	}
 
