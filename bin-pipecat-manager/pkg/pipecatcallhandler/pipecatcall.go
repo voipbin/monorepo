@@ -6,12 +6,14 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	"monorepo/bin-pipecat-manager/models/pipecatframe"
 
 	"github.com/gofrs/uuid"
 )
 
 func (h *pipecatcallHandler) Create(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceType pipecatcall.ReferenceType,
@@ -25,7 +27,14 @@ func (h *pipecatcallHandler) Create(
 	h.muPipecatcall.Lock()
 	defer h.muPipecatcall.Unlock()
 
-	id := h.utilHandler.UUIDCreate()
+	// this option will be deprecated soon
+	// invalid id will be rejected in the future
+	if id == uuid.Nil {
+		id = h.utilHandler.UUIDCreate()
+	}
+
+	cctx, ccancel := context.WithCancel(context.Background())
+
 	res := &pipecatcall.Pipecatcall{
 		Identity: commonidentity.Identity{
 			ID:         id,
@@ -36,11 +45,18 @@ func (h *pipecatcallHandler) Create(
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
+		HostID: h.hostID,
+
 		LLM:      llm,
 		STT:      stt,
 		TTS:      tts,
 		VoiceID:  voiceID,
 		Messages: messages,
+
+		Ctx:    cctx,
+		Cancel: ccancel,
+
+		RunnerWebsocketChan: make(chan *pipecatframe.Frame, defaultRunnerWebsocketChanBufferSize),
 	}
 
 	_, ok := h.mapPipecatcall[id]

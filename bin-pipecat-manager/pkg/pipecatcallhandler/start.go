@@ -13,6 +13,7 @@ import (
 
 func (h *pipecatcallHandler) Start(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceType pipecatcall.ReferenceType,
@@ -33,6 +34,7 @@ func (h *pipecatcallHandler) Start(
 
 	res, err := h.Create(
 		ctx,
+		id,
 		customerID,
 		activeflowID,
 		referenceType,

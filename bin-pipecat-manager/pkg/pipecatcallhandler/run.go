@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
 	"time"
 
@@ -44,12 +43,6 @@ func (h *pipecatcallHandler) Run() error {
 func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	log := logrus.WithField("func", "runStart")
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer func() {
-		cancel()
-		_ = conn.Close()
-	}()
-
 	// Get streamingID
 	streamingID, err := h.audiosocketHandler.GetStreamingID(conn)
 	if err != nil {
@@ -59,16 +52,22 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	log = log.WithField("streaming_id", streamingID)
 	log.Debugf("Found streaming id: %s", streamingID)
 
-	// Start keep-alive in a separate goroutine
-	go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
-
 	// get pipecatcall info by using streamingID
-	pc, err := h.Get(ctx, streamingID)
+	pc, err := h.Get(context.Background(), streamingID)
 	if err != nil {
 		log.Errorf("Could not get streaming: %v", err)
 		return
 	}
 	h.setAsteriskInfo(pc, streamingID, conn)
+
+	// get context and cancel func from pipecatcall
+	// we will use this context to manage the lifecycle of goroutines
+	ctx := pc.Ctx
+	cancel := pc.Cancel
+
+	// Start keep-alive in a separate goroutine
+	go h.runAsteriskKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
+
 	log.WithField("streaming", pc).Debugf("Streaming info retrieved. streaming_id: %s", pc.ID)
 
 	go func() {
@@ -79,7 +78,7 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 
 	go func() {
 		// run the media handler
-		h.mediaStart(ctx, pc)
+		h.runAsteriskReceivedMediaHandle(ctx, pc)
 		cancel()
 	}()
 
@@ -89,9 +88,9 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	h.stop(context.Background(), pc)
 }
 
-func (h *pipecatcallHandler) runKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {
+func (h *pipecatcallHandler) runAsteriskKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "runKeepAlive",
+		"func":         "runAsteriskKeepAlive",
 		"streaming_id": streamingID,
 	})
 
@@ -137,10 +136,10 @@ func (h *pipecatcallHandler) retryWithBackoff(operation func() error, maxAttempt
 	return nil
 }
 
-func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pipecatcall) {
+func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(ctx context.Context, pc *pipecatcall.Pipecatcall) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "mediaRun",
-		"pipecatcall": pc.ID,
+		"func":           "runReceivedAsteriskMediaHandle",
+		"pipecatcall_id": pc.ID,
 	})
 
 	packetID := uint64(0)
@@ -162,22 +161,10 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 			continue
 		}
 
-		pipecatFrame := &pipecatframe.Frame{
-			Frame: &pipecatframe.Frame_Audio{
-				Audio: &pipecatframe.AudioRawFrame{
-					Id:          packetID,
-					Audio:       data,
-					SampleRate:  defaultMediaSampleRate,
-					NumChannels: defaultMediaNumChannel,
-				},
-			},
+		if errSend := h.pipecatframeHandler.SendAudio(pc, packetID, data); errSend != nil {
+			log.Errorf("Could not send audio frame. err: %v", errSend)
 		}
 
-		if pc.RunnerWebsocket != nil {
-			if errSend := h.sendProtobufFrame(pc.RunnerWebsocket, pipecatFrame); errSend != nil {
-				log.Errorf("Could not send the frame. err: %v", errSend)
-			}
-		}
 		packetID++
 	}
 }

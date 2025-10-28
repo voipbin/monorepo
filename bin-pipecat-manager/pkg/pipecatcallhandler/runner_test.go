@@ -7,98 +7,11 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"monorepo/bin-pipecat-manager/models/pipecatframe"
-	"net"
 	"testing"
-	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/websocket"
 	gomock "go.uber.org/mock/gomock"
 )
-
-type DummyConn struct {
-	Written [][]byte
-}
-
-func NewDummyConn() *DummyConn {
-	return &DummyConn{
-		Written: make([][]byte, 0),
-	}
-}
-
-func (d *DummyConn) Write(b []byte) (n int, err error) {
-	cpy := make([]byte, len(b))
-	copy(cpy, b)
-	d.Written = append(d.Written, cpy)
-	return len(b), nil
-}
-func (d *DummyConn) Read(b []byte) (n int, err error)   { return 0, nil }
-func (d *DummyConn) Close() error                       { return nil }
-func (d *DummyConn) LocalAddr() net.Addr                { return nil }
-func (d *DummyConn) RemoteAddr() net.Addr               { return nil }
-func (d *DummyConn) SetDeadline(t time.Time) error      { return nil }
-func (d *DummyConn) SetReadDeadline(t time.Time) error  { return nil }
-func (d *DummyConn) SetWriteDeadline(t time.Time) error { return nil }
-
-func Test_sendProtobufFrame(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		ws    *websocket.Conn
-		frame *pipecatframe.Frame
-
-		expectFrame []byte
-	}{
-		{
-			name: "bot-transcription",
-
-			ws: &websocket.Conn{},
-			frame: &pipecatframe.Frame{
-				Frame: &pipecatframe.Frame_Audio{
-					Audio: &pipecatframe.AudioRawFrame{
-						Id:          1,
-						Name:        "test-audio",
-						Audio:       []byte{0x01, 0x02, 0x03, 0x04}, // PCM16 example
-						SampleRate:  16000,
-						NumChannels: 1,
-					},
-				},
-			},
-			expectFrame: []byte{
-				0x12, 0x19, 0x08, 0x01, // field headers
-				0x12, 0x0A, 't', 'e', 's', 't', '-', 'a', 'u', 'd', 'i', 'o', // Name="test-audio"
-				0x1A, 0x04, 0x01, 0x02, 0x03, 0x04, // Audio data
-				0x20, 0x80, 0x7D, // SampleRate=16000
-				0x28, 0x01, // NumChannels=1
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockWebsock := NewMockWebsocketHandler(mc)
-
-			h := pipecatcallHandler{
-				notifyHandler:    mockNotify,
-				utilHandler:      mockUtil,
-				websocketHandler: mockWebsock,
-			}
-
-			mockWebsock.EXPECT().WriteMessage(tt.ws, websocket.BinaryMessage, tt.expectFrame).Return(nil)
-
-			if err := h.sendProtobufFrame(tt.ws, tt.frame); err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
-		})
-	}
-}
 
 func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 

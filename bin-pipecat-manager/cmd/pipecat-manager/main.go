@@ -61,7 +61,7 @@ func run() error {
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
 	sockHandler.Connect()
 
-	hostID := uuid.Must(uuid.NewV4())
+	hostID := uuid.Must(uuid.NewV4()).String()
 	log.Debugf("Generated host id. host_id: %s", hostID)
 
 	listenIP := os.Getenv("POD_IP")
@@ -93,7 +93,7 @@ func run() error {
 // runListen runs the listen handler
 func runListen(
 	sockHandler sockhandler.SockHandler,
-	hostID uuid.UUID,
+	hostID string,
 	pipecatcallHandler pipecatcallhandler.PipecatcallHandler,
 ) error {
 	listenHandler := listenhandler.NewListenHandler(sockHandler, pipecatcallHandler)

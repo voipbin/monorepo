@@ -19,11 +19,6 @@ func (h *listenHandler) processV1PipecatcallsPost(ctx context.Context, m *sock.R
 		"request": m,
 	})
 
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 3 {
-		return simpleResponse(400), nil
-	}
-
 	var req request.V1DataPipecatcallsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
@@ -32,6 +27,7 @@ func (h *listenHandler) processV1PipecatcallsPost(ctx context.Context, m *sock.R
 
 	tmp, err := h.pipecatcallHandler.Start(
 		ctx,
+		req.ID,
 		req.CustomerID,
 		req.ActiveflowID,
 		req.ReferenceType,
