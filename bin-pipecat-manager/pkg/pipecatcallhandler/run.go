@@ -59,7 +59,7 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	log.Debugf("Found streaming id: %s", streamingID)
 
 	// Start keep-alive in a separate goroutine
-	go h.runKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
+	go h.runAsteriskKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
 
 	// get pipecatcall info by using streamingID
 	pc, err := h.Get(ctx, streamingID)
@@ -78,41 +78,8 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 
 	go func() {
 		// run the media handler
-		h.mediaStart(ctx, pc)
+		h.runAsteriskReceivedMediaHandle(ctx, pc)
 		cancel()
-	}()
-
-	// go func() {
-	// 	count := 0
-
-	// 	for {
-	// 		select {
-	// 		case <-ctx.Done():
-	// 			return
-	// 		case <-time.After(10 * time.Second):
-	// 			text := fmt.Sprintf("This is a send text test message number %d.", count)
-	// 			_ = h.pipecatframeSendText(pc, text)
-	// 			log.Debugf("Sent test message: %s", text)
-	// 			count++
-	// 		}
-	// 	}
-	// }()
-
-	go func() {
-		count := 0
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(10 * time.Second):
-				id := h.utilHandler.UUIDCreate()
-				text := fmt.Sprintf("This is a rtvi text test message number %d. id: %s", count, id)
-				_ = h.pipecatframeSendRTVIText(pc, id.String(), text, true, true)
-				log.Debugf("Sent test message: %s", text)
-				count++
-			}
-		}
 	}()
 
 	<-ctx.Done()
@@ -121,9 +88,9 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	h.stop(context.Background(), pc)
 }
 
-func (h *pipecatcallHandler) runKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {
+func (h *pipecatcallHandler) runAsteriskKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "runKeepAlive",
+		"func":         "runAsteriskKeepAlive",
 		"streaming_id": streamingID,
 	})
 
@@ -169,10 +136,10 @@ func (h *pipecatcallHandler) retryWithBackoff(operation func() error, maxAttempt
 	return nil
 }
 
-func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pipecatcall) {
+func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(ctx context.Context, pc *pipecatcall.Pipecatcall) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "mediaRun",
-		"pipecatcall": pc.ID,
+		"func":           "runReceivedAsteriskMediaHandle",
+		"pipecatcall_id": pc.ID,
 	})
 
 	packetID := uint64(0)
@@ -198,7 +165,7 @@ func (h *pipecatcallHandler) mediaStart(ctx context.Context, pc *pipecatcall.Pip
 			continue
 		}
 
-		if errSend := h.pipecatframeSendAudio(pc, packetID, data); errSend != nil {
+		if errSend := h.pipecatframeHandler.SendAudio(pc, packetID, data); errSend != nil {
 			log.Errorf("Could not send audio frame. err: %v", errSend)
 		}
 

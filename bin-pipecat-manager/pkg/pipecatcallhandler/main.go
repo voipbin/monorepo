@@ -10,6 +10,7 @@ import (
 	"time"
 
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"sync"
@@ -22,6 +23,7 @@ type PipecatcallHandler interface {
 
 	Start(
 		ctx context.Context,
+		id uuid.UUID,
 		customerID uuid.UUID,
 		activeflowID uuid.UUID,
 		referenceType pipecatcall.ReferenceType,
@@ -35,6 +37,8 @@ type PipecatcallHandler interface {
 	Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)
 
 	Get(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)
+
+	SendMessage(ctx context.Context, id uuid.UUID, messageID string, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error)
 }
 
 // list of default external media channel options.
@@ -60,12 +64,13 @@ type pipecatcallHandler struct {
 	requestHandler requesthandler.RequestHandler
 	notifyHandler  notifyhandler.NotifyHandler
 
-	pythonRunner       PythonRunner
-	audiosocketHandler AudiosocketHandler
-	websocketHandler   WebsocketHandler
+	pythonRunner        PythonRunner
+	audiosocketHandler  AudiosocketHandler
+	websocketHandler    WebsocketHandler
+	pipecatframeHandler PipecatframeHandler
 
 	listenAddress string
-	podID         uuid.UUID
+	hostID        string
 
 	mapPipecatcall map[uuid.UUID]*pipecatcall.Pipecatcall
 	muPipecatcall  sync.Mutex
@@ -76,19 +81,20 @@ func NewPipecatcallHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 
 	listenAddress string,
-	podID uuid.UUID,
+	hostID string,
 ) PipecatcallHandler {
 	return &pipecatcallHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),
 		requestHandler: reqHandler,
 		notifyHandler:  notifyHandler,
 
-		pythonRunner:       NewPythonRunner(),
-		audiosocketHandler: NewAudiosocketHandler(),
-		websocketHandler:   NewWebsocketHandler(),
+		pythonRunner:        NewPythonRunner(),
+		audiosocketHandler:  NewAudiosocketHandler(),
+		websocketHandler:    NewWebsocketHandler(),
+		pipecatframeHandler: NewPipecatframeHandler(),
 
 		listenAddress: listenAddress,
-		podID:         podID,
+		hostID:        hostID,
 
 		mapPipecatcall: make(map[uuid.UUID]*pipecatcall.Pipecatcall),
 		muPipecatcall:  sync.Mutex{},

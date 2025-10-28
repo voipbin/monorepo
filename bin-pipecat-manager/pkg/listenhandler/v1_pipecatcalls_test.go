@@ -16,13 +16,14 @@ import (
 
 func Test_processV1PipecatcallsPost(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		request *sock.Request
 
 		responsePipecatcall *pipecatcall.Pipecatcall
 
+		expectID            uuid.UUID
 		expectCustomerID    uuid.UUID
 		expectActiveflowID  uuid.UUID
 		expectReferenceType pipecatcall.ReferenceType
@@ -34,9 +35,7 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 		expectMessages      []map[string]any
 
 		expectRes *sock.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			name: "normal",
 
@@ -44,7 +43,7 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 				URI:      "/v1/pipecatcalls",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"cd1d344c-aa43-11f0-a6b9-fb100dc5e57c","activeflow_id":"cd65b1b8-aa43-11f0-8c1e-bfc7dc74bbd9","reference_type":"call","reference_id":"cd97ff42-aa43-11f0-9042-0f14ff740ec1","llm":"openai.gpt-3.5-turbo","stt":"deepgram","tts":"elevenlabs","voice_id":"c41bacee-aadd-11f0-a5a5-8bedee791598","messages":[{"role":"system","content":"Say hello world after user"},{"role":"user","content":"Hello!"}]}`),
+				Data:     []byte(`{"id":"ffa2ac7a-b3a4-11f0-aeda-5b3b3498e619","customer_id":"cd1d344c-aa43-11f0-a6b9-fb100dc5e57c","activeflow_id":"cd65b1b8-aa43-11f0-8c1e-bfc7dc74bbd9","reference_type":"call","reference_id":"cd97ff42-aa43-11f0-9042-0f14ff740ec1","llm":"openai.gpt-3.5-turbo","stt":"deepgram","tts":"elevenlabs","voice_id":"c41bacee-aadd-11f0-a5a5-8bedee791598","messages":[{"role":"system","content":"Say hello world after user"},{"role":"user","content":"Hello!"}]}`),
 			},
 
 			responsePipecatcall: &pipecatcall.Pipecatcall{
@@ -53,6 +52,7 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 				},
 			},
 
+			expectID:            uuid.FromStringOrNil("ffa2ac7a-b3a4-11f0-aeda-5b3b3498e619"),
 			expectCustomerID:    uuid.FromStringOrNil("cd1d344c-aa43-11f0-a6b9-fb100dc5e57c"),
 			expectActiveflowID:  uuid.FromStringOrNil("cd65b1b8-aa43-11f0-8c1e-bfc7dc74bbd9"),
 			expectReferenceType: pipecatcall.ReferenceTypeCall,
@@ -88,7 +88,18 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockPipecatcall.EXPECT().Start(ctx, tt.expectCustomerID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLLM, tt.expectSTT, tt.expectTTS, tt.expectVoiceID, tt.expectMessages).Return(tt.responsePipecatcall, nil)
+			mockPipecatcall.EXPECT().Start(ctx,
+				tt.expectID,
+				tt.expectCustomerID,
+				tt.expectActiveflowID,
+				tt.expectReferenceType,
+				tt.expectReferenceID,
+				tt.expectLLM,
+				tt.expectSTT,
+				tt.expectTTS,
+				tt.expectVoiceID,
+				tt.expectMessages,
+			).Return(tt.responsePipecatcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -103,7 +114,7 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 
 func Test_processV1PipecatcallsIDGet(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		request *sock.Request
@@ -112,9 +123,7 @@ func Test_processV1PipecatcallsIDGet(t *testing.T) {
 
 		expectPipecatcallID uuid.UUID
 		expectRes           *sock.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			name: "normal",
 
@@ -167,7 +176,7 @@ func Test_processV1PipecatcallsIDGet(t *testing.T) {
 
 func Test_processV1PipecatcallsIDStopPost(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name string
 
 		request *sock.Request
@@ -176,9 +185,7 @@ func Test_processV1PipecatcallsIDStopPost(t *testing.T) {
 
 		expectPipecatcallID uuid.UUID
 		expectRes           *sock.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			name: "normal",
 

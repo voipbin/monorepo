@@ -32,6 +32,7 @@ func (h *listenHandler) processV1PipecatcallsPost(ctx context.Context, m *sock.R
 
 	tmp, err := h.pipecatcallHandler.Start(
 		ctx,
+		req.ID,
 		req.CustomerID,
 		req.ActiveflowID,
 		req.ReferenceType,

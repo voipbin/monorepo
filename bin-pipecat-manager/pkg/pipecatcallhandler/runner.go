@@ -114,7 +114,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 
 	log.Debugf("WebSocket connection established with pipecat runner.")
 	h.setRunnerWebsocket(pc, ws)
-	go h.pipecatFrameSendRun(ctx, pc)
+	go h.pipecatframeHandler.RunSender(pc)
 
 	for {
 		msgType, message, err := h.websocketHandler.ReadMessage(ws)
@@ -177,19 +177,6 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 			log.Debugf("Received unknown message type %d", msgType)
 		}
 	}
-}
-
-func (h *pipecatcallHandler) sendProtobufFrame(ws *websocket.Conn, frame *pipecatframe.Frame) error {
-	marshaledFrame, err := proto.Marshal(frame)
-	if err != nil {
-		return errors.Wrapf(err, "could not marshaling the protobuf frame")
-	}
-
-	if errWrite := h.websocketHandler.WriteMessage(ws, websocket.BinaryMessage, marshaledFrame); errWrite != nil {
-		return errors.Wrapf(errWrite, "could not write message")
-	}
-
-	return nil
 }
 
 func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context, pc *pipecatcall.Pipecatcall, m []byte) error {

@@ -13,6 +13,7 @@ import (
 
 func (h *pipecatcallHandler) Create(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceType pipecatcall.ReferenceType,
@@ -26,7 +27,10 @@ func (h *pipecatcallHandler) Create(
 	h.muPipecatcall.Lock()
 	defer h.muPipecatcall.Unlock()
 
-	id := h.utilHandler.UUIDCreate()
+	if id == uuid.Nil {
+		id = h.utilHandler.UUIDCreate()
+	}
+
 	res := &pipecatcall.Pipecatcall{
 		Identity: commonidentity.Identity{
 			ID:         id,
@@ -37,13 +41,15 @@ func (h *pipecatcallHandler) Create(
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
+		HostID: h.hostID,
+
 		LLM:      llm,
 		STT:      stt,
 		TTS:      tts,
 		VoiceID:  voiceID,
 		Messages: messages,
 
-		RunnerWebsocketChan: make(chan *pipecatframe.Frame, 100),
+		RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1000),
 	}
 
 	_, ok := h.mapPipecatcall[id]

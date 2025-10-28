@@ -17,6 +17,8 @@ type Pipecatcall struct {
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
+	HostID string `json:"host_id,omitempty"`
+
 	LLM      LLM              `json:"-"`
 	STT      STT              `json:"-"`
 	TTS      TTS              `json:"-"`
