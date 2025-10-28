@@ -13,10 +13,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (h *pipecatcallHandler) setContext(pc *pipecatcall.Pipecatcall, ctx context.Context) {
-	pc.Ctx = ctx
-}
-
 func (h *pipecatcallHandler) setRunnerInfo(
 	pc *pipecatcall.Pipecatcall,
 	listener net.Listener,

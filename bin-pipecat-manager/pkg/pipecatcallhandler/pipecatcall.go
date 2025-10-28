@@ -33,6 +33,8 @@ func (h *pipecatcallHandler) Create(
 		id = h.utilHandler.UUIDCreate()
 	}
 
+	cctx, ccancel := context.WithCancel(context.Background())
+
 	res := &pipecatcall.Pipecatcall{
 		Identity: commonidentity.Identity{
 			ID:         id,
@@ -50,6 +52,9 @@ func (h *pipecatcallHandler) Create(
 		TTS:      tts,
 		VoiceID:  voiceID,
 		Messages: messages,
+
+		Ctx:    cctx,
+		Cancel: ccancel,
 
 		RunnerWebsocketChan: make(chan *pipecatframe.Frame, defaultRunnerWebsocketChanBufferSize),
 	}

@@ -26,7 +26,8 @@ type Pipecatcall struct {
 	VoiceID  string           `json:"-"`
 	Messages []map[string]any `json:"-"`
 
-	Ctx context.Context `json:"-"`
+	Ctx    context.Context    `json:"-"`
+	Cancel context.CancelFunc `json:"-"`
 
 	// pipecat runner
 	RunnerListener      net.Listener             `json:"-"`
