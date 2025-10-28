@@ -55,8 +55,9 @@ const (
 	defaultKeepAliveInterval = 10 * time.Second // 10 seconds
 	defaultMaxRetryAttempts  = 3
 	defaultInitialBackoff    = 100 * time.Millisecond // 100 milliseconds
+	defaultPushFrameTimeout  = 2 * time.Second        // 2 seconds
 
-	defaultRunnerWebsocketChanBufferSize = 1000 // 1000: typical burst size for concurrent frame pushes
+	defaultRunnerWebsocketChanBufferSize = 1000 // Buffer size for runner websocket channel.
 	defaultRunnerWebsocketListenAddress  = "localhost:0"
 )
 

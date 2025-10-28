@@ -27,6 +27,8 @@ func (h *pipecatcallHandler) Create(
 	h.muPipecatcall.Lock()
 	defer h.muPipecatcall.Unlock()
 
+	// this option will be deprecated soon
+	// invalid id will be rejected in the future
 	if id == uuid.Nil {
 		id = h.utilHandler.UUIDCreate()
 	}

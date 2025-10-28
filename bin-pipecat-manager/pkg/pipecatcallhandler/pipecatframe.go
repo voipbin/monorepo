@@ -71,7 +71,7 @@ func (h *pipecatframeHandler) sendFrame(conn *websocket.Conn, frame *pipecatfram
 
 	marshaledFrame, err := proto.Marshal(frame)
 	if err != nil {
-		return errors.Wrapf(err, "could not marshal the protobuf frame")
+		return errors.Wrapf(err, "could not marshal the frame")
 	}
 
 	if errSend := h.websocketHandler.WriteMessage(conn, websocket.BinaryMessage, marshaledFrame); errSend != nil {
@@ -89,7 +89,7 @@ func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Pipecatcall, frame *pipe
 	case pc.RunnerWebsocketChan <- frame:
 		return
 
-	case <-time.After(2 * time.Second):
+	case <-time.After(defaultPushFrameTimeout):
 		logrus.WithFields(logrus.Fields{
 			"func":           "pushFrame",
 			"pipecatcall_id": pc.ID,

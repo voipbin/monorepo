@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-pipecat-manager/pkg/listenhandler/models/request"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -16,12 +15,6 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 		"handler": "processV1MessagesPost",
 		"request": m,
 	})
-
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 3 {
-		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
-		return simpleResponse(400), nil
-	}
 
 	var req request.V1DataMessagesPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {

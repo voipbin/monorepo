@@ -91,7 +91,11 @@ func run() error {
 }
 
 // runListen runs the listen handler
-func runListen(sockHandler sockhandler.SockHandler, hostID string, pipecatcallHandler pipecatcallhandler.PipecatcallHandler) error {
+func runListen(
+	sockHandler sockhandler.SockHandler,
+	hostID string,
+	pipecatcallHandler pipecatcallhandler.PipecatcallHandler,
+) error {
 	listenHandler := listenhandler.NewListenHandler(sockHandler, pipecatcallHandler)
 
 	// run
