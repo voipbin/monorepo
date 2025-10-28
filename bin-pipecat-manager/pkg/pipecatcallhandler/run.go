@@ -43,12 +43,6 @@ func (h *pipecatcallHandler) Run() error {
 func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	log := logrus.WithField("func", "runStart")
 
-	// ctx, cancel := context.WithCancel(context.Background())
-	// defer func() {
-	// 	cancel()
-	// 	_ = conn.Close()
-	// }()
-
 	// Get streamingID
 	streamingID, err := h.audiosocketHandler.GetStreamingID(conn)
 	if err != nil {
