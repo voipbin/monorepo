@@ -13,6 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+func (h *pipecatcallHandler) setContext(pc *pipecatcall.Pipecatcall, ctx context.Context) {
+	pc.Ctx = ctx
+}
+
 func (h *pipecatcallHandler) setRunnerInfo(
 	pc *pipecatcall.Pipecatcall,
 	listener net.Listener,
@@ -52,7 +56,7 @@ func (h *pipecatcallHandler) SendMessage(ctx context.Context, id uuid.UUID, mess
 
 		Text: messageText,
 	}
-	h.notifyHandler.PublishEvent(ctx, message.EventTypeBotTranscription, res)
+	h.notifyHandler.PublishEvent(ctx, message.EventTypeUserTranscription, res)
 
 	if errSend := h.pipecatframeHandler.SendRTVIText(pc, messageID, messageText, runImmediately, audioResponse); errSend != nil {
 		return nil, errors.Wrapf(errSend, "could not send the message to pipecatcall")

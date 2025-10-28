@@ -1,6 +1,7 @@
 package pipecatcall
 
 import (
+	"context"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
@@ -24,6 +25,8 @@ type Pipecatcall struct {
 	TTS      TTS              `json:"-"`
 	VoiceID  string           `json:"-"`
 	Messages []map[string]any `json:"-"`
+
+	Ctx context.Context `json:"-"`
 
 	// pipecat runner
 	RunnerListener      net.Listener             `json:"-"`

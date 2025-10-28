@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -36,15 +37,38 @@ func (h *pipecatframeHandler) RunSender(pc *pipecatcall.Pipecatcall) {
 		"pipecatcall_id": pc.ID,
 	})
 
-	for frame := range pc.RunnerWebsocketChan {
-		if errSend := h.sendFrame(pc.RunnerWebsocket, frame); errSend != nil {
-			log.Errorf("Could not send the frame. Stopping sender runner. err: %v", errSend)
+	for {
+		select {
+		case <-pc.Ctx.Done():
+			log.Infof("Context done, stopping sender runner.")
 			return
+
+		case frame, ok := <-pc.RunnerWebsocketChan:
+			if !ok {
+				log.Infof("RunnerWebsocketChan closed, stopping sender runner.")
+				return
+			}
+
+			if frame == nil {
+				log.Warnf("Received nil frame, skipping.")
+				continue
+			}
+
+			if errSend := h.sendFrame(pc.RunnerWebsocket, frame); errSend != nil {
+				log.Errorf("Could not send the frame. Stopping sender runner. err: %v", errSend)
+				return
+			}
 		}
 	}
+
 }
 
 func (h *pipecatframeHandler) sendFrame(conn *websocket.Conn, frame *pipecatframe.Frame) error {
+	if conn == nil {
+		// connection is not ready. drop the frame
+		return nil
+	}
+
 	marshaledFrame, err := proto.Marshal(frame)
 	if err != nil {
 		return errors.Wrapf(err, "could not marshal the protobuf frame")
@@ -58,7 +82,19 @@ func (h *pipecatframeHandler) sendFrame(conn *websocket.Conn, frame *pipecatfram
 }
 
 func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Pipecatcall, frame *pipecatframe.Frame) {
-	pc.RunnerWebsocketChan <- frame
+	select {
+	case <-pc.Ctx.Done():
+		return
+
+	case pc.RunnerWebsocketChan <- frame:
+		return
+
+	case <-time.After(2 * time.Second):
+		logrus.WithFields(logrus.Fields{
+			"func":           "pushFrame",
+			"pipecatcall_id": pc.ID,
+		}).Warnf("Timeout pushing frame to RunnerWebsocketChan, dropping frame")
+	}
 }
 
 func (h *pipecatframeHandler) SendAudio(pc *pipecatcall.Pipecatcall, packetID uint64, data []byte) error {

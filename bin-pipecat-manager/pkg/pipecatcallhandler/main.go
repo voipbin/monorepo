@@ -56,7 +56,8 @@ const (
 	defaultMaxRetryAttempts  = 3
 	defaultInitialBackoff    = 100 * time.Millisecond // 100 milliseconds
 
-	defaultRunnerWebsocketListenAddress = "localhost:0"
+	defaultRunnerWebsocketChanBufferSize = 1000 // 1000: typical burst size for concurrent frame pushes
+	defaultRunnerWebsocketListenAddress  = "localhost:0"
 )
 
 type pipecatcallHandler struct {

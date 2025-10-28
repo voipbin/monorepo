@@ -1,6 +1,7 @@
 package pipecatcallhandler
 
 import (
+	"context"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
@@ -47,7 +48,7 @@ func Test_sendProtobufFrame(t *testing.T) {
 		expectFrame []byte
 	}{
 		{
-			name: "bot-transcription",
+			name: "normal audio",
 
 			ws: &websocket.Conn{},
 			frame: &pipecatframe.Frame{
@@ -105,6 +106,8 @@ func Test_SendAudio(t *testing.T) {
 			name: "simple audio frame",
 
 			pc: &pipecatcall.Pipecatcall{
+				Ctx:                 context.Background(),
+				RunnerWebsocket:     &websocket.Conn{},
 				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
 			},
 			packetID:  1,
@@ -124,6 +127,8 @@ func Test_SendAudio(t *testing.T) {
 			name: "empty audio frame",
 
 			pc: &pipecatcall.Pipecatcall{
+				Ctx:                 context.Background(),
+				RunnerWebsocket:     &websocket.Conn{},
 				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
 			},
 			packetID:  2,
@@ -178,6 +183,8 @@ func Test_SendRTVIText(t *testing.T) {
 		{
 			name: "simple RTVI text frame",
 			pc: &pipecatcall.Pipecatcall{
+				Ctx:                 context.Background(),
+				RunnerWebsocket:     &websocket.Conn{},
 				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
 			},
 			id:             "123",
@@ -211,6 +218,7 @@ func Test_SendRTVIText(t *testing.T) {
 				if !reflect.DeepEqual(got, tt.expectRes) {
 					t.Errorf("frame mismatch\nGot:  %+v\nWant: %+v", got, tt.expectRes)
 				}
+
 			default:
 				t.Fatal("no frame pushed to RunnerWebsocketChan")
 			}

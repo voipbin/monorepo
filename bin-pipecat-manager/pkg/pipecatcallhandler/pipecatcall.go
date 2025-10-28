@@ -49,7 +49,7 @@ func (h *pipecatcallHandler) Create(
 		VoiceID:  voiceID,
 		Messages: messages,
 
-		RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1000),
+		RunnerWebsocketChan: make(chan *pipecatframe.Frame, defaultRunnerWebsocketChanBufferSize),
 	}
 
 	_, ok := h.mapPipecatcall[id]

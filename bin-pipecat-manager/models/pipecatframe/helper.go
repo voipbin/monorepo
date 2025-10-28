@@ -9,8 +9,8 @@ type CommonFrameMessage struct {
 
 // type RTVIFrameType
 const (
-	RTVIFrameTypeBotTranscription  = "bot-transcription"
-	RTVIFrameTypeUserTranscription = "user-transcription"
+	RTVIFrameTypeBotTranscription  = "bot-transcription"  // pipecat -> pipecat-manager event frame type.
+	RTVIFrameTypeUserTranscription = "user-transcription" // pipecat -> pipecat-manager event frame type.
 
-	RTVIFrameTypeSendText = "send-text"
+	RTVIFrameTypeSendText = "send-text" // pipecat-manager -> pipecat request frame type.
 )

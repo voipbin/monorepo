@@ -67,6 +67,7 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 		log.Errorf("Could not get streaming: %v", err)
 		return
 	}
+	h.setContext(pc, ctx)
 	h.setAsteriskInfo(pc, streamingID, conn)
 	log.WithField("streaming", pc).Debugf("Streaming info retrieved. streaming_id: %s", pc.ID)
 
@@ -153,10 +154,6 @@ func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(ctx context.Context,
 		if err != nil {
 			log.Infof("Connection has closed. err: %v", err)
 			return
-		}
-
-		if pc.RunnerWebsocket == nil {
-			continue
 		}
 
 		data, err := h.audiosocketHandler.Upsample8kTo16k(m.Payload())
