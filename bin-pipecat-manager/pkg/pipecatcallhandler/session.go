@@ -82,18 +82,24 @@ func (h *pipecatcallHandler) SessionsetAsteriskInfo(pc *pipecatcall.Session, str
 	pc.AsteriskStreamingID = streamingID
 }
 
-func (h *pipecatcallHandler) SessionDelete(id uuid.UUID) {
+func (h *pipecatcallHandler) sessionDelete(id uuid.UUID) {
 	h.muPipecatcallSession.Lock()
 	defer h.muPipecatcallSession.Unlock()
 
 	delete(h.mapPipecatcallSession, id)
 }
 
-func (h *pipecatcallHandler) SessionStop(pc *pipecatcall.Session) {
+func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "SessionStop",
-		"pipecatcall_id": pc.ID,
+		"pipecatcall_id": id,
 	})
+
+	pc, err := h.SessionGet(id)
+	if err != nil {
+		log.Errorf("Could not get pipecatcall session: %v", err)
+		return
+	}
 
 	if pc.RunnerWebsocket != nil {
 		if errClose := pc.RunnerWebsocket.Close(); errClose != nil {
@@ -127,5 +133,5 @@ func (h *pipecatcallHandler) SessionStop(pc *pipecatcall.Session) {
 		}
 	}
 
-	h.SessionDelete(pc.ID)
+	h.sessionDelete(pc.ID)
 }
