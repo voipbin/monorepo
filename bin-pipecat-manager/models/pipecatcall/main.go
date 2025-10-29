@@ -24,20 +24,6 @@ type Pipecatcall struct {
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
 	TMDelete string `json:"tm_delete,omitempty"`
-
-	// Ctx    context.Context    `json:"-"`
-	// Cancel context.CancelFunc `json:"-"`
-
-	// // pipecat runner
-	// RunnerListener      net.Listener             `json:"-"`
-	// RunnerPort          int                      `json:"-"`
-	// RunnerServer        *http.Server             `json:"-"`
-	// RunnerWebsocket     *websocket.Conn          `json:"-"`
-	// RunnerWebsocketChan chan *pipecatframe.Frame `json:"-"`
-
-	// // asterisk info
-	// AsteriskStreamingID uuid.UUID `json:"-"`
-	// AsteriskConn        net.Conn  `json:"-"`
 }
 
 type ReferenceType string

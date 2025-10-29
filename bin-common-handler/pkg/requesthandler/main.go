@@ -903,13 +903,13 @@ type RequestHandler interface {
 		activeflowID uuid.UUID,
 		referenceType pmpipecatcall.ReferenceType,
 		referenceID uuid.UUID,
-		llm pmpipecatcall.LLM,
-		stt pmpipecatcall.STT,
-		tts pmpipecatcall.TTS,
-		voiceID string,
-		messages []map[string]any,
+		llmType pmpipecatcall.LLMType,
+		llmMessages []map[string]any,
+		sttType pmpipecatcall.STTType,
+		ttsType pmpipecatcall.TTSType,
+		ttsVoiceID string,
 	) (*pmpipecatcall.Pipecatcall, error)
-	PipecatV1PipecatcallGet(ctx context.Context, hostID string, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
+	PipecatV1PipecatcallGet(ctx context.Context, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
 	PipecatV1PipecatcallTerminate(ctx context.Context, hostID string, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
 
 	// queue-manager queue

@@ -144,11 +144,11 @@ func (h *aicallHandler) startReferenceTypeCall(
 		activeflowID,
 		pmpipecatcall.ReferenceTypeAICall,
 		res.ID,
-		pmpipecatcall.LLM(c.EngineModel),
-		pmpipecatcall.STT(c.STTType),
-		pmpipecatcall.TTS(c.TTSType),
-		voiceID,
+		pmpipecatcall.LLMType(c.EngineModel),
 		messages,
+		pmpipecatcall.STTType(c.STTType),
+		pmpipecatcall.TTSType(c.TTSType),
+		voiceID,
 	)
 	if err != nil {
 		log.Errorf("Could not start pipecatcall. err: %v", err)
