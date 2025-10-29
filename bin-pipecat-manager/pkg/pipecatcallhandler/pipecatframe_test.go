@@ -96,7 +96,7 @@ func Test_SendAudio(t *testing.T) {
 	tests := []struct {
 		name string
 
-		pc        *pipecatcall.Pipecatcall
+		se        *pipecatcall.Session
 		packetID  uint64
 		audioData []byte
 
@@ -105,7 +105,7 @@ func Test_SendAudio(t *testing.T) {
 		{
 			name: "simple audio frame",
 
-			pc: &pipecatcall.Pipecatcall{
+			se: &pipecatcall.Session{
 				Ctx:                 context.Background(),
 				RunnerWebsocket:     &websocket.Conn{},
 				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
@@ -126,7 +126,7 @@ func Test_SendAudio(t *testing.T) {
 		{
 			name: "empty audio frame",
 
-			pc: &pipecatcall.Pipecatcall{
+			se: &pipecatcall.Session{
 				Ctx:                 context.Background(),
 				RunnerWebsocket:     &websocket.Conn{},
 				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
@@ -150,12 +150,12 @@ func Test_SendAudio(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &pipecatframeHandler{}
 
-			if err := h.SendAudio(tt.pc, tt.packetID, tt.audioData); err != nil {
+			if err := h.SendAudio(tt.se, tt.packetID, tt.audioData); err != nil {
 				t.Fatalf("SendAudio returned error: %v", err)
 			}
 
 			select {
-			case got := <-tt.pc.RunnerWebsocketChan:
+			case got := <-tt.se.RunnerWebsocketChan:
 				if got == nil {
 					t.Fatal("got frame is nil")
 				}
@@ -173,7 +173,7 @@ func Test_SendAudio(t *testing.T) {
 func Test_SendRTVIText(t *testing.T) {
 	tests := []struct {
 		name           string
-		pc             *pipecatcall.Pipecatcall
+		se             *pipecatcall.Session
 		id             string
 		text           string
 		runImmediately bool
@@ -182,7 +182,7 @@ func Test_SendRTVIText(t *testing.T) {
 	}{
 		{
 			name: "simple RTVI text frame",
-			pc: &pipecatcall.Pipecatcall{
+			se: &pipecatcall.Session{
 				Ctx:                 context.Background(),
 				RunnerWebsocket:     &websocket.Conn{},
 				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
@@ -205,12 +205,12 @@ func Test_SendRTVIText(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &pipecatframeHandler{}
 
-			if err := h.SendRTVIText(tt.pc, tt.id, tt.text, tt.runImmediately, tt.audioResponse); err != nil {
+			if err := h.SendRTVIText(tt.se, tt.id, tt.text, tt.runImmediately, tt.audioResponse); err != nil {
 				t.Fatalf("SendRTVIText returned error: %v", err)
 			}
 
 			select {
-			case got := <-tt.pc.RunnerWebsocketChan:
+			case got := <-tt.se.RunnerWebsocketChan:
 				if got == nil {
 					t.Fatal("got frame is nil")
 				}

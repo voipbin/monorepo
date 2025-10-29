@@ -1,7 +1,6 @@
 package pipecatcallhandler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -17,38 +16,38 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (h *pipecatcallHandler) RunnerStart(ctx context.Context, pc *pipecatcall.Pipecatcall) {
+func (h *pipecatcallHandler) RunnerStart(pc *pipecatcall.Pipecatcall, se *pipecatcall.Session) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "RunnerStart",
 		"pipecatcall_id": pc.ID,
 	})
 
 	// start websocket server for pipecat runner to connect
-	if errWebsocket := h.runnerStartWebsocket(ctx, pc); errWebsocket != nil {
+	if errWebsocket := h.runnerStartWebsocket(se); errWebsocket != nil {
 		log.Errorf("Could not start the websocket server for pipecat runner: %v", errWebsocket)
 		return
 	}
-	log.Debugf("WebSocket server started. port %d", pc.RunnerPort)
+	log.Debugf("WebSocket server started. port %d", se.RunnerPort)
 
 	// start python script to run the pipecat runner
-	if errScript := h.runnerStartScript(ctx, pc); errScript != nil {
+	if errScript := h.runnerStartScript(pc, se); errScript != nil {
 		log.Errorf("Could not start the pipecat runner script: %v", errScript)
 		return
 	}
 	log.Debugf("Pipecat runner script started.")
 
-	<-ctx.Done()
+	<-se.Ctx.Done()
 	log.Debugf("Pipecat runner script finished.")
 }
 
-func (h *pipecatcallHandler) runnerStartWebsocket(ctx context.Context, pc *pipecatcall.Pipecatcall) error {
+func (h *pipecatcallHandler) runnerStartWebsocket(se *pipecatcall.Session) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runnerStartWebsocket",
 	})
 
 	app := http.NewServeMux()
 	app.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		h.runnerWebsocketHandle(ctx, w, r, pc)
+		h.runnerWebsocketHandle(w, r, se)
 	})
 
 	listener, err := net.Listen("tcp", defaultRunnerWebsocketListenAddress)
@@ -60,7 +59,7 @@ func (h *pipecatcallHandler) runnerStartWebsocket(ctx context.Context, pc *pipec
 	server := &http.Server{
 		Handler: app,
 	}
-	h.setRunnerInfo(pc, listener, server)
+	h.SessionsetRunnerInfo(se, listener, server)
 
 	go func() {
 		log.Debugf("Starting HTTP server on %s", listener.Addr().String())
@@ -73,25 +72,25 @@ func (h *pipecatcallHandler) runnerStartWebsocket(ctx context.Context, pc *pipec
 	return nil
 }
 
-func (h *pipecatcallHandler) runnerStartScript(ctx context.Context, pc *pipecatcall.Pipecatcall) error {
+func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *pipecatcall.Session) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Start",
 		"pipecatcall_id": pc.ID,
 	})
 	log.Debugf("Starting pipecat runner. pipecatcall_id: %s", pc.ID)
 
-	url := h.runnerGetURL(pc)
+	url := h.runnerGetURL(se)
 	log.Debugf("Pipecat WebSocket server URL: %s", url)
 
 	if errStart := h.pythonRunner.Start(
-		ctx,
+		se.Ctx,
 		pc.ID,
 		url,
-		string(pc.LLM),
-		string(pc.STT),
-		string(pc.TTS),
-		pc.VoiceID,
-		pc.Messages,
+		string(pc.LLMType),
+		string(pc.STTType),
+		string(pc.TTSType),
+		pc.TTSVoiceID,
+		pc.LLMMessages,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}
@@ -100,10 +99,10 @@ func (h *pipecatcallHandler) runnerStartScript(ctx context.Context, pc *pipecatc
 	return nil
 }
 
-func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.ResponseWriter, r *http.Request, pc *pipecatcall.Pipecatcall) {
+func (h *pipecatcallHandler) runnerWebsocketHandle(w http.ResponseWriter, r *http.Request, se *pipecatcall.Session) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "runnerWebsocketHandle",
-		"pipecatcall_id": pc.ID,
+		"pipecatcall_id": se.ID,
 	})
 
 	ws, err := h.websocketHandler.Upgrade(w, r, nil)
@@ -113,8 +112,8 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 	}
 
 	log.Debugf("WebSocket connection established with pipecat runner.")
-	h.setRunnerWebsocket(pc, ws)
-	go h.pipecatframeHandler.RunSender(pc)
+	h.SessionsetRunnerWebsocket(se, ws)
+	go h.pipecatframeHandler.RunSender(se)
 
 	for {
 		msgType, message, err := h.websocketHandler.ReadMessage(ws)
@@ -143,7 +142,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 
 			case *pipecatframe.Frame_Audio:
 				audio := x.Audio
-				if errAudio := h.runnerWebsocketHandleAudio(ctx, pc, int(audio.SampleRate), int(audio.NumChannels), audio.Audio); errAudio != nil {
+				if errAudio := h.runnerWebsocketHandleAudio(se, int(audio.SampleRate), int(audio.NumChannels), audio.Audio); errAudio != nil {
 					return
 				}
 
@@ -151,7 +150,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 				log.Debugf("Received TranscriptionFrame: ID=%d, Name=%s, Text='%s', UserID=%s, Timestamp=%s", x.Transcription.Id, x.Transcription.Name, x.Transcription.Text, x.Transcription.UserId, x.Transcription.Timestamp)
 
 			case *pipecatframe.Frame_Message:
-				if errMessage := h.receiveMessageFrameTypeMessage(ctx, pc, []byte(x.Message.Data)); errMessage != nil {
+				if errMessage := h.receiveMessageFrameTypeMessage(se, []byte(x.Message.Data)); errMessage != nil {
 					log.Errorf("Could not process MessageFrame: %v", errMessage)
 				}
 
@@ -179,10 +178,10 @@ func (h *pipecatcallHandler) runnerWebsocketHandle(ctx context.Context, w http.R
 	}
 }
 
-func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context, pc *pipecatcall.Pipecatcall, m []byte) error {
+func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Session, m []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "receiveMessageFrameMessage",
-		"pipecatcall_id": pc.ID,
+		"pipecatcall_id": se.ID,
 	})
 
 	frame := pipecatframe.CommonFrameMessage{}
@@ -209,16 +208,16 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 		event := message.Message{
 			Identity: commonidentity.Identity{
 				ID:         id,
-				CustomerID: pc.CustomerID,
+				CustomerID: se.CustomerID,
 			},
 
-			PipecatcallID:            pc.ID,
-			PipecatcallReferenceType: pc.ReferenceType,
-			PipecatcallReferenceID:   pc.ReferenceID,
+			PipecatcallID:            se.ID,
+			PipecatcallReferenceType: se.PipecatcallReferenceType,
+			PipecatcallReferenceID:   se.PipecatcallReferenceID,
 
 			Text: msg.Data.Text,
 		}
-		h.notifyHandler.PublishEvent(ctx, message.EventTypeBotTranscription, event)
+		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotTranscription, event)
 
 	case pipecatframe.RTVIFrameTypeUserTranscription:
 		msg := pipecatframe.RTVIUserTranscriptionMessage{}
@@ -235,16 +234,16 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 		event := message.Message{
 			Identity: commonidentity.Identity{
 				ID:         id,
-				CustomerID: pc.CustomerID,
+				CustomerID: se.CustomerID,
 			},
 
-			PipecatcallID:            pc.ID,
-			PipecatcallReferenceType: pc.ReferenceType,
-			PipecatcallReferenceID:   pc.ReferenceID,
+			PipecatcallID:            se.ID,
+			PipecatcallReferenceType: se.PipecatcallReferenceType,
+			PipecatcallReferenceID:   se.PipecatcallReferenceID,
 
 			Text: msg.Data.Text,
 		}
-		h.notifyHandler.PublishEvent(ctx, message.EventTypeUserTranscription, event)
+		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserTranscription, event)
 
 	default:
 		log.WithField("frame", frame).Errorf("Unrecognized RTVI message type: %s", frame.Type)
@@ -253,7 +252,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(ctx context.Context,
 	return nil
 }
 
-func (h *pipecatcallHandler) runnerWebsocketHandleAudio(ctx context.Context, pc *pipecatcall.Pipecatcall, sampleRate int, numChannels int, data []byte) error {
+func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session, sampleRate int, numChannels int, data []byte) error {
 	if numChannels != 1 {
 		return errors.Errorf("only mono audio is supported. num_channels: %d", numChannels)
 	}
@@ -263,13 +262,13 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(ctx context.Context, pc 
 		return errors.Wrapf(err, "could not get audio data samples")
 	}
 
-	if errWrite := h.audiosocketHandler.Write(ctx, pc.AsteriskConn, audioData); errWrite != nil {
+	if errWrite := h.audiosocketHandler.Write(se.Ctx, se.AsteriskConn, audioData); errWrite != nil {
 		return errors.Wrapf(errWrite, "could not write processed audio data to asterisk connection")
 	}
 
 	return nil
 }
 
-func (h *pipecatcallHandler) runnerGetURL(pc *pipecatcall.Pipecatcall) string {
+func (h *pipecatcallHandler) runnerGetURL(pc *pipecatcall.Session) string {
 	return fmt.Sprintf("ws://localhost:%d/ws", pc.RunnerPort)
 }

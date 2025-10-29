@@ -12,6 +12,7 @@ import (
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	"monorepo/bin-pipecat-manager/pkg/dbhandler"
 
 	"sync"
 
@@ -28,11 +29,11 @@ type PipecatcallHandler interface {
 		activeflowID uuid.UUID,
 		referenceType pipecatcall.ReferenceType,
 		referenceID uuid.UUID,
-		llm pipecatcall.LLM,
-		stt pipecatcall.STT,
-		tts pipecatcall.TTS,
-		voiceID string,
-		messages []map[string]any,
+		llmType pipecatcall.LLMType,
+		llmMessages []map[string]any,
+		sttType pipecatcall.STTType,
+		ttsType pipecatcall.TTSType,
+		ttsVoiceID string,
 	) (*pipecatcall.Pipecatcall, error)
 	Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)
 
@@ -63,6 +64,7 @@ const (
 
 type pipecatcallHandler struct {
 	utilHandler    utilhandler.UtilHandler
+	db             dbhandler.DBHandler
 	requestHandler requesthandler.RequestHandler
 	notifyHandler  notifyhandler.NotifyHandler
 
@@ -74,8 +76,8 @@ type pipecatcallHandler struct {
 	listenAddress string
 	hostID        string
 
-	mapPipecatcall map[uuid.UUID]*pipecatcall.Pipecatcall
-	muPipecatcall  sync.Mutex
+	mapPipecatcallSession map[uuid.UUID]*pipecatcall.Session
+	muPipecatcallSession  sync.Mutex
 }
 
 func NewPipecatcallHandler(
@@ -98,7 +100,7 @@ func NewPipecatcallHandler(
 		listenAddress: listenAddress,
 		hostID:        hostID,
 
-		mapPipecatcall: make(map[uuid.UUID]*pipecatcall.Pipecatcall),
-		muPipecatcall:  sync.Mutex{},
+		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
+		muPipecatcallSession:  sync.Mutex{},
 	}
 }

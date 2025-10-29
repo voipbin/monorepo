@@ -15,10 +15,10 @@ import (
 )
 
 type PipecatframeHandler interface {
-	RunSender(pc *pipecatcall.Pipecatcall)
+	RunSender(se *pipecatcall.Session)
 
-	SendAudio(pc *pipecatcall.Pipecatcall, packetID uint64, data []byte) error
-	SendRTVIText(pc *pipecatcall.Pipecatcall, id string, text string, runImmediately bool, audioResponse bool) error
+	SendAudio(se *pipecatcall.Session, packetID uint64, data []byte) error
+	SendRTVIText(se *pipecatcall.Session, id string, text string, runImmediately bool, audioResponse bool) error
 }
 
 type pipecatframeHandler struct {
@@ -31,19 +31,19 @@ func NewPipecatframeHandler() *pipecatframeHandler {
 	}
 }
 
-func (h *pipecatframeHandler) RunSender(pc *pipecatcall.Pipecatcall) {
+func (h *pipecatframeHandler) RunSender(se *pipecatcall.Session) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "RunSender",
-		"pipecatcall_id": pc.ID,
+		"pipecatcall_id": se.ID,
 	})
 
 	for {
 		select {
-		case <-pc.Ctx.Done():
+		case <-se.Ctx.Done():
 			log.Infof("Context done, stopping sender runner.")
 			return
 
-		case frame, ok := <-pc.RunnerWebsocketChan:
+		case frame, ok := <-se.RunnerWebsocketChan:
 			if !ok {
 				log.Infof("RunnerWebsocketChan closed, stopping sender runner.")
 				return
@@ -54,7 +54,7 @@ func (h *pipecatframeHandler) RunSender(pc *pipecatcall.Pipecatcall) {
 				continue
 			}
 
-			if errSend := h.sendFrame(pc.RunnerWebsocket, frame); errSend != nil {
+			if errSend := h.sendFrame(se.RunnerWebsocket, frame); errSend != nil {
 				log.Errorf("Could not send the frame. Stopping sender runner. err: %v", errSend)
 				return
 			}
@@ -81,7 +81,7 @@ func (h *pipecatframeHandler) sendFrame(conn *websocket.Conn, frame *pipecatfram
 	return nil
 }
 
-func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Pipecatcall, frame *pipecatframe.Frame) {
+func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Session, frame *pipecatframe.Frame) {
 	select {
 	case <-pc.Ctx.Done():
 		return
@@ -97,7 +97,7 @@ func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Pipecatcall, frame *pipe
 	}
 }
 
-func (h *pipecatframeHandler) SendAudio(pc *pipecatcall.Pipecatcall, packetID uint64, data []byte) error {
+func (h *pipecatframeHandler) SendAudio(se *pipecatcall.Session, packetID uint64, data []byte) error {
 	frame := &pipecatframe.Frame{
 		Frame: &pipecatframe.Frame_Audio{
 			Audio: &pipecatframe.AudioRawFrame{
@@ -109,11 +109,11 @@ func (h *pipecatframeHandler) SendAudio(pc *pipecatcall.Pipecatcall, packetID ui
 		},
 	}
 
-	h.pushFrame(pc, frame)
+	h.pushFrame(se, frame)
 	return nil
 }
 
-func (h *pipecatframeHandler) SendRTVIText(pc *pipecatcall.Pipecatcall, id string, text string, runImmediately bool, audioResponse bool) error {
+func (h *pipecatframeHandler) SendRTVIText(se *pipecatcall.Session, id string, text string, runImmediately bool, audioResponse bool) error {
 	tmp := pipecatframe.CommonFrameMessage{
 		ID:    id,
 		Label: pipecatframe.RTVIMessageLabel,
@@ -140,7 +140,7 @@ func (h *pipecatframeHandler) SendRTVIText(pc *pipecatcall.Pipecatcall, id strin
 		},
 	}
 
-	h.pushFrame(pc, frame)
+	h.pushFrame(se, frame)
 
 	return nil
 }

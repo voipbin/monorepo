@@ -58,31 +58,32 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 		log.Errorf("Could not get streaming: %v", err)
 		return
 	}
-	h.setAsteriskInfo(pc, streamingID, conn)
+	log.WithField("pipecatcall", pc).Debugf("Pipecatcall info retrieved. pipecatcall_id: %s", pc.ID)
 
-	// get context and cancel func from pipecatcall
-	// we will use this context to manage the lifecycle of goroutines
-	ctx := pc.Ctx
-	cancel := pc.Cancel
+	// create a new session
+	se, err := h.SessionCreate(pc, streamingID, conn)
+	if err != nil {
+		log.Errorf("Could not add pipecatcall session: %v", err)
+		return
+	}
+	log.WithField("session", se).Debugf("Pipecatcall session added. pipecatcall_id: %s", pc.ID)
 
 	// Start keep-alive in a separate goroutine
-	go h.runAsteriskKeepAlive(ctx, conn, defaultKeepAliveInterval, streamingID)
-
-	log.WithField("streaming", pc).Debugf("Streaming info retrieved. streaming_id: %s", pc.ID)
+	go h.runAsteriskKeepAlive(se.Ctx, conn, defaultKeepAliveInterval, streamingID)
 
 	go func() {
 		// run the pipecat runner
-		h.RunnerStart(ctx, pc)
-		cancel()
+		h.RunnerStart(pc, se)
+		se.Cancel()
 	}()
 
 	go func() {
 		// run the media handler
-		h.runAsteriskReceivedMediaHandle(ctx, pc)
-		cancel()
+		h.runAsteriskReceivedMediaHandle(se)
+		se.Cancel()
 	}()
 
-	<-ctx.Done()
+	<-se.Ctx.Done()
 
 	log.Debugf("Context done, stopping pipecatcall. pipecatcall_id: %s", pc.ID)
 	h.stop(context.Background(), pc)
@@ -136,20 +137,20 @@ func (h *pipecatcallHandler) retryWithBackoff(operation func() error, maxAttempt
 	return nil
 }
 
-func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(ctx context.Context, pc *pipecatcall.Pipecatcall) {
+func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Session) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "runReceivedAsteriskMediaHandle",
-		"pipecatcall_id": pc.ID,
+		"pipecatcall_id": se.ID,
 	})
 
 	packetID := uint64(0)
 	for {
-		if ctx.Err() != nil {
-			log.Debugf("Context has finished. pipecatcall_id: %s", pc.ID)
+		if se.Ctx.Err() != nil {
+			log.Debugf("Context has finished. pipecatcall_id: %s", se.ID)
 			return
 		}
 
-		m, err := h.audiosocketHandler.GetNextMedia(pc.AsteriskConn)
+		m, err := h.audiosocketHandler.GetNextMedia(se.AsteriskConn)
 		if err != nil {
 			log.Infof("Connection has closed. err: %v", err)
 			return
@@ -161,7 +162,7 @@ func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(ctx context.Context,
 			continue
 		}
 
-		if errSend := h.pipecatframeHandler.SendAudio(pc, packetID, data); errSend != nil {
+		if errSend := h.pipecatframeHandler.SendAudio(se, packetID, data); errSend != nil {
 			log.Errorf("Could not send audio frame. err: %v", errSend)
 		}
 

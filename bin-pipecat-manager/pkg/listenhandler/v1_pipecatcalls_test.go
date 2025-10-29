@@ -28,11 +28,11 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 		expectActiveflowID  uuid.UUID
 		expectReferenceType pipecatcall.ReferenceType
 		expectReferenceID   uuid.UUID
-		expectLLM           pipecatcall.LLM
-		expectSTT           pipecatcall.STT
-		expectTTS           pipecatcall.TTS
-		expectVoiceID       string
-		expectMessages      []map[string]any
+		expectLLMType       pipecatcall.LLMType
+		expectLLMMessages   []map[string]any
+		expectSTTType       pipecatcall.STTType
+		expectTTSType       pipecatcall.TTSType
+		expectTTSVoiceID    string
 
 		expectRes *sock.Response
 	}{
@@ -43,7 +43,7 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 				URI:      "/v1/pipecatcalls",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"ffa2ac7a-b3a4-11f0-aeda-5b3b3498e619","customer_id":"cd1d344c-aa43-11f0-a6b9-fb100dc5e57c","activeflow_id":"cd65b1b8-aa43-11f0-8c1e-bfc7dc74bbd9","reference_type":"call","reference_id":"cd97ff42-aa43-11f0-9042-0f14ff740ec1","llm":"openai.gpt-3.5-turbo","stt":"deepgram","tts":"elevenlabs","voice_id":"c41bacee-aadd-11f0-a5a5-8bedee791598","messages":[{"role":"system","content":"Say hello world after user"},{"role":"user","content":"Hello!"}]}`),
+				Data:     []byte(`{"id":"ffa2ac7a-b3a4-11f0-aeda-5b3b3498e619","customer_id":"cd1d344c-aa43-11f0-a6b9-fb100dc5e57c","activeflow_id":"cd65b1b8-aa43-11f0-8c1e-bfc7dc74bbd9","reference_type":"call","reference_id":"cd97ff42-aa43-11f0-9042-0f14ff740ec1","llm_type":"openai.gpt-3.5-turbo","llm_messages":[{"role":"system","content":"Say hello world after user"},{"role":"user","content":"Hello!"}],"stt_type":"deepgram","tts_type":"elevenlabs","tts_voice_id":"c41bacee-aadd-11f0-a5a5-8bedee791598"}`),
 			},
 
 			responsePipecatcall: &pipecatcall.Pipecatcall{
@@ -57,14 +57,14 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 			expectActiveflowID:  uuid.FromStringOrNil("cd65b1b8-aa43-11f0-8c1e-bfc7dc74bbd9"),
 			expectReferenceType: pipecatcall.ReferenceTypeCall,
 			expectReferenceID:   uuid.FromStringOrNil("cd97ff42-aa43-11f0-9042-0f14ff740ec1"),
-			expectLLM:           pipecatcall.LLM("openai.gpt-3.5-turbo"),
-			expectSTT:           pipecatcall.STTDeepgram,
-			expectTTS:           pipecatcall.TTSElevenLabs,
-			expectVoiceID:       "c41bacee-aadd-11f0-a5a5-8bedee791598",
-			expectMessages: []map[string]any{
+			expectLLMType:       pipecatcall.LLMType("openai.gpt-3.5-turbo"),
+			expectLLMMessages: []map[string]any{
 				{"role": "system", "content": "Say hello world after user"},
 				{"role": "user", "content": "Hello!"},
 			},
+			expectSTTType:    pipecatcall.STTTypeDeepgram,
+			expectTTSType:    pipecatcall.TTSTypeElevenLabs,
+			expectTTSVoiceID: "c41bacee-aadd-11f0-a5a5-8bedee791598",
 
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -88,17 +88,18 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockPipecatcall.EXPECT().Start(ctx,
+			mockPipecatcall.EXPECT().Start(
+				ctx,
 				tt.expectID,
 				tt.expectCustomerID,
 				tt.expectActiveflowID,
 				tt.expectReferenceType,
 				tt.expectReferenceID,
-				tt.expectLLM,
-				tt.expectSTT,
-				tt.expectTTS,
-				tt.expectVoiceID,
-				tt.expectMessages,
+				tt.expectLLMType,
+				tt.expectLLMMessages,
+				tt.expectSTTType,
+				tt.expectTTSType,
+				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
