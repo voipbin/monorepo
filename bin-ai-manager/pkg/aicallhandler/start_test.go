@@ -171,8 +171,8 @@ func Test_startReferenceTypeNone(t *testing.T) {
 		gender   aicall.Gender
 		language string
 
-		responseUUIDAIcallID      uuid.UUID
 		responseUUIDPipecatcallID uuid.UUID
+		responseUUIDAIcallID      uuid.UUID
 		responseAIcall            *aicall.AIcall
 		responseMessage           *message.Message
 
@@ -193,8 +193,8 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			gender:   aicall.GenderFemale,
 			language: "en-US",
 
-			responseUUIDAIcallID:      uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("78a31220-b465-11f0-a3f2-b77bb59ccdcd"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
 			responseAIcall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
@@ -249,8 +249,8 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			ctx := context.Background()
 
 			// create
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)

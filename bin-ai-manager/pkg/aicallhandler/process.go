@@ -38,7 +38,8 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 
 	// stop pipecatcall
 	if ac.PipecatcallID != uuid.Nil {
-		_, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, ac.PipecatcallID)
+		// todo: need to fix.
+		_, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, "", ac.PipecatcallID)
 		if err != nil {
 			// failed to stop the pipecatcall but we keep move
 			log.Errorf("Could not terminate the pipecatcall. err: %v", err)
@@ -62,7 +63,8 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall)
 
 	// stop the pipecatcall
 	if ac.PipecatcallID != uuid.Nil {
-		_, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, ac.PipecatcallID)
+		// todo: need to fix
+		_, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, "", ac.PipecatcallID)
 		if err != nil {
 			// failed to stop the pipecatcall but we keep move
 			log.Errorf("Could not terminate the pipecatcall. err: %v", err)

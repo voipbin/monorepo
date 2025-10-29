@@ -11,7 +11,6 @@ package aicallhandler
 
 import (
 	context "context"
-	ai "monorepo/bin-ai-manager/models/ai"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	call "monorepo/bin-call-manager/models/call"
 	confbridge "monorepo/bin-call-manager/models/confbridge"
@@ -45,21 +44,6 @@ func NewMockAIcallHandler(ctrl *gomock.Controller) *MockAIcallHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAIcallHandler) EXPECT() *MockAIcallHandlerMockRecorder {
 	return m.recorder
-}
-
-// Create mocks base method.
-func (m *MockAIcallHandler) Create(ctx context.Context, c *ai.AI, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID, confbridgeID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language)
-	ret0, _ := ret[0].(*aicall.AIcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Create indicates an expected call of Create.
-func (mr *MockAIcallHandlerMockRecorder) Create(ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAIcallHandler)(nil).Create), ctx, c, activeflowID, referenceType, referenceID, confbridgeID, gender, language)
 }
 
 // Delete mocks base method.

@@ -26,16 +26,6 @@ import (
 
 // AIcallHandler define
 type AIcallHandler interface {
-	Create(
-		ctx context.Context,
-		c *ai.AI,
-		activeflowID uuid.UUID,
-		referenceType aicall.ReferenceType,
-		referenceID uuid.UUID,
-		confbridgeID uuid.UUID,
-		gender aicall.Gender,
-		language string,
-	) (*aicall.AIcall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)

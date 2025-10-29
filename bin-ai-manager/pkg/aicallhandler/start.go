@@ -110,7 +110,8 @@ func (h *aicallHandler) startReferenceTypeCall(
 	}
 
 	// create ai call
-	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language)
+	pipecatcallID := h.utilHandler.UUIDCreate()
+	res, err := h.Create(ctx, c, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, pipecatcallID, gender, language)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
@@ -178,7 +179,8 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	res, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
 		// aicall not found, create a new one
-		res, err = h.Create(ctx, c, activeflowID, aicall.ReferenceTypeConversation, referenceID, uuid.Nil, gender, language)
+		pipecatcallID := h.utilHandler.UUIDCreate()
+		res, err = h.Create(ctx, c, activeflowID, aicall.ReferenceTypeConversation, referenceID, uuid.Nil, pipecatcallID, gender, language)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
@@ -219,7 +221,8 @@ func (h *aicallHandler) startReferenceTypeNone(
 		"ai":   c,
 	})
 
-	tmp, err := h.Create(ctx, c, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language)
+	pipecatcallID := h.utilHandler.UUIDCreate()
+	tmp, err := h.Create(ctx, c, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, pipecatcallID, gender, language)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")

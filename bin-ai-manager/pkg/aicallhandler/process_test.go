@@ -74,17 +74,6 @@ func Test_ProcessStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscribeStart(
-				ctx,
-				tt.aicall.CustomerID,
-				tt.aicall.ActiveflowID,
-				uuid.Nil,
-				tmtranscribe.ReferenceTypeCall,
-				tt.aicall.ReferenceID,
-				tt.aicall.Language,
-				tmtranscribe.DirectionIn,
-				30000,
-			).Return(tt.responseTranscribe, nil)
 			mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.aicall.ID, aicall.StatusProgressing).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusProgressing, tt.aicall)

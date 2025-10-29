@@ -21,6 +21,7 @@ func (h *aicallHandler) Create(
 	referenceType aicall.ReferenceType,
 	referenceID uuid.UUID,
 	confbridgeID uuid.UUID,
+	pipecatcallID uuid.UUID,
 	gender aicall.Gender,
 	language string,
 ) (*aicall.AIcall, error) {
@@ -30,7 +31,6 @@ func (h *aicallHandler) Create(
 	})
 
 	id := h.utilHandler.UUIDCreate()
-	pipecatcallID := h.utilHandler.UUIDCreate()
 	tmp := &aicall.AIcall{
 		Identity: identity.Identity{
 			ID:         id,
@@ -224,7 +224,7 @@ func (h *aicallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status a
 		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
 	}
 
-	switch res.Status {
+	switch status {
 	case aicall.StatusProgressing:
 		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusProgressing, res)
 	case aicall.StatusPausing:
