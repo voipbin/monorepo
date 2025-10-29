@@ -61,7 +61,7 @@ func (h *handler) pipecatcallGetFromRow(row *sql.Rows) (*pipecatcall.Pipecatcall
 		&res.TMUpdate,
 		&res.TMDelete,
 	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. flowGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. pipecatcallGetFromRow. err: %v", err)
 	}
 
 	if err := json.Unmarshal([]byte(messages), &res.LLMMessages); err != nil {

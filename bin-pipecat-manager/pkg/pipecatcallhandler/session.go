@@ -56,7 +56,7 @@ func (h *pipecatcallHandler) SessionGet(id uuid.UUID) (*pipecatcall.Session, err
 	defer h.muPipecatcallSession.Unlock()
 
 	res, ok := h.mapPipecatcallSession[id]
-	if ok {
+	if !ok {
 		return nil, fmt.Errorf("could not find session. session_id: %s", res.ID)
 	}
 
