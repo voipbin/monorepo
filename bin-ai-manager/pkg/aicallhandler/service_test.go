@@ -195,13 +195,14 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 		language      string
 		resume        bool
 
-		responseAI         *ai.AI
-		responseConfbridge *cmconfbridge.Confbridge
-		responseUUIDAIcall uuid.UUID
-		responseAIcall     *aicall.AIcall
-		responseVariable   *fmvariable.Variable
-		responseMessage    *message.Message
-		responseUUIDAction uuid.UUID
+		responseAI                *ai.AI
+		responseConfbridge        *cmconfbridge.Confbridge
+		responseUUIDAIcallID      uuid.UUID
+		responseUUIDPipecatcallID uuid.UUID
+		responseAIcall            *aicall.AIcall
+		responseVariable          *fmvariable.Variable
+		responseMessage           *message.Message
+		responseUUIDAction        uuid.UUID
 
 		expectAIcall         *aicall.AIcall
 		expectMessageContent string
@@ -230,7 +231,8 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				},
 			},
-			responseUUIDAIcall: uuid.FromStringOrNil("983b70ca-30f1-11f0-b3a1-1bc84ea9dc87"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("983b70ca-30f1-11f0-b3a1-1bc84ea9dc87"),
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("53b5f310-b465-11f0-8620-77b447a9f6a8"),
 			responseAIcall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("983b70ca-30f1-11f0-b3a1-1bc84ea9dc87"),
@@ -259,6 +261,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				AIEngineType:  ai.EngineTypeNone,
 				ReferenceType: aicall.ReferenceTypeConversation,
 				ReferenceID:   uuid.FromStringOrNil("97edda2c-30f1-11f0-8341-f38ceaa8013d"),
+				PipecatcallID: uuid.FromStringOrNil("53b5f310-b465-11f0-8620-77b447a9f6a8"),
 				Gender:        aicall.GenderFemale,
 				Language:      "en-US",
 				Status:        aicall.StatusInitiating,
@@ -300,9 +303,10 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(nil, fmt.Errorf(""))
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)

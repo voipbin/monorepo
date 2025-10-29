@@ -4289,48 +4289,48 @@ func (mr *MockRequestHandlerMockRecorder) OutdialV1OutdialtargetUpdateStatusProg
 }
 
 // PipecatV1PipecatcallGet mocks base method.
-func (m *MockRequestHandler) PipecatV1PipecatcallGet(ctx context.Context, pipecallID uuid.UUID) (*pipecatcall.Pipecatcall, error) {
+func (m *MockRequestHandler) PipecatV1PipecatcallGet(ctx context.Context, hostID string, pipecatcallID uuid.UUID) (*pipecatcall.Pipecatcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PipecatV1PipecatcallGet", ctx, pipecallID)
+	ret := m.ctrl.Call(m, "PipecatV1PipecatcallGet", ctx, hostID, pipecatcallID)
 	ret0, _ := ret[0].(*pipecatcall.Pipecatcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PipecatV1PipecatcallGet indicates an expected call of PipecatV1PipecatcallGet.
-func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallGet(ctx, pipecallID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallGet(ctx, hostID, pipecatcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallGet", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallGet), ctx, pipecallID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallGet", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallGet), ctx, hostID, pipecatcallID)
 }
 
 // PipecatV1PipecatcallStart mocks base method.
-func (m *MockRequestHandler) PipecatV1PipecatcallStart(ctx context.Context, customerID, activeflowID uuid.UUID, referenceType pipecatcall.ReferenceType, referenceID uuid.UUID, llm pipecatcall.LLM, stt pipecatcall.STT, tts pipecatcall.TTS, voiceID string, messages []map[string]any) (*pipecatcall.Pipecatcall, error) {
+func (m *MockRequestHandler) PipecatV1PipecatcallStart(ctx context.Context, id, customerID, activeflowID uuid.UUID, referenceType pipecatcall.ReferenceType, referenceID uuid.UUID, llm pipecatcall.LLM, stt pipecatcall.STT, tts pipecatcall.TTS, voiceID string, messages []map[string]any) (*pipecatcall.Pipecatcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PipecatV1PipecatcallStart", ctx, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages)
+	ret := m.ctrl.Call(m, "PipecatV1PipecatcallStart", ctx, id, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages)
 	ret0, _ := ret[0].(*pipecatcall.Pipecatcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PipecatV1PipecatcallStart indicates an expected call of PipecatV1PipecatcallStart.
-func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallStart(ctx, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallStart(ctx, id, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallStart", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallStart), ctx, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallStart", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallStart), ctx, id, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages)
 }
 
 // PipecatV1PipecatcallTerminate mocks base method.
-func (m *MockRequestHandler) PipecatV1PipecatcallTerminate(ctx context.Context, aicallID uuid.UUID) (*pipecatcall.Pipecatcall, error) {
+func (m *MockRequestHandler) PipecatV1PipecatcallTerminate(ctx context.Context, hostID string, pipecatcallID uuid.UUID) (*pipecatcall.Pipecatcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PipecatV1PipecatcallTerminate", ctx, aicallID)
+	ret := m.ctrl.Call(m, "PipecatV1PipecatcallTerminate", ctx, hostID, pipecatcallID)
 	ret0, _ := ret[0].(*pipecatcall.Pipecatcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PipecatV1PipecatcallTerminate indicates an expected call of PipecatV1PipecatcallTerminate.
-func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallTerminate(ctx, aicallID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallTerminate(ctx, hostID, pipecatcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallTerminate", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallTerminate), ctx, aicallID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallTerminate", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallTerminate), ctx, hostID, pipecatcallID)
 }
 
 // QueueV1QueueCreate mocks base method.

@@ -171,9 +171,10 @@ func Test_startReferenceTypeNone(t *testing.T) {
 		gender   aicall.Gender
 		language string
 
-		responseUUIDAIcall uuid.UUID
-		responseAIcall     *aicall.AIcall
-		responseMessage    *message.Message
+		responseUUIDAIcallID      uuid.UUID
+		responseUUIDPipecatcallID uuid.UUID
+		responseAIcall            *aicall.AIcall
+		responseMessage           *message.Message
 
 		expectAIcall *aicall.AIcall
 		expectRes    *aicall.AIcall
@@ -192,7 +193,8 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			gender:   aicall.GenderFemale,
 			language: "en-US",
 
-			responseUUIDAIcall: uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("78a31220-b465-11f0-a3f2-b77bb59ccdcd"),
 			responseAIcall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
@@ -207,11 +209,12 @@ func Test_startReferenceTypeNone(t *testing.T) {
 					ID:         uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 				},
-				AIID:         uuid.FromStringOrNil("1d758ff0-f06f-11ef-bcb1-1ff1f3691915"),
-				AIEngineType: ai.EngineTypeNone,
-				Gender:       aicall.GenderFemale,
-				Language:     "en-US",
-				Status:       aicall.StatusInitiating,
+				AIID:          uuid.FromStringOrNil("1d758ff0-f06f-11ef-bcb1-1ff1f3691915"),
+				AIEngineType:  ai.EngineTypeNone,
+				PipecatcallID: uuid.FromStringOrNil("78a31220-b465-11f0-a3f2-b77bb59ccdcd"),
+				Gender:        aicall.GenderFemale,
+				Language:      "en-US",
+				Status:        aicall.StatusInitiating,
 			},
 			expectRes: &aicall.AIcall{
 				Identity: commonidentity.Identity{
@@ -246,9 +249,10 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			ctx := context.Background()
 
 			// create
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			mockMessage.EXPECT().Send(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.ai.InitPrompt, true).Return(tt.responseMessage, nil)
@@ -279,9 +283,10 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 		gender       aicall.Gender
 		language     string
 
-		responseUUIDAIcall uuid.UUID
-		responseAIcall     *aicall.AIcall
-		responseVarible    *fmvariable.Variable
+		responseUUIDAIcallID      uuid.UUID
+		responseUUIDPipecatcallID uuid.UUID
+		responseAIcall            *aicall.AIcall
+		responseVarible           *fmvariable.Variable
 
 		responseMessage *message.Message
 
@@ -305,7 +310,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			gender:       aicall.GenderFemale,
 			language:     "en-US",
 
-			responseUUIDAIcall: uuid.FromStringOrNil("d1319db4-30dd-11f0-8747-a7f601e136a5"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("d1319db4-30dd-11f0-8747-a7f601e136a5"),
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("19f84290-b465-11f0-81ef-07fea8c8aa82"),
 			responseAIcall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d1319db4-30dd-11f0-8747-a7f601e136a5"),
@@ -331,6 +337,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				ActiveflowID:  uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
 				ReferenceType: aicall.ReferenceTypeConversation,
 				ReferenceID:   uuid.FromStringOrNil("d184c87c-30dd-11f0-8bbf-d773a2d31d73"),
+				PipecatcallID: uuid.FromStringOrNil("19f84290-b465-11f0-81ef-07fea8c8aa82"),
 				Gender:        aicall.GenderFemale,
 				Language:      "en-US",
 				Status:        aicall.StatusInitiating,
@@ -371,9 +378,10 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(nil, dbhandler.ErrNotFound)
 
 			// create
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			// get conversation message
