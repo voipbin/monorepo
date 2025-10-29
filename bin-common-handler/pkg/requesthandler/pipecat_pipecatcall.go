@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"monorepo/bin-common-handler/models/outline"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	pcrequest "monorepo/bin-pipecat-manager/pkg/listenhandler/models/request"
@@ -65,7 +64,7 @@ func (r *requestHandler) PipecatV1PipecatcallGet(ctx context.Context, hostID str
 	uri := fmt.Sprintf("/v1/pipecatcalls/%s", pipecallID)
 
 	queueName := fmt.Sprintf("%s.%s", outline.QueueNamePipecatRequest, hostID)
-	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodGet, "pipecat/pipecatcalls/<pipecatcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodGet, "pipecat/pipecatcalls/<pipecatcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +84,7 @@ func (r *requestHandler) PipecatV1PipecatcallTerminate(ctx context.Context, host
 	uri := fmt.Sprintf("/v1/pipecatcalls/%s/stop", aicallID)
 
 	queueName := fmt.Sprintf("%s.%s", outline.QueueNamePipecatRequest, hostID)
-	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodPost, "pipecat/pipecatcalls/<pipecatcall-id>/terminate", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodPost, "pipecat/pipecatcalls/<pipecatcall-id>/terminate", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
