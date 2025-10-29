@@ -20,8 +20,9 @@ type AIcall struct {
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
-	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty"`
-	TranscribeID uuid.UUID `json:"transcribe_id,omitempty"`
+	ConfbridgeID  uuid.UUID `json:"confbridge_id,omitempty"`
+	TranscribeID  uuid.UUID `json:"transcribe_id,omitempty"`
+	PipecatcallID uuid.UUID `json:"pipecatcall_id,omitempty"`
 
 	Status Status `json:"status,omitempty"`
 

@@ -18,6 +18,7 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id            uuid.UUID
 		cusotmerID    uuid.UUID
 		activeflowID  uuid.UUID
 		referenceType pipecatcall.ReferenceType
@@ -36,6 +37,7 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 		{
 			name: "normal",
 
+			id:            uuid.FromStringOrNil("775a5cb0-b45c-11f0-b77f-eb8a93884b92"),
 			cusotmerID:    uuid.FromStringOrNil("087c5196-aba5-11f0-b874-67331df11790"),
 			activeflowID:  uuid.FromStringOrNil("08b77244-aba5-11f0-867c-83627171cc5f"),
 			referenceType: pipecatcall.ReferenceTypeCall,
@@ -54,7 +56,7 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 				URI:      "/v1/pipecatcalls",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"087c5196-aba5-11f0-b874-67331df11790","activeflow_id":"08b77244-aba5-11f0-867c-83627171cc5f","reference_type":"call","reference_id":"08ea1dac-aba5-11f0-98a0-075b9b4bcd29","llm":"openai.gpt-3.5-turbo","stt":"deepgram","tts":"elevenlabs","voice_id":"09132436-aba5-11f0-835c-236dfc483b0e","messages":[{"content":"Say hello world after user","role":"system"},{"content":"Hello!","role":"user"}]}`),
+				Data:     []byte(`{"id":"775a5cb0-b45c-11f0-b77f-eb8a93884b92","customer_id":"087c5196-aba5-11f0-b874-67331df11790","activeflow_id":"08b77244-aba5-11f0-867c-83627171cc5f","reference_type":"call","reference_id":"08ea1dac-aba5-11f0-98a0-075b9b4bcd29","llm":"openai.gpt-3.5-turbo","stt":"deepgram","tts":"elevenlabs","voice_id":"09132436-aba5-11f0-835c-236dfc483b0e","messages":[{"content":"Say hello world after user","role":"system"},{"content":"Hello!","role":"user"}]}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -77,7 +79,7 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			_, err := reqHandler.PipecatV1PipecatcallStart(ctx, tt.cusotmerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.llm, tt.stt, tt.tts, tt.voiceID, tt.messages)
+			_, err := reqHandler.PipecatV1PipecatcallStart(ctx, tt.id, tt.cusotmerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.llm, tt.stt, tt.tts, tt.voiceID, tt.messages)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -90,7 +92,8 @@ func Test_PipecatV1PipecatcallGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		hostID string
+		id     uuid.UUID
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -100,9 +103,10 @@ func Test_PipecatV1PipecatcallGet(t *testing.T) {
 		{
 			name: "normal",
 
-			id: uuid.FromStringOrNil("1c2231ec-aba6-11f0-8f2b-6fa1b3127622"),
+			hostID: "1.2.3.4",
+			id:     uuid.FromStringOrNil("1c2231ec-aba6-11f0-8f2b-6fa1b3127622"),
 
-			expectTarget: "bin-manager.pipecat-manager.request",
+			expectTarget: "bin-manager.pipecat-manager.request.1.2.3.4",
 			expectRequest: &sock.Request{
 				URI:    "/v1/pipecatcalls/1c2231ec-aba6-11f0-8f2b-6fa1b3127622",
 				Method: sock.RequestMethodGet,
@@ -128,7 +132,7 @@ func Test_PipecatV1PipecatcallGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			_, err := reqHandler.PipecatV1PipecatcallGet(ctx, tt.id)
+			_, err := reqHandler.PipecatV1PipecatcallGet(ctx, tt.hostID, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -141,7 +145,8 @@ func Test_PipecatV1PipecatcallTerminate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		hostID string
+		id     uuid.UUID
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -151,9 +156,10 @@ func Test_PipecatV1PipecatcallTerminate(t *testing.T) {
 		{
 			name: "normal",
 
-			id: uuid.FromStringOrNil("1c506288-aba6-11f0-9faa-cfb11d9d5e47"),
+			hostID: "8c342d88-b460-11f0-bc20-13fdcc8faeb3",
+			id:     uuid.FromStringOrNil("1c506288-aba6-11f0-9faa-cfb11d9d5e47"),
 
-			expectTarget: "bin-manager.pipecat-manager.request",
+			expectTarget: "bin-manager.pipecat-manager.request.8c342d88-b460-11f0-bc20-13fdcc8faeb3",
 			expectRequest: &sock.Request{
 				URI:    "/v1/pipecatcalls/1c506288-aba6-11f0-9faa-cfb11d9d5e47/stop",
 				Method: sock.RequestMethodPost,
@@ -179,7 +185,7 @@ func Test_PipecatV1PipecatcallTerminate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			_, err := reqHandler.PipecatV1PipecatcallTerminate(ctx, tt.id)
+			_, err := reqHandler.PipecatV1PipecatcallTerminate(ctx, tt.hostID, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

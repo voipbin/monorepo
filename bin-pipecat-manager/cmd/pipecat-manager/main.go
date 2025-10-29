@@ -12,7 +12,6 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"os"
 
-	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -61,9 +60,6 @@ func run() error {
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
 	sockHandler.Connect()
 
-	hostID := uuid.Must(uuid.NewV4()).String()
-	log.Debugf("Generated host id. host_id: %s", hostID)
-
 	listenIP := os.Getenv("POD_IP")
 	if listenIP == "" {
 		return fmt.Errorf("could not get the listen ip address")
@@ -73,10 +69,10 @@ func run() error {
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName)
 
-	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, listenAddress, hostID)
+	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, listenAddress, listenIP)
 
 	// run listen
-	if errListen := runListen(sockHandler, hostID, pipecatcallHandler); errListen != nil {
+	if errListen := runListen(sockHandler, listenIP, pipecatcallHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errors.Wrapf(errListen, "could not start runListen")
 	}
@@ -99,7 +95,7 @@ func runListen(
 	listenHandler := listenhandler.NewListenHandler(sockHandler, pipecatcallHandler)
 
 	// run
-	listenQueue := fmt.Sprintf("bin-manager.pipecat-manager-%s.request", hostID)
+	listenQueue := fmt.Sprintf("%s.%s", commonoutline.QueueNamePipecatRequest, hostID)
 	if err := listenHandler.Run(string("bin-manager.pipecat-manager.request"), listenQueue, string(commonoutline.QueueNameDelay)); err != nil {
 		return errors.Wrapf(err, "could not run the listenhandler correctly")
 	}
