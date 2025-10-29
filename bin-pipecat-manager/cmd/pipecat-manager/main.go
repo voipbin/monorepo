@@ -9,6 +9,8 @@ import (
 	"monorepo/bin-pipecat-manager/pkg/listenhandler"
 	"monorepo/bin-pipecat-manager/pkg/pipecatcallhandler"
 
+	_ "github.com/go-sql-driver/mysql"
+
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"

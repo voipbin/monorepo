@@ -58,6 +58,7 @@ require (
 	github.com/CyCoreSystems/audiosocket v0.3.0
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/go-redsync/redsync/v4 v4.14.0
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
@@ -77,6 +78,7 @@ require (
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
