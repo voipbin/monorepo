@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	pcrequest "monorepo/bin-pipecat-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
@@ -13,19 +14,21 @@ import (
 
 func (r *requestHandler) PipecatV1PipecatcallStart(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	activeflowID uuid.UUID,
-	referenceType pipecatcall.ReferenceType,
+	referenceType pmpipecatcall.ReferenceType,
 	referenceID uuid.UUID,
-	llm pipecatcall.LLM,
-	stt pipecatcall.STT,
-	tts pipecatcall.TTS,
+	llm pmpipecatcall.LLM,
+	stt pmpipecatcall.STT,
+	tts pmpipecatcall.TTS,
 	voiceID string,
 	messages []map[string]any,
-) (*pipecatcall.Pipecatcall, error) {
+) (*pmpipecatcall.Pipecatcall, error) {
 	uri := "/v1/pipecatcalls"
 
 	data := &pcrequest.V1DataPipecatcallsPost{
+		ID:           id,
 		CustomerID:   customerID,
 		ActiveflowID: activeflowID,
 
@@ -49,7 +52,7 @@ func (r *requestHandler) PipecatV1PipecatcallStart(
 		return nil, err
 	}
 
-	var res pipecatcall.Pipecatcall
+	var res pmpipecatcall.Pipecatcall
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, errParse
 	}
@@ -57,15 +60,16 @@ func (r *requestHandler) PipecatV1PipecatcallStart(
 	return &res, nil
 }
 
-func (r *requestHandler) PipecatV1PipecatcallGet(ctx context.Context, pipecallID uuid.UUID) (*pipecatcall.Pipecatcall, error) {
+func (r *requestHandler) PipecatV1PipecatcallGet(ctx context.Context, hostID string, pipecallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error) {
 	uri := fmt.Sprintf("/v1/pipecatcalls/%s", pipecallID)
 
-	tmp, err := r.sendRequestPipecat(ctx, uri, sock.RequestMethodGet, "pipecat/pipecatcalls/<pipecatcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	queueName := fmt.Sprintf("%s.%s", outline.QueueNamePipecatRequest, hostID)
+	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodGet, "pipecat/pipecatcalls/<pipecatcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var res pipecatcall.Pipecatcall
+	var res pmpipecatcall.Pipecatcall
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, errParse
 	}
@@ -76,15 +80,16 @@ func (r *requestHandler) PipecatV1PipecatcallGet(ctx context.Context, pipecallID
 // PipecatV1PipecatcallTerminate sends a request to pipecat-manager
 // to terminate an pipecatcall.
 // it returns pipecatcall if it succeed.
-func (r *requestHandler) PipecatV1PipecatcallTerminate(ctx context.Context, aicallID uuid.UUID) (*pipecatcall.Pipecatcall, error) {
+func (r *requestHandler) PipecatV1PipecatcallTerminate(ctx context.Context, hostID string, aicallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error) {
 	uri := fmt.Sprintf("/v1/pipecatcalls/%s/stop", aicallID)
 
-	tmp, err := r.sendRequestPipecat(ctx, uri, sock.RequestMethodPost, "pipecat/pipecatcalls/<pipecatcall-id>/terminate", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	queueName := fmt.Sprintf("%s.%s", outline.QueueNamePipecatRequest, hostID)
+	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodPost, "pipecat/pipecatcalls/<pipecatcall-id>/terminate", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var res pipecatcall.Pipecatcall
+	var res pmpipecatcall.Pipecatcall
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, errParse
 	}

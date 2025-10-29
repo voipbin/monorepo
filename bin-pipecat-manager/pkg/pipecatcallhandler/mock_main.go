@@ -11,6 +11,7 @@ package pipecatcallhandler
 
 import (
 	context "context"
+	message "monorepo/bin-pipecat-manager/models/message"
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	reflect "reflect"
 
@@ -71,19 +72,34 @@ func (mr *MockPipecatcallHandlerMockRecorder) Run() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockPipecatcallHandler)(nil).Run))
 }
 
-// Start mocks base method.
-func (m *MockPipecatcallHandler) Start(ctx context.Context, customerID, activeflowID uuid.UUID, referenceType pipecatcall.ReferenceType, referenceID uuid.UUID, llm pipecatcall.LLM, stt pipecatcall.STT, tts pipecatcall.TTS, voiceID string, messages []map[string]any) (*pipecatcall.Pipecatcall, error) {
+// SendMessage mocks base method.
+func (m *MockPipecatcallHandler) SendMessage(ctx context.Context, id uuid.UUID, messageID, messageText string, runImmediately, audioResponse bool) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages)
+	ret := m.ctrl.Call(m, "SendMessage", ctx, id, messageID, messageText, runImmediately, audioResponse)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SendMessage indicates an expected call of SendMessage.
+func (mr *MockPipecatcallHandlerMockRecorder) SendMessage(ctx, id, messageID, messageText, runImmediately, audioResponse any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockPipecatcallHandler)(nil).SendMessage), ctx, id, messageID, messageText, runImmediately, audioResponse)
+}
+
+// Start mocks base method.
+func (m *MockPipecatcallHandler) Start(ctx context.Context, id, customerID, activeflowID uuid.UUID, referenceType pipecatcall.ReferenceType, referenceID uuid.UUID, llm pipecatcall.LLM, stt pipecatcall.STT, tts pipecatcall.TTS, voiceID string, messages []map[string]any) (*pipecatcall.Pipecatcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Start", ctx, id, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages)
 	ret0, _ := ret[0].(*pipecatcall.Pipecatcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockPipecatcallHandlerMockRecorder) Start(ctx, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages any) *gomock.Call {
+func (mr *MockPipecatcallHandlerMockRecorder) Start(ctx, id, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPipecatcallHandler)(nil).Start), ctx, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPipecatcallHandler)(nil).Start), ctx, id, customerID, activeflowID, referenceType, referenceID, llm, stt, tts, voiceID, messages)
 }
 
 // Stop mocks base method.

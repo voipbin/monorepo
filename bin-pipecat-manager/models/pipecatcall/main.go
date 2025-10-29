@@ -1,7 +1,9 @@
 package pipecatcall
 
 import (
+	"context"
 	"monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
 	"net/http"
 
@@ -16,17 +18,23 @@ type Pipecatcall struct {
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
 
+	HostID string `json:"host_id,omitempty"`
+
 	LLM      LLM              `json:"-"`
 	STT      STT              `json:"-"`
 	TTS      TTS              `json:"-"`
 	VoiceID  string           `json:"-"`
 	Messages []map[string]any `json:"-"`
 
+	Ctx    context.Context    `json:"-"`
+	Cancel context.CancelFunc `json:"-"`
+
 	// pipecat runner
-	RunnerListener  net.Listener    `json:"-"`
-	RunnerPort      int             `json:"-"`
-	RunnerServer    *http.Server    `json:"-"`
-	RunnerWebsocket *websocket.Conn `json:"-"`
+	RunnerListener      net.Listener             `json:"-"`
+	RunnerPort          int                      `json:"-"`
+	RunnerServer        *http.Server             `json:"-"`
+	RunnerWebsocket     *websocket.Conn          `json:"-"`
+	RunnerWebsocketChan chan *pipecatframe.Frame `json:"-"`
 
 	// asterisk info
 	AsteriskStreamingID uuid.UUID `json:"-"`

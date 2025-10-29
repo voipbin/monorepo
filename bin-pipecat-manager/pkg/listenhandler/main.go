@@ -45,6 +45,9 @@ var (
 	regV1Pipecatcalls       = regexp.MustCompile(`/v1/pipecatcalls$`)
 	regV1PipecatcallsID     = regexp.MustCompile("/v1/pipecatcalls/" + regUUID + "$")
 	regV1PipecatcallsIDStop = regexp.MustCompile("/v1/pipecatcalls/" + regUUID + "/stop$")
+
+	// messages
+	regV1Messages = regexp.MustCompile(`/v1/messages$`)
 )
 
 var (
@@ -191,6 +194,14 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1PipecatcallsIDStop.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1PipecatcallsIDStopPost(ctx, m)
 		requestType = "/v1/pipecatcalls/<pipecatcall-id>/stop"
+
+	////////////////////
+	// messages
+	////////////////////
+	// POST /messages
+	case regV1Messages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1MessagesPost(ctx, m)
+		requestType = "/v1/messages"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

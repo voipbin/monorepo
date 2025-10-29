@@ -898,6 +898,7 @@ type RequestHandler interface {
 	// pipecat-manager pipecatcall
 	PipecatV1PipecatcallStart(
 		ctx context.Context,
+		id uuid.UUID,
 		customerID uuid.UUID,
 		activeflowID uuid.UUID,
 		referenceType pmpipecatcall.ReferenceType,
@@ -908,8 +909,8 @@ type RequestHandler interface {
 		voiceID string,
 		messages []map[string]any,
 	) (*pmpipecatcall.Pipecatcall, error)
-	PipecatV1PipecatcallGet(ctx context.Context, pipecallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
-	PipecatV1PipecatcallTerminate(ctx context.Context, aicallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
+	PipecatV1PipecatcallGet(ctx context.Context, hostID string, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
+	PipecatV1PipecatcallTerminate(ctx context.Context, hostID string, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
 
 	// queue-manager queue
 	QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]qmqueue.Queue, error)

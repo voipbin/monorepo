@@ -30,6 +30,7 @@ func (h *aicallHandler) Create(
 	})
 
 	id := h.utilHandler.UUIDCreate()
+	pipecatcallID := h.utilHandler.UUIDCreate()
 	tmp := &aicall.AIcall{
 		Identity: identity.Identity{
 			ID:         id,
@@ -45,7 +46,8 @@ func (h *aicallHandler) Create(
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
-		ConfbridgeID: confbridgeID,
+		ConfbridgeID:  confbridgeID,
+		PipecatcallID: pipecatcallID,
 
 		Gender:   gender,
 		Language: language,

@@ -135,6 +135,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 
 	pc, err := h.reqHandler.PipecatV1PipecatcallStart(
 		ctx,
+		res.PipecatcallID,
 		c.CustomerID,
 		activeflowID,
 		pmpipecatcall.ReferenceTypeAICall,

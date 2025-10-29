@@ -32,8 +32,9 @@ func Test_Create(t *testing.T) {
 		gender        aicall.Gender
 		language      string
 
-		responseUUID   uuid.UUID
-		responseAIcall *aicall.AIcall
+		responseUUIDID            uuid.UUID
+		responseUUIDPipecatcallID uuid.UUID
+		responseAIcall            *aicall.AIcall
 
 		expectAIcall *aicall.AIcall
 	}{
@@ -58,7 +59,8 @@ func Test_Create(t *testing.T) {
 			gender:        aicall.GenderFemale,
 			language:      "en-US",
 
-			responseUUID: uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
+			responseUUIDID:            uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
 			responseAIcall: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
@@ -76,13 +78,15 @@ func Test_Create(t *testing.T) {
 				AIEngineData: map[string]any{
 					"key1": "value1",
 				},
-				ActiveflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
-				ConfbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				Status:        aicall.StatusInitiating,
+				ActiveflowID:      uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
+				ReferenceType:     aicall.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
+				ConfbridgeID:      uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
+				Gender:            aicall.GenderFemale,
+				Language:          "en-US",
+				Status:            aicall.StatusInitiating,
+				TTSStreamingID:    uuid.FromStringOrNil("f28face2-817a-11f0-a087-531eee9532b8"),
+				TTSStreamingPodID: "f2d8841c-817a-11f0-9521-4f553837a2fb",
 			},
 		},
 	}
@@ -108,9 +112,10 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUID).Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			res, err := h.Create(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language)
