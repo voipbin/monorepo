@@ -1,8 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-pipecat-manager/pkg/cachehandler"
+	"monorepo/bin-pipecat-manager/pkg/dbhandler"
 	"monorepo/bin-pipecat-manager/pkg/listenhandler"
 	"monorepo/bin-pipecat-manager/pkg/pipecatcallhandler"
 
@@ -25,9 +28,13 @@ var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
 var (
+	databaseDSN             = ""
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
 	rabbitMQAddress         = ""
+	redisAddress            = ""
+	redisDatabase           = 0
+	redisPassword           = ""
 )
 
 func main() {
@@ -53,8 +60,11 @@ func signalHandler() {
 func run() error {
 	log := logrus.WithField("func", "run")
 
-	// // dbhandler
-	// db := dbhandler.NewHandler(sqlDB, cache)
+	dbHandler, err := createDBHandler()
+	if err != nil {
+		return errors.Wrapf(err, "could not create dbhandler")
+	}
+	log.Debugf("Connected to database and cache server.")
 
 	// rabbitmq sock connect
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
@@ -69,7 +79,7 @@ func run() error {
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName)
 
-	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, listenAddress, listenIP)
+	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, dbHandler, listenAddress, listenIP)
 
 	// run listen
 	if errListen := runListen(sockHandler, listenIP, pipecatcallHandler); errListen != nil {
@@ -115,4 +125,26 @@ func runStreaming(pipecatcallHandler pipecatcallhandler.PipecatcallHandler) erro
 	}()
 
 	return nil
+}
+
+// connectDatabase connects to the database and cachehandler
+func createDBHandler() (dbhandler.DBHandler, error) {
+	// connect to database
+	db, err := sql.Open("mysql", databaseDSN)
+	if err != nil {
+		logrus.Errorf("Could not access to database. err: %v", err)
+		return nil, err
+	}
+
+	// connect to cache
+	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
+	if err := cache.Connect(); err != nil {
+		logrus.Errorf("Could not connect to cache server. err: %v", err)
+		return nil, err
+	}
+
+	// create dbhandler
+	dbHandler := dbhandler.NewHandler(db, cache)
+
+	return dbHandler, nil
 }

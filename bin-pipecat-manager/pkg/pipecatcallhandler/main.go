@@ -64,9 +64,9 @@ const (
 
 type pipecatcallHandler struct {
 	utilHandler    utilhandler.UtilHandler
-	db             dbhandler.DBHandler
 	requestHandler requesthandler.RequestHandler
 	notifyHandler  notifyhandler.NotifyHandler
+	db             dbhandler.DBHandler
 
 	pythonRunner        PythonRunner
 	audiosocketHandler  AudiosocketHandler
@@ -83,6 +83,7 @@ type pipecatcallHandler struct {
 func NewPipecatcallHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+	dbHandler dbhandler.DBHandler,
 
 	listenAddress string,
 	hostID string,
@@ -91,6 +92,7 @@ func NewPipecatcallHandler(
 		utilHandler:    utilhandler.NewUtilHandler(),
 		requestHandler: reqHandler,
 		notifyHandler:  notifyHandler,
+		db:             dbHandler,
 
 		pythonRunner:        NewPythonRunner(),
 		audiosocketHandler:  NewAudiosocketHandler(),
