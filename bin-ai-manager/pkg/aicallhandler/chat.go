@@ -92,19 +92,20 @@ import (
 // 	return nil
 // }
 
-func (h *aicallHandler) setVariables(ctx context.Context, cc *aicall.AIcall) error {
+func (h *aicallHandler) setActiveflowVariables(ctx context.Context, cc *aicall.AIcall) error {
 	if cc.ActiveflowID == uuid.Nil {
 		// nothing todo
 		return nil
 	}
 
 	variables := map[string]string{
-		variableAIcallID:      cc.ID.String(),
+		variableID:            cc.ID.String(),
 		variableAIID:          cc.AIID.String(),
 		variableAIEngineModel: string(cc.AIEngineModel),
 		variableConfbridgeID:  cc.ConfbridgeID.String(),
 		variableGender:        string(cc.Gender),
 		variableLanguage:      cc.Language,
+		variablePipecatcallID: cc.PipecatcallID.String(),
 	}
 
 	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, cc.ActiveflowID, variables); errSet != nil {

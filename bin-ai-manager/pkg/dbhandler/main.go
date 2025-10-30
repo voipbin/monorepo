@@ -47,12 +47,6 @@ type DBHandler interface {
 	AIcallUpdatePipecatcallID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID) error
 	AIcallUpdateStatus(ctx context.Context, id uuid.UUID, status aicall.Status) error
 
-	// AIcallUpdateStatusPausing(ctx context.Context, id uuid.UUID) error
-	// AIcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
-	// AIcallUpdateStatusResuming(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) error
-	// AIcallUpdateStatusTerminating(ctx context.Context, id uuid.UUID) error
-	// AIcallUpdateStatusTerminated(ctx context.Context, id uuid.UUID) error
-
 	MessageCreate(ctx context.Context, c *message.Message) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageGets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error)

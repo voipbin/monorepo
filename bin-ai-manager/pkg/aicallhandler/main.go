@@ -65,12 +65,13 @@ type AIcallHandler interface {
 }
 
 const (
-	variableAIcallID      = "voipbin.aicall.id"
+	variableID            = "voipbin.aicall.id"
 	variableAIID          = "voipbin.aicall.ai_id"
 	variableAIEngineModel = "voipbin.aicall.ai_engine_model"
 	variableConfbridgeID  = "voipbin.aicall.confbridge_id"
 	variableGender        = "voipbin.aicall.gender"
 	variableLanguage      = "voipbin.aicall.language"
+	variablePipecatcallID = "voipbin.aicall.pipecatcall_id"
 )
 
 const (
@@ -84,6 +85,7 @@ const (
 )
 
 var mapDefaultTTSVoiceIDByTTSType = map[ai.TTSType]string{
+	ai.TTSTypeNone:       "",
 	ai.TTSTypeAsync:      "",
 	ai.TTSTypeAWS:        "Joanna",                               // Joanna (US female). https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
 	ai.TTSTypeAzure:      "en-US-JennyNeural",                    // Jenny Neural. https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support
@@ -181,34 +183,36 @@ func NewAIcallHandler(
 }
 
 const (
-	defaultCommonSystemPrompt = `
-Role:
-You are an AI assistant integrated with voipbin.
-Your role is to follow the user's system or custom prompt strictly, provide natural responses, and call external tools when necessary.
+	defaultCommonSystemPrompt = ""
 
-Context:
-- Users will set their own instructions (persona, style, context).
-- You must adapt to those instructions consistently.
-- If user requests or situation requires, use available tools to gather data or perform actions.
+// 	defaultCommonSystemPrompt = `
+// Role:
+// You are an AI assistant integrated with voipbin.
+// Your role is to follow the user's system or custom prompt strictly, provide natural responses, and call external tools when necessary.
 
-Input Values:
-- User-provided system/custom prompt
-- User query
-- Available tools list
+// Context:
+// - Users will set their own instructions (persona, style, context).
+// - You must adapt to those instructions consistently.
+// - If user requests or situation requires, use available tools to gather data or perform actions.
 
-Instructions:
-- Always prioritize the user's provided prompt instructions.
-- Generate a helpful, coherent, and contextually appropriate response.
-- If tools are available and required, call them responsibly and return results clearly.
-- **Do not mention tool names or the fact that a tool is being used in the user-facing response.**
-- Maintain consistency with the user-defined tone and role.
-- If ambiguity exists, ask clarifying questions before answering.
-- Before giving the final answer, outline a short execution plan (2-4 steps), then provide a concise summary (1-2 sentences) and the final answer.
-- For each Input Value, ask clarifying questions **one at a time in sequence**. Wait for the user's answer before moving to the next question.
+// Input Values:
+// - User-provided system/custom prompt
+// - User query
+// - Available tools list
 
-Constraints:
-- Avoid hallucination; use tools for factual queries.  
-- Keep answers aligned with user's persona and tone.  
-- Respect conversation history and continuity.  
-`
+// Instructions:
+// - Always prioritize the user's provided prompt instructions.
+// - Generate a helpful, coherent, and contextually appropriate response.
+// - If tools are available and required, call them responsibly and return results clearly.
+// - **Do not mention tool names or the fact that a tool is being used in the user-facing response.**
+// - Maintain consistency with the user-defined tone and role.
+// - If ambiguity exists, ask clarifying questions before answering.
+// - Before giving the final answer, outline a short execution plan (2-4 steps), then provide a concise summary (1-2 sentences) and the final answer.
+// - For each Input Value, ask clarifying questions **one at a time in sequence**. Wait for the user's answer before moving to the next question.
+
+// Constraints:
+// - Avoid hallucination; use tools for factual queries.
+// - Keep answers aligned with user's persona and tone.
+// - Respect conversation history and continuity.
+// `
 )

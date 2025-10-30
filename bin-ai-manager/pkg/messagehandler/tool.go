@@ -8,7 +8,6 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
-	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -61,7 +60,7 @@ func (h *messageHandler) toolMessageHandleConnect(ctx context.Context, cc *aical
 	}
 	log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", cc.ActiveflowID)
 
-	tmp, err := h.Create(ctx, uuid.Nil, cc.CustomerID, cc.ID, message.DirectionOutgoing, message.RoleTool, `{"result": "success"}`, nil, toolCall.ID)
+	tmp, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionOutgoing, message.RoleTool, `{"result": "success"}`, nil, toolCall.ID)
 	if err != nil {
 		log.Errorf("Could not create the tool response message correctly. err: %v", err)
 		return false, errors.Wrapf(err, "could not create the tool message")
@@ -107,7 +106,7 @@ func (h *messageHandler) toolMessageHandleMessageSend(ctx context.Context, cc *a
 	log.Debugf("Message sent. result: %s, content: %s", result, tmpContent)
 
 	content := fmt.Sprintf(`{"result": "%s", "message": %s}`, result, tmpContent)
-	tmp, err := h.Create(ctx, uuid.Nil, cc.CustomerID, cc.ID, message.DirectionOutgoing, message.RoleTool, content, nil, toolCall.ID)
+	tmp, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionOutgoing, message.RoleTool, content, nil, toolCall.ID)
 	if err != nil {
 		log.Errorf("Could not create the tool response message correctly. err: %v", err)
 		return false, errors.Wrapf(err, "could not create the tool message")

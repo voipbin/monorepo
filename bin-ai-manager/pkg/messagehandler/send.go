@@ -36,7 +36,7 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 	}
 
 	// create a message for outgoing(request)
-	res, err := h.Create(ctx, uuid.Nil, cc.CustomerID, aicallID, message.DirectionOutgoing, role, content, nil, "")
+	res, err := h.Create(ctx, cc.CustomerID, aicallID, message.DirectionOutgoing, role, content, nil, "")
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the sending message correctly")
 	}
@@ -70,7 +70,7 @@ func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role mess
 	}
 
 	// create a message for incoming(response)
-	tmpResponse, err := h.Create(ctx, uuid.Nil, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content, nil, "")
+	tmpResponse, err := h.Create(ctx, cc.CustomerID, cc.ID, message.DirectionIncoming, tmpMessage.Role, tmpMessage.Content, nil, "")
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the received message correctly")
 	}

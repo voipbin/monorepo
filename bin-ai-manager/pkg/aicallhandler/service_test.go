@@ -301,6 +301,8 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
 
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
+
 			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(nil, fmt.Errorf(""))
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
@@ -308,8 +310,6 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
-
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
 
 			mockMessage.EXPECT().Send(ctx, tt.responseAIcall.ID, message.RoleUser, tt.expectMessageContent, false).Return(tt.responseMessage, nil)
 

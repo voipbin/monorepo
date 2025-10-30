@@ -43,6 +43,21 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockMessageHandler) Create(ctx context.Context, customerID, aicallID uuid.UUID, direction message.Direction, role message.Role, content string, toolCalls []message.ToolCall, toolCallID string) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, aicallID, direction, role, content, toolCalls, toolCallID)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockMessageHandlerMockRecorder) Create(ctx, customerID, aicallID, direction, role, content, toolCalls, toolCallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, customerID, aicallID, direction, role, content, toolCalls, toolCallID)
+}
+
 // EventPMMessageBotTranscription mocks base method.
 func (m *MockMessageHandler) EventPMMessageBotTranscription(ctx context.Context, evt *message0.Message) {
 	m.ctrl.T.Helper()
