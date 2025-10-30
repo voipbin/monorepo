@@ -74,7 +74,7 @@ const (
 )
 
 const (
-	deaultPipecatcallTTSType = pmpipecatcall.TTSElevenLabs
+	deaultPipecatcallTTSType = pmpipecatcall.TTSTypeElevenLabs
 	defaultTTSType           = ai.TTSTypeElevenLabs
 	defaultSTTType           = ai.STTTypeDeepgram
 

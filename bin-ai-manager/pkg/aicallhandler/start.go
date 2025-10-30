@@ -141,11 +141,11 @@ func (h *aicallHandler) startReferenceTypeCall(
 		activeflowID,
 		pmpipecatcall.ReferenceTypeAICall,
 		res.ID,
-		pmpipecatcall.LLM(c.EngineModel),
+		pmpipecatcall.LLMType(c.EngineModel),
+		messages,
 		sttType,
 		ttsType,
 		ttsVoiceID,
-		messages,
 	)
 	if err != nil {
 		log.Errorf("Could not start pipecatcall. err: %v", err)
@@ -279,13 +279,13 @@ func (h *aicallHandler) getPipecatcallMessages(ctx context.Context, c *ai.AI, ac
 	return res, nil
 }
 
-func (h *aicallHandler) getSTTType(sttType ai.STTType) pmpipecatcall.STT {
+func (h *aicallHandler) getSTTType(sttType ai.STTType) pmpipecatcall.STTType {
 
 	if sttType != ai.STTTypeNone {
-		return pmpipecatcall.STT(sttType)
+		return pmpipecatcall.STTType(sttType)
 	}
 
-	return pmpipecatcall.STT(defaultSTTType)
+	return pmpipecatcall.STTType(defaultSTTType)
 }
 
 func (h *aicallHandler) getTTSType(ttsType ai.TTSType) ai.TTSType {
@@ -296,10 +296,10 @@ func (h *aicallHandler) getTTSType(ttsType ai.TTSType) ai.TTSType {
 	return defaultTTSType
 }
 
-func (h *aicallHandler) getPipecatcallTTSType(ttsType ai.TTSType) pmpipecatcall.TTS {
+func (h *aicallHandler) getPipecatcallTTSType(ttsType ai.TTSType) pmpipecatcall.TTSType {
 	tmp := h.getTTSType(ttsType)
 
-	return pmpipecatcall.TTS(tmp)
+	return pmpipecatcall.TTSType(tmp)
 }
 
 func (h *aicallHandler) getPipecatcallVoiceID(ttsType ai.TTSType, voiceID string) (string, error) {

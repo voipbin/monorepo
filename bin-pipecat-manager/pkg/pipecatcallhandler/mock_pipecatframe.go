@@ -41,41 +41,41 @@ func (m *MockPipecatframeHandler) EXPECT() *MockPipecatframeHandlerMockRecorder 
 }
 
 // RunSender mocks base method.
-func (m *MockPipecatframeHandler) RunSender(pc *pipecatcall.Pipecatcall) {
+func (m *MockPipecatframeHandler) RunSender(se *pipecatcall.Session) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RunSender", pc)
+	m.ctrl.Call(m, "RunSender", se)
 }
 
 // RunSender indicates an expected call of RunSender.
-func (mr *MockPipecatframeHandlerMockRecorder) RunSender(pc any) *gomock.Call {
+func (mr *MockPipecatframeHandlerMockRecorder) RunSender(se any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunSender", reflect.TypeOf((*MockPipecatframeHandler)(nil).RunSender), pc)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunSender", reflect.TypeOf((*MockPipecatframeHandler)(nil).RunSender), se)
 }
 
 // SendAudio mocks base method.
-func (m *MockPipecatframeHandler) SendAudio(pc *pipecatcall.Pipecatcall, packetID uint64, data []byte) error {
+func (m *MockPipecatframeHandler) SendAudio(se *pipecatcall.Session, packetID uint64, data []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendAudio", pc, packetID, data)
+	ret := m.ctrl.Call(m, "SendAudio", se, packetID, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SendAudio indicates an expected call of SendAudio.
-func (mr *MockPipecatframeHandlerMockRecorder) SendAudio(pc, packetID, data any) *gomock.Call {
+func (mr *MockPipecatframeHandlerMockRecorder) SendAudio(se, packetID, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAudio", reflect.TypeOf((*MockPipecatframeHandler)(nil).SendAudio), pc, packetID, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAudio", reflect.TypeOf((*MockPipecatframeHandler)(nil).SendAudio), se, packetID, data)
 }
 
 // SendRTVIText mocks base method.
-func (m *MockPipecatframeHandler) SendRTVIText(pc *pipecatcall.Pipecatcall, id, text string, runImmediately, audioResponse bool) error {
+func (m *MockPipecatframeHandler) SendRTVIText(se *pipecatcall.Session, id, text string, runImmediately, audioResponse bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendRTVIText", pc, id, text, runImmediately, audioResponse)
+	ret := m.ctrl.Call(m, "SendRTVIText", se, id, text, runImmediately, audioResponse)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SendRTVIText indicates an expected call of SendRTVIText.
-func (mr *MockPipecatframeHandlerMockRecorder) SendRTVIText(pc, id, text, runImmediately, audioResponse any) *gomock.Call {
+func (mr *MockPipecatframeHandlerMockRecorder) SendRTVIText(se, id, text, runImmediately, audioResponse any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRTVIText", reflect.TypeOf((*MockPipecatframeHandler)(nil).SendRTVIText), pc, id, text, runImmediately, audioResponse)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRTVIText", reflect.TypeOf((*MockPipecatframeHandler)(nil).SendRTVIText), se, id, text, runImmediately, audioResponse)
 }

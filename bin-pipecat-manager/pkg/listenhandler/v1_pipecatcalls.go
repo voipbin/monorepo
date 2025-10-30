@@ -32,11 +32,11 @@ func (h *listenHandler) processV1PipecatcallsPost(ctx context.Context, m *sock.R
 		req.ActiveflowID,
 		req.ReferenceType,
 		req.ReferenceID,
-		req.LLM,
-		req.STT,
-		req.TTS,
-		req.VoiceID,
-		req.Messages,
+		req.LLMType,
+		req.LLMMessages,
+		req.STTType,
+		req.TTSType,
+		req.TTSVoiceID,
 	)
 	if err != nil {
 		log.Debugf("Could not create a pipecatcall. err: %v", err)

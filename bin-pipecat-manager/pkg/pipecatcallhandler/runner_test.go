@@ -18,7 +18,7 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 	tests := []struct {
 		name string
 
-		pc *pipecatcall.Pipecatcall
+		se *pipecatcall.Session
 		m  []byte
 
 		responseUUID  uuid.UUID
@@ -28,11 +28,12 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 		{
 			name: "bot-transcription",
 
-			pc: &pipecatcall.Pipecatcall{
+			se: &pipecatcall.Session{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("54416ae0-af23-11f0-8991-07dd3ffd4def"),
 					CustomerID: uuid.FromStringOrNil("546f7606-af23-11f0-a7ca-c32fd2659ee7"),
 				},
+				Ctx: context.Background(),
 			},
 			m: []byte(`{
 				"label": "rtvi-ai",
@@ -53,11 +54,12 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 		},
 		{
 			name: "user-transcription",
-			pc: &pipecatcall.Pipecatcall{
+			se: &pipecatcall.Session{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("54986764-af23-11f0-9793-db91dfe17f29"),
 					CustomerID: uuid.FromStringOrNil("54c1efee-af23-11f0-af7c-a7f393ea7de5"),
 				},
+				Ctx: context.Background(),
 			},
 			m: []byte(`{
 				"label": "rtvi-ai",
@@ -90,12 +92,11 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
 			}
-			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockNotify.EXPECT().PublishEvent(ctx, tt.expectEvent, tt.expectMessage)
+			mockNotify.EXPECT().PublishEvent(tt.se.Ctx, tt.expectEvent, tt.expectMessage)
 
-			if err := h.receiveMessageFrameTypeMessage(ctx, tt.pc, tt.m); err != nil {
+			if err := h.receiveMessageFrameTypeMessage(tt.se, tt.m); err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
 		})
@@ -106,7 +107,7 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 	tests := []struct {
 		name string
 
-		pc          *pipecatcall.Pipecatcall
+		se          *pipecatcall.Session
 		sampleRate  int
 		numChannels int
 		data        []byte
@@ -117,8 +118,9 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 		{
 			name: "normal mono audio",
 
-			pc: &pipecatcall.Pipecatcall{
+			se: &pipecatcall.Session{
 				AsteriskConn: NewDummyConn(),
+				Ctx:          context.Background(),
 			},
 			sampleRate:  16000,
 			numChannels: 1,
@@ -130,8 +132,9 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 		{
 			name: "empty data",
 
-			pc: &pipecatcall.Pipecatcall{
+			se: &pipecatcall.Session{
 				AsteriskConn: NewDummyConn(),
+				Ctx:          context.Background(),
 			},
 			sampleRate:  8000,
 			numChannels: 1,
@@ -151,12 +154,11 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 			h := &pipecatcallHandler{
 				audiosocketHandler: mockAudio,
 			}
-			ctx := context.Background()
 
 			mockAudio.EXPECT().GetDataSamples(tt.sampleRate, tt.data).Return(tt.responseDataSamples, nil)
-			mockAudio.EXPECT().Write(ctx, tt.pc.AsteriskConn, tt.expectWriteData).Return(nil)
+			mockAudio.EXPECT().Write(tt.se.Ctx, tt.se.AsteriskConn, tt.expectWriteData).Return(nil)
 
-			if err := h.runnerWebsocketHandleAudio(ctx, tt.pc, tt.sampleRate, tt.numChannels, tt.data); err != nil {
+			if err := h.runnerWebsocketHandleAudio(tt.se, tt.sampleRate, tt.numChannels, tt.data); err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
 
@@ -190,11 +192,11 @@ func Test_runnerGetURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &pipecatcallHandler{}
-			pc := &pipecatcall.Pipecatcall{
+			se := &pipecatcall.Session{
 				RunnerPort: tt.runnerPort,
 			}
 
-			got := h.runnerGetURL(pc)
+			got := h.runnerGetURL(se)
 			if got != tt.expectURL {
 				t.Errorf("unexpected URL: expect %q, got %q", tt.expectURL, got)
 			}
