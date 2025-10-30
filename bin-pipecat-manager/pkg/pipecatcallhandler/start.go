@@ -18,11 +18,11 @@ func (h *pipecatcallHandler) Start(
 	activeflowID uuid.UUID,
 	referenceType pipecatcall.ReferenceType,
 	referenceID uuid.UUID,
-	llm pipecatcall.LLM,
-	stt pipecatcall.STT,
-	tts pipecatcall.TTS,
-	voiceID string,
-	messages []map[string]any,
+	llmType pipecatcall.LLMType,
+	llmMessages []map[string]any,
+	sttType pipecatcall.STTType,
+	ttsType pipecatcall.TTSType,
+	ttsVoiceID string,
 ) (*pipecatcall.Pipecatcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Start",
@@ -39,11 +39,11 @@ func (h *pipecatcallHandler) Start(
 		activeflowID,
 		referenceType,
 		referenceID,
-		llm,
-		stt,
-		tts,
-		voiceID,
-		messages,
+		llmType,
+		llmMessages,
+		sttType,
+		ttsType,
+		ttsVoiceID,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create pipecatcall")
@@ -126,38 +126,6 @@ func (h *pipecatcallHandler) stop(ctx context.Context, pc *pipecatcall.Pipecatca
 	}
 	log.WithField("external_media", em).Info("Stopped external media. external_media_id: ", em.ID)
 
-	if pc.RunnerWebsocket != nil {
-		if errClose := pc.RunnerWebsocket.Close(); errClose != nil {
-			log.Errorf("Could not close the pipecat runner websocket. err: %v", errClose)
-		} else {
-			log.Infof("Closed the pipecat runner websocket.")
-		}
-	}
-
-	if pc.RunnerServer != nil {
-		if errClose := pc.RunnerServer.Close(); errClose != nil {
-			log.Errorf("Could not close the pipecat runner server. err: %v", errClose)
-		} else {
-			log.Infof("Closed the pipecat runner server.")
-		}
-	}
-
-	if pc.RunnerListener != nil {
-		if errClose := pc.RunnerListener.Close(); errClose != nil {
-			log.Errorf("Could not close the pipecat runner listener. err: %v", errClose)
-		} else {
-			log.Infof("Closed the pipecat runner listener.")
-		}
-	}
-
-	if pc.AsteriskConn != nil {
-		if errClose := pc.AsteriskConn.Close(); errClose != nil {
-			log.Errorf("Could not close the asterisk connection. err: %v", errClose)
-		} else {
-			log.Infof("Closed the asterisk connection.")
-		}
-	}
-
-	h.Delete(ctx, pc.ID)
+	h.SessionStop(pc.ID)
 	log.Infof("Pipecatcall stopped. pipecatcall_id: %s", pc.ID)
 }

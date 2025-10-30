@@ -1,14 +1,9 @@
 package pipecatcall
 
 import (
-	"context"
 	"monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-pipecat-manager/models/pipecatframe"
-	"net"
-	"net/http"
 
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/websocket"
 )
 
 type Pipecatcall struct {
@@ -20,25 +15,15 @@ type Pipecatcall struct {
 
 	HostID string `json:"host_id,omitempty"`
 
-	LLM      LLM              `json:"-"`
-	STT      STT              `json:"-"`
-	TTS      TTS              `json:"-"`
-	VoiceID  string           `json:"-"`
-	Messages []map[string]any `json:"-"`
+	LLMType     LLMType          `json:"llm_type,omitempty"`
+	LLMMessages []map[string]any `json:"llm_messages,omitempty"`
+	STTType     STTType          `json:"stt_type,omitempty"`
+	TTSType     TTSType          `json:"tts_type,omitempty"`
+	TTSVoiceID  string           `json:"tts_voice_id,omitempty"`
 
-	Ctx    context.Context    `json:"-"`
-	Cancel context.CancelFunc `json:"-"`
-
-	// pipecat runner
-	RunnerListener      net.Listener             `json:"-"`
-	RunnerPort          int                      `json:"-"`
-	RunnerServer        *http.Server             `json:"-"`
-	RunnerWebsocket     *websocket.Conn          `json:"-"`
-	RunnerWebsocketChan chan *pipecatframe.Frame `json:"-"`
-
-	// asterisk info
-	AsteriskStreamingID uuid.UUID `json:"-"`
-	AsteriskConn        net.Conn  `json:"-"`
+	TMCreate string `json:"tm_create,omitempty"`
+	TMUpdate string `json:"tm_update,omitempty"`
+	TMDelete string `json:"tm_delete,omitempty"`
 }
 
 type ReferenceType string
@@ -48,20 +33,20 @@ const (
 	ReferenceTypeAICall ReferenceType = "ai_call"
 )
 
-// LLM
+// LLMType
 // consist of (vendor) + . + (model)
 // e.g. openai.gpt-4, anthropic.claude-2
-type LLM string
+type LLMType string
 
-type STT string
+type STTType string
 
 const (
-	STTDeepgram = "deepgram"
+	STTTypeDeepgram = "deepgram"
 )
 
-type TTS string
+type TTSType string
 
 const (
-	TTSCartesia   = "cartesia"
-	TTSElevenLabs = "elevenlabs"
+	TTSTypeCartesia   = "cartesia"
+	TTSTypeElevenLabs = "elevenlabs"
 )

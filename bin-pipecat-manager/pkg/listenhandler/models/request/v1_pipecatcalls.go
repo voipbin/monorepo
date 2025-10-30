@@ -15,9 +15,9 @@ type V1DataPipecatcallsPost struct {
 	ActiveflowID  uuid.UUID                 `json:"activeflow_id,omitempty"`
 	ReferenceType pipecatcall.ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID                 `json:"reference_id,omitempty"`
-	LLM           pipecatcall.LLM           `json:"llm,omitempty"`
-	STT           pipecatcall.STT           `json:"stt,omitempty"`
-	TTS           pipecatcall.TTS           `json:"tts,omitempty"`
-	VoiceID       string                    `json:"voice_id,omitempty"`
-	Messages      []map[string]any          `json:"messages,omitempty"`
+	LLMType       pipecatcall.LLMType       `json:"llm_type,omitempty"`
+	LLMMessages   []map[string]any          `json:"llm_messages,omitempty"`
+	STTType       pipecatcall.STTType       `json:"stt_type,omitempty"`
+	TTSType       pipecatcall.TTSType       `json:"tts_type,omitempty"`
+	TTSVoiceID    string                    `json:"tts_voice_id,omitempty"`
 }

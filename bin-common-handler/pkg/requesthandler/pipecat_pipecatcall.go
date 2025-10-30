@@ -19,11 +19,11 @@ func (r *requestHandler) PipecatV1PipecatcallStart(
 	activeflowID uuid.UUID,
 	referenceType pmpipecatcall.ReferenceType,
 	referenceID uuid.UUID,
-	llm pmpipecatcall.LLM,
-	stt pmpipecatcall.STT,
-	tts pmpipecatcall.TTS,
-	voiceID string,
-	messages []map[string]any,
+	llmType pmpipecatcall.LLMType,
+	llmMessages []map[string]any,
+	sttType pmpipecatcall.STTType,
+	ttsType pmpipecatcall.TTSType,
+	ttsVoiceID string,
 ) (*pmpipecatcall.Pipecatcall, error) {
 	uri := "/v1/pipecatcalls"
 
@@ -35,11 +35,11 @@ func (r *requestHandler) PipecatV1PipecatcallStart(
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
-		LLM:      llm,
-		STT:      stt,
-		TTS:      tts,
-		VoiceID:  voiceID,
-		Messages: messages,
+		LLMType:     llmType,
+		LLMMessages: llmMessages,
+		STTType:     sttType,
+		TTSType:     ttsType,
+		TTSVoiceID:  ttsVoiceID,
 	}
 
 	m, err := json.Marshal(data)
@@ -60,11 +60,10 @@ func (r *requestHandler) PipecatV1PipecatcallStart(
 	return &res, nil
 }
 
-func (r *requestHandler) PipecatV1PipecatcallGet(ctx context.Context, hostID string, pipecallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error) {
+func (r *requestHandler) PipecatV1PipecatcallGet(ctx context.Context, pipecallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error) {
 	uri := fmt.Sprintf("/v1/pipecatcalls/%s", pipecallID)
 
-	queueName := fmt.Sprintf("%s.%s", outline.QueueNamePipecatRequest, hostID)
-	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodGet, "pipecat/pipecatcalls/<pipecatcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestPipecat(ctx, uri, sock.RequestMethodGet, "pipecat/pipecatcalls/<pipecatcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
