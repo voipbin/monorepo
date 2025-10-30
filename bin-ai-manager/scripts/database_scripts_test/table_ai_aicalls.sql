@@ -14,6 +14,7 @@ create table ai_aicalls(
 
   confbridge_id     binary(16),
   transcribe_id     binary(16),
+  pipecatcall_id    binary(16),
 
   status  varchar(255),   -- status
 

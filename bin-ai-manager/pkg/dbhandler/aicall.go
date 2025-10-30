@@ -30,6 +30,7 @@ const (
 
 		confbridge_id,
 		transcribe_id,
+		pipecatcall_id,
 
 		status,
 
@@ -69,6 +70,7 @@ func (h *handler) aicallGetFromRow(row *sql.Rows) (*aicall.AIcall, error) {
 
 		&res.ConfbridgeID,
 		&res.TranscribeID,
+		&res.PipecatcallID,
 
 		&res.Status,
 
@@ -115,6 +117,7 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 
 		confbridge_id,
 		transcribe_id,
+		pipecatcall_id,
 
 		status,
 
@@ -132,7 +135,7 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 		?, ?, 
 		?, ?, ?, ?,
 		?, ?, ?,
-		?, ?,
+		?, ?, ?,
 		?,
 		?, ?,
 		?, ?,
@@ -160,6 +163,7 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 
 		cb.ConfbridgeID.Bytes(),
 		cb.TranscribeID.Bytes(),
+		cb.PipecatcallID.Bytes(),
 
 		cb.Status,
 

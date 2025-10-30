@@ -49,7 +49,12 @@ def upgrade():
     op.execute("""create index idx_pipecat_pipecatcalls_reference_id on pipecat_pipecatcalls(reference_id);""")
     op.execute("""create index idx_pipecat_pipecatcalls_host_id on pipecat_pipecatcalls(host_id);""")
     op.execute("""create index idx_pipecat_pipecatcalls_tm_create on pipecat_pipecatcalls(tm_create);""")
+    
+    op.execute("""alter table ai_aicalls add column pipecatcall_id binary(16) after transcribe_id;""")
+    op.execute("""update ai_aicalls set pipecatcall_id = unhex(replace('00000000-0000-0000-0000-000000000000', '-', ''));""")
+
 
 
 def downgrade():
     op.execute("""drop table pipecat_pipecatcalls;""")
+    op.execute("""alter table ai_aicalls drop column pipecatcall_id;""")
