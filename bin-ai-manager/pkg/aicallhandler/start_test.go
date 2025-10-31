@@ -482,6 +482,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
+			mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID).Return(tt.responsePipecatcall, nil)
+
 			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)

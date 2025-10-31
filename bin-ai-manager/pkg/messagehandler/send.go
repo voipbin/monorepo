@@ -37,11 +37,13 @@ func (h *messageHandler) Send(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the aicall correctly")
 	}
+	log.WithField("aicall", c).Debugf("Found the aicall.")
 
 	pc, err := h.reqHandler.PipecatV1PipecatcallGet(ctx, c.PipecatcallID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the pipecatcall correctly")
 	}
+	log.WithField("pipecatcall", pc).Debugf("Found the pipecatcall.")
 
 	// create message
 	res, err := h.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, role, content, nil, "")
@@ -56,6 +58,14 @@ func (h *messageHandler) Send(
 	log.WithField("pipecat_message", tmp).Debugf("Sent the message to the pipecatcall.")
 
 	return res, nil
+}
+
+func (h *messageHandler) sendReferenceTypeCall() (*message.Message, error) {
+	return nil, nil
+}
+
+func (h *messageHandler) sendReferenceTypeOthers() (*message.Message, error) {
+	return nil, nil
 }
 
 // Send sends a message to the ai engine and returns the sent message.

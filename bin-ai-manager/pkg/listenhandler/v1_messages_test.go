@@ -139,15 +139,17 @@ func Test_processV1MessagesPost(t *testing.T) {
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAI := aihandler.NewMockAIHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:    mockSock,
 				aiHandler:      mockAI,
+				aicallHandler:  mockAIcall,
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Send(gomock.Any(), tt.expectAIcallID, tt.expectRole, tt.expectContent, tt.expectReturnResponse).Return(tt.responseMessage, nil)
+			mockAIcall.EXPECT().Send(gomock.Any(), tt.expectAIcallID, tt.expectRole, tt.expectContent, tt.expectReturnResponse).Return(tt.responseMessage, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

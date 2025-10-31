@@ -144,6 +144,12 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
+	tmpPipecatcall, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not terminate the pipecatcall correctly")
+	}
+	log.WithField("pipecatcall_terminate", tmpPipecatcall).Debugf("Terminated the pipecatcall correctly.")
+
 	return res, nil
 }
 

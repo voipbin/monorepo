@@ -12,10 +12,11 @@ package aicallhandler
 import (
 	context "context"
 	aicall "monorepo/bin-ai-manager/models/aicall"
+	message "monorepo/bin-ai-manager/models/message"
 	call "monorepo/bin-call-manager/models/call"
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	service "monorepo/bin-common-handler/models/service"
-	message "monorepo/bin-tts-manager/models/message"
+	message0 "monorepo/bin-tts-manager/models/message"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -98,7 +99,7 @@ func (mr *MockAIcallHandlerMockRecorder) EventCMConfbridgeLeaved(ctx, evt any) *
 }
 
 // EventTMPlayFinished mocks base method.
-func (m *MockAIcallHandler) EventTMPlayFinished(ctx context.Context, evt *message.Message) {
+func (m *MockAIcallHandler) EventTMPlayFinished(ctx context.Context, evt *message0.Message) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "EventTMPlayFinished", ctx, evt)
 }
@@ -212,6 +213,21 @@ func (m *MockAIcallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID
 func (mr *MockAIcallHandlerMockRecorder) ProcessTerminating(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessTerminating", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessTerminating), ctx, id)
+}
+
+// Send mocks base method.
+func (m *MockAIcallHandler) Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Send", ctx, id, role, messageText, runImmediately)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Send indicates an expected call of Send.
+func (mr *MockAIcallHandlerMockRecorder) Send(ctx, id, role, messageText, runImmediately any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockAIcallHandler)(nil).Send), ctx, id, role, messageText, runImmediately)
 }
 
 // ServiceStart mocks base method.
