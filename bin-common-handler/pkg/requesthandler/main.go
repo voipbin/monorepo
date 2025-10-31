@@ -56,6 +56,7 @@ import (
 
 	omoutdial "monorepo/bin-outdial-manager/models/outdial"
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
@@ -894,6 +895,16 @@ type RequestHandler interface {
 	) ([]omoutdialtarget.OutdialTarget, error)
 	OutdialV1OutdialtargetUpdateStatusProgressing(ctx context.Context, outdialtargetID uuid.UUID, destinationIndex int) (*omoutdialtarget.OutdialTarget, error)
 	OutdialV1OutdialtargetUpdateStatus(ctx context.Context, outdialtargetID uuid.UUID, status omoutdialtarget.Status) (*omoutdialtarget.OutdialTarget, error)
+
+	// pipecat-manager message
+	PipecatV1MessageSend(
+		ctx context.Context,
+		pipecatcallID uuid.UUID,
+		messageID string,
+		messageText string,
+		runImmediately bool,
+		audioResponse bool,
+	) (*pmmessage.Message, error)
 
 	// pipecat-manager pipecatcall
 	PipecatV1PipecatcallStart(
