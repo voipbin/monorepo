@@ -218,7 +218,6 @@ func (h *aicallHandler) getPipecatcallSTTType(c *aicall.AIcall) pmpipecatcall.ST
 }
 
 func (h *aicallHandler) getPipecatcallTTSInfo(a *aicall.AIcall) (pmpipecatcall.TTSType, string) {
-
 	// get tts type
 	ttsType := defaultPipecatcallTTSType
 	if a.AITTSType != ai.TTSTypeNone {
@@ -226,7 +225,12 @@ func (h *aicallHandler) getPipecatcallTTSInfo(a *aicall.AIcall) (pmpipecatcall.T
 	}
 
 	// get voiceID
-	ttsVoiceID := mapDefaultTTSVoiceIDByTTSType[ai.TTSType(ttsType)]
+	ttsVoiceID, ok := mapDefaultTTSVoiceIDByTTSType[ai.TTSType(ttsType)]
+	if !ok {
+		logrus.Warnf("No default TTS voice ID found for TTSType: %v", ttsType)
+		ttsVoiceID = ""
+	}
+
 	if a.AITTSVoiceID != "" {
 		ttsVoiceID = a.AITTSVoiceID
 	}
