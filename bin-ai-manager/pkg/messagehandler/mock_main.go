@@ -111,18 +111,3 @@ func (mr *MockMessageHandlerMockRecorder) Gets(ctx, aicallID, size, token, filte
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, aicallID, size, token, filters)
 }
-
-// Send mocks base method.
-func (m *MockMessageHandler) Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, runImmediately bool) (*message.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", ctx, aicallID, role, content, runImmediately)
-	ret0, _ := ret[0].(*message.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Send indicates an expected call of Send.
-func (mr *MockMessageHandlerMockRecorder) Send(ctx, aicallID, role, content, runImmediately any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMessageHandler)(nil).Send), ctx, aicallID, role, content, runImmediately)
-}
