@@ -4290,18 +4290,18 @@ func (mr *MockRequestHandlerMockRecorder) OutdialV1OutdialtargetUpdateStatusProg
 }
 
 // PipecatV1MessageSend mocks base method.
-func (m *MockRequestHandler) PipecatV1MessageSend(ctx context.Context, pipecatcallID uuid.UUID, messageID, messageText string, runImmediately, audioResponse bool) (*message2.Message, error) {
+func (m *MockRequestHandler) PipecatV1MessageSend(ctx context.Context, hostID string, pipecatcallID uuid.UUID, messageID, messageText string, runImmediately, audioResponse bool) (*message2.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PipecatV1MessageSend", ctx, pipecatcallID, messageID, messageText, runImmediately, audioResponse)
+	ret := m.ctrl.Call(m, "PipecatV1MessageSend", ctx, hostID, pipecatcallID, messageID, messageText, runImmediately, audioResponse)
 	ret0, _ := ret[0].(*message2.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PipecatV1MessageSend indicates an expected call of PipecatV1MessageSend.
-func (mr *MockRequestHandlerMockRecorder) PipecatV1MessageSend(ctx, pipecatcallID, messageID, messageText, runImmediately, audioResponse any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) PipecatV1MessageSend(ctx, hostID, pipecatcallID, messageID, messageText, runImmediately, audioResponse any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1MessageSend), ctx, pipecatcallID, messageID, messageText, runImmediately, audioResponse)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1MessageSend), ctx, hostID, pipecatcallID, messageID, messageText, runImmediately, audioResponse)
 }
 
 // PipecatV1PipecatcallGet mocks base method.

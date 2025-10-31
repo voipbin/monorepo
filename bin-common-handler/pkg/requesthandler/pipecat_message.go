@@ -3,6 +3,8 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	outline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	pcrequest "monorepo/bin-pipecat-manager/pkg/listenhandler/models/request"
@@ -12,6 +14,7 @@ import (
 
 func (r *requestHandler) PipecatV1MessageSend(
 	ctx context.Context,
+	hostID string,
 	pipecatcallID uuid.UUID,
 	messageID string,
 	messageText string,
@@ -33,7 +36,8 @@ func (r *requestHandler) PipecatV1MessageSend(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestPipecat(ctx, uri, sock.RequestMethodPost, "pipecat/messages", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	queueName := fmt.Sprintf("%s.%s", outline.QueueNamePipecatRequest, hostID)
+	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodPost, "pipecat/messages", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
