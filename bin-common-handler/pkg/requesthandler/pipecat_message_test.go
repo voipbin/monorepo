@@ -19,6 +19,7 @@ func Test_PipecatV1MessageSend(t *testing.T) {
 	tests := []struct {
 		name string
 
+		hostID         string
 		pipecatcallID  uuid.UUID
 		messageID      string
 		messageText    string
@@ -34,13 +35,14 @@ func Test_PipecatV1MessageSend(t *testing.T) {
 		{
 			name: "normal",
 
+			hostID:         "1.2.3.4",
 			pipecatcallID:  uuid.FromStringOrNil("23ea9586-b56f-11f0-aa50-439818383d0b"),
 			messageID:      "2461ac48-b56f-11f0-a4fc-67f1da4bde52",
 			messageText:    "bruce willis is a ghost",
 			runImmediately: true,
 			audioResponse:  true,
 
-			expectTarget: "bin-manager.pipecat-manager.request",
+			expectTarget: "bin-manager.pipecat-manager.request.1.2.3.4",
 			expectRequest: &sock.Request{
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
@@ -74,7 +76,7 @@ func Test_PipecatV1MessageSend(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.PipecatV1MessageSend(ctx, tt.pipecatcallID, tt.messageID, tt.messageText, tt.runImmediately, tt.audioResponse)
+			res, err := reqHandler.PipecatV1MessageSend(ctx, tt.hostID, tt.pipecatcallID, tt.messageID, tt.messageText, tt.runImmediately, tt.audioResponse)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

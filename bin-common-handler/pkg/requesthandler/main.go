@@ -899,6 +899,7 @@ type RequestHandler interface {
 	// pipecat-manager message
 	PipecatV1MessageSend(
 		ctx context.Context,
+		hostID string,
 		pipecatcallID uuid.UUID,
 		messageID string,
 		messageText string,
