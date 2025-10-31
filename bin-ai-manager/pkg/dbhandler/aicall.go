@@ -23,6 +23,9 @@ const (
 		ai_engine_type,
 		ai_engine_model,
 		ai_engine_data,
+		ai_tts_type,
+		ai_tts_voice_id,
+		ai_stt_type,
 
 		activeflow_id,
 		reference_type,
@@ -59,6 +62,9 @@ func (h *handler) aicallGetFromRow(row *sql.Rows) (*aicall.AIcall, error) {
 		&res.AIEngineType,
 		&res.AIEngineModel,
 		&tmpAIEngineData,
+		&res.AITTSType,
+		&res.AITTSVoiceID,
+		&res.AISTTType,
 
 		&res.ActiveflowID,
 		&res.ReferenceType,
@@ -102,6 +108,9 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 		ai_engine_type,
 		ai_engine_model,
 		ai_engine_data,
+		ai_tts_type,
+		ai_tts_voice_id,
+		ai_stt_type,
 
 		activeflow_id,
 		reference_type,
@@ -121,7 +130,7 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 		tm_delete
 	) values(
 		?, ?, 
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?,
 		?, ?,
 		?,
@@ -143,6 +152,9 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 		cb.AIEngineType,
 		cb.AIEngineModel,
 		tmpAIEngineData,
+		cb.AITTSType,
+		cb.AITTSVoiceID,
+		cb.AISTTType,
 
 		cb.ActiveflowID.Bytes(),
 		cb.ReferenceType,

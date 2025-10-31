@@ -158,11 +158,6 @@ func IsValidEngineModel(engineModel EngineModel) bool {
 type TTSType string
 
 const (
-	// TTSTypeNone       TTSType = ""
-	// TTSTypeCartesia   TTSType = "cartesia"
-	// TTSTypeDeepgram   TTSType = "deepgram"
-	// TTSTypeElevenLabs TTSType = "elevenlabs"
-
 	TTSTypeNone       TTSType = ""
 	TTSTypeAsync      TTSType = "async"       // Generic async TTS adapter
 	TTSTypeAWS        TTSType = "aws"         // AWS Polly or Bedrock TTS

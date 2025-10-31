@@ -114,16 +114,16 @@ func (h *aicallHandler) setActiveflowVariables(ctx context.Context, cc *aicall.A
 	return nil
 }
 
-func (h *aicallHandler) chatGetInitPrompt(ctx context.Context, cb *ai.AI, activeflowID uuid.UUID) string {
+func (h *aicallHandler) getInitPrompt(ctx context.Context, a *ai.AI, activeflowID uuid.UUID) string {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "chatGetInitPrompt",
-		"ai_id":         cb.ID,
+		"ai_id":         a.ID,
 		"activeflow_id": activeflowID,
 	})
 
-	res := cb.InitPrompt
+	res := a.InitPrompt
 	if activeflowID != uuid.Nil {
-		tmp, err := h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, cb.InitPrompt)
+		tmp, err := h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, a.InitPrompt)
 		if err != nil {
 			log.Errorf("Could not substitute the init prompt. err: %v", err)
 			return res

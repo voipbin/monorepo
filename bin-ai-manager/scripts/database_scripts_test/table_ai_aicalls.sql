@@ -7,6 +7,9 @@ create table ai_aicalls(
   ai_engine_type   varchar(255), -- ai engine type
   ai_engine_model  varchar(255),
   ai_engine_data   json,
+  ai_tts_type      varchar(255),
+  ai_tts_voice_id  varchar(255),
+  ai_stt_type      varchar(255),
 
   activeflow_id     binary(16),
   reference_type    varchar(255),

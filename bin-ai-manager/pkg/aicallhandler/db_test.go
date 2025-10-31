@@ -51,6 +51,9 @@ func Test_Create(t *testing.T) {
 				EngineData: map[string]any{
 					"key1": "value1",
 				},
+				TTSType:    ai.TTSTypeElevenLabs,
+				TTSVoiceID: "d4c7e1f2-5e8b-4d3a-9f0a-1c2b3d4e5f60",
+				STTType:    ai.STTTypeDeepgram,
 			},
 			activeflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
 			referenceType: aicall.ReferenceTypeCall,
@@ -78,6 +81,9 @@ func Test_Create(t *testing.T) {
 				AIEngineData: map[string]any{
 					"key1": "value1",
 				},
+				AITTSType:     ai.TTSTypeElevenLabs,
+				AITTSVoiceID:  "d4c7e1f2-5e8b-4d3a-9f0a-1c2b3d4e5f60",
+				AISTTType:     ai.STTTypeDeepgram,
 				ActiveflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
 				ReferenceType: aicall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),

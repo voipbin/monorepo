@@ -17,7 +17,49 @@ import (
 )
 
 // Send sends a message to the ai engine and returns the sent message.
-func (h *messageHandler) Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error) {
+func (h *messageHandler) Send(
+	ctx context.Context,
+	aicallID uuid.UUID,
+	role message.Role,
+	content string,
+	runImmediately bool,
+) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "Send",
+		"aicall_id": aicallID,
+		"role":      role,
+		"content":   content,
+	})
+	log.Debugf("Sending ai message.")
+
+	// get aicall
+	c, err := h.reqHandler.AIV1AIcallGet(ctx, aicallID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the aicall correctly")
+	}
+
+	pc, err := h.reqHandler.PipecatV1PipecatcallGet(ctx, c.PipecatcallID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the pipecatcall correctly")
+	}
+
+	// create message
+	res, err := h.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, role, content, nil, "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not create the sending message correctly")
+	}
+
+	tmp, err := h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, "", content, true, true)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not send the message to the pipecatcall correctly")
+	}
+	log.WithField("pipecat_message", tmp).Debugf("Sent the message to the pipecatcall.")
+
+	return res, nil
+}
+
+// Send sends a message to the ai engine and returns the sent message.
+func (h *messageHandler) SendOrg(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "Send",
 		"aicall_id": aicallID,

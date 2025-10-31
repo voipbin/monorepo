@@ -75,9 +75,12 @@ const (
 )
 
 const (
-	deaultPipecatcallTTSType = pmpipecatcall.TTSTypeElevenLabs
-	defaultTTSType           = ai.TTSTypeElevenLabs
-	defaultSTTType           = ai.STTTypeDeepgram
+	defaultPipecatcallTTSType = pmpipecatcall.TTSTypeElevenLabs
+	defaultTTSType            = ai.TTSTypeElevenLabs
+	defaultSTTType            = ai.STTTypeDeepgram
+
+	defaultPipecatcallSTTType    = pmpipecatcall.STTTypeDeepgram
+	defaultPipecatcallTTSVoiceID = "EXAVITQu4vr4xnSDxMaL" // Rachel
 
 	// defaultTTSVoiceIDElevenlabs = "EXAVITQu4vr4xnSDxMaL"                 // Rachel
 	// defaultTTSVoiceIDCartesia   = "71a7ad14-091c-4e8e-a314-022ece01c121" // British Reading Lady(https://developer.signalwire.com/voice/tts/cartesia/)
