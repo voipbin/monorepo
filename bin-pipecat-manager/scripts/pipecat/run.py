@@ -39,6 +39,9 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
     if messages is None:
         messages = []
 
+    pipeline_stages = []
+    
+    # ws transport
     ws_transport = WebsocketClientTransport(
         uri=ws_server_url,
         params=WebsocketClientParams(
@@ -49,11 +52,13 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
             vad_analyzer=SileroVADAnalyzer(),
             session_timeout=60 * 3,
         )
-    )
-    
-    pipeline_stages = []
+    )    
     pipeline_stages.append(ws_transport.input())
-
+    
+    # rtvi
+    rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
+    pipeline_stages.append(rtvi)
+    
     # Create STT service
     if stt:
         stt_service = create_stt_service(stt)
@@ -78,7 +83,6 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
     pipeline = Pipeline(pipeline_stages)
 
     # Create RTVI processor and observer
-    rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
     task = PipelineTask(
         pipeline,
         params=PipelineParams(
