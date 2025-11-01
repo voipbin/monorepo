@@ -337,10 +337,11 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 		gender       aicall.Gender
 		language     string
 
-		responseVarible     *fmvariable.Variable
-		responseAIcall      *aicall.AIcall
-		responseMessages    []*message.Message
-		responsePipecatcall *pmpipecatcall.Pipecatcall
+		responseVarible           *fmvariable.Variable
+		responseAIcall            *aicall.AIcall
+		responseUUIDPipecatcallID uuid.UUID
+		responseMessages          []*message.Message
+		responsePipecatcall       *pmpipecatcall.Pipecatcall
 
 		expectAIcall         *aicall.AIcall
 		expectMessageContent string
@@ -378,6 +379,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				},
 				AIEngineModel: "openai.gpt-3.5-turbo",
 			},
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("017c1c12-b737-11f0-80ad-032b0dde6a93"),
 			responseMessages: []*message.Message{
 				{
 					Role:    "system",
@@ -462,6 +464,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 			// GetByReferenceID
 			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseAIcall, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
+			mockDB.EXPECT().AIcallUpdatePipecatcallID(ctx, tt.responseAIcall.ID, tt.responseUUIDPipecatcallID).Return(nil)
 
 			// get conversation message
 			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageContent, nil, "").Return(&message.Message{}, nil)

@@ -128,6 +128,12 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
+	} else {
+		// update the pipecatcall id to a new one
+		newPipecatcallID := h.utilHandler.UUIDCreate()
+		if errUpdate := h.UpdatePipecatcallID(ctx, res.ID, newPipecatcallID); errUpdate != nil {
+			return nil, errors.Wrapf(errUpdate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", res.ID)
+		}
 	}
 	log.WithField("aicall", res).Debugf("Found the aicall. aicall_id: %s", res.ID)
 
