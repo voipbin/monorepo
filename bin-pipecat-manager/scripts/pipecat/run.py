@@ -92,41 +92,6 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         observers=[RTVIObserver(rtvi)],
     )
 
-    # stt_service = create_stt_service(stt)
-
-    # tts_service = create_tts_service(
-    #     tts,
-    #     voice_id=voice_id if voice_id else None,
-    # )
-
-    # llm_service = create_llm_server(llm)
-    
-    # context_aggregator = create_context_aggregator(llm_service, messages)
-
-    # rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
-
-    # pipeline = Pipeline(
-    #     [
-    #         ws_transport.input(),
-    #         rtvi,
-    #         stt_service,
-    #         context_aggregator.user(),
-    #         llm_service,
-    #         tts_service,
-    #         context_aggregator.assistant(),
-    #         ws_transport.output(),
-    #     ]
-    # )
-
-    # task = PipelineTask(
-    #     pipeline,
-    #     params=PipelineParams(
-    #         enable_metrics=True,
-    #         enable_usage_metrics=True,
-    #     ),
-    #     observers=[RTVIObserver(rtvi)],
-    # )
-
     @ws_transport.event_handler("on_disconnected")
     async def on_client_disconnected(transport, error):
         logger.info(f"Pipecat Client disconnected from Go server. Error: {error}")

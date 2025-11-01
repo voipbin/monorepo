@@ -44,3 +44,17 @@ func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, ev
 	}
 	log.WithField("message", tmp).Debugf("Created message from the pipecat-manager's user transcription.")
 }
+
+func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessage.Message) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventPMMessageBotLLM",
+		"event": evt,
+	})
+
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+	if err != nil {
+		log.Errorf("Could not create the message. err: %v", err)
+		return
+	}
+	log.WithField("message", tmp).Debugf("Created message from the pipecat-manager's user transcription.")
+}

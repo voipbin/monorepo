@@ -5,6 +5,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -148,7 +149,11 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}
 
-		go h.RunnerStart(pc, se)
+		go func() {
+			go h.RunnerStart(pc, se)
+			time.Sleep(30 * time.Second)
+			se.Cancel()
+		}()
 		return nil
 	}
 }
