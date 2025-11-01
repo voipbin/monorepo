@@ -64,8 +64,14 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", res.ID)
 	}
-	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, res.ID)
 
+	newPipecatcallID := h.utilHandler.UUIDCreate()
+	c, err = h.UpdatePipecatcallID(ctx, c.ID, newPipecatcallID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not update the pipecatcall id for existing aicall. aicall_id: %s", c.ID)
+	}
+
+	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, res.ID)
 	pc, err := h.startPipecatcall(ctx, c)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)

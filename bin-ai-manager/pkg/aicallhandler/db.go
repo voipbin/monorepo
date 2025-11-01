@@ -211,8 +211,17 @@ func (h *aicallHandler) Gets(ctx context.Context, size uint64, token string, fil
 	return res, nil
 }
 
-func (h *aicallHandler) UpdatePipecatcallID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID) error {
-	return h.db.AIcallUpdatePipecatcallID(ctx, id, pipecatcallID)
+func (h *aicallHandler) UpdatePipecatcallID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID) (*aicall.AIcall, error) {
+	if errUpdate := h.db.AIcallUpdatePipecatcallID(ctx, id, pipecatcallID); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", id)
+	}
+
+	res, err := h.db.AIcallGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+	}
+
+	return res, nil
 }
 
 // UpdateStatusTerminating updates the status to terminating

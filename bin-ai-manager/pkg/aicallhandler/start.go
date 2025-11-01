@@ -131,9 +131,11 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	} else {
 		// update the pipecatcall id to a new one
 		newPipecatcallID := h.utilHandler.UUIDCreate()
-		if errUpdate := h.UpdatePipecatcallID(ctx, res.ID, newPipecatcallID); errUpdate != nil {
+		tmp, errUpdate := h.UpdatePipecatcallID(ctx, res.ID, newPipecatcallID)
+		if errUpdate != nil {
 			return nil, errors.Wrapf(errUpdate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", res.ID)
 		}
+		res = tmp
 	}
 	log.WithField("aicall", res).Debugf("Found the aicall. aicall_id: %s", res.ID)
 
