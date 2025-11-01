@@ -50,41 +50,46 @@ func (h *pipecatcallHandler) Start(
 	}
 	log.WithField("pipecatcall", res).Info("Created pipecatcall. pipecatcall_id: ", res.ID)
 
-	// get callID info
-	var callID uuid.UUID
+	// start based on reference type
 	switch referenceType {
 	case pipecatcall.ReferenceTypeCall:
-		callID = referenceID
+		if errStart := h.startReferenceTypeCall(ctx, res); errStart != nil {
+			return nil, errors.Wrapf(errStart, "could not start reference type call")
+		}
 
 	case pipecatcall.ReferenceTypeAICall:
-		tmp, err := h.requestHandler.AIV1AIcallGet(ctx, referenceID)
-		if err != nil {
-			return nil, errors.Wrapf(err, "could not get ai call info")
+		if errStart := h.startReferenceTypeAIcall(ctx, res); errStart != nil {
+			return nil, errors.Wrapf(errStart, "could not start reference type ai call")
 		}
-		if tmp.ReferenceType != amaicall.ReferenceTypeCall {
-			return nil, errors.Errorf("invalid ai call reference type: %v", tmp.ReferenceType)
-		}
-
-		callID = tmp.ReferenceID
 
 	default:
 		log.Errorf("Invalid reference type. reference_type: %v", referenceType)
 		return nil, errors.Errorf("invalid reference type: %v", referenceType)
 	}
 
-	if callID == uuid.Nil {
-		log.Errorf("Invalid call ID retrieved from reference. reference_type: %v, reference_id: %v", referenceType, referenceID)
-		return nil, errors.Errorf("invalid call ID retrieved from reference")
+	return res, nil
+}
+
+func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pipecatcall.Pipecatcall) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "startReferenceTypeAIcall",
+		"pipecatcall_id": pc.ID,
+	})
+
+	c, err := h.requestHandler.CallV1CallGet(ctx, pc.ReferenceID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get call info")
 	}
+	log.WithField("call", c).Info("Retrieved call info. call_id: ", c.ID)
 
 	// start the external media
 	// send request to the call-manager
 	// currently only supporting call reference type
 	em, err := h.requestHandler.CallV1ExternalMediaStart(
 		ctx,
-		res.ID,
+		pc.ID,
 		cmexternalmedia.ReferenceTypeCall,
-		callID,
+		c.ID,
 		h.listenAddress,
 		defaultEncapsulation,
 		defaultTransport,
@@ -94,12 +99,58 @@ func (h *pipecatcallHandler) Start(
 		cmexternalmedia.DirectionOut,
 	)
 	if err != nil {
-		log.Errorf("Could not create external media. err: %v", err)
-		return nil, err
+		return errors.Wrapf(err, "could not create external media")
 	}
 	log.WithField("external_media", em).Info("Created external media. external_media_id: ", em.ID)
 
-	return res, nil
+	return nil
+}
+
+func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *pipecatcall.Pipecatcall) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "startReferenceTypeAIcall",
+		"pipecatcall_id": pc.ID,
+	})
+
+	c, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get ai call info")
+	}
+	log.WithField("ai_call", c).Info("Retrieved ai call info. ai_call_id: ", c.ID)
+
+	switch c.ReferenceType {
+	case amaicall.ReferenceTypeCall:
+		// start the external media
+		// send request to the call-manager
+		// currently only supporting call reference type
+		em, err := h.requestHandler.CallV1ExternalMediaStart(
+			ctx,
+			pc.ID,
+			cmexternalmedia.ReferenceTypeCall,
+			c.ReferenceID,
+			h.listenAddress,
+			defaultEncapsulation,
+			defaultTransport,
+			defaultConnectionType,
+			defaultFormat,
+			cmexternalmedia.DirectionIn,
+			cmexternalmedia.DirectionOut,
+		)
+		if err != nil {
+			return errors.Wrapf(err, "could not create external media")
+		}
+		log.WithField("external_media", em).Info("Created external media. external_media_id: ", em.ID)
+		return nil
+
+	default:
+		se, err := h.SessionCreate(pc, uuid.Nil, nil)
+		if err != nil {
+			return errors.Wrapf(err, "could not create pipecatcall session")
+		}
+
+		h.RunnerStart(pc, se)
+		return nil
+	}
 }
 
 func (h *pipecatcallHandler) Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
