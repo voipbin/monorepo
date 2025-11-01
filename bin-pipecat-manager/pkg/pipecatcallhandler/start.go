@@ -148,7 +148,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}
 
-		h.RunnerStart(pc, se)
+		go h.RunnerStart(pc, se)
 		return nil
 	}
 }
