@@ -50,33 +50,35 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
             session_timeout=60 * 3,
         )
     )
-
-    stt_service = create_stt_service(stt)
-
-    tts_service = create_tts_service(
-        tts,
-        voice_id=voice_id if voice_id else None,
-    )
-
-    llm_service = create_llm_server(llm)
     
+    pipeline_stages = []
+    pipeline_stages.append(ws_transport.input())
+
+    # Create STT service
+    if stt:
+        stt_service = create_stt_service(stt)
+        pipeline_stages.append(stt_service)
+
+    # Create LLM service
+    llm_service = create_llm_server(llm)
     context_aggregator = create_context_aggregator(llm_service, messages)
+    pipeline_stages.append(context_aggregator.user())
+    pipeline_stages.append(llm_service)
 
+    # Create TTS service
+    if tts:
+        tts_service = create_tts_service(tts, voice_id=voice_id)
+        pipeline_stages.append(tts_service)
+
+    # Add context aggregator assistant stage
+    pipeline_stages.append(context_aggregator.assistant())
+    pipeline_stages.append(ws_transport.output())
+
+    # Build the pipeline
+    pipeline = Pipeline(pipeline_stages)
+
+    # Create RTVI processor and observer
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
-
-    pipeline = Pipeline(
-        [
-            ws_transport.input(),
-            rtvi,
-            stt_service,
-            context_aggregator.user(),
-            llm_service,
-            tts_service,
-            context_aggregator.assistant(),
-            ws_transport.output(),
-        ]
-    )
-
     task = PipelineTask(
         pipeline,
         params=PipelineParams(
@@ -85,6 +87,41 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         ),
         observers=[RTVIObserver(rtvi)],
     )
+
+    # stt_service = create_stt_service(stt)
+
+    # tts_service = create_tts_service(
+    #     tts,
+    #     voice_id=voice_id if voice_id else None,
+    # )
+
+    # llm_service = create_llm_server(llm)
+    
+    # context_aggregator = create_context_aggregator(llm_service, messages)
+
+    # rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
+
+    # pipeline = Pipeline(
+    #     [
+    #         ws_transport.input(),
+    #         rtvi,
+    #         stt_service,
+    #         context_aggregator.user(),
+    #         llm_service,
+    #         tts_service,
+    #         context_aggregator.assistant(),
+    #         ws_transport.output(),
+    #     ]
+    # )
+
+    # task = PipelineTask(
+    #     pipeline,
+    #     params=PipelineParams(
+    #         enable_metrics=True,
+    #         enable_usage_metrics=True,
+    #     ),
+    #     observers=[RTVIObserver(rtvi)],
+    # )
 
     @ws_transport.event_handler("on_disconnected")
     async def on_client_disconnected(transport, error):
