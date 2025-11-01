@@ -23,22 +23,21 @@ const (
 		ai_engine_type,
 		ai_engine_model,
 		ai_engine_data,
+		ai_tts_type,
+		ai_tts_voice_id,
+		ai_stt_type,
 
 		activeflow_id,
 		reference_type,
 		reference_id,
 
 		confbridge_id,
-		transcribe_id,
 		pipecatcall_id,
 
 		status,
 
 		gender,
 		language,
-
-		tts_streaming_id,
-		tts_streaming_pod_id,
 
 		tm_end,
 		tm_create,
@@ -63,22 +62,21 @@ func (h *handler) aicallGetFromRow(row *sql.Rows) (*aicall.AIcall, error) {
 		&res.AIEngineType,
 		&res.AIEngineModel,
 		&tmpAIEngineData,
+		&res.AITTSType,
+		&res.AITTSVoiceID,
+		&res.AISTTType,
 
 		&res.ActiveflowID,
 		&res.ReferenceType,
 		&res.ReferenceID,
 
 		&res.ConfbridgeID,
-		&res.TranscribeID,
 		&res.PipecatcallID,
 
 		&res.Status,
 
 		&res.Gender,
 		&res.Language,
-
-		&res.TTSStreamingID,
-		&res.TTSStreamingPodID,
 
 		&res.TMEnd,
 		&res.TMCreate,
@@ -110,13 +108,15 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 		ai_engine_type,
 		ai_engine_model,
 		ai_engine_data,
+		ai_tts_type,
+		ai_tts_voice_id,
+		ai_stt_type,
 
 		activeflow_id,
 		reference_type,
 		reference_id,
 
 		confbridge_id,
-		transcribe_id,
 		pipecatcall_id,
 
 		status,
@@ -124,20 +124,16 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 		gender,
 		language,
  
-		tts_streaming_id,
-		tts_streaming_pod_id,
-
 		tm_end,
 		tm_create,
 		tm_update,
 		tm_delete
 	) values(
 		?, ?, 
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?,
-		?, ?, ?,
-		?,
 		?, ?,
+		?,
 		?, ?,
  		?, ?, ?, ?
 		)
@@ -156,22 +152,21 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 		cb.AIEngineType,
 		cb.AIEngineModel,
 		tmpAIEngineData,
+		cb.AITTSType,
+		cb.AITTSVoiceID,
+		cb.AISTTType,
 
 		cb.ActiveflowID.Bytes(),
 		cb.ReferenceType,
 		cb.ReferenceID.Bytes(),
 
 		cb.ConfbridgeID.Bytes(),
-		cb.TranscribeID.Bytes(),
 		cb.PipecatcallID.Bytes(),
 
 		cb.Status,
 
 		cb.Gender,
 		cb.Language,
-
-		cb.TTSStreamingID.Bytes(),
-		cb.TTSStreamingPodID,
 
 		DefaultTimeStamp,
 		h.utilHandler.TimeGetCurTime(),
@@ -302,86 +297,19 @@ func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.U
 	return res, nil
 }
 
-// AIcallGetByStreamingID gets aicall of the given streaming_id.
-func (h *handler) AIcallGetByStreamingID(ctx context.Context, streamingID uuid.UUID) (*aicall.AIcall, error) {
-
-	tmp, err := h.cache.AIcallGetByStreamingID(ctx, streamingID)
-	if err == nil {
-		return tmp, nil
-	}
-
-	// prepare
-	q := fmt.Sprintf("%s where tts_streaming_id = ? order by tm_create desc", aicallSelect)
-
-	row, err := h.db.Query(q, streamingID.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("could not query. AIcallGetByStreamingID. err: %v", err)
-	}
-	defer func() {
-		_ = row.Close()
-	}()
-
-	if !row.Next() {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.aicallGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not get call. AIcallGetByStreamingID, err: %v", err)
-	}
-
-	_ = h.aicallSetToCache(ctx, res)
-
-	return res, nil
-}
-
-// AIcallGetByTranscribeID gets aicall of the given transcribe_id.
-func (h *handler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
-
-	tmp, err := h.cache.AIcallGetByTranscribeID(ctx, transcribeID)
-	if err == nil {
-		return tmp, nil
-	}
-
-	// prepare
-	q := fmt.Sprintf("%s where transcribe_id = ? order by tm_create desc", aicallSelect)
-
-	row, err := h.db.Query(q, transcribeID.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("could not query. AIcallGetByTranscribeID. err: %v", err)
-	}
-	defer func() {
-		_ = row.Close()
-	}()
-
-	if !row.Next() {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.aicallGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not get call. AIcallGetByTranscribeID, err: %v", err)
-	}
-
-	_ = h.aicallSetToCache(ctx, res)
-
-	return res, nil
-}
-
-func (h *handler) aicallUpdateStatus(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID, status aicall.Status) error {
+func (h *handler) AIcallUpdatePipecatcallID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID) error {
 	//prepare
 	q := `
 		update ai_aicalls set
-			status = ?,
-			transcribe_id = ?,
+ 			pipecatcall_id = ?,
 			tm_update = ?
 		where
 			id = ?
 		`
 
-	_, err := h.db.Exec(q, status, transcribeID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, pipecatcallID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
-		return errors.Wrapf(err, "could not execute. aicallUpdateStatus")
+		return errors.Wrapf(err, "could not execute. AIcallUpdateStatusAndPipecatcallID")
 	}
 
 	// update the cache
@@ -390,15 +318,25 @@ func (h *handler) aicallUpdateStatus(ctx context.Context, id uuid.UUID, transcri
 	return nil
 }
 
-// AIcallUpdateStatusProgressing updates the aicall's status to progressing
-func (h *handler) AIcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error {
+func (h *handler) AIcallUpdateStatus(ctx context.Context, id uuid.UUID, status aicall.Status) error {
+	//prepare
+	q := `
+		update ai_aicalls set
+ 			status = ?,
+			tm_update = ?
+		where
+			id = ?
+		`
 
-	return h.aicallUpdateStatus(ctx, id, transcribeID, aicall.StatusProgressing)
-}
+	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	if err != nil {
+		return errors.Wrapf(err, "could not execute. AIcallUpdateStatus")
+	}
 
-// AIcallUpdateStatusPausing updates the aicall's status to pausing
-func (h *handler) AIcallUpdateStatusPausing(ctx context.Context, id uuid.UUID) error {
-	return h.aicallUpdateStatus(ctx, id, uuid.Nil, aicall.StatusPausing)
+	// update the cache
+	_ = h.aicallUpdateToCache(ctx, id)
+
+	return nil
 }
 
 // AIcallUpdateStatusResuming updates the aicall's status to resuming
@@ -439,31 +377,6 @@ func (h *handler) AIcallUpdateStatusTerminating(ctx context.Context, id uuid.UUI
 	_, err := h.db.Exec(q, aicall.StatusTerminating, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return errors.Wrapf(err, "could not execute. AIcallUpdateStatusTerminating")
-	}
-
-	// update the cache
-	_ = h.aicallUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// AIcallUpdateStatusTerminated updates the aicall's status to end
-func (h *handler) AIcallUpdateStatusTerminated(ctx context.Context, id uuid.UUID) error {
-	//prepare
-	q := `
-	update ai_aicalls set
-		status = ?,
-		transcribe_id = ?,
-		tm_end = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, aicall.StatusTerminated, uuid.Nil.Bytes(), ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AIcallUpdateStatusTerminated. err: %v", err)
 	}
 
 	// update the cache
@@ -519,7 +432,7 @@ func (h *handler) AIcallGets(ctx context.Context, size uint64, token string, fil
 				values = append(values, DefaultTimeStamp)
 			}
 
-		case "customer_id", "ai_id", "activeflow_id", "reference_id", "confbridge_id", "transcribe_id":
+		case "customer_id", "ai_id", "activeflow_id", "reference_id", "confbridge_id", "pipecatcall_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			values = append(values, uuid.FromStringOrNil(v).Bytes())
 

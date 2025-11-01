@@ -43,6 +43,33 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockMessageHandler) Create(ctx context.Context, customerID, aicallID uuid.UUID, direction message.Direction, role message.Role, content string, toolCalls []message.ToolCall, toolCallID string) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, aicallID, direction, role, content, toolCalls, toolCallID)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockMessageHandlerMockRecorder) Create(ctx, customerID, aicallID, direction, role, content, toolCalls, toolCallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, customerID, aicallID, direction, role, content, toolCalls, toolCallID)
+}
+
+// EventPMMessageBotLLM mocks base method.
+func (m *MockMessageHandler) EventPMMessageBotLLM(ctx context.Context, evt *message0.Message) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMMessageBotLLM", ctx, evt)
+}
+
+// EventPMMessageBotLLM indicates an expected call of EventPMMessageBotLLM.
+func (mr *MockMessageHandlerMockRecorder) EventPMMessageBotLLM(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageBotLLM", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageBotLLM), ctx, evt)
+}
+
 // EventPMMessageBotTranscription mocks base method.
 func (m *MockMessageHandler) EventPMMessageBotTranscription(ctx context.Context, evt *message0.Message) {
 	m.ctrl.T.Helper()
@@ -53,6 +80,18 @@ func (m *MockMessageHandler) EventPMMessageBotTranscription(ctx context.Context,
 func (mr *MockMessageHandlerMockRecorder) EventPMMessageBotTranscription(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageBotTranscription", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageBotTranscription), ctx, evt)
+}
+
+// EventPMMessageUserLLM mocks base method.
+func (m *MockMessageHandler) EventPMMessageUserLLM(ctx context.Context, evt *message0.Message) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMMessageUserLLM", ctx, evt)
+}
+
+// EventPMMessageUserLLM indicates an expected call of EventPMMessageUserLLM.
+func (mr *MockMessageHandlerMockRecorder) EventPMMessageUserLLM(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageUserLLM", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageUserLLM), ctx, evt)
 }
 
 // EventPMMessageUserTranscription mocks base method.
@@ -95,48 +134,4 @@ func (m *MockMessageHandler) Gets(ctx context.Context, aicallID uuid.UUID, size 
 func (mr *MockMessageHandlerMockRecorder) Gets(ctx, aicallID, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, aicallID, size, token, filters)
-}
-
-// Send mocks base method.
-func (m *MockMessageHandler) Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", ctx, aicallID, role, content, returnResponse)
-	ret0, _ := ret[0].(*message.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Send indicates an expected call of Send.
-func (mr *MockMessageHandlerMockRecorder) Send(ctx, aicallID, role, content, returnResponse any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMessageHandler)(nil).Send), ctx, aicallID, role, content, returnResponse)
-}
-
-// StreamingSend mocks base method.
-func (m *MockMessageHandler) StreamingSend(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StreamingSend", ctx, aicallID, role, content)
-	ret0, _ := ret[0].(*message.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// StreamingSend indicates an expected call of StreamingSend.
-func (mr *MockMessageHandlerMockRecorder) StreamingSend(ctx, aicallID, role, content any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingSend", reflect.TypeOf((*MockMessageHandler)(nil).StreamingSend), ctx, aicallID, role, content)
-}
-
-// StreamingSendAll mocks base method.
-func (m *MockMessageHandler) StreamingSendAll(ctx context.Context, aicallID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StreamingSendAll", ctx, aicallID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// StreamingSendAll indicates an expected call of StreamingSendAll.
-func (mr *MockMessageHandlerMockRecorder) StreamingSendAll(ctx, aicallID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingSendAll", reflect.TypeOf((*MockMessageHandler)(nil).StreamingSendAll), ctx, aicallID)
 }

@@ -76,7 +76,20 @@ func (h *listenHandler) processV1AIsPost(ctx context.Context, m *sock.Request) (
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.aiHandler.Create(ctx, req.CustomerID, req.Name, req.Detail, req.EngineType, req.EngineModel, req.EngineData, req.InitPrompt)
+	tmp, err := h.aiHandler.Create(
+		ctx,
+		req.CustomerID,
+		req.Name,
+		req.Detail,
+		req.EngineType,
+		req.EngineModel,
+		req.EngineData,
+		req.EngineKey,
+		req.InitPrompt,
+		req.TTSType,
+		req.TTSVoiceID,
+		req.STTType,
+	)
 	if err != nil {
 		log.Errorf("Could not create ai. err: %v", err)
 		return simpleResponse(500), nil
@@ -187,7 +200,20 @@ func (h *listenHandler) processV1AIsIDPut(ctx context.Context, m *sock.Request) 
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	tmp, err := h.aiHandler.Update(ctx, id, req.Name, req.Detail, req.EngineType, req.EngineModel, req.EngineData, req.InitPrompt)
+	tmp, err := h.aiHandler.Update(
+		ctx,
+		id,
+		req.Name,
+		req.Detail,
+		req.EngineType,
+		req.EngineModel,
+		req.EngineData,
+		req.EngineKey,
+		req.InitPrompt,
+		req.TTSType,
+		req.TTSVoiceID,
+		req.STTType,
+	)
 	if err != nil {
 		log.Errorf("Could not update ai. err: %v", err)
 		return simpleResponse(500), nil

@@ -28,7 +28,11 @@ func Test_Create(t *testing.T) {
 		engineType  ai.EngineType
 		engineModel ai.EngineModel
 		engineData  map[string]any
+		engineKey   string
 		initPrompt  string
+		ttsType     ai.TTSType
+		ttsVoiceID  string
+		sttType     ai.STTType
 
 		responseUUID uuid.UUID
 		responseAI   *ai.AI
@@ -46,7 +50,11 @@ func Test_Create(t *testing.T) {
 			engineData: map[string]any{
 				"key1": "val1",
 			},
+			engineKey:  "test engine service key",
 			initPrompt: "test init prompt",
+			ttsType:    ai.TTSTypeCartesia,
+			ttsVoiceID: "test-voice-id",
+			sttType:    ai.STTTypeDeepgram,
 
 			responseUUID: uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
 			responseAI: &ai.AI{
@@ -67,7 +75,11 @@ func Test_Create(t *testing.T) {
 				EngineData: map[string]any{
 					"key1": "val1",
 				},
+				EngineKey:  "test engine service key",
 				InitPrompt: "test init prompt",
+				TTSType:    ai.TTSTypeCartesia,
+				TTSVoiceID: "test-voice-id",
+				STTType:    ai.STTTypeDeepgram,
 			},
 		},
 	}
@@ -96,7 +108,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIGet(ctx, tt.responseUUID).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeCreated, tt.responseAI)
 
-			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
+			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -295,7 +307,11 @@ func Test_Update(t *testing.T) {
 		engineType  ai.EngineType
 		engineModel ai.EngineModel
 		engineData  map[string]any
+		engineKey   string
 		initPrompt  string
+		ttsType     ai.TTSType
+		ttsVoiceID  string
+		sttType     ai.STTType
 
 		responseAI *ai.AI
 	}{
@@ -310,7 +326,11 @@ func Test_Update(t *testing.T) {
 			engineData: map[string]any{
 				"key1": "val1",
 			},
+			engineKey:  "new engine service key",
 			initPrompt: "new init prompt",
+			ttsType:    ai.TTSTypeCartesia,
+			ttsVoiceID: "new-voice-id",
+			sttType:    ai.STTTypeDeepgram,
 
 			responseAI: &ai.AI{
 				Identity: identity.Identity{
@@ -339,11 +359,37 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AISetInfo(ctx, tt.id, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt).Return(nil)
+			mockDB.EXPECT().AISetInfo(
+				ctx,
+				tt.id,
+				tt.aiName,
+				tt.detail,
+				tt.engineType,
+				tt.engineModel,
+				tt.engineData,
+				tt.engineKey,
+				tt.initPrompt,
+				tt.ttsType,
+				tt.ttsVoiceID,
+				tt.sttType,
+			).Return(nil)
 			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeUpdated, tt.responseAI)
 
-			res, err := h.Update(ctx, tt.id, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
+			res, err := h.Update(
+				ctx,
+				tt.id,
+				tt.aiName,
+				tt.detail,
+				tt.engineType,
+				tt.engineModel,
+				tt.engineData,
+				tt.engineKey,
+				tt.initPrompt,
+				tt.ttsType,
+				tt.ttsVoiceID,
+				tt.sttType,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

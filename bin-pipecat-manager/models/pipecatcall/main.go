@@ -41,12 +41,14 @@ type LLMType string
 type STTType string
 
 const (
-	STTTypeDeepgram = "deepgram"
+	STTTypeNone     STTType = ""
+	STTTypeDeepgram STTType = "deepgram"
 )
 
 type TTSType string
 
 const (
-	TTSTypeCartesia   = "cartesia"
-	TTSTypeElevenLabs = "elevenlabs"
+	TTSTypeNone       TTSType = ""
+	TTSTypeCartesia   TTSType = "cartesia"
+	TTSTypeElevenLabs TTSType = "elevenlabs"
 )

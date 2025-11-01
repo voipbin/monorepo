@@ -75,7 +75,7 @@ func (h *listenHandler) processV1AIcallsPost(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.aicallHandler.Start(ctx, req.AIID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Gender, req.Language, false)
+	tmp, err := h.aicallHandler.Start(ctx, req.AIID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Gender, req.Language)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return simpleResponse(500), nil
@@ -213,12 +213,12 @@ func (h *listenHandler) processV1AIcallsIDSendAllPost(ctx context.Context, m *so
 		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
 		return simpleResponse(400), nil
 	}
-	id := uuid.FromStringOrNil(uriItems[3])
+	// id := uuid.FromStringOrNil(uriItems[3])
 
-	if errSend := h.messageHandler.StreamingSendAll(ctx, id); errSend != nil {
-		log.Errorf("Could not send the aicall message. err: %v", errSend)
-		return simpleResponse(500), nil
-	}
+	// if errSend := h.messageHandler.StreamingSendAll(ctx, id); errSend != nil {
+	// 	log.Errorf("Could not send the aicall message. err: %v", errSend)
+	// 	return simpleResponse(500), nil
+	// }
 
 	res := &sock.Response{
 		StatusCode: 200,

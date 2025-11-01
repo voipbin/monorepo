@@ -103,7 +103,11 @@ func Test_processV1AIsPost(t *testing.T) {
 		expectEngineType  ai.EngineType
 		expectEngineModel ai.EngineModel
 		expectEngineData  map[string]any
+		expectEngineKey   string
 		expectInitPrompt  string
+		expectTTSType     ai.TTSType
+		expectTTSVoiceID  string
+		expectSTTType     ai.STTType
 		expectRes         *sock.Response
 	}{
 		{
@@ -112,7 +116,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				URI:      "/v1/ais",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"", "engine_model": "openai.gpt-4", "engine_data": {"key1": "val1"}, "init_prompt": "test init prompt"}`),
+				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"", "engine_model": "openai.gpt-4", "engine_data": {"key1": "val1"}, "engine_key": "test engine key", "init_prompt": "test init prompt", "tts_type": "elevenlabs", "tts_voice_id": "test-voice-id", "stt_type": "deepgram"}`),
 			},
 
 			responseAI: &ai.AI{
@@ -129,7 +133,11 @@ func Test_processV1AIsPost(t *testing.T) {
 			expectEngineData: map[string]any{
 				"key1": "val1",
 			},
+			expectEngineKey:  "test engine key",
 			expectInitPrompt: "test init prompt",
+			expectTTSType:    ai.TTSTypeElevenLabs,
+			expectTTSVoiceID: "test-voice-id",
+			expectSTTType:    ai.STTTypeDeepgram,
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -151,7 +159,20 @@ func Test_processV1AIsPost(t *testing.T) {
 				aiHandler:   mockAI,
 			}
 
-			mockAI.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectEngineModel, tt.expectEngineData, tt.expectInitPrompt).Return(tt.responseAI, nil)
+			mockAI.EXPECT().Create(
+				gomock.Any(),
+				tt.expectCustomerID,
+				tt.expectName,
+				tt.expectDetail,
+				tt.expectEngineType,
+				tt.expectEngineModel,
+				tt.expectEngineData,
+				tt.expectEngineKey,
+				tt.expectInitPrompt,
+				tt.expectTTSType,
+				tt.expectTTSVoiceID,
+				tt.expectSTTType,
+			).Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -298,7 +319,11 @@ func Test_processV1AIsIDPut(t *testing.T) {
 		expectEngineType  ai.EngineType
 		expectEngineModel ai.EngineModel
 		expectEngineData  map[string]any
+		expectEngineKey   string
 		expectInitPrompt  string
+		expectTTSType     ai.TTSType
+		expectTTSVoiceID  string
+		expectSTTType     ai.STTType
 		expectRes         *sock.Response
 	}{
 		{
@@ -307,7 +332,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				URI:      "/v1/ais/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"new name","detail":"new detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"init_prompt":"new prompt"}`),
+				Data:     []byte(`{"name":"new name","detail":"new detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"new prompt","tts_type":"cartesia","tts_voice_id":"new-voice-id","stt_type":"deepgram"}`),
 			},
 
 			responseAI: &ai.AI{
@@ -324,7 +349,11 @@ func Test_processV1AIsIDPut(t *testing.T) {
 			expectEngineData: map[string]any{
 				"key1": "val1",
 			},
+			expectEngineKey:  "test engine key",
 			expectInitPrompt: "new prompt",
+			expectTTSType:    ai.TTSTypeCartesia,
+			expectTTSVoiceID: "new-voice-id",
+			expectSTTType:    ai.STTTypeDeepgram,
 
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -347,7 +376,20 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				aiHandler:   mockAI,
 			}
 
-			mockAI.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectEngineModel, tt.expectEngineData, tt.expectInitPrompt).Return(tt.responseAI, nil)
+			mockAI.EXPECT().Update(
+				gomock.Any(),
+				tt.expectID,
+				tt.expectName,
+				tt.expectDetail,
+				tt.expectEngineType,
+				tt.expectEngineModel,
+				tt.expectEngineData,
+				tt.expectEngineKey,
+				tt.expectInitPrompt,
+				tt.expectTTSType,
+				tt.expectTTSVoiceID,
+				tt.expectSTTType,
+			).Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

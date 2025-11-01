@@ -19,7 +19,11 @@ func (h *aiHandler) dbCreate(
 	engineType ai.EngineType,
 	engineModel ai.EngineModel,
 	engineData map[string]any,
+	engineKey string,
 	initPrompt string,
+	ttsType ai.TTSType,
+	ttsVoiceID string,
+	sttType ai.STTType,
 ) (*ai.AI, error) {
 	id := h.utilHandler.UUIDCreate()
 	c := &ai.AI{
@@ -34,8 +38,14 @@ func (h *aiHandler) dbCreate(
 		EngineType:  engineType,
 		EngineModel: engineModel,
 		EngineData:  engineData,
+		EngineKey:   engineKey,
 
 		InitPrompt: initPrompt,
+
+		TTSType:    ttsType,
+		TTSVoiceID: ttsVoiceID,
+
+		STTType: sttType,
 	}
 
 	if err := h.db.AICreate(ctx, c); err != nil {
@@ -95,9 +105,13 @@ func (h *aiHandler) dbUpdate(
 	engineType ai.EngineType,
 	engineModel ai.EngineModel,
 	engineData map[string]any,
+	engineKey string,
 	initPrompt string,
+	ttsType ai.TTSType,
+	ttsVoice string,
+	sttType ai.STTType,
 ) (*ai.AI, error) {
-	if err := h.db.AISetInfo(ctx, id, name, detail, engineType, engineModel, engineData, initPrompt); err != nil {
+	if err := h.db.AISetInfo(ctx, id, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoice, sttType); err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
 	}
 

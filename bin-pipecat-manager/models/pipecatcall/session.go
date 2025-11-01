@@ -30,4 +30,7 @@ type Session struct {
 	// asterisk info
 	AsteriskStreamingID uuid.UUID `json:"-"`
 	AsteriskConn        net.Conn  `json:"-"`
+
+	// llm
+	LLMBotText string `json:"-"`
 }

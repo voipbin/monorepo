@@ -11,7 +11,6 @@ import (
 
 func (h *messageHandler) Create(
 	ctx context.Context,
-	id uuid.UUID,
 	customerID uuid.UUID,
 	aicallID uuid.UUID,
 	direction message.Direction,
@@ -20,9 +19,7 @@ func (h *messageHandler) Create(
 	toolCalls []message.ToolCall,
 	toolCallID string,
 ) (*message.Message, error) {
-	if id == uuid.Nil {
-		id = h.utilHandler.UUIDCreate()
-	}
+	id := h.utilHandler.UUIDCreate()
 
 	tmpToolCalls := toolCalls
 	if tmpToolCalls == nil {

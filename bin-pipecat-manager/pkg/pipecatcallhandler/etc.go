@@ -28,7 +28,7 @@ func (h *pipecatcallHandler) SendMessage(ctx context.Context, id uuid.UUID, mess
 
 		Text: messageText,
 	}
-	h.notifyHandler.PublishEvent(ctx, message.EventTypeUserTranscription, res)
+	// h.notifyHandler.PublishEvent(ctx, message.EventTypeUserTranscription, res)
 
 	if errSend := h.pipecatframeHandler.SendRTVIText(se, messageID, messageText, runImmediately, audioResponse); errSend != nil {
 		return nil, errors.Wrapf(errSend, "could not send the message to pipecatcall")

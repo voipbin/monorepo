@@ -41,7 +41,11 @@ func Test_AICreate(t *testing.T) {
 					"key1": "val1",
 					"key2": 2.0,
 				},
+				EngineKey:  "test engine key",
 				InitPrompt: "test init prompt",
+				TTSType:    ai.TTSTypeCartesia,
+				TTSVoiceID: "test tts voice id",
+				STTType:    ai.STTTypeElevenLabs,
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -57,7 +61,11 @@ func Test_AICreate(t *testing.T) {
 					"key1": "val1",
 					"key2": 2.0,
 				},
+				EngineKey:  "test engine key",
 				InitPrompt: "test init prompt",
+				TTSType:    ai.TTSTypeCartesia,
+				TTSVoiceID: "test tts voice id",
+				STTType:    ai.STTTypeElevenLabs,
 
 				TMCreate: "2023-01-03 21:35:02.809",
 				TMUpdate: DefaultTimeStamp,
@@ -319,7 +327,11 @@ func Test_AISetInfo(t *testing.T) {
 		engineType  ai.EngineType
 		engineModel ai.EngineModel
 		engineData  map[string]any
+		engineKey   string
 		initPrompt  string
+		ttsType     ai.TTSType
+		ttsVoiceID  string
+		sttType     ai.STTType
 
 		responseCurTime string
 		expectRes       *ai.AI
@@ -341,7 +353,11 @@ func Test_AISetInfo(t *testing.T) {
 				"key1": "val1",
 				"key2": 2.0,
 			},
+			engineKey:  "new engine key",
 			initPrompt: "new init prompt",
+			ttsType:    ai.TTSTypeCartesia,
+			ttsVoiceID: "new tts voice id",
+			sttType:    ai.STTTypeElevenLabs,
 
 			responseCurTime: "2023-01-03 21:35:02.809",
 			expectRes: &ai.AI{
@@ -356,7 +372,11 @@ func Test_AISetInfo(t *testing.T) {
 					"key1": "val1",
 					"key2": 2.0,
 				},
+				EngineKey:  "new engine key",
 				InitPrompt: "new init prompt",
+				TTSType:    ai.TTSTypeCartesia,
+				TTSVoiceID: "new tts voice id",
+				STTType:    ai.STTTypeElevenLabs,
 				TMCreate:   "2023-01-03 21:35:02.809",
 				TMUpdate:   "2023-01-03 21:35:02.809",
 				TMDelete:   DefaultTimeStamp,
@@ -387,7 +407,7 @@ func Test_AISetInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
-			if errDel := h.AISetInfo(ctx, tt.id, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt); errDel != nil {
+			if errDel := h.AISetInfo(ctx, tt.id, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 

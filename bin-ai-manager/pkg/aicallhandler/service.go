@@ -22,12 +22,11 @@ func (h *aicallHandler) ServiceStart(
 	referenceID uuid.UUID,
 	gender aicall.Gender,
 	language string,
-	resume bool,
 ) (*commonservice.Service, error) {
 
 	switch referenceType {
 	case aicall.ReferenceTypeCall:
-		return h.serviceStartReferenceTypeCall(ctx, aiID, activeflowID, referenceID, gender, language, resume)
+		return h.serviceStartReferenceTypeCall(ctx, aiID, activeflowID, referenceID, gender, language)
 
 	case aicall.ReferenceTypeConversation:
 		return h.serviceStartReferenceTypeConversation(ctx, aiID, activeflowID, referenceID, gender, language)
@@ -45,7 +44,6 @@ func (h *aicallHandler) serviceStartReferenceTypeCall(
 	referenceID uuid.UUID,
 	gender aicall.Gender,
 	language string,
-	resume bool,
 ) (*commonservice.Service, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "serviceStartReferenceTypeCall",
@@ -56,7 +54,7 @@ func (h *aicallHandler) serviceStartReferenceTypeCall(
 		"language":      language,
 	})
 
-	cc, err := h.Start(ctx, aiID, activeflowID, aicall.ReferenceTypeCall, referenceID, gender, language, resume)
+	cc, err := h.Start(ctx, aiID, activeflowID, aicall.ReferenceTypeCall, referenceID, gender, language)
 	if err != nil {
 		log.Errorf("Could not start aicall. err: %v", err)
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)
@@ -100,7 +98,7 @@ func (h *aicallHandler) serviceStartReferenceTypeConversation(
 		"language":      language,
 	})
 
-	cc, err := h.Start(ctx, aiID, activeflowID, aicall.ReferenceTypeConversation, referenceID, gender, language, false)
+	cc, err := h.Start(ctx, aiID, activeflowID, aicall.ReferenceTypeConversation, referenceID, gender, language)
 	if err != nil {
 		log.Errorf("Could not start aicall. err: %v", err)
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)
