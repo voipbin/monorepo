@@ -56,5 +56,19 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		log.Errorf("Could not create the message. err: %v", err)
 		return
 	}
-	log.WithField("message", tmp).Debugf("Created message from the pipecat-manager's user transcription.")
+	log.WithField("message", tmp).Debugf("Created message.")
+}
+
+func (h *messageHandler) EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventPMMessageUserLLM",
+		"event": evt,
+	})
+
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
+	if err != nil {
+		log.Errorf("Could not create the message. err: %v", err)
+		return
+	}
+	log.WithField("message", tmp).Debugf("Created message.")
 }

@@ -34,6 +34,7 @@ type MessageHandler interface {
 	EventPMMessageBotTranscription(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageBotLLM(ctx context.Context, evt *pmmessage.Message)
+	EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message)
 }
 
 type messageHandler struct {

@@ -245,6 +245,27 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		}
 		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserTranscription, event)
 
+	case pipecatframe.RTVIFrameTypeUserLLMText:
+		msg := pipecatframe.RTVIUserLLMTextMessage{}
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal user-llm-text message")
+		}
+
+		id := h.utilHandler.UUIDCreate()
+		event := message.Message{
+			Identity: commonidentity.Identity{
+				ID:         id,
+				CustomerID: se.CustomerID,
+			},
+
+			PipecatcallID:            se.ID,
+			PipecatcallReferenceType: se.PipecatcallReferenceType,
+			PipecatcallReferenceID:   se.PipecatcallReferenceID,
+
+			Text: msg.Data.Text,
+		}
+		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserLLM, event)
+
 	case pipecatframe.RTVIFrameTypeBotLLMText:
 		msg := pipecatframe.RTVIBotLLMTextMessage{}
 		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {

@@ -37,7 +37,6 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	}
 	log.WithField("pipecatcall", pc).Debugf("Found the pipecatcall.")
 
-	// note: after create a new aicall, we need to create a new message for the conversation message
 	res, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", res.ID)
@@ -50,7 +49,7 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	}
 	log.WithField("pipecat_message", tmp).Debugf("Sent the message to the pipecatcall.")
 
-	return nil, nil
+	return res, nil
 }
 
 func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.AIcall, role message.Role, messageText string, runImmediately bool) (*message.Message, error) {
@@ -84,5 +83,5 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 	}
 	log.WithField("pipecatcall_terminate", tmp).Debugf("Terminated the pipecatcall correctly.")
 
-	return nil, nil
+	return res, nil
 }
