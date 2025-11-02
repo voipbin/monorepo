@@ -4,6 +4,7 @@ package aicallhandler
 
 import (
 	"context"
+	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
@@ -82,6 +83,8 @@ const (
 
 	defaultPipecatcallSTTType    = pmpipecatcall.STTTypeDeepgram
 	defaultPipecatcallTTSVoiceID = "EXAVITQu4vr4xnSDxMaL" // Rachel
+
+	defaultPipecatcallTimeout = time.Second * 30
 
 	// defaultTTSVoiceIDElevenlabs = "EXAVITQu4vr4xnSDxMaL"                 // Rachel
 	// defaultTTSVoiceIDCartesia   = "71a7ad14-091c-4e8e-a314-022ece01c121" // British Reading Lady(https://developer.signalwire.com/voice/tts/cartesia/)
@@ -196,6 +199,7 @@ Context:
 - Users will set their own instructions (persona, style, context).
 - You must adapt to those instructions consistently.
 - If user requests or situation requires, use available tools to gather data or perform actions.
+- You may receive messages in the form "DTMF_EVENT: N". These indicate that the user pressed a key on their telephone keypad. Treat these as events, not normal user text, and respond naturally according to the conversation flow.
 
 Input Values:
 - User-provided system/custom prompt
@@ -211,6 +215,7 @@ Instructions:
 - If ambiguity exists, ask clarifying questions before answering.
 - Before giving the final answer, outline a short execution plan (2-4 steps), then provide a concise summary (1-2 sentences) and the final answer.
 - For each Input Value, ask clarifying questions **one at a time in sequence**. Wait for the user's answer before moving to the next question.
+- When receiving DTMF_EVENT messages, interpret the event based on the user's instructions and generate an appropriate response without treating it as a normal text input.
 
 Constraints:
 - Avoid hallucination; use tools for factual queries.

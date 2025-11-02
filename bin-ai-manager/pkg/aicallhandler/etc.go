@@ -4,6 +4,7 @@ import (
 	"context"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -77,11 +78,15 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	tmp, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not terminate the pipecatcall correctly")
-	}
-	log.WithField("pipecatcall_terminate", tmp).Debugf("Terminated the pipecatcall correctly.")
+	go func() {
+		time.Sleep(defaultPipecatcallTimeout)
+		tmp, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
+		if err != nil {
+			log.Errorf("Could not terminate the pipecatcall correctly. err: %v", err)
+			return
+		}
+		log.WithField("pipecatcall_terminate", tmp).Debugf("Terminated the pipecatcall correctly.")
+	}()
 
 	return res, nil
 }
