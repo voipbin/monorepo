@@ -89,6 +89,21 @@ func (mr *MockCacheHandlerMockRecorder) AIcallGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGet", reflect.TypeOf((*MockCacheHandler)(nil).AIcallGet), ctx, id)
 }
 
+// AIcallGetByPipecatcallID mocks base method.
+func (m *MockCacheHandler) AIcallGetByPipecatcallID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallGetByPipecatcallID", ctx, transcribeID)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIcallGetByPipecatcallID indicates an expected call of AIcallGetByPipecatcallID.
+func (mr *MockCacheHandlerMockRecorder) AIcallGetByPipecatcallID(ctx, transcribeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByPipecatcallID", reflect.TypeOf((*MockCacheHandler)(nil).AIcallGetByPipecatcallID), ctx, transcribeID)
+}
+
 // AIcallGetByReferenceID mocks base method.
 func (m *MockCacheHandler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -102,36 +117,6 @@ func (m *MockCacheHandler) AIcallGetByReferenceID(ctx context.Context, reference
 func (mr *MockCacheHandlerMockRecorder) AIcallGetByReferenceID(ctx, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByReferenceID", reflect.TypeOf((*MockCacheHandler)(nil).AIcallGetByReferenceID), ctx, referenceID)
-}
-
-// AIcallGetByStreamingID mocks base method.
-func (m *MockCacheHandler) AIcallGetByStreamingID(ctx context.Context, streamingID uuid.UUID) (*aicall.AIcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallGetByStreamingID", ctx, streamingID)
-	ret0, _ := ret[0].(*aicall.AIcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AIcallGetByStreamingID indicates an expected call of AIcallGetByStreamingID.
-func (mr *MockCacheHandlerMockRecorder) AIcallGetByStreamingID(ctx, streamingID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByStreamingID", reflect.TypeOf((*MockCacheHandler)(nil).AIcallGetByStreamingID), ctx, streamingID)
-}
-
-// AIcallGetByTranscribeID mocks base method.
-func (m *MockCacheHandler) AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallGetByTranscribeID", ctx, transcribeID)
-	ret0, _ := ret[0].(*aicall.AIcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AIcallGetByTranscribeID indicates an expected call of AIcallGetByTranscribeID.
-func (mr *MockCacheHandlerMockRecorder) AIcallGetByTranscribeID(ctx, transcribeID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByTranscribeID", reflect.TypeOf((*MockCacheHandler)(nil).AIcallGetByTranscribeID), ctx, transcribeID)
 }
 
 // AIcallSet mocks base method.

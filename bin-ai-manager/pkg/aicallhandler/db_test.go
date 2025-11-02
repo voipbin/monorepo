@@ -24,19 +24,17 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai                *ai.AI
-		activeflowID      uuid.UUID
-		referenceType     aicall.ReferenceType
-		referenceID       uuid.UUID
-		confbridgeID      uuid.UUID
-		gender            aicall.Gender
-		language          string
-		ttsStreamingID    uuid.UUID
-		ttsStreamingPodID string
+		ai            *ai.AI
+		activeflowID  uuid.UUID
+		referenceType aicall.ReferenceType
+		referenceID   uuid.UUID
+		confbridgeID  uuid.UUID
+		pipecatcallID uuid.UUID
+		gender        aicall.Gender
+		language      string
 
-		responseUUIDID            uuid.UUID
-		responseUUIDPipecatcallID uuid.UUID
-		responseAIcall            *aicall.AIcall
+		responseUUIDID uuid.UUID
+		responseAIcall *aicall.AIcall
 
 		expectAIcall *aicall.AIcall
 	}{
@@ -53,18 +51,19 @@ func Test_Create(t *testing.T) {
 				EngineData: map[string]any{
 					"key1": "value1",
 				},
+				TTSType:    ai.TTSTypeElevenLabs,
+				TTSVoiceID: "d4c7e1f2-5e8b-4d3a-9f0a-1c2b3d4e5f60",
+				STTType:    ai.STTTypeDeepgram,
 			},
-			activeflowID:      uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
-			referenceType:     aicall.ReferenceTypeCall,
-			referenceID:       uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
-			confbridgeID:      uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
-			gender:            aicall.GenderFemale,
-			language:          "en-US",
-			ttsStreamingID:    uuid.FromStringOrNil("f28face2-817a-11f0-a087-531eee9532b8"),
-			ttsStreamingPodID: "f2d8841c-817a-11f0-9521-4f553837a2fb",
+			activeflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
+			referenceType: aicall.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
+			confbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
+			pipecatcallID: uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
+			gender:        aicall.GenderFemale,
+			language:      "en-US",
 
-			responseUUIDID:            uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
-			responseUUIDPipecatcallID: uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
+			responseUUIDID: uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
 			responseAIcall: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
@@ -82,16 +81,17 @@ func Test_Create(t *testing.T) {
 				AIEngineData: map[string]any{
 					"key1": "value1",
 				},
-				ActiveflowID:      uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
-				ReferenceType:     aicall.ReferenceTypeCall,
-				ReferenceID:       uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
-				ConfbridgeID:      uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
-				PipecatcallID:     uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
-				Gender:            aicall.GenderFemale,
-				Language:          "en-US",
-				Status:            aicall.StatusInitiating,
-				TTSStreamingID:    uuid.FromStringOrNil("f28face2-817a-11f0-a087-531eee9532b8"),
-				TTSStreamingPodID: "f2d8841c-817a-11f0-9521-4f553837a2fb",
+				AITTSType:     ai.TTSTypeElevenLabs,
+				AITTSVoiceID:  "d4c7e1f2-5e8b-4d3a-9f0a-1c2b3d4e5f60",
+				AISTTType:     ai.STTTypeDeepgram,
+				ActiveflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
+				ConfbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
+				PipecatcallID: uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
+				Gender:        aicall.GenderFemale,
+				Language:      "en-US",
+				Status:        aicall.StatusInitiating,
 			},
 		},
 	}
@@ -114,16 +114,14 @@ func Test_Create(t *testing.T) {
 				db:            mockDB,
 				aiHandler:     mockAI,
 			}
-
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDID)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			res, err := h.Create(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.ttsStreamingID, tt.ttsStreamingPodID)
+			res, err := h.Create(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -249,182 +247,182 @@ func Test_GetByReferenceID(t *testing.T) {
 	}
 }
 
-func Test_GetByTranscribeID(t *testing.T) {
+// func Test_GetByTranscribeID(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		transcribeID uuid.UUID
+// 		transcribeID uuid.UUID
 
-		responseAIcall *aicall.AIcall
-	}{
-		{
-			"normal",
+// 		responseAIcall *aicall.AIcall
+// 	}{
+// 		{
+// 			"normal",
 
-			uuid.FromStringOrNil("c590415a-a709-11ed-b130-eba649c97eab"),
+// 			uuid.FromStringOrNil("c590415a-a709-11ed-b130-eba649c97eab"),
 
-			&aicall.AIcall{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("c5b76622-a709-11ed-8d54-63813a022d9a"),
-				},
-			},
-		},
-	}
+// 			&aicall.AIcall{
+// 				Identity: identity.Identity{
+// 					ID: uuid.FromStringOrNil("c5b76622-a709-11ed-8d54-63813a022d9a"),
+// 				},
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockAI := aihandler.NewMockAIHandler(mc)
+// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+// 			mockReq := requesthandler.NewMockRequestHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockAI := aihandler.NewMockAIHandler(mc)
 
-			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
-			}
+// 			h := &aicallHandler{
+// 				utilHandler:   mockUtil,
+// 				reqHandler:    mockReq,
+// 				notifyHandler: mockNotify,
+// 				db:            mockDB,
+// 				aiHandler:     mockAI,
+// 			}
 
-			ctx := context.Background()
+// 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGetByTranscribeID(ctx, tt.transcribeID).Return(tt.responseAIcall, nil)
+// 			mockDB.EXPECT().AIcallGetByTranscribeID(ctx, tt.transcribeID).Return(tt.responseAIcall, nil)
 
-			res, err := h.GetByTranscribeID(ctx, tt.transcribeID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			res, err := h.GetByTranscribeID(ctx, tt.transcribeID)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if !reflect.DeepEqual(res, tt.responseAIcall) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAIcall, res)
-			}
-		})
-	}
-}
+// 			if !reflect.DeepEqual(res, tt.responseAIcall) {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAIcall, res)
+// 			}
+// 		})
+// 	}
+// }
 
-func Test_UpdateStatusStart(t *testing.T) {
+// func Test_UpdateStatusStart(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		id           uuid.UUID
-		transcribeID uuid.UUID
+// 		id           uuid.UUID
+// 		transcribeID uuid.UUID
 
-		responseAIcall *aicall.AIcall
-	}{
-		{
-			"normal",
+// 		responseAIcall *aicall.AIcall
+// 	}{
+// 		{
+// 			"normal",
 
-			uuid.FromStringOrNil("3447ddd8-a70a-11ed-8b76-43164266fbb2"),
-			uuid.FromStringOrNil("3470b852-a70a-11ed-9d3f-7feaeeaa417b"),
+// 			uuid.FromStringOrNil("3447ddd8-a70a-11ed-8b76-43164266fbb2"),
+// 			uuid.FromStringOrNil("3470b852-a70a-11ed-9d3f-7feaeeaa417b"),
 
-			&aicall.AIcall{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("3447ddd8-a70a-11ed-8b76-43164266fbb2"),
-				},
-			},
-		},
-	}
+// 			&aicall.AIcall{
+// 				Identity: identity.Identity{
+// 					ID: uuid.FromStringOrNil("3447ddd8-a70a-11ed-8b76-43164266fbb2"),
+// 				},
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockAI := aihandler.NewMockAIHandler(mc)
+// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+// 			mockReq := requesthandler.NewMockRequestHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockAI := aihandler.NewMockAIHandler(mc)
 
-			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
-			}
+// 			h := &aicallHandler{
+// 				utilHandler:   mockUtil,
+// 				reqHandler:    mockReq,
+// 				notifyHandler: mockNotify,
+// 				db:            mockDB,
+// 				aiHandler:     mockAI,
+// 			}
 
-			ctx := context.Background()
+// 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallUpdateStatusProgressing(ctx, tt.id, tt.transcribeID).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
+// 			mockDB.EXPECT().AIcallUpdateStatusProgressing(ctx, tt.id, tt.transcribeID).Return(nil)
+// 			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, nil)
+// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
-			res, err := h.UpdateStatusStartProgressing(ctx, tt.id, tt.transcribeID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			res, err := h.UpdateStatusStartProgressing(ctx, tt.id, tt.transcribeID)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if !reflect.DeepEqual(res, tt.responseAIcall) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAIcall, res)
-			}
-		})
-	}
-}
+// 			if !reflect.DeepEqual(res, tt.responseAIcall) {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAIcall, res)
+// 			}
+// 		})
+// 	}
+// }
 
-func Test_UpdateStatusEnd(t *testing.T) {
+// func Test_UpdateStatusEnd(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		id uuid.UUID
+// 		id uuid.UUID
 
-		responseAIcall *aicall.AIcall
-	}{
-		{
-			"normal",
+// 		responseAIcall *aicall.AIcall
+// 	}{
+// 		{
+// 			"normal",
 
-			uuid.FromStringOrNil("a3c338ec-a70a-11ed-b305-9bd0df7c9474"),
+// 			uuid.FromStringOrNil("a3c338ec-a70a-11ed-b305-9bd0df7c9474"),
 
-			&aicall.AIcall{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("a3c338ec-a70a-11ed-b305-9bd0df7c9474"),
-				},
-			},
-		},
-	}
+// 			&aicall.AIcall{
+// 				Identity: identity.Identity{
+// 					ID: uuid.FromStringOrNil("a3c338ec-a70a-11ed-b305-9bd0df7c9474"),
+// 				},
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockAI := aihandler.NewMockAIHandler(mc)
+// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+// 			mockReq := requesthandler.NewMockRequestHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockAI := aihandler.NewMockAIHandler(mc)
 
-			h := &aicallHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
-				aiHandler:     mockAI,
-			}
+// 			h := &aicallHandler{
+// 				utilHandler:   mockUtil,
+// 				reqHandler:    mockReq,
+// 				notifyHandler: mockNotify,
+// 				db:            mockDB,
+// 				aiHandler:     mockAI,
+// 			}
 
-			ctx := context.Background()
+// 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallUpdateStatusTerminated(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusTerminated, tt.responseAIcall)
+// 			mockDB.EXPECT().AIcallUpdateStatusTerminated(ctx, tt.id).Return(nil)
+// 			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, nil)
+// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusTerminated, tt.responseAIcall)
 
-			res, err := h.UpdateStatusTerminated(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			res, err := h.UpdateStatusTerminated(ctx, tt.id)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if !reflect.DeepEqual(res, tt.responseAIcall) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAIcall, res)
-			}
-		})
-	}
-}
+// 			if !reflect.DeepEqual(res, tt.responseAIcall) {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAIcall, res)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_Delete(t *testing.T) {
 

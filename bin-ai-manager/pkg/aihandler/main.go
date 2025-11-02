@@ -26,7 +26,11 @@ type AIHandler interface {
 		engineType ai.EngineType,
 		engineModel ai.EngineModel,
 		engineData map[string]any,
+		engineKey string,
 		initPrompt string,
+		ttsType ai.TTSType,
+		ttsVoiceID string,
+		sttType ai.STTType,
 	) (*ai.AI, error)
 	Get(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error)
@@ -39,7 +43,11 @@ type AIHandler interface {
 		engineType ai.EngineType,
 		engineModel ai.EngineModel,
 		engineData map[string]any,
+		engineKey string,
 		initPrompt string,
+		ttsType ai.TTSType,
+		ttsVoice string,
+		sttType ai.STTType,
 	) (*ai.AI, error)
 }
 

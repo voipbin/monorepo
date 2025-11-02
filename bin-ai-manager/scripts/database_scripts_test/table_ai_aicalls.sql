@@ -7,22 +7,21 @@ create table ai_aicalls(
   ai_engine_type   varchar(255), -- ai engine type
   ai_engine_model  varchar(255),
   ai_engine_data   json,
+  ai_tts_type      varchar(255),
+  ai_tts_voice_id  varchar(255),
+  ai_stt_type      varchar(255),
 
   activeflow_id     binary(16),
   reference_type    varchar(255),
   reference_id      binary(16),
 
   confbridge_id     binary(16),
-  transcribe_id     binary(16),
   pipecatcall_id    binary(16),
 
   status  varchar(255),   -- status
 
   gender    varchar(255), -- gender
   language  varchar(255), -- language
-
-  tts_streaming_id      binary(16),     -- tts streaming id
-  tts_streaming_pod_id  varchar(255),   -- tts streaming pod id
 
   -- timestamps
   tm_end    datetime(6),  --

@@ -24,20 +24,28 @@ type DBHandler interface {
 	AIDelete(ctx context.Context, id uuid.UUID) error
 	AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	AIGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error)
-	AISetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType ai.EngineType, engineModel ai.EngineModel, engineData map[string]any, initPrompt string) error
+	AISetInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		engineType ai.EngineType,
+		engineModel ai.EngineModel,
+		engineData map[string]any,
+		engineKey string,
+		initPrompt string,
+		ttsType ai.TTSType,
+		ttsVoiceID string,
+		sttType ai.STTType,
+	) error
 
 	AIcallCreate(ctx context.Context, cb *aicall.AIcall) error
 	AIcallDelete(ctx context.Context, id uuid.UUID) error
 	AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
-	AIcallGetByStreamingID(ctx context.Context, streamingID uuid.UUID) (*aicall.AIcall, error)
-	AIcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*aicall.AIcall, error)
 	AIcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error)
-	AIcallUpdateStatusPausing(ctx context.Context, id uuid.UUID) error
-	AIcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
-	AIcallUpdateStatusResuming(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) error
-	AIcallUpdateStatusTerminating(ctx context.Context, id uuid.UUID) error
-	AIcallUpdateStatusTerminated(ctx context.Context, id uuid.UUID) error
+	AIcallUpdatePipecatcallID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID) error
+	AIcallUpdateStatus(ctx context.Context, id uuid.UUID, status aicall.Status) error
 
 	MessageCreate(ctx context.Context, c *message.Message) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)

@@ -18,15 +18,23 @@ import (
 )
 
 type MessageHandler interface {
+	Create(
+		ctx context.Context,
+		customerID uuid.UUID,
+		aicallID uuid.UUID,
+		direction message.Direction,
+		role message.Role,
+		content string,
+		toolCalls []message.ToolCall,
+		toolCallID string,
+	) (*message.Message, error)
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error)
 
-	Send(ctx context.Context, aicallID uuid.UUID, role message.Role, content string, returnResponse bool) (*message.Message, error)
-	StreamingSend(ctx context.Context, aicallID uuid.UUID, role message.Role, content string) (*message.Message, error)
-	StreamingSendAll(ctx context.Context, aicallID uuid.UUID) error
-
 	EventPMMessageBotTranscription(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message)
+	EventPMMessageBotLLM(ctx context.Context, evt *pmmessage.Message)
+	EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message)
 }
 
 type messageHandler struct {

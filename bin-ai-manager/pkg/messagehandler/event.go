@@ -6,7 +6,6 @@ import (
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +19,7 @@ func (h *messageHandler) EventPMMessageBotTranscription(ctx context.Context, evt
 		return
 	}
 
-	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -38,10 +37,38 @@ func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, ev
 		return
 	}
 
-	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
 	}
 	log.WithField("message", tmp).Debugf("Created message from the pipecat-manager's user transcription.")
+}
+
+func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessage.Message) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventPMMessageBotLLM",
+		"event": evt,
+	})
+
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+	if err != nil {
+		log.Errorf("Could not create the message. err: %v", err)
+		return
+	}
+	log.WithField("message", tmp).Debugf("Created message.")
+}
+
+func (h *messageHandler) EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventPMMessageUserLLM",
+		"event": evt,
+	})
+
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
+	if err != nil {
+		log.Errorf("Could not create the message. err: %v", err)
+		return
+	}
+	log.WithField("message", tmp).Debugf("Created message.")
 }

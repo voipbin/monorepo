@@ -13,7 +13,6 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
-	"monorepo/bin-ai-manager/pkg/messagehandler"
 )
 
 func Test_processV1AIcallsGet(t *testing.T) {
@@ -58,7 +57,7 @@ func Test_processV1AIcallsGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"64b555fe-a773-11ed-9dc7-2fccabe21218","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","tts_streaming_id":"00000000-0000-0000-0000-000000000000"},{"id":"6792a0d8-a773-11ed-b28c-c79bf61e95b2","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","tts_streaming_id":"00000000-0000-0000-0000-000000000000"}]`),
+				Data:       []byte(`[{"id":"64b555fe-a773-11ed-9dc7-2fccabe21218","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000"},{"id":"6792a0d8-a773-11ed-b28c-c79bf61e95b2","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 	}
@@ -129,7 +128,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6792a0d8-a773-11ed-b28c-c79bf61e95b2","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","tts_streaming_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"6792a0d8-a773-11ed-b28c-c79bf61e95b2","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -147,7 +146,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().Start(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage, false).Return(tt.responseAIcall, nil)
+			mockAIcall.EXPECT().Start(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage).Return(tt.responseAIcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -188,7 +187,7 @@ func Test_processV1AIcallsIDDelete(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"d9d804d8-ef03-4a23-906c-c192029b19fc","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","tts_streaming_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"d9d804d8-ef03-4a23-906c-c192029b19fc","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -247,7 +246,7 @@ func Test_processV1AIcallsIDGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3e349bb8-7b31-4533-8e2b-6654ebc84e3e","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","tts_streaming_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"3e349bb8-7b31-4533-8e2b-6654ebc84e3e","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -306,7 +305,7 @@ func Test_processV1AIcallsIDTerminatePost(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"24a00d20-9199-11f0-b036-f7aebbe6e8f8","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","tts_streaming_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"24a00d20-9199-11f0-b036-f7aebbe6e8f8","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -337,53 +336,53 @@ func Test_processV1AIcallsIDTerminatePost(t *testing.T) {
 	}
 }
 
-func Test_processV1AIcallsIDSendAllPost(t *testing.T) {
+// func Test_processV1AIcallsIDSendAllPost(t *testing.T) {
 
-	tests := []struct {
-		name    string
-		request *sock.Request
+// 	tests := []struct {
+// 		name    string
+// 		request *sock.Request
 
-		expectedID  uuid.UUID
-		expectedRes *sock.Response
-	}{
-		{
-			name: "normal",
-			request: &sock.Request{
-				URI:    "/v1/aicalls/3c77f28e-9525-11f0-8139-5b1970217821/send_all",
-				Method: sock.RequestMethodPost,
-			},
+// 		expectedID  uuid.UUID
+// 		expectedRes *sock.Response
+// 	}{
+// 		{
+// 			name: "normal",
+// 			request: &sock.Request{
+// 				URI:    "/v1/aicalls/3c77f28e-9525-11f0-8139-5b1970217821/send_all",
+// 				Method: sock.RequestMethodPost,
+// 			},
 
-			expectedID: uuid.FromStringOrNil("3c77f28e-9525-11f0-8139-5b1970217821"),
-			expectedRes: &sock.Response{
-				StatusCode: 200,
-			},
-		},
-	}
+// 			expectedID: uuid.FromStringOrNil("3c77f28e-9525-11f0-8139-5b1970217821"),
+// 			expectedRes: &sock.Response{
+// 				StatusCode: 200,
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
-			mockMessage := messagehandler.NewMockMessageHandler(mc)
+// 			mockSock := sockhandler.NewMockSockHandler(mc)
+// 			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+// 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
-			h := &listenHandler{
-				sockHandler:    mockSock,
-				aicallHandler:  mockAIcall,
-				messageHandler: mockMessage,
-			}
+// 			h := &listenHandler{
+// 				sockHandler:    mockSock,
+// 				aicallHandler:  mockAIcall,
+// 				messageHandler: mockMessage,
+// 			}
 
-			mockMessage.EXPECT().StreamingSendAll(gomock.Any(), tt.expectedID).Return(nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			mockMessage.EXPECT().StreamingSendAll(gomock.Any(), tt.expectedID).Return(nil)
+// 			res, err := h.processRequest(tt.request)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
-			}
-		})
-	}
-}
+// 			if reflect.DeepEqual(res, tt.expectedRes) != true {
+// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+// 			}
+// 		})
+// 	}
+// }

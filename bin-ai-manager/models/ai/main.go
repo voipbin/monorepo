@@ -12,9 +12,10 @@ type AI struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	EngineType  EngineType     `json:"engine_type,omitempty"`
-	EngineModel EngineModel    `json:"engine_model,omitempty"`
+	EngineType  EngineType     `json:"engine_type,omitempty"`  // currently not in used.
+	EngineModel EngineModel    `json:"engine_model,omitempty"` // ai(llm) model. combine with <engine model target>.<model>
 	EngineData  map[string]any `json:"engine_data,omitempty"`
+	EngineKey   string         `json:"engine_key,omitempty"` // ai(llm) service api key
 
 	InitPrompt string `json:"init_prompt,omitempty"`
 
@@ -41,9 +42,50 @@ type EngineModelTarget string
 
 const (
 	EngineModelTargetNone       EngineModelTarget = ""
-	EngineModelTargetOpenai     EngineModelTarget = "openai"     // openai. https://chat.openai.com/chat
 	EngineModelTargetDialogflow EngineModelTarget = "dialogflow" // dialogflow use
+
+	EngineModelTargetAnthropic  EngineModelTarget = "anthropic"  // Anthropic Claude
+	EngineModelTargetAWS        EngineModelTarget = "aws"        // AWS Bedrock
+	EngineModelTargetAzure      EngineModelTarget = "azure"      // Azure OpenAI
+	EngineModelTargetCerebras   EngineModelTarget = "cerebras"   // Cerebras
+	EngineModelTargetDeepSeek   EngineModelTarget = "deepseek"   // DeepSeek
+	EngineModelTargetFireworks  EngineModelTarget = "fireworks"  // Fireworks AI
+	EngineModelTargetGemini     EngineModelTarget = "gemini"     // Google Gemini
+	EngineModelTargetGrok       EngineModelTarget = "grok"       // Grok
+	EngineModelTargetGroq       EngineModelTarget = "groq"       // Groq
+	EngineModelTargetMistral    EngineModelTarget = "mistral"    // Mistral AI
+	EngineModelTargetNvidiaNIM  EngineModelTarget = "nvidia"     // NVIDIA NIM
+	EngineModelTargetOllama     EngineModelTarget = "ollama"     // Ollama
+	EngineModelTargetOpenAI     EngineModelTarget = "openai"     // OpenAI
+	EngineModelTargetOpenRouter EngineModelTarget = "openrouter" // OpenRouter
+	EngineModelTargetPerplexity EngineModelTarget = "perplexity" // Perplexity
+	EngineModelTargetQwen       EngineModelTarget = "qwen"       // Qwen
+	EngineModelTargetSambaNova  EngineModelTarget = "sambanova"  // SambaNova
+	EngineModelTargetTogetherAI EngineModelTarget = "together"   // Together AI
 )
+
+var EngineModelTargets = []EngineModelTarget{
+	EngineModelTargetDialogflow,
+
+	EngineModelTargetAnthropic,
+	EngineModelTargetAWS,
+	EngineModelTargetAzure,
+	EngineModelTargetCerebras,
+	EngineModelTargetDeepSeek,
+	EngineModelTargetFireworks,
+	EngineModelTargetGemini,
+	EngineModelTargetGrok,
+	EngineModelTargetGroq,
+	EngineModelTargetMistral,
+	EngineModelTargetNvidiaNIM,
+	EngineModelTargetOllama,
+	EngineModelTargetOpenAI,
+	EngineModelTargetOpenRouter,
+	EngineModelTargetPerplexity,
+	EngineModelTargetQwen,
+	EngineModelTargetSambaNova,
+	EngineModelTargetTogetherAI,
+}
 
 type EngineModel string
 
@@ -66,16 +108,16 @@ const (
 
 func GetEngineModelTarget(engineModel EngineModel) EngineModelTarget {
 	mapModelTarget := map[EngineModel]EngineModelTarget{
-		EngineModelOpenaiO1Mini:            EngineModelTargetOpenai,
-		EngineModelOpenaiO1Preview:         EngineModelTargetOpenai,
-		EngineModelOpenaiO1:                EngineModelTargetOpenai,
-		EngineModelOpenaiO3Mini:            EngineModelTargetOpenai,
-		EngineModelOpenaiGPT4O:             EngineModelTargetOpenai,
-		EngineModelOpenaiGPT4OMini:         EngineModelTargetOpenai,
-		EngineModelOpenaiGPT4Turbo:         EngineModelTargetOpenai,
-		EngineModelOpenaiGPT4VisionPreview: EngineModelTargetOpenai,
-		EngineModelOpenaiGPT4:              EngineModelTargetOpenai,
-		EngineModelOpenaiGPT3Dot5Turbo:     EngineModelTargetOpenai,
+		EngineModelOpenaiO1Mini:            EngineModelTargetOpenAI,
+		EngineModelOpenaiO1Preview:         EngineModelTargetOpenAI,
+		EngineModelOpenaiO1:                EngineModelTargetOpenAI,
+		EngineModelOpenaiO3Mini:            EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT4O:             EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT4OMini:         EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT4Turbo:         EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT4VisionPreview: EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT4:              EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT3Dot5Turbo:     EngineModelTargetOpenAI,
 
 		EngineModelDialogflowCX: EngineModelTargetDialogflow,
 		EngineModelDialogflowES: EngineModelTargetDialogflow,
@@ -97,14 +139,47 @@ func GetEngineModelName(engineModel EngineModel) string {
 	return tmp[1]
 }
 
+func IsValidEngineModel(engineModel EngineModel) bool {
+	tmp := strings.Split(string(engineModel), ".")
+	if len(tmp) < 2 {
+		return false
+	}
+
+	for _, target := range EngineModelTargets {
+		if EngineModelTarget(tmp[0]) == target {
+			return true
+		}
+	}
+
+	return false
+}
+
 // TTSType define
 type TTSType string
 
 const (
 	TTSTypeNone       TTSType = ""
-	TTSTypeCartesia   TTSType = "cartesia"
-	TTSTypeDeepgram   TTSType = "deepgram"
-	TTSTypeElevenLabs TTSType = "elevenlabs"
+	TTSTypeAsync      TTSType = "async"       // Generic async TTS adapter
+	TTSTypeAWS        TTSType = "aws"         // AWS Polly or Bedrock TTS
+	TTSTypeAzure      TTSType = "azure"       // Azure Cognitive TTS
+	TTSTypeCartesia   TTSType = "cartesia"    // Cartesia TTS
+	TTSTypeDeepgram   TTSType = "deepgram"    // Deepgram TTS
+	TTSTypeElevenLabs TTSType = "elevenlabs"  // ElevenLabs TTS
+	TTSTypeFish       TTSType = "fish"        // Fish TTS (experimental)
+	TTSTypeGoogle     TTSType = "google"      // Google Cloud TTS
+	TTSTypeGroq       TTSType = "groq"        // Groq TTS (fast inference)
+	TTSTypeHume       TTSType = "hume"        // Hume AI TTS (emotion-driven)
+	TTSTypeInworld    TTSType = "inworld"     // Inworld TTS (character voices)
+	TTSTypeLMNT       TTSType = "lmnt"        // LMNT TTS
+	TTSTypeMiniMax    TTSType = "minimax"     // MiniMax TTS
+	TTSTypeNeuphonic  TTSType = "neuphonic"   // Neuphonic TTS
+	TTSTypeNvidiaRiva TTSType = "nvidia-riva" // NVIDIA Riva TTS
+	TTSTypeOpenAI     TTSType = "openai"      // OpenAI TTS (e.g., tts-1)
+	TTSTypePiper      TTSType = "piper"       // Piper open-source TTS
+	TTSTypePlayHT     TTSType = "playht"      // PlayHT TTS
+	TTSTypeRime       TTSType = "rime"        // Rime TTS
+	TTSTypeSarvam     TTSType = "sarvam"      // Sarvam AI TTS
+	TTSTypeXTTS       TTSType = "xtts"        // XTTS (cross-lingual TTS)
 )
 
 // STTType define
@@ -114,5 +189,5 @@ const (
 	STTTypeNone       STTType = ""
 	STTTypeCartesia   STTType = "cartesia"
 	STTTypeDeepgram   STTType = "deepgram"
-	STTTypeElevenLabs TTSType = "elevenlabs"
+	STTTypeElevenLabs STTType = "elevenlabs"
 )
