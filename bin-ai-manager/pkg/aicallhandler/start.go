@@ -155,7 +155,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 
 	go func() {
 		time.Sleep(defaultPipecatcallTimeout)
-		tmpPipecatcall, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
+		tmpPipecatcall, err := h.reqHandler.PipecatV1PipecatcallTerminate(context.Background(), pc.HostID, pc.ID)
 		if err != nil {
 			log.Errorf("Could not terminate the pipecatcall correctly. err: %v", err)
 			return
