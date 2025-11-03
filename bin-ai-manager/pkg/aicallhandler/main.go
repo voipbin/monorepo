@@ -8,6 +8,7 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -62,6 +63,7 @@ type AIcallHandler interface {
 	EventCMCallHangup(ctx context.Context, c *cmcall.Call)
 	EventCMConfbridgeJoined(ctx context.Context, evt *cmconfbridge.EventConfbridgeJoined)
 	EventCMConfbridgeLeaved(ctx context.Context, evt *cmconfbridge.EventConfbridgeLeaved)
+	EventDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF)
 }
 
 const (

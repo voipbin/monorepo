@@ -9,6 +9,7 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	cfconference "monorepo/bin-conference-manager/models/conference"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -154,6 +155,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	case m.Publisher == publisherCallManager && m.Type == string(cmcall.EventTypeCallHangup):
 		err = h.processEventCMCallHangup(ctx, m)
+
+	case m.Publisher == publisherCallManager && m.Type == string(cmdtmf.EventTypeDTMFReceived):
+		err = h.processEventCMDTMFReceived(ctx, m)
 
 	// conference-manager
 	case m.Publisher == string(commonoutline.ServiceNameConferenceManager) && m.Type == string(cfconference.EventTypeConferenceUpdated):

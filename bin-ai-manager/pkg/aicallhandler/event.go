@@ -62,7 +62,7 @@ func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call)
 	}
 }
 
-func (h *aicallHandler) EventDTMFRecevied(ctx context.Context, evt *cmdtmf.DTMF) {
+func (h *aicallHandler) EventDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "EventDTMFRecevied",
 		"dtmf_id": evt.ID,

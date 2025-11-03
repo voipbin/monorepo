@@ -15,6 +15,7 @@ import (
 	message "monorepo/bin-ai-manager/models/message"
 	call "monorepo/bin-call-manager/models/call"
 	confbridge "monorepo/bin-call-manager/models/confbridge"
+	dtmf "monorepo/bin-call-manager/models/dtmf"
 	service "monorepo/bin-common-handler/models/service"
 	reflect "reflect"
 
@@ -95,6 +96,18 @@ func (m *MockAIcallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *co
 func (mr *MockAIcallHandlerMockRecorder) EventCMConfbridgeLeaved(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMConfbridgeLeaved", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMConfbridgeLeaved), ctx, evt)
+}
+
+// EventDTMFReceived mocks base method.
+func (m *MockAIcallHandler) EventDTMFReceived(ctx context.Context, evt *dtmf.DTMF) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventDTMFReceived", ctx, evt)
+}
+
+// EventDTMFReceived indicates an expected call of EventDTMFReceived.
+func (mr *MockAIcallHandlerMockRecorder) EventDTMFReceived(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventDTMFReceived", reflect.TypeOf((*MockAIcallHandler)(nil).EventDTMFReceived), ctx, evt)
 }
 
 // Get mocks base method.

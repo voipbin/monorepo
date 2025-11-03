@@ -20,7 +20,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_EventDTMFRecevied(t *testing.T) {
+func Test_EventDTMFReceived(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -103,7 +103,7 @@ func Test_EventDTMFRecevied(t *testing.T) {
 			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectedMessageText, nil, "").Return(&message.Message{}, nil)
 			mockReq.EXPECT().PipecatV1MessageSend(ctx, tt.responsePipecatcall.HostID, tt.expectedPipecatcallID, "", tt.expectedMessageText, true, false).Return(nil, nil)
 
-			h.EventDTMFRecevied(ctx, tt.evt)
+			h.EventDTMFReceived(ctx, tt.evt)
 		})
 	}
 }

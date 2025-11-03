@@ -6,6 +6,7 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 
 	"monorepo/bin-common-handler/models/sock"
 
@@ -45,6 +46,17 @@ func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *sock
 
 	go h.aicallHandler.EventCMCallHangup(context.Background(), &evt)
 	go h.summaryHandler.EventCMCallHangup(context.Background(), &evt)
+
+	return nil
+}
+
+func (h *subscribeHandler) processEventCMDTMFReceived(ctx context.Context, m *sock.Event) error {
+	evt := cmdtmf.DTMF{}
+	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
+		return errors.Wrapf(err, "Could not unmarshal the data")
+	}
+
+	go h.aicallHandler.EventDTMFReceived(context.Background(), &evt)
 
 	return nil
 }
