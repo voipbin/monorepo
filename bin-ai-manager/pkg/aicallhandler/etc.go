@@ -44,7 +44,7 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	}
 	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, res.ID)
 
-	tmp, err := h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, "", messageText, runImmediately, audioResponse)
+	tmp, err := h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, res.ID.String(), messageText, runImmediately, audioResponse)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message to the pipecatcall correctly")
 	}

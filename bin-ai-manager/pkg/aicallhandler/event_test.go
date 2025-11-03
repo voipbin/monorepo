@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
-	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -27,10 +26,9 @@ func Test_EventDTMFReceived(t *testing.T) {
 
 		evt *cmdtmf.DTMF
 
-		responseAIcall *aicall.AIcall
-
+		responseAIcall      *aicall.AIcall
+		responseMessage     *message.Message
 		responsePipecatcall *pmpipecatcall.Pipecatcall
-		responseConfbridge  *cmconfbridge.Confbridge
 
 		expectedReferenceID   uuid.UUID
 		expectedPipecatcallID uuid.UUID
@@ -56,17 +54,16 @@ func Test_EventDTMFReceived(t *testing.T) {
 				Status:        aicall.StatusTerminating,
 				PipecatcallID: uuid.FromStringOrNil("868ec1ea-b86b-11f0-8293-57474c75fb86"),
 			},
-
+			responseMessage: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("da41abd4-b87c-11f0-924e-47f942b42bf4"),
+				},
+			},
 			responsePipecatcall: &pmpipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("868ec1ea-b86b-11f0-8293-57474c75fb86"),
 				},
 				HostID: "1.2.3.4",
-			},
-			responseConfbridge: &cmconfbridge.Confbridge{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("6be1c6c8-919f-11f0-aa05-6fa11ae38c9a"),
-				},
 			},
 
 			expectedReferenceID:   uuid.FromStringOrNil("8660e752-b86b-11f0-978b-476bcd1ad7a6"),
@@ -100,8 +97,8 @@ func Test_EventDTMFReceived(t *testing.T) {
 
 			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.expectedReferenceID).Return(tt.responseAIcall, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.expectedPipecatcallID).Return(tt.responsePipecatcall, nil)
-			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectedMessageText, nil, "").Return(&message.Message{}, nil)
-			mockReq.EXPECT().PipecatV1MessageSend(ctx, tt.responsePipecatcall.HostID, tt.expectedPipecatcallID, "", tt.expectedMessageText, true, false).Return(nil, nil)
+			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectedMessageText, nil, "").Return(tt.responseMessage, nil)
+			mockReq.EXPECT().PipecatV1MessageSend(ctx, tt.responsePipecatcall.HostID, tt.expectedPipecatcallID, tt.responseMessage.ID.String(), tt.expectedMessageText, true, false).Return(nil, nil)
 
 			h.EventDTMFReceived(ctx, tt.evt)
 		})
