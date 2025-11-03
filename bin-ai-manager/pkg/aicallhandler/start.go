@@ -316,7 +316,7 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 	}
 
 	for _, msg := range messages {
-		tmp, err := h.messageHandler.Create(ctx, a.CustomerID, c.ID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "")
+		tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "")
 		if err != nil {
 			return errors.Wrapf(err, "could not create the init message to the ai. aicall_id: %s", c.ID)
 		}
