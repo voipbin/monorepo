@@ -2,10 +2,14 @@ package aicallhandler
 
 import (
 	"context"
+	"fmt"
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/message"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-	tmmessage "monorepo/bin-tts-manager/models/message"
+	cmdtmf "monorepo/bin-call-manager/models/dtmf"
+
+	"github.com/sirupsen/logrus"
 )
 
 // EventCMConfbridgeJoined handles the call-manager's confbridge_joined event
@@ -58,28 +62,26 @@ func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call)
 	}
 }
 
-// EventTMPlayFinished handles the tts-manager's play finished event
-func (h *aicallHandler) EventTMPlayFinished(ctx context.Context, evt *tmmessage.Message) {
+func (h *aicallHandler) EventDTMFRecevied(ctx context.Context, evt *cmdtmf.DTMF) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "EventDTMFRecevied",
+		"dtmf_id": evt.ID,
+	})
 
-	// log := logrus.WithFields(logrus.Fields{
-	// 	"func":         "EventTMPlayFinished",
-	// 	"streaming_id": evt.StreamingID,
-	// })
+	// get aicall
+	cc, err := h.GetByReferenceID(ctx, evt.CallID)
+	if err != nil {
+		log.Errorf("Could not get aicall by reference id. err: %v", err)
+		return
+	}
 
-	// // get aicall
-	// cc, err := h.GetByStreamingID(ctx, evt.StreamingID)
-	// if err != nil {
-	// 	return
-	// }
+	messageText := fmt.Sprintf("type: %s\ndigit: %s\nduration: %d\n", defaultDTMFEvent, evt.Digit, evt.Duration)
+	log.Debugf("Prepared the dtmf message to send to the aicall. message: %s", messageText)
 
-	// if cc.Status != aicall.StatusTerminating {
-	// 	return
-	// }
-
-	// tmp, err := h.ProcessTerminate(ctx, cc)
-	// if err != nil {
-	// 	log.Errorf("Could not terminate the aicall. err: %v", err)
-	// 	return
-	// }
-	// log.WithField("aicall", tmp).Debugf("Terminated the aicall. aicall: %v", tmp)
+	tmp, err := h.SendReferenceTypeCall(ctx, cc, message.RoleUser, messageText, true, false)
+	if err != nil {
+		log.Errorf("Could not send dtmf message to aicall. err: %v", err)
+		return
+	}
+	log.WithField("message", tmp).Debugf("Sent the dtmf message to the aicall.")
 }

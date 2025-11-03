@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -13,6 +14,7 @@ import (
 
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/dtmf"
 )
 
 // digitsReceived handles DTMF Recevied event
@@ -36,6 +38,7 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 			"call_id": c.ID,
 		},
 	)
+	h.digitNotifyDTMFEvent(ctx, c, digit, duration)
 
 	switch c.Action.Type {
 	case fmaction.TypeDigitsReceive:
@@ -199,4 +202,22 @@ func (h *callHandler) checkDigitsCondition(ctx context.Context, variableID uuid.
 	}
 
 	return false, nil
+}
+
+func (h *callHandler) digitNotifyDTMFEvent(ctx context.Context, c *call.Call, digits string, duration int) {
+	id := h.utilHandler.UUIDCreate()
+	e := &dtmf.DTMF{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: c.CustomerID,
+		},
+
+		CallID:   c.ID,
+		Digit:    digits,
+		Duration: duration,
+
+		TMCreate: h.utilHandler.TimeGetCurTime(),
+	}
+
+	h.notifyHandler.PublishEvent(ctx, dtmf.EventTypeDTMFReceived, e)
 }

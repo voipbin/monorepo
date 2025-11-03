@@ -14,5 +14,6 @@ type V1DataMessagesPost struct {
 	Role     message.Role `json:"role,omitempty"`
 	Content  string       `json:"content,omitempty"`
 
-	ReturnResponse bool `json:"return_response,omitempty"` // if true, it will return the response message
+	RunImmediately bool `json:"run_immediately,omitempty"` // if true, it will run the ai call immediately
+	AudioResponse  bool `json:"audio_response,omitempty"`  // if true, it will return audio response
 }

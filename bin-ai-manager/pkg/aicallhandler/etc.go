@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *aicallHandler) Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool) (*message.Message, error) {
+func (h *aicallHandler) Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error) {
 	c, err := h.Get(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the aicall correctly")
@@ -19,14 +19,14 @@ func (h *aicallHandler) Send(ctx context.Context, id uuid.UUID, role message.Rol
 
 	switch c.ReferenceType {
 	case aicall.ReferenceTypeCall:
-		return h.SendReferenceTypeCall(ctx, c, role, messageText, runImmediately)
+		return h.SendReferenceTypeCall(ctx, c, role, messageText, runImmediately, audioResponse)
 
 	default:
-		return h.SendReferenceTypeOthers(ctx, c, role, messageText, runImmediately)
+		return h.SendReferenceTypeOthers(ctx, c, role, messageText)
 	}
 }
 
-func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIcall, role message.Role, messageText string, runImmediately bool) (*message.Message, error) {
+func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIcall, role message.Role, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "SendReferenceTypeCall",
 		"aicall_id": c.ID,
@@ -44,7 +44,7 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	}
 	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, res.ID)
 
-	tmp, err := h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, "", messageText, true, true)
+	tmp, err := h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, "", messageText, runImmediately, audioResponse)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message to the pipecatcall correctly")
 	}
@@ -53,7 +53,7 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	return res, nil
 }
 
-func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.AIcall, role message.Role, messageText string, runImmediately bool) (*message.Message, error) {
+func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.AIcall, role message.Role, messageText string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "aicallhandler.Send",
 		"aicall_id": c.ID,

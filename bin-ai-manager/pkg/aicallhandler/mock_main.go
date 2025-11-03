@@ -16,7 +16,6 @@ import (
 	call "monorepo/bin-call-manager/models/call"
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	service "monorepo/bin-common-handler/models/service"
-	message0 "monorepo/bin-tts-manager/models/message"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -96,18 +95,6 @@ func (m *MockAIcallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *co
 func (mr *MockAIcallHandlerMockRecorder) EventCMConfbridgeLeaved(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMConfbridgeLeaved", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMConfbridgeLeaved), ctx, evt)
-}
-
-// EventTMPlayFinished mocks base method.
-func (m *MockAIcallHandler) EventTMPlayFinished(ctx context.Context, evt *message0.Message) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "EventTMPlayFinished", ctx, evt)
-}
-
-// EventTMPlayFinished indicates an expected call of EventTMPlayFinished.
-func (mr *MockAIcallHandlerMockRecorder) EventTMPlayFinished(ctx, evt any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventTMPlayFinished", reflect.TypeOf((*MockAIcallHandler)(nil).EventTMPlayFinished), ctx, evt)
 }
 
 // Get mocks base method.
@@ -216,18 +203,18 @@ func (mr *MockAIcallHandlerMockRecorder) ProcessTerminating(ctx, id any) *gomock
 }
 
 // Send mocks base method.
-func (m *MockAIcallHandler) Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool) (*message.Message, error) {
+func (m *MockAIcallHandler) Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately, audioResponse bool) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", ctx, id, role, messageText, runImmediately)
+	ret := m.ctrl.Call(m, "Send", ctx, id, role, messageText, runImmediately, audioResponse)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockAIcallHandlerMockRecorder) Send(ctx, id, role, messageText, runImmediately any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) Send(ctx, id, role, messageText, runImmediately, audioResponse any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockAIcallHandler)(nil).Send), ctx, id, role, messageText, runImmediately)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockAIcallHandler)(nil).Send), ctx, id, role, messageText, runImmediately, audioResponse)
 }
 
 // ServiceStart mocks base method.

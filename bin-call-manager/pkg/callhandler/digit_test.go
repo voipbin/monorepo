@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/variable"
@@ -15,6 +17,7 @@ import (
 
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/dtmf"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
@@ -23,31 +26,48 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 	tests := []struct {
 		name     string
 		channel  *channel.Channel
-		call     *call.Call
 		digit    string
 		duration int
 
-		expectVariables map[string]string
+		responseCall       *call.Call
+		responseUUIDDTMFID uuid.UUID
+		responseCurTime    string
+		expectDTMF         *dtmf.DTMF
+		expectVariables    map[string]string
 	}{
 		{
-			"normal",
-			&channel.Channel{
+			name: "normal",
+			channel: &channel.Channel{
 				ID:         "47c4df8c-9ace-11ea-82a2-b7e1b384317c",
 				AsteriskID: "80:fa:5b:5e:da:81",
 			},
-			&call.Call{
+			digit:    "4",
+			duration: 100,
+
+			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("b2a45cf6-9ace-11ea-9354-4baa7f3ad331"),
+					ID:         uuid.FromStringOrNil("b2a45cf6-9ace-11ea-9354-4baa7f3ad331"),
+					CustomerID: uuid.FromStringOrNil("c098148c-b838-11f0-a16e-8ba6f1e91be8"),
 				},
 				ChannelID: "47c4df8c-9ace-11ea-82a2-b7e1b384317c",
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
 				},
 			},
-			"4",
-			100,
+			responseUUIDDTMFID: uuid.FromStringOrNil("f496f2bc-b838-11f0-a757-4b893b2a9030"),
+			responseCurTime:    "2020-04-18 05:22:17.995000",
+			expectDTMF: &dtmf.DTMF{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f496f2bc-b838-11f0-a757-4b893b2a9030"),
+					CustomerID: uuid.FromStringOrNil("c098148c-b838-11f0-a16e-8ba6f1e91be8"),
+				},
+				CallID:   uuid.FromStringOrNil("b2a45cf6-9ace-11ea-9354-4baa7f3ad331"),
+				Digit:    "4",
+				Duration: 100,
 
-			map[string]string{
+				TMCreate: "2020-04-18 05:22:17.995000",
+			},
+			expectVariables: map[string]string{
 				variableCallDigits: "4",
 			},
 		},
@@ -60,15 +80,22 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &callHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.call.ActiveflowID, tt.expectVariables).Return(nil)
+			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.responseCall, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDDTMFID)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockNotify.EXPECT().PublishEvent(ctx, dtmf.EventTypeDTMFReceived, tt.expectDTMF)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseCall.ActiveflowID, tt.expectVariables).Return(nil)
 
 			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

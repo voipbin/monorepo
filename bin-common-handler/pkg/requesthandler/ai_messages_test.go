@@ -105,7 +105,8 @@ func Test_AIV1MessageSend(t *testing.T) {
 		aicallID       uuid.UUID
 		role           cbmessage.Role
 		content        string
-		returnResponse bool
+		runImmediately bool
+		audioResponse  bool
 		timeout        int
 
 		response *sock.Response
@@ -120,7 +121,8 @@ func Test_AIV1MessageSend(t *testing.T) {
 			aicallID:       uuid.FromStringOrNil("5398cd60-f2cf-11ef-ac07-2b477cb8a829"),
 			role:           cbmessage.RoleUser,
 			content:        "test content",
-			returnResponse: true,
+			runImmediately: true,
+			audioResponse:  true,
 			timeout:        30000,
 
 			response: &sock.Response{
@@ -134,7 +136,7 @@ func Test_AIV1MessageSend(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"aicall_id":"5398cd60-f2cf-11ef-ac07-2b477cb8a829","role":"user","content":"test content","return_response":true}`),
+				Data:     []byte(`{"aicall_id":"5398cd60-f2cf-11ef-ac07-2b477cb8a829","role":"user","content":"test content","run_immediately":true,"audio_response":true}`),
 			},
 			expectRes: &cbmessage.Message{
 				Identity: identity.Identity{
@@ -157,7 +159,7 @@ func Test_AIV1MessageSend(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1MessageSend(ctx, tt.aicallID, tt.role, tt.content, tt.returnResponse, tt.timeout)
+			cf, err := reqHandler.AIV1MessageSend(ctx, tt.aicallID, tt.role, tt.content, tt.runImmediately, tt.audioResponse, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

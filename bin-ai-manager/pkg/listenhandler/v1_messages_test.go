@@ -102,6 +102,8 @@ func Test_processV1MessagesPost(t *testing.T) {
 		expectAIcallID       uuid.UUID
 		expectRole           message.Role
 		expectContent        string
+		expectRunImmediately bool
+		expectAudioResponse  bool
 		expectReturnResponse bool
 		expectRes            *sock.Response
 	}{
@@ -111,8 +113,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"aicall_id": "0615dec8-f25e-11ef-b878-0fb5e7ac2aee", "role": "user", "content": "hello world!", "return_response": true}`),
-			},
+				Data:     []byte(`{"aicall_id": "0615dec8-f25e-11ef-b878-0fb5e7ac2aee", "role": "user", "content": "hello world!", "run_immediately": true, "audio_response": true}`)},
 
 			responseMessage: &message.Message{
 				Identity: identity.Identity{
@@ -123,6 +124,8 @@ func Test_processV1MessagesPost(t *testing.T) {
 			expectAIcallID:       uuid.FromStringOrNil("0615dec8-f25e-11ef-b878-0fb5e7ac2aee"),
 			expectRole:           message.RoleUser,
 			expectContent:        "hello world!",
+			expectRunImmediately: true,
+			expectAudioResponse:  true,
 			expectReturnResponse: true,
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -149,7 +152,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 				messageHandler: mockMessage,
 			}
 
-			mockAIcall.EXPECT().Send(gomock.Any(), tt.expectAIcallID, tt.expectRole, tt.expectContent, tt.expectReturnResponse).Return(tt.responseMessage, nil)
+			mockAIcall.EXPECT().Send(gomock.Any(), tt.expectAIcallID, tt.expectRole, tt.expectContent, tt.expectRunImmediately, tt.expectAudioResponse).Return(tt.responseMessage, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
