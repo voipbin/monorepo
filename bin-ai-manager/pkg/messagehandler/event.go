@@ -9,24 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *messageHandler) EventPMMessageBotTranscription(ctx context.Context, evt *pmmessage.Message) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "EventPMMessageBotTranscription",
-		"event": evt,
-	})
-
-	if evt.PipecatcallReferenceType != pmpipecatcall.ReferenceTypeAICall {
-		return
-	}
-
-	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
-	if err != nil {
-		log.Errorf("Could not create the message. err: %v", err)
-		return
-	}
-	log.WithField("message", tmp).Debugf("Created message from the pipecat-manager's bot transcription.")
-}
-
 func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "EventPMMessageUserTranscription",

@@ -31,7 +31,6 @@ type MessageHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error)
 
-	EventPMMessageBotTranscription(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageBotLLM(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message)
