@@ -33,6 +33,11 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		"event": evt,
 	})
 
+	if evt.Text == "" {
+		// nothing to do
+		return
+	}
+
 	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
