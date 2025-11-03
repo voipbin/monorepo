@@ -80,7 +80,6 @@ require (
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700
-	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996
 )
 
 require (
@@ -148,5 +147,6 @@ require (
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
+	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
 	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c // indirect
 )

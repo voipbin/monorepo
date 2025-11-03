@@ -32,7 +32,7 @@ func (h *serviceHandler) AImessageCreate(
 		return nil, errors.Wrapf(err, "could not get the aicall info. aicall_id: %v", aicallID)
 	}
 
-	tmp, err := h.reqHandler.AIV1MessageSend(ctx, aicallID, role, content, false, 30000)
+	tmp, err := h.reqHandler.AIV1MessageSend(ctx, aicallID, role, content, true, false, 30000)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create a new ai message. err: %v", err)
 	}

@@ -78,7 +78,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.aicallHandler.Send(ctx, req.AIcallID, req.Role, req.Content, req.ReturnResponse)
+	tmp, err := h.aicallHandler.Send(ctx, req.AIcallID, req.Role, req.Content, req.RunImmediately, req.AudioResponse)
 	if err != nil {
 		log.Errorf("Could not create ai. err: %v", err)
 		return simpleResponse(500), nil

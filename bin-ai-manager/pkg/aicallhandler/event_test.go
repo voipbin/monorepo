@@ -1,86 +1,109 @@
 package aicallhandler
 
-// func Test_EventTMPlayFinished(t *testing.T) {
+import (
+	"context"
+	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmdtmf "monorepo/bin-call-manager/models/dtmf"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	"testing"
 
-// 	tests := []struct {
-// 		name string
+	"github.com/gofrs/uuid"
+	gomock "go.uber.org/mock/gomock"
+)
 
-// 		evt *tmmessage.Message
+func Test_EventDTMFReceived(t *testing.T) {
 
-// 		responseAIcall *aicall.AIcall
+	tests := []struct {
+		name string
 
-// 		responseTranscribe *tmtranscribe.Transcribe
-// 		responseConfbridge *cmconfbridge.Confbridge
+		evt *cmdtmf.DTMF
 
-// 		expectedStreamingID  uuid.UUID
-// 		expectedTranscribeID uuid.UUID
-// 		expectedConfbridgeID uuid.UUID
-// 	}{
-// 		{
-// 			name: "normal",
+		responseAIcall *aicall.AIcall
 
-// 			evt: &tmmessage.Message{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("c3f4df40-919e-11f0-b323-c35a63a7c2ea"),
-// 				},
-// 				StreamingID: uuid.FromStringOrNil("c4b0b544-919e-11f0-aadc-1736b1bcda1b"),
-// 			},
+		responsePipecatcall *pmpipecatcall.Pipecatcall
+		responseConfbridge  *cmconfbridge.Confbridge
 
-// 			responseAIcall: &aicall.AIcall{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("c4d46818-919e-11f0-a76a-73b2d524da9b"),
-// 				},
-// 				Status:       aicall.StatusTerminating,
-// 				TranscribeID: uuid.FromStringOrNil("c4eb82d2-919e-11f0-a6c2-5f2b4c268b25"),
-// 				ConfbridgeID: uuid.FromStringOrNil("6be1c6c8-919f-11f0-aa05-6fa11ae38c9a"),
-// 			},
+		expectedReferenceID   uuid.UUID
+		expectedPipecatcallID uuid.UUID
+		expectedHostID        string
+		expectedMessageText   string
+	}{
+		{
+			name: "normal",
 
-// 			responseTranscribe: &tmtranscribe.Transcribe{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("c4eb82d2-919e-11f0-a6c2-5f2b4c268b25"),
-// 				},
-// 			},
-// 			responseConfbridge: &cmconfbridge.Confbridge{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("6be1c6c8-919f-11f0-aa05-6fa11ae38c9a"),
-// 				},
-// 			},
+			evt: &cmdtmf.DTMF{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c3f4df40-919e-11f0-b323-c35a63a7c2ea"),
+				},
+				CallID:   uuid.FromStringOrNil("8660e752-b86b-11f0-978b-476bcd1ad7a6"),
+				Digit:    "9",
+				Duration: 100,
+			},
 
-// 			expectedStreamingID:  uuid.FromStringOrNil("c4b0b544-919e-11f0-aadc-1736b1bcda1b"),
-// 			expectedTranscribeID: uuid.FromStringOrNil("c4eb82d2-919e-11f0-a6c2-5f2b4c268b25"),
-// 			expectedConfbridgeID: uuid.FromStringOrNil("6be1c6c8-919f-11f0-aa05-6fa11ae38c9a"),
-// 		},
-// 	}
+			responseAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8660e752-b86b-11f0-978b-476bcd1ad7a6"),
+				},
+				Status:        aicall.StatusTerminating,
+				PipecatcallID: uuid.FromStringOrNil("868ec1ea-b86b-11f0-8293-57474c75fb86"),
+			},
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("868ec1ea-b86b-11f0-8293-57474c75fb86"),
+				},
+				HostID: "1.2.3.4",
+			},
+			responseConfbridge: &cmconfbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6be1c6c8-919f-11f0-aa05-6fa11ae38c9a"),
+				},
+			},
 
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockAI := aihandler.NewMockAIHandler(mc)
+			expectedReferenceID:   uuid.FromStringOrNil("8660e752-b86b-11f0-978b-476bcd1ad7a6"),
+			expectedPipecatcallID: uuid.FromStringOrNil("868ec1ea-b86b-11f0-8293-57474c75fb86"),
+			expectedHostID:        "1.2.3.4",
+			expectedMessageText:   "type: DTMF_EVENT\ndigit: 9\nduration: 100\n",
+		},
+	}
 
-// 			h := &aicallHandler{
-// 				utilHandler:   mockUtil,
-// 				reqHandler:    mockReq,
-// 				notifyHandler: mockNotify,
-// 				db:            mockDB,
-// 				aiHandler:     mockAI,
-// 			}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-// 			ctx := context.Background()
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
-// 			mockDB.EXPECT().AIcallGetByStreamingID(ctx, tt.expectedStreamingID).Return(tt.responseAIcall, nil)
-// 			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.expectedTranscribeID).Return(tt.responseTranscribe, nil)
-// 			mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.expectedConfbridgeID).Return(tt.responseConfbridge, nil)
-// 			mockDB.EXPECT().AIcallUpdateStatusTerminated(ctx, tt.responseAIcall.ID).Return(nil)
-// 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
-// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusTerminated, tt.responseAIcall)
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
 
-// 			h.EventTMPlayFinished(ctx, tt.evt)
-// 		})
-// 	}
-// }
+			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.expectedReferenceID).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.expectedPipecatcallID).Return(tt.responsePipecatcall, nil)
+			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectedMessageText, nil, "").Return(&message.Message{}, nil)
+			mockReq.EXPECT().PipecatV1MessageSend(ctx, tt.responsePipecatcall.HostID, tt.expectedPipecatcallID, "", tt.expectedMessageText, true, false).Return(nil, nil)
+
+			h.EventDTMFReceived(ctx, tt.evt)
+		})
+	}
+}

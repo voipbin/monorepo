@@ -8,11 +8,11 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
-	tmmessage "monorepo/bin-tts-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -58,12 +58,12 @@ type AIcallHandler interface {
 		language string,
 	) (*commonservice.Service, error)
 
-	Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool) (*message.Message, error)
+	Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error)
 
 	EventCMCallHangup(ctx context.Context, c *cmcall.Call)
 	EventCMConfbridgeJoined(ctx context.Context, evt *cmconfbridge.EventConfbridgeJoined)
 	EventCMConfbridgeLeaved(ctx context.Context, evt *cmconfbridge.EventConfbridgeLeaved)
-	EventTMPlayFinished(ctx context.Context, evt *tmmessage.Message)
+	EventDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF)
 }
 
 const (
@@ -85,10 +85,6 @@ const (
 	defaultPipecatcallTTSVoiceID = "EXAVITQu4vr4xnSDxMaL" // Rachel
 
 	defaultPipecatcallTimeout = time.Second * 30
-
-	// defaultTTSVoiceIDElevenlabs = "EXAVITQu4vr4xnSDxMaL"                 // Rachel
-	// defaultTTSVoiceIDCartesia   = "71a7ad14-091c-4e8e-a314-022ece01c121" // British Reading Lady(https://developer.signalwire.com/voice/tts/cartesia/)
-	// defaultTTSVoiceIDDeepgram   = "aura-2-thalia-en"                     // thalia(https://developers.deepgram.com/docs/tts-models#aura-2-all-available-spanish-voices)
 )
 
 var mapDefaultTTSVoiceIDByTTSType = map[ai.TTSType]string{
@@ -222,4 +218,5 @@ Constraints:
 - Keep answers aligned with user's persona and tone.
 - Respect conversation history and continuity.
 `
+	defaultDTMFEvent = "DTMF_EVENT"
 )
