@@ -9,6 +9,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -152,11 +153,15 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	tmpPipecatcall, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not terminate the pipecatcall correctly")
-	}
-	log.WithField("pipecatcall_terminate", tmpPipecatcall).Debugf("Terminated the pipecatcall correctly.")
+	go func() {
+		time.Sleep(defaultPipecatcallTimeout)
+		tmpPipecatcall, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
+		if err != nil {
+			log.Errorf("Could not terminate the pipecatcall correctly. err: %v", err)
+			return
+		}
+		log.WithField("pipecatcall_terminate", tmpPipecatcall).Debugf("Terminated the pipecatcall correctly.")
+	}()
 
 	return res, nil
 }
@@ -264,6 +269,7 @@ func (h *aicallHandler) startPipecatcall(ctx context.Context, c *aicall.AIcall) 
 	})
 
 	// get llmMessages for pipecatcall
+	llmType := pmpipecatcall.LLMType(c.AIEngineModel)
 	llmMessages, err := h.getPipecatcallMessages(ctx, c)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the messages for pipecatcall")
@@ -288,7 +294,7 @@ func (h *aicallHandler) startPipecatcall(ctx context.Context, c *aicall.AIcall) 
 		c.ActiveflowID,
 		pmpipecatcall.ReferenceTypeAICall,
 		c.ID,
-		pmpipecatcall.LLMType(c.AIEngineModel),
+		llmType,
 		llmMessages,
 		sttType,
 		ttsType,
