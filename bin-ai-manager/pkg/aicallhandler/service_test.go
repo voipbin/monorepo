@@ -1,301 +1,407 @@
 package aicallhandler
 
-// func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
-// 	tests := []struct {
-// 		name string
+import (
+	"context"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonservice "monorepo/bin-common-handler/models/service"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmvariable "monorepo/bin-flow-manager/models/variable"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	reflect "reflect"
+	"testing"
 
-// 		aiID          uuid.UUID
-// 		activeflowID  uuid.UUID
-// 		referenceType aicall.ReferenceType
-// 		referenceID   uuid.UUID
-// 		gender        aicall.Gender
-// 		language      string
-// 		resume        bool
+	"github.com/gofrs/uuid"
+	gomock "go.uber.org/mock/gomock"
+)
 
-// 		responseAI           *ai.AI
-// 		responseConfbridge   *cmconfbridge.Confbridge
-// 		responseTTSStreaming *tmstreaming.Streaming
-// 		responseUUIDAIcall   uuid.UUID
-// 		responseAIcall       *aicall.AIcall
-// 		responseMessage      *message.Message
-// 		responseUUIDAction   uuid.UUID
+func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
+	tests := []struct {
+		name string
 
-// 		expectAIcall *aicall.AIcall
-// 		expectRes    *commonservice.Service
-// 	}{
-// 		{
-// 			name:          "normal - english female",
-// 			aiID:          uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
-// 			activeflowID:  uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
-// 			referenceType: aicall.ReferenceTypeCall,
-// 			referenceID:   uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
-// 			gender:        aicall.GenderFemale,
-// 			language:      "en-US",
-// 			resume:        false,
+		aiID          uuid.UUID
+		activeflowID  uuid.UUID
+		referenceType aicall.ReferenceType
+		referenceID   uuid.UUID
+		gender        aicall.Gender
+		language      string
 
-// 			responseAI: &ai.AI{
-// 				Identity: commonidentity.Identity{
-// 					ID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
-// 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
-// 				},
-// 				EngineType: ai.EngineTypeNone,
-// 				InitPrompt: "hello, this is init prompt message.",
-// 			},
-// 			responseConfbridge: &cmconfbridge.Confbridge{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-// 				},
-// 			},
-// 			responseTTSStreaming: &tmstreaming.Streaming{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("457c3846-817e-11f0-9090-6309abe0b661"),
-// 				},
-// 				PodID: "45e53dd2-817e-11f0-a608-7f6bb70061e4",
-// 			},
-// 			responseUUIDAIcall: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
-// 			responseAIcall: &aicall.AIcall{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
-// 				},
-// 				ReferenceType: aicall.ReferenceTypeCall,
-// 				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-// 			},
-// 			responseMessage: &message.Message{
-// 				Role:    "assistant",
-// 				Content: "test assistant message.",
-// 			},
-// 			responseUUIDAction: uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
+		responseAI                *ai.AI
+		responseConfbridge        *cmconfbridge.Confbridge
+		responseUUIDPipecatcallID uuid.UUID
+		responseUUIDAIcall        uuid.UUID
+		responseMessages          []*message.Message
+		responseUUIDAction        uuid.UUID
 
-// 			expectAIcall: &aicall.AIcall{
-// 				Identity: commonidentity.Identity{
-// 					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
-// 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
-// 				},
-// 				AIID:              uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
-// 				ActiveflowID:      uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
-// 				AIEngineType:      ai.EngineTypeNone,
-// 				ReferenceType:     aicall.ReferenceTypeCall,
-// 				ReferenceID:       uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
-// 				ConfbridgeID:      uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-// 				Gender:            aicall.GenderFemale,
-// 				Language:          "en-US",
-// 				Status:            aicall.StatusInitiating,
-// 				TTSStreamingID:    uuid.FromStringOrNil("457c3846-817e-11f0-9090-6309abe0b661"),
-// 				TTSStreamingPodID: "45e53dd2-817e-11f0-a608-7f6bb70061e4",
-// 			},
-// 			expectRes: &commonservice.Service{
-// 				ID:   uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
-// 				Type: commonservice.TypeAIcall,
-// 				PushActions: []fmaction.Action{
-// 					{
-// 						ID:   uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
-// 						Type: fmaction.TypeConfbridgeJoin,
-// 						Option: map[string]any{
-// 							"confbridge_id": "ec6d153d-dd5a-4eef-bc27-8fcebe100704",
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 	}
+		expectAIcall       *aicall.AIcall
+		expectMessageTexts []string
+		expectLLMMessages  []map[string]any
+		expectLLMType      pmpipecatcall.LLMType
+		expectSTType       pmpipecatcall.STTType
+		expectTTSType      pmpipecatcall.TTSType
+		expectTTSVoiceID   string
+		expectRes          *commonservice.Service
+	}{
+		{
+			name:          "normal",
+			aiID:          uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+			activeflowID:  uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
+			referenceType: aicall.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
+			gender:        aicall.GenderFemale,
+			language:      "en-US",
 
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				},
+				EngineModel: ai.EngineModel("openai.gpt-4"),
+				InitPrompt:  "hello, this is init prompt message.",
+				TTSType:     ai.TTSTypeElevenLabs,
+				TTSVoiceID:  "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
+				STTType:     ai.STTTypeDeepgram,
+			},
+			responseConfbridge: &cmconfbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				},
+			},
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("025e1aa6-b87f-11f0-9a90-63680416f9cb"),
+			responseUUIDAIcall:        uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
+			responseMessages: []*message.Message{
+				{
+					Role:    "system",
+					Content: "hello, this is init prompt message.",
+				},
+				{
+					Role:    "system",
+					Content: defaultCommonSystemPrompt,
+				},
+			},
+			responseUUIDAction: uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
 
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockMessage := messagehandler.NewMockMessageHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockAI := aihandler.NewMockAIHandler(mc)
+			expectAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
+					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				},
+				AIID:          uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+				ActiveflowID:  uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
+				AIEngineModel: ai.EngineModel("openai.gpt-4"),
+				AITTSType:     ai.TTSTypeElevenLabs,
+				AITTSVoiceID:  "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
+				AISTTType:     ai.STTTypeDeepgram,
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
+				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				PipecatcallID: uuid.FromStringOrNil("025e1aa6-b87f-11f0-9a90-63680416f9cb"),
+				Gender:        aicall.GenderFemale,
+				Language:      "en-US",
+				Status:        aicall.StatusInitiating,
+			},
+			expectMessageTexts: []string{
+				defaultCommonSystemPrompt,
+				"hello, this is init prompt message.",
+			},
+			expectLLMType: pmpipecatcall.LLMType("openai.gpt-4"),
+			expectLLMMessages: []map[string]any{
+				{
+					"role":    "system",
+					"content": defaultCommonSystemPrompt,
+				},
+				{
+					"role":    "system",
+					"content": "hello, this is init prompt message.",
+				},
+			},
+			expectSTType:     pmpipecatcall.STTTypeDeepgram,
+			expectTTSType:    pmpipecatcall.TTSTypeElevenLabs,
+			expectTTSVoiceID: "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
+			expectRes: &commonservice.Service{
+				ID:   uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
+				Type: commonservice.TypeAIcall,
+				PushActions: []fmaction.Action{
+					{
+						ID:   uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
+						Type: fmaction.TypeConfbridgeJoin,
+						Option: map[string]any{
+							"confbridge_id": "ec6d153d-dd5a-4eef-bc27-8fcebe100704",
+						},
+					},
+				},
+			},
+		},
+	}
 
-// 			h := &aicallHandler{
-// 				utilHandler:    mockUtil,
-// 				reqHandler:     mockReq,
-// 				notifyHandler:  mockNotify,
-// 				db:             mockDB,
-// 				messageHandler: mockMessage,
-// 				aiHandler:      mockAI,
-// 			}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-// 			ctx := context.Background()
-// 			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
-// 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.responseAI.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
-// 			mockReq.EXPECT().TTSV1StreamingCreate(
-// 				ctx,
-// 				tt.responseAI.CustomerID,
-// 				tt.activeflowID,
-// 				tmstreaming.ReferenceTypeCall,
-// 				tt.referenceID,
-// 				tt.language,
-// 				tmstreaming.Gender(tt.gender),
-// 				tmstreaming.DirectionOutgoing,
-// 			).Return(tt.responseTTSStreaming, nil)
-// 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
-// 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
-// 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.responseAIcall, nil)
-// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
 
-// 			mockMessage.EXPECT().StreamingSend(ctx, tt.responseAIcall.ID, message.RoleSystem, tt.responseAI.InitPrompt).Return(tt.responseMessage, nil)
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				messageHandler: mockMessage,
+				aiHandler:      mockAI,
+			}
+			ctx := context.Background()
 
-// 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
+			// Start
+			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(
+				ctx,
+				cmcustomer.IDAIManager,
+				tt.activeflowID,
+				cmconfbridge.ReferenceTypeAI,
+				tt.responseAI.ID,
+				cmconfbridge.TypeConference,
+			).Return(tt.responseConfbridge, nil)
 
-// 			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.resume)
-// 			if err != nil {
-// 				t.Fatalf("Unexpected error: %v", err)
-// 			}
-// 			if !reflect.DeepEqual(res, tt.expectRes) {
-// 				t.Errorf("Expected result %#v, got %#v", tt.expectRes, res)
-// 			}
+			// startAIcall
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcall)
+			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcall).Return(tt.expectAIcall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.expectAIcall)
 
-// 			time.Sleep(100 * time.Millisecond)
-// 		})
-// 	}
-// }
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectAIcall.ActiveflowID, gomock.Any()).Return(nil)
 
-// func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
-// 	tests := []struct {
-// 		name string
+			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.expectAIcall.ActiveflowID, tt.responseAI.InitPrompt).Return(tt.responseAI.InitPrompt, nil)
 
-// 		aiID          uuid.UUID
-// 		activeflowID  uuid.UUID
-// 		referenceType aicall.ReferenceType
-// 		referenceID   uuid.UUID
-// 		gender        aicall.Gender
-// 		language      string
-// 		resume        bool
+			for i := range 2 {
+				mockMessage.EXPECT().Create(
+					ctx,
+					tt.expectAIcall.CustomerID,
+					tt.expectAIcall.ID,
+					message.DirectionOutgoing,
+					message.RoleSystem,
+					tt.expectMessageTexts[i],
+					nil,
+					"",
+				).Return(&message.Message{}, nil)
+			}
 
-// 		responseAI                *ai.AI
-// 		responseConfbridge        *cmconfbridge.Confbridge
-// 		responseUUIDAIcallID      uuid.UUID
-// 		responseUUIDPipecatcallID uuid.UUID
-// 		responseAIcall            *aicall.AIcall
-// 		responseVariable          *fmvariable.Variable
-// 		responseMessage           *message.Message
-// 		responseUUIDAction        uuid.UUID
+			mockMessage.EXPECT().Gets(ctx, tt.expectAIcall.ID, gomock.Any(), "", gomock.Any()).Return(tt.responseMessages, nil)
 
-// 		expectAIcall         *aicall.AIcall
-// 		expectMessageContent string
-// 		expectRes            *commonservice.Service
-// 	}{
-// 		{
-// 			name:          "normal",
-// 			aiID:          uuid.FromStringOrNil("979b54dc-30f1-11f0-b20f-cf68bd028351"),
-// 			activeflowID:  uuid.FromStringOrNil("97c49694-30f1-11f0-9312-77d7d1f35c66"),
-// 			referenceType: aicall.ReferenceTypeConversation,
-// 			referenceID:   uuid.FromStringOrNil("97edda2c-30f1-11f0-8341-f38ceaa8013d"),
-// 			gender:        aicall.GenderFemale,
-// 			language:      "en-US",
-// 			resume:        false,
+			mockReq.EXPECT().PipecatV1PipecatcallStart(
+				ctx,
+				tt.expectAIcall.PipecatcallID,
+				tt.expectAIcall.CustomerID,
+				tt.expectAIcall.ActiveflowID,
+				pmpipecatcall.ReferenceTypeAICall,
+				tt.expectAIcall.ID,
+				tt.expectLLMType,
+				tt.expectLLMMessages,
+				tt.expectSTType,
+				tt.expectTTSType,
+				tt.expectTTSVoiceID,
+			).Return(&pmpipecatcall.Pipecatcall{}, nil)
 
-// 			responseAI: &ai.AI{
-// 				Identity: commonidentity.Identity{
-// 					ID:         uuid.FromStringOrNil("979b54dc-30f1-11f0-b20f-cf68bd028351"),
-// 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
-// 				},
-// 				EngineType: ai.EngineTypeNone,
-// 				InitPrompt: "hello, this is init prompt message.",
-// 			},
-// 			responseConfbridge: &cmconfbridge.Confbridge{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-// 				},
-// 			},
-// 			responseUUIDAIcallID:      uuid.FromStringOrNil("983b70ca-30f1-11f0-b3a1-1bc84ea9dc87"),
-// 			responseUUIDPipecatcallID: uuid.FromStringOrNil("53b5f310-b465-11f0-8620-77b447a9f6a8"),
-// 			responseAIcall: &aicall.AIcall{
-// 				Identity: commonidentity.Identity{
-// 					ID: uuid.FromStringOrNil("983b70ca-30f1-11f0-b3a1-1bc84ea9dc87"),
-// 				},
-// 				ReferenceType: aicall.ReferenceTypeCall,
-// 				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-// 			},
-// 			responseVariable: &fmvariable.Variable{
-// 				Variables: map[string]string{
-// 					"voipbin.conversation_message.text": "test assistant message.",
-// 				},
-// 			},
-// 			responseMessage: &message.Message{
-// 				Role:    "assistant",
-// 				Content: "test assistant message.",
-// 			},
-// 			responseUUIDAction: uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
 
-// 			expectAIcall: &aicall.AIcall{
-// 				Identity: commonidentity.Identity{
-// 					ID:         uuid.FromStringOrNil("983b70ca-30f1-11f0-b3a1-1bc84ea9dc87"),
-// 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
-// 				},
-// 				AIID:          uuid.FromStringOrNil("979b54dc-30f1-11f0-b20f-cf68bd028351"),
-// 				ActiveflowID:  uuid.FromStringOrNil("97c49694-30f1-11f0-9312-77d7d1f35c66"),
-// 				AIEngineType:  ai.EngineTypeNone,
-// 				ReferenceType: aicall.ReferenceTypeConversation,
-// 				ReferenceID:   uuid.FromStringOrNil("97edda2c-30f1-11f0-8341-f38ceaa8013d"),
-// 				PipecatcallID: uuid.FromStringOrNil("53b5f310-b465-11f0-8620-77b447a9f6a8"),
-// 				Gender:        aicall.GenderFemale,
-// 				Language:      "en-US",
-// 				Status:        aicall.StatusInitiating,
-// 			},
-// 			expectMessageContent: "test assistant message.",
-// 			expectRes: &commonservice.Service{
-// 				ID:          uuid.FromStringOrNil("983b70ca-30f1-11f0-b3a1-1bc84ea9dc87"),
-// 				Type:        commonservice.TypeAIcall,
-// 				PushActions: []fmaction.Action{},
-// 			},
-// 		},
-// 	}
+			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Expected result %#v, got %#v", tt.expectRes, res)
+			}
+		})
+	}
+}
 
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
+	tests := []struct {
+		name string
 
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockAI := aihandler.NewMockAIHandler(mc)
-// 			mockMessage := messagehandler.NewMockMessageHandler(mc)
+		aiID          uuid.UUID
+		activeflowID  uuid.UUID
+		referenceType aicall.ReferenceType
+		referenceID   uuid.UUID
+		gender        aicall.Gender
+		language      string
 
-// 			h := &aicallHandler{
-// 				utilHandler:    mockUtil,
-// 				reqHandler:     mockReq,
-// 				notifyHandler:  mockNotify,
-// 				db:             mockDB,
-// 				aiHandler:      mockAI,
-// 				messageHandler: mockMessage,
-// 			}
-// 			ctx := context.Background()
+		responseAI           *ai.AI
+		responseFlowVariable *fmvariable.Variable
+		responseAIcall       *aicall.AIcall
 
-// 			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
+		responseUUIDPipecatcallID uuid.UUID
+		responseMessages          []*message.Message
 
-// 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
+		expectMessageText string
+		expectLLMMessages []map[string]any
+		expectLLMType     pmpipecatcall.LLMType
+		expectSTType      pmpipecatcall.STTType
+		expectTTSType     pmpipecatcall.TTSType
+		expectTTSVoiceID  string
+		expectRes         *commonservice.Service
+	}{
+		{
+			name:          "normal",
+			aiID:          uuid.FromStringOrNil("c3cd8518-b885-11f0-bae4-fb5033fa2df2"),
+			activeflowID:  uuid.FromStringOrNil("c3ff93fa-b885-11f0-82cb-3f47ec04d13d"),
+			referenceType: aicall.ReferenceTypeConversation,
+			referenceID:   uuid.FromStringOrNil("c436f642-b885-11f0-8b5f-7b234b8f9158"),
+			gender:        aicall.GenderFemale,
+			language:      "en-US",
 
-// 			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(nil, fmt.Errorf(""))
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c3cd8518-b885-11f0-bae4-fb5033fa2df2"),
+					CustomerID: uuid.FromStringOrNil("c468f26e-b885-11f0-b106-fb180bad9fd1"),
+				},
+				EngineModel: ai.EngineModel("openai.gpt-4"),
+				InitPrompt:  "hello, this is init prompt message.",
+				TTSType:     ai.TTSTypeElevenLabs,
+				TTSVoiceID:  "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
+				STTType:     ai.STTTypeDeepgram,
+			},
+			responseFlowVariable: &fmvariable.Variable{
+				Variables: map[string]string{
+					"voipbin.conversation_message.text": "hello world",
+				},
+			},
+			responseAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("15e0eebc-b886-11f0-9165-53c1245e306f"),
+					CustomerID: uuid.FromStringOrNil("c468f26e-b885-11f0-b106-fb180bad9fd1"),
+				},
+				AIID:          uuid.FromStringOrNil("c3cd8518-b885-11f0-bae4-fb5033fa2df2"),
+				ActiveflowID:  uuid.FromStringOrNil("c3ff93fa-b885-11f0-82cb-3f47ec04d13d"),
+				AIEngineModel: ai.EngineModel("openai.gpt-4"),
+				AITTSType:     ai.TTSTypeElevenLabs,
+				AITTSVoiceID:  "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
+				AISTTType:     ai.STTTypeDeepgram,
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("c436f642-b885-11f0-8b5f-7b234b8f9158"),
+				PipecatcallID: uuid.FromStringOrNil("c4c99736-b885-11f0-b96c-436111319838"),
+				Gender:        aicall.GenderFemale,
+				Language:      "en-US",
+				Status:        aicall.StatusInitiating,
+			},
 
-// 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
-// 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
-// 			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
-// 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.responseAIcall, nil)
-// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("c4c99736-b885-11f0-b96c-436111319838"),
+			responseMessages: []*message.Message{
+				{
+					Role:    "user",
+					Content: "hello world",
+				},
+				{
+					Role:    "system",
+					Content: "hello, this is init prompt message.",
+				},
+				{
+					Role:    "system",
+					Content: defaultCommonSystemPrompt,
+				},
+			},
 
-// 			mockMessage.EXPECT().Send(ctx, tt.responseAIcall.ID, message.RoleUser, tt.expectMessageContent, false).Return(tt.responseMessage, nil)
+			expectMessageText: "hello world",
+			expectLLMType:     pmpipecatcall.LLMType("openai.gpt-4"),
+			expectLLMMessages: []map[string]any{
+				{
+					"role":    "system",
+					"content": defaultCommonSystemPrompt,
+				},
+				{
+					"role":    "system",
+					"content": "hello, this is init prompt message.",
+				},
+				{
+					"role":    "user",
+					"content": "hello world",
+				},
+			},
+			expectSTType:     pmpipecatcall.STTTypeDeepgram,
+			expectTTSType:    pmpipecatcall.TTSTypeElevenLabs,
+			expectTTSVoiceID: "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
+			expectRes: &commonservice.Service{
+				ID:          uuid.FromStringOrNil("15e0eebc-b886-11f0-9165-53c1245e306f"),
+				Type:        commonservice.TypeAIcall,
+				PushActions: []fmaction.Action{},
+			},
+		},
+	}
 
-// 			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
-// 			if err != nil {
-// 				t.Fatalf("Unexpected error: %v", err)
-// 			}
-// 			if !reflect.DeepEqual(res, tt.expectRes) {
-// 				t.Errorf("Expected result %#v, got %#v", tt.expectRes, res)
-// 			}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-// 			time.Sleep(100 * time.Millisecond)
-// 		})
-// 	}
-// }
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				messageHandler: mockMessage,
+				aiHandler:      mockAI,
+			}
+			ctx := context.Background()
+
+			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseFlowVariable, nil)
+			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseAIcall, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
+			mockDB.EXPECT().AIcallUpdatePipecatcallID(ctx, tt.responseAIcall.ID, tt.responseUUIDPipecatcallID).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
+
+			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageText, nil, "").Return(&message.Message{}, nil)
+
+			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, gomock.Any(), "", gomock.Any()).Return(tt.responseMessages, nil)
+
+			mockReq.EXPECT().PipecatV1PipecatcallStart(
+				ctx,
+				tt.responseAIcall.PipecatcallID,
+				tt.responseAIcall.CustomerID,
+				tt.responseAIcall.ActiveflowID,
+				pmpipecatcall.ReferenceTypeAICall,
+				tt.responseAIcall.ID,
+				tt.expectLLMType,
+				tt.expectLLMMessages,
+				tt.expectSTType,
+				tt.expectTTSType,
+				tt.expectTTSVoiceID,
+			).Return(&pmpipecatcall.Pipecatcall{}, nil)
+
+			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Expected result %#v, got %#v", tt.expectRes, res)
+			}
+		})
+	}
+}

@@ -164,9 +164,6 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 		err = h.processEventCMConferenceUpdated(ctx, m)
 
 	// pipecat-manager
-	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmmessage.EventTypeBotTranscription):
-		err = h.processEventPMMessageBotTranscription(ctx, m)
-
 	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmmessage.EventTypeUserTranscription):
 		err = h.processEventPMMessageUserTranscription(ctx, m)
 

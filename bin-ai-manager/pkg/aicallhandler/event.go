@@ -78,7 +78,7 @@ func (h *aicallHandler) EventDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF)
 	messageText := fmt.Sprintf("type: %s\ndigit: %s\nduration: %d\n", defaultDTMFEvent, evt.Digit, evt.Duration)
 	log.Debugf("Prepared the dtmf message to send to the aicall. message: %s", messageText)
 
-	tmp, err := h.SendReferenceTypeCall(ctx, cc, message.RoleUser, messageText, true, false)
+	tmp, err := h.SendReferenceTypeCall(ctx, cc, message.RoleUser, messageText, true, true)
 	if err != nil {
 		log.Errorf("Could not send dtmf message to aicall. err: %v", err)
 		return
