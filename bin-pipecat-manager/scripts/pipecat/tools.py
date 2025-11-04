@@ -1,5 +1,5 @@
 from functools import partial
-from pipecat.frames.frames import MessageFrame
+from pipecat.frames.frames import LLMMessagesFrame
 import asyncio
 import json
 
@@ -26,7 +26,7 @@ async def tool_connect(params, transport):
     msg = f"Connecting {src} -> {', '.join([d['target'] for d in dsts])}"
     print(msg)
 
-    await transport.queue_frame(MessageFrame(role="tool", content=json.dumps({
+    await transport.queue_frame(LLMMessagesFrame(role="tool", content=json.dumps({
         "type": "connect",
         "options": {
             "source": src,
@@ -52,7 +52,7 @@ async def tool_message_send(params, transport):
     msg = f"SMS from {src['target']} to {[d['target'] for d in dsts]}: {text}"
     print(msg)
     
-    await transport.queue_frame(MessageFrame(role="tool", content=json.dumps({
+    await transport.queue_frame(LLMMessagesFrame(role="tool", content=json.dumps({
         "type": "connect",
         "options": {
             "source": src,
