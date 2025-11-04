@@ -33,6 +33,9 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
+# tool
+from pipecat.tools import tool_register
+
 async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
     logger.info(f"Connecting Pipecat client to Go WebSocket server at: {ws_server_url}. id: {id}")
 
@@ -41,8 +44,8 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
 
     pipeline_stages = []
     
-    # ws transport
-    ws_transport = WebsocketClientTransport(
+    # transport
+    transport = WebsocketClientTransport(
         uri=ws_server_url,
         params=WebsocketClientParams(
             serializer=ProtobufFrameSerializer(),
@@ -53,7 +56,7 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
             session_timeout=60 * 3,
         )
     )    
-    pipeline_stages.append(ws_transport.input())
+    pipeline_stages.append(transport.input())
     
     # rtvi
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
@@ -77,7 +80,10 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
 
     # Add context aggregator assistant stage
     pipeline_stages.append(context_aggregator.assistant())
-    pipeline_stages.append(ws_transport.output())
+    pipeline_stages.append(transport.output())
+
+    # Register tool functions
+    tool_register(llm_service, transport)
 
     # Build the pipeline
     pipeline = Pipeline(pipeline_stages)
@@ -92,12 +98,12 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         observers=[RTVIObserver(rtvi)],
     )
 
-    @ws_transport.event_handler("on_disconnected")
+    @transport.event_handler("on_disconnected")
     async def on_client_disconnected(transport, error):
         logger.info(f"Pipecat Client disconnected from Go server. Error: {error}")
         await task.cancel()
 
-    @ws_transport.event_handler("on_error")
+    @transport.event_handler("on_error")
     async def on_error(transport, error):
         logger.error(f"Pipecat Client WebSocket error: {error}")
         await task.cancel()
