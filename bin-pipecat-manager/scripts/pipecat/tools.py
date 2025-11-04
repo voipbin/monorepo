@@ -25,8 +25,7 @@ async def tool_connect(params, transport):
     dsts = params.get("destinations", [])
     msg = f"Connecting {src} -> {', '.join([d['target'] for d in dsts])}"
     print(msg)
- 
- 
+
     await transport.queue_frame(MessageFrame(role="tool", content=json.dumps({
         "type": "connect",
         "options": {
@@ -36,7 +35,6 @@ async def tool_connect(params, transport):
         # "request_id": request_id
     })))
 
- 
     return {"status": "connected", "destinations": dsts}
 
 
@@ -62,6 +60,5 @@ async def tool_message_send(params, transport):
         },
         # "request_id": request_id
     })))
-
 
     return {"status": "sent", "text": text}
