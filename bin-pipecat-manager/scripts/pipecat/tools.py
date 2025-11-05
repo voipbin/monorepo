@@ -1,6 +1,6 @@
 import json
 from loguru import logger
-from pipecat.frames.frames import LLMMessagesFrame
+from pipecat.frames.frames import TextFrame
 from pipecat.services.llm_service import FunctionCallParams
 
 tools = [
@@ -148,21 +148,20 @@ async def tool_connect(params: FunctionCallParams, task):
     
     msg = f"Connecting {src} -> {', '.join([d['target'] for d in dsts])}"
     logger.info(msg)
-    
 
     await task.queue_frames([
-        LLMMessagesFrame(
-            messages=[{
-                "role": "tool",
-                "content": json.dumps({
-                    "type": "connect",
-                    "options": {
+        TextFrame(json.dumps([
+            {
+                "type": "function",
+                "function": {
+                    "name": "connect",
+                    "arguments": {
                         "source": src,
                         "destinations": dsts
-                    }
-                })
-            }]
-        )
+                    }, 
+                },
+            }
+        ]))
     ])
     
     await params.result_callback({
@@ -185,19 +184,19 @@ async def tool_message_send(params: FunctionCallParams, task):
     logger.info(msg)
 
     await task.queue_frames([
-        LLMMessagesFrame(
-            messages=[{
-                "role": "tool",
-                "content": json.dumps({
-                    "type": "message_send",
-                    "options": {
+        TextFrame(json.dumps([
+            {
+                "type": "function",
+                "function": {
+                    "name": "message_send",
+                    "arguments": {
                         "source": src,
                         "destinations": dsts,
                         "text": text
-                    }
-                })
-            }]
-        )
+                    }, 
+                },
+            }
+        ]))
     ])
 
     await params.result_callback({
