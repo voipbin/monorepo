@@ -68,8 +68,6 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         pipeline_stages.append(stt_service)
 
     # Create LLM service
-    # llm_service = create_llm_server(llm)
-    # llm_context_aggregator = create_context_aggregator(llm_service, messages)
     llm_service, llm_context_aggregator = create_llm_service(llm, messages)
     pipeline_stages.append(llm_context_aggregator.user())
     pipeline_stages.append(llm_service)
@@ -84,7 +82,7 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
     pipeline_stages.append(transport.output())
 
     # Register tool functions
-    tool_register(llm_service, transport)
+    # tool_register(llm_service, transport)
 
     # Build the pipeline
     pipeline = Pipeline(pipeline_stages)
@@ -98,6 +96,8 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         ),
         observers=[RTVIObserver(rtvi)],
     )
+    
+    tool_register(llm_service, task)
 
     @transport.event_handler("on_disconnected")
     async def on_client_disconnected(transport, error):
