@@ -1,4 +1,5 @@
 import json
+from loguru import logger
 from pipecat.frames.frames import LLMMessagesFrame
 from pipecat.services.llm_service import FunctionCallParams
 
@@ -140,13 +141,13 @@ async def tool_connect(params: FunctionCallParams, task):
     """
     Establishes a call from a source endpoint to one or more destination endpoints.
     """
-    print(f"Checking params: {params}")
+    logger.info(f"Checking params: {params}")
 
     src = params.arguments.get("source")
     dsts = params.arguments.get("destinations", [])
     
     msg = f"Connecting {src} -> {', '.join([d['target'] for d in dsts])}"
-    print(msg)
+    logger.info(msg)
     
 
     await task.queue_frames([
@@ -174,14 +175,14 @@ async def tool_message_send(params: FunctionCallParams, task):
     """
     Sends an SMS text message from a source telephone number to one or more destination numbers.
     """
-    print(f"Checking params: {params}")
+    logger.info(f"Checking params: {params}")
 
     src = params.arguments.get("source")
     dsts = params.arguments.get("destinations", [])
     text = params.arguments.get("text")
     
     msg = f"SMS from {src} to {[d for d in dsts]}: {text}"
-    print(msg)
+    logger.info(msg)
 
     await task.queue_frames([
         LLMMessagesFrame(
