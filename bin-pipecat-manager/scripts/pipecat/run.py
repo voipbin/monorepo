@@ -172,7 +172,6 @@ def create_llm_server(name: str, **options):
             api_key=options.get("api_key", os.getenv("OPENAI_API_KEY")),
             model=model_name
         )
-        llm.context_class = OpenAILLMContext
     else:
         raise ValueError(f"Unsupported LLM service: {service_name}")
     

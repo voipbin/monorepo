@@ -128,8 +128,13 @@ The source and destination types must be "tel".
 
 
 def tool_register(llm_service, transport):
-    llm_service.register_function("connect", partial(tool_connect, transport=transport))
-    llm_service.register_function("message_send", partial(tool_message_send, transport=transport))
+    async def connect_wrapper(params: FunctionCallParams):
+        return await tool_connect(params, transport)
+    llm_service.register_function("connect", connect_wrapper)
+
+    async def message_send_wrapper(params: FunctionCallParams):
+        return await tool_message_send(params, transport)
+    llm_service.register_function("message_send", message_send_wrapper)
 
 
 # connect to someone
