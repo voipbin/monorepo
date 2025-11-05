@@ -80,10 +80,7 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
     # Add context aggregator assistant stage
     pipeline_stages.append(llm_context_aggregator.assistant())
     pipeline_stages.append(transport.output())
-
-    # Register tool functions
-    # tool_register(llm_service, transport)
-
+ 
     # Build the pipeline
     pipeline = Pipeline(pipeline_stages)
 
@@ -97,6 +94,7 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         observers=[RTVIObserver(rtvi)],
     )
     
+    # Register tool functions
     tool_register(llm_service, task)
 
     @transport.event_handler("on_disconnected")

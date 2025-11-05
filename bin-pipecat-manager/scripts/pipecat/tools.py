@@ -1,6 +1,6 @@
+import json
 from pipecat.frames.frames import LLMMessagesFrame
 from pipecat.services.llm_service import FunctionCallParams
-import json
 
 tools = [
     {
@@ -125,18 +125,18 @@ The source and destination types must be "tel".
 ]
 
 
-def tool_register(llm_service, transport):
+def tool_register(llm_service, task):
     async def connect_wrapper(params: FunctionCallParams):
-        return await tool_connect(params, transport)
+        return await tool_connect(params, task)
     llm_service.register_function("connect", connect_wrapper)
 
     async def message_send_wrapper(params: FunctionCallParams):
-        return await tool_message_send(params, transport)
+        return await tool_message_send(params, task)
     llm_service.register_function("message_send", message_send_wrapper)
 
 
 # connect to someone
-async def tool_connect(params: FunctionCallParams, transport):
+async def tool_connect(params: FunctionCallParams, task):
     """
     Establishes a call from a source endpoint to one or more destination endpoints.
     """
@@ -149,32 +149,20 @@ async def tool_connect(params: FunctionCallParams, transport):
     print(msg)
     
 
-
-    # await transport.queue_frames([
-    #     LLMMessagesFrame(
-    #         role="tool", 
-    #         content=json.dumps({
-    #             "type": "connect",
-    #             "options": {
-    #                 "source": src,
-    #                 "destinations": dsts
-    #             }
-    #         })
-    #     )
-    # ])
-
-    # await transport.queue_frames([
-    #     LLMMessagesFrame(
-    #         role="tool", 
-    #         content=json.dumps({
-    #             "type": "connect",
-    #             "options": {
-    #                 "source": src,
-    #                 "destinations": dsts
-    #             }
-    #         })
-    #     )
-    # ])
+    await task.queue_frames([
+        LLMMessagesFrame(
+            messages=[{
+                "role": "tool",
+                "content": json.dumps({
+                    "type": "connect",
+                    "options": {
+                        "source": src,
+                        "destinations": dsts
+                    }
+                })
+            }]
+        )
+    ])
     
     await params.result_callback({
         "status": "connected",
@@ -182,7 +170,7 @@ async def tool_connect(params: FunctionCallParams, transport):
     })
 
 
-async def tool_message_send(params: FunctionCallParams, transport):
+async def tool_message_send(params: FunctionCallParams, task):
     """
     Sends an SMS text message from a source telephone number to one or more destination numbers.
     """
@@ -195,34 +183,21 @@ async def tool_message_send(params: FunctionCallParams, transport):
     msg = f"SMS from {src} to {[d for d in dsts]}: {text}"
     print(msg)
 
-    # await transport.queue_frames([
-    #     LLMMessagesFrame(
-    #         role="tool", 
-    #         content=json.dumps({
-    #             "type": "message_send",
-    #             "options": {
-    #                 "source": src,
-    #                 "destinations": dsts,
-    #                 "text": text
-    #             }
-    #         })
-    #     )
-    # ])
-
-    
-    # await transport.queue_frames([
-    #     LLMMessagesFrame(
-    #         role="tool", 
-    #         content=json.dumps({
-    #             "type": "message_send",
-    #             "options": {
-    #                 "source": src,
-    #                 "destinations": dsts,
-    #                 "text": text
-    #             }
-    #         })
-    #     )
-    # ])
+    await task.queue_frames([
+        LLMMessagesFrame(
+            messages=[{
+                "role": "tool",
+                "content": json.dumps({
+                    "type": "message_send",
+                    "options": {
+                        "source": src,
+                        "destinations": dsts,
+                        "text": text
+                    }
+                })
+            }]
+        )
+    ])
 
     await params.result_callback({
         "status": "sent",
