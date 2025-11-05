@@ -68,9 +68,10 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         pipeline_stages.append(stt_service)
 
     # Create LLM service
-    llm_service = create_llm_server(llm)
-    context_aggregator = create_context_aggregator(llm_service, messages)
-    pipeline_stages.append(context_aggregator.user())
+    # llm_service = create_llm_server(llm)
+    # llm_context_aggregator = create_context_aggregator(llm_service, messages)
+    llm_service, llm_context_aggregator = create_llm_service(llm, messages)
+    pipeline_stages.append(llm_context_aggregator.user())
     pipeline_stages.append(llm_service)
 
     # Create TTS service
@@ -79,7 +80,7 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         pipeline_stages.append(tts_service)
 
     # Add context aggregator assistant stage
-    pipeline_stages.append(context_aggregator.assistant())
+    pipeline_stages.append(llm_context_aggregator.assistant())
     pipeline_stages.append(transport.output())
 
     # Register tool functions
@@ -156,31 +157,15 @@ def create_stt_service(name: str, **options):
         raise ValueError(f"Unsupported STT service: {name}")
 
 
-def create_llm_server(name: str, **options):
-    """
-    Factory function to create a Pipecat LLM service instance
-    based on the argument in 'service.model' format.
-    """
+def create_llm_service(name: str, messages, **options):
+    
+    # validate name
     if "." not in name:
         raise ValueError(f"Wrong LLM: {name}. LLM argument must be in 'service.model' format, e.g., 'openai.gpt-4o-mini'")
-
     service_name, model_name = name.split(".", 1)
     service_name = service_name.lower()
 
-    if service_name == "openai":
-        llm = OpenAILLMService(
-            api_key=options.get("api_key", os.getenv("OPENAI_API_KEY")),
-            model=model_name
-        )
-    else:
-        raise ValueError(f"Unsupported LLM service: {service_name}")
-    
-    return llm
-
-
-def create_context_aggregator(llm, messages):
-    logger.info(f"Executing create_context_aggregator. LLM: {llm}, Initial Messages Count: {len(messages)}")
-
+    # validate messages
     valid_messages = []
     for msg in messages:
         if "role" not in msg or "content" not in msg or msg["role"] is None or msg["content"] is None:
@@ -188,12 +173,23 @@ def create_context_aggregator(llm, messages):
             continue
         valid_messages.append(msg)
     logger.info(f"Valid Messages Count: {len(valid_messages)}")
-    logger.info(f"Initial Messages (first 2): {valid_messages[:2]}")
 
-    context = llm.context_class(
-        messages = valid_messages,
-        tools = tools,
-    )
-    context_aggregator = llm.create_context_aggregator(context)
-    
-    return context_aggregator
+    res_llm = None
+    res_context_aggregator = None
+    if service_name == "openai":
+        logger.info(f"Creating OpenAI LLM Service with model: {model_name}")
+        res_llm = OpenAILLMService(
+            api_key=options.get("api_key", os.getenv("OPENAI_API_KEY")),
+            model=model_name
+        )
+        
+        context = OpenAILLMContext(
+            messages = valid_messages,
+            tools = tools,
+        )
+        res_context_aggregator = res_llm.create_context_aggregator(context)
+                
+    else:
+        raise ValueError(f"Unsupported LLM service: {service_name}")
+
+    return res_llm, res_context_aggregator
