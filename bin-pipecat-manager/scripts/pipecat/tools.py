@@ -150,18 +150,18 @@ async def tool_connect(params: FunctionCallParams, transport):
     
 
 
-    await transport.queue_frames([
-        LLMMessagesFrame(
-            role="tool", 
-            content=json.dumps({
-                "type": "connect",
-                "options": {
-                    "source": src,
-                    "destinations": dsts
-                }
-            })
-        )
-    ])
+    # await transport.queue_frames([
+    #     LLMMessagesFrame(
+    #         role="tool", 
+    #         content=json.dumps({
+    #             "type": "connect",
+    #             "options": {
+    #                 "source": src,
+    #                 "destinations": dsts
+    #             }
+    #         })
+    #     )
+    # ])
 
     # await transport.queue_frames([
     #     LLMMessagesFrame(
@@ -195,19 +195,19 @@ async def tool_message_send(params: FunctionCallParams, transport):
     msg = f"SMS from {src} to {[d for d in dsts]}: {text}"
     print(msg)
 
-    await transport.queue_frames([
-        LLMMessagesFrame(
-            role="tool", 
-            content=json.dumps({
-                "type": "message_send",
-                "options": {
-                    "source": src,
-                    "destinations": dsts,
-                    "text": text
-                }
-            })
-        )
-    ])
+    # await transport.queue_frames([
+    #     LLMMessagesFrame(
+    #         role="tool", 
+    #         content=json.dumps({
+    #             "type": "message_send",
+    #             "options": {
+    #                 "source": src,
+    #                 "destinations": dsts,
+    #                 "text": text
+    #             }
+    #         })
+    #     )
+    # ])
 
     
     # await transport.queue_frames([
