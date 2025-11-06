@@ -62,6 +62,8 @@ func (h *pipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context)
 		"id":   id,
 	})
 
+	log.WithField("request_headers", c.Request.Header).Debugf("Incoming WebSocket upgrade request.")
+
 	ws, err := h.websocketHandler.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Errorf("Could not upgrade to WebSocket: %v", err)
