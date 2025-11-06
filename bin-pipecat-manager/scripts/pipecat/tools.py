@@ -2,7 +2,6 @@ import common
 import json
 import requests
 from loguru import logger
-from pipecat.frames.frames import TextFrame
 from pipecat.services.llm_service import FunctionCallParams
 
 tools = [
