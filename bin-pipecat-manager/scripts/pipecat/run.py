@@ -43,12 +43,11 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
     if messages is None:
         messages = []
     pipeline_stages = []
-    uri = common.PIPECATCALL_WS_URL + f"/{id}/ws"
-    logger.info(f"Establishing WebSocket connection to URI: {uri}")
-    
-    # transport
-    transport = WebsocketClientTransport(
-        uri=uri,
+
+    # transport input
+    uri_input = common.PIPECATCALL_WS_URL + f"/{id}/ws?direction=input"
+    transport_input = WebsocketClientTransport(
+        uri=uri_input,
         params=WebsocketClientParams(
             serializer=ProtobufFrameSerializer(),
             audio_in_enabled=True,
@@ -58,7 +57,8 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
             session_timeout=60 * 3,
         )
     )    
-    pipeline_stages.append(transport.input())
+    logger.info(f"Establishing WebSocket connection to URI: {uri_input}")
+    pipeline_stages.append(transport_input)
     
     # rtvi
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
@@ -81,7 +81,22 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
 
     # Add context aggregator assistant stage
     pipeline_stages.append(llm_context_aggregator.assistant())
-    pipeline_stages.append(transport.output())
+    
+    # transport output
+    uri_output = common.PIPECATCALL_WS_URL + f"/{id}/ws?direction=output"
+    transport_output = WebsocketClientTransport(
+        uri=uri_output,
+        params=WebsocketClientParams(
+            serializer=ProtobufFrameSerializer(),
+            audio_in_enabled=True,
+            audio_out_enabled=True,
+            add_wav_header=False,
+            vad_analyzer=SileroVADAnalyzer(),
+            session_timeout=60 * 3,
+        )
+    )    
+    pipeline_stages.append(transport_output)
+    logger.info(f"Establishing WebSocket connection to URI: {uri_output}")
  
     # Build the pipeline
     pipeline = Pipeline(pipeline_stages)
@@ -99,12 +114,12 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
     # Register tool functions
     tool_register(llm_service, task, id)
 
-    @transport.event_handler("on_disconnected")
+    @transport_input.event_handler("on_disconnected")
     async def on_client_disconnected(transport, error):
         logger.info(f"Pipecat Client disconnected from Go server. Error: {error}")
         await task.cancel()
 
-    @transport.event_handler("on_error")
+    @transport_input.event_handler("on_error")
     async def on_error(transport, error):
         logger.error(f"Pipecat Client WebSocket error: {error}")
         await task.cancel()
