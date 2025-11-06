@@ -59,7 +59,7 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
     )    
     logger.info(f"Establishing WebSocket connection to URI: {uri_input}")
     pipeline_stages.append(transport_input.input())
-    
+
     # rtvi
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
     pipeline_stages.append(rtvi)
