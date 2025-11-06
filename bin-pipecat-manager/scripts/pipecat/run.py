@@ -45,7 +45,7 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
 
     pipeline_stages = []
     
-    uri = common.PIPECATCALL_URL + f"/{id}/ws"
+    uri = "ws://" + common.PIPECATCALL_WS_URL + f"/{id}/ws"
     
     # transport
     transport = WebsocketClientTransport(

@@ -152,7 +152,7 @@ async def tool_connect(params: FunctionCallParams, task, pipecatcall_id):
     logger.info(msg)
     
     # send request
-    http_url = common.PIPECATCALL_URL + f"/{pipecatcall_id}/tools"
+    http_url = common.PIPECATCALL_HTTP_URL + f"/{pipecatcall_id}/tools"
     http_params = {
         "type": "function",
         "function": {
@@ -189,7 +189,7 @@ async def tool_message_send(params: FunctionCallParams, task, pipecatcall_id):
     logger.info(msg)
 
     # send request
-    http_url = common.PIPECATCALL_URL + f"/{pipecatcall_id}/tools"
+    http_url = common.PIPECATCALL_HTTP_URL + f"/{pipecatcall_id}/tools"
     http_params = {
         "type": "function",
         "function": {
