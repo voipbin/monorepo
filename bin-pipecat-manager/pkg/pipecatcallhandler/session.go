@@ -62,8 +62,12 @@ func (h *pipecatcallHandler) SessionGet(id uuid.UUID) (*pipecatcall.Session, err
 	return res, nil
 }
 
-func (h *pipecatcallHandler) SessionsetRunnerWebsocket(pc *pipecatcall.Session, ws *websocket.Conn) {
-	pc.RunnerWebsocket = ws
+func (h *pipecatcallHandler) SessionsetRunnerWebsocketWrite(pc *pipecatcall.Session, ws *websocket.Conn) {
+	pc.RunnerWebsocketWrite = ws
+}
+
+func (h *pipecatcallHandler) SessionsetRunnerWebsocketRead(pc *pipecatcall.Session, ws *websocket.Conn) {
+	pc.RunnerWebsocketRead = ws
 }
 
 func (h *pipecatcallHandler) SessionsetAsteriskInfo(pc *pipecatcall.Session, streamingID uuid.UUID, conn net.Conn) {
@@ -90,8 +94,8 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 		return
 	}
 
-	if pc.RunnerWebsocket != nil {
-		if errClose := pc.RunnerWebsocket.Close(); errClose != nil {
+	if pc.RunnerWebsocketWrite != nil {
+		if errClose := pc.RunnerWebsocketWrite.Close(); errClose != nil {
 			log.Errorf("Could not close the pipecat runner websocket. err: %v", errClose)
 		} else {
 			log.Infof("Closed the pipecat runner websocket.")

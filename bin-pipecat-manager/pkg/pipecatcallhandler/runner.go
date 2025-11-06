@@ -56,20 +56,162 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	return nil
 }
 
+// func (h *pipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func": "RunnerWebsocketHandle",
+// 		"id":   id,
+// 	})
+
+// 	log.WithFields(
+// 		logrus.Fields{
+// 			"remote_addr": c.Request.RemoteAddr,
+// 			"uri":         c.Request.RequestURI,
+// 			"method":      c.Request.Method,
+// 			"headers":     c.Request.Header,
+// 			"params":      c.Params,
+// 		}).Debugf("Incoming WebSocket upgrade request.")
+
+// 	ws, err := h.websocketHandler.Upgrade(c.Writer, c.Request, nil)
+// 	if err != nil {
+// 		log.Errorf("Could not upgrade to WebSocket: %v", err)
+// 		return
+// 	}
+// 	log.Debugf("WebSocket connection established with pipecat runner.")
+
+// 	se, err := h.SessionGet(id)
+// 	if err != nil {
+// 		log.Errorf("Could not get pipecatcall session: %v", err)
+// 		return
+// 	}
+// 	log.WithField("session", se).Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
+
+// 	h.SessionsetRunnerWebsocketWrite(se, ws)
+// 	go h.pipecatframeHandler.RunSender(se)
+
+// 	// handle received messages from websocket
+// 	for {
+// 		msgType, message, err := h.websocketHandler.ReadMessage(ws)
+// 		if err != nil {
+// 			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
+// 				log.Debugf("Client disconnected gracefully.")
+// 			} else if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+// 				log.Errorf("Client disconnected unexpectedly: %v", err)
+// 			} else {
+// 				log.Errorf("Error reading message from client: %v", err)
+// 			}
+// 			break
+// 		}
+
+// 		switch msgType {
+// 		case websocket.BinaryMessage:
+// 			var frame pipecatframe.Frame
+// 			if errUnmarshal := proto.Unmarshal(message, &frame); errUnmarshal != nil {
+// 				log.Errorf("Could not unmarshal Protobuf message: %v", errUnmarshal)
+// 				continue
+// 			}
+
+// 			switch x := frame.Frame.(type) {
+// 			case *pipecatframe.Frame_Text:
+// 				log.Debugf("Received TextFrame: ID=%d, Name=%s, Text='%s'", x.Text.Id, x.Text.Name, x.Text.Text)
+
+// 			case *pipecatframe.Frame_Audio:
+// 				audio := x.Audio
+// 				if errAudio := h.runnerWebsocketHandleAudio(se, int(audio.SampleRate), int(audio.NumChannels), audio.Audio); errAudio != nil {
+// 					return
+// 				}
+
+// 			case *pipecatframe.Frame_Transcription:
+// 				log.Debugf("Received TranscriptionFrame: ID=%d, Name=%s, Text='%s', UserID=%s, Timestamp=%s", x.Transcription.Id, x.Transcription.Name, x.Transcription.Text, x.Transcription.UserId, x.Transcription.Timestamp)
+
+// 			case *pipecatframe.Frame_Message:
+// 				if errMessage := h.receiveMessageFrameTypeMessage(se, []byte(x.Message.Data)); errMessage != nil {
+// 					log.Errorf("Could not process MessageFrame: %v", errMessage)
+// 				}
+
+// 			default:
+// 				log.Errorf("Could not recognize the Protobuf Frame type. type: %T", x)
+// 			}
+
+// 		case websocket.TextMessage:
+// 			// because of we switched to Protobuf communication, text messages are only handled in exceptional cases.
+// 			log.Errorf("Could not recognize the message type. type: %d (Expecting Protobuf Binary)", msgType)
+// 		case websocket.CloseMessage:
+// 			log.Debugf("Received Close message from client.")
+// 			return
+// 		case websocket.PingMessage:
+// 			log.Debugf("Received Ping message from client. Sending Pong.")
+// 			if errWrite := h.websocketHandler.WriteMessage(ws, websocket.PongMessage, []byte{}); errWrite != nil {
+// 				log.Errorf("Could not send Pong message: %v", errWrite)
+// 				return
+// 			}
+// 		case websocket.PongMessage:
+// 			log.Debugf("Received Pong message from client.")
+// 		default:
+// 			log.Debugf("Received unknown message type %d", msgType)
+// 		}
+// 	}
+// }
+
 func (h *pipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "RunnerWebsocketHandle",
 		"id":   id,
 	})
 
-	log.WithFields(
-		logrus.Fields{
-			"remote_addr": c.Request.RemoteAddr,
-			"uri":         c.Request.RequestURI,
-			"method":      c.Request.Method,
-			"headers":     c.Request.Header,
-			"params":      c.Params,
-		}).Debugf("Incoming WebSocket upgrade request.")
+	direction := c.Query("direction")
+	switch direction {
+	case "input":
+		h.RunnerWebsocketHandleInput(id, c)
+
+	case "output":
+		h.RunnerWebsocketHandleOutput(id, c)
+
+	default:
+		log.Errorf("Invalid direction parameter: %s", direction)
+	}
+}
+
+func (h *pipecatcallHandler) RunnerWebsocketHandleInput(id uuid.UUID, c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "RunnerWebsocketHandleInput",
+		"pipecatcall_id": id,
+		"remote_addr":    c.Request.RemoteAddr,
+		"uri":            c.Request.RequestURI,
+		"method":         c.Request.Method,
+		"headers":        c.Request.Header,
+		"params":         c.Params,
+	})
+
+	ws, err := h.websocketHandler.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		log.Errorf("Could not upgrade to WebSocket: %v", err)
+		return
+	}
+	log.Debugf("WebSocket connection established with pipecat runner for input direction. pipecatcall_id: %s", id)
+
+	se, err := h.SessionGet(id)
+	if err != nil {
+		log.Errorf("Could not get pipecatcall session: %v", err)
+		return
+	}
+	log.WithField("session", se).Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
+
+	h.SessionsetRunnerWebsocketWrite(se, ws)
+	go h.pipecatframeHandler.RunSender(se)
+
+	<-se.Ctx.Done()
+}
+
+func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "RunnerWebsocketHandleOutput",
+		"pipecatcall_id": id,
+		"remote_addr":    c.Request.RemoteAddr,
+		"uri":            c.Request.RequestURI,
+		"method":         c.Request.Method,
+		"headers":        c.Request.Header,
+		"params":         c.Params,
+	})
 
 	ws, err := h.websocketHandler.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -85,10 +227,8 @@ func (h *pipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context)
 	}
 	log.WithField("session", se).Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
 
-	h.SessionsetRunnerWebsocket(se, ws)
-	go h.pipecatframeHandler.RunSender(se)
-
 	// handle received messages from websocket
+	h.SessionsetRunnerWebsocketRead(se, ws)
 	for {
 		msgType, message, err := h.websocketHandler.ReadMessage(ws)
 		if err != nil {

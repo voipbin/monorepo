@@ -54,7 +54,7 @@ func (h *pipecatframeHandler) RunSender(se *pipecatcall.Session) {
 				continue
 			}
 
-			if errSend := h.sendFrame(se.RunnerWebsocket, frame); errSend != nil {
+			if errSend := h.sendFrame(se.RunnerWebsocketWrite, frame); errSend != nil {
 				log.Errorf("Could not send the frame. Stopping sender runner. err: %v", errSend)
 				return
 			}

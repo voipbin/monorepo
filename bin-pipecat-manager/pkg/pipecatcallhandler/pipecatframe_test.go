@@ -106,9 +106,9 @@ func Test_SendAudio(t *testing.T) {
 			name: "simple audio frame",
 
 			se: &pipecatcall.Session{
-				Ctx:                 context.Background(),
-				RunnerWebsocket:     &websocket.Conn{},
-				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
+				Ctx:                  context.Background(),
+				RunnerWebsocketWrite: &websocket.Conn{},
+				RunnerWebsocketChan:  make(chan *pipecatframe.Frame, 1),
 			},
 			packetID:  1,
 			audioData: []byte{0x01, 0x02, 0x03, 0x04},
@@ -127,9 +127,9 @@ func Test_SendAudio(t *testing.T) {
 			name: "empty audio frame",
 
 			se: &pipecatcall.Session{
-				Ctx:                 context.Background(),
-				RunnerWebsocket:     &websocket.Conn{},
-				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
+				Ctx:                  context.Background(),
+				RunnerWebsocketWrite: &websocket.Conn{},
+				RunnerWebsocketChan:  make(chan *pipecatframe.Frame, 1),
 			},
 			packetID:  2,
 			audioData: []byte{},
@@ -183,9 +183,9 @@ func Test_SendRTVIText(t *testing.T) {
 		{
 			name: "simple RTVI text frame",
 			se: &pipecatcall.Session{
-				Ctx:                 context.Background(),
-				RunnerWebsocket:     &websocket.Conn{},
-				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
+				Ctx:                  context.Background(),
+				RunnerWebsocketWrite: &websocket.Conn{},
+				RunnerWebsocketChan:  make(chan *pipecatframe.Frame, 1),
 			},
 			id:             "123",
 			text:           "Hello World",

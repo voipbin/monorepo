@@ -20,8 +20,9 @@ type Session struct {
 	Cancel context.CancelFunc `json:"-"`
 
 	// pipecat runner
-	RunnerWebsocket     *websocket.Conn          `json:"-"`
-	RunnerWebsocketChan chan *pipecatframe.Frame `json:"-"`
+	RunnerWebsocketWrite *websocket.Conn          `json:"-"`
+	RunnerWebsocketRead  *websocket.Conn          `json:"-"`
+	RunnerWebsocketChan  chan *pipecatframe.Frame `json:"-"`
 
 	// asterisk info
 	AsteriskStreamingID uuid.UUID `json:"-"`
