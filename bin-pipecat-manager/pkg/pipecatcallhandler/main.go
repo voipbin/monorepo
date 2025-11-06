@@ -16,6 +16,7 @@ import (
 
 	"sync"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 )
 
@@ -40,6 +41,9 @@ type PipecatcallHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)
 
 	SendMessage(ctx context.Context, id uuid.UUID, messageID string, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error)
+
+	RunnerWebsocketHandle(id uuid.UUID, c *gin.Context)
+	RunnerToolHandle(id uuid.UUID, c *gin.Context)
 }
 
 // list of default external media channel options.

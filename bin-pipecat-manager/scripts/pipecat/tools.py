@@ -1,4 +1,6 @@
+import common
 import json
+import requests
 from loguru import logger
 from pipecat.frames.frames import TextFrame
 from pipecat.services.llm_service import FunctionCallParams
@@ -126,18 +128,18 @@ The source and destination types must be "tel".
 ]
 
 
-def tool_register(llm_service, task):
+def tool_register(llm_service, task, pipecatcall_id):
     async def connect_wrapper(params: FunctionCallParams):
-        return await tool_connect(params, task)
+        return await tool_connect(params, task, pipecatcall_id)
     llm_service.register_function("connect", connect_wrapper)
 
     async def message_send_wrapper(params: FunctionCallParams):
-        return await tool_message_send(params, task)
+        return await tool_message_send(params, task, pipecatcall_id)
     llm_service.register_function("message_send", message_send_wrapper)
 
 
 # connect to someone
-async def tool_connect(params: FunctionCallParams, task):
+async def tool_connect(params: FunctionCallParams, task, pipecatcall_id):
     """
     Establishes a call from a source endpoint to one or more destination endpoints.
     """
@@ -148,21 +150,24 @@ async def tool_connect(params: FunctionCallParams, task):
     
     msg = f"Connecting {src} -> {', '.join([d['target'] for d in dsts])}"
     logger.info(msg)
-
-    await task.queue_frames([
-        TextFrame(json.dumps([
-            {
-                "type": "function",
-                "function": {
-                    "name": "connect",
-                    "arguments": {
-                        "source": src,
-                        "destinations": dsts
-                    }, 
-                },
-            }
-        ]))
-    ])
+    
+    # send request
+    http_url = common.PIPECATCALL_URL + f"/{pipecatcall_id}/tools"
+    http_params = {
+        "type": "function",
+        "function": {
+            "name": "connect",
+            "arguments": {
+                "source": src,
+                "destinations": dsts
+            }, 
+        },
+    }
+    logger.debug(f"HTTP Request URL: {http_url}, Params: {http_params}")
+    
+    response = requests.get(http_url, json=http_params)
+    print("상태 코드:", response.status_code)
+    print("응답 본문:", response.text)
     
     await params.result_callback({
         "status": "connected",
@@ -170,7 +175,7 @@ async def tool_connect(params: FunctionCallParams, task):
     })
 
 
-async def tool_message_send(params: FunctionCallParams, task):
+async def tool_message_send(params: FunctionCallParams, task, pipecatcall_id):
     """
     Sends an SMS text message from a source telephone number to one or more destination numbers.
     """
@@ -183,21 +188,23 @@ async def tool_message_send(params: FunctionCallParams, task):
     msg = f"SMS from {src} to {[d for d in dsts]}: {text}"
     logger.info(msg)
 
-    await task.queue_frames([
-        TextFrame(json.dumps([
-            {
-                "type": "function",
-                "function": {
-                    "name": "message_send",
-                    "arguments": {
-                        "source": src,
-                        "destinations": dsts,
-                        "text": text
-                    }, 
-                },
-            }
-        ]))
-    ])
+    # send request
+    http_url = common.PIPECATCALL_URL + f"/{pipecatcall_id}/tools"
+    http_params = {
+        "type": "function",
+        "function": {
+            "name": "message_send",
+            "arguments": {
+                "source": src,
+                "destinations": dsts,
+                "text": text,
+            }, 
+        },
+    }
+    response = requests.post(http_url, json=http_params)
+
+    print("상태 코드:", response.status_code)
+    print("응답 본문:", response.text)
 
     await params.result_callback({
         "status": "sent",

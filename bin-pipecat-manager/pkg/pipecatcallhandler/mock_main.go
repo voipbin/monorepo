@@ -15,6 +15,7 @@ import (
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	reflect "reflect"
 
+	gin "github.com/gin-gonic/gin"
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -70,6 +71,30 @@ func (m *MockPipecatcallHandler) Run() error {
 func (mr *MockPipecatcallHandlerMockRecorder) Run() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockPipecatcallHandler)(nil).Run))
+}
+
+// RunnerToolHandle mocks base method.
+func (m *MockPipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RunnerToolHandle", id, c)
+}
+
+// RunnerToolHandle indicates an expected call of RunnerToolHandle.
+func (mr *MockPipecatcallHandlerMockRecorder) RunnerToolHandle(id, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunnerToolHandle", reflect.TypeOf((*MockPipecatcallHandler)(nil).RunnerToolHandle), id, c)
+}
+
+// RunnerWebsocketHandle mocks base method.
+func (m *MockPipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RunnerWebsocketHandle", id, c)
+}
+
+// RunnerWebsocketHandle indicates an expected call of RunnerWebsocketHandle.
+func (mr *MockPipecatcallHandlerMockRecorder) RunnerWebsocketHandle(id, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunnerWebsocketHandle", reflect.TypeOf((*MockPipecatcallHandler)(nil).RunnerWebsocketHandle), id, c)
 }
 
 // SendMessage mocks base method.

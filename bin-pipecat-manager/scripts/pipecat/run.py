@@ -1,6 +1,7 @@
 import asyncio
 import os
 import json
+import common
 
 from loguru import logger
 
@@ -36,17 +37,19 @@ from pipecat.transports.websocket.client import (
 # tool
 from tools import tool_register, tools
 
-async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
-    logger.info(f"Connecting Pipecat client to Go WebSocket server at: {ws_server_url}. id: {id}")
+async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
+    logger.info(f"Connecting Pipecat client to Go WebSocket server. id: {id}")
 
     if messages is None:
         messages = []
 
     pipeline_stages = []
     
+    uri = common.PIPECATCALL_URL + f"/{id}/ws"
+    
     # transport
     transport = WebsocketClientTransport(
-        uri=ws_server_url,
+        uri=uri,
         params=WebsocketClientParams(
             serializer=ProtobufFrameSerializer(),
             audio_in_enabled=True,
@@ -95,7 +98,7 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
     )
     
     # Register tool functions
-    tool_register(llm_service, task)
+    tool_register(llm_service, task, id)
 
     @transport.event_handler("on_disconnected")
     async def on_client_disconnected(transport, error):

@@ -18,7 +18,6 @@ class Message(BaseModel):
 
 class PipelineRequest(BaseModel):
     id: Optional[str] = None
-    ws_server_url: Optional[str] = None
     llm: Optional[str] = None
     tts: Optional[str] = None
     stt: Optional[str] = None
@@ -39,7 +38,6 @@ async def run_pipeline_wrapper(*args, **kwargs):
 async def run_pipeline_endpoint(req: PipelineRequest, background_tasks: BackgroundTasks):
     try:
         logger.info("=== Received /run request ===")
-        logger.info(f"ws_server_url: {req.ws_server_url}")
         logger.info(f"llm: {req.llm}")
         logger.info(f"tts: {req.tts}")
         logger.info(f"stt: {req.stt}")
@@ -49,7 +47,6 @@ async def run_pipeline_endpoint(req: PipelineRequest, background_tasks: Backgrou
         asyncio.create_task(
             run_pipeline_wrapper(
                 req.id,
-                req.ws_server_url,
                 req.llm,
                 req.tts,
                 req.stt,
