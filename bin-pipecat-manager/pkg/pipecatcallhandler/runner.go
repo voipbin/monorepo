@@ -62,7 +62,14 @@ func (h *pipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context)
 		"id":   id,
 	})
 
-	log.WithField("request_headers", c.Request.Header).Debugf("Incoming WebSocket upgrade request.")
+	log.WithFields(
+		logrus.Fields{
+			"remote_addr": c.Request.RemoteAddr,
+			"uri":         c.Request.RequestURI,
+			"method":      c.Request.Method,
+			"headers":     c.Request.Header,
+			"params":      c.Params,
+		}).Debugf("Incoming WebSocket upgrade request.")
 
 	ws, err := h.websocketHandler.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
