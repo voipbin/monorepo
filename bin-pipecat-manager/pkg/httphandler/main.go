@@ -68,11 +68,7 @@ func (h *httpHandler) Run() error {
 }
 
 func (h *httpHandler) wsHandle(c *gin.Context) {
-	log := logrus.WithField("func", "wsHandle")
-
 	id := uuid.FromStringOrNil(c.Param("id"))
-	log.WithField("id", id).Debug("WebSocket handle called")
-
 	h.pipecatcallHandler.RunnerWebsocketHandle(id, c)
 }
 

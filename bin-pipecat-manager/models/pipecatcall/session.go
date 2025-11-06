@@ -5,7 +5,6 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
-	"net/http"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -21,9 +20,6 @@ type Session struct {
 	Cancel context.CancelFunc `json:"-"`
 
 	// pipecat runner
-	RunnerListener      net.Listener             `json:"-"`
-	RunnerPort          int                      `json:"-"`
-	RunnerServer        *http.Server             `json:"-"`
 	RunnerWebsocket     *websocket.Conn          `json:"-"`
 	RunnerWebsocketChan chan *pipecatframe.Frame `json:"-"`
 

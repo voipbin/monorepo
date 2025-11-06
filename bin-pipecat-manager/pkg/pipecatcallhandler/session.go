@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
-	"net/http"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -63,16 +62,6 @@ func (h *pipecatcallHandler) SessionGet(id uuid.UUID) (*pipecatcall.Session, err
 	return res, nil
 }
 
-func (h *pipecatcallHandler) SessionsetRunnerInfo(
-	ps *pipecatcall.Session,
-	listener net.Listener,
-	server *http.Server,
-) {
-	ps.RunnerListener = listener
-	ps.RunnerPort = listener.Addr().(*net.TCPAddr).Port
-	ps.RunnerServer = server
-}
-
 func (h *pipecatcallHandler) SessionsetRunnerWebsocket(pc *pipecatcall.Session, ws *websocket.Conn) {
 	pc.RunnerWebsocket = ws
 }
@@ -106,22 +95,6 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 			log.Errorf("Could not close the pipecat runner websocket. err: %v", errClose)
 		} else {
 			log.Infof("Closed the pipecat runner websocket.")
-		}
-	}
-
-	if pc.RunnerServer != nil {
-		if errClose := pc.RunnerServer.Close(); errClose != nil {
-			log.Errorf("Could not close the pipecat runner server. err: %v", errClose)
-		} else {
-			log.Infof("Closed the pipecat runner server.")
-		}
-	}
-
-	if pc.RunnerListener != nil {
-		if errClose := pc.RunnerListener.Close(); errClose != nil {
-			log.Errorf("Could not close the pipecat runner listener. err: %v", errClose)
-		} else {
-			log.Infof("Closed the pipecat runner listener.")
 		}
 	}
 
