@@ -205,6 +205,7 @@ func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) {
 	pc, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get pipecatcall: %v", err)
+		return
 	}
 	log.WithField("pipecatcall", pc).Debugf("Pipecatcall retrieved. pipecatcall_id: %s", id)
 
@@ -218,6 +219,7 @@ func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) {
 	se, err := h.SessionGet(id)
 	if err != nil {
 		log.Errorf("Could not get pipecatcall session: %v", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	log.WithField("session", se).Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)

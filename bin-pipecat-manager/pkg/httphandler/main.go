@@ -52,8 +52,8 @@ func (h *httpHandler) Run() error {
 
 	listener, err := net.Listen("tcp", defaultListenAddress)
 	if err != nil {
-		log.Errorf("Failed to listen on ephemeral port: %v", err)
-		return errors.Wrapf(err, "failed to listen on ephemeral port")
+		log.Errorf("Failed to listen on %s: %v", defaultListenAddress, err)
+		return errors.Wrapf(err, "failed to listen on %s", defaultListenAddress)
 	}
 
 	go func() {

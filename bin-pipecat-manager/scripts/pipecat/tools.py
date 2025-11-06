@@ -1,5 +1,4 @@
 import common
-import json
 import requests
 from loguru import logger
 from pipecat.services.llm_service import FunctionCallParams
@@ -163,15 +162,28 @@ async def tool_connect(params: FunctionCallParams, task, pipecatcall_id):
         },
     }
     logger.debug(f"HTTP Request URL: {http_url}, Params: {http_params}")
-    
-    response = requests.get(http_url, json=http_params)
-    print("상태 코드:", response.status_code)
-    print("응답 본문:", response.text)
-    
-    await params.result_callback({
-        "status": "connected",
-        "destinations": dsts
-    })
+
+    try:
+        response = requests.post(http_url, json=http_params)
+        if response.status_code != 200:
+            logger.error(f"HTTP request failed with status code {response.status_code}: {response.text}")
+            await params.result_callback({
+                "status": "error",
+                "error": f"HTTP request failed with status code {response.status_code}"
+            })
+            return
+        await params.result_callback({
+            "status": "ok",
+            "data": response.text,
+        })
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"HTTP request exception: {e}")
+        await params.result_callback({
+            "status": "error",
+            "error": str(e)
+        })
+        return
 
 
 async def tool_message_send(params: FunctionCallParams, task, pipecatcall_id):
@@ -200,12 +212,25 @@ async def tool_message_send(params: FunctionCallParams, task, pipecatcall_id):
             }, 
         },
     }
-    response = requests.post(http_url, json=http_params)
 
-    print("상태 코드:", response.status_code)
-    print("응답 본문:", response.text)
+    try:
+        response = requests.post(http_url, json=http_params)
+        if response.status_code != 200:
+            logger.error(f"HTTP request failed with status code {response.status_code}: {response.text}")
+            await params.result_callback({
+                "status": "error",
+                "error": f"HTTP request failed with status code {response.status_code}"
+            })
+            return
+        await params.result_callback({
+            "status": "ok",
+            "data": response.text,
+        })
 
-    await params.result_callback({
-        "status": "sent",
-        "text": text
-    })
+    except requests.exceptions.RequestException as e:
+        logger.error(f"HTTP request exception: {e}")
+        await params.result_callback({
+            "status": "error",
+            "error": str(e)
+        })
+        return
