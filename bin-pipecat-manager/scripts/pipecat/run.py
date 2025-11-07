@@ -126,7 +126,7 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
 
     @transport_output.event_handler("on_disconnected")
     async def on_output_disconnected(transport_output, error):
-        logger.info(f"Pipecat ouput websocket disconnected from Go server. Error: {error}")
+        logger.info(f"Pipecat output websocket disconnected from Go server. Error: {error}")
         await task.cancel()
 
     @transport_output.event_handler("on_error")

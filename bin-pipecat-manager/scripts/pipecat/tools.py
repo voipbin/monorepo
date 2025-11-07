@@ -206,6 +206,7 @@ async def tool_message_send(params: FunctionCallParams, pipecatcall_id):
             }, 
         },
     }
+    logger.debug(f"HTTP Request URL: {http_url}, Params: {http_params}")
 
     try:
         response = requests.post(http_url, json=http_params)
