@@ -16,6 +16,9 @@ type WebhookMessage struct {
 	Content   string    `json:"content"`
 	Direction Direction `json:"direction"`
 
+	ToolCalls  []ToolCall `json:"tool_calls,omitempty"`
+	ToolCallID string     `json:"tool_call_id,omitempty"`
+
 	TMCreate string `json:"tm_create,omitempty"`
 }
 
@@ -28,7 +31,11 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 		Role:      h.Role,
 		Content:   h.Content,
 		Direction: h.Direction,
-		TMCreate:  h.TMCreate,
+
+		ToolCalls:  h.ToolCalls,
+		ToolCallID: h.ToolCallID,
+
+		TMCreate: h.TMCreate,
 	}
 }
 

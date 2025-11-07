@@ -223,8 +223,13 @@ func (h *aicallHandler) getPipecatcallMessages(ctx context.Context, c *aicall.AI
 				"role":    string(m.Role),
 				"content": string(m.Content),
 			}
+
 			if len(m.ToolCalls) > 0 {
 				tmp["tool_calls"] = m.ToolCalls
+			}
+
+			if len(m.ToolCallID) > 0 {
+				tmp["tool_call_id"] = m.ToolCallID
 			}
 
 			res = append(res, tmp)
