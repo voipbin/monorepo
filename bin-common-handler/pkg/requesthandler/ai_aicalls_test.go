@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	ammessage "monorepo/bin-ai-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -361,31 +362,64 @@ func Test_AIV1AIcallTerminate(t *testing.T) {
 	}
 }
 
-func Test_AIV1AIcallSendAll(t *testing.T) {
+func Test_AIV1AIcallToolExecute(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		aicallID uuid.UUID
+		toolID   string
+		toolType ammessage.ToolType
+		function *ammessage.FunctionCall
 
 		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
+		expectRes     map[string]any
 	}{
 		{
 			name: "normal",
 
-			aicallID: uuid.FromStringOrNil("23754b40-958b-11f0-9d00-0b3acce8ba68"),
+			aicallID: uuid.FromStringOrNil("780281fa-bbec-11f0-a56b-fb82bf5a05ef"),
+			toolID:   "77d4c710-bbec-11f0-826e-2f6827c0d353",
+			toolType: ammessage.ToolTypeFunction,
+			function: &ammessage.FunctionCall{
+				Name: ammessage.FunctionCallNameConnect,
+				Arguments: map[string]any{
+					"source": map[string]any{
+						"type":   "tel",
+						"target": "+123456789",
+					},
+					"destinations": []any{
+						map[string]any{
+							"type":   "tel",
+							"target": "+111111",
+						},
+						map[string]any{
+							"type":   "tel",
+							"target": "+22222",
+						},
+					},
+				},
+			},
 
 			response: &sock.Response{
 				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"result":"success", "message": ""}`),
 			},
 
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:    "/v1/aicalls/23754b40-958b-11f0-9d00-0b3acce8ba68/send_all",
-				Method: sock.RequestMethodPost,
+				URI:      "/v1/aicalls/780281fa-bbec-11f0-a56b-fb82bf5a05ef/tool_execute",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"77d4c710-bbec-11f0-826e-2f6827c0d353","type":"function","function":{"name":"connect","arguments":{"destinations":[{"target":"+111111","type":"tel"},{"target":"+22222","type":"tel"}],"source":{"target":"+123456789","type":"tel"}}}}`),
+			},
+			expectRes: map[string]any{
+				"result":  "success",
+				"message": "",
 			},
 		},
 	}
@@ -403,8 +437,13 @@ func Test_AIV1AIcallSendAll(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if errSend := reqHandler.AIV1AIcallSendAll(ctx, tt.aicallID); errSend != nil {
-				t.Errorf("Wrong match. expect ok, got: %v", errSend)
+			res, err := reqHandler.AIV1AIcallToolExecute(ctx, tt.aicallID, tt.toolID, tt.toolType, tt.function)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

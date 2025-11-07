@@ -26,7 +26,7 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
-	cbmessage "monorepo/bin-ai-manager/models/message"
+	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	chatchat "monorepo/bin-chat-manager/models/chat"
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
@@ -197,21 +197,27 @@ type RequestHandler interface {
 	AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallTerminate(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
-	AIV1AIcallSendAll(ctx context.Context, aicallID uuid.UUID) error
+	AIV1AIcallToolExecute(
+		ctx context.Context,
+		aicallID uuid.UUID,
+		toolID string,
+		toolType ammessage.ToolType,
+		function *ammessage.FunctionCall,
+	) (map[string]any, error)
 
 	// ai-manager message
-	AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbmessage.Message, error)
+	AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]ammessage.Message, error)
 	AIV1MessageSend(
 		ctx context.Context,
 		aicallID uuid.UUID,
-		role cbmessage.Role,
+		role ammessage.Role,
 		content string,
 		runImmediately bool,
 		audioResponse bool,
 		timeout int,
-	) (*cbmessage.Message, error)
-	AIV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
-	AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error)
+	) (*ammessage.Message, error)
+	AIV1MessageGet(ctx context.Context, messageID uuid.UUID) (*ammessage.Message, error)
+	AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*ammessage.Message, error)
 
 	// ai-manager service
 	AIV1ServiceTypeAIcallStart(

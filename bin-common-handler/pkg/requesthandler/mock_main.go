@@ -229,20 +229,6 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGets(ctx, pageToken, pageSiz
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallGets", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallGets), ctx, pageToken, pageSize, filters)
 }
 
-// AIV1AIcallSendAll mocks base method.
-func (m *MockRequestHandler) AIV1AIcallSendAll(ctx context.Context, aicallID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIcallSendAll", ctx, aicallID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AIV1AIcallSendAll indicates an expected call of AIV1AIcallSendAll.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIcallSendAll(ctx, aicallID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallSendAll", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallSendAll), ctx, aicallID)
-}
-
 // AIV1AIcallStart mocks base method.
 func (m *MockRequestHandler) AIV1AIcallStart(ctx context.Context, activeflowID, aiID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -271,6 +257,21 @@ func (m *MockRequestHandler) AIV1AIcallTerminate(ctx context.Context, aicallID u
 func (mr *MockRequestHandlerMockRecorder) AIV1AIcallTerminate(ctx, aicallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallTerminate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallTerminate), ctx, aicallID)
+}
+
+// AIV1AIcallToolExecute mocks base method.
+func (m *MockRequestHandler) AIV1AIcallToolExecute(ctx context.Context, aicallID uuid.UUID, toolID string, toolType message.ToolType, function *message.FunctionCall) (map[string]any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIcallToolExecute", ctx, aicallID, toolID, toolType, function)
+	ret0, _ := ret[0].(map[string]any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIcallToolExecute indicates an expected call of AIV1AIcallToolExecute.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallToolExecute(ctx, aicallID, toolID, toolType, function any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallToolExecute", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallToolExecute), ctx, aicallID, toolID, toolType, function)
 }
 
 // AIV1MessageDelete mocks base method.
