@@ -50,8 +50,6 @@ func (h *pipecatcallHandler) Start(
 	}
 	log.WithField("pipecatcall", res).Info("Created pipecatcall. pipecatcall_id: ", res.ID)
 
-	log.WithField("llm_messages", res.LLMMessages).Info("Pipecatcall LLM messages.")
-
 	// start based on reference type
 	switch referenceType {
 	case pipecatcall.ReferenceTypeCall:
