@@ -194,6 +194,8 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 			log.Debugf("Received unknown message type %d", msgType)
 		}
 	}
+
+	<-se.Ctx.Done()
 }
 
 func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) {

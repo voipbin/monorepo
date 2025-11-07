@@ -87,6 +87,7 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 		"func":           "SessionStop",
 		"pipecatcall_id": id,
 	})
+	log.Debugf("Stopping pipecatcall session. pipecatcall_id: %s", id)
 
 	pc, err := h.SessionGet(id)
 	if err != nil {
@@ -96,9 +97,17 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 
 	if pc.RunnerWebsocketWrite != nil {
 		if errClose := pc.RunnerWebsocketWrite.Close(); errClose != nil {
-			log.Errorf("Could not close the pipecat runner websocket. err: %v", errClose)
+			log.Errorf("Could not close the pipecat runner write websocket. err: %v", errClose)
 		} else {
-			log.Infof("Closed the pipecat runner websocket.")
+			log.Infof("Closed the pipecat runner write websocket.")
+		}
+	}
+
+	if pc.RunnerWebsocketRead != nil {
+		if errClose := pc.RunnerWebsocketRead.Close(); errClose != nil {
+			log.Errorf("Could not close the pipecat runner read websocket. err: %v", errClose)
+		} else {
+			log.Infof("Closed the pipecat runner read websocket.")
 		}
 	}
 
@@ -111,4 +120,5 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 	}
 
 	h.sessionDelete(pc.ID)
+	log.Debugf("Stopped pipecatcall session. pipecatcall_id: %s", id)
 }

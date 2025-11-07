@@ -192,6 +192,7 @@ func (h *pipecatcallHandler) stop(ctx context.Context, pc *pipecatcall.Pipecatca
 
 	default:
 		// no action needed for other reference types
+		log.Debugf("No action needed to stop for reference type: %v", pc.ReferenceType)
 	}
 
 	h.SessionStop(pc.ID)
