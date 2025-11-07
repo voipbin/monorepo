@@ -6,6 +6,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-pipecat-manager/pkg/cachehandler"
 	"monorepo/bin-pipecat-manager/pkg/dbhandler"
+	"monorepo/bin-pipecat-manager/pkg/httphandler"
 	"monorepo/bin-pipecat-manager/pkg/listenhandler"
 	"monorepo/bin-pipecat-manager/pkg/pipecatcallhandler"
 
@@ -82,6 +83,7 @@ func run() error {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName)
 
 	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, dbHandler, listenAddress, listenIP)
+	httpHandler := httphandler.NewHttpHandler(requestHandler, pipecatcallHandler)
 
 	// run listen
 	if errListen := runListen(sockHandler, listenIP, pipecatcallHandler); errListen != nil {
@@ -93,6 +95,12 @@ func run() error {
 	if errStreaming := runStreaming(pipecatcallHandler); errStreaming != nil {
 		log.Errorf("Could not start runStreaming. err: %v", errStreaming)
 		return errors.Wrapf(errStreaming, "could not start runStreaming")
+	}
+
+	// run http
+	if errHttp := runHttp(httpHandler); errHttp != nil {
+		log.Errorf("Could not start runHttp. err: %v", errHttp)
+		return errors.Wrapf(errHttp, "could not start runHttp")
 	}
 
 	return nil
@@ -123,6 +131,16 @@ func runStreaming(pipecatcallHandler pipecatcallhandler.PipecatcallHandler) erro
 	go func() {
 		if errRun := pipecatcallHandler.Run(); errRun != nil {
 			log.Errorf("Could not run the streaming handler correctly. err: %v", errRun)
+		}
+	}()
+
+	return nil
+}
+
+func runHttp(httpHandler httphandler.HttpHandler) error {
+	go func() {
+		if errRun := httpHandler.Run(); errRun != nil {
+			logrus.Errorf("Could not run the http handler correctly. err: %v", errRun)
 		}
 	}()
 

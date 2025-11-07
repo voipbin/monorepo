@@ -1,6 +1,7 @@
 import asyncio
 import os
 import json
+import common
 
 from loguru import logger
 
@@ -33,17 +34,20 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
-    logger.info(f"Connecting Pipecat client to Go WebSocket server at: {ws_server_url}. id: {id}")
+# tool
+from tools import tool_register, tools
+
+async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
+    logger.info(f"Connecting Pipecat client to Go WebSocket server. id: {id}")
 
     if messages is None:
         messages = []
-
     pipeline_stages = []
-    
-    # ws transport
-    ws_transport = WebsocketClientTransport(
-        uri=ws_server_url,
+
+    # transport input
+    uri_input = common.PIPECATCALL_WS_URL + f"/{id}/ws?direction=input"
+    transport_input = WebsocketClientTransport(
+        uri=uri_input,
         params=WebsocketClientParams(
             serializer=ProtobufFrameSerializer(),
             audio_in_enabled=True,
@@ -53,8 +57,9 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
             session_timeout=60 * 3,
         )
     )    
-    pipeline_stages.append(ws_transport.input())
-    
+    logger.info(f"Establishing WebSocket connection to URI: {uri_input}")
+    pipeline_stages.append(transport_input.input())
+
     # rtvi
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
     pipeline_stages.append(rtvi)
@@ -65,9 +70,8 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         pipeline_stages.append(stt_service)
 
     # Create LLM service
-    llm_service = create_llm_server(llm)
-    context_aggregator = create_context_aggregator(llm_service, messages)
-    pipeline_stages.append(context_aggregator.user())
+    llm_service, llm_context_aggregator = create_llm_service(llm, messages)
+    pipeline_stages.append(llm_context_aggregator.user())
     pipeline_stages.append(llm_service)
 
     # Create TTS service
@@ -76,9 +80,24 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         pipeline_stages.append(tts_service)
 
     # Add context aggregator assistant stage
-    pipeline_stages.append(context_aggregator.assistant())
-    pipeline_stages.append(ws_transport.output())
-
+    pipeline_stages.append(llm_context_aggregator.assistant())
+    
+    # transport output
+    uri_output = common.PIPECATCALL_WS_URL + f"/{id}/ws?direction=output"
+    transport_output = WebsocketClientTransport(
+        uri=uri_output,
+        params=WebsocketClientParams(
+            serializer=ProtobufFrameSerializer(),
+            audio_in_enabled=True,
+            audio_out_enabled=True,
+            add_wav_header=False,
+            vad_analyzer=SileroVADAnalyzer(),
+            session_timeout=60 * 3,
+        )
+    )    
+    pipeline_stages.append(transport_output.output())
+    logger.info(f"Establishing WebSocket connection to URI: {uri_output}")
+ 
     # Build the pipeline
     pipeline = Pipeline(pipeline_stages)
 
@@ -91,16 +110,30 @@ async def run_pipeline(id: str, ws_server_url: str, llm: str, tts: str, stt: str
         ),
         observers=[RTVIObserver(rtvi)],
     )
+    
+    # Register tool functions
+    tool_register(llm_service, id)
 
-    @ws_transport.event_handler("on_disconnected")
-    async def on_client_disconnected(transport, error):
-        logger.info(f"Pipecat Client disconnected from Go server. Error: {error}")
+    @transport_input.event_handler("on_disconnected")
+    async def on_input_disconnected(transport_input, error):
+        logger.info(f"Pipecat input websocket disconnected from Go server. Error: {error}")
         await task.cancel()
 
-    @ws_transport.event_handler("on_error")
-    async def on_error(transport, error):
-        logger.error(f"Pipecat Client WebSocket error: {error}")
+    @transport_input.event_handler("on_error")
+    async def on_input_error(transport_input, error):
+        logger.error(f"Pipecat input websocket error: {error}")
         await task.cancel()
+
+    @transport_output.event_handler("on_disconnected")
+    async def on_output_disconnected(transport_output, error):
+        logger.info(f"Pipecat output websocket disconnected from Go server. Error: {error}")
+        await task.cancel()
+
+    @transport_output.event_handler("on_error")
+    async def on_output_error(transport_output, error):
+        logger.error(f"Pipecat output websocket error: {error}")
+        await task.cancel()
+
 
     runner = PipelineRunner()
 
@@ -150,32 +183,15 @@ def create_stt_service(name: str, **options):
         raise ValueError(f"Unsupported STT service: {name}")
 
 
-def create_llm_server(name: str, **options):
-    """
-    Factory function to create a Pipecat LLM service instance
-    based on the argument in 'service.model' format.
-    """
+def create_llm_service(name: str, messages, **options):
+    
+    # validate name
     if "." not in name:
         raise ValueError(f"Wrong LLM: {name}. LLM argument must be in 'service.model' format, e.g., 'openai.gpt-4o-mini'")
-
     service_name, model_name = name.split(".", 1)
     service_name = service_name.lower()
 
-    if service_name == "openai":
-        llm = OpenAILLMService(
-            api_key=options.get("api_key", os.getenv("OPENAI_API_KEY")),
-            model=model_name
-        )
-        llm.context_class = OpenAILLMContext
-    else:
-        raise ValueError(f"Unsupported LLM service: {service_name}")
-    
-    return llm
-
-
-def create_context_aggregator(llm, messages):
-    logger.info(f"Executing create_context_aggregator. LLM: {llm}, Initial Messages Count: {len(messages)}")
-
+    # validate messages
     valid_messages = []
     for msg in messages:
         if "role" not in msg or "content" not in msg or msg["role"] is None or msg["content"] is None:
@@ -183,9 +199,23 @@ def create_context_aggregator(llm, messages):
             continue
         valid_messages.append(msg)
     logger.info(f"Valid Messages Count: {len(valid_messages)}")
-    logger.info(f"Initial Messages (first 2): {valid_messages[:2]}")
 
-    context = llm.context_class(valid_messages)
-    context_aggregator = llm.create_context_aggregator(context)
-    
-    return context_aggregator
+    res_llm = None
+    res_context_aggregator = None
+    if service_name == "openai":
+        logger.info(f"Creating OpenAI LLM Service with model: {model_name}")
+        res_llm = OpenAILLMService(
+            api_key=options.get("api_key", os.getenv("OPENAI_API_KEY")),
+            model=model_name
+        )
+        
+        context = OpenAILLMContext(
+            messages = valid_messages,
+            tools = tools,
+        )
+        res_context_aggregator = res_llm.create_context_aggregator(context)
+                
+    else:
+        raise ValueError(f"Unsupported LLM service: {service_name}")
+
+    return res_llm, res_context_aggregator

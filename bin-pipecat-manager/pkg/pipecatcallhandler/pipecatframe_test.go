@@ -97,6 +97,7 @@ func Test_SendAudio(t *testing.T) {
 		name string
 
 		se        *pipecatcall.Session
+		ws        *websocket.Conn
 		packetID  uint64
 		audioData []byte
 
@@ -107,9 +108,9 @@ func Test_SendAudio(t *testing.T) {
 
 			se: &pipecatcall.Session{
 				Ctx:                 context.Background(),
-				RunnerWebsocket:     &websocket.Conn{},
 				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
 			},
+			ws:        &websocket.Conn{},
 			packetID:  1,
 			audioData: []byte{0x01, 0x02, 0x03, 0x04},
 			expectRes: &pipecatframe.Frame{
@@ -128,9 +129,9 @@ func Test_SendAudio(t *testing.T) {
 
 			se: &pipecatcall.Session{
 				Ctx:                 context.Background(),
-				RunnerWebsocket:     &websocket.Conn{},
 				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
 			},
+			ws:        &websocket.Conn{},
 			packetID:  2,
 			audioData: []byte{},
 			expectRes: &pipecatframe.Frame{
@@ -174,6 +175,7 @@ func Test_SendRTVIText(t *testing.T) {
 	tests := []struct {
 		name           string
 		se             *pipecatcall.Session
+		ws             *websocket.Conn
 		id             string
 		text           string
 		runImmediately bool
@@ -184,9 +186,9 @@ func Test_SendRTVIText(t *testing.T) {
 			name: "simple RTVI text frame",
 			se: &pipecatcall.Session{
 				Ctx:                 context.Background(),
-				RunnerWebsocket:     &websocket.Conn{},
 				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
 			},
+			ws:             &websocket.Conn{},
 			id:             "123",
 			text:           "Hello World",
 			runImmediately: true,

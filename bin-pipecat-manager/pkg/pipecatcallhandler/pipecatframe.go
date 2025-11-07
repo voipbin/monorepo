@@ -15,7 +15,7 @@ import (
 )
 
 type PipecatframeHandler interface {
-	RunSender(se *pipecatcall.Session)
+	RunSender(se *pipecatcall.Session, ws *websocket.Conn)
 
 	SendAudio(se *pipecatcall.Session, packetID uint64, data []byte) error
 	SendRTVIText(se *pipecatcall.Session, id string, text string, runImmediately bool, audioResponse bool) error
@@ -31,7 +31,7 @@ func NewPipecatframeHandler() *pipecatframeHandler {
 	}
 }
 
-func (h *pipecatframeHandler) RunSender(se *pipecatcall.Session) {
+func (h *pipecatframeHandler) RunSender(se *pipecatcall.Session, ws *websocket.Conn) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "RunSender",
 		"pipecatcall_id": se.ID,
@@ -54,7 +54,7 @@ func (h *pipecatframeHandler) RunSender(se *pipecatcall.Session) {
 				continue
 			}
 
-			if errSend := h.sendFrame(se.RunnerWebsocket, frame); errSend != nil {
+			if errSend := h.sendFrame(ws, frame); errSend != nil {
 				log.Errorf("Could not send the frame. Stopping sender runner. err: %v", errSend)
 				return
 			}

@@ -22,36 +22,49 @@ type pythonRunner struct {
 }
 
 type PythonRunner interface {
-	Start(ctx context.Context, pipecatcallID uuid.UUID, uri string, llm string, stt string, tts string, voiceID string, messages []map[string]any) error
+	Start(
+		ctx context.Context,
+		pipecatcallID uuid.UUID,
+		llm string,
+		stt string,
+		tts string,
+		voiceID string,
+		messages []map[string]any,
+	) error
 }
 
 func NewPythonRunner() PythonRunner {
 	return &pythonRunner{}
 }
 
-func (h *pythonRunner) Start(ctx context.Context, pipecatcallID uuid.UUID, uri string, llm string, stt string, tts string, voiceID string, messages []map[string]any) error {
+func (h *pythonRunner) Start(
+	ctx context.Context,
+	pipecatcallID uuid.UUID,
+	llm string,
+	stt string,
+	tts string,
+	voiceID string,
+	messages []map[string]any,
+) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Start",
 	})
 
-	type PipelineRequest struct {
-		ID          uuid.UUID        `json:"id,omitempty"`
-		WsServerURL string           `json:"ws_server_url,omitempty"`
-		LLM         string           `json:"llm,omitempty"`
-		TTS         string           `json:"tts,omitempty"`
-		STT         string           `json:"stt,omitempty"`
-		VoiceID     string           `json:"voice_id,omitempty"`
-		Messages    []map[string]any `json:"messages,omitempty"`
-	}
-
-	reqBody := PipelineRequest{
-		ID:          pipecatcallID,
-		WsServerURL: uri,
-		LLM:         llm,
-		STT:         stt,
-		TTS:         tts,
-		VoiceID:     voiceID,
-		Messages:    messages,
+	// // only used to send data to the python runner
+	reqBody := struct {
+		ID       uuid.UUID        `json:"id,omitempty"`
+		LLM      string           `json:"llm,omitempty"`
+		TTS      string           `json:"tts,omitempty"`
+		STT      string           `json:"stt,omitempty"`
+		VoiceID  string           `json:"voice_id,omitempty"`
+		Messages []map[string]any `json:"messages,omitempty"`
+	}{
+		ID:       pipecatcallID,
+		LLM:      llm,
+		STT:      stt,
+		TTS:      tts,
+		VoiceID:  voiceID,
+		Messages: messages,
 	}
 
 	jsonData, err := json.Marshal(reqBody)
@@ -80,8 +93,9 @@ func (h *pythonRunner) Start(ctx context.Context, pipecatcallID uuid.UUID, uri s
 		return errors.Wrapf(err, "could not read response body from python runner")
 	}
 
-	log.Debugf("Response status: %s", resp.Status)
-	log.Debugf("Response body: %v", body)
+	if resp.StatusCode != http.StatusOK {
+		return errors.Errorf("python runner returned non-200 status: %s, body: %s", resp.Status, string(body))
+	}
 
 	return nil
 }

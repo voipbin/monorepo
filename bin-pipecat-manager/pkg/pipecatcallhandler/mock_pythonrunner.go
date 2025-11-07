@@ -42,15 +42,15 @@ func (m *MockPythonRunner) EXPECT() *MockPythonRunnerMockRecorder {
 }
 
 // Start mocks base method.
-func (m *MockPythonRunner) Start(ctx context.Context, pipecatcallID uuid.UUID, uri, llm, stt, tts, voiceID string, messages []map[string]any) error {
+func (m *MockPythonRunner) Start(ctx context.Context, pipecatcallID uuid.UUID, llm, stt, tts, voiceID string, messages []map[string]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, pipecatcallID, uri, llm, stt, tts, voiceID, messages)
+	ret := m.ctrl.Call(m, "Start", ctx, pipecatcallID, llm, stt, tts, voiceID, messages)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockPythonRunnerMockRecorder) Start(ctx, pipecatcallID, uri, llm, stt, tts, voiceID, messages any) *gomock.Call {
+func (mr *MockPythonRunnerMockRecorder) Start(ctx, pipecatcallID, llm, stt, tts, voiceID, messages any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPythonRunner)(nil).Start), ctx, pipecatcallID, uri, llm, stt, tts, voiceID, messages)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPythonRunner)(nil).Start), ctx, pipecatcallID, llm, stt, tts, voiceID, messages)
 }
