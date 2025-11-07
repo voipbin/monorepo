@@ -126,106 +126,151 @@ The source and destination types must be "tel".
 ]
 
 
+# def tool_register(llm_service, pipecatcall_id):
+#     async def connect_wrapper(params: FunctionCallParams):
+#         return await tool_connect(params, pipecatcall_id)
+#     llm_service.register_function("connect", connect_wrapper)
+
+#     async def message_send_wrapper(params: FunctionCallParams):
+#         return await tool_message_send(params, pipecatcall_id)
+#     llm_service.register_function("message_send", message_send_wrapper)
+
+
+# # connect to someone
+# async def tool_connect(params: FunctionCallParams, pipecatcall_id):
+#     """
+#     Establishes a call from a source endpoint to one or more destination endpoints.
+#     """
+#     logger.info(f"Checking params: {params}")
+
+#     src = params.arguments.get("source")
+#     dsts = params.arguments.get("destinations", [])
+    
+#     # send request
+#     http_url = common.PIPECATCALL_HTTP_URL + f"/{pipecatcall_id}/tools"
+#     http_params = {
+#         "id": params.tool_call_id,
+#         "type": "function",
+#         "function": {
+#             "name": "connect",
+#             "arguments": {
+#                 params.arguments,
+#             }, 
+#         },
+#     }
+#     logger.debug(f"HTTP Request URL: {http_url}, Params: {http_params}")
+
+#     try:
+#         response = requests.post(http_url, json=http_params)
+#         if response.status_code != 200:
+#             logger.error(f"HTTP request failed with status code {response.status_code}: {response.text}")
+#             await params.result_callback({
+#                 "status": "error",
+#                 "error": f"HTTP request failed with status code {response.status_code}"
+#             })
+#             return
+#         await params.result_callback({
+#             "status": "ok",
+#             "data": response.text,
+#         })
+
+#     except requests.exceptions.RequestException as e:
+#         logger.error(f"HTTP request exception: {e}")
+#         await params.result_callback({
+#             "status": "error",
+#             "error": str(e)
+#         })
+#         return
+
+
+# async def tool_message_send(params: FunctionCallParams, pipecatcall_id):
+#     """
+#     Sends an SMS text message from a source telephone number to one or more destination numbers.
+#     """
+#     logger.info(f"Checking params: {params}")
+
+#     src = params.arguments.get("source")
+#     dsts = params.arguments.get("destinations", [])
+#     text = params.arguments.get("text")
+
+#     # send request
+#     http_url = common.PIPECATCALL_HTTP_URL + f"/{pipecatcall_id}/tools"
+#     http_params = {
+#         "id": params.tool_call_id,
+#         "type": "function",
+#         "function": {
+#             "name": "message_send",
+#             "arguments": {
+#                 params.arguments,
+#             }, 
+#         },
+#     }
+#     logger.debug(f"HTTP Request URL: {http_url}, Params: {http_params}")
+
+#     try:
+#         response = requests.post(http_url, json=http_params)
+#         if response.status_code != 200:
+#             logger.error(f"HTTP request failed with status code {response.status_code}: {response.text}")
+#             await params.result_callback({
+#                 "status": "error",
+#                 "error": f"HTTP request failed with status code {response.status_code}"
+#             })
+#             return
+#         await params.result_callback({
+#             "status": "ok",
+#             "data": response.text,
+#         })
+
+#     except requests.exceptions.RequestException as e:
+#         logger.error(f"HTTP request exception: {e}")
+#         await params.result_callback({
+#             "status": "error",
+#             "error": str(e)
+#         })
+#         return
+
+
 def tool_register(llm_service, pipecatcall_id):
+    """Registers available tools for the LLM service."""
     async def connect_wrapper(params: FunctionCallParams):
-        return await tool_connect(params, pipecatcall_id)
-    llm_service.register_function("connect", connect_wrapper)
+        return await tool_execute("connect", params, pipecatcall_id)
 
     async def message_send_wrapper(params: FunctionCallParams):
-        return await tool_message_send(params, pipecatcall_id)
+        return await tool_execute("message_send", params, pipecatcall_id)
+
+    llm_service.register_function("connect", connect_wrapper)
     llm_service.register_function("message_send", message_send_wrapper)
 
 
-# connect to someone
-async def tool_connect(params: FunctionCallParams, pipecatcall_id):
-    """
-    Establishes a call from a source endpoint to one or more destination endpoints.
-    """
-    logger.info(f"Checking params: {params}")
+async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_id: str):
+    """Generic executor for tool calls (connect, message_send, etc)."""
+    logger.info(f"[{tool_name}] Executing with params: {params}")
 
-    src = params.arguments.get("source")
-    dsts = params.arguments.get("destinations", [])
-    
-    # send request
-    http_url = common.PIPECATCALL_HTTP_URL + f"/{pipecatcall_id}/tools"
-    http_params = {
+    http_url = f"{common.PIPECATCALL_HTTP_URL}/{pipecatcall_id}/tools"
+    http_body = {
+        "id": params.tool_call_id,
         "type": "function",
         "function": {
-            "name": "connect",
-            "arguments": {
-                "source": src,
-                "destinations": dsts
-            }, 
+            "name": tool_name,
+            "arguments": params.arguments,  # fixed: previously wrapped incorrectly
         },
     }
-    logger.debug(f"HTTP Request URL: {http_url}, Params: {http_params}")
+
+    logger.debug(f"[{tool_name}] POST {http_url} with body: {http_body}")
 
     try:
-        response = requests.post(http_url, json=http_params)
-        if response.status_code != 200:
-            logger.error(f"HTTP request failed with status code {response.status_code}: {response.text}")
-            await params.result_callback({
-                "status": "error",
-                "error": f"HTTP request failed with status code {response.status_code}"
-            })
-            return
+        response = requests.post(http_url, json=http_body, timeout=10)
+        response.raise_for_status()
+        logger.info(f"[{tool_name}] Success: {response.status_code}")
+
         await params.result_callback({
             "status": "ok",
-            "data": response.text,
+            "data": response.json() if response.headers.get("Content-Type", "").startswith("application/json") else response.text,
         })
 
     except requests.exceptions.RequestException as e:
-        logger.error(f"HTTP request exception: {e}")
+        logger.error(f"[{tool_name}] Request failed: {e}")
         await params.result_callback({
             "status": "error",
-            "error": str(e)
+            "error": str(e),
         })
-        return
-
-
-async def tool_message_send(params: FunctionCallParams, pipecatcall_id):
-    """
-    Sends an SMS text message from a source telephone number to one or more destination numbers.
-    """
-    logger.info(f"Checking params: {params}")
-
-    src = params.arguments.get("source")
-    dsts = params.arguments.get("destinations", [])
-    text = params.arguments.get("text")
-
-    # send request
-    http_url = common.PIPECATCALL_HTTP_URL + f"/{pipecatcall_id}/tools"
-    http_params = {
-        "type": "function",
-        "function": {
-            "name": "message_send",
-            "arguments": {
-                "source": src,
-                "destinations": dsts,
-                "text": text,
-            }, 
-        },
-    }
-    logger.debug(f"HTTP Request URL: {http_url}, Params: {http_params}")
-
-    try:
-        response = requests.post(http_url, json=http_params)
-        if response.status_code != 200:
-            logger.error(f"HTTP request failed with status code {response.status_code}: {response.text}")
-            await params.result_callback({
-                "status": "error",
-                "error": f"HTTP request failed with status code {response.status_code}"
-            })
-            return
-        await params.result_callback({
-            "status": "ok",
-            "data": response.text,
-        })
-
-    except requests.exceptions.RequestException as e:
-        logger.error(f"HTTP request exception: {e}")
-        await params.result_callback({
-            "status": "error",
-            "error": str(e)
-        })
-        return
