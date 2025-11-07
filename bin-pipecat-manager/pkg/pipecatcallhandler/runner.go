@@ -72,6 +72,7 @@ func (h *pipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context)
 
 	default:
 		log.Errorf("Invalid direction parameter: %s", direction)
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
 }
 
@@ -104,6 +105,7 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleInput(id uuid.UUID, c *gin.Con
 	go h.pipecatframeHandler.RunSender(se)
 
 	<-se.Ctx.Done()
+	log.Debugf("Pipecatcall input websocket session is done. pipecatcall_id: %s", id)
 }
 
 func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Context) {
@@ -195,7 +197,7 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 		}
 	}
 
-	<-se.Ctx.Done()
+	log.Debugf("Pipecatcall output websocket session is done. pipecatcall_id: %s", id)
 }
 
 func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) {
@@ -230,6 +232,7 @@ func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) {
 	// todo: need to implement tool handling logic here
 	// for now, just logging the request
 	// send the request to the ai-manager later.
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Session, m []byte) error {

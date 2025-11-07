@@ -104,7 +104,7 @@ The source and destination types must be "tel".
                                 },
                                 "target": {
                                     "type":        "string",
-                                    "description": "E.164 formatted phone number",
+                                    "description": "+E.164 formatted phone number",
                                 },
                                 "target_name": {
                                     "type":        "string",
