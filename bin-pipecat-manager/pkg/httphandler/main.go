@@ -68,8 +68,15 @@ func (h *httpHandler) Run() error {
 }
 
 func (h *httpHandler) wsHandle(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "wsHandle",
+	})
+
 	id := uuid.FromStringOrNil(c.Param("id"))
-	h.pipecatcallHandler.RunnerWebsocketHandle(id, c)
+	if errHandle := h.pipecatcallHandler.RunnerWebsocketHandle(id, c); errHandle != nil {
+		log.Errorf("Could not handle websocket connection. pipecatcall_id: %s, err: %v", id, errHandle)
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
 }
 
 func (h *httpHandler) toolHandle(c *gin.Context) {
@@ -80,5 +87,8 @@ func (h *httpHandler) toolHandle(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Param("id"))
 	log.WithField("id", id).Debug("Tool handle called")
 
-	h.pipecatcallHandler.RunnerToolHandle(id, c)
+	if errHandle := h.pipecatcallHandler.RunnerToolHandle(id, c); errHandle != nil {
+		log.Errorf("Could not handle tool request. pipecatcall_id: %s, err: %v", id, errHandle)
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
 }

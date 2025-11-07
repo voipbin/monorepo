@@ -74,9 +74,11 @@ func (mr *MockPipecatcallHandlerMockRecorder) Run() *gomock.Call {
 }
 
 // RunnerToolHandle mocks base method.
-func (m *MockPipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) {
+func (m *MockPipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RunnerToolHandle", id, c)
+	ret := m.ctrl.Call(m, "RunnerToolHandle", id, c)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // RunnerToolHandle indicates an expected call of RunnerToolHandle.
@@ -86,9 +88,11 @@ func (mr *MockPipecatcallHandlerMockRecorder) RunnerToolHandle(id, c any) *gomoc
 }
 
 // RunnerWebsocketHandle mocks base method.
-func (m *MockPipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context) {
+func (m *MockPipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RunnerWebsocketHandle", id, c)
+	ret := m.ctrl.Call(m, "RunnerWebsocketHandle", id, c)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // RunnerWebsocketHandle indicates an expected call of RunnerWebsocketHandle.

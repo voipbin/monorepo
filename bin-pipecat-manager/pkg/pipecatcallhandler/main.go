@@ -42,8 +42,8 @@ type PipecatcallHandler interface {
 
 	SendMessage(ctx context.Context, id uuid.UUID, messageID string, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error)
 
-	RunnerWebsocketHandle(id uuid.UUID, c *gin.Context)
-	RunnerToolHandle(id uuid.UUID, c *gin.Context)
+	RunnerWebsocketHandle(id uuid.UUID, c *gin.Context) error
+	RunnerToolHandle(id uuid.UUID, c *gin.Context) error
 }
 
 // list of default external media channel options.
