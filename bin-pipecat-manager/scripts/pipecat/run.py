@@ -112,26 +112,26 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
     )
     
     # Register tool functions
-    tool_register(llm_service, task, id)
+    tool_register(llm_service, id)
 
     @transport_input.event_handler("on_disconnected")
-    async def on_client_disconnected(transport_input, error):
-        logger.info(f"Pipecat Client disconnected from Go server. Error: {error}")
+    async def on_input_disconnected(transport_input, error):
+        logger.info(f"Pipecat input websocket disconnected from Go server. Error: {error}")
         await task.cancel()
 
     @transport_input.event_handler("on_error")
-    async def on_error(transport_input, error):
-        logger.error(f"Pipecat Client WebSocket error: {error}")
+    async def on_input_error(transport_input, error):
+        logger.error(f"Pipecat input websocket error: {error}")
         await task.cancel()
 
     @transport_output.event_handler("on_disconnected")
-    async def on_client_disconnected(transport_output, error):
-        logger.info(f"Pipecat Client disconnected from Go server. Error: {error}")
+    async def on_output_disconnected(transport_output, error):
+        logger.info(f"Pipecat ouput websocket disconnected from Go server. Error: {error}")
         await task.cancel()
 
     @transport_output.event_handler("on_error")
-    async def on_error(transport_output, error):
-        logger.error(f"Pipecat Client WebSocket error: {error}")
+    async def on_output_error(transport_output, error):
+        logger.error(f"Pipecat output websocket error: {error}")
         await task.cancel()
 
 

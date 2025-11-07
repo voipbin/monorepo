@@ -126,18 +126,18 @@ The source and destination types must be "tel".
 ]
 
 
-def tool_register(llm_service, task, pipecatcall_id):
+def tool_register(llm_service, pipecatcall_id):
     async def connect_wrapper(params: FunctionCallParams):
-        return await tool_connect(params, task, pipecatcall_id)
+        return await tool_connect(params, pipecatcall_id)
     llm_service.register_function("connect", connect_wrapper)
 
     async def message_send_wrapper(params: FunctionCallParams):
-        return await tool_message_send(params, task, pipecatcall_id)
+        return await tool_message_send(params, pipecatcall_id)
     llm_service.register_function("message_send", message_send_wrapper)
 
 
 # connect to someone
-async def tool_connect(params: FunctionCallParams, task, pipecatcall_id):
+async def tool_connect(params: FunctionCallParams, pipecatcall_id):
     """
     Establishes a call from a source endpoint to one or more destination endpoints.
     """
@@ -145,9 +145,6 @@ async def tool_connect(params: FunctionCallParams, task, pipecatcall_id):
 
     src = params.arguments.get("source")
     dsts = params.arguments.get("destinations", [])
-    
-    msg = f"Connecting {src} -> {', '.join([d['target'] for d in dsts])}"
-    logger.info(msg)
     
     # send request
     http_url = common.PIPECATCALL_HTTP_URL + f"/{pipecatcall_id}/tools"
@@ -186,7 +183,7 @@ async def tool_connect(params: FunctionCallParams, task, pipecatcall_id):
         return
 
 
-async def tool_message_send(params: FunctionCallParams, task, pipecatcall_id):
+async def tool_message_send(params: FunctionCallParams, pipecatcall_id):
     """
     Sends an SMS text message from a source telephone number to one or more destination numbers.
     """
@@ -195,9 +192,6 @@ async def tool_message_send(params: FunctionCallParams, task, pipecatcall_id):
     src = params.arguments.get("source")
     dsts = params.arguments.get("destinations", [])
     text = params.arguments.get("text")
-    
-    msg = f"SMS from {src} to {[d for d in dsts]}: {text}"
-    logger.info(msg)
 
     # send request
     http_url = common.PIPECATCALL_HTTP_URL + f"/{pipecatcall_id}/tools"

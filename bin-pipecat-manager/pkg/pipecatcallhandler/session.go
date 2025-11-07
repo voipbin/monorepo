@@ -9,7 +9,6 @@ import (
 	"net"
 
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
 
@@ -62,14 +61,6 @@ func (h *pipecatcallHandler) SessionGet(id uuid.UUID) (*pipecatcall.Session, err
 	return res, nil
 }
 
-func (h *pipecatcallHandler) SessionsetRunnerWebsocketWrite(pc *pipecatcall.Session, ws *websocket.Conn) {
-	pc.RunnerWebsocketWrite = ws
-}
-
-func (h *pipecatcallHandler) SessionsetRunnerWebsocketRead(pc *pipecatcall.Session, ws *websocket.Conn) {
-	pc.RunnerWebsocketRead = ws
-}
-
 func (h *pipecatcallHandler) SessionsetAsteriskInfo(pc *pipecatcall.Session, streamingID uuid.UUID, conn net.Conn) {
 	pc.AsteriskConn = conn
 	pc.AsteriskStreamingID = streamingID
@@ -93,22 +84,6 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 	if err != nil {
 		log.Errorf("Could not get pipecatcall session: %v", err)
 		return
-	}
-
-	if pc.RunnerWebsocketWrite != nil {
-		if errClose := pc.RunnerWebsocketWrite.Close(); errClose != nil {
-			log.Errorf("Could not close the pipecat runner write websocket. err: %v", errClose)
-		} else {
-			log.Infof("Closed the pipecat runner write websocket.")
-		}
-	}
-
-	if pc.RunnerWebsocketRead != nil {
-		if errClose := pc.RunnerWebsocketRead.Close(); errClose != nil {
-			log.Errorf("Could not close the pipecat runner read websocket. err: %v", errClose)
-		} else {
-			log.Infof("Closed the pipecat runner read websocket.")
-		}
 	}
 
 	if pc.AsteriskConn != nil {

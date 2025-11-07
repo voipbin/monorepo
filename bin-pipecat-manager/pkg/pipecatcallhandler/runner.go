@@ -92,12 +92,15 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleInput(id uuid.UUID, c *gin.Con
 	if err != nil {
 		return fmt.Errorf("could not upgrade to WebSocket: %w", err)
 	}
+	defer func() {
+		log.Debugf("Closing pipecatcall input websocket connection. pipecatcall_id: %s", id)
+		_ = ws.Close()
+	}()
 	log.Debugf("WebSocket connection established with pipecat runner for input direction. pipecatcall_id: %s", id)
 
-	h.SessionsetRunnerWebsocketWrite(se, ws)
-	go h.pipecatframeHandler.RunSender(se)
-
-	<-se.Ctx.Done()
+	// handle sending messages to websocket
+	// this will run until the session context is done
+	h.pipecatframeHandler.RunSender(se, ws)
 	log.Debugf("Pipecatcall input websocket session is done. pipecatcall_id: %s", id)
 
 	return nil
@@ -125,9 +128,12 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 		return fmt.Errorf("could not upgrade to WebSocket: %w", err)
 	}
 	log.Debugf("WebSocket connection established with pipecat runner.")
+	defer func() {
+		log.Debugf("Closing pipecatcall output websocket connection. pipecatcall_id: %s", id)
+		_ = ws.Close()
+	}()
 
 	// handle received messages from websocket
-	h.SessionsetRunnerWebsocketRead(se, ws)
 	for {
 		msgType, message, err := h.websocketHandler.ReadMessage(ws)
 		if err != nil {

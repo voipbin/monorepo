@@ -7,7 +7,6 @@ import (
 	"net"
 
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/websocket"
 )
 
 type Session struct {
@@ -19,10 +18,8 @@ type Session struct {
 	Ctx    context.Context    `json:"-"`
 	Cancel context.CancelFunc `json:"-"`
 
-	// pipecat runner
-	RunnerWebsocketWrite *websocket.Conn          `json:"-"`
-	RunnerWebsocketRead  *websocket.Conn          `json:"-"`
-	RunnerWebsocketChan  chan *pipecatframe.Frame `json:"-"`
+	// Runner info
+	RunnerWebsocketChan chan *pipecatframe.Frame `json:"-"`
 
 	// asterisk info
 	AsteriskStreamingID uuid.UUID `json:"-"`

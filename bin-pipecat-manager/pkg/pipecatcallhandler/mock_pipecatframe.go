@@ -13,6 +13,7 @@ import (
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	reflect "reflect"
 
+	websocket "github.com/gorilla/websocket"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,15 +42,15 @@ func (m *MockPipecatframeHandler) EXPECT() *MockPipecatframeHandlerMockRecorder 
 }
 
 // RunSender mocks base method.
-func (m *MockPipecatframeHandler) RunSender(se *pipecatcall.Session) {
+func (m *MockPipecatframeHandler) RunSender(se *pipecatcall.Session, ws *websocket.Conn) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RunSender", se)
+	m.ctrl.Call(m, "RunSender", se, ws)
 }
 
 // RunSender indicates an expected call of RunSender.
-func (mr *MockPipecatframeHandlerMockRecorder) RunSender(se any) *gomock.Call {
+func (mr *MockPipecatframeHandlerMockRecorder) RunSender(se, ws any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunSender", reflect.TypeOf((*MockPipecatframeHandler)(nil).RunSender), se)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunSender", reflect.TypeOf((*MockPipecatframeHandler)(nil).RunSender), se, ws)
 }
 
 // SendAudio mocks base method.
