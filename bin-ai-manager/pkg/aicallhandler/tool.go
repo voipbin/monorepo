@@ -49,9 +49,6 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		log.Debugf("unknown tool call: %s", tool.Function.Name)
 		return nil, fmt.Errorf("unknown tool call: %s", tool.Function.Name)
 	}
-
-	log.Errorf("Must not reach here.") // nolint:govet // unreachable code is intentional
-	return nil, fmt.Errorf("internal error")
 }
 
 func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) (map[string]any, error) {
