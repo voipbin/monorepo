@@ -4,6 +4,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/message"
 )
 
 // V1DataAIcallsPost is
@@ -27,4 +28,13 @@ type V1DataAIcallsPost struct {
 type V1DataAIcallsIDMessagesPost struct {
 	Role aicall.MessageRole `json:"role,omitempty"`
 	Text string             `json:"text,omitempty"`
+}
+
+// V1DataAIcallsIDToolExecutePost is
+// v1 data type request struct for
+// /v1/aicalls/<ai-id>/tool_execute POST
+type V1DataAIcallsIDToolExecutePost struct {
+	ID       string               `json:"id,omitempty"`
+	Type     message.ToolType     `json:"type,omitempty"`
+	Function message.FunctionCall `json:"function,omitempty"`
 }

@@ -13,11 +13,19 @@ const (
 )
 
 type FunctionCall struct {
-	Name      string `json:"name,omitempty"`
-	Arguments string `json:"arguments,omitempty"`
+	Name FunctionCallName `json:"name,omitempty"`
+	// Arguments string           `json:"arguments,omitempty"`
+	Arguments map[string]any `json:"arguments,omitempty"`
 }
 
 type ToolResponse struct {
 	ID      string
 	Content string
 }
+
+type FunctionCallName string
+
+const (
+	FunctionCallNameConnect     FunctionCallName = "connect"
+	FunctionCallNameMessageSend FunctionCallName = "message_send"
+)

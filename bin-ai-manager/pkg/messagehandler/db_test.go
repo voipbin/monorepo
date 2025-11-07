@@ -44,8 +44,11 @@ func Test_Create(t *testing.T) {
 					ID:   "62bfd2da-943b-11f0-9375-c711ec2159d9",
 					Type: message.ToolTypeFunction,
 					Function: message.FunctionCall{
-						Name:      "get_current_weather",
-						Arguments: `{"location":"Boston, MA","unit":"celsius"}`,
+						Name: "get_current_weather",
+						Arguments: map[string]any{
+							"location": "Boston, MA",
+							"unit":     "celsius",
+						},
 					},
 				},
 			},
@@ -68,8 +71,11 @@ func Test_Create(t *testing.T) {
 						ID:   "62bfd2da-943b-11f0-9375-c711ec2159d9",
 						Type: message.ToolTypeFunction,
 						Function: message.FunctionCall{
-							Name:      "get_current_weather",
-							Arguments: `{"location":"Boston, MA","unit":"celsius"}`,
+							Name: "get_current_weather",
+							Arguments: map[string]any{
+								"location": "Boston, MA",
+								"unit":     "celsius",
+							},
 						},
 					},
 				},

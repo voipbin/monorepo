@@ -12,6 +12,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
 )
 
@@ -82,7 +83,7 @@ func Test_processV1AIcallsGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -153,7 +154,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -212,7 +213,7 @@ func Test_processV1AIcallsIDDelete(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -271,7 +272,7 @@ func Test_processV1AIcallsIDGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -330,59 +331,82 @@ func Test_processV1AIcallsIDTerminatePost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
 }
 
-// func Test_processV1AIcallsIDSendAllPost(t *testing.T) {
+func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 
-// 	tests := []struct {
-// 		name    string
-// 		request *sock.Request
+	tests := []struct {
+		name    string
+		request *sock.Request
 
-// 		expectedID  uuid.UUID
-// 		expectedRes *sock.Response
-// 	}{
-// 		{
-// 			name: "normal",
-// 			request: &sock.Request{
-// 				URI:    "/v1/aicalls/3c77f28e-9525-11f0-8139-5b1970217821/send_all",
-// 				Method: sock.RequestMethodPost,
-// 			},
+		responseToolHandle map[string]any
 
-// 			expectedID: uuid.FromStringOrNil("3c77f28e-9525-11f0-8139-5b1970217821"),
-// 			expectedRes: &sock.Response{
-// 				StatusCode: 200,
-// 			},
-// 		},
-// 	}
+		expectedID           uuid.UUID
+		expectedToolID       string
+		expectedToolType     message.ToolType
+		expectedToolFunction message.FunctionCall
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+		expectedRes *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/aicalls/a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b/tool_execute",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"tool-1234","type":"function","function":{"name":"connect","arguments":{"source":{"target":"+1234567890"}}}}`),
+			},
 
-// 			mockSock := sockhandler.NewMockSockHandler(mc)
-// 			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
-// 			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			responseToolHandle: map[string]any{
+				"result":  "success",
+				"message": "",
+			},
 
-// 			h := &listenHandler{
-// 				sockHandler:    mockSock,
-// 				aicallHandler:  mockAIcall,
-// 				messageHandler: mockMessage,
-// 			}
+			expectedID:       uuid.FromStringOrNil("a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b"),
+			expectedToolID:   "tool-1234",
+			expectedToolType: message.ToolTypeFunction,
+			expectedToolFunction: message.FunctionCall{
+				Name: "connect",
+				Arguments: map[string]any{
+					"source": map[string]any{
+						"target": "+1234567890",
+					},
+				},
+			},
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"message":"","result":"success"}`),
+			},
+		},
+	}
 
-// 			mockMessage.EXPECT().StreamingSendAll(gomock.Any(), tt.expectedID).Return(nil)
-// 			res, err := h.processRequest(tt.request)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-// 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
-// 			}
-// 		})
-// 	}
-// }
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:   mockSock,
+				aicallHandler: mockAIcall,
+			}
+
+			mockAIcall.EXPECT().ToolHandle(gomock.Any(), tt.expectedID, tt.expectedToolID, tt.expectedToolType, tt.expectedToolFunction).Return(tt.responseToolHandle, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
