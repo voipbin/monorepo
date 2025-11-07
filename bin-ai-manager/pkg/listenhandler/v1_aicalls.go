@@ -223,7 +223,7 @@ func (h *listenHandler) processV1AIcallsIDToolExecutePost(ctx context.Context, m
 
 	tmp, err := h.aicallHandler.ToolHandle(ctx, id, req.ID, req.Type, req.Function)
 	if err != nil {
-		log.Errorf("Could not terminate aicall. err: %v", err)
+		log.Errorf("Could not execute tool. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

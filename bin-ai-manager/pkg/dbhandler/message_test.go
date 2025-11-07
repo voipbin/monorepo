@@ -43,7 +43,6 @@ func Test_MessageCreate(t *testing.T) {
 						Type: message.ToolTypeFunction,
 						Function: message.FunctionCall{
 							Name: "get_current_weather",
-							// Arguments: `{"location":"Boston, MA","unit":"celsius"}`,
 							Arguments: map[string]any{
 								"location": "Boston, MA",
 								"unit":     "celsius",
@@ -71,7 +70,6 @@ func Test_MessageCreate(t *testing.T) {
 						Type: message.ToolTypeFunction,
 						Function: message.FunctionCall{
 							Name: "get_current_weather",
-							// Arguments: `{"location":"Boston, MA","unit":"celsius"}`,
 							Arguments: map[string]any{
 								"location": "Boston, MA",
 								"unit":     "celsius",
