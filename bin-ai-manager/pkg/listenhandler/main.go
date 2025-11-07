@@ -57,11 +57,11 @@ var (
 	regV1AIsID  = regexp.MustCompile("/v1/ais/" + regUUID + "$")
 
 	// aicalls
-	regV1AIcallsGet         = regexp.MustCompile(`/v1/aicalls\?`)
-	regV1AIcalls            = regexp.MustCompile(`/v1/aicalls$`)
-	regV1AIcallsID          = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
-	regV1AIcallsIDTerminate = regexp.MustCompile("/v1/aicalls/" + regUUID + "/terminate$")
-	regV1AIcallsIDSendAll   = regexp.MustCompile("/v1/aicalls/" + regUUID + "/send_all$")
+	regV1AIcallsGet           = regexp.MustCompile(`/v1/aicalls\?`)
+	regV1AIcalls              = regexp.MustCompile(`/v1/aicalls$`)
+	regV1AIcallsID            = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
+	regV1AIcallsIDTerminate   = regexp.MustCompile("/v1/aicalls/" + regUUID + "/terminate$")
+	regV1AIcallsIDToolExecute = regexp.MustCompile("/v1/aicalls/" + regUUID + "/tool_execute$")
 
 	// messages
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
@@ -245,10 +245,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1AIcallsIDTerminatePost(ctx, m)
 		requestType = "/v1/aicalls/<aicall-id>/terminate"
 
-	// POST /aicalls/<aicall-id>/send_all
-	case regV1AIcallsIDSendAll.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1AIcallsIDSendAllPost(ctx, m)
-		requestType = "/v1/aicalls/<aicall-id>/send_all"
+	// POST /aicalls/<aicall-id>/tool_execute
+	case regV1AIcallsIDToolExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIcallsIDToolExecutePost(ctx, m)
+		requestType = "/v1/aicalls/<aicall-id>/tool_execute"
 
 	///////////////
 	// messages

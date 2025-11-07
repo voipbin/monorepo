@@ -201,10 +201,10 @@ func (h *listenHandler) processV1AIcallsIDTerminatePost(ctx context.Context, m *
 	return res, nil
 }
 
-// processV1AIcallsIDSendAllPost handles POST /v1/aicalls/<aicall-id>/send_all request
-func (h *listenHandler) processV1AIcallsIDSendAllPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+// processV1AIcallsIDToolExecutePost handles POST /v1/aicalls/<aicall-id>/tool_execute request
+func (h *listenHandler) processV1AIcallsIDToolExecutePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsIDSendAllPost",
+		"handler": "processV1AIcallsIDToolExecutePost",
 		"request": m,
 	})
 
@@ -213,15 +213,30 @@ func (h *listenHandler) processV1AIcallsIDSendAllPost(ctx context.Context, m *so
 		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
 		return simpleResponse(400), nil
 	}
-	// id := uuid.FromStringOrNil(uriItems[3])
+	id := uuid.FromStringOrNil(uriItems[3])
 
-	// if errSend := h.messageHandler.StreamingSendAll(ctx, id); errSend != nil {
-	// 	log.Errorf("Could not send the aicall message. err: %v", errSend)
-	// 	return simpleResponse(500), nil
-	// }
+	var req request.V1DataAIcallsIDToolExecutePost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.aicallHandler.ToolHandle(ctx, id, req.ID, req.Type, req.Function)
+	if err != nil {
+		log.Errorf("Could not terminate aicall. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
 
 	res := &sock.Response{
 		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

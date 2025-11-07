@@ -187,10 +187,10 @@ func (h *engineOpenaiHandler) streamingResponseHandleTool(chanTool chan *message
 	toolCall := &message.ToolCall{
 		ID:   id,
 		Type: message.ToolTypeFunction,
-		Function: message.FunctionCall{
-			Name:      name,
-			Arguments: arg.String(),
-		},
+		// Function: message.FunctionCall{
+		// 	Name:      name,
+		// 	Arguments: arg.String(),
+		// },
 	}
 	log.WithField("tool_call", toolCall).Debugf("Prepared the tool call.")
 

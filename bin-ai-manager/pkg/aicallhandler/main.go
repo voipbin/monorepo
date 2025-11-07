@@ -38,6 +38,8 @@ type AIcallHandler interface {
 	ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	ProcessTerminate(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
 
+	ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall) (map[string]any, error)
+
 	Start(
 		ctx context.Context,
 		aiID uuid.UUID,
