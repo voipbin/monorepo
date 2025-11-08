@@ -245,7 +245,7 @@ def tool_register(llm_service, pipecatcall_id):
 
 async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_id: str):
     """Generic executor for tool calls (connect, message_send, etc)."""
-    logger.info(f"[{tool_name}] Executing with params: {params.model_dump_json()}")
+    logger.info(f"[{tool_name}] Executing with params: {json.dumps(params.arguments, indent=2, ensure_ascii=False)}")
     
     http_url = f"{common.PIPECATCALL_HTTP_URL}/{pipecatcall_id}/tools"
     http_body = {
