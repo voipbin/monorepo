@@ -358,7 +358,7 @@ func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 				URI:      "/v1/aicalls/a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b/tool_execute",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"tool-1234","type":"function","function":{"name":"connect","arguments":{"source":{"target":"+1234567890"}}}}`),
+				Data:     []byte(`{"id":"tool-1234","type":"function","function":{"name":"connect","arguments":"{\"source\":{\"target\":\"+1234567890\"}}"}}`),
 			},
 
 			responseToolHandle: map[string]any{
@@ -370,12 +370,8 @@ func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 			expectedToolID:   "tool-1234",
 			expectedToolType: message.ToolTypeFunction,
 			expectedToolFunction: message.FunctionCall{
-				Name: "connect",
-				Arguments: map[string]any{
-					"source": map[string]any{
-						"target": "+1234567890",
-					},
-				},
+				Name:      "connect",
+				Arguments: `{"source":{"target":"+1234567890"}}`,
 			},
 			expectedRes: &sock.Response{
 				StatusCode: 200,

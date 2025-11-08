@@ -58,13 +58,8 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 	})
 	log.Debugf("handling tool call connect.")
 
-	argBytes, err := json.Marshal(tool.Function.Arguments)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not marshal the tool arguments")
-	}
-
 	var tmpOpt fmaction.OptionConnect
-	if errUnmarshal := json.Unmarshal([]byte(argBytes), &tmpOpt); errUnmarshal != nil {
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
 		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
 	}
 
@@ -107,13 +102,8 @@ func (h *aicallHandler) toolHandleMessageSend(ctx context.Context, c *aicall.AIc
 		"aicall_id": c.ID,
 	})
 
-	argBytes, err := json.Marshal(tool.Function.Arguments)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not marshal the tool arguments")
-	}
-
 	var tmpOpt fmaction.OptionMessageSend
-	if errUnmarshal := json.Unmarshal([]byte(argBytes), &tmpOpt); errUnmarshal != nil {
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the tool option correctly. err: %v", errUnmarshal)
 		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
 	}

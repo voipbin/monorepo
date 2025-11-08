@@ -48,24 +48,24 @@ func Test_toolHandleConnect(t *testing.T) {
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
 					Name: message.FunctionCallNameConnect,
-					Arguments: map[string]any{
-						"source": map[string]any{
+					Arguments: `{
+						"source": {
 							"type":   "tel",
-							"target": "+123456789",
+							"target": "+123456789"
 						},
-						"destinations": []map[string]any{
+						"destinations": [
 							{
 								"type":   "tel",
-								"target": "+11111111",
+								"target": "+11111111"
 							},
 							{
 								"type":   "tel",
-								"target": "+22222222",
-							},
-						},
+								"target": "+22222222"
+							}
+						],
 						"early_media":  true,
-						"relay_reason": true,
-					},
+						"relay_reason": true
+					}`,
 				},
 			},
 
@@ -169,23 +169,23 @@ func Test_toolHandleMessageSend(t *testing.T) {
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
 					Name: message.FunctionCallNameMessageSend,
-					Arguments: map[string]any{
-						"source": map[string]any{
+					Arguments: `{
+						"source": {
 							"type":   "tel",
-							"target": "+123456789",
+							"target": "+123456789"
 						},
-						"destinations": []map[string]any{
+						"destinations": [
 							{
 								"type":   "tel",
-								"target": "+11111111",
+								"target": "+11111111"
 							},
 							{
 								"type":   "tel",
-								"target": "+22222222",
-							},
-						},
-						"text": "test message",
-					},
+								"target": "+22222222"
+							}
+						],
+						"text": "test message"
+					}`,
 				},
 			},
 
