@@ -1,5 +1,6 @@
 import common
 import requests
+import json
 from loguru import logger
 from pipecat.services.llm_service import FunctionCallParams
 
@@ -244,19 +245,18 @@ def tool_register(llm_service, pipecatcall_id):
 
 async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_id: str):
     """Generic executor for tool calls (connect, message_send, etc)."""
-    logger.info(f"[{tool_name}] Executing with params: {params}")
-
+    logger.info(f"[{tool_name}] Executing with params: {params.model_dump_json()}")
+    
     http_url = f"{common.PIPECATCALL_HTTP_URL}/{pipecatcall_id}/tools"
     http_body = {
         "id": params.tool_call_id,
         "type": "function",
         "function": {
             "name": tool_name,
-            "arguments": params.arguments,  # fixed: previously wrapped incorrectly
+            "arguments": json.dumps(params.arguments, ensure_ascii=False),
         },
     }
-
-    logger.debug(f"[{tool_name}] POST {http_url} with body: {http_body}")
+    logger.debug(f"[{tool_name}] POST {http_url} with body: {json.dumps(http_body, indent=2, ensure_ascii=False)}")
 
     try:
         response = requests.post(http_url, json=http_body, timeout=10)
