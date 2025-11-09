@@ -69,7 +69,10 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	log.WithField("session", se).Debugf("Pipecatcall session added. pipecatcall_id: %s", pc.ID)
 
 	// Start keep-alive in a separate goroutine
-	go h.runAsteriskKeepAlive(se.Ctx, conn, defaultKeepAliveInterval, streamingID)
+	go func() {
+		h.runAsteriskKeepAlive(se.Ctx, conn, defaultKeepAliveInterval, streamingID)
+		se.Cancel()
+	}()
 
 	go func() {
 		// run the pipecat runner
