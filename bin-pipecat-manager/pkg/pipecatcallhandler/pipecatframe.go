@@ -90,10 +90,10 @@ func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Session, frame *pipecatf
 		return
 
 	case <-time.After(defaultPushFrameTimeout):
-		logrus.WithFields(logrus.Fields{
-			"func":           "pushFrame",
-			"pipecatcall_id": pc.ID,
-		}).Warnf("Timeout pushing frame to RunnerWebsocketChan, dropping frame")
+		// timeout pushing frame
+		// note: we don't log here to avoid flooding the logs
+		// just drop the frame
+		return
 	}
 }
 

@@ -92,10 +92,10 @@ func (h *listenHandler) processV1PipecatcallsIDGet(ctx context.Context, m *sock.
 	return res, nil
 }
 
-// processV1PipecatcallsIDTerminatePost handles /v1/pipecatcalls/<id>/terminate POST request
-func (h *listenHandler) processV1PipecatcallsIDTerminatePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+// processV1PipecatcallsIDStopPost handles /v1/pipecatcalls/<id>/stop POST request
+func (h *listenHandler) processV1PipecatcallsIDStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1PipecatcallsIDTerminatePost",
+		"handler": "processV1PipecatcallsIDStopPost",
 		"request": m,
 	})
 

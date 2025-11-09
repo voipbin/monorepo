@@ -57,7 +57,7 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 // ProcessTerminate ends a aicall process
 func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "ProcessEnd",
+		"func":      "ProcessTerminate",
 		"aicall_id": ac.ID,
 	})
 	log.Debugf("Terminating aicall process. aicall: %v", ac)
@@ -93,10 +93,21 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall)
 
 // ProcessTerminating starts the aicall terminating process.
 func (h *aicallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-	res, err := h.UpdateStatus(ctx, id, aicall.StatusTerminating)
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "ProcessTerminating",
+		"aicall_id": id,
+	})
+
+	tmp, err := h.UpdateStatus(ctx, id, aicall.StatusTerminating)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not terminating the aicall")
 	}
+
+	res, err := h.ProcessTerminate(ctx, tmp)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not terminate the aicall")
+	}
+	log.WithField("aicall", res).Debug("Terminated aicall process")
 
 	return res, nil
 }

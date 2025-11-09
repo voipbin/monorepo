@@ -42,9 +42,9 @@ var (
 
 	// v1
 	// pipecatcalls
-	regV1Pipecatcalls            = regexp.MustCompile(`/v1/pipecatcalls$`)
-	regV1PipecatcallsID          = regexp.MustCompile("/v1/pipecatcalls/" + regUUID + "$")
-	regV1PipecatcallsIDTerminate = regexp.MustCompile("/v1/pipecatcalls/" + regUUID + "/terminate$")
+	regV1Pipecatcalls       = regexp.MustCompile(`/v1/pipecatcalls$`)
+	regV1PipecatcallsID     = regexp.MustCompile("/v1/pipecatcalls/" + regUUID + "$")
+	regV1PipecatcallsIDStop = regexp.MustCompile("/v1/pipecatcalls/" + regUUID + "/stop$")
 
 	// messages
 	regV1Messages = regexp.MustCompile(`/v1/messages$`)
@@ -190,9 +190,9 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1PipecatcallsIDGet(ctx, m)
 		requestType = "/v1/pipecatcalls/<pipecatcall-id>"
 
-	// POST /pipecatcalls/<pipecatcall-id>/terminate
-	case regV1PipecatcallsIDTerminate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1PipecatcallsIDTerminatePost(ctx, m)
+	// POST /pipecatcalls/<pipecatcall-id>/stop
+	case regV1PipecatcallsIDStop.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1PipecatcallsIDStopPost(ctx, m)
 		requestType = "/v1/pipecatcalls/<pipecatcall-id>/stop"
 
 	////////////////////
