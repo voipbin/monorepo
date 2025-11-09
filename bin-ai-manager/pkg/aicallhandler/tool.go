@@ -90,7 +90,7 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 
 	go func() {
 		// this will connect the call right away
-		tmp, err := h.reqHandler.AIV1AIcallTerminate(ctx, c.ID)
+		tmp, err := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
 		if err != nil {
 			log.Errorf("Could not terminate the aicall after sending the tool actions. err: %v", err)
 			return
