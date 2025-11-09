@@ -172,14 +172,28 @@ func (h *pipecatcallHandler) terminate(ctx context.Context, pc *pipecatcall.Pipe
 
 	switch pc.ReferenceType {
 	case pipecatcall.ReferenceTypeCall:
-		c, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
+		c, err := h.requestHandler.CallV1CallGet(ctx, pc.ReferenceID)
 		if err != nil {
 			log.Errorf("Could not get ai call info. err: %v", err)
 			break
 		}
 		log.WithField("ai_call", c).Info("Retrieved ai call info. ai_call_id: ", c.ID)
 
-		if c.ReferenceType != amaicall.ReferenceTypeCall {
+		em, err := h.requestHandler.CallV1ExternalMediaStop(ctx, pc.ID)
+		if err != nil {
+			log.Errorf("Could not stop external media. err: %v", err)
+			return
+		}
+		log.WithField("external_media", em).Info("Stopped external media. external_media_id: ", em.ID)
+
+	case pipecatcall.ReferenceTypeAICall:
+		ac, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
+		if err != nil {
+			log.Errorf("Could not get ai call info. err: %v", err)
+			break
+		}
+
+		if ac.ReferenceType != amaicall.ReferenceTypeCall {
 			break
 		}
 
