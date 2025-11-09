@@ -36,7 +36,7 @@ type PipecatcallHandler interface {
 		ttsType pipecatcall.TTSType,
 		ttsVoiceID string,
 	) (*pipecatcall.Pipecatcall, error)
-	Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)
+	Terminate(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)
 
 	Get(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)
 

@@ -153,22 +153,22 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 	}
 }
 
-func (h *pipecatcallHandler) Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
+func (h *pipecatcallHandler) Terminate(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
 	res, err := h.Get(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get pipecatcall info")
 	}
 
-	h.stop(ctx, res)
+	h.terminate(ctx, res)
 	return res, nil
 }
 
-func (h *pipecatcallHandler) stop(ctx context.Context, pc *pipecatcall.Pipecatcall) {
+func (h *pipecatcallHandler) terminate(ctx context.Context, pc *pipecatcall.Pipecatcall) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Stop",
+		"func":           "terminate",
 		"pipecatcall_id": pc.ID,
 	})
-	log.Infof("Stopping pipecatcall...")
+	log.Infof("Terminating pipecatcall...")
 
 	switch pc.ReferenceType {
 	case pipecatcall.ReferenceTypeCall:

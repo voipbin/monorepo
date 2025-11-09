@@ -89,7 +89,7 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	<-se.Ctx.Done()
 
 	log.Debugf("Context done, stopping pipecatcall. pipecatcall_id: %s", pc.ID)
-	h.stop(context.Background(), pc)
+	h.terminate(context.Background(), pc)
 }
 
 func (h *pipecatcallHandler) runAsteriskKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {

@@ -175,7 +175,7 @@ func Test_processV1PipecatcallsIDGet(t *testing.T) {
 	}
 }
 
-func Test_processV1PipecatcallsIDStopPost(t *testing.T) {
+func Test_processV1PipecatcallsIDTerminatePost(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -191,7 +191,7 @@ func Test_processV1PipecatcallsIDStopPost(t *testing.T) {
 			name: "normal",
 
 			request: &sock.Request{
-				URI:    "/v1/pipecatcalls/e594fff6-ab0a-11f0-8220-1fe5a6807315/stop",
+				URI:    "/v1/pipecatcalls/e594fff6-ab0a-11f0-8220-1fe5a6807315/terminate",
 				Method: sock.RequestMethodPost,
 			},
 
@@ -224,7 +224,7 @@ func Test_processV1PipecatcallsIDStopPost(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockPipecatcall.EXPECT().Stop(ctx, tt.expectPipecatcallID).Return(tt.responsePipecatcall, nil)
+			mockPipecatcall.EXPECT().Terminate(ctx, tt.expectPipecatcallID).Return(tt.responsePipecatcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

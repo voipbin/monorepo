@@ -92,10 +92,10 @@ func (h *listenHandler) processV1PipecatcallsIDGet(ctx context.Context, m *sock.
 	return res, nil
 }
 
-// processV1PipecatcallsIDStopPost handles /v1/pipecatcalls/<id>/stop POST request
-func (h *listenHandler) processV1PipecatcallsIDStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+// processV1PipecatcallsIDTerminatePost handles /v1/pipecatcalls/<id>/terminate POST request
+func (h *listenHandler) processV1PipecatcallsIDTerminatePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1PipecatcallsIDStopPost",
+		"handler": "processV1PipecatcallsIDTerminatePost",
 		"request": m,
 	})
 
@@ -106,7 +106,7 @@ func (h *listenHandler) processV1PipecatcallsIDStopPost(ctx context.Context, m *
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	tmp, err := h.pipecatcallHandler.Stop(ctx, id)
+	tmp, err := h.pipecatcallHandler.Terminate(ctx, id)
 	if err != nil {
 		return simpleResponse(500), nil
 	}
