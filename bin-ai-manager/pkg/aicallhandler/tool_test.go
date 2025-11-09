@@ -127,7 +127,7 @@ func Test_toolHandleConnect(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, tt.expectActions).Return(&fmactiveflow.Activeflow{}, nil)
 			mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleTool, tt.expectContent, nil, tt.tool.ID).Return(&message.Message{}, nil)
-			mockReq.EXPECT().AIV1AIcallTerminate(ctx, tt.aicall.ID).Return(&aicall.AIcall{}, nil)
+			mockReq.EXPECT().AIV1AIcallTerminate(gomock.Any(), tt.aicall.ID).Return(&aicall.AIcall{}, nil)
 
 			res, err := h.toolHandleConnect(ctx, tt.aicall, tt.tool)
 			if err != nil {
