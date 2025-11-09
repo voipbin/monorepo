@@ -32,11 +32,11 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 
 	// create a message for tool handle request
-	res, errCreate := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "")
+	tmp, errCreate := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "")
 	if errCreate != nil {
 		return nil, errors.Wrapf(errCreate, "could not create the tool message")
 	}
-	log.WithField("message", res).Debugf("Created the tool message for the actions. message_id: %s", res.ID)
+	log.WithField("message", tmp).Debugf("Created the tool message for the actions. message_id: %s", tmp.ID)
 
 	switch tool.Function.Name {
 	case message.FunctionCallNameConnect:
@@ -87,6 +87,16 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}
 	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
+
+	go func() {
+		// this will connect the call right away
+		tmp, err := h.reqHandler.AIV1AIcallTerminate(ctx, c.ID)
+		if err != nil {
+			log.Errorf("Could not terminate the aicall after sending the tool actions. err: %v", err)
+			return
+		}
+		log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
+	}()
 
 	res := map[string]any{
 		"result":  result,
