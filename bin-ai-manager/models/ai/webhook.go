@@ -19,6 +19,11 @@ type WebhookMessage struct {
 
 	InitPrompt string `json:"init_prompt,omitempty"`
 
+	TTSType    TTSType `json:"tts_type,omitempty"`
+	TTSVoiceID string  `json:"tts_voice_id,omitempty"`
+
+	STTType STTType `json:"stt_type,omitempty"`
+
 	// timestamp
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
@@ -39,6 +44,11 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		EngineKey:   h.EngineKey,
 
 		InitPrompt: h.InitPrompt,
+
+		TTSType:    h.TTSType,
+		TTSVoiceID: h.TTSVoiceID,
+
+		STTType: h.STTType,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
