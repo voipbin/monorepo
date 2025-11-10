@@ -255,7 +255,6 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		log.Errorf("Error unmarshaling JSON message: %v", errUnmarshal)
 		return errUnmarshal
 	}
-	log.Debugf("Received message frame: Label=%s, Type=%s", frame.Label, frame.Type)
 
 	if frame.Label != pipecatframe.RTVIMessageLabel {
 		// other message types can be handled here
@@ -361,6 +360,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		}
 		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLM, event)
 
+		log.Debugf("Cleaning BotLLMStopped message. text: %s", se.LLMBotText)
 		se.LLMBotText = ""
 
 	default:
