@@ -70,20 +70,20 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 
 	// Start keep-alive in a separate goroutine
 	go func() {
-		h.runAsteriskKeepAlive(se.Ctx, conn, defaultKeepAliveInterval, streamingID)
-		se.Cancel()
+		defer se.Cancel()
+		h.runAsteriskKeepAlive(se, conn, defaultKeepAliveInterval, streamingID)
 	}()
 
+	// run the pipecat runner
 	go func() {
-		// run the pipecat runner
+		defer se.Cancel()
 		h.RunnerStart(pc, se)
-		se.Cancel()
 	}()
 
+	// run the media handler
 	go func() {
-		// run the media handler
+		defer se.Cancel()
 		h.runAsteriskReceivedMediaHandle(se)
-		se.Cancel()
 	}()
 
 	<-se.Ctx.Done()
@@ -92,7 +92,7 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	h.terminate(context.Background(), pc)
 }
 
-func (h *pipecatcallHandler) runAsteriskKeepAlive(ctx context.Context, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {
+func (h *pipecatcallHandler) runAsteriskKeepAlive(se *pipecatcall.Session, conn net.Conn, interval time.Duration, streamingID uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "runAsteriskKeepAlive",
 		"streaming_id": streamingID,
@@ -103,7 +103,7 @@ func (h *pipecatcallHandler) runAsteriskKeepAlive(ctx context.Context, conn net.
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-se.Ctx.Done():
 			log.Debug("Keep-alive stopped")
 			return
 

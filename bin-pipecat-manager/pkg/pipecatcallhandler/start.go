@@ -3,6 +3,7 @@ package pipecatcallhandler
 import (
 	"context"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	cmcall "monorepo/bin-call-manager/models/call"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
@@ -203,6 +204,11 @@ func (h *pipecatcallHandler) terminateReferenceTypeCall(ctx context.Context, pc 
 		return errors.Wrapf(err, "could not get call info")
 	}
 	log.WithField("call", c).Info("Retrieved call info. call_id: ", c.ID)
+
+	if c.Status != cmcall.StatusProgressing {
+		log.Debugf("No action needed to stop for call status: %v", c.Status)
+		return nil
+	}
 
 	// note: we use the pipecatcall's ID as external media id.
 	// so this is correct.
