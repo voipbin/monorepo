@@ -224,7 +224,7 @@ func Test_processV1PipecatcallsIDStopPost(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockPipecatcall.EXPECT().Stop(ctx, tt.expectPipecatcallID).Return(tt.responsePipecatcall, nil)
+			mockPipecatcall.EXPECT().Terminate(ctx, tt.expectPipecatcallID).Return(tt.responsePipecatcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -1,8 +1,8 @@
 import asyncio
 import json
 from typing import Optional, List
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
 from loguru import logger
 from dotenv import load_dotenv
 
@@ -12,9 +12,19 @@ load_dotenv(override=True)
 
 app = FastAPI(title="Python Pipeline API")
 
+class ToolCall(BaseModel):
+    id: str
+    type: Optional[str] = "function"
+    function: Optional[dict] = None
+
 class Message(BaseModel):
     role: Optional[str] = None
     content: Optional[str] = None
+    tool_calls: Optional[List[ToolCall]] = None   # for assistant -> tool call
+    tool_call_id: Optional[str] = None            # for tool -> assistant response
+
+    class Config:
+        extra = "ignore"
 
 class PipelineRequest(BaseModel):
     id: Optional[str] = None
@@ -22,32 +32,40 @@ class PipelineRequest(BaseModel):
     tts: Optional[str] = None
     stt: Optional[str] = None
     voice_id: Optional[str] = None
-    messages: Optional[List[Message]] = None
+    messages: Optional[List[Message]] = Field(default_factory=list)
 
-
-async def run_pipeline_wrapper(*args, **kwargs):
+async def run_pipeline_wrapper(req: PipelineRequest):
     try:
-        logger.info("Pipeline started")
-        await run_pipeline(*args, **kwargs)
-        logger.info("Pipeline finished successfully")
+        logger.info(f"Pipeline started: id={req.id}")
+        await run_pipeline(
+            req.id,
+            req.llm,
+            req.tts,
+            req.stt,
+            req.voice_id,
+            [m.model_dump() for m in req.messages],
+        )
+        logger.info(f"Pipeline finished successfully: id={req.id}")
     except Exception as e:
-        logger.exception(f"Pipeline failed in background: {e}")
+        logger.exception(f"Pipeline failed (id={req.id}): {e}")
 
 
 @app.post("/run")
-async def run_pipeline_endpoint(req: PipelineRequest, background_tasks: BackgroundTasks):
+async def run_pipeline_endpoint(req: PipelineRequest):
     try:
-        logger.info(f"Received run request. id: {req.id}, llm: {req.llm}, tts: {req.tts}, stt: {req.stt}, voice_id: {req.voice_id}, messages_length: {len(req.messages) if req.messages else 0}")
-        asyncio.create_task(
-            run_pipeline_wrapper(
-                req.id,
-                req.llm,
-                req.tts,
-                req.stt,
-                req.voice_id,
-                [m.model_dump() for m in (req.messages or [])],
-            )
-        )
+        msg_count = len(req.messages or [])
+        logger.info(json.dumps({
+            "event": "run_request",
+            "id": req.id,
+            "llm": req.llm,
+            "tts": req.tts,
+            "stt": req.stt,
+            "voice_id": req.voice_id,
+            "message_count": msg_count
+        }))
+        
+        asyncio.create_task(run_pipeline_wrapper(req))
+        await asyncio.sleep(0)
 
         return {"status": "ok", "message": "Pipeline executed successfully"}
 

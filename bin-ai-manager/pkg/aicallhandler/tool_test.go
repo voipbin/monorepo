@@ -17,6 +17,7 @@ import (
 	mmmessage "monorepo/bin-message-manager/models/message"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -48,24 +49,24 @@ func Test_toolHandleConnect(t *testing.T) {
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
 					Name: message.FunctionCallNameConnect,
-					Arguments: map[string]any{
-						"source": map[string]any{
+					Arguments: `{
+						"source": {
 							"type":   "tel",
-							"target": "+123456789",
+							"target": "+123456789"
 						},
-						"destinations": []map[string]any{
+						"destinations": [
 							{
 								"type":   "tel",
-								"target": "+11111111",
+								"target": "+11111111"
 							},
 							{
 								"type":   "tel",
-								"target": "+22222222",
-							},
-						},
+								"target": "+22222222"
+							}
+						],
 						"early_media":  true,
-						"relay_reason": true,
-					},
+						"relay_reason": true
+					}`,
 				},
 			},
 
@@ -126,12 +127,14 @@ func Test_toolHandleConnect(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, tt.expectActions).Return(&fmactiveflow.Activeflow{}, nil)
 			mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleTool, tt.expectContent, nil, tt.tool.ID).Return(&message.Message{}, nil)
+			mockReq.EXPECT().AIV1AIcallTerminate(gomock.Any(), tt.aicall.ID).Return(&aicall.AIcall{}, nil)
 
 			res, err := h.toolHandleConnect(ctx, tt.aicall, tt.tool)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
 
+			time.Sleep(100 * time.Millisecond)
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
 			}
@@ -169,23 +172,23 @@ func Test_toolHandleMessageSend(t *testing.T) {
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
 					Name: message.FunctionCallNameMessageSend,
-					Arguments: map[string]any{
-						"source": map[string]any{
+					Arguments: `{
+						"source": {
 							"type":   "tel",
-							"target": "+123456789",
+							"target": "+123456789"
 						},
-						"destinations": []map[string]any{
+						"destinations": [
 							{
 								"type":   "tel",
-								"target": "+11111111",
+								"target": "+11111111"
 							},
 							{
 								"type":   "tel",
-								"target": "+22222222",
-							},
-						},
-						"text": "test message",
-					},
+								"target": "+22222222"
+							}
+						],
+						"text": "test message"
+					}`,
 				},
 			},
 

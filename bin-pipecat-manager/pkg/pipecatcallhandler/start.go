@@ -3,6 +3,7 @@ package pipecatcallhandler
 import (
 	"context"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	cmcall "monorepo/bin-call-manager/models/call"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
@@ -153,42 +154,35 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 	}
 }
 
-func (h *pipecatcallHandler) Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
+func (h *pipecatcallHandler) Terminate(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
 	res, err := h.Get(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get pipecatcall info")
 	}
 
-	h.stop(ctx, res)
+	h.terminate(ctx, res)
 	return res, nil
 }
 
-func (h *pipecatcallHandler) stop(ctx context.Context, pc *pipecatcall.Pipecatcall) {
+func (h *pipecatcallHandler) terminate(ctx context.Context, pc *pipecatcall.Pipecatcall) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Stop",
+		"func":           "terminate",
 		"pipecatcall_id": pc.ID,
 	})
-	log.Infof("Stopping pipecatcall...")
+	log.Infof("Terminating pipecatcall...")
 
 	switch pc.ReferenceType {
 	case pipecatcall.ReferenceTypeCall:
-		c, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
-		if err != nil {
-			log.Errorf("Could not get ai call info. err: %v", err)
-			break
-		}
-		log.WithField("ai_call", c).Info("Retrieved ai call info. ai_call_id: ", c.ID)
-
-		if c.ReferenceType != amaicall.ReferenceTypeCall {
-			break
-		}
-
-		em, err := h.requestHandler.CallV1ExternalMediaStop(ctx, pc.ID)
-		if err != nil {
-			log.Errorf("Could not stop external media. err: %v", err)
+		if errTerminate := h.terminateReferenceTypeCall(ctx, pc); errTerminate != nil {
+			log.Errorf("Could not terminate reference type call. err: %v", errTerminate)
 			return
 		}
-		log.WithField("external_media", em).Info("Stopped external media. external_media_id: ", em.ID)
+
+	case pipecatcall.ReferenceTypeAICall:
+		if errTerminate := h.terminateReferenceTypeAICall(ctx, pc); errTerminate != nil {
+			log.Errorf("Could not terminate reference type ai call. err: %v", errTerminate)
+			return
+		}
 
 	default:
 		// no action needed for other reference types
@@ -196,5 +190,60 @@ func (h *pipecatcallHandler) stop(ctx context.Context, pc *pipecatcall.Pipecatca
 	}
 
 	h.SessionStop(pc.ID)
-	log.Infof("Pipecatcall stopped. pipecatcall_id: %s", pc.ID)
+	log.Infof("Pipecatcall terminated. pipecatcall_id: %s", pc.ID)
+}
+
+func (h *pipecatcallHandler) terminateReferenceTypeCall(ctx context.Context, pc *pipecatcall.Pipecatcall) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "terminateReferenceTypeCall",
+		"pipecatcall_id": pc.ID,
+	})
+
+	c, err := h.requestHandler.CallV1CallGet(ctx, pc.ReferenceID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get call info")
+	}
+	log.WithField("call", c).Info("Retrieved call info. call_id: ", c.ID)
+
+	if c.Status != cmcall.StatusProgressing {
+		log.Debugf("No action needed to stop for call status: %v", c.Status)
+		return nil
+	}
+
+	// note: we use the pipecatcall's ID as external media id.
+	// so this is correct.
+	em, err := h.requestHandler.CallV1ExternalMediaStop(ctx, pc.ID)
+	if err != nil {
+		return errors.Wrapf(err, "could not stop external media")
+	}
+	log.WithField("external_media", em).Info("Stopped external media. external_media_id: ", em.ID)
+
+	return nil
+}
+
+func (h *pipecatcallHandler) terminateReferenceTypeAICall(ctx context.Context, pc *pipecatcall.Pipecatcall) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "terminateReferenceTypeAICall",
+		"pipecatcall_id": pc.ID,
+	})
+
+	ac, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get ai call info")
+	}
+	log.WithField("ai_call", ac).Info("Retrieved ai call info. ai_call_id: ", ac.ID)
+
+	if ac.ReferenceType != amaicall.ReferenceTypeCall {
+		log.Debugf("No action needed to stop for reference type: %v", ac.ReferenceType)
+		return nil
+	}
+
+	// note: we use the pipecatcall's ID as external media id.
+	em, err := h.requestHandler.CallV1ExternalMediaStop(ctx, pc.ID)
+	if err != nil {
+		return errors.Wrapf(err, "could not stop external media")
+	}
+	log.WithField("external_media", em).Info("Stopped external media. external_media_id: ", em.ID)
+
+	return nil
 }

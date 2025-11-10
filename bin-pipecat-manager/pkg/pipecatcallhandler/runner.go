@@ -3,6 +3,7 @@ package pipecatcallhandler
 import (
 	"encoding/json"
 	"fmt"
+	ammessage "monorepo/bin-ai-manager/models/message"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
@@ -224,11 +225,21 @@ func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) erro
 		return fmt.Errorf("pipecatcall reference type is not ai-call. reference_type: %s", pc.ReferenceType)
 	}
 
-	// note
-	// todo: need to implement tool handling logic here
-	// for now, just logging the request
-	// send the request to the ai-manager later.
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	request := struct {
+		ID       string                 `json:"id"`
+		Type     string                 `json:"type"`
+		Function ammessage.FunctionCall `json:"function"`
+	}{}
+	if errBind := c.BindJSON(&request); errBind != nil {
+		return fmt.Errorf("could not bind tool request JSON: %w", errBind)
+	}
+
+	res, err := h.requestHandler.AIV1AIcallToolExecute(ctx, pc.ReferenceID, request.ID, ammessage.ToolType(request.Type), &request.Function)
+	if err != nil {
+		return fmt.Errorf("could not execute tool via ai-manager: %w", err)
+	}
+
+	c.JSON(http.StatusOK, res)
 
 	return nil
 }
@@ -244,7 +255,6 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		log.Errorf("Error unmarshaling JSON message: %v", errUnmarshal)
 		return errUnmarshal
 	}
-	log.Debugf("Received message frame: Label=%s, Type=%s", frame.Label, frame.Type)
 
 	if frame.Label != pipecatframe.RTVIMessageLabel {
 		// other message types can be handled here
@@ -350,6 +360,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		}
 		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLM, event)
 
+		log.Debugf("Cleaning BotLLMStopped message. text: %s", se.LLMBotText)
 		se.LLMBotText = ""
 
 	default:

@@ -13,9 +13,8 @@ const (
 )
 
 type FunctionCall struct {
-	Name FunctionCallName `json:"name,omitempty"`
-	// Arguments string           `json:"arguments,omitempty"`
-	Arguments map[string]any `json:"arguments,omitempty"`
+	Name      FunctionCallName `json:"name,omitempty"`
+	Arguments string           `json:"arguments,omitempty"`
 }
 
 type ToolResponse struct {

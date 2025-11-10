@@ -131,17 +131,17 @@ func (mr *MockPipecatcallHandlerMockRecorder) Start(ctx, id, customerID, activef
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPipecatcallHandler)(nil).Start), ctx, id, customerID, activeflowID, referenceType, referenceID, llmType, llmMessages, sttType, ttsType, ttsVoiceID)
 }
 
-// Stop mocks base method.
-func (m *MockPipecatcallHandler) Stop(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
+// Terminate mocks base method.
+func (m *MockPipecatcallHandler) Terminate(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Stop", ctx, id)
+	ret := m.ctrl.Call(m, "Terminate", ctx, id)
 	ret0, _ := ret[0].(*pipecatcall.Pipecatcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Stop indicates an expected call of Stop.
-func (mr *MockPipecatcallHandlerMockRecorder) Stop(ctx, id any) *gomock.Call {
+// Terminate indicates an expected call of Terminate.
+func (mr *MockPipecatcallHandlerMockRecorder) Terminate(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockPipecatcallHandler)(nil).Stop), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockPipecatcallHandler)(nil).Terminate), ctx, id)
 }

@@ -32,11 +32,11 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 
 	// create a message for tool handle request
-	res, errCreate := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "")
+	tmp, errCreate := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "")
 	if errCreate != nil {
 		return nil, errors.Wrapf(errCreate, "could not create the tool message")
 	}
-	log.WithField("message", res).Debugf("Created the tool message for the actions. message_id: %s", res.ID)
+	log.WithField("message", tmp).Debugf("Created the tool message for the actions. message_id: %s", tmp.ID)
 
 	switch tool.Function.Name {
 	case message.FunctionCallNameConnect:
@@ -58,13 +58,8 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 	})
 	log.Debugf("handling tool call connect.")
 
-	argBytes, err := json.Marshal(tool.Function.Arguments)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not marshal the tool arguments")
-	}
-
 	var tmpOpt fmaction.OptionConnect
-	if errUnmarshal := json.Unmarshal([]byte(argBytes), &tmpOpt); errUnmarshal != nil {
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
 		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
 	}
 
@@ -93,6 +88,16 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 	}
 	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
 
+	go func() {
+		// this will connect the call right away
+		tmp, err := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
+		if err != nil {
+			log.Errorf("Could not terminate the aicall after sending the tool actions. err: %v", err)
+			return
+		}
+		log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
+	}()
+
 	res := map[string]any{
 		"result":  result,
 		"message": tmpContent,
@@ -107,13 +112,8 @@ func (h *aicallHandler) toolHandleMessageSend(ctx context.Context, c *aicall.AIc
 		"aicall_id": c.ID,
 	})
 
-	argBytes, err := json.Marshal(tool.Function.Arguments)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not marshal the tool arguments")
-	}
-
 	var tmpOpt fmaction.OptionMessageSend
-	if errUnmarshal := json.Unmarshal([]byte(argBytes), &tmpOpt); errUnmarshal != nil {
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the tool option correctly. err: %v", errUnmarshal)
 		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
 	}
