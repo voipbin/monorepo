@@ -4,6 +4,7 @@ import json
 import common
 
 from loguru import logger
+from functools import partial
 
 # tts
 from pipecat.services.cartesia.tts import CartesiaTTSService
@@ -90,15 +91,15 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         observers=[RTVIObserver(rtvi)],
     )
     
-    async def handle_disconnect_or_error(transport, error):
-        name = "Input" if "input" in transport.uri else "Output"
+
+    async def handle_disconnect_or_error(transport, error, name):
         logger.error(f"{name} WebSocket disconnected or errored: {error}")
         await task.cancel()
 
-    transport_input.event_handler("on_disconnected")(handle_disconnect_or_error)
-    transport_input.event_handler("on_error")(handle_disconnect_or_error)
-    transport_output.event_handler("on_disconnected")(handle_disconnect_or_error)
-    transport_output.event_handler("on_error")(handle_disconnect_or_error)
+    transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, name="Input"))
+    transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, name="Input"))
+    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, name="Output"))
+    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, name="Output"))
 
     runner = PipelineRunner()
     await task.queue_frames([LLMRunFrame()])
@@ -121,7 +122,7 @@ def create_tts_service(name: str, **options):
     voice_id = options.get("voice_id")
     if not voice_id:
         logger.warning(f"No voice_id specified for {name}, using default system voice.")
-        voice_id = "default_voice_id"
+        voice_id = "default_voice_id"   # currently, we don't have a default voice id, so just a placeholder
 
     if name == "cartesia":
         return CartesiaTTSService(
@@ -155,8 +156,6 @@ def create_stt_service(name: str, **options):
 def create_llm_service(type: str, key: str, messages: list[dict], **options):
     
     # validate name
-    service_name = ""
-    model_name = ""
     if "." in type:
         service_name, model_name = type.split(".", 1)
     elif ":" in type:
