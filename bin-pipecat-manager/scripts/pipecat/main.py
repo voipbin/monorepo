@@ -1,5 +1,6 @@
 import asyncio
 import json
+import sys
 from typing import Optional, List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -75,6 +76,17 @@ async def run_pipeline_endpoint(req: PipelineRequest):
         logger.exception(f"Pipeline execution failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+def cloud_log_format(record):
+    return json.dumps({
+        "severity": record["level"].name,
+        "message": record["message"],
+        "module": record["module"],
+        "function": record["function"],
+        "line": record["line"],
+    }) + "\n"
+logger.remove()
+logger.add(sys.stdout, format=cloud_log_format, level="INFO")
 
 # --- run server ---
 if __name__ == "__main__":
