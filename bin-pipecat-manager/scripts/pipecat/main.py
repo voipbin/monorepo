@@ -77,16 +77,12 @@ async def run_pipeline_endpoint(req: PipelineRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def cloud_log_format(record):
-    return json.dumps({
-        "severity": record["level"].name,
-        "message": record["message"],
-        "module": record["module"],
-        "function": record["function"],
-        "line": record["line"],
-    }) + "\n"
+# --- logger setup ---
 logger.remove()
-logger.add(sys.stdout, format=cloud_log_format, level="INFO")
+logger.add(
+    sys.stdout,
+    serialize=True,
+)
 
 # --- run server ---
 if __name__ == "__main__":
