@@ -4,6 +4,7 @@ import json
 import common
 
 from loguru import logger
+from functools import partial
 
 # tts
 from pipecat.services.cartesia.tts import CartesiaTTSService
@@ -37,7 +38,7 @@ from pipecat.transports.websocket.client import (
 # tool
 from tools import tool_register, tools
 
-async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
+async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
     logger.info(f"Connecting Pipecat client to Go WebSocket server. id: {id}")
 
     if messages is None:
@@ -45,19 +46,7 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
     pipeline_stages = []
 
     # transport input
-    uri_input = common.PIPECATCALL_WS_URL + f"/{id}/ws?direction=input"
-    transport_input = WebsocketClientTransport(
-        uri=uri_input,
-        params=WebsocketClientParams(
-            serializer=ProtobufFrameSerializer(),
-            audio_in_enabled=True,
-            audio_out_enabled=True,
-            add_wav_header=False,
-            vad_analyzer=SileroVADAnalyzer(),
-            session_timeout=60 * 3,
-        )
-    )    
-    logger.info(f"Establishing WebSocket connection to URI: {uri_input}")
+    transport_input = create_websocket_transport("input", id)
     pipeline_stages.append(transport_input.input())
 
     # rtvi
@@ -70,7 +59,7 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
         pipeline_stages.append(stt_service)
 
     # Create LLM service
-    llm_service, llm_context_aggregator = create_llm_service(llm, messages)
+    llm_service, llm_context_aggregator = create_llm_service(llm_type, llm_key, messages)
     pipeline_stages.append(llm_context_aggregator.user())
     pipeline_stages.append(llm_service)
 
@@ -83,23 +72,14 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
     pipeline_stages.append(llm_context_aggregator.assistant())
     
     # transport output
-    uri_output = common.PIPECATCALL_WS_URL + f"/{id}/ws?direction=output"
-    transport_output = WebsocketClientTransport(
-        uri=uri_output,
-        params=WebsocketClientParams(
-            serializer=ProtobufFrameSerializer(),
-            audio_in_enabled=True,
-            audio_out_enabled=True,
-            add_wav_header=False,
-            vad_analyzer=SileroVADAnalyzer(),
-            session_timeout=60 * 3,
-        )
-    )    
+    transport_output = create_websocket_transport("output", id)
     pipeline_stages.append(transport_output.output())
-    logger.info(f"Establishing WebSocket connection to URI: {uri_output}")
  
     # Build the pipeline
     pipeline = Pipeline(pipeline_stages)
+
+    # Register tool functions
+    tool_register(llm_service, id)
 
     # Create RTVI processor and observer
     task = PipelineTask(
@@ -111,32 +91,17 @@ async def run_pipeline(id: str, llm: str, tts: str, stt: str, voice_id: str = No
         observers=[RTVIObserver(rtvi)],
     )
     
-    # Register tool functions
-    tool_register(llm_service, id)
 
-    @transport_input.event_handler("on_disconnected")
-    async def on_input_disconnected(transport_input, error):
-        logger.info(f"Pipecat input websocket disconnected from Go server. Error: {error}")
+    async def handle_disconnect_or_error(transport, error, name):
+        logger.error(f"{name} WebSocket disconnected or errored: {error}")
         await task.cancel()
 
-    @transport_input.event_handler("on_error")
-    async def on_input_error(transport_input, error):
-        logger.error(f"Pipecat input websocket error: {error}")
-        await task.cancel()
-
-    @transport_output.event_handler("on_disconnected")
-    async def on_output_disconnected(transport_output, error):
-        logger.info(f"Pipecat output websocket disconnected from Go server. Error: {error}")
-        await task.cancel()
-
-    @transport_output.event_handler("on_error")
-    async def on_output_error(transport_output, error):
-        logger.error(f"Pipecat output websocket error: {error}")
-        await task.cancel()
-
+    transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, name="Input"))
+    transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, name="Input"))
+    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, name="Output"))
+    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, name="Output"))
 
     runner = PipelineRunner()
-
     await task.queue_frames([LLMRunFrame()])
 
     try:
@@ -153,16 +118,21 @@ def create_tts_service(name: str, **options):
     based on the service name and optional parameters.
     """
     name = name.lower()
+    
+    voice_id = options.get("voice_id")
+    if not voice_id:
+        logger.warning(f"No voice_id specified for {name}, using default system voice.")
+        voice_id = "default_voice_id"   # currently, we don't have a default voice id, so just a placeholder
 
     if name == "cartesia":
         return CartesiaTTSService(
             api_key=options.get("api_key", os.getenv("CARTESIA_API_KEY")),
-            voice_id=options.get("voice_id", "default_voice_id")
+            voice_id=voice_id,
         )
     elif name == "elevenlabs":
         return ElevenLabsTTSService(
             api_key=options.get("api_key", os.getenv("ELEVENLABS_API_KEY")),
-            voice_id=options.get("voice_id", "default_voice_id")
+            voice_id=voice_id,
         )
     else:
         raise ValueError(f"Unsupported TTS service: {name}")
@@ -183,12 +153,15 @@ def create_stt_service(name: str, **options):
         raise ValueError(f"Unsupported STT service: {name}")
 
 
-def create_llm_service(name: str, messages, **options):
+def create_llm_service(type: str, key: str, messages: list[dict], **options):
     
     # validate name
-    if "." not in name:
-        raise ValueError(f"Wrong LLM: {name}. LLM argument must be in 'service.model' format, e.g., 'openai.gpt-4o-mini'")
-    service_name, model_name = name.split(".", 1)
+    if "." in type:
+        service_name, model_name = type.split(".", 1)
+    elif ":" in type:
+        service_name, model_name = type.split(":", 1)
+    else:
+        raise ValueError(f"Wrong LLM: {type}. LLM argument must be in 'service.model' or 'service:model' format, e.g., 'openai.gpt-4o-mini' or 'openai:gpt-4o-mini'")
     service_name = service_name.lower()
 
     # validate messages
@@ -198,14 +171,16 @@ def create_llm_service(name: str, messages, **options):
             logger.warning(f"Skipping invalid message format: {msg}")
             continue
         valid_messages.append(msg)
-    logger.info(f"Valid Messages Count: {len(valid_messages)}")
+    logger.debug(f"Valid Messages Count: {len(valid_messages)}")
 
     res_llm = None
     res_context_aggregator = None
     if service_name == "openai":
         logger.info(f"Creating OpenAI LLM Service with model: {model_name}")
+        
+        api_key = key if key else os.getenv("OPENAI_API_KEY")
         res_llm = OpenAILLMService(
-            api_key=options.get("api_key", os.getenv("OPENAI_API_KEY")),
+            api_key=api_key,
             model=model_name
         )
         
@@ -219,3 +194,19 @@ def create_llm_service(name: str, messages, **options):
         raise ValueError(f"Unsupported LLM service: {service_name}")
 
     return res_llm, res_context_aggregator
+
+def create_websocket_transport(direction: str, id: str):
+    uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
+    logger.info(f"Establishing WebSocket connection to URI: {uri}")
+
+    return WebsocketClientTransport(
+        uri=uri,
+        params=WebsocketClientParams(
+            serializer=ProtobufFrameSerializer(),
+            audio_in_enabled=True,
+            audio_out_enabled=True,
+            add_wav_header=False,
+            vad_analyzer=SileroVADAnalyzer(),
+            session_timeout=common.PIPELINE_SESSION_TIMEOUT,
+        )
+    )

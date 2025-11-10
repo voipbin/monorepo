@@ -46,6 +46,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		se.Ctx,
 		pc.ID,
 		string(pc.LLMType),
+		string(se.LLMKey),
 		string(pc.STTType),
 		string(pc.TTSType),
 		pc.TTSVoiceID,

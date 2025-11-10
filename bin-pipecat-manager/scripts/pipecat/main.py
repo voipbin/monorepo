@@ -1,5 +1,6 @@
 import asyncio
 import json
+import sys
 from typing import Optional, List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -28,7 +29,8 @@ class Message(BaseModel):
 
 class PipelineRequest(BaseModel):
     id: Optional[str] = None
-    llm: Optional[str] = None
+    llm_type: Optional[str] = None
+    llm_key: Optional[str] = None
     tts: Optional[str] = None
     stt: Optional[str] = None
     voice_id: Optional[str] = None
@@ -39,7 +41,8 @@ async def run_pipeline_wrapper(req: PipelineRequest):
         logger.info(f"Pipeline started: id={req.id}")
         await run_pipeline(
             req.id,
-            req.llm,
+            req.llm_type,
+            req.llm_key,
             req.tts,
             req.stt,
             req.voice_id,
@@ -57,7 +60,7 @@ async def run_pipeline_endpoint(req: PipelineRequest):
         logger.info(json.dumps({
             "event": "run_request",
             "id": req.id,
-            "llm": req.llm,
+            "llm_type": req.llm_type,
             "tts": req.tts,
             "stt": req.stt,
             "voice_id": req.voice_id,
@@ -73,6 +76,13 @@ async def run_pipeline_endpoint(req: PipelineRequest):
         logger.exception(f"Pipeline execution failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# --- logger setup ---
+logger.remove()
+logger.add(
+    sys.stdout,
+    serialize=True,
+)
 
 # --- run server ---
 if __name__ == "__main__":

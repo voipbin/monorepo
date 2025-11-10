@@ -25,7 +25,8 @@ type PythonRunner interface {
 	Start(
 		ctx context.Context,
 		pipecatcallID uuid.UUID,
-		llm string,
+		llmType string,
+		llmKey string,
 		stt string,
 		tts string,
 		voiceID string,
@@ -40,7 +41,8 @@ func NewPythonRunner() PythonRunner {
 func (h *pythonRunner) Start(
 	ctx context.Context,
 	pipecatcallID uuid.UUID,
-	llm string,
+	llmType string,
+	llmKey string,
 	stt string,
 	tts string,
 	voiceID string,
@@ -53,14 +55,16 @@ func (h *pythonRunner) Start(
 	// // only used to send data to the python runner
 	reqBody := struct {
 		ID       uuid.UUID        `json:"id,omitempty"`
-		LLM      string           `json:"llm,omitempty"`
+		LLMType  string           `json:"llm_type,omitempty"`
+		LLMKey   string           `json:"llm_key,omitempty"`
 		TTS      string           `json:"tts,omitempty"`
 		STT      string           `json:"stt,omitempty"`
 		VoiceID  string           `json:"voice_id,omitempty"`
 		Messages []map[string]any `json:"messages,omitempty"`
 	}{
 		ID:       pipecatcallID,
-		LLM:      llm,
+		LLMType:  llmType,
+		LLMKey:   llmKey,
 		STT:      stt,
 		TTS:      tts,
 		VoiceID:  voiceID,

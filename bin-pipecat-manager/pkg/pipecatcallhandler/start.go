@@ -144,7 +144,8 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		return nil
 
 	default:
-		se, err := h.SessionCreate(pc, uuid.Nil, nil)
+		llmKey := h.runGetLLMKey(ctx, pc)
+		se, err := h.SessionCreate(pc, uuid.Nil, nil, llmKey)
 		if err != nil {
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}

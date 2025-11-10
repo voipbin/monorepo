@@ -61,7 +61,8 @@ func (h *pipecatcallHandler) runStart(conn net.Conn) {
 	log.WithField("pipecatcall", pc).Debugf("Pipecatcall info retrieved. pipecatcall_id: %s", pc.ID)
 
 	// create a new session
-	se, err := h.SessionCreate(pc, streamingID, conn)
+	llmKey := h.runGetLLMKey(context.Background(), pc)
+	se, err := h.SessionCreate(pc, streamingID, conn, llmKey)
 	if err != nil {
 		log.Errorf("Could not add pipecatcall session: %v", err)
 		return
@@ -170,5 +171,27 @@ func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Sess
 		}
 
 		packetID++
+	}
+}
+
+func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.Pipecatcall) string {
+	switch pc.ReferenceType {
+	case pipecatcall.ReferenceTypeAICall:
+		c, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
+		if err != nil {
+			logrus.Errorf("Could not get ai call info. err: %v", err)
+			return ""
+		}
+
+		a, err := h.requestHandler.AIV1AIGet(ctx, c.AIID)
+		if err != nil {
+			logrus.Errorf("Could not get ai info. err: %v", err)
+			return ""
+		}
+
+		return a.EngineKey
+
+	default:
+		return ""
 	}
 }
