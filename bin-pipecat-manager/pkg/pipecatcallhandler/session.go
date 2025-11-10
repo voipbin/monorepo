@@ -16,6 +16,7 @@ func (h *pipecatcallHandler) SessionCreate(
 	pc *pipecatcall.Pipecatcall,
 	asteriskStreamingID uuid.UUID,
 	asteriskConn net.Conn,
+	llmKey string,
 ) (*pipecatcall.Session, error) {
 	h.muPipecatcallSession.Lock()
 	defer h.muPipecatcallSession.Unlock()
@@ -38,6 +39,8 @@ func (h *pipecatcallHandler) SessionCreate(
 
 		AsteriskStreamingID: asteriskStreamingID,
 		AsteriskConn:        asteriskConn,
+
+		LLMKey: llmKey,
 	}
 
 	_, ok := h.mapPipecatcallSession[res.ID]

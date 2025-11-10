@@ -26,5 +26,6 @@ type Session struct {
 	AsteriskConn        net.Conn  `json:"-"`
 
 	// llm
+	LLMKey     string `json:"-"`
 	LLMBotText string `json:"-"`
 }
