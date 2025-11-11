@@ -33,7 +33,11 @@ func Test_PostAis(t *testing.T) {
 		expectedEngineType  amai.EngineType
 		expectedEngineModel amai.EngineModel
 		expectedEngineData  map[string]any
+		expectedEngineKey   string
 		expectedInitPrompt  string
+		expectedTTSType     amai.TTSType
+		expectedTTSVoiceID  string
+		expectedSTTType     amai.STTType
 		expectedRes         string
 	}{
 		{
@@ -45,7 +49,7 @@ func Test_PostAis(t *testing.T) {
 			},
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"init_prompt":"test init prompt"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -60,7 +64,11 @@ func Test_PostAis(t *testing.T) {
 			expectedEngineData: map[string]any{
 				"key1": "val1",
 			},
+			expectedEngineKey:  "test engine key",
 			expectedInitPrompt: "test init prompt",
+			expectedTTSType:    amai.TTSTypeElevenLabs,
+			expectedTTSVoiceID: "test voice id",
+			expectedSTTType:    amai.STTTypeCartesia,
 			expectedRes:        `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
@@ -94,7 +102,11 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedEngineType,
 				tt.expectedEngineModel,
 				tt.expectedEngineData,
+				tt.expectedEngineKey,
 				tt.expectedInitPrompt,
+				tt.expectedTTSType,
+				tt.expectedTTSVoiceID,
+				tt.expectedSTTType,
 			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
@@ -371,7 +383,11 @@ func Test_PutAisId(t *testing.T) {
 		expectedEngineType  amai.EngineType
 		epxectedEngineModel amai.EngineModel
 		expectedEngineData  map[string]any
+		expectedEngineKey   string
 		expectedInitPrompt  string
+		expectedTTSType     amai.TTSType
+		expectedTTSVoiceID  string
+		expectedSTTType     amai.STTType
 		expectedRes         string
 	}{
 		{
@@ -383,7 +399,7 @@ func Test_PutAisId(t *testing.T) {
 			},
 
 			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"init_prompt":"test init prompt"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -399,7 +415,11 @@ func Test_PutAisId(t *testing.T) {
 			expectedEngineData: map[string]any{
 				"key1": "val1",
 			},
+			expectedEngineKey:  "test engine key",
 			expectedInitPrompt: "test init prompt",
+			expectedTTSType:    amai.TTSTypeElevenLabs,
+			expectedTTSVoiceID: "test voice id",
+			expectedSTTType:    amai.STTTypeCartesia,
 			expectedRes:        `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
@@ -434,7 +454,11 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedEngineType,
 				tt.epxectedEngineModel,
 				tt.expectedEngineData,
+				tt.expectedEngineKey,
 				tt.expectedInitPrompt,
+				tt.expectedTTSType,
+				tt.expectedTTSVoiceID,
+				tt.expectedSTTType,
 			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)

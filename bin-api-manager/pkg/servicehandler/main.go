@@ -249,7 +249,11 @@ type ServiceHandler interface {
 		engineType amai.EngineType,
 		engineModel amai.EngineModel,
 		engineData map[string]any,
+		engineKey string,
 		initPrompt string,
+		ttsType amai.TTSType,
+		ttsVoiceID string,
+		sttType amai.STTType,
 	) (*amai.WebhookMessage, error)
 	AIGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amai.WebhookMessage, error)
 	AIGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amai.WebhookMessage, error)
@@ -263,7 +267,11 @@ type ServiceHandler interface {
 		engineType amai.EngineType,
 		engineModel amai.EngineModel,
 		engineData map[string]any,
+		engineKey string,
 		initPrompt string,
+		ttsType amai.TTSType,
+		ttsVoiceID string,
+		sttType amai.STTType,
 	) (*amai.WebhookMessage, error)
 
 	// aicall handlers

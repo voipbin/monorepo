@@ -666,6 +666,9 @@ type AIManagerAI struct {
 	// EngineData Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	EngineData *map[string]interface{} `json:"engine_data,omitempty"`
 
+	// EngineKey API key or authentication key for the ai engine.
+	EngineKey *string `json:"engine_key,omitempty"`
+
 	// EngineModel Model of the ai engine.
 	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
 
@@ -681,6 +684,9 @@ type AIManagerAI struct {
 	// Name Name of the ai.
 	Name *string `json:"name,omitempty"`
 
+	// SttType Speech-to-text type used by the ai.
+	SttType *string `json:"stt_type,omitempty"`
+
 	// TmCreate Timestamp when the ai was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
@@ -689,6 +695,12 @@ type AIManagerAI struct {
 
 	// TmUpdate Timestamp when the ai was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// TtsType Text-to-speech type used by the ai.
+	TtsType *string `json:"tts_type,omitempty"`
+
+	// TtsVoiceId Identifier for the text-to-speech voice.
+	TtsVoiceId *string `json:"tts_voice_id,omitempty"`
 }
 
 // AIManagerAIEngineModel Model of the ai engine.
@@ -3175,6 +3187,9 @@ type PostAisJSONBody struct {
 	// EngineData Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	EngineData map[string]interface{} `json:"engine_data"`
 
+	// EngineKey API key or credential for the AI engine.
+	EngineKey string `json:"engine_key"`
+
 	// EngineModel Model of the ai engine.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 
@@ -3182,6 +3197,15 @@ type PostAisJSONBody struct {
 	EngineType AIManagerAIEngineType `json:"engine_type"`
 	InitPrompt string                `json:"init_prompt"`
 	Name       string                `json:"name"`
+
+	// SttType Speech-to-text engine type.
+	SttType string `json:"stt_type"`
+
+	// TtsType Text-to-speech engine type.
+	TtsType string `json:"tts_type"`
+
+	// TtsVoiceId Voice ID for the text-to-speech engine.
+	TtsVoiceId string `json:"tts_voice_id"`
 }
 
 // PutAisIdJSONBody defines parameters for PutAisId.
@@ -3191,6 +3215,9 @@ type PutAisIdJSONBody struct {
 	// EngineData Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	EngineData map[string]interface{} `json:"engine_data"`
 
+	// EngineKey API key or credential for the AI engine.
+	EngineKey string `json:"engine_key"`
+
 	// EngineModel Model of the ai engine.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 
@@ -3198,6 +3225,15 @@ type PutAisIdJSONBody struct {
 	EngineType AIManagerAIEngineType `json:"engine_type"`
 	InitPrompt string                `json:"init_prompt"`
 	Name       string                `json:"name"`
+
+	// SttType Speech-to-text engine type.
+	SttType string `json:"stt_type"`
+
+	// TtsType Text-to-speech engine type.
+	TtsType string `json:"tts_type"`
+
+	// TtsVoiceId Voice ID for the text-to-speech engine.
+	TtsVoiceId string `json:"tts_voice_id"`
 }
 
 // GetAisummariesParams defines parameters for GetAisummaries.

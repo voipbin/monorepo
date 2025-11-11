@@ -38,7 +38,11 @@ func (h *serviceHandler) AICreate(
 	engineType amai.EngineType,
 	engineModel amai.EngineModel,
 	engineData map[string]any,
+	engineKey string,
 	initPrompt string,
+	ttsType amai.TTSType,
+	ttsVoiceID string,
+	sttType amai.STTType,
 ) (*amai.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AICreate",
@@ -48,7 +52,11 @@ func (h *serviceHandler) AICreate(
 		"engine_type":  engineType,
 		"engine_model": engineModel,
 		"engine_data":  engineData,
+		"engine_key":   engineKey,
 		"init_prompt":  initPrompt,
+		"tts_type":     ttsType,
+		"tts_voice_id": ttsVoiceID,
+		"stt_type":     sttType,
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -64,7 +72,11 @@ func (h *serviceHandler) AICreate(
 		engineType,
 		engineModel,
 		engineData,
+		engineKey,
 		initPrompt,
+		ttsType,
+		ttsVoiceID,
+		sttType,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new ai. err: %v", err)
@@ -185,7 +197,11 @@ func (h *serviceHandler) AIUpdate(
 	engineType amai.EngineType,
 	engineModel amai.EngineModel,
 	engineData map[string]any,
+	engineKey string,
 	initPrompt string,
+	ttsType amai.TTSType,
+	ttsVoiceID string,
+	sttType amai.STTType,
 ) (*amai.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AIUpdate",
@@ -195,7 +211,12 @@ func (h *serviceHandler) AIUpdate(
 		"detail":       detail,
 		"engine_type":  engineType,
 		"engine_model": engineModel,
+		"engine_data":  engineData,
+		"engine_key":   engineKey,
 		"init_prompt":  initPrompt,
+		"tts_type":     ttsType,
+		"tts_voice_id": ttsVoiceID,
+		"stt_type":     sttType,
 	})
 
 	// get chat
@@ -218,7 +239,11 @@ func (h *serviceHandler) AIUpdate(
 		engineType,
 		engineModel,
 		engineData,
+		engineKey,
 		initPrompt,
+		ttsType,
+		ttsVoiceID,
+		sttType,
 	)
 	if err != nil {
 		log.Errorf("Could not update the ai. err: %v", err)

@@ -1302,9 +1302,21 @@ components:
           type: object
           additionalProperties: true
           description: Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+        engine_key:
+          type: string
+          description: API key or authentication key for the ai engine.
         init_prompt:
           type: string
           description: Initial prompt to configure the ai's behavior.
+        tts_type:
+          type: string
+          description: Text-to-speech type used by the ai.
+        tts_voice_id:
+          type: string
+          description: Identifier for the text-to-speech voice.
+        stt_type:
+          type: string
+          description: Speech-to-text type used by the ai.
         tm_create:
           type: string
           description: Timestamp when the ai was created.

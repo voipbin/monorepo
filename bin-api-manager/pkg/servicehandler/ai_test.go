@@ -29,7 +29,11 @@ func Test_AICreate(t *testing.T) {
 		engineType  amai.EngineType
 		engineModel amai.EngineModel
 		engineData  map[string]any
+		engineKey   string
 		initPrompt  string
+		ttsType     amai.TTSType
+		ttsVoiceID  string
+		sttType     amai.STTType
 
 		response  *amai.AI
 		expectRes *amai.WebhookMessage
@@ -51,7 +55,11 @@ func Test_AICreate(t *testing.T) {
 			engineData: map[string]any{
 				"key1": "val1",
 			},
+			engineKey:  "test-engine-key",
 			initPrompt: "test init prompt",
+			ttsType:    amai.TTSTypeElevenLabs,
+			ttsVoiceID: "test-voice-id",
+			sttType:    amai.STTTypeDeepgram,
 
 			response: &amai.AI{
 				Identity: commonidentity.Identity{
@@ -80,9 +88,35 @@ func Test_AICreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AICreate(ctx, tt.agent.CustomerID, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AICreate(
+				ctx,
+				tt.agent.CustomerID,
+				tt.aiName,
+				tt.detail,
+				tt.engineType,
+				tt.engineModel,
+				tt.engineData,
+				tt.engineKey,
+				tt.initPrompt,
+				tt.ttsType,
+				tt.ttsVoiceID,
+				tt.sttType,
+			).Return(tt.response, nil)
 
-			res, err := h.AICreate(ctx, tt.agent, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.initPrompt)
+			res, err := h.AICreate(
+				ctx,
+				tt.agent,
+				tt.aiName,
+				tt.detail,
+				tt.engineType,
+				tt.engineModel,
+				tt.engineData,
+				tt.engineKey,
+				tt.initPrompt,
+				tt.ttsType,
+				tt.ttsVoiceID,
+				tt.sttType,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

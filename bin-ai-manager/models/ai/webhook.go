@@ -15,8 +15,14 @@ type WebhookMessage struct {
 	EngineType  EngineType     `json:"engine_type,omitempty"`
 	EngineModel EngineModel    `json:"engine_model,omitempty"`
 	EngineData  map[string]any `json:"engine_data,omitempty"`
+	EngineKey   string         `json:"engine_key,omitempty"`
 
 	InitPrompt string `json:"init_prompt,omitempty"`
+
+	TTSType    TTSType `json:"tts_type,omitempty"`
+	TTSVoiceID string  `json:"tts_voice_id,omitempty"`
+
+	STTType STTType `json:"stt_type,omitempty"`
 
 	// timestamp
 	TMCreate string `json:"tm_create,omitempty"`
@@ -35,8 +41,14 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		EngineType:  h.EngineType,
 		EngineModel: h.EngineModel,
 		EngineData:  h.EngineData,
+		EngineKey:   h.EngineKey,
 
 		InitPrompt: h.InitPrompt,
+
+		TTSType:    h.TTSType,
+		TTSVoiceID: h.TTSVoiceID,
+
+		STTType: h.STTType,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

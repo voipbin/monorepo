@@ -177,7 +177,11 @@ type RequestHandler interface {
 		engineType amai.EngineType,
 		engineModel amai.EngineModel,
 		engineData map[string]any,
+		engineKey string,
 		initPrompt string,
+		ttsType amai.TTSType,
+		ttsVoiceID string,
+		sttType amai.STTType,
 	) (*amai.AI, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIUpdate(
@@ -188,7 +192,11 @@ type RequestHandler interface {
 		engineType amai.EngineType,
 		engineModel amai.EngineModel,
 		engineData map[string]any,
+		engineKey string,
 		initPrompt string,
+		ttsType amai.TTSType,
+		ttsVoiceID string,
+		sttType amai.STTType,
 	) (*amai.AI, error)
 
 	// ai-manager aicall

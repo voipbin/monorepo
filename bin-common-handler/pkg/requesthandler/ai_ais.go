@@ -64,7 +64,11 @@ func (r *requestHandler) AIV1AICreate(
 	engineType amai.EngineType,
 	engineModel amai.EngineModel,
 	engineData map[string]any,
+	engineKey string,
 	initPrompt string,
+	ttsType amai.TTSType,
+	ttsVoiceID string,
+	sttType amai.STTType,
 ) (*amai.AI, error) {
 	uri := "/v1/ais"
 
@@ -76,8 +80,14 @@ func (r *requestHandler) AIV1AICreate(
 		EngineType:  engineType,
 		EngineModel: engineModel,
 		EngineData:  engineData,
+		EngineKey:   engineKey,
 
 		InitPrompt: initPrompt,
+
+		TTSType:    ttsType,
+		TTSVoiceID: ttsVoiceID,
+
+		STTType: sttType,
 	}
 
 	m, err := json.Marshal(data)
@@ -128,7 +138,11 @@ func (r *requestHandler) AIV1AIUpdate(
 	engineType amai.EngineType,
 	engineModel amai.EngineModel,
 	engineData map[string]any,
+	engineKey string,
 	initPrompt string,
+	ttsType amai.TTSType,
+	ttsVoiceID string,
+	sttType amai.STTType,
 ) (*amai.AI, error) {
 	uri := fmt.Sprintf("/v1/ais/%s", aiID)
 
@@ -139,8 +153,14 @@ func (r *requestHandler) AIV1AIUpdate(
 		EngineType:  engineType,
 		EngineModel: engineModel,
 		EngineData:  engineData,
+		EngineKey:   engineKey,
 
 		InitPrompt: initPrompt,
+
+		TTSType:    ttsType,
+		TTSVoiceID: ttsVoiceID,
+
+		STTType: sttType,
 	}
 
 	m, err := json.Marshal(data)

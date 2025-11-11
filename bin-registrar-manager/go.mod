@@ -65,8 +65,8 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	go.uber.org/mock v0.6.0
-	golang.org/x/sys v0.37.0 // indirect
-	google.golang.org/genproto v0.0.0-20251103181224-f26f9409b101 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	google.golang.org/genproto v0.0.0-20251110190251-83f479183930 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
