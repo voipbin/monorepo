@@ -34,7 +34,20 @@ func (h *server) PostAis(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.AICreate(c.Request.Context(), &a, req.Name, req.Detail, amai.EngineType(req.EngineType), amai.EngineModel(req.EngineModel), req.EngineData, req.InitPrompt)
+	res, err := h.serviceHandler.AICreate(
+		c.Request.Context(),
+		&a,
+		req.Name,
+		req.Detail,
+		amai.EngineType(req.EngineType),
+		amai.EngineModel(req.EngineModel),
+		req.EngineData,
+		req.EngineKey,
+		req.InitPrompt,
+		amai.TTSType(req.TtsType),
+		req.TtsVoiceId,
+		amai.STTType(req.SttType),
+	)
 	if err != nil {
 		log.Errorf("Could not create a AI. err: %v", err)
 		c.AbortWithStatus(400)
@@ -193,7 +206,21 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AIUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, amai.EngineType(req.EngineType), amai.EngineModel(req.EngineModel), req.EngineData, req.InitPrompt)
+	res, err := h.serviceHandler.AIUpdate(
+		c.Request.Context(),
+		&a,
+		target,
+		req.Name,
+		req.Detail,
+		amai.EngineType(req.EngineType),
+		amai.EngineModel(req.EngineModel),
+		req.EngineData,
+		req.EngineKey,
+		req.InitPrompt,
+		amai.TTSType(req.TtsType),
+		req.TtsVoiceId,
+		amai.STTType(req.SttType),
+	)
 	if err != nil {
 		log.Errorf("Could not update the ai. err: %v", err)
 		c.AbortWithStatus(400)

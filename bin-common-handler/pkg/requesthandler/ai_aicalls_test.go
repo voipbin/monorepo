@@ -385,23 +385,8 @@ func Test_AIV1AIcallToolExecute(t *testing.T) {
 			toolID:   "77d4c710-bbec-11f0-826e-2f6827c0d353",
 			toolType: ammessage.ToolTypeFunction,
 			function: &ammessage.FunctionCall{
-				Name: ammessage.FunctionCallNameConnect,
-				Arguments: map[string]any{
-					"source": map[string]any{
-						"type":   "tel",
-						"target": "+123456789",
-					},
-					"destinations": []any{
-						map[string]any{
-							"type":   "tel",
-							"target": "+111111",
-						},
-						map[string]any{
-							"type":   "tel",
-							"target": "+22222",
-						},
-					},
-				},
+				Name:      ammessage.FunctionCallNameConnect,
+				Arguments: `{"source":{"type":"tel","target":"+123456789"},"destinations":[{"type":"tel","target":"+111111"},{"type":"tel","target":"+22222"}]}`,
 			},
 
 			response: &sock.Response{
@@ -415,7 +400,7 @@ func Test_AIV1AIcallToolExecute(t *testing.T) {
 				URI:      "/v1/aicalls/780281fa-bbec-11f0-a56b-fb82bf5a05ef/tool_execute",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"77d4c710-bbec-11f0-826e-2f6827c0d353","type":"function","function":{"name":"connect","arguments":{"destinations":[{"target":"+111111","type":"tel"},{"target":"+22222","type":"tel"}],"source":{"target":"+123456789","type":"tel"}}}}`),
+				Data:     []byte(`{"id":"77d4c710-bbec-11f0-826e-2f6827c0d353","type":"function","function":{"name":"connect","arguments":"{\"source\":{\"type\":\"tel\",\"target\":\"+123456789\"},\"destinations\":[{\"type\":\"tel\",\"target\":\"+111111\"},{\"type\":\"tel\",\"target\":\"+22222\"}]}"}}`),
 			},
 			expectRes: map[string]any{
 				"result":  "success",

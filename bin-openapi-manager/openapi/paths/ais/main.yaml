@@ -45,16 +45,31 @@ post:
               type: object
               additionalProperties: true
               description: Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+            engine_key:
+              type: string
+              description: API key or credential for the AI engine.
             init_prompt:
               type: string
+            tts_type:
+              type: string
+              description: Text-to-speech engine type.
+            tts_voice_id:
+              type: string
+              description: Voice ID for the text-to-speech engine.
+            stt_type:
+              type: string
+              description: Speech-to-text engine type.
           required:
             - name
             - detail
             - engine_type
             - engine_model
             - engine_data
+            - engine_key
             - init_prompt
-            - credential_project_id
+            - tts_type
+            - tts_voice_id
+            - stt_type
   responses:
     '200':
       description: Details of the created ai.
