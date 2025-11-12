@@ -5,6 +5,7 @@ from loguru import logger
 import aiohttp
 import asyncio
 from pipecat.services.llm_service import FunctionCallParams
+from pipecat.frames.frames import FunctionCallResultProperties
 
 tools = [
     {
@@ -181,10 +182,17 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
                     return
 
                 logger.info(f"[{tool_name}] Success: {status}")
-                await params.result_callback({
-                    "status": "ok",
-                    "data": data,
-                })
+                properties = FunctionCallResultProperties(
+                    run_llm=False,  # Do not run LLM again after tool execution
+                )
+
+                await params.result_callback(
+                    {
+                        "status": "ok",
+                        "data": data,
+                    },
+                    properties=properties,
+                )
 
     except requests.exceptions.RequestException as e:
         logger.error(f"[{tool_name}] Request failed: {e}")
