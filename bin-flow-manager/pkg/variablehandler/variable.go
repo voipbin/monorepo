@@ -82,7 +82,7 @@ func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, variabl
 	}
 
 	for k, v := range variables {
-		val := h.SubstituteString(ctx, v, vars)
+		val := h.substituteString(ctx, v, vars)
 		vars.Variables[k] = val
 	}
 

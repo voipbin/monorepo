@@ -2,8 +2,10 @@ package variablehandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/variable"
 
 	"github.com/gofrs/uuid"
@@ -18,12 +20,12 @@ func (h *variableHandler) Substitute(ctx context.Context, id uuid.UUID, data str
 		return "", errors.Wrapf(err, "could not get variable info. id: %s", id)
 	}
 
-	res := h.SubstituteString(ctx, data, vars)
+	res := h.substituteString(ctx, data, vars)
 	return res, nil
 }
 
-// SubstituteString substitutes the given data string with variables
-func (h *variableHandler) SubstituteString(ctx context.Context, data string, v *variable.Variable) string {
+// substituteString substitutes the given data string with variables
+func (h *variableHandler) substituteString(ctx context.Context, data string, v *variable.Variable) string {
 	return regexVariable.ReplaceAllStringFunc(data, func(match string) string {
 		submatches := regexVariable.FindStringSubmatch(match)
 		if len(submatches) < 2 {
@@ -31,18 +33,33 @@ func (h *variableHandler) SubstituteString(ctx context.Context, data string, v *
 		}
 		variableName := submatches[1] // Second submatch is the variable name
 
-		value, ok := v.Variables[variableName]
-		if ok {
+		// Try to get the value from variable first
+		if value, ok := h.substituteParseFromVariable(ctx, variableName, v); ok {
 			return value
 		}
+
+		// Try to get the value from other sources
+		if value, ok := h.substituteParseFromOther(ctx, variableName, v); ok {
+			return value
+		}
+
 		return ""
 	})
 }
 
+func (h *variableHandler) substituteParseFromVariable(ctx context.Context, variableName string, v *variable.Variable) (string, bool) {
+	value, ok := v.Variables[variableName]
+	if ok {
+		return value, true
+	}
+
+	return "", false
+}
+
 // Substitute substitutes the given data with variables
-func (h *variableHandler) SubstituteByte(ctx context.Context, data []byte, v *variable.Variable) []byte {
+func (h *variableHandler) substituteByte(ctx context.Context, data []byte, v *variable.Variable) []byte {
 	tmp := string(data)
-	res := h.SubstituteString(ctx, tmp, v)
+	res := h.substituteString(ctx, tmp, v)
 	return []byte(res)
 }
 
@@ -51,9 +68,9 @@ func (h *variableHandler) SubstituteOption(ctx context.Context, data map[string]
 	for k, v := range data {
 		switch v := v.(type) {
 		case string:
-			data[k] = h.SubstituteString(ctx, v, vars)
+			data[k] = h.substituteString(ctx, v, vars)
 		case []byte:
-			data[k] = h.SubstituteByte(ctx, v, vars)
+			data[k] = h.substituteByte(ctx, v, vars)
 		case map[string]any:
 			h.SubstituteOption(ctx, v, vars)
 		case []any:
@@ -62,7 +79,7 @@ func (h *variableHandler) SubstituteOption(ctx context.Context, data map[string]
 			}
 		case []string:
 			for i, elem := range v {
-				data[k].([]string)[i] = h.SubstituteString(ctx, elem, vars)
+				data[k].([]string)[i] = h.substituteString(ctx, elem, vars)
 			}
 		case []map[string]any:
 			for i, m := range v {
@@ -85,9 +102,9 @@ func (h *variableHandler) SubstituteOption(ctx context.Context, data map[string]
 func (h *variableHandler) resolveValue(ctx context.Context, value any, vars *variable.Variable) any {
 	switch v := value.(type) {
 	case string:
-		return h.SubstituteString(ctx, v, vars)
+		return h.substituteString(ctx, v, vars)
 	case []byte:
-		return h.SubstituteByte(ctx, v, vars)
+		return h.substituteByte(ctx, v, vars)
 	case map[string]any:
 		h.SubstituteOption(ctx, v, vars)
 		return v
@@ -98,7 +115,7 @@ func (h *variableHandler) resolveValue(ctx context.Context, value any, vars *var
 		return v
 	case []string:
 		for i, elem := range v {
-			v[i] = h.SubstituteString(ctx, elem, vars)
+			v[i] = h.substituteString(ctx, elem, vars)
 		}
 		return v
 	case *string:
@@ -107,5 +124,54 @@ func (h *variableHandler) resolveValue(ctx context.Context, value any, vars *var
 		return h.resolveValue(ctx, *v, vars)
 	default:
 		return fmt.Sprintf("%v", v)
+	}
+}
+
+func (h *variableHandler) substituteParseFromOther(ctx context.Context, variableName string, v *variable.Variable) (string, bool) {
+
+	switch variableName {
+	case constVariableReferenceData:
+		af, err := h.requestHandler.FlowV1ActiveflowGet(ctx, v.ID)
+		if err != nil {
+			return "", false
+		}
+
+		switch af.ReferenceType {
+		case activeflow.ReferenceTypeCall:
+			c, err := h.requestHandler.CallV1CallGet(ctx, af.ReferenceID)
+			if err != nil {
+				return "", false
+			}
+
+			cc := c.ConvertWebhookMessage()
+			tmp, err := json.Marshal(cc)
+			if err != nil {
+				return "", false
+			}
+
+			res := string(tmp)
+			return res, true
+
+		case activeflow.ReferenceTypeConversation:
+			c, err := h.requestHandler.ConversationV1ConversationGet(ctx, af.ReferenceID)
+			if err != nil {
+				return "", false
+			}
+
+			cc := c.ConvertWebhookMessage()
+			tmp, err := json.Marshal(cc)
+			if err != nil {
+				return "", false
+			}
+
+			res := string(tmp)
+			return res, true
+
+		default:
+			return "", false
+		}
+
+	default:
+		return "", false
 	}
 }
