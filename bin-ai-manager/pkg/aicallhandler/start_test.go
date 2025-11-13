@@ -1224,13 +1224,53 @@ func Test_startInitMessages(t *testing.T) {
 		ai     *ai.AI
 		aicall *aicall.AIcall
 
-		responseSubstitute string
+		responseSubstitutes []string
 
 		expectMessageTexts []string
-		expectRes          string
 	}{
 		{
-			name: "normal",
+			name: "has all",
+
+			ai: &ai.AI{
+				InitPrompt: "You are a helpful assistant.",
+				EngineData: map[string]any{
+					"initial_system_prompt": "Bruce Wayne is Batman.",
+				},
+			},
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("79e1da30-c055-11f0-9ca3-6ff0383cb80c"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("7a0651d0-c055-11f0-a70e-8fe16492a013"),
+			},
+
+			responseSubstitutes: []string{
+				"You are a super helpful assistant.",
+				"Bruce Wayne is Batman.",
+			},
+			expectMessageTexts: []string{
+				defaultCommonSystemPrompt,
+				"You are a super helpful assistant.",
+				`{"initial_system_prompt":"Bruce Wayne is Batman."}`,
+			},
+		},
+		{
+			name: "has nothing",
+
+			ai: &ai.AI{},
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("60afea76-c054-11f0-a76a-272fe6ab293c"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("60e6ed6e-c054-11f0-9d64-573dab8aa82d"),
+			},
+
+			expectMessageTexts: []string{
+				defaultCommonSystemPrompt,
+			},
+		},
+		{
+			name: "has initial prompt",
 
 			ai: &ai.AI{
 				InitPrompt: "You are a helpful assistant.",
@@ -1242,12 +1282,11 @@ func Test_startInitMessages(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("fa31d6a0-b659-11f0-8ec0-4f223b1fe9db"),
 			},
 
-			responseSubstitute: "You are a super helpful assistant.",
+			responseSubstitutes: []string{"You are a super helpful assistant."},
 			expectMessageTexts: []string{
 				defaultCommonSystemPrompt,
 				"You are a super helpful assistant.",
 			},
-			expectRes: "You are a super helpful assistant.",
 		},
 	}
 
@@ -1276,7 +1315,9 @@ func Test_startInitMessages(t *testing.T) {
 			ctx := context.Background()
 
 			// getInitPrompt
-			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, gomock.Any(), gomock.Any()).Return(tt.responseSubstitute, nil)
+			for _, m := range tt.responseSubstitutes {
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, gomock.Any(), gomock.Any()).Return(m, nil)
+			}
 
 			for _, m := range tt.expectMessageTexts {
 				mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)

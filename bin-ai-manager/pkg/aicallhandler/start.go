@@ -326,10 +326,18 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 		"aicall_id": c.ID,
 	})
 
-	initPromptMessage := h.getInitPrompt(ctx, a, c.ActiveflowID)
 	messages := []string{
-		defaultCommonSystemPrompt, // default system prompt for all calls
-		initPromptMessage,         // ai specific init prompt
+		defaultCommonSystemPrompt,
+	}
+
+	// parse init prompt
+	if msg := h.getInitPrompt(ctx, a, c.ActiveflowID); msg != "" {
+		messages = append(messages, msg)
+	}
+
+	// parse engine data
+	if msg := h.getEngineData(ctx, a, c.ActiveflowID); msg != "{}" {
+		messages = append(messages, msg)
 	}
 
 	for _, msg := range messages {

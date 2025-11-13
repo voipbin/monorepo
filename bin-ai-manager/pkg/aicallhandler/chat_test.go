@@ -1,5 +1,22 @@
 package aicallhandler
 
+import (
+	"context"
+	"encoding/json"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	reflect "reflect"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "go.uber.org/mock/gomock"
+)
+
 // func Test_ChatMessage(t *testing.T) {
 
 // 	type testCase struct {
@@ -294,3 +311,227 @@ package aicallhandler
 // 		})
 // 	}
 // }
+
+// func Test_getEngineData(t *testing.T) {
+
+// 	tests := []struct {
+// 		name string
+
+// 		ai           *ai.AI
+// 		activeflowID uuid.UUID
+
+// 		responseSubstitutes []string
+// 		expectedRes         string
+// 	}{
+// 		{
+// 			name: "normal",
+
+// 			ai: &ai.AI{
+// 				EngineData: map[string]any{
+// 					"key1": "value1",
+// 					"key2": 2,
+// 					"key3": true,
+// 					"key4": "The culprit is {${lame_person}}.",
+// 					"key5": map[string]any{
+// 						"subkey1": "subvalue1",
+// 						"subkey2": 3,
+// 						"subkey3": "The ghost is {${ghost_person}}.",
+// 						"subkey4": []string{
+// 							"sub list val 1",
+// 							"The secret is {${secret_info}}.",
+// 						},
+// 					},
+// 					"key6": []string{
+// 						"list val 1",
+// 						"The answer is {${answer_info}}.",
+// 					},
+// 					"key7": 4.5,
+// 					"key8": nil,
+// 				},
+// 			},
+// 			activeflowID: uuid.FromStringOrNil("d48b2510-c035-11f0-b454-83d837506895"),
+
+// 			responseSubstitutes: []string{
+// 				"response 1",
+// 				"response 2",
+// 				"response 3",
+// 				"response 4",
+// 				"response 5",
+// 				"response 6",
+// 				"response 7",
+// 				"response 8",
+// 			},
+// 			// expectedRes: "",
+// 			expectedRes: `{"key1":"response 1","key2":"2","key3":"true","key4":"response 2","key5":"{\"subkey1\":\"response 3\",\"subkey2\":\"3\",\"subkey3\":\"response 4\",\"subkey4\":\"[\\\"response 5\\\",\\\"response 6\\\"]\"}"}, got: {"key2":"2","key3":"true","key7":"4.5","key8":""}`,
+// 		},
+// 		{
+// 			name: "normal",
+
+// 			ai: &ai.AI{
+// 				EngineData: map[string]any{
+// 					"key2": 2,
+// 					"key3": true,
+// 					"key7": 4.5,
+// 					"key8": nil,
+// 				},
+// 			},
+// 			activeflowID: uuid.FromStringOrNil("d48b2510-c035-11f0-b454-83d837506895"),
+
+// 			responseSubstitutes: []string{},
+// 			// expectedRes: "",
+// 			expectedRes: `{"key1":"response 1","key2":"2","key3":"true","key4":"response 2","key5":"{\"subkey1\":\"response 3\",\"subkey2\":\"3\",\"subkey3\":\"response 4\",\"subkey4\":\"[\\\"response 5\\\",\\\"response 6\\\"]\"}"}`,
+// 		},
+// 		{
+// 			name: "sub keys",
+
+// 			ai: &ai.AI{
+// 				EngineData: map[string]any{
+// 					"key1": 2,
+// 					"key2": true,
+// 					"key3": map[string]any{
+// 						"subkey1": 4.5,
+// 						"subkey2": 3,
+// 						"subkey3": true,
+// 						"subkey4": []string{
+// 							"sub list val 1",
+// 						},
+// 						"subkey5": nil,
+// 					},
+// 				},
+// 			},
+// 			activeflowID: uuid.FromStringOrNil("d48b2510-c035-11f0-b454-83d837506895"),
+
+// 			responseSubstitutes: []string{
+// 				"response 1",
+// 			},
+// 			// expectedRes: "",
+// 			expectedRes: `{"key1":"response 1","key2":"2","key3":"true","key4":"response 2","key5":"{\"subkey1\":\"response 3\",\"subkey2\":\"3\",\"subkey3\":\"response 4\",\"subkey4\":\"[\\\"response 5\\\",\\\"response 6\\\"]\"}"}`,
+// 		},
+// 	}
+
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
+
+// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+// 			mockReq := requesthandler.NewMockRequestHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockAI := aihandler.NewMockAIHandler(mc)
+// 			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+// 			h := &aicallHandler{
+// 				utilHandler:    mockUtil,
+// 				reqHandler:     mockReq,
+// 				notifyHandler:  mockNotify,
+// 				db:             mockDB,
+// 				aiHandler:      mockAI,
+// 				messageHandler: mockMessage,
+// 			}
+// 			ctx := context.Background()
+
+// 			for _, sub := range tt.responseSubstitutes {
+// 				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, gomock.Any()).Return(sub, nil)
+// 			}
+
+// 			res := h.getEngineData(ctx, tt.ai, tt.activeflowID)
+// 			if res != tt.expectedRes {
+// 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
+// 			}
+// 		})
+// 	}
+// }
+
+func Test_getEngineData(t *testing.T) {
+	tests := []struct {
+		name string
+
+		ai           *ai.AI
+		activeflowID uuid.UUID
+
+		responseSubstitutes map[string]string
+		expectedRes         string
+	}{
+		{
+			name: "nested structure with variable substitution",
+			ai: &ai.AI{
+				EngineData: map[string]any{
+					"key1": "value1",
+					"key2": 2,
+					"key3": true,
+					"key4": "The culprit is {${lame_person}}.",
+					"key5": map[string]any{
+						"subkey1": "subvalue1",
+						"subkey2": 3,
+						"subkey3": "The ghost is {${ghost_person}}.",
+						"subkey4": []string{
+							"sub list val 1",
+							"The secret is {${secret_info}}.",
+						},
+					},
+					"key6": []string{
+						"list val 1",
+						"The answer is {${answer_info}}.",
+					},
+					"key7": 4.5,
+					"key8": nil,
+				},
+			},
+			activeflowID: uuid.FromStringOrNil("d48b2510-c035-11f0-b454-83d837506895"),
+			responseSubstitutes: map[string]string{
+				"value1":                           "response 1",
+				"The culprit is {${lame_person}}.": "response 2",
+				"subvalue1":                        "response 3",
+				"The ghost is {${ghost_person}}.":  "response 4",
+				"sub list val 1":                   "response 5",
+				"The secret is {${secret_info}}.":  "response 6",
+				"list val 1":                       "response 7",
+				"The answer is {${answer_info}}.":  "response 8",
+			},
+			expectedRes: `{"key1":"response 1","key2":"2","key3":"true","key4":"response 2","key5":"{\"subkey1\":\"response 3\",\"subkey2\":\"3\",\"subkey3\":\"response 4\",\"subkey4\":\"[\\\"response 5\\\",\\\"response 6\\\"]\"}","key6":"[\"response 7\",\"response 8\"]","key7":"4.5","key8":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			for k, v := range tt.responseSubstitutes {
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, k).Return(v, nil)
+			}
+
+			res := h.getEngineData(ctx, tt.ai, tt.activeflowID)
+
+			var expected, actual map[string]any
+			if err := json.Unmarshal([]byte(tt.expectedRes), &expected); err != nil {
+				t.Fatalf("invalid expectedRes JSON: %v", err)
+			}
+			if err := json.Unmarshal([]byte(res), &actual); err != nil {
+				t.Fatalf("invalid result JSON: %v", err)
+			}
+
+			if !reflect.DeepEqual(expected, actual) {
+				t.Errorf("Wrong match.\nexpected: %v\ngot: %v", expected, actual)
+			}
+		})
+	}
+}
