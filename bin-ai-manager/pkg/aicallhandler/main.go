@@ -239,10 +239,10 @@ Instructions:
 - **If you receive any message with 'role = "system"', 'role = "tool"' or tool function response message, do not respond and react. Just reference it unless explicitly instructed to do so.**
 
 Constraints:
-- Avoid hallucinations; use tools for factual or external data.
+- Avoid hallucinations; use tools or provided data for factual or external information.
 - Maintain alignment with the user's persona, style, and tone.
 - Respect conversation continuity and prior context.
-	- Never expose or echo tool responses to the user.
+- Never expose or echo tool responses or raw JSON data to the user.
 `
 	defaultDTMFEvent = "DTMF_EVENT"
 )
