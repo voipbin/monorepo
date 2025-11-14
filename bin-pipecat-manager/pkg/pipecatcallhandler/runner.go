@@ -111,6 +111,14 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleInput(id uuid.UUID, c *gin.Con
 	return nil
 }
 
+// runnerWebsocketHandleInputReceiver handles incoming WebSocket messages on the input connection.
+// This function is designed to handle WebSocket control messages (ping/pong/close) to maintain
+// the connection health. It runs in a separate goroutine alongside the main sender loop.
+//
+// Note: This is the INPUT direction (app → runner), where the primary purpose is to SEND data
+// to the runner. Any binary or text messages received are logged for debugging but not processed,
+// as they are not expected in this direction. The main data flow is handled by RunSender which
+// sends frames to the runner.
 func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.Session, ws *websocket.Conn) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "runnerWebsocketHandleInputReceiver",
