@@ -146,15 +146,15 @@ func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.
 		case websocket.TextMessage:
 			log.WithField("message", message).Debugf("Received Text message from client.")
 		case websocket.CloseMessage:
-			logrus.Debugf("Received Close message from client.")
+			log.Debugf("Received Close message from client.")
 			return
 		case websocket.PingMessage:
-			logrus.Debugf("Received Ping message from client. Sending Pong.")
+			log.Debugf("Received Ping message from client. Sending Pong.")
 			h.pipecatframeHandler.SendData(se, websocket.PongMessage, []byte{})
 		case websocket.PongMessage:
-			logrus.Debugf("Received Pong message from client.")
+			log.Debugf("Received Pong message from client.")
 		default:
-			logrus.Debugf("Received unknown message type %d, message: %s", msgType, message)
+			log.Debugf("Received unknown message type %d, message: %s", msgType, message)
 		}
 	}
 }
