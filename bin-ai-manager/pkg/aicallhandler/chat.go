@@ -64,6 +64,10 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 		"activeflow_id": activeflowID,
 	})
 
+	if a.EngineData == nil {
+		return "{}"
+	}
+
 	tmpRes := map[string]string{}
 	for k, v := range a.EngineData {
 		val := h.getEngineDataString(ctx, v, activeflowID)
@@ -74,7 +78,7 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 	engineDataBytes, err := json.Marshal(tmpRes)
 	if err != nil {
 		log.Errorf("Could not marshal the engine data back to string. err: %v", err)
-		return ""
+		return "{}"
 	}
 
 	return string(engineDataBytes)
@@ -106,12 +110,12 @@ func (h *aicallHandler) getEngineDataString(ctx context.Context, v any, activefl
 		return res
 
 	case reflect.String:
-		v := v.(string)
+		str := v.(string)
 
-		res, err := h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, v)
+		res, err := h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, str)
 		if err != nil {
 			log.Errorf("Could not substitute the engine data string. err: %v", err)
-			return v
+			return str
 		}
 
 		return res
