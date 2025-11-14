@@ -29,7 +29,9 @@ type Session struct {
 	LLMBotText string `json:"-"`
 }
 
+// SessionFrame represents a websocket frame that will be sent to the pipecat runner.
+// It encapsulates the message type and raw data to be transmitted over the websocket connection.
 type SessionFrame struct {
-	MessageType int
-	Data        []byte
+	MessageType int    // WebSocket message type (e.g., websocket.BinaryMessage, websocket.TextMessage)
+	Data        []byte // Raw frame data
 }

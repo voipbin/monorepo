@@ -36,7 +36,7 @@ func (d *DummyConn) SetDeadline(t time.Time) error      { return nil }
 func (d *DummyConn) SetReadDeadline(t time.Time) error  { return nil }
 func (d *DummyConn) SetWriteDeadline(t time.Time) error { return nil }
 
-func Test_SendDataRaw(t *testing.T) {
+func Test_SendData(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -75,7 +75,7 @@ func Test_SendDataRaw(t *testing.T) {
 				websocketHandler: mockWebsock,
 			}
 
-			h.SendDataRaw(tt.se, tt.messageType, tt.data)
+			h.SendData(tt.se, tt.messageType, tt.data)
 
 			select {
 			case got := <-tt.se.RunnerWebsocketChan:
@@ -89,7 +89,6 @@ func Test_SendDataRaw(t *testing.T) {
 			default:
 				t.Fatal("no frame pushed to RunnerWebsocketChan")
 			}
-
 		})
 	}
 }

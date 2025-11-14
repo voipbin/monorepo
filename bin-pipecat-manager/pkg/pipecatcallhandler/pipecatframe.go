@@ -19,7 +19,7 @@ type PipecatframeHandler interface {
 
 	SendAudio(se *pipecatcall.Session, packetID uint64, data []byte) error
 	SendRTVIText(se *pipecatcall.Session, id string, text string, runImmediately bool, audioResponse bool) error
-	SendDataRaw(se *pipecatcall.Session, messageType int, data []byte)
+	SendData(se *pipecatcall.Session, messageType int, data []byte)
 }
 
 type pipecatframeHandler struct {
@@ -97,7 +97,7 @@ func (h *pipecatframeHandler) SendAudio(se *pipecatcall.Session, packetID uint64
 		return errors.Wrapf(err, "could not marshal the frame")
 	}
 
-	h.SendDataRaw(se, websocket.BinaryMessage, tmpData)
+	h.SendData(se, websocket.BinaryMessage, tmpData)
 	return nil
 }
 
@@ -133,11 +133,11 @@ func (h *pipecatframeHandler) SendRTVIText(se *pipecatcall.Session, id string, t
 		return errors.Wrapf(err, "could not marshal the frame")
 	}
 
-	h.SendDataRaw(se, websocket.BinaryMessage, tmpData)
+	h.SendData(se, websocket.BinaryMessage, tmpData)
 	return nil
 }
 
-func (h *pipecatframeHandler) SendDataRaw(se *pipecatcall.Session, messageType int, data []byte) {
+func (h *pipecatframeHandler) SendData(se *pipecatcall.Session, messageType int, data []byte) {
 
 	tmpData := &pipecatcall.SessionFrame{
 		MessageType: messageType,

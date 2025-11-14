@@ -67,16 +67,16 @@ func (mr *MockPipecatframeHandlerMockRecorder) SendAudio(se, packetID, data any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAudio", reflect.TypeOf((*MockPipecatframeHandler)(nil).SendAudio), se, packetID, data)
 }
 
-// SendDataRaw mocks base method.
-func (m *MockPipecatframeHandler) SendDataRaw(se *pipecatcall.Session, messageType int, data []byte) {
+// SendData mocks base method.
+func (m *MockPipecatframeHandler) SendData(se *pipecatcall.Session, messageType int, data []byte) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SendDataRaw", se, messageType, data)
+	m.ctrl.Call(m, "SendData", se, messageType, data)
 }
 
-// SendDataRaw indicates an expected call of SendDataRaw.
-func (mr *MockPipecatframeHandlerMockRecorder) SendDataRaw(se, messageType, data any) *gomock.Call {
+// SendData indicates an expected call of SendData.
+func (mr *MockPipecatframeHandlerMockRecorder) SendData(se, messageType, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendDataRaw", reflect.TypeOf((*MockPipecatframeHandler)(nil).SendDataRaw), se, messageType, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendData", reflect.TypeOf((*MockPipecatframeHandler)(nil).SendData), se, messageType, data)
 }
 
 // SendRTVIText mocks base method.

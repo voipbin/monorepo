@@ -111,6 +111,22 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleInput(id uuid.UUID, c *gin.Con
 	return nil
 }
 
+// runnerWebsocketHandleInputReceiver handles control messages on the input WebSocket connection.
+// This goroutine's responsibility is to keep the input socket healthy by answering WebSocket
+// control frames (ping/pong/close). It runs concurrently with the main sender loop.
+//
+// Clarification about direction and data flow:
+//   - This is the INPUT direction — our side is sending the audio stream toward the pipecat app/runner.
+//     Because the primary purpose of this socket is to transmit audio, any text or binary messages
+//     received from the remote peer are unexpected and are only logged for debugging; they are not
+//     processed as application data here. The opposite (output) direction is responsible for receiving
+//     and handling streamed audio coming from the pipecat app.
+//   - Even though we normally ignore non-control incoming messages on the input socket, we must
+//     respond to WebSocket control frames (especially ping) to maintain the connection. That is the
+//     reason this receiver exists.
+//
+// Note: the main audio sending logic runs in RunSender; this function only preserves connection health
+// (control-frame handling and logging) for the input connection.
 func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.Session, ws *websocket.Conn) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "runnerWebsocketHandleInputReceiver",
@@ -134,7 +150,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.
 			return
 		case websocket.PingMessage:
 			logrus.Debugf("Received Ping message from client. Sending Pong.")
-			h.pipecatframeHandler.SendDataRaw(se, websocket.PongMessage, []byte{})
+			h.pipecatframeHandler.SendData(se, websocket.PongMessage, []byte{})
 		case websocket.PongMessage:
 			logrus.Debugf("Received Pong message from client.")
 		default:
@@ -401,11 +417,6 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 
 	case pipecatframe.RTVIFrameTypeMetric:
 		// we do nothing with this for now
-		// msg := pipecatframe.RTVIMetricsMessage{}
-		// if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
-		// 	return errors.Wrapf(errUnmarshal, "could not unmarshal metric message")
-		// }
-		// log.Debugf("Received metric message: %+v", msg)
 
 	default:
 		log.WithField("frame", frame).Errorf("Unrecognized RTVI message type: %s", frame.Type)
