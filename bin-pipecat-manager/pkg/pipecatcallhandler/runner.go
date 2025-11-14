@@ -134,10 +134,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.
 			return
 		case websocket.PingMessage:
 			logrus.Debugf("Received Ping message from client. Sending Pong.")
-			if errWrite := h.websocketHandler.WriteMessage(ws, websocket.PongMessage, []byte{}); errWrite != nil {
-				log.Errorf("Could not send Pong message: %v", errWrite)
-				return
-			}
+			h.pipecatframeHandler.SendDataRaw(se, websocket.PongMessage, []byte{})
 		case websocket.PongMessage:
 			logrus.Debugf("Received Pong message from client.")
 		default:

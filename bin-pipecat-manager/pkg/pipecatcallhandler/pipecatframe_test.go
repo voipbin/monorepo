@@ -3,7 +3,6 @@ package pipecatcallhandler
 import (
 	"context"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
 	reflect "reflect"
 	"testing"
@@ -37,37 +36,30 @@ func (d *DummyConn) SetDeadline(t time.Time) error      { return nil }
 func (d *DummyConn) SetReadDeadline(t time.Time) error  { return nil }
 func (d *DummyConn) SetWriteDeadline(t time.Time) error { return nil }
 
-func Test_sendProtobufFrame(t *testing.T) {
+func Test_SendDataRaw(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		ws    *websocket.Conn
-		frame *pipecatframe.Frame
+		se          *pipecatcall.Session
+		messageType int
+		data        []byte
 
-		expectFrame []byte
+		expectRes *pipecatcall.SessionFrame
 	}{
 		{
-			name: "normal audio",
+			name: "normal",
 
-			ws: &websocket.Conn{},
-			frame: &pipecatframe.Frame{
-				Frame: &pipecatframe.Frame_Audio{
-					Audio: &pipecatframe.AudioRawFrame{
-						Id:          1,
-						Name:        "test-audio",
-						Audio:       []byte{0x01, 0x02, 0x03, 0x04}, // PCM16 example
-						SampleRate:  16000,
-						NumChannels: 1,
-					},
-				},
+			se: &pipecatcall.Session{
+				Ctx:                 context.Background(),
+				RunnerWebsocketChan: make(chan *pipecatcall.SessionFrame, 1),
 			},
-			expectFrame: []byte{
-				0x12, 0x19, 0x08, 0x01, // field headers
-				0x12, 0x0A, 't', 'e', 's', 't', '-', 'a', 'u', 'd', 'i', 'o', // Name="test-audio"
-				0x1A, 0x04, 0x01, 0x02, 0x03, 0x04, // Audio data
-				0x20, 0x80, 0x7D, // SampleRate=16000
-				0x28, 0x01, // NumChannels=1
+			messageType: websocket.BinaryMessage,
+			data:        []byte(`{"key1":"val1"}`),
+
+			expectRes: &pipecatcall.SessionFrame{
+				MessageType: websocket.BinaryMessage,
+				Data:        []byte(`{"key1":"val1"}`),
 			},
 		},
 	}
@@ -83,11 +75,21 @@ func Test_sendProtobufFrame(t *testing.T) {
 				websocketHandler: mockWebsock,
 			}
 
-			mockWebsock.EXPECT().WriteMessage(tt.ws, websocket.BinaryMessage, tt.expectFrame).Return(nil)
+			h.SendDataRaw(tt.se, tt.messageType, tt.data)
 
-			if err := h.sendFrame(tt.ws, tt.frame); err != nil {
-				t.Errorf("unexpected error: %v", err)
+			select {
+			case got := <-tt.se.RunnerWebsocketChan:
+				if got == nil {
+					t.Fatal("got frame is nil")
+				}
+
+				if !reflect.DeepEqual(got, tt.expectRes) {
+					t.Errorf("frame mismatch\nGot:  %+v\nWant: %+v", got, tt.expectRes)
+				}
+			default:
+				t.Fatal("no frame pushed to RunnerWebsocketChan")
 			}
+
 		})
 	}
 }
@@ -101,26 +103,26 @@ func Test_SendAudio(t *testing.T) {
 		packetID  uint64
 		audioData []byte
 
-		expectRes *pipecatframe.Frame
+		expectRes *pipecatcall.SessionFrame
 	}{
 		{
 			name: "simple audio frame",
 
 			se: &pipecatcall.Session{
 				Ctx:                 context.Background(),
-				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
+				RunnerWebsocketChan: make(chan *pipecatcall.SessionFrame, 1),
 			},
 			ws:        &websocket.Conn{},
 			packetID:  1,
 			audioData: []byte{0x01, 0x02, 0x03, 0x04},
-			expectRes: &pipecatframe.Frame{
-				Frame: &pipecatframe.Frame_Audio{
-					Audio: &pipecatframe.AudioRawFrame{
-						Id:          1,
-						Audio:       []byte{0x01, 0x02, 0x03, 0x04},
-						SampleRate:  defaultMediaSampleRate,
-						NumChannels: defaultMediaNumChannel,
-					},
+
+			expectRes: &pipecatcall.SessionFrame{
+				MessageType: websocket.BinaryMessage,
+				Data: []byte{
+					0x12, 0x0D, 0x08, 0x01, // field headers
+					0x1A, 0x04, 0x01, 0x02, 0x03, 0x04, // Audio data
+					0x20, 0x80, 0x7D, // SampleRate=16000
+					0x28, 0x01, // NumChannels=1
 				},
 			},
 		},
@@ -129,19 +131,19 @@ func Test_SendAudio(t *testing.T) {
 
 			se: &pipecatcall.Session{
 				Ctx:                 context.Background(),
-				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
+				RunnerWebsocketChan: make(chan *pipecatcall.SessionFrame, 1),
 			},
 			ws:        &websocket.Conn{},
 			packetID:  2,
 			audioData: []byte{},
-			expectRes: &pipecatframe.Frame{
-				Frame: &pipecatframe.Frame_Audio{
-					Audio: &pipecatframe.AudioRawFrame{
-						Id:          2,
-						Audio:       []byte{},
-						SampleRate:  defaultMediaSampleRate,
-						NumChannels: defaultMediaNumChannel,
-					},
+
+			expectRes: &pipecatcall.SessionFrame{
+				MessageType: websocket.BinaryMessage,
+				Data: []byte{
+					0x12, 0x07, 0x08, 0x02, // field headers
+					// Audio data(none)
+					0x20, 0x80, 0x7D, // SampleRate=16000
+					0x28, 0x01, // NumChannels=1
 				},
 			},
 		},
@@ -180,25 +182,27 @@ func Test_SendRTVIText(t *testing.T) {
 		text           string
 		runImmediately bool
 		audioResponse  bool
-		expectRes      *pipecatframe.Frame
+
+		expectRes *pipecatcall.SessionFrame
 	}{
 		{
 			name: "simple RTVI text frame",
 			se: &pipecatcall.Session{
 				Ctx:                 context.Background(),
-				RunnerWebsocketChan: make(chan *pipecatframe.Frame, 1),
+				RunnerWebsocketChan: make(chan *pipecatcall.SessionFrame, 1),
 			},
 			ws:             &websocket.Conn{},
 			id:             "123",
 			text:           "Hello World",
 			runImmediately: true,
 			audioResponse:  true,
-			expectRes: &pipecatframe.Frame{
-				Frame: &pipecatframe.Frame_Message{
-					Message: &pipecatframe.MessageFrame{
-						Data: string([]byte(`{"id":"123","label":"rtvi-ai","type":"send-text","data":{"content":"Hello World","options":{"run_immediately":true,"audio_response":true}}}`)),
-					},
-				},
+
+			expectRes: &pipecatcall.SessionFrame{
+				MessageType: websocket.BinaryMessage,
+				Data: append(
+					[]byte{34, 142, 1, 10, 139, 1},
+					[]byte(`{"id":"123","label":"rtvi-ai","type":"send-text","data":{"content":"Hello World","options":{"run_immediately":true,"audio_response":true}}}`)...,
+				),
 			},
 		},
 	}

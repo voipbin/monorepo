@@ -3,7 +3,6 @@ package pipecatcall
 import (
 	"context"
 	"monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
 
 	"github.com/gofrs/uuid"
@@ -19,7 +18,7 @@ type Session struct {
 	Cancel context.CancelFunc `json:"-"`
 
 	// Runner info
-	RunnerWebsocketChan chan *pipecatframe.Frame `json:"-"`
+	RunnerWebsocketChan chan *SessionFrame `json:"-"`
 
 	// asterisk info
 	AsteriskStreamingID uuid.UUID `json:"-"`
@@ -28,4 +27,9 @@ type Session struct {
 	// llm
 	LLMKey     string `json:"-"`
 	LLMBotText string `json:"-"`
+}
+
+type SessionFrame struct {
+	MessageType int
+	Data        []byte
 }

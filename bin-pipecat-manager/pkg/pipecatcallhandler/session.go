@@ -5,7 +5,6 @@ import (
 	"fmt"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net"
 
 	"github.com/gofrs/uuid"
@@ -35,7 +34,7 @@ func (h *pipecatcallHandler) SessionCreate(
 		Ctx:    ctx,
 		Cancel: cancel,
 
-		RunnerWebsocketChan: make(chan *pipecatframe.Frame, defaultRunnerWebsocketChanBufferSize),
+		RunnerWebsocketChan: make(chan *pipecatcall.SessionFrame, defaultRunnerWebsocketChanBufferSize),
 
 		AsteriskStreamingID: asteriskStreamingID,
 		AsteriskConn:        asteriskConn,
