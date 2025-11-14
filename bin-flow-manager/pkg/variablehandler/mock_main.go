@@ -129,20 +129,6 @@ func (mr *MockVariableHandlerMockRecorder) Substitute(ctx, id, data any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Substitute", reflect.TypeOf((*MockVariableHandler)(nil).Substitute), ctx, id, data)
 }
 
-// SubstituteByte mocks base method.
-func (m *MockVariableHandler) SubstituteByte(ctx context.Context, data []byte, v *variable.Variable) []byte {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubstituteByte", ctx, data, v)
-	ret0, _ := ret[0].([]byte)
-	return ret0
-}
-
-// SubstituteByte indicates an expected call of SubstituteByte.
-func (mr *MockVariableHandlerMockRecorder) SubstituteByte(ctx, data, v any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubstituteByte", reflect.TypeOf((*MockVariableHandler)(nil).SubstituteByte), ctx, data, v)
-}
-
 // SubstituteOption mocks base method.
 func (m *MockVariableHandler) SubstituteOption(ctx context.Context, data map[string]any, vars *variable.Variable) {
 	m.ctrl.T.Helper()
@@ -153,18 +139,4 @@ func (m *MockVariableHandler) SubstituteOption(ctx context.Context, data map[str
 func (mr *MockVariableHandlerMockRecorder) SubstituteOption(ctx, data, vars any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubstituteOption", reflect.TypeOf((*MockVariableHandler)(nil).SubstituteOption), ctx, data, vars)
-}
-
-// SubstituteString mocks base method.
-func (m *MockVariableHandler) SubstituteString(ctx context.Context, data string, v *variable.Variable) string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubstituteString", ctx, data, v)
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// SubstituteString indicates an expected call of SubstituteString.
-func (mr *MockVariableHandlerMockRecorder) SubstituteString(ctx, data, v any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubstituteString", reflect.TypeOf((*MockVariableHandler)(nil).SubstituteString), ctx, data, v)
 }

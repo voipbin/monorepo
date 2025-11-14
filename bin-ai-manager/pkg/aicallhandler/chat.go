@@ -2,6 +2,9 @@ package aicallhandler
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	reflect "reflect"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -41,7 +44,7 @@ func (h *aicallHandler) getInitPrompt(ctx context.Context, a *ai.AI, activeflowI
 	})
 
 	res := a.InitPrompt
-	if activeflowID != uuid.Nil {
+	if activeflowID != uuid.Nil && a.InitPrompt != "" {
 		tmp, err := h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, a.InitPrompt)
 		if err != nil {
 			log.Errorf("Could not substitute the init prompt. err: %v", err)
@@ -52,4 +55,93 @@ func (h *aicallHandler) getInitPrompt(ctx context.Context, a *ai.AI, activeflowI
 	}
 
 	return res
+}
+
+func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowID uuid.UUID) string {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "getEngineData",
+		"ai_id":         a.ID,
+		"activeflow_id": activeflowID,
+	})
+
+	if a.EngineData == nil {
+		return "{}"
+	}
+
+	tmpRes := map[string]string{}
+	for k, v := range a.EngineData {
+		val := h.getEngineDataString(ctx, v, activeflowID)
+		tmpRes[k] = val
+	}
+
+	// marshal back to string
+	engineDataBytes, err := json.Marshal(tmpRes)
+	if err != nil {
+		log.Errorf("Could not marshal the engine data back to string. err: %v", err)
+		return "{}"
+	}
+
+	return string(engineDataBytes)
+}
+
+func (h *aicallHandler) getEngineDataString(ctx context.Context, v any, activeflowID uuid.UUID) string {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "getEngineDataString",
+		"activeflow_id": activeflowID,
+	})
+
+	if v == nil {
+		return ""
+	}
+
+	rv := reflect.ValueOf(v)
+	switch rv.Kind() {
+	case reflect.Map:
+		tmp := make(map[string]string)
+		for _, key := range rv.MapKeys() {
+			k := fmt.Sprintf("%v", key.Interface())
+			val := rv.MapIndex(key).Interface()
+			tmp[k] = h.getEngineDataString(ctx, val, activeflowID)
+		}
+
+		tmpRes, err := json.Marshal(tmp)
+		if err != nil {
+			log.Errorf("Could not marshal map. err: %v", err)
+			return ""
+		}
+
+		res := string(tmpRes)
+		return res
+
+	case reflect.String:
+		str := v.(string)
+
+		res, err := h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, str)
+		if err != nil {
+			log.Errorf("Could not substitute the engine data string. err: %v", err)
+			return str
+		}
+
+		return res
+
+	case reflect.Slice, reflect.Array:
+		tmp := make([]string, rv.Len())
+		for i := 0; i < rv.Len(); i++ {
+			tmp[i] = h.getEngineDataString(ctx, rv.Index(i).Interface(), activeflowID)
+		}
+		tmpRes, err := json.Marshal(tmp)
+		if err != nil {
+			log.Errorf("Could not marshal slice. err: %v", err)
+			return ""
+		}
+
+		res := string(tmpRes)
+		return res
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Float32, reflect.Float64, reflect.Bool:
+		return fmt.Sprintf("%v", v)
+	}
+
+	return ""
 }

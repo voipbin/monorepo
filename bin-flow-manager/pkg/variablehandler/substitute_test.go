@@ -8,6 +8,12 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	cmconversation "monorepo/bin-conversation-manager/models/conversation"
+
+	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
@@ -131,7 +137,7 @@ func Test_SubstituteString(t *testing.T) {
 
 			ctx := context.Background()
 
-			res := h.SubstituteString(ctx, tt.data, tt.v)
+			res := h.substituteString(ctx, tt.data, tt.v)
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}
@@ -204,7 +210,7 @@ func Test_SubstituteByte(t *testing.T) {
 
 			ctx := context.Background()
 
-			res := h.SubstituteByte(ctx, tt.data, tt.v)
+			res := h.substituteByte(ctx, tt.data, tt.v)
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
 			}
@@ -394,6 +400,96 @@ func Test_SubstituteOption(t *testing.T) {
 			if !reflect.DeepEqual(tt.data, tt.expectedRes) {
 				t.Errorf("Test %s failed: expected %v, got %v", tt.name, tt.expectedRes, tt.data)
 			}
+		})
+	}
+}
+
+func Test_substituteParseFromOther(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		variableName string
+		v            *variable.Variable
+
+		responseActiveflow   *activeflow.Activeflow
+		responseCall         *cmcall.Call
+		responseConversation *cmconversation.Conversation
+
+		expectedRes string
+	}{
+		{
+			name: "reference type is call",
+
+			variableName: "voipbin.reference_data",
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("df85d5c6-c05f-11f0-9ad8-4355d58efb8a"),
+			},
+
+			responseActiveflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("dfb89132-c05f-11f0-a2ad-8beb167b2ddd"),
+			},
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dfb89132-c05f-11f0-a2ad-8beb167b2ddd"),
+				},
+			},
+
+			expectedRes: `{"id":"dfb89132-c05f-11f0-a2ad-8beb167b2ddd","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"}}`,
+		},
+		{
+			name: "reference type is conversation",
+
+			variableName: "voipbin.reference_data",
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("e387e17e-c063-11f0-a135-6bff329e1839"),
+			},
+
+			responseActiveflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeConversation,
+				ReferenceID:   uuid.FromStringOrNil("e3b5a546-c063-11f0-9e2b-3339dafc15d0"),
+			},
+			responseConversation: &cmconversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e3b5a546-c063-11f0-9e2b-3339dafc15d0"),
+				},
+			},
+
+			expectedRes: `{"id":"e3b5a546-c063-11f0-9e2b-3339dafc15d0","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{}}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &variableHandler{
+				db:             mockDB,
+				requestHandler: mockReq,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.v.ID).Return(tt.responseActiveflow, nil)
+
+			if tt.responseCall != nil {
+				mockReq.EXPECT().CallV1CallGet(ctx, tt.responseActiveflow.ReferenceID).Return(tt.responseCall, nil)
+			} else if tt.responseConversation != nil {
+				mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.responseActiveflow.ReferenceID).Return(tt.responseConversation, nil)
+			}
+
+			res, found := h.substituteParseFromOther(ctx, tt.variableName, tt.v)
+			if !found {
+				t.Errorf("Wrong match. expect:found,true got:false")
+			}
+
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectedRes, res)
+			}
+
 		})
 	}
 }

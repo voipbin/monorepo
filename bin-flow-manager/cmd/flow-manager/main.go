@@ -96,7 +96,7 @@ func run(dbHandler dbhandler.DBHandler) {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
 
 	actionHandler := actionhandler.NewActionHandler()
-	variableHandler := variablehandler.NewVariableHandler(dbHandler)
+	variableHandler := variablehandler.NewVariableHandler(dbHandler, reqHandler)
 	activeflowHandler := activeflowhandler.NewActiveflowHandler(dbHandler, reqHandler, notifyHandler, actionHandler, variableHandler)
 	flowHandler := flowhandler.NewFlowHandler(dbHandler, reqHandler, notifyHandler, actionHandler, activeflowHandler)
 
