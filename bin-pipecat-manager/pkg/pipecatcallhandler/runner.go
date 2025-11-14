@@ -100,12 +100,50 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleInput(id uuid.UUID, c *gin.Con
 	}()
 	log.Debugf("WebSocket connection established with pipecat runner for input direction. pipecatcall_id: %s", id)
 
+	// run input receiver in a separate goroutine
+	go h.runnerWebsocketHandleInputReceiver(se, ws)
+
 	// handle sending messages to websocket
 	// this will run until the session context is done
 	h.pipecatframeHandler.RunSender(se, ws)
 	log.Debugf("Pipecatcall input websocket session is done. pipecatcall_id: %s", id)
 
 	return nil
+}
+
+func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.Session, ws *websocket.Conn) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "runnerWebsocketHandleInputReceiver",
+		"pipecatcall_id": se.ID,
+	})
+
+	for {
+		msgType, message, err := h.websocketHandler.ReadMessage(ws)
+		if err != nil {
+			log.Errorf("Could not read message from websocket: %v", err)
+			return
+		}
+
+		switch msgType {
+		case websocket.BinaryMessage:
+			log.WithField("message", message).Debugf("Received Protobuf Frame from client.")
+		case websocket.TextMessage:
+			log.WithField("message", message).Debugf("Received Text message from client.")
+		case websocket.CloseMessage:
+			logrus.Debugf("Received Close message from client.")
+			return
+		case websocket.PingMessage:
+			logrus.Debugf("Received Ping message from client. Sending Pong.")
+			if errWrite := h.websocketHandler.WriteMessage(ws, websocket.PongMessage, []byte{}); errWrite != nil {
+				log.Errorf("Could not send Pong message: %v", errWrite)
+				return
+			}
+		case websocket.PongMessage:
+			logrus.Debugf("Received Pong message from client.")
+		default:
+			logrus.Debugf("Received unknown message type %d, message: %s", msgType, message)
+		}
+	}
 }
 
 func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Context) error {
