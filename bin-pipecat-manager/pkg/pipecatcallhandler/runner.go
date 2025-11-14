@@ -100,12 +100,63 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleInput(id uuid.UUID, c *gin.Con
 	}()
 	log.Debugf("WebSocket connection established with pipecat runner for input direction. pipecatcall_id: %s", id)
 
+	// run input receiver in a separate goroutine
+	go h.runnerWebsocketHandleInputReceiver(se, ws)
+
 	// handle sending messages to websocket
 	// this will run until the session context is done
 	h.pipecatframeHandler.RunSender(se, ws)
 	log.Debugf("Pipecatcall input websocket session is done. pipecatcall_id: %s", id)
 
 	return nil
+}
+
+// runnerWebsocketHandleInputReceiver handles control messages on the input WebSocket connection.
+// This goroutine's responsibility is to keep the input socket healthy by answering WebSocket
+// control frames (ping/pong/close). It runs concurrently with the main sender loop.
+//
+// Clarification about direction and data flow:
+//   - This is the INPUT direction — our side is sending the audio stream toward the pipecat app/runner.
+//     Because the primary purpose of this socket is to transmit audio, any text or binary messages
+//     received from the remote peer are unexpected and are only logged for debugging; they are not
+//     processed as application data here. The opposite (output) direction is responsible for receiving
+//     and handling streamed audio coming from the pipecat app.
+//   - Even though we normally ignore non-control incoming messages on the input socket, we must
+//     respond to WebSocket control frames (especially ping) to maintain the connection. That is the
+//     reason this receiver exists.
+//
+// Note: the main audio sending logic runs in RunSender; this function only preserves connection health
+// (control-frame handling and logging) for the input connection.
+func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.Session, ws *websocket.Conn) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "runnerWebsocketHandleInputReceiver",
+		"pipecatcall_id": se.ID,
+	})
+
+	for {
+		msgType, message, err := h.websocketHandler.ReadMessage(ws)
+		if err != nil {
+			log.Errorf("Could not read message from websocket: %v", err)
+			return
+		}
+
+		switch msgType {
+		case websocket.BinaryMessage:
+			log.WithField("message", message).Debugf("Received Protobuf Frame from client.")
+		case websocket.TextMessage:
+			log.WithField("message", message).Debugf("Received Text message from client.")
+		case websocket.CloseMessage:
+			log.Debugf("Received Close message from client.")
+			return
+		case websocket.PingMessage:
+			log.Debugf("Received Ping message from client. Sending Pong.")
+			h.pipecatframeHandler.SendData(se, websocket.PongMessage, []byte{})
+		case websocket.PongMessage:
+			log.Debugf("Received Pong message from client.")
+		default:
+			log.Debugf("Received unknown message type %d, message: %s", msgType, message)
+		}
+	}
 }
 
 func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Context) error {
@@ -363,6 +414,9 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 
 		log.Debugf("Cleaning BotLLMStopped message. text: %s", se.LLMBotText)
 		se.LLMBotText = ""
+
+	case pipecatframe.RTVIFrameTypeMetric:
+		// we do nothing with this for now
 
 	default:
 		log.WithField("frame", frame).Errorf("Unrecognized RTVI message type: %s", frame.Type)

@@ -16,5 +16,7 @@ const (
 	RTVIFrameTypeBotLLMStopped = "bot-llm-stopped" // pipecat-manager -> pipecat request frame type.
 	RTVIFrameTypeUserLLMText   = "user-llm-text"   // pipecat-manager -> pipecat request frame type.
 
+	RTVIFrameTypeMetric = "metric" // pipecat -> pipecat-manager event frame type.
+
 	RTVIFrameTypeSendText = "send-text" // pipecat-manager -> pipecat request frame type.
 )

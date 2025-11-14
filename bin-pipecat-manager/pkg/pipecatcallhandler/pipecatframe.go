@@ -19,6 +19,7 @@ type PipecatframeHandler interface {
 
 	SendAudio(se *pipecatcall.Session, packetID uint64, data []byte) error
 	SendRTVIText(se *pipecatcall.Session, id string, text string, runImmediately bool, audioResponse bool) error
+	SendData(se *pipecatcall.Session, messageType int, data []byte)
 }
 
 type pipecatframeHandler struct {
@@ -54,7 +55,7 @@ func (h *pipecatframeHandler) RunSender(se *pipecatcall.Session, ws *websocket.C
 				continue
 			}
 
-			if errSend := h.sendFrame(ws, frame); errSend != nil {
+			if errSend := h.websocketHandler.WriteMessage(ws, frame.MessageType, frame.Data); errSend != nil {
 				log.Errorf("Could not send the frame. Stopping sender runner. err: %v", errSend)
 				return
 			}
@@ -63,25 +64,7 @@ func (h *pipecatframeHandler) RunSender(se *pipecatcall.Session, ws *websocket.C
 
 }
 
-func (h *pipecatframeHandler) sendFrame(conn *websocket.Conn, frame *pipecatframe.Frame) error {
-	if conn == nil {
-		// connection is not ready. drop the frame
-		return nil
-	}
-
-	marshaledFrame, err := proto.Marshal(frame)
-	if err != nil {
-		return errors.Wrapf(err, "could not marshal the frame")
-	}
-
-	if errSend := h.websocketHandler.WriteMessage(conn, websocket.BinaryMessage, marshaledFrame); errSend != nil {
-		return errors.Wrapf(errSend, "could not send the frame")
-	}
-
-	return nil
-}
-
-func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Session, frame *pipecatframe.Frame) {
+func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Session, frame *pipecatcall.SessionFrame) {
 	select {
 	case <-pc.Ctx.Done():
 		return
@@ -109,7 +92,12 @@ func (h *pipecatframeHandler) SendAudio(se *pipecatcall.Session, packetID uint64
 		},
 	}
 
-	h.pushFrame(se, frame)
+	tmpData, err := proto.Marshal(frame)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the frame")
+	}
+
+	h.SendData(se, websocket.BinaryMessage, tmpData)
 	return nil
 }
 
@@ -140,7 +128,21 @@ func (h *pipecatframeHandler) SendRTVIText(se *pipecatcall.Session, id string, t
 		},
 	}
 
-	h.pushFrame(se, frame)
+	tmpData, err := proto.Marshal(frame)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the frame")
+	}
 
+	h.SendData(se, websocket.BinaryMessage, tmpData)
 	return nil
+}
+
+func (h *pipecatframeHandler) SendData(se *pipecatcall.Session, messageType int, data []byte) {
+
+	tmpData := &pipecatcall.SessionFrame{
+		MessageType: messageType,
+		Data:        data,
+	}
+
+	h.pushFrame(se, tmpData)
 }
