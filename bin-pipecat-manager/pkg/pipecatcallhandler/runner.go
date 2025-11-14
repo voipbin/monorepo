@@ -402,6 +402,14 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		log.Debugf("Cleaning BotLLMStopped message. text: %s", se.LLMBotText)
 		se.LLMBotText = ""
 
+	case pipecatframe.RTVIFrameTypeMetric:
+		// we do nothing with this for now
+		// msg := pipecatframe.RTVIMetricsMessage{}
+		// if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+		// 	return errors.Wrapf(errUnmarshal, "could not unmarshal metric message")
+		// }
+		// log.Debugf("Received metric message: %+v", msg)
+
 	default:
 		log.WithField("frame", frame).Errorf("Unrecognized RTVI message type: %s", frame.Type)
 	}
