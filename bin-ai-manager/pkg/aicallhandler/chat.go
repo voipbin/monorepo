@@ -90,6 +90,10 @@ func (h *aicallHandler) getEngineDataString(ctx context.Context, v any, activefl
 		"activeflow_id": activeflowID,
 	})
 
+	if v == nil {
+		return ""
+	}
+
 	rv := reflect.ValueOf(v)
 	switch rv.Kind() {
 	case reflect.Map:
