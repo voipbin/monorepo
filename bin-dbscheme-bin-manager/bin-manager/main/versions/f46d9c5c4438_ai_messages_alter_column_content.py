@@ -21,7 +21,8 @@ def upgrade():
         ALTER TABLE ai_messages 
         MODIFY COLUMN content TEXT 
         CHARACTER SET utf8mb4 
-        COLLATE utf8mb4_general_ci;""")
+        COLLATE utf8mb4_general_ci;
+    """)
 
 
 def downgrade():
