@@ -46,7 +46,7 @@ Each endpoint must include a type and target, and optionally a target_name for d
                             "properties": {
                                 "type": {
                                     "type":        "string",
-                                    "description": "one of agent/conference/email/extension/line/sip/tel",
+                                    "description": "one of agent/conference/extension/line/sip/tel",
                                 },
                                 "target": {
                                     "type":        "string",
@@ -127,6 +127,72 @@ The source and destination types must be "tel".
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "email_send",
+            "description": "Sends an email with subject, content, and optional attachments to one or more destination email addresses.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "destinations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type":        "string",
+                                    "enum":        ["email"],
+                                    "description": "must be email",
+                                },
+                                "target": {
+                                    "type":        "string",
+                                    "description": "Email address",
+                                },
+                                "target_name": {
+                                    "type":        "string",
+                                    "description": "Optional display name",
+                                },
+                            },
+                            "required": ["type", "target"],
+                        },
+                    },
+                    "subject": {
+                        "type": "string",
+                        "description": "Email subject"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Email body content (HTML or plain text)"
+                    },
+                    "attachments": {
+                        "type": "array",
+                        "description": "Optional list of attachments",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "reference_type": {
+                                    "type": "string",
+                                    "enum":        ["recording"],
+                                    "description": "Attachment reference type"
+                                },
+                                "reference_id": {
+                                    "type": "string",
+                                    "description": "UUID of referenced object"
+                                }
+                            },
+                            "required": ["reference_type", "reference_id"]
+                        }
+                    }
+                },
+                "required": [
+                    "destinations",
+                    "subject",
+                    "content"
+                ]
+            }
+        }
+    },
 ]
 
 
@@ -138,8 +204,13 @@ def tool_register(llm_service, pipecatcall_id):
     async def message_send_wrapper(params: FunctionCallParams):
         return await tool_execute("message_send", params, pipecatcall_id)
 
+    async def email_send_wrapper(params: FunctionCallParams):
+        return await tool_execute("email_send", params, pipecatcall_id)
+
+
     llm_service.register_function("connect", connect_wrapper)
     llm_service.register_function("message_send", message_send_wrapper)
+    llm_service.register_function("email_send", email_send_wrapper)
 
 
 async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_id: str):

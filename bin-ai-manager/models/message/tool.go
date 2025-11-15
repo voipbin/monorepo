@@ -27,4 +27,5 @@ type FunctionCallName string
 const (
 	FunctionCallNameConnect     FunctionCallName = "connect"
 	FunctionCallNameMessageSend FunctionCallName = "message_send"
+	FunctionCallNameEmailSend   FunctionCallName = "email_send"
 )
