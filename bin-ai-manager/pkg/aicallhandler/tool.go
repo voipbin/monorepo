@@ -110,7 +110,7 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		"func":      "toolHandleConnect",
 		"aicall_id": c.ID,
 	})
-	log.Debugf("handling tool call connect.")
+	log.Debugf("handling tool connect.")
 
 	var tmpOpt fmaction.OptionConnect
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
@@ -163,6 +163,7 @@ func (h *aicallHandler) toolHandleMessageSend(ctx context.Context, c *aicall.AIc
 		"func":      "toolHandleMessageSend",
 		"aicall_id": c.ID,
 	})
+	log.Debugf("handling tool message_send.")
 
 	var tmpOpt fmaction.OptionMessageSend
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
@@ -197,6 +198,7 @@ func (h *aicallHandler) toolHandleEmailSend(ctx context.Context, c *aicall.AIcal
 		"func":      "toolHandleEmailSend",
 		"aicall_id": c.ID,
 	})
+	log.Debugf("handling tool email_send.")
 
 	var tmpOpt fmaction.OptionEmailSend
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
