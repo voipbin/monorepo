@@ -326,7 +326,7 @@ func Test_toolHandleEmailSend(t *testing.T) {
 						],
 						"subject": "test subject",
 						"content":  "test content",
-						"attachements": []
+						"attachments": []
 					}`,
 				},
 			},
@@ -337,7 +337,7 @@ func Test_toolHandleEmailSend(t *testing.T) {
 				},
 			},
 			responseMessage: &message.Message{
-				Content: `{"message":"","resource_id":"45e4d190-c23c-11f0-b814-43aec86b987f","resource_type":"email","result":"success","tool_call_id":"6ed073c6-c23b-11f0-9ada-035c2e737106"}`,
+				Content: `{"message":"Email sent successfully.","resource_id":"45e4d190-c23c-11f0-b814-43aec86b987f","resource_type":"email","result":"success","tool_call_id":"6ed073c6-c23b-11f0-9ada-035c2e737106"}`,
 			},
 
 			expectDestinations: []commonaddress.Address{
@@ -352,10 +352,11 @@ func Test_toolHandleEmailSend(t *testing.T) {
 			},
 			expectSubject:        "test subject",
 			expectContent:        `test content`,
+			expectAttachments:    []ememail.Attachment{},
 			expectMessageContent: `{"tool_call_id":"6ed073c6-c23b-11f0-9ada-035c2e737106","result":"success","message":"Email sent successfully.","resource_type":"email","resource_id":"45e4d190-c23c-11f0-b814-43aec86b987f"}`,
 			expectRes: map[string]any{
 				"result":        "success",
-				"message":       "",
+				"message":       "Email sent successfully.",
 				"resource_type": "email",
 				"resource_id":   "45e4d190-c23c-11f0-b814-43aec86b987f",
 				"tool_call_id":  "6ed073c6-c23b-11f0-9ada-035c2e737106",
@@ -397,10 +398,16 @@ func Test_toolHandleEmailSend(t *testing.T) {
 				tt.expectAttachments,
 			).Return(tt.responseEmail, nil)
 
-			// mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDMessageID)
-
-			// mockReq.EXPECT().MessageV1MessageSend(ctx, tt.responseUUIDMessageID, tt.aicall.CustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(&mmmessage.Message{}, nil)
-			mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleTool, tt.expectMessageContent, nil, tt.tool.ID).Return(tt.responseMessage, nil)
+			mockMessage.EXPECT().Create(
+				ctx,
+				tt.aicall.CustomerID,
+				tt.aicall.ID,
+				message.DirectionOutgoing,
+				message.RoleTool,
+				tt.expectMessageContent,
+				nil,
+				tt.tool.ID,
+			).Return(tt.responseMessage, nil)
 
 			res, err := h.toolHandleEmailSend(ctx, tt.aicall, tt.tool)
 			if err != nil {

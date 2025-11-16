@@ -202,12 +202,19 @@ func (h *aicallHandler) toolHandleEmailSend(ctx context.Context, c *aicall.AIcal
 
 	var tmpOpt fmaction.OptionEmailSend
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
-		log.Errorf("Could not unmarshal the tool option correctly. err: %v", errUnmarshal)
 		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
 	}
 
 	tmpMessageContent := newToolResult(tool.ID)
-	tmpRes, err := h.reqHandler.EmailV1EmailSend(ctx, c.CustomerID, c.ActiveflowID, tmpOpt.Destinations, tmpOpt.Subject, tmpOpt.Content, tmpOpt.Attachments)
+	tmpRes, err := h.reqHandler.EmailV1EmailSend(
+		ctx,
+		c.CustomerID,
+		c.ActiveflowID,
+		tmpOpt.Destinations,
+		tmpOpt.Subject,
+		tmpOpt.Content,
+		tmpOpt.Attachments,
+	)
 	if err != nil {
 		fillFailed(tmpMessageContent, err)
 	} else {
