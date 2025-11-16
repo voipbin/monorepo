@@ -415,7 +415,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		log.Debugf("Cleaning BotLLMStopped message. text: %s", se.LLMBotText)
 		se.LLMBotText = ""
 
-	case pipecatframe.RTVIFrameTypeMetric:
+	case pipecatframe.RTVIFrameTypeMetrics:
 		// we do nothing with this for now
 
 	default:

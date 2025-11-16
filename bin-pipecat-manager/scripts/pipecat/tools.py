@@ -235,7 +235,6 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
                 content_type = response.headers.get("Content-Type", "")
                 text = await response.text()
 
-                # JSON 응답일 경우 자동 파싱
                 if content_type.startswith("application/json"):
                     try:
                         data = json.loads(text)
