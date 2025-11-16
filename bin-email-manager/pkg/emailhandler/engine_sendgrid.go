@@ -90,7 +90,25 @@ func (h *engineSendgrid) Send(ctx context.Context, m *email.Email) (string, erro
 		return "", errors.Wrapf(err, "could not send email.")
 	}
 
-	res := resp.Headers["X-Message-Id"][0]
+	if resp.Headers == nil {
+		log.WithFields(logrus.Fields{
+			"status_code":   resp.StatusCode,
+			"response_body": resp.Body,
+		}).Errorf("Response headers are nil, could not get message id from response headers.")
+		return "", errors.Errorf("response headers are nil, could not get message id from response headers")
+	}
+
+	messageIDs := resp.Headers["X-Message-Id"]
+	if len(messageIDs) == 0 {
+		log.WithFields(logrus.Fields{
+			"response_headers": resp.Headers,
+			"status_code":      resp.StatusCode,
+			"response_body":    resp.Body,
+		}).Errorf("Could not get message id from response headers.")
+		return "", errors.Errorf("could not get message id from response headers")
+	}
+
+	res := messageIDs[0]
 	return res, nil
 }
 

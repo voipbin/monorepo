@@ -45,10 +45,64 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	case message.FunctionCallNameMessageSend:
 		return h.toolHandleMessageSend(ctx, c, tool)
 
+	case message.FunctionCallNameEmailSend:
+		return h.toolHandleEmailSend(ctx, c, tool)
+
 	default:
 		log.Debugf("unknown tool call: %s", tool.Function.Name)
 		return nil, fmt.Errorf("unknown tool call: %s", tool.Function.Name)
 	}
+}
+
+type messageContent struct {
+	ToolCallID   string `json:"tool_call_id"`
+	Result       string `json:"result"`
+	Message      string `json:"message"`
+	ResourceType string `json:"resource_type"`
+	ResourceID   string `json:"resource_id"`
+}
+
+func (h *aicallHandler) toolCreateResultMessage(
+	ctx context.Context,
+	c *aicall.AIcall,
+	tool *message.ToolCall,
+	tmpContent *messageContent,
+) (*message.Message, error) {
+
+	content, err := json.Marshal(tmpContent)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal the tool result content")
+	}
+
+	tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleTool, string(content), nil, tool.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create the tool message")
+	}
+	return tmp, nil
+}
+
+func newToolResult(toolID string) *messageContent {
+	return &messageContent{ToolCallID: toolID}
+}
+
+func fillFailed(mc *messageContent, err error) {
+	mc.Result = "failed"
+	mc.Message = err.Error()
+}
+
+func fillSuccess(mc *messageContent, rType, rID, msg string) {
+	mc.Result = "success"
+	mc.ResourceType = rType
+	mc.ResourceID = rID
+	mc.Message = msg
+}
+
+func (h *aicallHandler) unmarshalToolResponse(tmp *message.Message) (map[string]any, error) {
+	var res map[string]any
+	if err := json.Unmarshal([]byte(tmp.Content), &res); err != nil {
+		return nil, errors.Wrap(err, "could not unmarshal the tool response message content")
+	}
+	return res, nil
 }
 
 func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) (map[string]any, error) {
@@ -56,7 +110,7 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		"func":      "toolHandleConnect",
 		"aicall_id": c.ID,
 	})
-	log.Debugf("handling tool call connect.")
+	log.Debugf("handling tool connect.")
 
 	var tmpOpt fmaction.OptionConnect
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
@@ -71,19 +125,17 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		},
 	}
 
-	result := "success"
-	tmpContent := ""
+	tmpMessageContent := newToolResult(tool.ID)
 	af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, c.ActiveflowID, actions)
 	if err != nil {
-		result = "failed"
-		tmpContent = err.Error()
+		fillFailed(tmpMessageContent, err)
+	} else {
+		log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
+		fillSuccess(tmpMessageContent, "", "", "")
 	}
-	log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
 
-	content := fmt.Sprintf(`{"result": "%s", "message": "%s"}`, result, tmpContent)
-	tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleTool, content, nil, tool.ID)
+	tmp, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
 	if err != nil {
-		log.Errorf("Could not create the tool response message correctly. err: %v", err)
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}
 	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
@@ -98,9 +150,9 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
 	}()
 
-	res := map[string]any{
-		"result":  result,
-		"message": tmpContent,
+	res, err := h.unmarshalToolResponse(tmp)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
 	}
 
 	return res, nil
@@ -111,36 +163,73 @@ func (h *aicallHandler) toolHandleMessageSend(ctx context.Context, c *aicall.AIc
 		"func":      "toolHandleMessageSend",
 		"aicall_id": c.ID,
 	})
+	log.Debugf("handling tool message_send.")
 
 	var tmpOpt fmaction.OptionMessageSend
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
-		log.Errorf("Could not unmarshal the tool option correctly. err: %v", errUnmarshal)
 		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
 	}
 
-	// send the message right away
-	result := "success"
-	tmpContent := ""
+	tmpMessageContent := newToolResult(tool.ID)
 	msgID := h.utilHandler.UUIDCreate()
-	tmpMessage, err := h.reqHandler.MessageV1MessageSend(ctx, msgID, c.CustomerID, tmpOpt.Source, tmpOpt.Destinations, tmpOpt.Text)
+	tmpRes, err := h.reqHandler.MessageV1MessageSend(ctx, msgID, c.CustomerID, tmpOpt.Source, tmpOpt.Destinations, tmpOpt.Text)
 	if err != nil {
-		log.WithField("tool_call", tool).Errorf("Could not send the message correctly. err: %v", err)
-		result = "error"
-		tmpContent = err.Error()
+		fillFailed(tmpMessageContent, err)
+	} else {
+		fillSuccess(tmpMessageContent, "message", tmpRes.ID.String(), "Message sent successfully.")
 	}
-	log.WithField("message", tmpMessage).Debugf("Message sent. result: %s, content: %s", result, tmpContent)
 
-	content := fmt.Sprintf(`{"result": "%s", "message": "%s"}`, result, tmpContent)
-	tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleTool, content, nil, tool.ID)
+	tmp, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
 	if err != nil {
-		log.Errorf("Could not create the tool response message correctly. err: %v", err)
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}
 	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
 
-	res := map[string]any{
-		"result":  result,
-		"message": tmpContent,
+	res, err := h.unmarshalToolResponse(tmp)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
+	}
+
+	return res, nil
+}
+
+func (h *aicallHandler) toolHandleEmailSend(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) (map[string]any, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleEmailSend",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool email_send.")
+
+	var tmpOpt fmaction.OptionEmailSend
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
+		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
+	}
+
+	tmpMessageContent := newToolResult(tool.ID)
+	tmpRes, err := h.reqHandler.EmailV1EmailSend(
+		ctx,
+		c.CustomerID,
+		c.ActiveflowID,
+		tmpOpt.Destinations,
+		tmpOpt.Subject,
+		tmpOpt.Content,
+		tmpOpt.Attachments,
+	)
+	if err != nil {
+		fillFailed(tmpMessageContent, err)
+	} else {
+		fillSuccess(tmpMessageContent, "email", tmpRes.ID.String(), "Email sent successfully.")
+	}
+
+	tmp, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create the tool message")
+	}
+	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
+
+	res, err := h.unmarshalToolResponse(tmp)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
 	}
 
 	return res, nil
