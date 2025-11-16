@@ -92,6 +92,11 @@ func (h *engineSendgrid) Send(ctx context.Context, m *email.Email) (string, erro
 
 	messageIDs := resp.Headers["X-Message-Id"]
 	if len(messageIDs) == 0 {
+		log.WithFields(logrus.Fields{
+			"response_headers": resp.Headers,
+			"status_code":      resp.StatusCode,
+			"response_body":    resp.Body,
+		}).Errorf("Could not get message id from response headers.")
 		return "", errors.Errorf("could not get message id from response headers")
 	}
 
