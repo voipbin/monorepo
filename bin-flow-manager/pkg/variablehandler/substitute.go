@@ -33,13 +33,13 @@ func (h *variableHandler) substituteString(ctx context.Context, data string, v *
 		}
 		variableName := submatches[1] // Second submatch is the variable name
 
-		// Try to get the value from variable first
-		if value, ok := h.substituteParseFromVariable(ctx, variableName, v); ok {
+		// Try to get the value from the static variable first
+		if value, ok := h.substituteParseStatic(ctx, variableName, v); ok {
 			return value
 		}
 
-		// Try to get the value from other sources
-		if value, ok := h.substituteParseFromOther(ctx, variableName, v); ok {
+		// Try to get the value from dynamic resource
+		if value, ok := h.substituteParseDynamic(ctx, variableName, v); ok {
 			return value
 		}
 
@@ -47,7 +47,7 @@ func (h *variableHandler) substituteString(ctx context.Context, data string, v *
 	})
 }
 
-func (h *variableHandler) substituteParseFromVariable(ctx context.Context, variableName string, v *variable.Variable) (string, bool) {
+func (h *variableHandler) substituteParseStatic(ctx context.Context, variableName string, v *variable.Variable) (string, bool) {
 	value, ok := v.Variables[variableName]
 	if ok {
 		return value, true
@@ -127,7 +127,7 @@ func (h *variableHandler) resolveValue(ctx context.Context, value any, vars *var
 	}
 }
 
-func (h *variableHandler) substituteParseFromOther(ctx context.Context, variableName string, v *variable.Variable) (string, bool) {
+func (h *variableHandler) substituteParseDynamic(ctx context.Context, variableName string, v *variable.Variable) (string, bool) {
 
 	switch variableName {
 	case constVariableReferenceData:

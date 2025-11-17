@@ -481,7 +481,7 @@ func Test_substituteParseFromOther(t *testing.T) {
 				mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.responseActiveflow.ReferenceID).Return(tt.responseConversation, nil)
 			}
 
-			res, found := h.substituteParseFromOther(ctx, tt.variableName, tt.v)
+			res, found := h.substituteParseDynamic(ctx, tt.variableName, tt.v)
 			if !found {
 				t.Errorf("Wrong match. expect:found,true got:false")
 			}
