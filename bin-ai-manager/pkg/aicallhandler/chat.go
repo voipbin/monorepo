@@ -68,10 +68,10 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 		return "{}"
 	}
 
-	tmpRes := map[string]string{}
+	tmpRes := map[string]any{}
 	for k, v := range a.EngineData {
-		val := h.getEngineDataString(ctx, v, activeflowID)
-		tmpRes[k] = val
+		data := h.getEngineDataValue(ctx, v, activeflowID)
+		tmpRes[k] = data
 	}
 
 	// marshal back to string
@@ -84,64 +84,52 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 	return string(engineDataBytes)
 }
 
-func (h *aicallHandler) getEngineDataString(ctx context.Context, v any, activeflowID uuid.UUID) string {
+func (h *aicallHandler) getEngineDataValue(ctx context.Context, v any, activeflowID uuid.UUID) any {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "getEngineDataString",
+		"func":          "getEngineDataValue",
 		"activeflow_id": activeflowID,
 	})
 
 	if v == nil {
-		return ""
+		return nil
 	}
 
 	rv := reflect.ValueOf(v)
 	switch rv.Kind() {
 	case reflect.Map:
-		tmp := make(map[string]string)
+		tmp := make(map[string]any)
 		for _, key := range rv.MapKeys() {
 			k := fmt.Sprintf("%v", key.Interface())
 			val := rv.MapIndex(key).Interface()
-			tmp[k] = h.getEngineDataString(ctx, val, activeflowID)
+			tmp[k] = h.getEngineDataValue(ctx, val, activeflowID)
 		}
+		return tmp
 
-		tmpRes, err := json.Marshal(tmp)
-		if err != nil {
-			log.Errorf("Could not marshal map. err: %v", err)
-			return ""
+	case reflect.Slice, reflect.Array:
+		tmp := make([]any, rv.Len())
+		for i := 0; i < rv.Len(); i++ {
+			tmp[i] = h.getEngineDataValue(ctx, rv.Index(i).Interface(), activeflowID)
 		}
-
-		res := string(tmpRes)
-		return res
+		return tmp
 
 	case reflect.String:
 		str := v.(string)
-
 		res, err := h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, str)
 		if err != nil {
 			log.Errorf("Could not substitute the engine data string. err: %v", err)
 			return str
 		}
-
 		return res
 
-	case reflect.Slice, reflect.Array:
-		tmp := make([]string, rv.Len())
-		for i := 0; i < rv.Len(); i++ {
-			tmp[i] = h.getEngineDataString(ctx, rv.Index(i).Interface(), activeflowID)
-		}
-		tmpRes, err := json.Marshal(tmp)
-		if err != nil {
-			log.Errorf("Could not marshal slice. err: %v", err)
-			return ""
-		}
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return rv.Int()
 
-		res := string(tmpRes)
-		return res
+	case reflect.Float32, reflect.Float64:
+		return rv.Float()
 
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Float32, reflect.Float64, reflect.Bool:
-		return fmt.Sprintf("%v", v)
+	case reflect.Bool:
+		return rv.Bool()
 	}
 
-	return ""
+	return v
 }

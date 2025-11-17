@@ -390,13 +390,10 @@ func Test_SubstituteOption(t *testing.T) {
 			h := &variableHandler{
 				db: mockDB,
 			}
-
 			ctx := context.Background()
 
-			// Run the substitute function
 			h.SubstituteOption(ctx, tt.data, tt.v)
 
-			// Compare the results
 			if !reflect.DeepEqual(tt.data, tt.expectedRes) {
 				t.Errorf("Test %s failed: expected %v, got %v", tt.name, tt.expectedRes, tt.data)
 			}
@@ -421,7 +418,7 @@ func Test_substituteParseFromOther(t *testing.T) {
 		{
 			name: "reference type is call",
 
-			variableName: "voipbin.reference_data",
+			variableName: "voipbin.flow.reference_data",
 			v: &variable.Variable{
 				ID: uuid.FromStringOrNil("df85d5c6-c05f-11f0-9ad8-4355d58efb8a"),
 			},
@@ -441,7 +438,7 @@ func Test_substituteParseFromOther(t *testing.T) {
 		{
 			name: "reference type is conversation",
 
-			variableName: "voipbin.reference_data",
+			variableName: "voipbin.flow.reference_data",
 			v: &variable.Variable{
 				ID: uuid.FromStringOrNil("e387e17e-c063-11f0-a135-6bff329e1839"),
 			},
@@ -481,7 +478,7 @@ func Test_substituteParseFromOther(t *testing.T) {
 				mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.responseActiveflow.ReferenceID).Return(tt.responseConversation, nil)
 			}
 
-			res, found := h.substituteParseFromOther(ctx, tt.variableName, tt.v)
+			res, found := h.substituteParseDynamic(ctx, tt.variableName, tt.v)
 			if !found {
 				t.Errorf("Wrong match. expect:found,true got:false")
 			}
