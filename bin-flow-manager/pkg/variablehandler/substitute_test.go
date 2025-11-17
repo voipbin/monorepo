@@ -390,13 +390,10 @@ func Test_SubstituteOption(t *testing.T) {
 			h := &variableHandler{
 				db: mockDB,
 			}
-
 			ctx := context.Background()
 
-			// Run the substitute function
 			h.SubstituteOption(ctx, tt.data, tt.v)
 
-			// Compare the results
 			if !reflect.DeepEqual(tt.data, tt.expectedRes) {
 				t.Errorf("Test %s failed: expected %v, got %v", tt.name, tt.expectedRes, tt.data)
 			}
