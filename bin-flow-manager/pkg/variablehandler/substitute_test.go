@@ -421,7 +421,7 @@ func Test_substituteParseFromOther(t *testing.T) {
 		{
 			name: "reference type is call",
 
-			variableName: "voipbin.reference_data",
+			variableName: "voipbin.flow.reference_data",
 			v: &variable.Variable{
 				ID: uuid.FromStringOrNil("df85d5c6-c05f-11f0-9ad8-4355d58efb8a"),
 			},
@@ -441,7 +441,7 @@ func Test_substituteParseFromOther(t *testing.T) {
 		{
 			name: "reference type is conversation",
 
-			variableName: "voipbin.reference_data",
+			variableName: "voipbin.flow.reference_data",
 			v: &variable.Variable{
 				ID: uuid.FromStringOrNil("e387e17e-c063-11f0-a135-6bff329e1839"),
 			},

@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	constVariableReferenceData = "voipbin.reference_data"
+	constVariableReferenceData = "voipbin.flow.reference_data"
 )
 
 // variableHandler struct
