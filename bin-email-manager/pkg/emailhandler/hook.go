@@ -24,6 +24,9 @@ func (h *emailHandler) Hook(ctx context.Context, uri string, data []byte) error 
 	case hookSendgrid:
 		err = h.hookSendgrid(ctx, data)
 
+	case hookMailgun:
+		err = h.hookMailgun(ctx, data)
+
 	default:
 		err = errors.Errorf("unknown hook uri: %s", uri)
 	}
@@ -59,6 +62,16 @@ func (h *emailHandler) hookSendgrid(ctx context.Context, data []byte) error {
 			continue
 		}
 	}
+
+	return nil
+}
+
+func (h *emailHandler) hookMailgun(ctx context.Context, data []byte) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "hookMailgun",
+	})
+
+	log.WithField("data", string(data)).Debug("Received mailgun webhook data.")
 
 	return nil
 }

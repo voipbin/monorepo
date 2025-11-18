@@ -22,6 +22,7 @@ const (
 	defaultRedisDatabase           = 1
 	defaultRedisPassword           = ""
 	defaultSendgridAPIkey          = ""
+	defaultMailgunAPIkey           = ""
 )
 
 func init() {
@@ -51,6 +52,7 @@ func initVariable() {
 	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
 	pflag.String("sendgrid_api_key", defaultSendgridAPIkey, "API key for Sendgrid")
+	pflag.String("mailgun_api_key", defaultMailgunAPIkey, "API key for Mailgun")
 	pflag.Parse()
 
 	// rabbitmq_address
@@ -141,6 +143,16 @@ func initVariable() {
 	}
 	sendgridAPIKey = viper.GetString("sendgrid_api_key")
 
+	// mailgun_api_key
+	if errFlag := viper.BindPFlag("mailgun_api_key", pflag.Lookup("mailgun_api_key")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("mailgun_api_key", "MAILGUN_API_KEY"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	mailgunAPIKey = viper.GetString("mailgun_api_key")
 }
 
 // initLog inits log settings.

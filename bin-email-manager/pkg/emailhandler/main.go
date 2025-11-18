@@ -21,6 +21,7 @@ type emailHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 
 	engineSendgrid EngineSendgrid
+	engineMailgun  EngineMailgun
 }
 
 type EmailHandler interface {
@@ -46,10 +47,13 @@ var (
 		Target:     "service@voipbin.net",
 		TargetName: "voipbin service",
 	}
+
+	defaultMailgunDomain = "mailgun.voipbin.net"
 )
 
 const (
 	hookSendgrid = "sendgrid"
+	hookMailgun  = "mailgun"
 )
 
 func NewEmailHandler(
@@ -58,9 +62,11 @@ func NewEmailHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 
 	sendgridAPIKey string,
+	mailgunAPIKey string,
 ) EmailHandler {
 
 	engineSendgrid := NewEngineSendgrid(reqHandler, sendgridAPIKey)
+	engineMailgun := NewEngineMailgun(reqHandler, defaultMailgunDomain, mailgunAPIKey)
 
 	h := &emailHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -69,6 +75,7 @@ func NewEmailHandler(
 		notifyHandler: notifyHandler,
 
 		engineSendgrid: engineSendgrid,
+		engineMailgun:  engineMailgun,
 	}
 	return h
 }

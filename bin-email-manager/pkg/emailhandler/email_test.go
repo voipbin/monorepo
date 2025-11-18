@@ -122,6 +122,7 @@ func Test_Create(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
+			mockMailgun := NewMockEngineMailgun(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
@@ -130,6 +131,7 @@ func Test_Create(t *testing.T) {
 				utilHandler:   mockUtil,
 
 				engineSendgrid: mockSendgrid,
+				engineMailgun:  mockMailgun,
 			}
 
 			ctx := context.Background()

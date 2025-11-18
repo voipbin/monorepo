@@ -15,6 +15,7 @@ func (h *emailHandler) Send(ctx context.Context, e *email.Email) {
 
 	handlers := []func(context.Context, *email.Email) (string, error){
 		h.engineSendgrid.Send,
+		h.engineMailgun.Send,
 	}
 
 	for _, handler := range handlers {
