@@ -73,5 +73,7 @@ func (h *emailHandler) hookMailgun(ctx context.Context, data []byte) error {
 
 	log.WithField("data", string(data)).Debug("Received mailgun webhook data.")
 
+	// TODO: implement mailgun webhook handling
+
 	return nil
 }

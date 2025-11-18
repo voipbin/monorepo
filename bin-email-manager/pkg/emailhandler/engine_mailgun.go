@@ -113,7 +113,7 @@ func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) 
 	case email.AttachmentReferenceTypeRecording:
 		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not get attachment. type=%s id=%s", e.ReferenceType, e.ReferenceID)
+			return nil, errors.Wrapf(err, "could not get attachment. reference_type=%s, reference_id=%s", e.ReferenceType, e.ReferenceID)
 		}
 		log.WithField("recording", f).Debugf("Got recording attachment. recording_id: %s", f.ReferenceID)
 
@@ -140,7 +140,11 @@ func (h *engineMailgun) download(ctx context.Context, downloadURI string) ([]byt
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	client := &http.Client{
+		Timeout: defaultDownloadTimeout,
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to download file")
 	}

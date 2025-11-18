@@ -160,7 +160,11 @@ func (h *engineSendgrid) downloadToBase64(ctx context.Context, downloadURI strin
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	client := &http.Client{
+		Timeout: defaultDownloadTimeout,
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to download file")
 	}
