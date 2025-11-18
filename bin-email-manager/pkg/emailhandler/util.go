@@ -13,6 +13,7 @@ import (
 
 const (
 	defaultDownloadTimeout = 30 * time.Second
+	defaultMaxDownloadSize = 50 * 1024 * 1024 // 50 MB
 )
 
 var httpClient = &http.Client{
@@ -37,7 +38,7 @@ func download(ctx context.Context, downloadURI string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to download file. status=%d", resp.StatusCode)
 	}
 
-	data, err := io.ReadAll(resp.Body)
+	data, err := io.ReadAll(io.LimitReader(resp.Body, defaultMaxDownloadSize))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read response body")
 	}

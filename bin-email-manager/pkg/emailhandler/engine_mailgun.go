@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"monorepo/bin-common-handler/pkg/requesthandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	"time"
@@ -22,11 +21,9 @@ const (
 )
 
 type engineMailgun struct {
-	utilHandler utilhandler.UtilHandler
-	reqHandler  requesthandler.RequestHandler
+	reqHandler requesthandler.RequestHandler
 
 	client *mailgun.MailgunImpl
-	domain string
 }
 
 type EngineMailgun interface {
@@ -34,14 +31,17 @@ type EngineMailgun interface {
 }
 
 func NewEngineMailgun(reqHandler requesthandler.RequestHandler, apiKey string) EngineMailgun {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "NewEngineMailgun",
+	})
+
+	log.Debugf("Initializing Mailgun client. domain: %s", defaultMailgunDomain)
 	mg := mailgun.NewMailgun(defaultMailgunDomain, apiKey)
 
 	return &engineMailgun{
-		utilHandler: utilhandler.NewUtilHandler(),
-		reqHandler:  reqHandler,
+		reqHandler: reqHandler,
 
 		client: mg,
-		domain: defaultMailgunDomain,
 	}
 }
 
