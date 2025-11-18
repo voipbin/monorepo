@@ -63,7 +63,7 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 	for _, d := range m.Destinations {
 		if errAdd := message.AddRecipient(fmt.Sprintf("%s <%s>", d.TargetName, d.Target)); errAdd != nil {
 			log.Errorf("Could not add recipient: %s <%s>. err: %v", d.TargetName, d.Target, errAdd)
-			return "", errors.Wrapf(errAdd, "could not add recipient. recipient=%s", d.Target)
+			return "", errors.Wrapf(errAdd, "could not add recipient. target: %s, target_name: %s", d.Target, d.TargetName)
 		}
 	}
 
@@ -71,8 +71,7 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 	for _, a := range m.Attachments {
 		filename, data, err := h.getAttachment(ctx, &a)
 		if err != nil {
-			log.WithField("attachment", a).Errorf("Could not get attachment. err: %v", err)
-			continue
+			return "", errors.Wrapf(err, "could not get attachment. reference_type: %s, reference_id: %s", a.ReferenceType, a.ReferenceID)
 		}
 
 		message.AddBufferAttachment(filename, data)
