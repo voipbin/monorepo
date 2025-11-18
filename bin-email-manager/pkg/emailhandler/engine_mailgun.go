@@ -52,14 +52,24 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 	})
 	log.Debugf("Sending an email via Mailgun. email_id: %v", m.ID)
 
+	source := m.Source.Target
+	if m.Source.TargetName != "" {
+		source = fmt.Sprintf("%s <%s>", m.Source.TargetName, m.Source.Target)
+	}
+
 	message := mailgun.NewMessage(
-		fmt.Sprintf("%s <%s>", m.Source.TargetName, m.Source.Target),
+		source,
 		m.Subject,
 		m.Content,
 	)
 
 	for _, d := range m.Destinations {
-		if errAdd := message.AddRecipient(fmt.Sprintf("%s <%s>", d.TargetName, d.Target)); errAdd != nil {
+		tmp := d.Target
+		if d.TargetName != "" {
+			tmp = fmt.Sprintf("%s <%s>", d.TargetName, d.Target)
+		}
+
+		if errAdd := message.AddRecipient(tmp); errAdd != nil {
 			return "", errors.Wrapf(errAdd, "could not add recipient. target: %s, target_name: %s", d.Target, d.TargetName)
 		}
 	}
