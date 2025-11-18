@@ -16,14 +16,14 @@ const (
 	defaultMaxDownloadSize = 50 * 1024 * 1024 // 50 MB
 )
 
-var httpClient = &http.Client{
-	Timeout: defaultDownloadTimeout,
-}
-
 func download(ctx context.Context, downloadURI string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", downloadURI, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create request")
+	}
+
+	httpClient := &http.Client{
+		Timeout: defaultDownloadTimeout,
 	}
 
 	resp, err := httpClient.Do(req)

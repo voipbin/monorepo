@@ -89,7 +89,7 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 
 	resp, id, err := h.client.Send(cctx, message)
 	if err != nil {
-		return "", errors.Wrapf(err, "could not send mailgun email. message: %v", message)
+		return "", errors.Wrapf(err, "could not send mailgun email. email_id: %s", m.ID)
 	}
 
 	log.WithField("mailgun_response", resp).Debugf("Mailgun email sent. message_id: %s", id)
@@ -121,6 +121,8 @@ func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) 
 		return "", nil, errors.Errorf("unknown attachment reference type: %v", e.ReferenceType)
 	}
 
+	// Note: Mailgun expects attachment data as raw bytes, so we use `download` here.
+	// In contrast, the Sendgrid engine uses `downloadToBase64` because Sendgrid expects base64-encoded attachments.
 	data, err := download(ctx, f.DownloadURI)
 	if err != nil {
 		return "", nil, errors.Wrapf(err, "could not download attachment")
