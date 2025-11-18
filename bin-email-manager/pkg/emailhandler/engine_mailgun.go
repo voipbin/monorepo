@@ -60,26 +60,22 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 		m.Content,
 	)
 
-	// Add recipients
 	for _, d := range m.Destinations {
 		if errAdd := message.AddRecipient(fmt.Sprintf("%s <%s>", d.TargetName, d.Target)); errAdd != nil {
 			log.Errorf("Could not add recipient: %s <%s>. err: %v", d.TargetName, d.Target, errAdd)
-			continue
+			return "", errors.Wrapf(errAdd, "could not add recipient. recipient=%s", d.Target)
 		}
 	}
 
-	// Custom message-id
 	message.AddHeader("X-Voipbin-Message-Id", m.ID.String())
-
-	// Attachments (Mailgun is simpler)
 	for _, a := range m.Attachments {
-		attach, err := h.getAttachment(ctx, &a)
+		filename, data, err := h.getAttachment(ctx, &a)
 		if err != nil {
 			log.WithField("attachment", a).Errorf("Could not get attachment. err: %v", err)
 			continue
 		}
 
-		message.AddBufferAttachment(attach.Filename, attach.Bytes)
+		message.AddBufferAttachment(filename, data)
 	}
 
 	cctx, cancel := context.WithTimeout(ctx, defaultMailgunRequestTimeout)
@@ -95,15 +91,7 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 	return id, nil
 }
 
-/*
-We define a dedicated struct instead of mail.Attachment
-*/
-type MGAttachment struct {
-	Filename string
-	Bytes    []byte
-}
-
-func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) (*MGAttachment, error) {
+func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) (string, []byte, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "getAttachment",
 		"attachment": e,
@@ -117,25 +105,22 @@ func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) 
 	case email.AttachmentReferenceTypeRecording:
 		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not get attachment. reference_type=%s, reference_id=%s", e.ReferenceType, e.ReferenceID)
+			return "", nil, errors.Wrapf(err, "could not get attachment. reference_type=%s, reference_id=%s", e.ReferenceType, e.ReferenceID)
 		}
 		log.WithField("recording", f).Debugf("Got recording attachment. recording_id: %s", f.ReferenceID)
 
 		filename = fmt.Sprintf("%s.zip", f.ReferenceID)
 
 	default:
-		return nil, errors.Errorf("unknown attachment reference type: %v", e.ReferenceType)
+		return "", nil, errors.Errorf("unknown attachment reference type: %v", e.ReferenceType)
 	}
 
 	data, err := h.download(ctx, f.DownloadURI)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not download attachment")
+		return "", nil, errors.Wrapf(err, "could not download attachment")
 	}
 
-	return &MGAttachment{
-		Filename: filename,
-		Bytes:    data,
-	}, nil
+	return filename, data, nil
 }
 
 func (h *engineMailgun) download(ctx context.Context, downloadURI string) ([]byte, error) {
