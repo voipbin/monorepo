@@ -10,7 +10,6 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
 	"monorepo/bin-email-manager/pkg/dbhandler"
-	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -48,8 +47,6 @@ var (
 		Target:     "service@voipbin.net",
 		TargetName: "voipbin service",
 	}
-
-	defaultDownloadTimeout = 30 * time.Second
 )
 
 const (

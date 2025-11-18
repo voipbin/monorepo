@@ -5,12 +5,10 @@ package emailhandler
 import (
 	"context"
 	"fmt"
-	"io"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
-	"net/http"
 	"time"
 
 	"github.com/mailgun/mailgun-go/v4"
@@ -104,7 +102,7 @@ func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) 
 	case email.AttachmentReferenceTypeRecording:
 		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)
 		if err != nil {
-			return "", nil, errors.Wrapf(err, "could not get attachment. reference_type=%s, reference_id=%s", e.ReferenceType, e.ReferenceID)
+			return "", nil, errors.Wrapf(err, "could not get attachment. reference_type: %s, reference_id: %s", e.ReferenceType, e.ReferenceID)
 		}
 		log.WithField("recording", f).Debugf("Got recording attachment. recording_id: %s", f.ReferenceID)
 
@@ -114,40 +112,10 @@ func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) 
 		return "", nil, errors.Errorf("unknown attachment reference type: %v", e.ReferenceType)
 	}
 
-	data, err := h.download(ctx, f.DownloadURI)
+	data, err := download(ctx, f.DownloadURI)
 	if err != nil {
 		return "", nil, errors.Wrapf(err, "could not download attachment")
 	}
 
 	return filename, data, nil
-}
-
-func (h *engineMailgun) download(ctx context.Context, downloadURI string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", downloadURI, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	client := &http.Client{
-		Timeout: defaultDownloadTimeout,
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to download file")
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to download file: status=%d", resp.StatusCode)
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read response body")
-	}
-
-	return data, nil
 }
