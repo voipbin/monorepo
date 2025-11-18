@@ -15,17 +15,17 @@ const (
 	defaultDownloadTimeout = 30 * time.Second
 )
 
+var httpClient = &http.Client{
+	Timeout: defaultDownloadTimeout,
+}
+
 func download(ctx context.Context, downloadURI string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", downloadURI, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create request")
 	}
 
-	client := &http.Client{
-		Timeout: defaultDownloadTimeout,
-	}
-
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to download file")
 	}
