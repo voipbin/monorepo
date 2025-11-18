@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mailgun/mailgun-go"
+	"github.com/mailgun/mailgun-go/v4"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -49,7 +49,7 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 	})
 	log.Debugf("Sending an email via Mailgun. email_id: %v", m.ID)
 
-	message := h.client.NewMessage(
+	message := mailgun.NewMessage(
 		fmt.Sprintf("%s <%s>", m.Source.TargetName, m.Source.Target),
 		m.Subject,
 		m.Content,
@@ -57,7 +57,10 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 
 	// Add recipients
 	for _, d := range m.Destinations {
-		message.AddRecipient(fmt.Sprintf("%s <%s>", d.TargetName, d.Target))
+		if errAdd := message.AddRecipient(fmt.Sprintf("%s <%s>", d.TargetName, d.Target)); errAdd != nil {
+			log.Errorf("Could not add recipient: %s <%s>. err: %v", d.TargetName, d.Target, errAdd)
+			continue
+		}
 	}
 
 	// Custom message-id
@@ -75,10 +78,10 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 	}
 
 	// Mailgun timeout recommendation: context with timeout
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	cctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	resp, id, err := h.client.Send(message)
+	resp, id, err := h.client.Send(cctx, message)
 	if err != nil {
 		return "", errors.Wrapf(err, "could not send mailgun email. message: %v", message)
 	}
