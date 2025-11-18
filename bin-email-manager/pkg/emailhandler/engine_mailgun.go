@@ -18,6 +18,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	defaultMailgunDomain         = "mailgun.voipbin.net"
+	defaultMailgunRequestTimeout = 30 * time.Second
+)
+
 type engineMailgun struct {
 	utilHandler utilhandler.UtilHandler
 	reqHandler  requesthandler.RequestHandler
@@ -30,15 +35,15 @@ type EngineMailgun interface {
 	Send(ctx context.Context, m *email.Email) (string, error)
 }
 
-func NewEngineMailgun(reqHandler requesthandler.RequestHandler, domain string, apiKey string) EngineMailgun {
-	mg := mailgun.NewMailgun(domain, apiKey)
+func NewEngineMailgun(reqHandler requesthandler.RequestHandler, apiKey string) EngineMailgun {
+	mg := mailgun.NewMailgun(defaultMailgunDomain, apiKey)
 
 	return &engineMailgun{
 		utilHandler: utilhandler.NewUtilHandler(),
 		reqHandler:  reqHandler,
 
 		client: mg,
-		domain: domain,
+		domain: defaultMailgunDomain,
 	}
 }
 
@@ -77,8 +82,7 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 		message.AddBufferAttachment(attach.Filename, attach.Bytes)
 	}
 
-	// Mailgun timeout recommendation: context with timeout
-	cctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	cctx, cancel := context.WithTimeout(ctx, defaultMailgunRequestTimeout)
 	defer cancel()
 
 	resp, id, err := h.client.Send(cctx, message)

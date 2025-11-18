@@ -49,7 +49,6 @@ var (
 		TargetName: "voipbin service",
 	}
 
-	defaultMailgunDomain   = "mailgun.voipbin.net"
 	defaultDownloadTimeout = 30 * time.Second
 )
 
@@ -68,7 +67,7 @@ func NewEmailHandler(
 ) EmailHandler {
 
 	engineSendgrid := NewEngineSendgrid(reqHandler, sendgridAPIKey)
-	engineMailgun := NewEngineMailgun(reqHandler, defaultMailgunDomain, mailgunAPIKey)
+	engineMailgun := NewEngineMailgun(reqHandler, mailgunAPIKey)
 
 	h := &emailHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
