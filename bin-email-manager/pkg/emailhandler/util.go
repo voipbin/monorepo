@@ -38,9 +38,12 @@ func download(ctx context.Context, downloadURI string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to download file. status=%d", resp.StatusCode)
 	}
 
-	data, err := io.ReadAll(io.LimitReader(resp.Body, defaultMaxDownloadSize))
+	data, err := io.ReadAll(io.LimitReader(resp.Body, defaultMaxDownloadSize+1))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read response body")
+	}
+	if int64(len(data)) > defaultMaxDownloadSize {
+		return nil, fmt.Errorf("file size exceeds maximum download size of %d bytes", defaultMaxDownloadSize)
 	}
 
 	return data, nil
