@@ -48,6 +48,8 @@ spec:
               value: "1"
             - name: SENDGRID_API_KEY
               value: ${SENDGRID_API_KEY}
+            - name: MAILGUN_API_KEY
+              value: ${MAILGUN_API_KEY}
           ports:
             - name: metrics
               protocol: "TCP"

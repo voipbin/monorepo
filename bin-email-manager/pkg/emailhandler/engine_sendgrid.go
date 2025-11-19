@@ -4,14 +4,11 @@ package emailhandler
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"io"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
-	"net/http"
 
 	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go"
@@ -139,7 +136,7 @@ func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment)
 		return nil, errors.Errorf("unknown attachment reference type: %v", e.ReferenceType)
 	}
 
-	encodedAttachment, err := h.downloadToBase64(ctx, f.DownloadURI)
+	encodedAttachment, err := downloadToBase64(ctx, f.DownloadURI)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not download attachment")
 	}
@@ -151,31 +148,4 @@ func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment)
 	res.SetDisposition("attachment") //  "attachment" = download, "inline" = display in email if possible
 
 	return res, nil
-}
-
-// downloadToBase64 downloads the file from the given uri and returns the base64 encoded string
-func (h *engineSendgrid) downloadToBase64(ctx context.Context, downloadURI string) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", downloadURI, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to create request: %w", err)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", errors.Wrapf(err, "failed to download file")
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", errors.Wrapf(err, "failed to download file, status code: %d", resp.StatusCode)
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", errors.Wrapf(err, "failed to read response body")
-	}
-
-	return base64.StdEncoding.EncodeToString(data), nil
 }

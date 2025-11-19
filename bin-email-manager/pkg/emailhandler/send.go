@@ -13,16 +13,23 @@ func (h *emailHandler) Send(ctx context.Context, e *email.Email) {
 		"email_id": e.ID,
 	})
 
-	handlers := []func(context.Context, *email.Email) (string, error){
-		h.engineSendgrid.Send,
+	providers := []struct {
+		name    string
+		handler func(context.Context, *email.Email) (string, error)
+	}{
+		{"sendgrid", h.engineSendgrid.Send},
+		{"mailgun", h.engineMailgun.Send},
 	}
 
-	for _, handler := range handlers {
-		providerReferenceID, err := handler(ctx, e)
+	for _, p := range providers {
+		log.WithField("provider", p.name).Debugf("Attempting to send email via provider. provider: %s", p.name)
+
+		providerReferenceID, err := p.handler(ctx, e)
 		if err != nil {
 			log.Errorf("Could not send email. Trying with next provider. err: %v", err)
 			continue
 		}
+		log.Infof("Email successfully sent via provider. provider_name: %s, provider_reference_id: %s", p.name, providerReferenceID)
 
 		if errUpdate := h.UpdateProviderReferenceID(ctx, e.ID, providerReferenceID); errUpdate != nil {
 			// we could not update the provider reference id

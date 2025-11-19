@@ -35,6 +35,7 @@ var (
 	redisDatabase           = 0
 	redisPassword           = ""
 	sendgridAPIKey          = ""
+	mailgunAPIKey           = ""
 )
 
 func main() {
@@ -92,7 +93,7 @@ func run(dbHandler dbhandler.DBHandler) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
 
-	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, sendgridAPIKey)
+	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, sendgridAPIKey, mailgunAPIKey)
 
 	// run listen
 	if errListen := runListen(sockHandler, emailHandler); errListen != nil {
