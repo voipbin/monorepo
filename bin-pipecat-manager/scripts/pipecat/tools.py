@@ -214,6 +214,9 @@ The source and destination types must be "tel".
 
 def tool_register(llm_service, pipecatcall_id):
     """Registers available tools for the LLM service."""
+    async def tool_finalize_wrapper(params: FunctionCallParams):
+        return await tool_finalize(params, pipecatcall_id)
+
     async def connect_wrapper(params: FunctionCallParams):
         return await tool_execute("connect", params, pipecatcall_id)
 
@@ -224,6 +227,7 @@ def tool_register(llm_service, pipecatcall_id):
         return await tool_execute("email_send", params, pipecatcall_id)
 
 
+    llm_service.register_function("tool_finalize", tool_finalize_wrapper)
     llm_service.register_function("connect", connect_wrapper)
     llm_service.register_function("message_send", message_send_wrapper)
     llm_service.register_function("email_send", email_send_wrapper)
