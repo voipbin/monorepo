@@ -11,10 +11,11 @@ type CommonFrameMessage struct {
 const (
 	RTVIFrameTypeBotTranscription  = "bot-transcription"  // pipecat -> pipecat-manager event frame type.
 	RTVIFrameTypeUserTranscription = "user-transcription" // pipecat -> pipecat-manager event frame type.
+	RTVIFrameTypeBotLLMText        = "bot-llm-text"       // pipecat -> pipecat-manager event frame type.
+	RTVIFrameTypeBotLLMStarted     = "bot-llm-started"    // pipecat -> pipecat-manager event frame type.
+	RTVIFrameTypeBotLLMStopped     = "bot-llm-stopped"    // pipecat -> pipecat-manager event frame type.
 
-	RTVIFrameTypeBotLLMText    = "bot-llm-text"    // pipecat-manager -> pipecat request frame type.
-	RTVIFrameTypeBotLLMStopped = "bot-llm-stopped" // pipecat-manager -> pipecat request frame type.
-	RTVIFrameTypeUserLLMText   = "user-llm-text"   // pipecat-manager -> pipecat request frame type.
+	RTVIFrameTypeUserLLMText = "user-llm-text" // pipecat-manager -> pipecat request frame type.
 
 	RTVIFrameTypeMetrics = "metrics" // pipecat -> pipecat-manager event frame type.
 

@@ -11,6 +11,22 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "tool_finalize",
+            "description": """
+A general-purpose tool that triggers a follow-up LLM response at the appropriate point after 
+tool execution (e.g., SMS, Email, or database updates). 
+This tool should be called only once when a final response from the LLM is needed.
+""",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "connect",
             "description": """
 Establishes a call from a source endpoint to one or more destination endpoints. 
@@ -198,6 +214,9 @@ The source and destination types must be "tel".
 
 def tool_register(llm_service, pipecatcall_id):
     """Registers available tools for the LLM service."""
+    async def tool_finalize_wrapper(params: FunctionCallParams):
+        return await tool_finalize(params, pipecatcall_id)
+
     async def connect_wrapper(params: FunctionCallParams):
         return await tool_execute("connect", params, pipecatcall_id)
 
@@ -208,9 +227,27 @@ def tool_register(llm_service, pipecatcall_id):
         return await tool_execute("email_send", params, pipecatcall_id)
 
 
+    llm_service.register_function("tool_finalize", tool_finalize_wrapper)
     llm_service.register_function("connect", connect_wrapper)
     llm_service.register_function("message_send", message_send_wrapper)
     llm_service.register_function("email_send", email_send_wrapper)
+
+
+async def tool_finalize(params: FunctionCallParams, pipecatcall_id: str):
+    """Finalizes the tool execution and triggers a follow-up LLM response."""
+    logger.info(f"[tool_finalize] Finalizing tool execution. pipecatcall_id: {pipecatcall_id}")
+
+    properties = FunctionCallResultProperties(
+        run_llm=True,  # Trigger LLM response after finalization
+    )
+
+    await params.result_callback(
+        {
+            "status": "ok",
+            "data": {"message": "Tool execution finalized."},
+        },
+        properties=properties,
+    )
 
 
 async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_id: str):
