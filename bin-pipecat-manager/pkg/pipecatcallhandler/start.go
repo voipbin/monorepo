@@ -246,8 +246,5 @@ func (h *pipecatcallHandler) terminateReferenceTypeAICall(ctx context.Context, p
 		log.Debugf("No action needed to stop for ai call reference type: %v", ac.ReferenceType)
 	}
 
-	h.SessionStop(pc.ID)
-	log.Debugf("Terminated pipecatcall session. pipecatcall_id: %s", pc.ID)
-
 	return nil
 }
