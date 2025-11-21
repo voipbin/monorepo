@@ -17,11 +17,8 @@ func (h *pipecatcallHandler) SessionCreate(
 	asteriskConn net.Conn,
 	llmKey string,
 ) (*pipecatcall.Session, error) {
-	h.muPipecatcallSession.Lock()
-	defer h.muPipecatcallSession.Unlock()
 
 	ctx, cancel := context.WithCancel(context.Background())
-
 	res := &pipecatcall.Session{
 		Identity: commonidentity.Identity{
 			ID:         pc.ID,
@@ -41,6 +38,9 @@ func (h *pipecatcallHandler) SessionCreate(
 
 		LLMKey: llmKey,
 	}
+
+	h.muPipecatcallSession.Lock()
+	defer h.muPipecatcallSession.Unlock()
 
 	_, ok := h.mapPipecatcallSession[res.ID]
 	if ok {
