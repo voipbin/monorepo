@@ -211,26 +211,54 @@ The source and destination types must be "tel".
     },
 ]
 
-
+TOOLS = ["tool_finalize", "connect", "message_send", "email_send"]
 def tool_register(llm_service, pipecatcall_id):
     """Registers available tools for the LLM service."""
-    async def tool_finalize_wrapper(params: FunctionCallParams):
-        return await tool_finalize(params, pipecatcall_id)
+    
+    for tool_name in TOOLS:
+        if tool_name == "tool_finalize":
+            async def wrapper(params, tool_name=tool_name):
+                return await tool_finalize(params, pipecatcall_id)
+        else:
+            async def wrapper(params, tool_name=tool_name):
+                return await tool_execute(tool_name, params, pipecatcall_id)
 
-    async def connect_wrapper(params: FunctionCallParams):
-        return await tool_execute("connect", params, pipecatcall_id)
-
-    async def message_send_wrapper(params: FunctionCallParams):
-        return await tool_execute("message_send", params, pipecatcall_id)
-
-    async def email_send_wrapper(params: FunctionCallParams):
-        return await tool_execute("email_send", params, pipecatcall_id)
+        llm_service.register_function(tool_name, wrapper)
 
 
-    llm_service.register_function("tool_finalize", tool_finalize_wrapper)
-    llm_service.register_function("connect", connect_wrapper)
-    llm_service.register_function("message_send", message_send_wrapper)
-    llm_service.register_function("email_send", email_send_wrapper)
+def tool_unregister(llm_service):
+    """Unregisters tools from the LLM service."""
+    for func_name in TOOLS:
+        if llm_service.is_registered(func_name):
+            llm_service.unregister_function(func_name)
+
+
+
+# def tool_register(llm_service, pipecatcall_id):
+#     """Registers available tools for the LLM service."""
+#     async def tool_finalize_wrapper(params: FunctionCallParams):
+#         return await tool_finalize(params, pipecatcall_id)
+
+#     async def connect_wrapper(params: FunctionCallParams):
+#         return await tool_execute("connect", params, pipecatcall_id)
+
+#     async def message_send_wrapper(params: FunctionCallParams):
+#         return await tool_execute("message_send", params, pipecatcall_id)
+
+#     async def email_send_wrapper(params: FunctionCallParams):
+#         return await tool_execute("email_send", params, pipecatcall_id)
+
+
+#     llm_service.register_function("tool_finalize", tool_finalize_wrapper)
+#     llm_service.register_function("connect", connect_wrapper)
+#     llm_service.register_function("message_send", message_send_wrapper)
+#     llm_service.register_function("email_send", email_send_wrapper)
+
+# def tool_unregister(llm_service):
+#     """Unregisters tools from the LLM service."""
+#     for func_name in ["tool_finalize", "connect", "message_send", "email_send"]:
+#         if llm_service.is_registered(func_name):
+#             llm_service.unregister_function(func_name)
 
 
 async def tool_finalize(params: FunctionCallParams, pipecatcall_id: str):

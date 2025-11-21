@@ -62,7 +62,7 @@ const (
 	defaultInitialBackoff    = 100 * time.Millisecond // 100 milliseconds
 	defaultPushFrameTimeout  = 2 * time.Second        // 2 seconds
 
-	defaultRunnerWebsocketChanBufferSize = 1000 // Buffer size for runner websocket channel.
+	defaultRunnerWebsocketChanBufferSize = 2000 // Buffer size for runner websocket channel.
 	defaultRunnerWebsocketListenAddress  = "localhost:0"
 )
 

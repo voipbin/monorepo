@@ -54,3 +54,17 @@ func (mr *MockPythonRunnerMockRecorder) Start(ctx, pipecatcallID, llmType, llmKe
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPythonRunner)(nil).Start), ctx, pipecatcallID, llmType, llmKey, stt, tts, voiceID, messages)
 }
+
+// Stop mocks base method.
+func (m *MockPythonRunner) Stop(ctx context.Context, pipecatcallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Stop", ctx, pipecatcallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Stop indicates an expected call of Stop.
+func (mr *MockPythonRunnerMockRecorder) Stop(ctx, pipecatcallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockPythonRunner)(nil).Stop), ctx, pipecatcallID)
+}
