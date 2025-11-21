@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	defaultPipecatRunnerListenAddress = "http://localhost:8000/run"
+	// defaultPipecatRunnerListenAddress = "http://localhost:8000/run"
+	defaultPipecatRunnerListenAddress = "http://localhost:8000"
 )
 
 type pythonRunner struct {
@@ -32,6 +33,7 @@ type PythonRunner interface {
 		voiceID string,
 		messages []map[string]any,
 	) error
+	Stop(ctx context.Context, pipecatcallID uuid.UUID) error
 }
 
 func NewPythonRunner() PythonRunner {
@@ -76,7 +78,8 @@ func (h *pythonRunner) Start(
 		return errors.Wrapf(err, "could not marshal request body for python runner")
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", defaultPipecatRunnerListenAddress, bytes.NewBuffer(jsonData))
+	url := defaultPipecatRunnerListenAddress + "/run"
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return errors.Wrapf(err, "could not create request for python runner")
 	}
@@ -99,6 +102,40 @@ func (h *pythonRunner) Start(
 
 	if resp.StatusCode != http.StatusOK {
 		return errors.Errorf("python runner returned non-200 status: %s, body: %s", resp.Status, string(body))
+	}
+
+	return nil
+}
+
+func (h *pythonRunner) Stop(ctx context.Context, pipecatcallID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Stop",
+		"pipecatcall_id": pipecatcallID,
+	})
+
+	url := defaultPipecatRunnerListenAddress + "/stop?id=" + pipecatcallID.String()
+	req, err := http.NewRequestWithContext(ctx, "POST", url, nil)
+	if err != nil {
+		return errors.Wrapf(err, "could not create stop request for python runner")
+	}
+
+	log.Debugf("Sending stop request to python runner")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.Wrapf(err, "could not send stop request to python runner")
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Wrapf(err, "could not read stop response body from python runner")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.Errorf("python runner returned non-200 status on stop: %s, body: %s", resp.Status, string(body))
 	}
 
 	return nil

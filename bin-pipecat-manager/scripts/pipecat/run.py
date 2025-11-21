@@ -35,8 +35,9 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-# tool
+
 from tools import tool_register, tools
+from task import task_manager
 
 async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
     logger.info(f"Connecting Pipecat client to Go WebSocket server. id: {id}")
@@ -90,16 +91,16 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         ),
         observers=[RTVIObserver(rtvi)],
     )
-    
+    await task_manager.add(id, task)
 
-    async def handle_disconnect_or_error(transport, error, name):
+    async def handle_disconnect_or_error(name, transport, error=None):
         logger.error(f"{name} WebSocket disconnected or errored: {error}")
-        await task.cancel()
+        task.cancel()
 
-    transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, name="Input"))
-    transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, name="Input"))
-    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, name="Output"))
-    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, name="Output"))
+    transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
+    transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
+    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
+    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
 
     runner = PipelineRunner()
     await task.queue_frames([LLMRunFrame()])
@@ -110,6 +111,9 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         logger.info("Pipecat client pipeline cancelled.")
     except Exception as e:
         logger.error(f"Pipecat client pipeline error: {e}")
+    finally:
+        await task_manager.remove(id)
+        logger.info(f"Pipeline cleaned up (id={id})")
 
 
 def create_tts_service(name: str, **options):

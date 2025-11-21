@@ -97,5 +97,6 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 	}
 
 	h.sessionDelete(pc.ID)
+	h.pythonRunner.Stop(context.Background(), id)
 	log.Debugf("Stopped pipecatcall session. pipecatcall_id: %s", id)
 }
