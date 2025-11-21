@@ -97,6 +97,10 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 	}
 
 	h.sessionDelete(pc.ID)
-	h.pythonRunner.Stop(context.Background(), id)
+	if errStop := h.pythonRunner.Stop(context.Background(), id); errStop != nil {
+		log.Errorf("Could not stop the pipecatcall in python runner. err: %v", errStop)
+		return
+	}
+
 	log.Debugf("Stopped pipecatcall session. pipecatcall_id: %s", id)
 }
