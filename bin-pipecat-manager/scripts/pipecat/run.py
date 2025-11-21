@@ -91,6 +91,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         ),
         observers=[RTVIObserver(rtvi)],
     )
+    task.llm_service = llm_service
     await task_manager.add(id, task)
 
     async def handle_disconnect_or_error(name, transport, error=None):
