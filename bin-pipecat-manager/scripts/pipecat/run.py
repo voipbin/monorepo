@@ -95,7 +95,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
 
     async def handle_disconnect_or_error(name, transport, error=None):
         logger.error(f"{name} WebSocket disconnected or errored: {error}")
-        task.cancel()
+        await task.cancel()
 
     transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
     transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))

@@ -24,7 +24,7 @@ class TaskManager:
             if not task:
                 return False
             
-            task.cancel()
+            await task.cancel()
             self._tasks.pop(id, None)
             return True
 
