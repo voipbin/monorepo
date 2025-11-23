@@ -83,6 +83,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     tool_register(llm_service, id)
 
     # Create RTVI processor and observer
+    logger.info(f"Starting Pipecat client pipeline task. id: {id}")
     task = PipelineTask(
         pipeline,
         params=PipelineParams(
@@ -107,6 +108,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     await task.queue_frames([LLMRunFrame()])
 
     try:
+        logger.info(f"Running Pipecat client pipeline. id: {id}")
         await runner.run(task)
     except asyncio.CancelledError:
         logger.info("Pipecat client pipeline cancelled.")
