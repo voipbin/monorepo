@@ -30,7 +30,7 @@ class TaskManager:
         try:
             await task.cancel()
 
-            # 2️⃣ close WebSocket transports explicitly if exists
+            # close WebSocket transports explicitly if exists
             if hasattr(task, "pipeline"):
                 logger.info(f"Closing pipeline stages for task id='{id}'")
                 for stage in getattr(task.pipeline, "stages", []):
@@ -38,19 +38,20 @@ class TaskManager:
                         logger.info(f"Closing stage '{stage}' for task id='{id}'")
                         await stage.close()
 
-            # 3️⃣ unregister LLM tool functions
+            # unregister LLM tool functions
             if hasattr(task, "llm_service") and task.llm_service:
                 logger.info(f"Unregistering tool functions for task id='{id}'")
                 llm_service = task.llm_service
                 
                 tool_unregister(llm_service)
-            # 4️⃣ remove from task manager
+            # remove from task manager
             async with self._lock:
                 self._tasks.pop(id, None)
 
             return True
 
         except Exception as e:
+            logger.error(f"Error stopping pipeline task id='{id}': {e}")
             return False
 
 
