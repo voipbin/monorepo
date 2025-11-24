@@ -50,7 +50,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     if messages is None:
         messages = []
     pipeline_stages = []
-        
+
     if stt:
         logger.info(f"Creating WebSocket transport for input. id: {id}")
         stt_service = create_stt_service(stt)

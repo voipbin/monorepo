@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	// defaultPipecatRunnerListenAddress = "http://localhost:8000/run"
 	defaultPipecatRunnerListenAddress = "http://localhost:8000"
 )
 

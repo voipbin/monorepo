@@ -79,7 +79,7 @@ async def run_pipeline_endpoint(req: PipelineRequest):
 
 @app.post("/stop")
 async def stop_pipeline(id: str):
-    logger.info(f"Stop request received for pipeline task id='{id}'")    
+    logger.info(f"Stop request received for pipeline task id='{id}'")
     cancelled = await task_manager.stop(id)
 
     if not cancelled:
