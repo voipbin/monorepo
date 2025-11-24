@@ -43,6 +43,10 @@ from task import task_manager
 async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
     logger.info(f"Starting Pipecat client pipeline. id: {id}, llm_type: {llm_type}, tts: {tts}, stt: {stt}, voice_id: {voice_id}")
 
+    transport_input = None
+    transport_output = None
+    task = None
+
     if messages is None:
         messages = []
     pipeline_stages = []
