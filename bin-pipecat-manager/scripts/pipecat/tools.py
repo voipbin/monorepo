@@ -243,8 +243,7 @@ def tool_register(llm_service, pipecatcall_id):
 def tool_unregister(llm_service):
     """Unregisters tools from the LLM service."""
     for func_name in TOOLS:
-        if llm_service.is_registered(func_name):
-            llm_service.unregister_function(func_name)
+        llm_service.unregister_function(func_name)
 
 
 

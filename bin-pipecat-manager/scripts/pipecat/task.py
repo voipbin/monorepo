@@ -38,12 +38,12 @@ class TaskManager:
                         logger.info(f"Closing stage '{stage}' for task id='{id}'")
                         await stage.close()
 
-            # unregister LLM tool functions
-            if hasattr(task, "llm_service") and task.llm_service:
-                logger.info(f"Unregistering tool functions for task id='{id}'")
-                llm_service = task.llm_service
+            # # unregister LLM tool functions
+            # if hasattr(task, "llm_service") and task.llm_service:
+            #     logger.info(f"Unregistering tool functions for task id='{id}'")
+            #     llm_service = task.llm_service
                 
-                tool_unregister(llm_service)
+            #     tool_unregister(llm_service)
             # remove from task manager
             async with self._lock:
                 self._tasks.pop(id, None)
