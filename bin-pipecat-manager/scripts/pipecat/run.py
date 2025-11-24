@@ -96,7 +96,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         ),
         observers=[RTVIObserver(rtvi)],
     )
-    task.llm_service = llm_service
     await task_manager.add(id, task)
 
     async def handle_disconnect_or_error(name, transport, error=None):
@@ -130,12 +129,11 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         if transport_output:
             logger.info(f"Cleaning up output transport (id={id})")
             await transport_output.cleanup()
-
-        logger.info(f"Unregistering tool functions (id={id})")
-        tool_unregister(llm_service)
+        if llm_service:
+            logger.info(f"Unregistering tool functions (id={id})")
+            tool_unregister(llm_service)
         await task_manager.remove(id)
         logger.info(f"Pipeline cleaned up (id={id})")
-
 
 
 def create_tts_service(name: str, **options):
