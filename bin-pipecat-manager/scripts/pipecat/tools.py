@@ -214,18 +214,18 @@ The source and destination types must be "tel".
 TOOLS = ["tool_finalize", "connect", "message_send", "email_send"]
 
 def tool_register(llm_service, pipecatcall_id):
+    def create_wrapper(tool_name, pipecatcall_id):
+        if tool_name == "tool_finalize":
+            async def wrapper(params: FunctionCallParams):
+                return await tool_finalize(params, pipecatcall_id)
+        else:
+            async def wrapper(params: FunctionCallParams):
+                return await tool_execute(tool_name, params, pipecatcall_id)
+        return wrapper
 
     for tool_name in TOOLS:
-
-        if tool_name == "tool_finalize":
-            async def wrapper(params: FunctionCallParams, _pipecatcall_id=pipecatcall_id):
-                return await tool_finalize(params, _pipecatcall_id)
-        else:
-            async def wrapper(params: FunctionCallParams, _tool_name=tool_name, _pipecatcall_id=pipecatcall_id):
-                return await tool_execute(_tool_name, params, _pipecatcall_id)
-
+        wrapper = create_wrapper(tool_name, pipecatcall_id)
         llm_service.register_function(tool_name, wrapper)
-
 
 
 def tool_unregister(llm_service):

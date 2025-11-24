@@ -104,12 +104,11 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         await task.cancel()
 
     if stt:
-        transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
-        transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
+        transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input", transport_input))
+        transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input", transport_input))
 
-    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
-    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
-
+    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output", transport_output))
+    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output", transport_output))
     runner = PipelineRunner()
     await task.queue_frames([LLMRunFrame()])
 
