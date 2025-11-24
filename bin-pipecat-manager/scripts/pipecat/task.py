@@ -1,5 +1,6 @@
 import asyncio
 from typing import Dict
+from loguru import logger
 
 from tools import tool_unregister
 
@@ -25,11 +26,7 @@ class TaskManager:
             task = self._tasks.get(id)
             if not task:
                 return False
-            
-            # await task.cancel()
-            # self._tasks.pop(id, None)
-            # return True
-
+        logger.info(f"Stopping pipeline task id='{id}'")
         try:
             await task.cancel()
 
