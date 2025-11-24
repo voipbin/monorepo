@@ -53,8 +53,9 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         
     if stt:
         logger.info(f"Creating WebSocket transport for input. id: {id}")
-        stt_service = create_stt_service(stt)        
-        transport_input = create_websocket_transport("input", id)
+        stt_service = create_stt_service(stt)
+        vad_analyzer = SileroVADAnalyzer()
+        transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
 
     if tts:
         tts_service = create_tts_service(tts, voice_id=voice_id)
@@ -219,7 +220,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], **options):
 
     return res_llm, res_context_aggregator
 
-def create_websocket_transport(direction: str, id: str):
+def create_websocket_transport(direction: str, id: str, vad_analyzer: SileroVADAnalyzer = None):
     uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
     logger.info(f"Establishing WebSocket connection to URI: {uri}")
 
@@ -230,7 +231,7 @@ def create_websocket_transport(direction: str, id: str):
             audio_in_enabled=True,
             audio_out_enabled=True,
             add_wav_header=False,
-            vad_analyzer=SileroVADAnalyzer(),
+            vad_analyzer=vad_analyzer,
             session_timeout=common.PIPELINE_SESSION_TIMEOUT,
         )
     )
