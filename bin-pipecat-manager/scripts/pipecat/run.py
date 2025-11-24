@@ -143,14 +143,12 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         stt_service = create_stt_service(stt)        
         transport_input = create_websocket_transport("input", id)
 
-    
-    llm_service, llm_context_aggregator = create_llm_service(llm_type, llm_key, messages)
-    
     if tts:
         tts_service = create_tts_service(tts, voice_id=voice_id)
-        transport_output = create_websocket_transport("output", id)
 
     
+    llm_service, llm_context_aggregator = create_llm_service(llm_type, llm_key, messages)
+    transport_output = create_websocket_transport("output", id)
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
     
     # Assemble pipeline stages
@@ -166,9 +164,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         pipeline_stages.append(tts_service)
 
     pipeline_stages.append(llm_context_aggregator.assistant())
-
-    if tts:
-        pipeline_stages.append(transport_output.output())
+    pipeline_stages.append(transport_output.output())
 
     # Build the pipeline
     pipeline = Pipeline(pipeline_stages)
@@ -196,9 +192,9 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     if stt:
         transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
         transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
-    if tts:
-        transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
-        transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
+
+    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
+    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
 
     runner = PipelineRunner()
     await task.queue_frames([LLMRunFrame()])
@@ -213,10 +209,10 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     finally:
         await task_manager.remove(id)
         logger.info(f"Pipeline cleaned up (id={id})")
+
         if stt:
             await transport_input.cleanup()
-        if tts:
-            await transport_output.cleanup()
+        await transport_output.cleanup()
 
 
 def create_tts_service(name: str, **options):
