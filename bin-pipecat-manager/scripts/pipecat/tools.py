@@ -212,18 +212,6 @@ The source and destination types must be "tel".
 ]
 
 TOOLS = ["tool_finalize", "connect", "message_send", "email_send"]
-# def tool_register(llm_service, pipecatcall_id):
-#     """Registers available tools for the LLM service."""
-    
-#     for tool_name in TOOLS:
-#         if tool_name == "tool_finalize":
-#             async def wrapper(params, tool_name=tool_name):
-#                 return await tool_finalize(params, pipecatcall_id)
-#         else:
-#             async def wrapper(params, tool_name=tool_name):
-#                 return await tool_execute(tool_name, params, pipecatcall_id)
-
-#         llm_service.register_function(tool_name, wrapper)
 
 def tool_register(llm_service, pipecatcall_id):
 

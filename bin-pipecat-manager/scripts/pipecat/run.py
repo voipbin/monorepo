@@ -62,7 +62,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
 
     
     llm_service, llm_context_aggregator = create_llm_service(llm_type, llm_key, messages)
-    transport_output = create_websocket_transport("output", id)
+    transport_output = create_websocket_transport("output", id, vad_analyzer=None)
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
     
     # Assemble pipeline stages
