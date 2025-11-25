@@ -415,11 +415,8 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		log.Debugf("Cleaning BotLLMStopped message. text: %s", se.LLMBotText)
 		se.LLMBotText = ""
 
-	case pipecatframe.RTVIFrameTypeMetrics, pipecatframe.RTVIFrameTypeBotLLMStarted:
-		// we do nothing with this for now
-
 	default:
-		log.WithField("frame", frame).Errorf("Unrecognized RTVI message type: %s", frame.Type)
+		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
 	}
 
 	return nil
