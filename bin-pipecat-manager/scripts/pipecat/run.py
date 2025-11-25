@@ -219,7 +219,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], **options):
 
     return res_llm, res_context_aggregator
 
-def create_websocket_transport(direction: str, id: str, vad_analyzer: SileroVADAnalyzer = None):
+def create_websocket_transport(direction: str, id: str, vad_analyzer: SileroVADAnalyzer | None = None):
     uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
     logger.info(f"Establishing WebSocket connection to URI: {uri}")
 

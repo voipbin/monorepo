@@ -25,19 +25,14 @@ class TaskManager:
             if not task:
                 return False
             
-        logger.info(f"Stopping pipeline task id='{id}'")
-        try:
-            await task.cancel()
-
-            # remove from task manager
-            async with self._lock:
+            logger.info(f"Stopping pipeline task id='{id}'")
+            try:
+                await task.cancel()
                 self._tasks.pop(id, None)
-
-            return True
-
-        except Exception as e:
-            logger.error(f"Error stopping pipeline task id='{id}': {e}")
-            return False
+                return True
+            except Exception as e:
+                logger.error(f"Error stopping pipeline task id='{id}': {e}")
+                return False
 
 
     async def list_ids(self):
