@@ -62,7 +62,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
             transport = create_websocket_transport("input", id, vad)
 
             logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-            # return stt_service, transport, vad
             return {
                 "stt_service": stt_service,
                 "transport_input": transport,
@@ -75,7 +74,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
             start = time.monotonic()
             tts_service = create_tts_service(tts, voice_id=voice_id)
             logger.info(f"[INIT][tts] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-            # return tts_service
             return {
                 "tts_service": tts_service,
             }
@@ -85,7 +83,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         start = time.monotonic()
         llm_service, aggregator = create_llm_service(llm_type, llm_key, messages)
         logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-        # return llm_service, aggregator
         return {
             "llm_service": llm_service,
             "llm_context_aggregator": aggregator,
@@ -96,7 +93,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         start = time.monotonic()
         transport = create_websocket_transport("output", id, vad_analyzer=None)
         logger.info(f"[INIT][ws_output] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-        # return transport
         return {
             "transport_output": transport,
         }
@@ -106,7 +102,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         start = time.monotonic()
         rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
         logger.info(f"[INIT][rtvi] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-        # return rtvi
         return {
             "rtvi": rtvi,
         }
@@ -128,9 +123,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     for part in results_list:
         results.update(part)
 
-    # ----------------------------
     # Access initialized services by key
-    # ----------------------------
     stt_service = results.get("stt_service")
     transport_input = results.get("transport_input")
     vad_analyzer = results.get("vad_analyzer")
@@ -142,19 +135,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
 
     transport_output = results["transport_output"]
     rtvi = results["rtvi"]
-
-
-
-    # # Unpack results in same order
-    # idx = 0
-    # if stt:
-    #     stt_service, transport_input, vad_analyzer = results[idx]; idx += 1
-    # if tts:
-    #     tts_service = results[idx]; idx += 1
-
-    # llm_service, llm_context_aggregator = results[idx]; idx += 1
-    # transport_output = results[idx]; idx += 1
-    # rtvi = results[idx]; idx += 1
 
     # Assemble pipeline stages
     pipeline_stages = []
@@ -192,16 +172,10 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     await task_manager.add(id, task)
     logger.info(f"[INIT][task_create] done in {time.monotonic() - task_start:.3f} sec. pipeline id={id}")
 
-    # Configure WS error handlers
-    # async def handle_disconnect_or_error(name, error=None):
-    #     logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
-    #     await task.cancel()
-
     async def handle_disconnect_or_error(name, *args, **kwargs):
         error = kwargs.get("error") or (args[0] if args else None)
         logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
         await task.cancel()
-
 
     if stt:
         transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
@@ -268,6 +242,8 @@ def create_stt_service(name: str, **options):
 
 
 def create_llm_service(type: str, key: str, messages: list[dict], **options):
+    valid_messages = [m for m in messages if m.get("role") and m.get("content")]
+
     if "." in type:
         service_name, model_name = type.split(".", 1)
     elif ":" in type:
@@ -276,9 +252,6 @@ def create_llm_service(type: str, key: str, messages: list[dict], **options):
         raise ValueError(f"Wrong LLM format: {type}")
 
     service_name = service_name.lower()
-
-    valid_messages = [m for m in messages if m.get("role") and m.get("content")]
-
     if service_name == "openai":
         api_key = key or os.getenv("OPENAI_API_KEY")
         llm = OpenAILLMService(api_key=api_key, model=model_name)
@@ -287,7 +260,6 @@ def create_llm_service(type: str, key: str, messages: list[dict], **options):
         aggregator = llm.create_context_aggregator(ctx)
 
         return llm, aggregator
-
     else:
         raise ValueError(f"Unsupported LLM service: {service_name}")
 
