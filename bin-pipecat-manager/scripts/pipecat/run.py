@@ -62,7 +62,12 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
             transport = create_websocket_transport("input", id, vad)
 
             logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-            return stt_service, transport, vad
+            # return stt_service, transport, vad
+            return {
+                "stt_service": stt_service,
+                "transport_input": transport,
+                "vad_analyzer": vad,
+            }
         init_tasks["stt_input"] = asyncio.create_task(init_stt_and_input_ws())
 
     if tts:
@@ -70,44 +75,86 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
             start = time.monotonic()
             tts_service = create_tts_service(tts, voice_id=voice_id)
             logger.info(f"[INIT][tts] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-            return tts_service
+            # return tts_service
+            return {
+                "tts_service": tts_service,
+            }
         init_tasks["tts"] = asyncio.create_task(init_tts())
 
     async def init_llm():
         start = time.monotonic()
         llm_service, aggregator = create_llm_service(llm_type, llm_key, messages)
         logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-        return llm_service, aggregator
+        # return llm_service, aggregator
+        return {
+            "llm_service": llm_service,
+            "llm_context_aggregator": aggregator,
+        }
     init_tasks["llm"] = asyncio.create_task(init_llm())
 
     async def init_output_ws():
         start = time.monotonic()
         transport = create_websocket_transport("output", id, vad_analyzer=None)
         logger.info(f"[INIT][ws_output] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-        return transport
+        # return transport
+        return {
+            "transport_output": transport,
+        }
     init_tasks["ws_output"] = asyncio.create_task(init_output_ws())
 
     async def init_rtvi():
         start = time.monotonic()
         rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
         logger.info(f"[INIT][rtvi] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-        return rtvi
+        # return rtvi
+        return {
+            "rtvi": rtvi,
+        }
     init_tasks["rtvi"] = asyncio.create_task(init_rtvi())
 
     # Await all init tasks
-    results = await asyncio.gather(*init_tasks.values())
+    # results = await asyncio.gather(*init_tasks.values())
+    try:
+        results_list = await asyncio.gather(*init_tasks.values())
+    except Exception as e:
+        logger.error(f"[INIT] Pipeline initialization failed: {e}")
+        for task in init_tasks.values():
+            if not task.done():
+                task.cancel()
+        raise
     logger.info(f"[INIT] All components initialized in {time.monotonic() - total_start:.3f} sec. pipeline id={id}")
 
-    # Unpack results in same order
-    idx = 0
-    if stt:
-        stt_service, transport_input, vad_analyzer = results[idx]; idx += 1
-    if tts:
-        tts_service = results[idx]; idx += 1
+    results = {}
+    for part in results_list:
+        results.update(part)
 
-    llm_service, llm_context_aggregator = results[idx]; idx += 1
-    transport_output = results[idx]; idx += 1
-    rtvi = results[idx]; idx += 1
+    # ----------------------------
+    # Access initialized services by key
+    # ----------------------------
+    stt_service = results.get("stt_service")
+    transport_input = results.get("transport_input")
+    vad_analyzer = results.get("vad_analyzer")
+
+    tts_service = results.get("tts_service")
+
+    llm_service = results["llm_service"]
+    llm_context_aggregator = results["llm_context_aggregator"]
+
+    transport_output = results["transport_output"]
+    rtvi = results["rtvi"]
+
+
+
+    # # Unpack results in same order
+    # idx = 0
+    # if stt:
+    #     stt_service, transport_input, vad_analyzer = results[idx]; idx += 1
+    # if tts:
+    #     tts_service = results[idx]; idx += 1
+
+    # llm_service, llm_context_aggregator = results[idx]; idx += 1
+    # transport_output = results[idx]; idx += 1
+    # rtvi = results[idx]; idx += 1
 
     # Assemble pipeline stages
     pipeline_stages = []
@@ -146,16 +193,22 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     logger.info(f"[INIT][task_create] done in {time.monotonic() - task_start:.3f} sec. pipeline id={id}")
 
     # Configure WS error handlers
-    async def handle_disconnect_or_error(name, transport, error=None):
+    # async def handle_disconnect_or_error(name, error=None):
+    #     logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
+    #     await task.cancel()
+
+    async def handle_disconnect_or_error(name, *args, **kwargs):
+        error = kwargs.get("error") or (args[0] if args else None)
         logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
         await task.cancel()
 
-    if stt:
-        transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input", transport_input))
-        transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input", transport_input))
 
-    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output", transport_output))
-    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output", transport_output))
+    if stt:
+        transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
+        transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
+
+    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
+    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
 
     # Warmup frame
     await task.queue_frames([LLMRunFrame()])
