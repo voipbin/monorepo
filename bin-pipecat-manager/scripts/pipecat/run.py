@@ -122,7 +122,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         logger.info(f"Cleaning up Pipecat client pipeline. id: {id}")
         if task:
             logger.info(f"Cancelling pipeline task (id={id})")
-            await task.cancel()
+            await task.cancel()                
         if transport_input:
             logger.info(f"Cleaning up input transport (id={id})")
             await transport_input.cleanup()
