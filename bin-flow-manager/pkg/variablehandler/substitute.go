@@ -10,10 +10,16 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // Substitute substitutes the given data string with variables
 func (h *variableHandler) Substitute(ctx context.Context, id uuid.UUID, data string) (string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "Substitute",
+		"variables_id": id,
+	})
+	log.Debugf("Substituting the given data with variables. variables_id: %s", id)
 
 	vars, err := h.Get(ctx, id)
 	if err != nil {
