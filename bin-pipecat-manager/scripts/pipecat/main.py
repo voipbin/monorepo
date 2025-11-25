@@ -8,6 +8,7 @@ from loguru import logger
 from dotenv import load_dotenv
 
 from run import run_pipeline
+from task import task_manager
 
 load_dotenv(override=True)
 
@@ -75,6 +76,17 @@ async def run_pipeline_endpoint(req: PipelineRequest):
     except Exception as e:
         logger.exception(f"Pipeline execution failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/stop")
+async def stop_pipeline(id: str):
+    logger.info(f"Stop request received for pipeline task id='{id}'")
+    cancelled = await task_manager.stop(id)
+
+    if not cancelled:
+        raise HTTPException(404, f"No running pipeline with id '{id}' found")
+
+    logger.info(f"Pipeline task id='{id}' stopped successfully")
+    return {"status": "stopped", "id": id}
 
 
 # --- logger setup ---

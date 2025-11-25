@@ -35,46 +35,51 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-# tool
-from tools import tool_register, tools
+
+from tools import tool_register, tool_unregister, tools
+from task import task_manager
+
 
 async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
-    logger.info(f"Connecting Pipecat client to Go WebSocket server. id: {id}")
+    logger.info(f"Starting Pipecat client pipeline. id: {id}, llm_type: {llm_type}, tts: {tts}, stt: {stt}, voice_id: {voice_id}")
+
+    transport_input = None
+    transport_output = None
+    task = None
 
     if messages is None:
         messages = []
     pipeline_stages = []
 
-    # transport input
-    transport_input = create_websocket_transport("input", id)
-    pipeline_stages.append(transport_input.input())
-
-    # rtvi
-    rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
-    pipeline_stages.append(rtvi)
-    
-    # Create STT service
     if stt:
+        logger.info(f"Creating WebSocket transport for input. id: {id}")
         stt_service = create_stt_service(stt)
+        vad_analyzer = SileroVADAnalyzer()
+        transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
+
+    if tts:
+        tts_service = create_tts_service(tts, voice_id=voice_id)
+
+    
+    llm_service, llm_context_aggregator = create_llm_service(llm_type, llm_key, messages)
+    transport_output = create_websocket_transport("output", id, vad_analyzer=None)
+    rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
+    
+    # Assemble pipeline stages
+    if stt:
+        pipeline_stages.append(transport_input.input())    
         pipeline_stages.append(stt_service)
 
-    # Create LLM service
-    llm_service, llm_context_aggregator = create_llm_service(llm_type, llm_key, messages)
+    pipeline_stages.append(rtvi)
     pipeline_stages.append(llm_context_aggregator.user())
     pipeline_stages.append(llm_service)
 
-    # Create TTS service
     if tts:
-        tts_service = create_tts_service(tts, voice_id=voice_id)
         pipeline_stages.append(tts_service)
 
-    # Add context aggregator assistant stage
     pipeline_stages.append(llm_context_aggregator.assistant())
-    
-    # transport output
-    transport_output = create_websocket_transport("output", id)
     pipeline_stages.append(transport_output.output())
- 
+
     # Build the pipeline
     pipeline = Pipeline(pipeline_stages)
 
@@ -82,6 +87,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     tool_register(llm_service, id)
 
     # Create RTVI processor and observer
+    logger.info(f"Starting Pipecat client pipeline task. id: {id}")
     task = PipelineTask(
         pipeline,
         params=PipelineParams(
@@ -90,26 +96,44 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         ),
         observers=[RTVIObserver(rtvi)],
     )
-    
+    await task_manager.add(id, task)
 
-    async def handle_disconnect_or_error(transport, error, name):
+    async def handle_disconnect_or_error(name, transport, error=None):
         logger.error(f"{name} WebSocket disconnected or errored: {error}")
         await task.cancel()
 
-    transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, name="Input"))
-    transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, name="Input"))
-    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, name="Output"))
-    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, name="Output"))
+    if stt:
+        transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input", transport_input))
+        transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input", transport_input))
 
+    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output", transport_output))
+    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output", transport_output))
     runner = PipelineRunner()
     await task.queue_frames([LLMRunFrame()])
 
     try:
+        logger.info(f"Running Pipecat client pipeline. id: {id}")
         await runner.run(task)
     except asyncio.CancelledError:
         logger.info("Pipecat client pipeline cancelled.")
     except Exception as e:
         logger.error(f"Pipecat client pipeline error: {e}")
+    finally:
+        logger.info(f"Cleaning up Pipecat client pipeline. id: {id}")
+        if task:
+            logger.info(f"Cancelling pipeline task (id={id})")
+            await task.cancel()                
+        if transport_input:
+            logger.info(f"Cleaning up input transport (id={id})")
+            await transport_input.cleanup()
+        if transport_output:
+            logger.info(f"Cleaning up output transport (id={id})")
+            await transport_output.cleanup()
+        if llm_service:
+            logger.info(f"Unregistering tool functions (id={id})")
+            tool_unregister(llm_service)
+        await task_manager.remove(id)
+        logger.info(f"Pipeline cleaned up (id={id})")
 
 
 def create_tts_service(name: str, **options):
@@ -195,7 +219,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], **options):
 
     return res_llm, res_context_aggregator
 
-def create_websocket_transport(direction: str, id: str):
+def create_websocket_transport(direction: str, id: str, vad_analyzer: SileroVADAnalyzer | None = None):
     uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
     logger.info(f"Establishing WebSocket connection to URI: {uri}")
 
@@ -206,7 +230,7 @@ def create_websocket_transport(direction: str, id: str):
             audio_in_enabled=True,
             audio_out_enabled=True,
             add_wav_header=False,
-            vad_analyzer=SileroVADAnalyzer(),
+            vad_analyzer=vad_analyzer,
             session_timeout=common.PIPELINE_SESSION_TIMEOUT,
         )
     )

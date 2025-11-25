@@ -17,11 +17,8 @@ func (h *pipecatcallHandler) SessionCreate(
 	asteriskConn net.Conn,
 	llmKey string,
 ) (*pipecatcall.Session, error) {
-	h.muPipecatcallSession.Lock()
-	defer h.muPipecatcallSession.Unlock()
 
 	ctx, cancel := context.WithCancel(context.Background())
-
 	res := &pipecatcall.Session{
 		Identity: commonidentity.Identity{
 			ID:         pc.ID,
@@ -41,6 +38,9 @@ func (h *pipecatcallHandler) SessionCreate(
 
 		LLMKey: llmKey,
 	}
+
+	h.muPipecatcallSession.Lock()
+	defer h.muPipecatcallSession.Unlock()
 
 	_, ok := h.mapPipecatcallSession[res.ID]
 	if ok {
@@ -97,5 +97,9 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 	}
 
 	h.sessionDelete(pc.ID)
+	if errStop := h.pythonRunner.Stop(context.Background(), id); errStop != nil {
+		log.Errorf("Could not stop the pipecatcall in python runner. err: %v", errStop)
+	}
+
 	log.Debugf("Stopped pipecatcall session. pipecatcall_id: %s", id)
 }
