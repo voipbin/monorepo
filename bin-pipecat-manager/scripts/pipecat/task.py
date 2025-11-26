@@ -34,7 +34,6 @@ class TaskManager:
                 logger.error(f"Error stopping pipeline task id='{id}': {e}")
                 return False
 
-
     async def list_ids(self):
         async with self._lock:
             return list(self._tasks.keys())

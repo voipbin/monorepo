@@ -147,7 +147,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     pipeline_stages.append(llm_context_aggregator.user())
     pipeline_stages.append(llm_service)
 
-    if tts:
+    if tts_service:
         pipeline_stages.append(tts_service)
 
     pipeline_stages.append(llm_context_aggregator.assistant())
@@ -177,7 +177,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
         await task.cancel()
 
-    if stt:
+    if transport_input:
         transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
         transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
 
@@ -206,7 +206,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         if task:
             await task.cancel()
 
-        if stt and transport_input:
+        if transport_input:
             await transport_input.cleanup()
 
         if transport_output:
@@ -218,8 +218,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         await task_manager.remove(id)
         logger.info(f"[CLEANUP] Pipeline cleaned. pipeline id={id}")
 
-
-# ----------------------------
 
 def create_tts_service(name: str, **options):
     name = name.lower()
