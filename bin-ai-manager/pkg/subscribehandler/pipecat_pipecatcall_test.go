@@ -13,7 +13,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_Test_processEventPMPipecatcallInitialized(t *testing.T) {
+func Test_processEventPMPipecatcallInitialized(t *testing.T) {
 
 	tests := []struct {
 		name  string

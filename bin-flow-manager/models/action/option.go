@@ -285,7 +285,7 @@ type OptionTalk struct {
 	Gender       string                 `json:"gender,omitempty"`        // gender(male/female/neutral)
 	Language     string                 `json:"language,omitempty"`      // IETF locale-name(ko-KR, en-US)
 	DigitsHandle OptionTalkDigitsHandle `json:"digits_handle,omitempty"` // define action when it receives the digits.
-	Async        bool                   `json:"async,omitempty"`         // if it's false, the call flow will stop until talk done.
+	Async        bool                   `json:"async,omitempty"`         // if true, the call flow continues immediately without waiting for talk to complete; if false, the call flow waits until talk is done.
 }
 
 // OptionTranscribeStart defines action TypeTranscribeStart's option.
