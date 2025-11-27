@@ -58,14 +58,14 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
             start = time.monotonic()
             stt_service = create_stt_service(stt)
 
-            vad = SileroVADAnalyzer()
-            transport = create_websocket_transport("input", id, vad)
+            vad_analyzer = SileroVADAnalyzer()
+            transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
 
             logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
             return {
                 "stt_service": stt_service,
                 "transport_input": transport,
-                "vad_analyzer": vad,
+                "vad_analyzer": vad_analyzer,
             }
         init_tasks["stt_input"] = asyncio.create_task(init_stt_and_input_ws())
 
@@ -170,8 +170,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     await task_manager.add(id, task)
     logger.info(f"[INIT][task_create] done in {time.monotonic() - task_start:.3f} sec. pipeline id={id}")
 
-    async def handle_disconnect_or_error(name, *args, **kwargs):
-        error = kwargs.get("error") or (args[0] if args else None)
+    async def handle_disconnect_or_error(name, transport, error=None):
         logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
         await task.cancel()
 
@@ -245,7 +244,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], **options):
     elif ":" in type:
         service_name, model_name = type.split(":", 1)
     else:
-        raise ValueError(f"Wrong LLM format: {type}")
+        raise ValueError(f"Wrong LLM format: {type}. Expected format: 'service.model' or 'service:model' (e.g., 'openai.gpt-4o-mini')")
 
     service_name = service_name.lower()
     if service_name == "openai":

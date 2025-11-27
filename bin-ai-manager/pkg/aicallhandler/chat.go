@@ -76,7 +76,8 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 
 		go func(key string, value any) {
 			defer wg.Done()
-			// EngineData must be immutable. Concurrent read is safe, but no mutation is allowed after read begins.
+
+			// EngineData(value) must be immutable. Concurrent read is safe, but no mutation is allowed after read begins.
 			data := h.getEngineDataValue(ctx, value, activeflowID)
 			tmpRes.Store(key, data)
 		}(k, v)
@@ -85,7 +86,16 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 
 	tmpMap := map[string]any{}
 	tmpRes.Range(func(key, value any) bool {
-		tmpMap[key.(string)] = value
+		k, ok := key.(string)
+		if !ok {
+			logrus.WithFields(logrus.Fields{
+				"func": "getEngineData",
+				"key":  key,
+			}).Warn("Non-string key encountered in tmpRes; skipping entry")
+			return true
+		}
+		tmpMap[k] = value
+
 		return true
 	})
 
