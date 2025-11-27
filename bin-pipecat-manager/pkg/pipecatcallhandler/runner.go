@@ -195,9 +195,9 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 	// notify the event that the output websocket is connected
 	// this is used to start sending audio from asterisk to pipecat runner
 	// we consider the pipecatcall initialized when the output websocket is connected
-	// because once the output websocket is connected, we can start to receiving the audio from the pipecat runner
+	// because once the output websocket is connected, we are ready to receiving the audio from the pipecat runner.
 	h.notifyHandler.PublishEvent(se.Ctx, pipecatcall.EventTypeInitialized, pc)
-	log.Debugf("Notified that pipecatcall output websocket is connected. pipecatcall_id: %s", id)
+	log.Debugf("Notified that pipecatcall is initialized. pipecatcall_id: %s", id)
 
 	// handle received messages from websocket
 	for {

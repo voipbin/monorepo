@@ -99,16 +99,16 @@ func (mr *MockAIcallHandlerMockRecorder) EventCMConfbridgeLeaved(ctx, evt any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMConfbridgeLeaved", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMConfbridgeLeaved), ctx, evt)
 }
 
-// EventDTMFReceived mocks base method.
-func (m *MockAIcallHandler) EventDTMFReceived(ctx context.Context, evt *dtmf.DTMF) {
+// EventCMDTMFReceived mocks base method.
+func (m *MockAIcallHandler) EventCMDTMFReceived(ctx context.Context, evt *dtmf.DTMF) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "EventDTMFReceived", ctx, evt)
+	m.ctrl.Call(m, "EventCMDTMFReceived", ctx, evt)
 }
 
-// EventDTMFReceived indicates an expected call of EventDTMFReceived.
-func (mr *MockAIcallHandlerMockRecorder) EventDTMFReceived(ctx, evt any) *gomock.Call {
+// EventCMDTMFReceived indicates an expected call of EventCMDTMFReceived.
+func (mr *MockAIcallHandlerMockRecorder) EventCMDTMFReceived(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventDTMFReceived", reflect.TypeOf((*MockAIcallHandler)(nil).EventDTMFReceived), ctx, evt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMDTMFReceived", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMDTMFReceived), ctx, evt)
 }
 
 // EventPMPipecatcallInitialzided mocks base method.

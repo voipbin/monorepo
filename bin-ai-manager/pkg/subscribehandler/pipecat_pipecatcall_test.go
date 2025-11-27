@@ -2,10 +2,10 @@ package subscribehandler
 
 import (
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
-	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	"testing"
 	"time"
 
@@ -13,27 +13,27 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_processEventCMDTMFReceived(t *testing.T) {
+func Test_processEventPMPipecalcallInitialized(t *testing.T) {
 
 	tests := []struct {
 		name  string
 		event *sock.Event
 
-		expectedEvent *cmdtmf.DTMF
+		expectedEvent *pmpipecatcall.Pipecatcall
 	}{
 		{
 			name: "normal",
 
 			event: &sock.Event{
-				Publisher: "call-manager",
-				Type:      "dtmf_received",
+				Publisher: "pipecat-manager",
+				Type:      pmpipecatcall.EventTypeInitialized,
 				DataType:  "application/json",
-				Data:      []byte(`{"id":"db993672-b873-11f0-bccf-37a302bcc930"}`),
+				Data:      []byte(`{"id":"cbfc5f0e-cb5c-11f0-80f1-23452c78fe7c"}`),
 			},
 
-			expectedEvent: &cmdtmf.DTMF{
+			expectedEvent: &pmpipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("db993672-b873-11f0-bccf-37a302bcc930"),
+					ID: uuid.FromStringOrNil("cbfc5f0e-cb5c-11f0-80f1-23452c78fe7c"),
 				},
 			},
 		},
@@ -52,7 +52,7 @@ func Test_processEventCMDTMFReceived(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().EventCMDTMFReceived(gomock.Any(), tt.expectedEvent)
+			mockAIcall.EXPECT().EventPMPipecatcallInitialzided(gomock.Any(), tt.expectedEvent)
 
 			h.processEvent(tt.event)
 
