@@ -76,6 +76,7 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 
 		go func(key string, value any) {
 			defer wg.Done()
+			// EngineData must be immutable. Concurrent read is safe, but no mutation is allowed after read begins.
 			data := h.getEngineDataValue(ctx, value, activeflowID)
 			tmpRes.Store(key, data)
 		}(k, v)

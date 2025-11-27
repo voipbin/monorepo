@@ -126,7 +126,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     # Access initialized services by key
     stt_service = results.get("stt_service")
     transport_input = results.get("transport_input")
-    vad_analyzer = results.get("vad_analyzer")
 
     tts_service = results.get("tts_service")
 
@@ -139,7 +138,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     # Assemble pipeline stages
     pipeline_stages = []
 
-    if stt:
+    if transport_input:
         pipeline_stages.append(transport_input.input())
         pipeline_stages.append(stt_service)
 
