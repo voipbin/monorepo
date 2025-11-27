@@ -172,7 +172,7 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 		err = h.processEventPMMessageBotLLM(ctx, m)
 
 	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmpipecatcall.EventTypeInitialized):
-		err = h.processEventPMPipecalcallInitialized(ctx, m)
+		err = h.processEventPMPipecatcallInitialized(ctx, m)
 
 	default:
 		// ignore the event.

@@ -9,9 +9,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *subscribeHandler) processEventPMPipecalcallInitialized(ctx context.Context, m *sock.Event) error {
+func (h *subscribeHandler) processEventPMPipecatcallInitialized(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventPMPipecalcallInitialized",
+		"func":  "processEventPMPipecatcallInitialized",
 		"event": m,
 	})
 	log.Debugf("Received the pipecat-manager's pipecatcall_initialized event.")
@@ -22,7 +22,7 @@ func (h *subscribeHandler) processEventPMPipecalcallInitialized(ctx context.Cont
 		return err
 	}
 
-	h.aicallHandler.EventPMPipecatcallInitialized(ctx, &evt)
+	go h.aicallHandler.EventPMPipecatcallInitialized(ctx, &evt)
 
 	return nil
 }
