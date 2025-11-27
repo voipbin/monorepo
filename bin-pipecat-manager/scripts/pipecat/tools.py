@@ -213,6 +213,7 @@ The source and destination types must be "tel".
 
 TOOLS = ["tool_finalize", "connect", "message_send", "email_send"]
 
+
 def tool_register(llm_service, pipecatcall_id):
     def create_wrapper(tool_name, pipecatcall_id):
         if tool_name == "tool_finalize":
@@ -232,7 +233,6 @@ def tool_unregister(llm_service):
     """Unregisters tools from the LLM service."""
     for func_name in TOOLS:
         llm_service.unregister_function(func_name)
-
 
 
 async def tool_finalize(params: FunctionCallParams, pipecatcall_id: str):
@@ -292,7 +292,7 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
 
                 logger.info(f"[{tool_name}] Success: {status}")
                 properties = FunctionCallResultProperties(
-                    run_llm=False,  # Do not run LLM again after tool execution
+                    run_llm=False,
                 )
 
                 await params.result_callback(

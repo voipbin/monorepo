@@ -9,15 +9,21 @@ type CommonFrameMessage struct {
 
 // type RTVIFrameType
 const (
-	RTVIFrameTypeBotTranscription  = "bot-transcription"  // pipecat -> pipecat-manager event frame type.
-	RTVIFrameTypeUserTranscription = "user-transcription" // pipecat -> pipecat-manager event frame type.
-	RTVIFrameTypeBotLLMText        = "bot-llm-text"       // pipecat -> pipecat-manager event frame type.
-	RTVIFrameTypeBotLLMStarted     = "bot-llm-started"    // pipecat -> pipecat-manager event frame type.
-	RTVIFrameTypeBotLLMStopped     = "bot-llm-stopped"    // pipecat -> pipecat-manager event frame type.
+	// pipecat -> pipecat-manager event frame types
+	RTVIFrameTypeBotTranscription    = "bot-transcription"
+	RTVIFrameTypeUserTranscription   = "user-transcription"
+	RTVIFrameTypeBotLLMText          = "bot-llm-text"
+	RTVIFrameTypeBotLLMStarted       = "bot-llm-started"
+	RTVIFrameTypeBotLLMStopped       = "bot-llm-stopped"
+	RTVIFrameTypeBotTTSStarted       = "bot-tts-started"
+	RTVIFrameTypeBotTTSStopped       = "bot-tts-stopped"
+	RTVIFrameTypeUserStartedSpeaking = "user-started-speaking"
+	RTVIFrameTypeUserStoppedSpeaking = "user-stopped-speaking"
+	RTVIFrameTypeBotStartedSpeaking  = "bot-started-speaking"
+	RTVIFrameTypeBotStoppedSpeaking  = "bot-stopped-speaking"
+	RTVIFrameTypeMetrics             = "metrics"
 
-	RTVIFrameTypeUserLLMText = "user-llm-text" // pipecat-manager -> pipecat request frame type.
-
-	RTVIFrameTypeMetrics = "metrics" // pipecat -> pipecat-manager event frame type.
-
-	RTVIFrameTypeSendText = "send-text" // pipecat-manager -> pipecat request frame type.
+	// pipecat-manager -> pipecat request frame types
+	RTVIFrameTypeUserLLMText = "user-llm-text"
+	RTVIFrameTypeSendText    = "send-text"
 )

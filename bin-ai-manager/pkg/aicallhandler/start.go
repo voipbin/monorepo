@@ -334,11 +334,13 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 	if msg := h.getInitPrompt(ctx, a, c.ActiveflowID); msg != "" {
 		messages = append(messages, msg)
 	}
+	log.Debugf("Parsed init prompt. aicall_id: %s", c.ID)
 
 	// parse engine data
 	if msg := h.getEngineData(ctx, a, c.ActiveflowID); msg != "{}" {
 		messages = append(messages, msg)
 	}
+	log.Debugf("Parsed engine data. aicall_id: %s", c.ID)
 
 	for _, msg := range messages {
 		tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "")

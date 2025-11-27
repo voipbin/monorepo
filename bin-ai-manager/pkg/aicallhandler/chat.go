@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	reflect "reflect"
+	"sync"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -68,14 +69,37 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 		return "{}"
 	}
 
-	tmpRes := map[string]any{}
+	wg := sync.WaitGroup{}
+	tmpRes := sync.Map{}
 	for k, v := range a.EngineData {
-		data := h.getEngineDataValue(ctx, v, activeflowID)
-		tmpRes[k] = data
-	}
+		wg.Add(1)
 
-	// marshal back to string
-	engineDataBytes, err := json.Marshal(tmpRes)
+		go func(key string, value any) {
+			defer wg.Done()
+
+			// EngineData(value) must be immutable. Concurrent read is safe, but no mutation is allowed after read begins.
+			data := h.getEngineDataValue(ctx, value, activeflowID)
+			tmpRes.Store(key, data)
+		}(k, v)
+	}
+	wg.Wait()
+
+	tmpMap := map[string]any{}
+	tmpRes.Range(func(key, value any) bool {
+		k, ok := key.(string)
+		if !ok {
+			logrus.WithFields(logrus.Fields{
+				"func": "getEngineData",
+				"key":  key,
+			}).Warn("Non-string key encountered in tmpRes; skipping entry")
+			return true
+		}
+		tmpMap[k] = value
+
+		return true
+	})
+
+	engineDataBytes, err := json.Marshal(tmpMap)
 	if err != nil {
 		log.Errorf("Could not marshal the engine data back to string. err: %v", err)
 		return "{}"

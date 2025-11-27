@@ -14,7 +14,6 @@ import (
 
 // Substitute substitutes the given data string with variables
 func (h *variableHandler) Substitute(ctx context.Context, id uuid.UUID, data string) (string, error) {
-
 	vars, err := h.Get(ctx, id)
 	if err != nil {
 		return "", errors.Wrapf(err, "could not get variable info. id: %s", id)

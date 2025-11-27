@@ -2,6 +2,7 @@ import asyncio
 import os
 import json
 import common
+import time
 
 from loguru import logger
 from functools import partial
@@ -35,13 +36,13 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-
 from tools import tool_register, tool_unregister, tools
 from task import task_manager
 
 
 async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
-    logger.info(f"Starting Pipecat client pipeline. id: {id}, llm_type: {llm_type}, tts: {tts}, stt: {stt}, voice_id: {voice_id}")
+    total_start = time.monotonic()
+    logger.info(f"[INIT] Starting Pipecat client pipeline id={id}")
 
     transport_input = None
     transport_output = None
@@ -49,45 +50,114 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
 
     if messages is None:
         messages = []
-    pipeline_stages = []
+
+    init_tasks = {}
 
     if stt:
-        logger.info(f"Creating WebSocket transport for input. id: {id}")
-        stt_service = create_stt_service(stt)
-        vad_analyzer = SileroVADAnalyzer()
-        transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
+        async def init_stt_and_input_ws():
+            start = time.monotonic()
+            stt_service = create_stt_service(stt)
+
+            vad_analyzer = SileroVADAnalyzer()
+            transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
+
+            logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
+            return {
+                "stt_service": stt_service,
+                "transport_input": transport,
+                "vad_analyzer": vad_analyzer,
+            }
+        init_tasks["stt_input"] = asyncio.create_task(init_stt_and_input_ws())
 
     if tts:
-        tts_service = create_tts_service(tts, voice_id=voice_id)
+        async def init_tts():
+            start = time.monotonic()
+            tts_service = create_tts_service(tts, voice_id=voice_id)
+            logger.info(f"[INIT][tts] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
+            return {
+                "tts_service": tts_service,
+            }
+        init_tasks["tts"] = asyncio.create_task(init_tts())
 
-    
-    llm_service, llm_context_aggregator = create_llm_service(llm_type, llm_key, messages)
-    transport_output = create_websocket_transport("output", id, vad_analyzer=None)
-    rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
-    
+    async def init_llm():
+        start = time.monotonic()
+        llm_service, aggregator = create_llm_service(llm_type, llm_key, messages)
+        logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
+        return {
+            "llm_service": llm_service,
+            "llm_context_aggregator": aggregator,
+        }
+    init_tasks["llm"] = asyncio.create_task(init_llm())
+
+    async def init_output_ws():
+        start = time.monotonic()
+        transport = create_websocket_transport("output", id, vad_analyzer=None)
+        logger.info(f"[INIT][ws_output] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
+        return {
+            "transport_output": transport,
+        }
+    init_tasks["ws_output"] = asyncio.create_task(init_output_ws())
+
+    async def init_rtvi():
+        start = time.monotonic()
+        rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
+        logger.info(f"[INIT][rtvi] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
+        return {
+            "rtvi": rtvi,
+        }
+    init_tasks["rtvi"] = asyncio.create_task(init_rtvi())
+
+    # Await all init tasks
+    try:
+        results_list = await asyncio.gather(*init_tasks.values())
+    except Exception as e:
+        logger.error(f"[INIT] Pipeline initialization failed: {e}")
+        for task in init_tasks.values():
+            if not task.done():
+                task.cancel()
+        raise
+    logger.info(f"[INIT] All components initialized in {time.monotonic() - total_start:.3f} sec. pipeline id={id}")
+
+    results = {}
+    for part in results_list:
+        results.update(part)
+
+    # Access initialized services by key
+    stt_service = results.get("stt_service")
+    transport_input = results.get("transport_input")
+
+    tts_service = results.get("tts_service")
+
+    llm_service = results["llm_service"]
+    llm_context_aggregator = results["llm_context_aggregator"]
+
+    transport_output = results["transport_output"]
+    rtvi = results["rtvi"]
+
     # Assemble pipeline stages
-    if stt:
-        pipeline_stages.append(transport_input.input())    
+    pipeline_stages = []
+
+    if transport_input:
+        pipeline_stages.append(transport_input.input())
         pipeline_stages.append(stt_service)
 
     pipeline_stages.append(rtvi)
     pipeline_stages.append(llm_context_aggregator.user())
     pipeline_stages.append(llm_service)
 
-    if tts:
+    if tts_service:
         pipeline_stages.append(tts_service)
 
     pipeline_stages.append(llm_context_aggregator.assistant())
     pipeline_stages.append(transport_output.output())
 
-    # Build the pipeline
     pipeline = Pipeline(pipeline_stages)
 
-    # Register tool functions
+    # Register tool
     tool_register(llm_service, id)
 
-    # Create RTVI processor and observer
-    logger.info(f"Starting Pipecat client pipeline task. id: {id}")
+    # Create Pipeline Task
+    task_start = time.monotonic()
     task = PipelineTask(
         pipeline,
         params=PipelineParams(
@@ -96,130 +166,100 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
         ),
         observers=[RTVIObserver(rtvi)],
     )
+
     await task_manager.add(id, task)
+    logger.info(f"[INIT][task_create] done in {time.monotonic() - task_start:.3f} sec. pipeline id={id}")
 
     async def handle_disconnect_or_error(name, transport, error=None):
-        logger.error(f"{name} WebSocket disconnected or errored: {error}")
+        logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
         await task.cancel()
 
-    if stt:
-        transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input", transport_input))
-        transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input", transport_input))
+    if transport_input:
+        transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
+        transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
 
-    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output", transport_output))
-    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output", transport_output))
-    runner = PipelineRunner()
+    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
+    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
+
+    # Warmup frame
     await task.queue_frames([LLMRunFrame()])
 
+    # Runner
+    runner = PipelineRunner()
+
+    init_total = time.monotonic() - total_start
+    logger.info(f"[INIT][total] All initialization completed in {init_total:.3f} sec. pipeline id={id}")
+
+    # Run the pipeline
     try:
-        logger.info(f"Running Pipecat client pipeline. id: {id}")
+        logger.info(f"[RUN] Starting pipeline id={id}")
         await runner.run(task)
     except asyncio.CancelledError:
-        logger.info("Pipecat client pipeline cancelled.")
+        logger.info(f"[RUN] Pipeline cancelled. pipeline id={id}")
     except Exception as e:
-        logger.error(f"Pipecat client pipeline error: {e}")
+        logger.error(f"[RUN] Pipeline error: {e}. pipeline id={id}")
     finally:
-        logger.info(f"Cleaning up Pipecat client pipeline. id: {id}")
+        logger.info(f"[CLEANUP] Cleaning up pipeline. pipeline id={id}")
         if task:
-            logger.info(f"Cancelling pipeline task (id={id})")
-            await task.cancel()                
+            await task.cancel()
+
         if transport_input:
-            logger.info(f"Cleaning up input transport (id={id})")
             await transport_input.cleanup()
+
         if transport_output:
-            logger.info(f"Cleaning up output transport (id={id})")
             await transport_output.cleanup()
+
         if llm_service:
-            logger.info(f"Unregistering tool functions (id={id})")
             tool_unregister(llm_service)
+
         await task_manager.remove(id)
-        logger.info(f"Pipeline cleaned up (id={id})")
+        logger.info(f"[CLEANUP] Pipeline cleaned. pipeline id={id}")
 
 
 def create_tts_service(name: str, **options):
-    """
-    Factory function to create a Pipecat TTS service instance
-    based on the service name and optional parameters.
-    """
     name = name.lower()
-    
-    voice_id = options.get("voice_id")
-    if not voice_id:
-        logger.warning(f"No voice_id specified for {name}, using default system voice.")
-        voice_id = "default_voice_id"   # currently, we don't have a default voice id, so just a placeholder
+    voice_id = options.get("voice_id") or "default_voice_id"
 
     if name == "cartesia":
-        return CartesiaTTSService(
-            api_key=options.get("api_key", os.getenv("CARTESIA_API_KEY")),
-            voice_id=voice_id,
-        )
+        return CartesiaTTSService(api_key=os.getenv("CARTESIA_API_KEY"), voice_id=voice_id)
     elif name == "elevenlabs":
-        return ElevenLabsTTSService(
-            api_key=options.get("api_key", os.getenv("ELEVENLABS_API_KEY")),
-            voice_id=voice_id,
-        )
+        return ElevenLabsTTSService(api_key=os.getenv("ELEVENLABS_API_KEY"), voice_id=voice_id)
     else:
         raise ValueError(f"Unsupported TTS service: {name}")
 
 
 def create_stt_service(name: str, **options):
-    """
-    Factory function to create a Pipecat STT service instance
-    based on the service name and optional parameters.
-    """
     name = name.lower()
-
     if name == "deepgram":
-        return DeepgramSTTService(
-            api_key=options.get("api_key", os.getenv("DEEPGRAM_API_KEY"))
-        )
+        return DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
     else:
         raise ValueError(f"Unsupported STT service: {name}")
 
 
 def create_llm_service(type: str, key: str, messages: list[dict], **options):
-    
-    # validate name
+    valid_messages = [m for m in messages if m.get("role") and m.get("content")]
+
     if "." in type:
         service_name, model_name = type.split(".", 1)
     elif ":" in type:
         service_name, model_name = type.split(":", 1)
     else:
-        raise ValueError(f"Wrong LLM: {type}. LLM argument must be in 'service.model' or 'service:model' format, e.g., 'openai.gpt-4o-mini' or 'openai:gpt-4o-mini'")
+        raise ValueError(f"Wrong LLM format: {type}. Expected format: 'service.model' or 'service:model' (e.g., 'openai.gpt-4o-mini')")
+
     service_name = service_name.lower()
-
-    # validate messages
-    valid_messages = []
-    for msg in messages:
-        if "role" not in msg or "content" not in msg or msg["role"] is None or msg["content"] is None:
-            logger.warning(f"Skipping invalid message format: {msg}")
-            continue
-        valid_messages.append(msg)
-    logger.debug(f"Valid Messages Count: {len(valid_messages)}")
-
-    res_llm = None
-    res_context_aggregator = None
     if service_name == "openai":
-        logger.info(f"Creating OpenAI LLM Service with model: {model_name}")
-        
-        api_key = key if key else os.getenv("OPENAI_API_KEY")
-        res_llm = OpenAILLMService(
-            api_key=api_key,
-            model=model_name
-        )
-        
-        context = OpenAILLMContext(
-            messages = valid_messages,
-            tools = tools,
-        )
-        res_context_aggregator = res_llm.create_context_aggregator(context)
-                
+        api_key = key or os.getenv("OPENAI_API_KEY")
+        llm = OpenAILLMService(api_key=api_key, model=model_name)
+
+        ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
+        aggregator = llm.create_context_aggregator(ctx)
+
+        return llm, aggregator
     else:
         raise ValueError(f"Unsupported LLM service: {service_name}")
 
-    return res_llm, res_context_aggregator
 
-def create_websocket_transport(direction: str, id: str, vad_analyzer: SileroVADAnalyzer | None = None):
+def create_websocket_transport(direction: str, id: str, vad_analyzer=None):
     uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
     logger.info(f"Establishing WebSocket connection to URI: {uri}")
 
