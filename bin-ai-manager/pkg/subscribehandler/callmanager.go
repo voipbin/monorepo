@@ -56,7 +56,7 @@ func (h *subscribeHandler) processEventCMDTMFReceived(ctx context.Context, m *so
 		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	go h.aicallHandler.EventDTMFReceived(context.Background(), &evt)
+	go h.aicallHandler.EventCMDTMFReceived(context.Background(), &evt)
 
 	return nil
 }

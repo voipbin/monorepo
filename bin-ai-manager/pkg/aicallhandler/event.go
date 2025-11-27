@@ -8,6 +8,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmdtmf "monorepo/bin-call-manager/models/dtmf"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/sirupsen/logrus"
 )
@@ -62,9 +63,9 @@ func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call)
 	}
 }
 
-func (h *aicallHandler) EventDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF) {
+func (h *aicallHandler) EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "EventDTMFRecevied",
+		"func":    "EventCMDTMFReceived",
 		"dtmf_id": evt.ID,
 	})
 
@@ -84,4 +85,33 @@ func (h *aicallHandler) EventDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF)
 		return
 	}
 	log.WithField("message", tmp).Debugf("Sent the dtmf message to the aicall.")
+}
+
+func (h *aicallHandler) EventPMPipecatcallInitialized(ctx context.Context, evt *pmpipecatcall.Pipecatcall) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "EventPMPipecatcallInitialized",
+		"pipecatcall_id": evt.ID,
+	})
+
+	if evt.ReferenceType != pmpipecatcall.ReferenceTypeAICall {
+		// nothing to do
+		return
+	}
+
+	// get aicall
+	cc, err := h.Get(ctx, evt.ReferenceID)
+	if err != nil {
+		log.Errorf("Could not get aicall info. err: %v", err)
+		return
+	}
+
+	if cc.ReferenceType != aicall.ReferenceTypeCall {
+		return
+	}
+
+	log.Debugf("Stopping currently playing media. aicall_id: %s, call_id: %s", cc.ID, cc.ReferenceID)
+	if errStop := h.reqHandler.CallV1CallMediaStop(ctx, cc.ReferenceID); errStop != nil {
+		log.Errorf("Could not stop the media on the call during pipecatcall initialization. err: %v", errStop)
+		return
+	}
 }

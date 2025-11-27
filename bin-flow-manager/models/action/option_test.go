@@ -1153,3 +1153,56 @@ func Test_marshal_OptionAISummary(t *testing.T) {
 		})
 	}
 }
+
+func Test_marshal_OptionTalk(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectedRes OptionTalk
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			option: []byte(`{
+				"text": "Hello, this is a test message.",
+				"gender": "female",
+				"language": "en-US",
+				"digits_handle": "next",
+				"async": true
+			}`),
+
+			expectedRes: OptionTalk{
+				Text:         "Hello, this is a test message.",
+				Gender:       "female",
+				Language:     "en-US",
+				DigitsHandle: OptionTalkDigitsHandleNext,
+				Async:        true,
+			},
+		},
+		{
+			name: "empty",
+
+			option: []byte(`{}`),
+
+			expectedRes: OptionTalk{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionTalk{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}

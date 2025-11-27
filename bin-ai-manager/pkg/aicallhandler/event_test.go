@@ -19,7 +19,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_EventDTMFReceived(t *testing.T) {
+func Test_EventCMDTMFReceived(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -100,7 +100,73 @@ func Test_EventDTMFReceived(t *testing.T) {
 			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectedMessageText, nil, "").Return(tt.responseMessage, nil)
 			mockReq.EXPECT().PipecatV1MessageSend(ctx, tt.responsePipecatcall.HostID, tt.expectedPipecatcallID, tt.responseMessage.ID.String(), tt.expectedMessageText, true, true).Return(nil, nil)
 
-			h.EventDTMFReceived(ctx, tt.evt)
+			h.EventCMDTMFReceived(ctx, tt.evt)
+		})
+	}
+}
+
+func Test_EventPMPipecatcallInitialized(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		evt *pmpipecatcall.Pipecatcall
+
+		responseAIcall *aicall.AIcall
+
+		expectedAICallID uuid.UUID
+		expectedCallID   uuid.UUID
+	}{
+		{
+			name: "normal",
+
+			evt: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("01d966e0-cb5c-11f0-be7e-774d531e6ec8"),
+				},
+				ReferenceType: pmpipecatcall.ReferenceTypeAICall,
+				ReferenceID:   uuid.FromStringOrNil("021532d8-cb5c-11f0-8f38-df7986b6fe53"),
+			},
+
+			responseAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("021532d8-cb5c-11f0-8f38-df7986b6fe53"),
+				},
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("0246703c-cb5c-11f0-ba32-e30e51dfb4e2"),
+			},
+
+			expectedAICallID: uuid.FromStringOrNil("021532d8-cb5c-11f0-8f38-df7986b6fe53"),
+			expectedCallID:   uuid.FromStringOrNil("0246703c-cb5c-11f0-ba32-e30e51dfb4e2"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AIcallGet(ctx, tt.expectedAICallID).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.expectedCallID).Return(nil)
+
+			h.EventPMPipecatcallInitialized(ctx, tt.evt)
 		})
 	}
 }

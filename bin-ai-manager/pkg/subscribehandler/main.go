@@ -11,6 +11,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	cfconference "monorepo/bin-conference-manager/models/conference"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -169,6 +170,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmmessage.EventTypeBotLLM):
 		err = h.processEventPMMessageBotLLM(ctx, m)
+
+	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmpipecatcall.EventTypeInitialized):
+		err = h.processEventPMPipecatcallInitialized(ctx, m)
 
 	default:
 		// ignore the event.

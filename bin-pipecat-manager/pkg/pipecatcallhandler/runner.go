@@ -1,6 +1,7 @@
 package pipecatcallhandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	ammessage "monorepo/bin-ai-manager/models/message"
@@ -185,6 +186,18 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 		log.Debugf("Closing pipecatcall output websocket connection. pipecatcall_id: %s", id)
 		_ = ws.Close()
 	}()
+
+	pc, err := h.Get(context.Background(), id)
+	if err != nil {
+		return errors.Wrapf(err, "Could not get pipecatcall info. pipecatcall_id: %s", id)
+	}
+
+	// notify the event that the output websocket is connected
+	// this is used to start sending audio from asterisk to pipecat runner
+	// we consider the pipecatcall initialized when the output websocket is connected
+	// because once the output websocket is connected, we are ready to receiving the audio from the pipecat runner.
+	h.notifyHandler.PublishEvent(se.Ctx, pipecatcall.EventTypeInitialized, pc)
+	log.Debugf("Notified that pipecatcall is initialized. pipecatcall_id: %s", id)
 
 	// handle received messages from websocket
 	for {

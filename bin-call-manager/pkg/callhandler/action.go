@@ -508,6 +508,11 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error
 		return errors.Wrap(errTalk, "could not talk correctly")
 	}
 
+	if option.Async {
+		log.Debugf("Talk is async. Moving to the next action. call_id: %s, async: %v", c.ID, option.Async)
+		return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)
+	}
+
 	return nil
 }
 

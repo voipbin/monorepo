@@ -17,6 +17,7 @@ import (
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	dtmf "monorepo/bin-call-manager/models/dtmf"
 	service "monorepo/bin-common-handler/models/service"
+	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -98,16 +99,28 @@ func (mr *MockAIcallHandlerMockRecorder) EventCMConfbridgeLeaved(ctx, evt any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMConfbridgeLeaved", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMConfbridgeLeaved), ctx, evt)
 }
 
-// EventDTMFReceived mocks base method.
-func (m *MockAIcallHandler) EventDTMFReceived(ctx context.Context, evt *dtmf.DTMF) {
+// EventCMDTMFReceived mocks base method.
+func (m *MockAIcallHandler) EventCMDTMFReceived(ctx context.Context, evt *dtmf.DTMF) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "EventDTMFReceived", ctx, evt)
+	m.ctrl.Call(m, "EventCMDTMFReceived", ctx, evt)
 }
 
-// EventDTMFReceived indicates an expected call of EventDTMFReceived.
-func (mr *MockAIcallHandlerMockRecorder) EventDTMFReceived(ctx, evt any) *gomock.Call {
+// EventCMDTMFReceived indicates an expected call of EventCMDTMFReceived.
+func (mr *MockAIcallHandlerMockRecorder) EventCMDTMFReceived(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventDTMFReceived", reflect.TypeOf((*MockAIcallHandler)(nil).EventDTMFReceived), ctx, evt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMDTMFReceived", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMDTMFReceived), ctx, evt)
+}
+
+// EventPMPipecatcallInitialized mocks base method.
+func (m *MockAIcallHandler) EventPMPipecatcallInitialized(ctx context.Context, evt *pipecatcall.Pipecatcall) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMPipecatcallInitialized", ctx, evt)
+}
+
+// EventPMPipecatcallInitialized indicates an expected call of EventPMPipecatcallInitialized.
+func (mr *MockAIcallHandlerMockRecorder) EventPMPipecatcallInitialized(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMPipecatcallInitialized", reflect.TypeOf((*MockAIcallHandler)(nil).EventPMPipecatcallInitialized), ctx, evt)
 }
 
 // Get mocks base method.

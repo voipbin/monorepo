@@ -259,6 +259,7 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 		expectLanguage   string
 		expectPlaybackID string
 		expectURI        []string
+		expectAsync      bool
 	}{
 		{
 			name: "normal",
@@ -292,6 +293,40 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			expectPlaybackID: playback.IDPrefixCall + "5c9cd6be-2195-11eb-a9c9-bfc91ac88411",
 			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
 		},
+		{
+			name: "async talk",
+
+			call: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cd53988e-cb3b-11f0-bba8-a36a06c0abb1"),
+				},
+				ChannelID: "cdb2ac20-cb3b-11f0-977b-03bf6ac80420",
+				Action: fmaction.Action{
+					Type: fmaction.TypeTalk,
+					ID:   uuid.FromStringOrNil("cddc2ea6-cb3b-11f0-ac41-d340351b406c"),
+					Option: map[string]any{
+						"text":     "hello world",
+						"gender":   "male",
+						"language": "en-US",
+						"async":    true,
+					},
+				},
+			},
+
+			responseTTS: &tmtts.TTS{
+				Gender:        tmtts.GenderMale,
+				Text:          "hello world",
+				Language:      "en-US",
+				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
+			},
+
+			expectSSML:       `hello world`,
+			expectGender:     "male",
+			expectLanguage:   "en-US",
+			expectPlaybackID: playback.IDPrefixCall + "cddc2ea6-cb3b-11f0-ac41-d340351b406c",
+			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
+			expectAsync:      true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -319,6 +354,10 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			}
 			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tmtts.Gender(tt.expectGender), tt.expectLanguage, 10000).Return(tt.responseTTS, nil)
 			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.expectPlaybackID, tt.expectURI, "", 0, 0).Return(nil)
+
+			if tt.expectAsync {
+				mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+			}
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
