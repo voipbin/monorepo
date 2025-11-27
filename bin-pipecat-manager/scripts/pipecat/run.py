@@ -108,7 +108,6 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     init_tasks["rtvi"] = asyncio.create_task(init_rtvi())
 
     # Await all init tasks
-    # results = await asyncio.gather(*init_tasks.values())
     try:
         results_list = await asyncio.gather(*init_tasks.values())
     except Exception as e:
