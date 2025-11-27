@@ -52,7 +52,7 @@ func Test_processEventPMPipecalcallInitialized(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().EventPMPipecatcallInitialzided(gomock.Any(), tt.expectedEvent)
+			mockAIcall.EXPECT().EventPMPipecatcallInitialized(gomock.Any(), tt.expectedEvent)
 
 			h.processEvent(tt.event)
 

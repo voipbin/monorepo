@@ -111,16 +111,16 @@ func (mr *MockAIcallHandlerMockRecorder) EventCMDTMFReceived(ctx, evt any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMDTMFReceived", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMDTMFReceived), ctx, evt)
 }
 
-// EventPMPipecatcallInitialzided mocks base method.
-func (m *MockAIcallHandler) EventPMPipecatcallInitialzided(ctx context.Context, evt *pipecatcall.Pipecatcall) {
+// EventPMPipecatcallInitialized mocks base method.
+func (m *MockAIcallHandler) EventPMPipecatcallInitialized(ctx context.Context, evt *pipecatcall.Pipecatcall) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "EventPMPipecatcallInitialzided", ctx, evt)
+	m.ctrl.Call(m, "EventPMPipecatcallInitialized", ctx, evt)
 }
 
-// EventPMPipecatcallInitialzided indicates an expected call of EventPMPipecatcallInitialzided.
-func (mr *MockAIcallHandlerMockRecorder) EventPMPipecatcallInitialzided(ctx, evt any) *gomock.Call {
+// EventPMPipecatcallInitialized indicates an expected call of EventPMPipecatcallInitialized.
+func (mr *MockAIcallHandlerMockRecorder) EventPMPipecatcallInitialized(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMPipecatcallInitialzided", reflect.TypeOf((*MockAIcallHandler)(nil).EventPMPipecatcallInitialzided), ctx, evt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMPipecatcallInitialized", reflect.TypeOf((*MockAIcallHandler)(nil).EventPMPipecatcallInitialized), ctx, evt)
 }
 
 // Get mocks base method.

@@ -19,7 +19,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_EventDTMFReceived(t *testing.T) {
+func Test_EventCMDTMFReceived(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -105,7 +105,7 @@ func Test_EventDTMFReceived(t *testing.T) {
 	}
 }
 
-func Test_EventPMPipecatcallInitialzided(t *testing.T) {
+func Test_EventPMPipecatcallInitialized(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -166,7 +166,7 @@ func Test_EventPMPipecatcallInitialzided(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.expectedAICallID).Return(tt.responseAIcall, nil)
 			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.expectedCallID).Return(nil)
 
-			h.EventPMPipecatcallInitialzided(ctx, tt.evt)
+			h.EventPMPipecatcallInitialized(ctx, tt.evt)
 		})
 	}
 }

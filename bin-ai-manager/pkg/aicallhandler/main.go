@@ -66,7 +66,7 @@ type AIcallHandler interface {
 	EventCMConfbridgeJoined(ctx context.Context, evt *cmconfbridge.EventConfbridgeJoined)
 	EventCMConfbridgeLeaved(ctx context.Context, evt *cmconfbridge.EventConfbridgeLeaved)
 	EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF)
-	EventPMPipecatcallInitialzided(ctx context.Context, evt *pmpipecatcall.Pipecatcall)
+	EventPMPipecatcallInitialized(ctx context.Context, evt *pmpipecatcall.Pipecatcall)
 }
 
 const (

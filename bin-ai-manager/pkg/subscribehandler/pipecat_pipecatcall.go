@@ -22,7 +22,7 @@ func (h *subscribeHandler) processEventPMPipecalcallInitialized(ctx context.Cont
 		return err
 	}
 
-	h.aicallHandler.EventPMPipecatcallInitialzided(ctx, &evt)
+	h.aicallHandler.EventPMPipecatcallInitialized(ctx, &evt)
 
 	return nil
 }

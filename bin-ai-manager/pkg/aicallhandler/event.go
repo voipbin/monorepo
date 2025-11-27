@@ -65,7 +65,7 @@ func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call)
 
 func (h *aicallHandler) EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "EventDTMFRecevied",
+		"func":    "EventCMDTMFReceived",
 		"dtmf_id": evt.ID,
 	})
 
@@ -87,10 +87,10 @@ func (h *aicallHandler) EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTM
 	log.WithField("message", tmp).Debugf("Sent the dtmf message to the aicall.")
 }
 
-func (h *aicallHandler) EventPMPipecatcallInitialzided(ctx context.Context, evt *pmpipecatcall.Pipecatcall) {
+func (h *aicallHandler) EventPMPipecatcallInitialized(ctx context.Context, evt *pmpipecatcall.Pipecatcall) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "EventPMPipecatcallInitialzided",
-		"dtmf_id": evt.ID,
+		"func":           "EventPMPipecatcallInitialized",
+		"pipecatcall_id": evt.ID,
 	})
 
 	if evt.ReferenceType != pmpipecatcall.ReferenceTypeAICall {
@@ -111,7 +111,7 @@ func (h *aicallHandler) EventPMPipecatcallInitialzided(ctx context.Context, evt 
 
 	log.Debugf("Stopping currently playing media. aicall_id: %s, call_id: %s", cc.ID, cc.ReferenceID)
 	if errStop := h.reqHandler.CallV1CallMediaStop(ctx, cc.ReferenceID); errStop != nil {
-		log.Errorf("Could not stop the media on the call before sending dtmf. err: %v", errStop)
+		log.Errorf("Could not stop the media on the call during pipecatcall initialization. err: %v", errStop)
 		return
 	}
 }
