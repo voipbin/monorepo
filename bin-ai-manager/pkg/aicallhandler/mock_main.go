@@ -17,6 +17,7 @@ import (
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	dtmf "monorepo/bin-call-manager/models/dtmf"
 	service "monorepo/bin-common-handler/models/service"
+	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -108,6 +109,18 @@ func (m *MockAIcallHandler) EventDTMFReceived(ctx context.Context, evt *dtmf.DTM
 func (mr *MockAIcallHandlerMockRecorder) EventDTMFReceived(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventDTMFReceived", reflect.TypeOf((*MockAIcallHandler)(nil).EventDTMFReceived), ctx, evt)
+}
+
+// EventPMPipecatcallInitialzided mocks base method.
+func (m *MockAIcallHandler) EventPMPipecatcallInitialzided(ctx context.Context, evt *pipecatcall.Pipecatcall) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMPipecatcallInitialzided", ctx, evt)
+}
+
+// EventPMPipecatcallInitialzided indicates an expected call of EventPMPipecatcallInitialzided.
+func (mr *MockAIcallHandlerMockRecorder) EventPMPipecatcallInitialzided(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMPipecatcallInitialzided", reflect.TypeOf((*MockAIcallHandler)(nil).EventPMPipecatcallInitialzided), ctx, evt)
 }
 
 // Get mocks base method.

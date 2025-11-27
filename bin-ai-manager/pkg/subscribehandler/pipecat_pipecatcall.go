@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"monorepo/bin-common-handler/models/sock"
-	pmmessage "monorepo/bin-pipecat-manager/models/message"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/sirupsen/logrus"
 )
@@ -16,13 +16,13 @@ func (h *subscribeHandler) processEventPMPipecalcallInitialized(ctx context.Cont
 	})
 	log.Debugf("Received the pipecat-manager's pipecatcall_initialized event.")
 
-	var evt pmmessage.Message
+	var evt pmpipecatcall.Pipecatcall
 	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
 	}
 
-	h.messageHandler.EventPMMessageUserTranscription(ctx, &evt)
+	h.aicallHandler.EventPMPipecatcallInitialzided(ctx, &evt)
 
 	return nil
 }
