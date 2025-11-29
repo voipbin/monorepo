@@ -48,10 +48,12 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		pc.ID,
 		string(pc.LLMType),
 		string(se.LLMKey),
-		string(pc.STTType),
-		string(pc.TTSType),
-		pc.TTSVoiceID,
 		pc.LLMMessages,
+		string(pc.STTType),
+		string(pc.STTLanguage),
+		string(pc.TTSType),
+		string(pc.TTSLanguage),
+		pc.TTSVoiceID,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}

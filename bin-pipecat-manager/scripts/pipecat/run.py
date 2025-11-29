@@ -14,6 +14,7 @@ from pipecat.services.google.tts import GoogleTTSService
 
 # stt
 from pipecat.services.deepgram.stt import DeepgramSTTService
+from deepgram import LiveOptions
 from pipecat.services.whisper.stt import Model, WhisperSTTService
 from pipecat.processors.filters.stt_mute_filter import STTMuteConfig, STTMuteFilter, STTMuteStrategy
 
@@ -40,7 +41,17 @@ from tools import tool_register, tool_unregister, tools
 from task import task_manager
 
 
-async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str, voice_id: str = None, messages: list = None):
+async def run_pipeline(
+    id: str, 
+    llm_type: str, 
+    llm_key: str, 
+    llm_messages: list = None, 
+    stt_type: str = None, 
+    stt_language: str = None,
+    tts_type: str = None, 
+    tts_language: str = None,
+    tts_voice_id: str = None,
+):
     total_start = time.monotonic()
     logger.info(f"[INIT] Starting Pipecat client pipeline id={id}")
 
@@ -48,15 +59,15 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
     transport_output = None
     task = None
 
-    if messages is None:
-        messages = []
+    if llm_messages is None:
+        llm_messages = []
 
     init_tasks = {}
 
-    if stt:
+    if stt_type:
         async def init_stt_and_input_ws():
             start = time.monotonic()
-            stt_service = create_stt_service(stt)
+            stt_service = create_stt_service(stt_type, language=stt_language)
 
             vad_analyzer = SileroVADAnalyzer()
             transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
@@ -69,10 +80,10 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
             }
         init_tasks["stt_input"] = asyncio.create_task(init_stt_and_input_ws())
 
-    if tts:
+    if tts_type:
         async def init_tts():
             start = time.monotonic()
-            tts_service = create_tts_service(tts, voice_id=voice_id)
+            tts_service = create_tts_service(tts_type, voice_id=tts_voice_id, language=tts_language)
             logger.info(f"[INIT][tts] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
             return {
                 "tts_service": tts_service,
@@ -81,7 +92,7 @@ async def run_pipeline(id: str, llm_type: str, llm_key: str, tts: str, stt: str,
 
     async def init_llm():
         start = time.monotonic()
-        llm_service, aggregator = create_llm_service(llm_type, llm_key, messages)
+        llm_service, aggregator = create_llm_service(llm_type, llm_key, llm_messages)
         logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
         return {
             "llm_service": llm_service,
@@ -230,8 +241,17 @@ def create_tts_service(name: str, **options):
 
 def create_stt_service(name: str, **options):
     name = name.lower()
+    language = options.get("language") or None
     if name == "deepgram":
-        return DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
+        live_options = LiveOptions(
+            model="nova-2",
+            language=language,
+            interim_results=True,
+        )
+        return DeepgramSTTService(
+            api_key=os.getenv("DEEPGRAM_API_KEY"),
+            live_options=live_options,
+        )
     else:
         raise ValueError(f"Unsupported STT service: {name}")
 
