@@ -117,18 +117,18 @@ func (mr *MockPipecatcallHandlerMockRecorder) SendMessage(ctx, id, messageID, me
 }
 
 // Start mocks base method.
-func (m *MockPipecatcallHandler) Start(ctx context.Context, id, customerID, activeflowID uuid.UUID, referenceType pipecatcall.ReferenceType, referenceID uuid.UUID, llmType pipecatcall.LLMType, llmMessages []map[string]any, sttType pipecatcall.STTType, ttsType pipecatcall.TTSType, ttsVoiceID string) (*pipecatcall.Pipecatcall, error) {
+func (m *MockPipecatcallHandler) Start(ctx context.Context, id, customerID, activeflowID uuid.UUID, referenceType pipecatcall.ReferenceType, referenceID uuid.UUID, llmType pipecatcall.LLMType, llmMessages []map[string]any, sttType pipecatcall.STTType, sttLanguage string, ttsType pipecatcall.TTSType, ttsLanguage, ttsVoiceID string) (*pipecatcall.Pipecatcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, id, customerID, activeflowID, referenceType, referenceID, llmType, llmMessages, sttType, ttsType, ttsVoiceID)
+	ret := m.ctrl.Call(m, "Start", ctx, id, customerID, activeflowID, referenceType, referenceID, llmType, llmMessages, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID)
 	ret0, _ := ret[0].(*pipecatcall.Pipecatcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockPipecatcallHandlerMockRecorder) Start(ctx, id, customerID, activeflowID, referenceType, referenceID, llmType, llmMessages, sttType, ttsType, ttsVoiceID any) *gomock.Call {
+func (mr *MockPipecatcallHandlerMockRecorder) Start(ctx, id, customerID, activeflowID, referenceType, referenceID, llmType, llmMessages, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPipecatcallHandler)(nil).Start), ctx, id, customerID, activeflowID, referenceType, referenceID, llmType, llmMessages, sttType, ttsType, ttsVoiceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPipecatcallHandler)(nil).Start), ctx, id, customerID, activeflowID, referenceType, referenceID, llmType, llmMessages, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID)
 }
 
 // Terminate mocks base method.
