@@ -26,7 +26,9 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 		llmType       pipecatcall.LLMType
 		llmMessages   []map[string]any
 		sttType       pipecatcall.STTType
+		sttLanguage   string
 		ttsType       pipecatcall.TTSType
+		ttsLanguage   string
 		ttsVoiceID    string
 
 		expectTarget  string
@@ -44,7 +46,9 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("08ea1dac-aba5-11f0-98a0-075b9b4bcd29"),
 			llmType:       "openai.gpt-3.5-turbo",
 			sttType:       pipecatcall.STTTypeDeepgram,
+			sttLanguage:   "en-US",
 			ttsType:       pipecatcall.TTSTypeElevenLabs,
+			ttsLanguage:   "ko-KR",
 			ttsVoiceID:    "09132436-aba5-11f0-835c-236dfc483b0e",
 			llmMessages: []map[string]any{
 				{"role": "system", "content": "Say hello world after user"},
@@ -56,7 +60,7 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 				URI:      "/v1/pipecatcalls",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"775a5cb0-b45c-11f0-b77f-eb8a93884b92","customer_id":"087c5196-aba5-11f0-b874-67331df11790","activeflow_id":"08b77244-aba5-11f0-867c-83627171cc5f","reference_type":"call","reference_id":"08ea1dac-aba5-11f0-98a0-075b9b4bcd29","llm_type":"openai.gpt-3.5-turbo","llm_messages":[{"content":"Say hello world after user","role":"system"},{"content":"Hello!","role":"user"}],"stt_type":"deepgram","tts_type":"elevenlabs","tts_voice_id":"09132436-aba5-11f0-835c-236dfc483b0e"}`),
+				Data:     []byte(`{"id":"775a5cb0-b45c-11f0-b77f-eb8a93884b92","customer_id":"087c5196-aba5-11f0-b874-67331df11790","activeflow_id":"08b77244-aba5-11f0-867c-83627171cc5f","reference_type":"call","reference_id":"08ea1dac-aba5-11f0-98a0-075b9b4bcd29","llm_type":"openai.gpt-3.5-turbo","llm_messages":[{"content":"Say hello world after user","role":"system"},{"content":"Hello!","role":"user"}],"stt_type":"deepgram","stt_language":"en-US","tts_type":"elevenlabs","tts_language":"ko-KR","tts_voice_id":"09132436-aba5-11f0-835c-236dfc483b0e"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -79,7 +83,7 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			_, err := reqHandler.PipecatV1PipecatcallStart(ctx, tt.id, tt.cusotmerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.llmType, tt.llmMessages, tt.sttType, tt.ttsType, tt.ttsVoiceID)
+			_, err := reqHandler.PipecatV1PipecatcallStart(ctx, tt.id, tt.cusotmerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.llmType, tt.llmMessages, tt.sttType, tt.sttLanguage, tt.ttsType, tt.ttsLanguage, tt.ttsVoiceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

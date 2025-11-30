@@ -940,7 +940,9 @@ type RequestHandler interface {
 		llmType pmpipecatcall.LLMType,
 		llmMessages []map[string]any,
 		sttType pmpipecatcall.STTType,
+		sttLanguage string,
 		ttsType pmpipecatcall.TTSType,
+		ttsLanguage string,
 		ttsVoiceID string,
 	) (*pmpipecatcall.Pipecatcall, error)
 	PipecatV1PipecatcallGet(ctx context.Context, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)

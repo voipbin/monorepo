@@ -215,7 +215,9 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectLLMMessages,
 				tt.expectSTType,
+				tt.expectAIcall.Language,
 				tt.expectTTSType,
+				tt.expectAIcall.Language,
 				tt.expectTTSVoiceID,
 			).Return(&pmpipecatcall.Pipecatcall{}, nil)
 
@@ -391,7 +393,9 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectLLMMessages,
 				tt.expectSTType,
+				tt.responseAIcall.Language,
 				tt.expectTTSType,
+				tt.responseAIcall.Language,
 				tt.expectTTSVoiceID,
 			).Return(&pmpipecatcall.Pipecatcall{}, nil)
 
