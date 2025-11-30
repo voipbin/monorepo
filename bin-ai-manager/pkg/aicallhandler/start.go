@@ -308,7 +308,9 @@ func (h *aicallHandler) startPipecatcall(ctx context.Context, c *aicall.AIcall) 
 		llmType,
 		llmMessages,
 		sttType,
+		c.Language,
 		ttsType,
+		c.Language,
 		ttsVoiceID,
 	)
 	if err != nil {

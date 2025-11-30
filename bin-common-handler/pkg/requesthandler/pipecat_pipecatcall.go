@@ -22,7 +22,9 @@ func (r *requestHandler) PipecatV1PipecatcallStart(
 	llmType pmpipecatcall.LLMType,
 	llmMessages []map[string]any,
 	sttType pmpipecatcall.STTType,
+	sttLanguage string,
 	ttsType pmpipecatcall.TTSType,
+	ttsLanguage string,
 	ttsVoiceID string,
 ) (*pmpipecatcall.Pipecatcall, error) {
 	uri := "/v1/pipecatcalls"
@@ -38,7 +40,9 @@ func (r *requestHandler) PipecatV1PipecatcallStart(
 		LLMType:     llmType,
 		LLMMessages: llmMessages,
 		STTType:     sttType,
+		STTLanguage: sttLanguage,
 		TTSType:     ttsType,
+		TTSLanguage: ttsLanguage,
 		TTSVoiceID:  ttsVoiceID,
 	}
 

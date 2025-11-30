@@ -219,7 +219,9 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectPipecatcallMessages,
 				tt.expectSTTType,
+				tt.responseAIcall.Language,
 				tt.expectTTSType,
+				tt.responseAIcall.Language,
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
@@ -483,7 +485,9 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectLLMMessages,
 				tt.expectSTTType,
+				tt.responseAIcall.Language,
 				tt.expectTTSType,
+				tt.responseAIcall.Language,
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
@@ -926,6 +930,7 @@ func Test_startPipecatcall(t *testing.T) {
 				AITTSType:     ai.TTSTypeElevenLabs,
 				AITTSVoiceID:  "fa5c67b8-b62b-11f0-aab5-630972321af9",
 				AISTTType:     ai.STTTypeDeepgram,
+				Language:      "en-US",
 			},
 
 			responseMessages: []*message.Message{
@@ -1000,7 +1005,9 @@ func Test_startPipecatcall(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectLLMMessages,
 				tt.expectSTTType,
+				tt.aicall.Language,
 				tt.expectTTSType,
+				tt.aicall.Language,
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
