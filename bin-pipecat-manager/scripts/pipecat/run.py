@@ -230,11 +230,20 @@ async def run_pipeline(
 def create_tts_service(name: str, **options):
     name = name.lower()
     voice_id = options.get("voice_id") or "default_voice_id"
+    language = options.get("language")
 
     if name == "cartesia":
-        return CartesiaTTSService(api_key=os.getenv("CARTESIA_API_KEY"), voice_id=voice_id)
+        return CartesiaTTSService(
+            api_key=os.getenv("CARTESIA_API_KEY"), 
+            voice_id=voice_id,
+            language=language,
+        )
     elif name == "elevenlabs":
-        return ElevenLabsTTSService(api_key=os.getenv("ELEVENLABS_API_KEY"), voice_id=voice_id)
+        return ElevenLabsTTSService(
+            api_key=os.getenv("ELEVENLABS_API_KEY"), 
+            voice_id=voice_id,
+            language=language,
+        )
     else:
         raise ValueError(f"Unsupported TTS service: {name}")
 
