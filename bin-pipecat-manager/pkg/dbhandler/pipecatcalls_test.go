@@ -43,10 +43,7 @@ func Test_PipecatcallsCreate(t *testing.T) {
 
 				HostID: "1.2.3.4",
 
-				LLMType:    pipecatcall.LLMType("openai.gpt-4"),
-				STTType:    pipecatcall.STTTypeDeepgram,
-				TTSType:    pipecatcall.TTSTypeElevenLabs,
-				TTSVoiceID: "test-voice-id",
+				LLMType: pipecatcall.LLMType("openai.gpt-4"),
 				LLMMessages: []map[string]any{
 					{
 						"role":    "system",
@@ -57,6 +54,13 @@ func Test_PipecatcallsCreate(t *testing.T) {
 						"content": "Hello, world!",
 					},
 				},
+
+				STTType:     pipecatcall.STTTypeDeepgram,
+				STTLanguage: "en-US",
+
+				TTSType:     pipecatcall.TTSTypeElevenLabs,
+				TTSLanguage: "en-US",
+				TTSVoiceID:  "test-voice-id",
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -72,10 +76,7 @@ func Test_PipecatcallsCreate(t *testing.T) {
 
 				HostID: "1.2.3.4",
 
-				LLMType:    pipecatcall.LLMType("openai.gpt-4"),
-				STTType:    pipecatcall.STTTypeDeepgram,
-				TTSType:    pipecatcall.TTSTypeElevenLabs,
-				TTSVoiceID: "test-voice-id",
+				LLMType: pipecatcall.LLMType("openai.gpt-4"),
 				LLMMessages: []map[string]any{
 					{
 						"role":    "system",
@@ -86,6 +87,13 @@ func Test_PipecatcallsCreate(t *testing.T) {
 						"content": "Hello, world!",
 					},
 				},
+
+				STTType:     pipecatcall.STTTypeDeepgram,
+				STTLanguage: "en-US",
+
+				TTSType:     pipecatcall.TTSTypeElevenLabs,
+				TTSLanguage: "en-US",
+				TTSVoiceID:  "test-voice-id",
 
 				TMCreate: "2020-04-18 03:22:17.995000",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,

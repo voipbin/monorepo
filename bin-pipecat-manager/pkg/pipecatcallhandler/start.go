@@ -22,7 +22,9 @@ func (h *pipecatcallHandler) Start(
 	llmType pipecatcall.LLMType,
 	llmMessages []map[string]any,
 	sttType pipecatcall.STTType,
+	sttLanguage string,
 	ttsType pipecatcall.TTSType,
+	ttsLanguage string,
 	ttsVoiceID string,
 ) (*pipecatcall.Pipecatcall, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -43,7 +45,9 @@ func (h *pipecatcallHandler) Start(
 		llmType,
 		llmMessages,
 		sttType,
+		sttLanguage,
 		ttsType,
+		ttsLanguage,
 		ttsVoiceID,
 	)
 	if err != nil {

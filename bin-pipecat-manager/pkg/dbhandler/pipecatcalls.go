@@ -26,10 +26,14 @@ var (
 		string(pipecatcall.FieldHostID),
 
 		string(pipecatcall.FieldLLMType),
-		string(pipecatcall.FieldSTTType),
-		string(pipecatcall.FieldTTSType),
-		string(pipecatcall.FieldTTSVoiceID),
 		string(pipecatcall.FieldLLMMessages),
+
+		string(pipecatcall.FieldSTTType),
+		string(pipecatcall.FieldSTTLanguage),
+
+		string(pipecatcall.FieldTTSType),
+		string(pipecatcall.FieldTTSLanguage),
+		string(pipecatcall.FieldTTSVoiceID),
 
 		string(pipecatcall.FieldTMCreate),
 		string(pipecatcall.FieldTMUpdate),
@@ -38,7 +42,7 @@ var (
 )
 
 func (h *handler) pipecatcallGetFromRow(row *sql.Rows) (*pipecatcall.Pipecatcall, error) {
-	var messages string
+	var llmMessages string
 
 	res := &pipecatcall.Pipecatcall{}
 	if err := row.Scan(
@@ -52,10 +56,14 @@ func (h *handler) pipecatcallGetFromRow(row *sql.Rows) (*pipecatcall.Pipecatcall
 		&res.HostID,
 
 		&res.LLMType,
+		&llmMessages,
+
 		&res.STTType,
+		&res.STTLanguage,
+
 		&res.TTSType,
+		&res.TTSLanguage,
 		&res.TTSVoiceID,
-		&messages,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -64,7 +72,7 @@ func (h *handler) pipecatcallGetFromRow(row *sql.Rows) (*pipecatcall.Pipecatcall
 		return nil, fmt.Errorf("could not scan the row. pipecatcallGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(messages), &res.LLMMessages); err != nil {
+	if err := json.Unmarshal([]byte(llmMessages), &res.LLMMessages); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the data. PipecatcallGet. err: %v", err)
 	}
 
@@ -74,7 +82,7 @@ func (h *handler) pipecatcallGetFromRow(row *sql.Rows) (*pipecatcall.Pipecatcall
 func (h *handler) PipecatcallCreate(ctx context.Context, f *pipecatcall.Pipecatcall) error {
 	now := h.utilHandler.TimeGetCurTime()
 
-	tmpMessages, err := json.Marshal(f.LLMMessages)
+	tmpLLMMessages, err := json.Marshal(f.LLMMessages)
 	if err != nil {
 		return fmt.Errorf("could not marshal messages. PipecatcallCreate. err: %v", err)
 	}
@@ -93,10 +101,14 @@ func (h *handler) PipecatcallCreate(ctx context.Context, f *pipecatcall.Pipecatc
 			f.HostID,
 
 			f.LLMType,
+			tmpLLMMessages,
+
 			f.STTType,
+			f.STTLanguage,
+
 			f.TTSType,
+			f.TTSLanguage,
 			f.TTSVoiceID,
-			tmpMessages,
 
 			now,                                    // tm_create
 			commondatabasehandler.DefaultTimeStamp, // tm_update

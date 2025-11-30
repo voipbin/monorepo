@@ -32,10 +32,12 @@ class PipelineRequest(BaseModel):
     id: Optional[str] = None
     llm_type: Optional[str] = None
     llm_key: Optional[str] = None
-    tts: Optional[str] = None
-    stt: Optional[str] = None
-    voice_id: Optional[str] = None
-    messages: Optional[List[Message]] = Field(default_factory=list)
+    llm_messages: Optional[List[Message]] = Field(default_factory=list)
+    stt_type: Optional[str] = None
+    stt_language: Optional[str] = None
+    tts_type: Optional[str] = None
+    tts_language: Optional[str] = None
+    tts_voice_id: Optional[str] = None
 
 async def run_pipeline_wrapper(req: PipelineRequest):
     try:
@@ -44,10 +46,12 @@ async def run_pipeline_wrapper(req: PipelineRequest):
             req.id,
             req.llm_type,
             req.llm_key,
-            req.tts,
-            req.stt,
-            req.voice_id,
-            [m.model_dump() for m in req.messages],
+            [m.model_dump() for m in req.llm_messages],
+            req.stt_type,
+            req.stt_language,
+            req.tts_type,
+            req.tts_language,
+            req.tts_voice_id,
         )
         logger.info(f"Pipeline finished successfully: id={req.id}")
     except Exception as e:
@@ -57,15 +61,17 @@ async def run_pipeline_wrapper(req: PipelineRequest):
 @app.post("/run")
 async def run_pipeline_endpoint(req: PipelineRequest):
     try:
-        msg_count = len(req.messages or [])
+        msg_count = len(req.llm_messages or [])
         logger.info(json.dumps({
             "event": "run_request",
             "id": req.id,
             "llm_type": req.llm_type,
-            "tts": req.tts,
-            "stt": req.stt,
-            "voice_id": req.voice_id,
-            "message_count": msg_count
+            "llm_message_count": msg_count,
+            "stt_type": req.stt_type,
+            "stt_language": req.stt_language,
+            "tts_type": req.tts_type,
+            "tts_language": req.tts_language,
+            "tts_voice_id": req.tts_voice_id,
         }))
         
         asyncio.create_task(run_pipeline_wrapper(req))

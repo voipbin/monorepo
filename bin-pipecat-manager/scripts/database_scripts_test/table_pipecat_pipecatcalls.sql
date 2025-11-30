@@ -11,8 +11,12 @@ create table pipecat_pipecatcalls(
 
   llm_type      varchar(255),
   llm_messages  json,
+
   stt_type      varchar(255),
+  stt_language  varchar(255),
+
   tts_type      varchar(255),
+  tts_language  varchar(255),
   tts_voice_id  varchar(255),
 
   -- timestamps

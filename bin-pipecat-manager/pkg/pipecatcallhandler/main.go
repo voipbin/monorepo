@@ -33,7 +33,9 @@ type PipecatcallHandler interface {
 		llmType pipecatcall.LLMType,
 		llmMessages []map[string]any,
 		sttType pipecatcall.STTType,
+		sttLanguage string,
 		ttsType pipecatcall.TTSType,
+		ttsLanguage string,
 		ttsVoiceID string,
 	) (*pipecatcall.Pipecatcall, error)
 	Terminate(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error)

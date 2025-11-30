@@ -20,7 +20,9 @@ func (h *pipecatcallHandler) Create(
 	llmType pipecatcall.LLMType,
 	llmMessages []map[string]any,
 	sttType pipecatcall.STTType,
+	sttLanguage string,
 	ttsType pipecatcall.TTSType,
+	ttsLanguage string,
 	ttsVoiceID string,
 ) (*pipecatcall.Pipecatcall, error) {
 
@@ -39,7 +41,9 @@ func (h *pipecatcallHandler) Create(
 		LLMType:     llmType,
 		LLMMessages: llmMessages,
 		STTType:     sttType,
+		STTLanguage: sttLanguage,
 		TTSType:     ttsType,
+		TTSLanguage: ttsLanguage,
 		TTSVoiceID:  ttsVoiceID,
 	}
 

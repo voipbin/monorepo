@@ -14,8 +14,12 @@ const (
 
 	FieldLLMType     Field = "llm_type"     // llm_type
 	FieldLLMMessages Field = "llm_messages" // llm_messages
+
 	FieldSTTType     Field = "stt_type"     // stt_type
+	FieldSTTLanguage Field = "stt_language" // stt_language
+
 	FieldTTSType     Field = "tts_type"     // tts_type
+	FieldTTSLanguage Field = "tts_language" // tts_language
 	FieldTTSVoiceID  Field = "tts_voice_id" // tts_voice_id
 
 	FieldTMCreate Field = "tm_create" // tm_create

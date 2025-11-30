@@ -18,6 +18,8 @@ type V1DataPipecatcallsPost struct {
 	LLMType       pipecatcall.LLMType       `json:"llm_type,omitempty"`
 	LLMMessages   []map[string]any          `json:"llm_messages,omitempty"`
 	STTType       pipecatcall.STTType       `json:"stt_type,omitempty"`
+	STTLanguage   string                    `json:"stt_language,omitempty"`
 	TTSType       pipecatcall.TTSType       `json:"tts_type,omitempty"`
+	TTSLanguage   string                    `json:"tts_language,omitempty"`
 	TTSVoiceID    string                    `json:"tts_voice_id,omitempty"`
 }

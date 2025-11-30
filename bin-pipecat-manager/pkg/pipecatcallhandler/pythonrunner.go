@@ -27,10 +27,12 @@ type PythonRunner interface {
 		pipecatcallID uuid.UUID,
 		llmType string,
 		llmKey string,
-		stt string,
-		tts string,
-		voiceID string,
-		messages []map[string]any,
+		llmMessages []map[string]any,
+		sttType string,
+		sttLanguage string,
+		ttsType string,
+		ttsLanguage string,
+		ttsVoiceID string,
 	) error
 	Stop(ctx context.Context, pipecatcallID uuid.UUID) error
 }
@@ -44,10 +46,12 @@ func (h *pythonRunner) Start(
 	pipecatcallID uuid.UUID,
 	llmType string,
 	llmKey string,
-	stt string,
-	tts string,
-	voiceID string,
-	messages []map[string]any,
+	llmMessages []map[string]any,
+	sttType string,
+	sttLanguage string,
+	ttsType string,
+	ttsLanguage string,
+	ttsVoiceID string,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Start",
@@ -55,21 +59,25 @@ func (h *pythonRunner) Start(
 
 	// // only used to send data to the python runner
 	reqBody := struct {
-		ID       uuid.UUID        `json:"id,omitempty"`
-		LLMType  string           `json:"llm_type,omitempty"`
-		LLMKey   string           `json:"llm_key,omitempty"`
-		TTS      string           `json:"tts,omitempty"`
-		STT      string           `json:"stt,omitempty"`
-		VoiceID  string           `json:"voice_id,omitempty"`
-		Messages []map[string]any `json:"messages,omitempty"`
+		ID          uuid.UUID        `json:"id,omitempty"`
+		LLMType     string           `json:"llm_type,omitempty"`
+		LLMKey      string           `json:"llm_key,omitempty"`
+		LLMMessages []map[string]any `json:"llm_messages,omitempty"`
+		STTType     string           `json:"stt_type,omitempty"`
+		STTLanguage string           `json:"stt_language,omitempty"`
+		TTSType     string           `json:"tts_type,omitempty"`
+		TTSLanguage string           `json:"tts_language,omitempty"`
+		TTSVoiceID  string           `json:"tts_voice_id,omitempty"`
 	}{
-		ID:       pipecatcallID,
-		LLMType:  llmType,
-		LLMKey:   llmKey,
-		STT:      stt,
-		TTS:      tts,
-		VoiceID:  voiceID,
-		Messages: messages,
+		ID:          pipecatcallID,
+		LLMType:     llmType,
+		LLMKey:      llmKey,
+		LLMMessages: llmMessages,
+		STTType:     sttType,
+		STTLanguage: sttLanguage,
+		TTSType:     ttsType,
+		TTSLanguage: ttsLanguage,
+		TTSVoiceID:  ttsVoiceID,
 	}
 
 	jsonData, err := json.Marshal(reqBody)

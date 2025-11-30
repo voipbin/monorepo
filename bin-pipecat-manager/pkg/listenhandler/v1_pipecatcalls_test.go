@@ -31,7 +31,9 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 		expectLLMType       pipecatcall.LLMType
 		expectLLMMessages   []map[string]any
 		expectSTTType       pipecatcall.STTType
+		expectSTTLanguage   string
 		expectTTSType       pipecatcall.TTSType
+		expectTTSLanguage   string
 		expectTTSVoiceID    string
 
 		expectRes *sock.Response
@@ -43,7 +45,7 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 				URI:      "/v1/pipecatcalls",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"ffa2ac7a-b3a4-11f0-aeda-5b3b3498e619","customer_id":"cd1d344c-aa43-11f0-a6b9-fb100dc5e57c","activeflow_id":"cd65b1b8-aa43-11f0-8c1e-bfc7dc74bbd9","reference_type":"call","reference_id":"cd97ff42-aa43-11f0-9042-0f14ff740ec1","llm_type":"openai.gpt-3.5-turbo","llm_messages":[{"role":"system","content":"Say hello world after user"},{"role":"user","content":"Hello!"}],"stt_type":"deepgram","tts_type":"elevenlabs","tts_voice_id":"c41bacee-aadd-11f0-a5a5-8bedee791598"}`),
+				Data:     []byte(`{"id":"ffa2ac7a-b3a4-11f0-aeda-5b3b3498e619","customer_id":"cd1d344c-aa43-11f0-a6b9-fb100dc5e57c","activeflow_id":"cd65b1b8-aa43-11f0-8c1e-bfc7dc74bbd9","reference_type":"call","reference_id":"cd97ff42-aa43-11f0-9042-0f14ff740ec1","llm_type":"openai.gpt-3.5-turbo","llm_messages":[{"role":"system","content":"Say hello world after user"},{"role":"user","content":"Hello!"}],"stt_type":"deepgram","stt_language":"en-US","tts_type":"elevenlabs","tts_language":"ko-KR","tts_voice_id":"c41bacee-aadd-11f0-a5a5-8bedee791598"}`),
 			},
 
 			responsePipecatcall: &pipecatcall.Pipecatcall{
@@ -62,9 +64,11 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 				{"role": "system", "content": "Say hello world after user"},
 				{"role": "user", "content": "Hello!"},
 			},
-			expectSTTType:    pipecatcall.STTTypeDeepgram,
-			expectTTSType:    pipecatcall.TTSTypeElevenLabs,
-			expectTTSVoiceID: "c41bacee-aadd-11f0-a5a5-8bedee791598",
+			expectSTTType:     pipecatcall.STTTypeDeepgram,
+			expectSTTLanguage: "en-US",
+			expectTTSType:     pipecatcall.TTSTypeElevenLabs,
+			expectTTSLanguage: "ko-KR",
+			expectTTSVoiceID:  "c41bacee-aadd-11f0-a5a5-8bedee791598",
 
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -98,7 +102,9 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectLLMMessages,
 				tt.expectSTTType,
+				tt.expectSTTLanguage,
 				tt.expectTTSType,
+				tt.expectTTSLanguage,
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 			res, err := h.processRequest(tt.request)

@@ -35,7 +35,9 @@ func (h *listenHandler) processV1PipecatcallsPost(ctx context.Context, m *sock.R
 		req.LLMType,
 		req.LLMMessages,
 		req.STTType,
+		req.STTLanguage,
 		req.TTSType,
+		req.TTSLanguage,
 		req.TTSVoiceID,
 	)
 	if err != nil {

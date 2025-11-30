@@ -17,9 +17,13 @@ type Pipecatcall struct {
 
 	LLMType     LLMType          `json:"llm_type,omitempty"`
 	LLMMessages []map[string]any `json:"llm_messages,omitempty"`
-	STTType     STTType          `json:"stt_type,omitempty"`
-	TTSType     TTSType          `json:"tts_type,omitempty"`
-	TTSVoiceID  string           `json:"tts_voice_id,omitempty"`
+
+	STTType     STTType `json:"stt_type,omitempty"`
+	STTLanguage string  `json:"stt_language,omitempty"`
+
+	TTSType     TTSType `json:"tts_type,omitempty"`
+	TTSLanguage string  `json:"tts_language,omitempty"`
+	TTSVoiceID  string  `json:"tts_voice_id,omitempty"`
 
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
