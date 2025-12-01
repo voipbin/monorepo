@@ -67,6 +67,7 @@ func Test_Create(t *testing.T) {
 						Type: action.TypeAnswer,
 					},
 				},
+				OnCompleteFlowID: uuid.FromStringOrNil("aa439464-ce1c-11f0-b1e0-7b89e4c9704a"),
 			},
 			responseStackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {
@@ -104,6 +105,8 @@ func Test_Create(t *testing.T) {
 				ReferenceType:         activeflow.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("e8f56ddc-07d3-11f0-b43f-ebac86ccf1dc"),
+
+				OnCompleteFlowID: uuid.FromStringOrNil("aa439464-ce1c-11f0-b1e0-7b89e4c9704a"),
 
 				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
@@ -242,11 +245,11 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
 			if tt.id == uuid.Nil {
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			}
 
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
 			mockStack.EXPECT().Create(tt.responseFlow.Actions).Return(tt.responseStackMap)
 			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectActiveflow).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.expectActiveflow.ID).Return(tt.responseActiveflow, nil)

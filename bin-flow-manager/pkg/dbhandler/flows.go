@@ -27,6 +27,8 @@ var (
 
 		string(flow.FieldActions),
 
+		string(flow.FieldOnCompleteFlowID),
+
 		string(flow.FieldTMCreate),
 		string(flow.FieldTMUpdate),
 		string(flow.FieldTMDelete),
@@ -47,6 +49,8 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 		&res.Detail,
 
 		&actions,
+
+		&res.OnCompleteFlowID,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -84,6 +88,8 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 			f.Detail,
 
 			tmpActions,
+
+			f.OnCompleteFlowID.Bytes(),
 
 			now,                                    // tm_create
 			commondatabasehandler.DefaultTimeStamp, // tm_update

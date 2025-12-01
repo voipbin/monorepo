@@ -19,6 +19,8 @@ type V1DataFlowsPost struct {
 
 	Actions []action.Action `json:"actions"` // actions
 
+	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id"`
+
 	Persist bool `json:"persist"` // persist. If it is true, set the flow into the database.
 }
 
@@ -30,4 +32,6 @@ type V1DataFlowsIDPut struct {
 	Detail string `json:"detail"` // detail
 
 	Actions []action.Action `json:"actions"` // actions
+
+	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id"`
 }

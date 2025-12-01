@@ -5,6 +5,8 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
+
+	"github.com/gofrs/uuid"
 )
 
 // WebhookMessage defines
@@ -17,6 +19,8 @@ type WebhookMessage struct {
 	Detail string `json:"detail,omitempty"`
 
 	Actions []action.Action `json:"actions,omitempty"`
+
+	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty"`
 
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
@@ -34,6 +38,8 @@ func (h *Flow) ConvertWebhookMessage() *WebhookMessage {
 		Detail: h.Detail,
 
 		Actions: h.Actions,
+
+		OnCompleteFlowID: h.OnCompleteFlowID,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

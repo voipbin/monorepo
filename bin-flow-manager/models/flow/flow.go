@@ -6,6 +6,8 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
+
+	"github.com/gofrs/uuid"
 )
 
 // Flow struct
@@ -21,33 +23,12 @@ type Flow struct {
 
 	Actions []action.Action `json:"actions,omitempty"`
 
+	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty"` // will be triggered when this flow is completed
+
 	TMCreate string `json:"tm_create,omitempty"`
 	TMUpdate string `json:"tm_update,omitempty"`
 	TMDelete string `json:"tm_delete,omitempty"`
 }
-
-type Field string
-
-const (
-	FieldID         Field = "id"          // id
-	FieldCustomerID Field = "customer_id" // customer_id
-
-	FieldType Field = "type" // type
-
-	FieldName   Field = "name"   // name
-	FieldDetail Field = "detail" // detail
-
-	FieldPersist Field = "persist" // persist
-
-	FieldActions Field = "actions" // actions
-
-	FieldTMCreate Field = "tm_create" // tm_create
-	FieldTMUpdate Field = "tm_update" // tm_update
-	FieldTMDelete Field = "tm_delete" // tm_delete
-
-	// filter only
-	FieldDeleted Field = "deleted"
-)
 
 // Type defines
 type Type string

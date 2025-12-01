@@ -92,14 +92,19 @@ func Test_FlowCreate(t *testing.T) {
 			},
 		},
 		{
-			name: "have 1 action echo with option",
+			name: "have all",
 
 			flow: &flow.Flow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
 				},
+				Type: flow.TypeFlow,
+
 				Name:   "test flow name",
 				Detail: "test flow detail",
+
+				Persist: true,
+
 				Actions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("7c911cfc-88e6-11ea-972e-cf8263196185"),
@@ -109,6 +114,7 @@ func Test_FlowCreate(t *testing.T) {
 						},
 					},
 				},
+				OnCompleteFlowID: uuid.FromStringOrNil("a7d3d97e-ce16-11f0-809a-ff2f69e4c16a"),
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -117,6 +123,8 @@ func Test_FlowCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
 				},
+				Type: flow.TypeFlow,
+
 				Name:    "test flow name",
 				Detail:  "test flow detail",
 				Persist: true,
@@ -129,9 +137,10 @@ func Test_FlowCreate(t *testing.T) {
 						},
 					},
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				OnCompleteFlowID: uuid.FromStringOrNil("a7d3d97e-ce16-11f0-809a-ff2f69e4c16a"),
+				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMUpdate:         commondatabasehandler.DefaultTimeStamp,
+				TMDelete:         commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -342,6 +351,7 @@ func Test_FlowUpdate(t *testing.T) {
 						Type: action.TypeAnswer,
 					},
 				},
+				flow.FieldOnCompleteFlowID: uuid.FromStringOrNil("9d1d6638-ce18-11f0-957f-1f0f3f0158b1"),
 			},
 
 			expectedRes: &flow.Flow{
@@ -357,6 +367,7 @@ func Test_FlowUpdate(t *testing.T) {
 						Type: action.TypeAnswer,
 					},
 				},
+				OnCompleteFlowID: uuid.FromStringOrNil("9d1d6638-ce18-11f0-957f-1f0f3f0158b1"),
 			},
 		},
 		{
@@ -381,6 +392,7 @@ func Test_FlowUpdate(t *testing.T) {
 						Type: action.TypeEcho,
 					},
 				},
+				flow.FieldOnCompleteFlowID: uuid.FromStringOrNil("9d468a7c-ce18-11f0-8afe-5bae9c781587"),
 			},
 
 			expectedRes: &flow.Flow{
@@ -400,6 +412,7 @@ func Test_FlowUpdate(t *testing.T) {
 						Type: action.TypeEcho,
 					},
 				},
+				OnCompleteFlowID: uuid.FromStringOrNil("9d468a7c-ce18-11f0-8afe-5bae9c781587"),
 			},
 		},
 	}

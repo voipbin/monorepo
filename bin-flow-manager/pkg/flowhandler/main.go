@@ -42,11 +42,19 @@ type FlowHandler interface {
 		detail string,
 		persist bool,
 		actions []action.Action,
+		onCompleteFlowID uuid.UUID,
 	) (*flow.Flow, error)
 	Delete(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	Gets(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error)
-	Update(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error)
+	Update(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		actions []action.Action,
+		onCompleteFlowID uuid.UUID,
+	) (*flow.Flow, error)
 	UpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error)
 
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
