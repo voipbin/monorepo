@@ -61,7 +61,7 @@ func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *amagent.Agent,
 
 	if flowID == uuid.Nil {
 		log.Debugf("The flowID is null. Creating a new temp flow for call dialing.")
-		tmpFlow, err := h.FlowCreate(ctx, a, "tmp", "tmp outbound flow", actions, false)
+		tmpFlow, err := h.FlowCreate(ctx, a, "tmp", "tmp outbound flow", actions, uuid.Nil, false)
 		if err != nil {
 			log.Errorf("Could not create a flow for outoing call. err: %v", err)
 			return nil, err

@@ -2341,6 +2341,9 @@ type FlowManagerActiveflow struct {
 	// Id Unique identifier for the activeflow.
 	Id *string `json:"id,omitempty"`
 
+	// OnCompleteFlowId ID of the flow to be executed on completion.
+	OnCompleteFlowId *string `json:"on_complete_flow_id,omitempty"`
+
 	// ReferenceActiveflowId ID of the referenced activeflow.
 	ReferenceActiveflowId *string `json:"reference_activeflow_id,omitempty"`
 
@@ -2382,6 +2385,9 @@ type FlowManagerFlow struct {
 
 	// Name Name of the flow.
 	Name *string `json:"name,omitempty"`
+
+	// OnCompleteFlowId ID of the flow to be executed on completion.
+	OnCompleteFlowId *string `json:"on_complete_flow_id,omitempty"`
 
 	// TmCreate Timestamp when the flow was created.
 	TmCreate *string `json:"tm_create,omitempty"`
@@ -3905,6 +3911,9 @@ type PostFlowsJSONBody struct {
 
 	// Name The name of the flow.
 	Name string `json:"name"`
+
+	// OnCompleteFlowId The ID of the flow to execute upon completion.
+	OnCompleteFlowId *string `json:"on_complete_flow_id,omitempty"`
 }
 
 // PutFlowsIdJSONBody defines parameters for PutFlowsId.
@@ -3917,6 +3926,9 @@ type PutFlowsIdJSONBody struct {
 
 	// Name The updated name of the flow.
 	Name string `json:"name"`
+
+	// OnCompleteFlowId ID of the flow to be executed on completion.
+	OnCompleteFlowId *string `json:"on_complete_flow_id,omitempty"`
 }
 
 // GetGroupcallsParams defines parameters for GetGroupcalls.

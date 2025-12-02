@@ -25,10 +25,11 @@ func Test_FlowCreate(t *testing.T) {
 		name  string
 		agent *amagent.Agent
 
-		flowName string
-		detail   string
-		actions  []fmaction.Action
-		persist  bool
+		flowName         string
+		detail           string
+		actions          []fmaction.Action
+		onCompleteFlowID uuid.UUID
+		persist          bool
 
 		response  *fmflow.Flow
 		expectRes *fmflow.WebhookMessage
@@ -50,7 +51,8 @@ func Test_FlowCreate(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			persist: true,
+			onCompleteFlowID: uuid.FromStringOrNil("dce9b1a2-cf91-11f0-9854-df19288f16fe"),
+			persist:          true,
 
 			response: &fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -81,8 +83,8 @@ func Test_FlowCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, uuid.Nil, tt.persist).Return(tt.response, nil)
-			res, err := h.FlowCreate(ctx, tt.agent, tt.flowName, tt.detail, tt.actions, tt.persist)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID, tt.persist).Return(tt.response, nil)
+			res, err := h.FlowCreate(ctx, tt.agent, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -443,10 +445,11 @@ func Test_FlowUpdate(t *testing.T) {
 		name  string
 		agent *amagent.Agent
 
-		flowID   uuid.UUID
-		flowName string
-		detail   string
-		actions  []fmaction.Action
+		flowID           uuid.UUID
+		flowName         string
+		detail           string
+		actions          []fmaction.Action
+		onCompleteFlowID uuid.UUID
 
 		responseFlow *fmflow.Flow
 		expectRes    *fmflow.WebhookMessage
@@ -469,6 +472,7 @@ func Test_FlowUpdate(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 			},
+			onCompleteFlowID: uuid.FromStringOrNil("dd113542-cf91-11f0-9f8a-fb8e4c6a808b"),
 
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -501,18 +505,9 @@ func Test_FlowUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			f := &fmflow.Flow{
-				Identity: commonidentity.Identity{
-					ID: tt.flowID,
-				},
-				Name:    tt.flowName,
-				Detail:  tt.detail,
-				Actions: tt.actions,
-			}
-
 			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
-			mockReq.EXPECT().FlowV1FlowUpdate(ctx, f).Return(tt.responseFlow, nil)
-			res, err := h.FlowUpdate(ctx, tt.agent, f)
+			mockReq.EXPECT().FlowV1FlowUpdate(ctx, tt.flowID, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID).Return(tt.responseFlow, nil)
+			res, err := h.FlowUpdate(ctx, tt.agent, tt.flowID, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

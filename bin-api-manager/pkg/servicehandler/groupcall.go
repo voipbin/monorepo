@@ -132,7 +132,7 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, a *amagent.Agent, 
 	targetFlowID := flowID
 	if targetFlowID == uuid.Nil {
 		log.Debugf("The flowID is null. Creating a new temp flow for call dialing.")
-		f, err := h.FlowCreate(ctx, a, "tmp", "tmp outbound flow", actions, false)
+		f, err := h.FlowCreate(ctx, a, "tmp", "tmp outbound flow", actions, uuid.Nil, false)
 		if err != nil {
 			log.Errorf("Could not create a flow for outoing call. err: %v", err)
 			return nil, err

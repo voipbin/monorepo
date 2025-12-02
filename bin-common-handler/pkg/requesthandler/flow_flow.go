@@ -99,15 +99,19 @@ func (r *requestHandler) FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID)
 // it returns updated flow info if it succeed.
 func (r *requestHandler) FlowV1FlowUpdate(
 	ctx context.Context,
-	f *fmflow.Flow,
+	flowID uuid.UUID,
+	name string,
+	detail string,
+	actions []fmaction.Action,
+	onCompleteFlowID uuid.UUID,
 ) (*fmflow.Flow, error) {
-	uri := fmt.Sprintf("/v1/flows/%s", f.ID)
+	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
 	data := &fmrequest.V1DataFlowsIDPut{
-		Name:             f.Name,
-		Detail:           f.Detail,
-		Actions:          f.Actions,
-		OnCompleteFlowID: f.OnCompleteFlowID,
+		Name:             name,
+		Detail:           detail,
+		Actions:          actions,
+		OnCompleteFlowID: onCompleteFlowID,
 	}
 
 	m, err := json.Marshal(data)

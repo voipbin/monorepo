@@ -107,8 +107,13 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		requestFlow *fmflow.Flow
-		response    *sock.Response
+		flowID           uuid.UUID
+		flowName         string
+		flowDetail       string
+		actions          []fmaction.Action
+		onCompleteFlowID uuid.UUID
+
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -116,15 +121,13 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 	}{
 		{
 			name: "empty action",
-			requestFlow: &fmflow.Flow{
-				Identity: identity.Identity{
-					ID: uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
-				},
-				Name:             "update name",
-				Detail:           "update detail",
-				Actions:          []fmaction.Action{},
-				OnCompleteFlowID: uuid.FromStringOrNil("feaf35be-cf8c-11f0-8b87-0b45b596f16e"),
-			},
+
+			flowID:           uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
+			flowName:         "update name",
+			flowDetail:       "update detail",
+			actions:          []fmaction.Action{},
+			onCompleteFlowID: uuid.FromStringOrNil("feaf35be-cf8c-11f0-8b87-0b45b596f16e"),
+
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -165,7 +168,14 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FlowV1FlowUpdate(ctx, tt.requestFlow)
+			res, err := reqHandler.FlowV1FlowUpdate(
+				ctx,
+				tt.flowID,
+				tt.flowName,
+				tt.flowDetail,
+				tt.actions,
+				tt.onCompleteFlowID,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
