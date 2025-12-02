@@ -23,7 +23,7 @@ func ConvertStringMapToFieldMap(src map[string]any) (map[Field]any, error) {
 			res[field] = parsed
 
 		// Fields requiring UUID conversion
-		case FieldID, FieldCustomerID:
+		case FieldID, FieldCustomerID, FieldOnCompleteFlowID:
 			str, ok := val.(string)
 			if !ok {
 				return nil, fmt.Errorf("expected string for uuid field %s, got %T", key, val)

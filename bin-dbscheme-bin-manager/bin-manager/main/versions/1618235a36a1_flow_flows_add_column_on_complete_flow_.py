@@ -19,12 +19,12 @@ depends_on = None
 def upgrade():
     op.execute("""
         ALTER TABLE flow_flows
-        ADD on_complete_flow_id BINARY(16) NOT NULL DEFAULT UNHEX(REPLACE('00000000-0000-0000-0000-000000000000', '-', ''));
+        ADD on_complete_flow_id BINARY(16) NOT NULL DEFAULT 0x00000000000000000000000000000000;
     """)
 
     op.execute("""
         ALTER TABLE flow_activeflows
-        ADD on_complete_flow_id BINARY(16) NOT NULL DEFAULT UNHEX(REPLACE('00000000-0000-0000-0000-000000000000', '-', ''));
+        ADD on_complete_flow_id BINARY(16) NOT NULL DEFAULT 0x00000000000000000000000000000000;
     """)
         
 
