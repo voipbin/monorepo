@@ -23,7 +23,7 @@ type Activeflow struct {
 	ReferenceID           uuid.UUID     `json:"reference_id,omitempty"`
 	ReferenceActiveflowID uuid.UUID     `json:"reference_activeflow_id,omitempty"` // the activeflow which created this activeflow by the on_complete_flow setting
 
-	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty"` // will be triggered when this activeflow is completed or teminated
+	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty"` // will be triggered when this activeflow is completed or terminated
 
 	// stack
 	StackMap map[uuid.UUID]*stack.Stack `json:"stack_map,omitempty"`
@@ -61,7 +61,6 @@ type ReferenceType string
 // list of ReferenceType
 const (
 	ReferenceTypeNone         ReferenceType = ""             // none
-	ReferenceTypeActiveflow   ReferenceType = "activeflow"   // activeflow
 	ReferenceTypeAI           ReferenceType = "ai"           // ai
 	ReferenceTypeCall         ReferenceType = "call"         // call
 	ReferenceTypeCampaign     ReferenceType = "campaign"     // campaign

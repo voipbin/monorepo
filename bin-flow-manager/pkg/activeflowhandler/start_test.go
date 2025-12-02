@@ -71,8 +71,9 @@ func Test_startOnCompleteFlow(t *testing.T) {
 			responseVariable: &variable.Variable{},
 			responseVariableParent: &variable.Variable{
 				Variables: map[string]string{
-					"key1": "val1",
-					"key2": "val2",
+					"key1":                          "val1",
+					"key2":                          "val2",
+					variableActiveflowCompleteCount: "2",
 				},
 			},
 			responseVariableNew: &variable.Variable{
@@ -111,8 +112,7 @@ func Test_startOnCompleteFlow(t *testing.T) {
 				variableActiveflowReferenceID:           "1b1ad4c6-ce64-11f0-baa3-9f08199af353",
 				variableActiveflowReferenceActiveflowID: "1ae88584-ce64-11f0-8579-f77458ccdaa0",
 				variableActiveflowFlowID:                "1b3f56c0-ce64-11f0-b334-1b77b8b401e9",
-
-				// "key3": "new val3",
+				variableActiveflowCompleteCount:         "3",
 			},
 		},
 	}

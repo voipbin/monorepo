@@ -30,7 +30,7 @@ func Test_variableCreate(t *testing.T) {
 		expectedVariables map[string]string
 	}{
 		{
-			name: "normal",
+			name: "has reference activeflow id",
 
 			activeflow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
@@ -44,8 +44,9 @@ func Test_variableCreate(t *testing.T) {
 
 			responseReferenceActiveflowVariable: &variable.Variable{
 				Variables: map[string]string{
-					"key1": "value1",
-					"key2": "value2",
+					"key1":                          "value1",
+					"key2":                          "value2",
+					variableActiveflowCompleteCount: "2",
 				},
 			},
 			responseVariable: &variable.Variable{
@@ -60,6 +61,31 @@ func Test_variableCreate(t *testing.T) {
 				variableActiveflowReferenceID:           "79cf3b5c-07f3-11f0-b1f5-ab8e50a8c6f5",
 				variableActiveflowReferenceActiveflowID: "7a0a2938-07f3-11f0-8103-0b6f3ab09e0c",
 				variableActiveflowFlowID:                "7a78656a-07f3-11f0-a8b5-5faa92a202a8",
+				variableActiveflowCompleteCount:         "3",
+			},
+		},
+		{
+			name: "no reference activeflow id",
+
+			activeflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("053a6bb0-cf29-11f0-be55-ebfa876b98e5"),
+				},
+				ReferenceType: activeflow.ReferenceTypeAI,
+				ReferenceID:   uuid.FromStringOrNil("05689a9e-cf29-11f0-a598-437d69259ef2"),
+				FlowID:        uuid.FromStringOrNil("0591416a-cf29-11f0-9cb9-c76b4fe51f98"),
+			},
+
+			responseVariable: &variable.Variable{
+				ID: uuid.FromStringOrNil("8bb1e4f4-cce0-11ec-a4d3-5f6e7c8b9d0e"),
+			},
+			expectedVariables: map[string]string{
+				variableActiveflowID:                    "053a6bb0-cf29-11f0-be55-ebfa876b98e5",
+				variableActiveflowReferenceType:         "ai",
+				variableActiveflowReferenceID:           "05689a9e-cf29-11f0-a598-437d69259ef2",
+				variableActiveflowReferenceActiveflowID: "00000000-0000-0000-0000-000000000000",
+				variableActiveflowFlowID:                "0591416a-cf29-11f0-9cb9-c76b4fe51f98",
+				variableActiveflowCompleteCount:         "0",
 			},
 		},
 	}

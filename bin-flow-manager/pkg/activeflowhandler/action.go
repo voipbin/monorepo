@@ -2,6 +2,7 @@ package activeflowhandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ func (h *activeflowHandler) actionGetsFromFlow(ctx context.Context, flowID uuid.
 	}
 
 	if f.CustomerID != customerID {
-		return nil, errors.Wrapf(err, "the customer has no permission. customer_id: %s", customerID)
+		return nil, fmt.Errorf("the customer has no permission. customer_id: %s", customerID)
 	}
 
 	return f.Actions, nil

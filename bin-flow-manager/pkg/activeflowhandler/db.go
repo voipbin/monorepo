@@ -48,7 +48,7 @@ func (h *activeflowHandler) Create(
 	}
 
 	if f.CustomerID != customerID {
-		return nil, errors.Wrapf(err, "the customer has no permission. customer_id: %s", customerID)
+		return nil, fmt.Errorf("the customer has no permission. customer_id: %s", customerID)
 	}
 
 	// create stack map

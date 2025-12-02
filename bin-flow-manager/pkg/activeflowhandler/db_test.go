@@ -47,7 +47,7 @@ func Test_Create(t *testing.T) {
 		expectVariables  map[string]string
 	}{
 		{
-			name: "normal",
+			name: "reference activeflow id is not nil",
 
 			id:                    uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
 			customerID:            uuid.FromStringOrNil("6be48e8c-0499-11f0-85e7-9b0dbee16d28"),
@@ -82,7 +82,8 @@ func Test_Create(t *testing.T) {
 			},
 			responseVariable: &variable.Variable{
 				Variables: map[string]string{
-					"key1": "key2",
+					"key1":                          "key2",
+					variableActiveflowCompleteCount: "2",
 				},
 			},
 			responseActiveflow: &activeflow.Activeflow{
@@ -138,16 +139,17 @@ func Test_Create(t *testing.T) {
 				variableActiveflowReferenceID:           "03e8a480-822f-11eb-b71f-8bbc09fa1e7a",
 				variableActiveflowReferenceActiveflowID: "e8f56ddc-07d3-11f0-b43f-ebac86ccf1dc",
 				variableActiveflowFlowID:                "dc8e048e-822e-11eb-8cb6-235002e45cf2",
+				variableActiveflowCompleteCount:         "3",
 			},
 		},
 		{
-			name: "id is empty",
+			name: "normal",
 
 			id:                    uuid.Nil,
 			customerID:            uuid.FromStringOrNil("73fe9964-0499-11f0-bca2-7fad0846a96d"),
 			refereceType:          activeflow.ReferenceTypeCall,
 			referenceID:           uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
-			referenceActiveflowID: uuid.FromStringOrNil("e930c2ec-07d3-11f0-975a-1fb6b479b451"),
+			referenceActiveflowID: uuid.Nil,
 			flowID:                uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
 
 			responseFlow: &flow.Flow{
@@ -169,10 +171,9 @@ func Test_Create(t *testing.T) {
 					ID:         uuid.FromStringOrNil("5f0d58fe-c8cf-11ed-b23d-9b5ebf2aca94"),
 					CustomerID: uuid.FromStringOrNil("73fe9964-0499-11f0-bca2-7fad0846a96d"),
 				},
-				ReferenceType:         activeflow.ReferenceTypeCall,
-				ReferenceID:           uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
-				ReferenceActiveflowID: uuid.FromStringOrNil("e930c2ec-07d3-11f0-975a-1fb6b479b451"),
-				FlowID:                uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
+				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
@@ -186,11 +187,10 @@ func Test_Create(t *testing.T) {
 					ID:         uuid.FromStringOrNil("5f0d58fe-c8cf-11ed-b23d-9b5ebf2aca94"),
 					CustomerID: uuid.FromStringOrNil("73fe9964-0499-11f0-bca2-7fad0846a96d"),
 				},
-				FlowID:                uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
-				Status:                activeflow.StatusRunning,
-				ReferenceType:         activeflow.ReferenceTypeCall,
-				ReferenceID:           uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
-				ReferenceActiveflowID: uuid.FromStringOrNil("e930c2ec-07d3-11f0-975a-1fb6b479b451"),
+				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				Status:        activeflow.StatusRunning,
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
 
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -216,8 +216,9 @@ func Test_Create(t *testing.T) {
 				variableActiveflowID:                    "5f0d58fe-c8cf-11ed-b23d-9b5ebf2aca94",
 				variableActiveflowReferenceType:         "call",
 				variableActiveflowReferenceID:           "d6543076-aba3-46c2-ac82-46101f294bf5",
-				variableActiveflowReferenceActiveflowID: "e930c2ec-07d3-11f0-975a-1fb6b479b451",
+				variableActiveflowReferenceActiveflowID: "00000000-0000-0000-0000-000000000000",
 				variableActiveflowFlowID:                "dc8e048e-822e-11eb-8cb6-235002e45cf2",
+				variableActiveflowCompleteCount:         "0",
 			},
 		},
 	}
