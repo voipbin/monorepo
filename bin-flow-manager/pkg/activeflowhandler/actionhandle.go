@@ -513,7 +513,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a flow for connect call
-	f, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "tmp", "tmp flow for action connect", tmpActions, false)
+	f, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "tmp", "tmp flow for action connect", tmpActions, uuid.Nil, false)
 	if err != nil {
 		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 		return fmt.Errorf("could not create a call flow. err: %v", err)
@@ -905,7 +905,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 	flowID := opt.FlowID
 	if flowID == uuid.Nil {
 		// create a flow
-		tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", opt.Actions, false)
+		tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", opt.Actions, uuid.Nil, false)
 		if err != nil {
 			log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 			return fmt.Errorf("could not create a call flow. err: %v", err)

@@ -226,7 +226,7 @@ func Test_ActiveflowCreate(t *testing.T) {
 
 			flowID := tt.flowID
 			if tt.flowID == uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(tt.responseFlow, nil)
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, uuid.Nil, false).Return(tt.responseFlow, nil)
 				flowID = tt.responseFlow.ID
 			}
 			mockReq.EXPECT().FlowV1FlowGet(ctx, flowID).Return(tt.responseFlow, nil)

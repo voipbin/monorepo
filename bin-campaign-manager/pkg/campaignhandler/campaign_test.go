@@ -145,7 +145,7 @@ func Test_Create(t *testing.T) {
 				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(tt.responseNextCampaign, nil)
 			}
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeCampaign, "", "", gomock.Any(), true).Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeCampaign, "", "", gomock.Any(), uuid.Nil, true).Return(&fmflow.Flow{}, nil)
 			mockDB.EXPECT().CampaignCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CampaignGet(ctx, gomock.Any()).Return(tt.responseCampaign, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignCreated, tt.responseCampaign)

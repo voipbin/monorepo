@@ -22,12 +22,13 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		flowType   fmflow.Type
-		flowName   string
-		flowDetail string
-		actions    []fmaction.Action
-		persist    bool
+		customerID       uuid.UUID
+		flowType         fmflow.Type
+		flowName         string
+		flowDetail       string
+		actions          []fmaction.Action
+		onCompleteFlowID uuid.UUID
+		persist          bool
 
 		response *sock.Response
 
@@ -36,28 +37,30 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 		expectResult  *fmflow.Flow
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("857f154e-7f4d-11ec-b669-a7aa025fbeaf"),
-			fmflow.TypeFlow,
-			"test flow",
-			"test flow detail",
-			[]fmaction.Action{},
-			true,
-			&sock.Response{
+			customerID:       uuid.FromStringOrNil("857f154e-7f4d-11ec-b669-a7aa025fbeaf"),
+			flowType:         fmflow.TypeFlow,
+			flowName:         "test flow",
+			flowDetail:       "test flow detail",
+			actions:          []fmaction.Action{},
+			onCompleteFlowID: uuid.FromStringOrNil("e1045cc0-cf8b-11f0-9707-07b637f61229"),
+			persist:          true,
+
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","actions":[],"persist":true,"tm_create":"2020-09-20T03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 
-			"bin-manager.flow-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/flows",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","actions":[],"persist":true}`),
+				Data:     []byte(`{"customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","actions":[],"on_complete_flow_id":"e1045cc0-cf8b-11f0-9707-07b637f61229","persist":true}`),
 			},
-			&fmflow.Flow{
+			expectResult: &fmflow.Flow{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0"),
 					CustomerID: uuid.FromStringOrNil("857f154e-7f4d-11ec-b669-a7aa025fbeaf"),
@@ -87,7 +90,7 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FlowV1FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.flowDetail, tt.actions, tt.persist)
+			res, err := reqHandler.FlowV1FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.flowDetail, tt.actions, tt.onCompleteFlowID, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -112,28 +115,29 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 		expectResult  *fmflow.Flow
 	}{
 		{
-			"empty action",
-			&fmflow.Flow{
+			name: "empty action",
+			requestFlow: &fmflow.Flow{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
 				},
-				Name:    "update name",
-				Detail:  "update detail",
-				Actions: []fmaction.Action{},
+				Name:             "update name",
+				Detail:           "update detail",
+				Actions:          []fmaction.Action{},
+				OnCompleteFlowID: uuid.FromStringOrNil("feaf35be-cf8c-11f0-8b87-0b45b596f16e"),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
-			"bin-manager.flow-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/flows/7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51",
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[]}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[],"on_complete_flow_id":"feaf35be-cf8c-11f0-8b87-0b45b596f16e"}`),
 			},
-			&fmflow.Flow{
+			expectResult: &fmflow.Flow{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
 					CustomerID: uuid.FromStringOrNil("bb832464-7f4d-11ec-aab5-8f3e1e3958d5"),

@@ -45,7 +45,7 @@ func (h *serviceHandler) FlowCreate(ctx context.Context, a *amagent.Agent, name,
 		}
 	}
 
-	tmp, err := h.reqHandler.FlowV1FlowCreate(ctx, a.CustomerID, fmflow.TypeFlow, name, detail, actions, persist)
+	tmp, err := h.reqHandler.FlowV1FlowCreate(ctx, a.CustomerID, fmflow.TypeFlow, name, detail, actions, uuid.Nil, persist)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create a new flow")
 	}

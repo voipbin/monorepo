@@ -80,7 +80,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.17.1
+	github.com/redis/go-redis/v9 v9.17.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
@@ -109,7 +109,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.2 // indirect
-	github.com/aws/smithy-go v1.23.2 // indirect
+	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20251110193048-8bfbf64dc13e // indirect

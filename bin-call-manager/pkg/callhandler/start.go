@@ -469,6 +469,7 @@ func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn 
 		"conference incoming handle",
 		"auto-generated temp flow for conference joining incoming call",
 		actions,
+		uuid.Nil,
 		false,
 	)
 	if err != nil {

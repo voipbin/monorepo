@@ -93,7 +93,7 @@ func (h *transferHandler) createFlow(ctx context.Context, transfererCall *cmcall
 	}
 
 	// create tmp flow
-	res, err := h.reqHandler.FlowV1FlowCreate(ctx, transfererCall.CustomerID, fmflow.TypeTransfer, "created by transfer-manager", "temp flow for call transfer", actions, false)
+	res, err := h.reqHandler.FlowV1FlowCreate(ctx, transfererCall.CustomerID, fmflow.TypeTransfer, "created by transfer-manager", "temp flow for call transfer", actions, uuid.Nil, false)
 	if err != nil {
 		log.Errorf("Could not create temp flow for call transfer. err: %v", err)
 		return nil, errors.Wrap(err, "could not create temp flow for call transfer")

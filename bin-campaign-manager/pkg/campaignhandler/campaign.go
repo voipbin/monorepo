@@ -56,7 +56,7 @@ func (h *campaignHandler) Create(
 	}
 
 	// create a flow
-	f, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeCampaign, "", "", flowActions, true)
+	f, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeCampaign, "", "", flowActions, uuid.Nil, true)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
 		return nil, err

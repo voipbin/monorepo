@@ -76,7 +76,7 @@ func Test_serviceInit(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.transfererCallID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseCall.CustomerID, fmflow.TypeTransfer, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseCall.CustomerID, fmflow.TypeTransfer, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 
 			resCall, resFlow, err := h.transferInit(ctx, tt.transfererCallID)
 			if err != nil {
@@ -147,7 +147,7 @@ func Test_createFlow(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.transfererCall.CustomerID, fmflow.TypeTransfer, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.transfererCall.CustomerID, fmflow.TypeTransfer, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 
 			res, err := h.createFlow(ctx, tt.transfererCall)
 			if err != nil {

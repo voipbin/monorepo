@@ -81,7 +81,7 @@ func Test_FlowCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.persist).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, uuid.Nil, tt.persist).Return(tt.response, nil)
 			res, err := h.FlowCreate(ctx, tt.agent, tt.flowName, tt.detail, tt.actions, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
