@@ -124,6 +124,58 @@ func Test_variableCreate(t *testing.T) {
 	}
 }
 
+func Test_variableCreate_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflow *activeflow.Activeflow
+
+		responseReferenceActiveflowVariable *variable.Variable
+	}{
+		{
+			name: "exceed max complete count",
+
+			activeflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("27850090-cf74-11f0-a41e-736faa98174a"),
+				},
+				ReferenceActiveflowID: uuid.FromStringOrNil("27e57524-cf74-11f0-8119-3f63b551357d"),
+			},
+
+			responseReferenceActiveflowVariable: &variable.Variable{
+				Variables: map[string]string{
+					variableActiveflowCompleteCount: "4",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &activeflowHandler{
+				db:              mockDB,
+				reqHandler:      mockReq,
+				variableHandler: mockVar,
+			}
+			ctx := context.Background()
+
+			mockVar.EXPECT().Get(ctx, tt.activeflow.ReferenceActiveflowID).Return(tt.responseReferenceActiveflowVariable, nil)
+
+			_, err := h.variableCreate(ctx, tt.activeflow)
+			if err == nil {
+				t.Errorf("Wrong match.\nexpect: error\ngot: ok\n")
+			}
+		})
+	}
+}
+
 func Test_variableSetFromReferenceActiveflow(t *testing.T) {
 
 	tests := []struct {

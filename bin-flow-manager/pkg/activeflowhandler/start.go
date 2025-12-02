@@ -31,7 +31,7 @@ func (h *activeflowHandler) startOnCompleteFlow(ctx context.Context, af *activef
 
 	// execute
 	go func() {
-		if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, res.ID); errExecute != nil {
+		if errExecute := h.reqHandler.FlowV1ActiveflowExecute(context.Background(), res.ID); errExecute != nil {
 			log.Errorf("could not execute the on complete activeflow. activeflow_id: %s, err: %v", res.ID, errExecute)
 			return
 		}
