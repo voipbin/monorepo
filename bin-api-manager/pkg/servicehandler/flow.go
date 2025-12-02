@@ -53,6 +53,18 @@ func (h *serviceHandler) FlowCreate(
 		}
 	}
 
+	if onCompleteID != uuid.Nil {
+		// validate onCompleteID
+		tmp, err := h.flowGet(ctx, onCompleteID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get the onComplete flow")
+		}
+
+		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission for the onComplete flow")
+		}
+	}
+
 	tmp, err := h.reqHandler.FlowV1FlowCreate(ctx, a.CustomerID, fmflow.TypeFlow, name, detail, actions, onCompleteID, persist)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create a new flow")
@@ -157,6 +169,17 @@ func (h *serviceHandler) FlowUpdate(
 
 	if !h.hasPermission(ctx, a, tmpFlow.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
+	}
+
+	if onCompleteID != uuid.Nil {
+		tmp, err := h.flowGet(ctx, onCompleteID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get the onComplete flow")
+		}
+
+		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission for the onComplete flow")
+		}
 	}
 
 	tmp, err := h.reqHandler.FlowV1FlowUpdate(ctx, id, name, detail, actions, onCompleteID)
