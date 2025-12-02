@@ -123,3 +123,137 @@ func Test_variableCreate(t *testing.T) {
 		})
 	}
 }
+
+func Test_variableSetFromReferenceActiveflow(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		variables             map[string]string
+		referenceActiveflowID uuid.UUID
+
+		responseVariable *variable.Variable
+
+		expectedVariables map[string]string
+	}{
+		{
+			name: "normal",
+
+			variables: map[string]string{
+				"key1": "value1",
+			},
+			referenceActiveflowID: uuid.FromStringOrNil("cc988c54-cf48-11f0-a59a-d734702c4854"),
+
+			responseVariable: &variable.Variable{
+				ID: uuid.FromStringOrNil("cc988c54-cf48-11f0-a59a-d734702c4854"),
+				Variables: map[string]string{
+					"key2":                          "value2",
+					variableActiveflowCompleteCount: "2",
+				},
+			},
+
+			expectedVariables: map[string]string{
+				"key1":                          "value1",
+				"key2":                          "value2",
+				variableActiveflowCompleteCount: "2",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &activeflowHandler{
+				db:              mockDB,
+				reqHandler:      mockReq,
+				variableHandler: mockVar,
+			}
+			ctx := context.Background()
+
+			mockVar.EXPECT().Get(ctx, tt.referenceActiveflowID).Return(tt.responseVariable, nil)
+
+			err := h.variableSetFromReferenceActiveflow(ctx, tt.variables, tt.referenceActiveflowID)
+			if err != nil {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", nil, err)
+			}
+
+			if reflect.DeepEqual(tt.variables, tt.expectedVariables) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectedVariables, tt.variables)
+			}
+		})
+	}
+}
+
+func Test_variableParseCompleteCount(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		variables map[string]string
+
+		expectedError bool
+		expectedRes   int
+	}{
+		{
+			name: "normal",
+
+			variables: map[string]string{
+				"key1":                          "value1",
+				variableActiveflowCompleteCount: "2",
+			},
+
+			expectedRes: 2,
+		},
+		{
+			name: "value is float",
+
+			variables: map[string]string{
+				"key1":                          "value1",
+				variableActiveflowCompleteCount: "2.1",
+			},
+
+			expectedRes: 2,
+		},
+		{
+			name: "error - value is string char",
+
+			variables: map[string]string{
+				"key1":                          "value1",
+				variableActiveflowCompleteCount: "abc",
+			},
+
+			expectedError: true,
+			expectedRes:   0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &activeflowHandler{
+				db:              mockDB,
+				reqHandler:      mockReq,
+				variableHandler: mockVar,
+			}
+
+			res, err := h.variableParseCompleteCount(tt.variables)
+			if (err != nil) != tt.expectedError {
+				t.Errorf("Wrong match.\nexpect error: %v\ngot error: %v\n", tt.expectedError, err != nil)
+			}
+
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectedRes, res)
+			}
+		})
+	}
+}
