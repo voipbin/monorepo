@@ -844,11 +844,27 @@ type RequestHandler interface {
 	FlowV1ActiveflowServiceStop(ctx context.Context, activeflowID uuid.UUID, serviceID uuid.UUID) error
 
 	// flow-manager flow
-	FlowV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error)
+	FlowV1FlowCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		flowType fmflow.Type,
+		name string,
+		detail string,
+		actions []fmaction.Action,
+		onCompleteFlowID uuid.UUID,
+		persist bool,
+	) (*fmflow.Flow, error)
 	FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 	FlowV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 	FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[fmflow.Field]any) ([]fmflow.Flow, error)
-	FlowV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error)
+	FlowV1FlowUpdate(
+		ctx context.Context,
+		flowID uuid.UUID,
+		name string,
+		detail string,
+		actions []fmaction.Action,
+		onCompleteFlowID uuid.UUID,
+	) (*fmflow.Flow, error)
 	FlowV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error)
 
 	// flow-manager variables

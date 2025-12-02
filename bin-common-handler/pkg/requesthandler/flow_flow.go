@@ -16,17 +16,27 @@ import (
 )
 
 // FlowV1FlowCreate creates a new flow.
-func (r *requestHandler) FlowV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error) {
+func (r *requestHandler) FlowV1FlowCreate(
+	ctx context.Context,
+	customerID uuid.UUID,
+	flowType fmflow.Type,
+	name string,
+	detail string,
+	actions []fmaction.Action,
+	onCompleteFlowID uuid.UUID,
+	persist bool,
+) (*fmflow.Flow, error) {
 
 	uri := "/v1/flows"
 
 	reqData := &fmrequest.V1DataFlowsPost{
-		CustomerID: customerID,
-		Type:       flowType,
-		Name:       name,
-		Detail:     detail,
-		Actions:    actions,
-		Persist:    persist,
+		CustomerID:       customerID,
+		Type:             flowType,
+		Name:             name,
+		Detail:           detail,
+		Actions:          actions,
+		OnCompleteFlowID: onCompleteFlowID,
+		Persist:          persist,
 	}
 
 	m, err := json.Marshal(reqData)
@@ -87,13 +97,21 @@ func (r *requestHandler) FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID)
 // FlowV1FlowUpdate sends a request to flow-manager
 // to update the detail flow info.
 // it returns updated flow info if it succeed.
-func (r *requestHandler) FlowV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error) {
-	uri := fmt.Sprintf("/v1/flows/%s", f.ID)
+func (r *requestHandler) FlowV1FlowUpdate(
+	ctx context.Context,
+	flowID uuid.UUID,
+	name string,
+	detail string,
+	actions []fmaction.Action,
+	onCompleteFlowID uuid.UUID,
+) (*fmflow.Flow, error) {
+	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
 	data := &fmrequest.V1DataFlowsIDPut{
-		Name:    f.Name,
-		Detail:  f.Detail,
-		Actions: f.Actions,
+		Name:             name,
+		Detail:           detail,
+		Actions:          actions,
+		OnCompleteFlowID: onCompleteFlowID,
 	}
 
 	m, err := json.Marshal(data)

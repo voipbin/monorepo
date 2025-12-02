@@ -140,6 +140,7 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 				gomock.Any(),
 				gomock.Any(),
 				gomock.Any(),
+				uuid.Nil,
 				false,
 			).DoAndReturn(func(
 				_ context.Context,
@@ -148,6 +149,7 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 				_ string,
 				_ string,
 				actions []fmaction.Action,
+				_ uuid.UUID,
 				_ bool,
 			) (*fmflow.Flow, error) {
 				tmp, err := json.Marshal(actions)

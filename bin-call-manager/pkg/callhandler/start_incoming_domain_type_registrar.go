@@ -128,6 +128,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeAgent(
 		"tmp",
 		"tmp flow for agent dialing",
 		actions,
+		uuid.Nil,
 		false,
 	)
 	if err != nil {
@@ -193,6 +194,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeConference(
 		"conference incoming handle",
 		"auto-generated temp flow for conference joining incoming call",
 		actions,
+		uuid.Nil,
 		false,
 	)
 	if err != nil {
@@ -246,6 +248,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeTel(
 		"tmp",
 		"tmp flow for outgoing call dialing",
 		actions,
+		uuid.Nil,
 		false,
 	)
 	if err != nil {
@@ -307,6 +310,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 		"tmp",
 		"tmp flow for outgoing call dialing",
 		actions,
+		uuid.Nil,
 		false,
 	)
 	if err != nil {

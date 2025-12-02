@@ -77,7 +77,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.17.1
+	github.com/redis/go-redis/v9 v9.17.2
 	github.com/smotes/purse v1.0.1
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0

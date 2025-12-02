@@ -29,7 +29,15 @@ func (h *serviceHandler) flowGet(ctx context.Context, flowID uuid.UUID) (*fmflow
 }
 
 // FlowCreate is a service handler for flow creation.
-func (h *serviceHandler) FlowCreate(ctx context.Context, a *amagent.Agent, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error) {
+func (h *serviceHandler) FlowCreate(
+	ctx context.Context,
+	a *amagent.Agent,
+	name string,
+	detail string,
+	actions []fmaction.Action,
+	onCompleteID uuid.UUID,
+	persist bool,
+) (*fmflow.WebhookMessage, error) {
 
 	if persist {
 		// we are making a persist flow here.
@@ -45,7 +53,19 @@ func (h *serviceHandler) FlowCreate(ctx context.Context, a *amagent.Agent, name,
 		}
 	}
 
-	tmp, err := h.reqHandler.FlowV1FlowCreate(ctx, a.CustomerID, fmflow.TypeFlow, name, detail, actions, persist)
+	if onCompleteID != uuid.Nil {
+		// validate onCompleteID
+		tmp, err := h.flowGet(ctx, onCompleteID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get the onComplete flow")
+		}
+
+		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission for the onComplete flow")
+		}
+	}
+
+	tmp, err := h.reqHandler.FlowV1FlowCreate(ctx, a.CustomerID, fmflow.TypeFlow, name, detail, actions, onCompleteID, persist)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create a new flow")
 	}
@@ -131,10 +151,18 @@ func (h *serviceHandler) FlowGets(ctx context.Context, a *amagent.Agent, size ui
 
 // FlowUpdate updates the flow info.
 // It returns updated flow if it succeed.
-func (h *serviceHandler) FlowUpdate(ctx context.Context, a *amagent.Agent, f *fmflow.Flow) (*fmflow.WebhookMessage, error) {
+func (h *serviceHandler) FlowUpdate(
+	ctx context.Context,
+	a *amagent.Agent,
+	id uuid.UUID,
+	name string,
+	detail string,
+	actions []fmaction.Action,
+	onCompleteID uuid.UUID,
+) (*fmflow.WebhookMessage, error) {
 
 	// get flows
-	tmpFlow, err := h.flowGet(ctx, f.ID)
+	tmpFlow, err := h.flowGet(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the flow")
 	}
@@ -143,7 +171,18 @@ func (h *serviceHandler) FlowUpdate(ctx context.Context, a *amagent.Agent, f *fm
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.FlowV1FlowUpdate(ctx, f)
+	if onCompleteID != uuid.Nil {
+		tmp, err := h.flowGet(ctx, onCompleteID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get the onComplete flow")
+		}
+
+		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission for the onComplete flow")
+		}
+	}
+
+	tmp, err := h.reqHandler.FlowV1FlowUpdate(ctx, id, name, detail, actions, onCompleteID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not update the flow")
 	}

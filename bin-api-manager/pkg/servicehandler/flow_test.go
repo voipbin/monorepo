@@ -25,13 +25,15 @@ func Test_FlowCreate(t *testing.T) {
 		name  string
 		agent *amagent.Agent
 
-		flowName string
-		detail   string
-		actions  []fmaction.Action
-		persist  bool
+		flowName         string
+		detail           string
+		actions          []fmaction.Action
+		onCompleteFlowID uuid.UUID
+		persist          bool
 
-		response  *fmflow.Flow
-		expectRes *fmflow.WebhookMessage
+		responseCompleteFlow *fmflow.Flow
+		responseFlow         *fmflow.Flow
+		expectRes            *fmflow.WebhookMessage
 	}{
 		{
 			name: "normal",
@@ -50,9 +52,17 @@ func Test_FlowCreate(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			persist: true,
+			onCompleteFlowID: uuid.FromStringOrNil("dce9b1a2-cf91-11f0-9854-df19288f16fe"),
+			persist:          true,
 
-			response: &fmflow.Flow{
+			responseCompleteFlow: &fmflow.Flow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dce9b1a2-cf91-11f0-9854-df19288f16fe"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
+			},
+			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -81,8 +91,12 @@ func Test_FlowCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.persist).Return(tt.response, nil)
-			res, err := h.FlowCreate(ctx, tt.agent, tt.flowName, tt.detail, tt.actions, tt.persist)
+			if tt.onCompleteFlowID != uuid.Nil {
+				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.onCompleteFlowID).Return(tt.responseCompleteFlow, nil)
+			}
+
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID, tt.persist).Return(tt.responseFlow, nil)
+			res, err := h.FlowCreate(ctx, tt.agent, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -443,13 +457,15 @@ func Test_FlowUpdate(t *testing.T) {
 		name  string
 		agent *amagent.Agent
 
-		flowID   uuid.UUID
-		flowName string
-		detail   string
-		actions  []fmaction.Action
+		flowID           uuid.UUID
+		flowName         string
+		detail           string
+		actions          []fmaction.Action
+		onCompleteFlowID uuid.UUID
 
-		responseFlow *fmflow.Flow
-		expectRes    *fmflow.WebhookMessage
+		responseFlow         *fmflow.Flow
+		responseCompleteFlow *fmflow.Flow
+		expectRes            *fmflow.WebhookMessage
 	}{
 		{
 			name: "normal",
@@ -469,10 +485,18 @@ func Test_FlowUpdate(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 			},
+			onCompleteFlowID: uuid.FromStringOrNil("dd113542-cf91-11f0-9f8a-fb8e4c6a808b"),
 
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
+			},
+			responseCompleteFlow: &fmflow.Flow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dd113542-cf91-11f0-9f8a-fb8e4c6a808b"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				TMDelete: defaultTimestamp,
@@ -501,18 +525,14 @@ func Test_FlowUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			f := &fmflow.Flow{
-				Identity: commonidentity.Identity{
-					ID: tt.flowID,
-				},
-				Name:    tt.flowName,
-				Detail:  tt.detail,
-				Actions: tt.actions,
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+
+			if tt.onCompleteFlowID != uuid.Nil {
+				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.onCompleteFlowID).Return(tt.responseCompleteFlow, nil)
 			}
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
-			mockReq.EXPECT().FlowV1FlowUpdate(ctx, f).Return(tt.responseFlow, nil)
-			res, err := h.FlowUpdate(ctx, tt.agent, f)
+			mockReq.EXPECT().FlowV1FlowUpdate(ctx, tt.flowID, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID).Return(tt.responseFlow, nil)
+			res, err := h.FlowUpdate(ctx, tt.agent, tt.flowID, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

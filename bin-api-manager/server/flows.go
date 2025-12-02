@@ -3,9 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
-	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -41,7 +39,11 @@ func (h *server) PostFlows(c *gin.Context) {
 		actions = append(actions, ConvertFlowManagerAction(v))
 	}
 
-	res, err := h.serviceHandler.FlowCreate(c.Request.Context(), &a, req.Name, req.Detail, actions, true)
+	onCompleteFlowId := uuid.Nil
+	if req.OnCompleteFlowId != nil {
+		onCompleteFlowId = uuid.FromStringOrNil(*req.OnCompleteFlowId)
+	}
+	res, err := h.serviceHandler.FlowCreate(c.Request.Context(), &a, req.Name, req.Detail, actions, onCompleteFlowId, true)
 	if err != nil {
 		log.Errorf("Could not create data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -170,16 +172,12 @@ func (h *server) PutFlowsId(c *gin.Context, id string) {
 		actions = append(actions, ConvertFlowManagerAction(v))
 	}
 
-	f := &fmflow.Flow{
-		Identity: commonidentity.Identity{
-			ID: target,
-		},
-		Name:    req.Name,
-		Detail:  req.Detail,
-		Actions: actions,
+	onCompleteFlowID := uuid.Nil
+	if req.OnCompleteFlowId != nil {
+		onCompleteFlowID = uuid.FromStringOrNil(*req.OnCompleteFlowId)
 	}
 
-	res, err := h.serviceHandler.FlowUpdate(c.Request.Context(), &a, f)
+	res, err := h.serviceHandler.FlowUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, actions, onCompleteFlowID)
 	if err != nil {
 		log.Errorf("Could not update data. err: %v", err)
 		c.AbortWithStatus(400)

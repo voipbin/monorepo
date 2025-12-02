@@ -90,7 +90,7 @@ func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, custome
 	}
 
 	// create a flow for agent dial.
-	res, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeFlow, "automatically generated for the agent call by the queue-manager", "", actions, false)
+	res, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeFlow, "automatically generated for the agent call by the queue-manager", "", actions, uuid.Nil, false)
 	if err != nil {
 		log.Errorf("Could not create the flow. err: %v", err)
 		return nil, err

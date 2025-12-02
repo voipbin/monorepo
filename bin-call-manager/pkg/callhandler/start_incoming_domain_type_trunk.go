@@ -85,6 +85,7 @@ func (h *callHandler) startIncomingDomainTypeTrunkDestinationTypeTel(
 		"tmp",
 		"tmp flow for outgoing call dialing",
 		actions,
+		uuid.Nil,
 		false,
 	)
 	if err != nil {

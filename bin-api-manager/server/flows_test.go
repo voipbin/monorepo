@@ -28,10 +28,11 @@ func Test_PostFlows(t *testing.T) {
 
 		responseFlow *fmflow.WebhookMessage
 
-		expectName    string
-		expectDetail  string
-		expectActions []fmaction.Action
-		expectRes     string
+		expectName             string
+		expectDetail           string
+		expectActions          []fmaction.Action
+		expectOnCompleteFlowID uuid.UUID
+		expectRes              string
 	}{
 		{
 			name: "normal",
@@ -42,7 +43,7 @@ func Test_PostFlows(t *testing.T) {
 			},
 
 			reqQuery: "/flows",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","actions":[{"type":"answer"}]}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","actions":[{"type":"answer"}],"on_complete_flow_id":"15356302-cf93-11f0-82a4-4723dbd39b78"}`),
 
 			responseFlow: &fmflow.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -64,7 +65,8 @@ func Test_PostFlows(t *testing.T) {
 					Type: "answer",
 				},
 			},
-			expectRes: `{"id":"264b18d4-82fa-11eb-919b-9f55a7f6ace1","customer_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectOnCompleteFlowID: uuid.FromStringOrNil("15356302-cf93-11f0-82a4-4723dbd39b78"),
+			expectRes:              `{"id":"264b18d4-82fa-11eb-919b-9f55a7f6ace1","customer_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -90,7 +92,7 @@ func Test_PostFlows(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().FlowCreate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail, tt.expectActions, true).Return(tt.responseFlow, nil)
+			mockSvc.EXPECT().FlowCreate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail, tt.expectActions, tt.expectOnCompleteFlowID, true).Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -264,9 +266,12 @@ func Test_PutFlowsId(t *testing.T) {
 
 		responseFlow *fmflow.WebhookMessage
 
-		expectFlowID uuid.UUID
-		expectFlow   *fmflow.Flow
-		expectRes    string
+		expectFlowID           uuid.UUID
+		expectName             string
+		expectDetail           string
+		expectActions          []fmaction.Action
+		expectOnCompleteFlowID uuid.UUID
+		expectRes              string
 	}{
 		{
 			name: "normal",
@@ -277,7 +282,7 @@ func Test_PutFlowsId(t *testing.T) {
 			},
 
 			reqQuery: "/flows/d213a09e-6790-11eb-8cea-bb3b333200ed",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","actions":[{"type":"answer"}]}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","actions":[{"type":"answer"}],"on_complete_flow_id":"305ebdb8-cf93-11f0-9bd2-4386663663cd"}`),
 
 			responseFlow: &fmflow.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -286,19 +291,15 @@ func Test_PutFlowsId(t *testing.T) {
 			},
 
 			expectFlowID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
-			expectFlow: &fmflow.Flow{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
-				},
-				Name:   "test name",
-				Detail: "test detail",
-				Actions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
+			expectName:   "test name",
+			expectDetail: "test detail",
+			expectActions: []fmaction.Action{
+				{
+					Type: "answer",
 				},
 			},
-			expectRes: `{"id":"d213a09e-6790-11eb-8cea-bb3b333200ed","customer_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectOnCompleteFlowID: uuid.FromStringOrNil("305ebdb8-cf93-11f0-9bd2-4386663663cd"),
+			expectRes:              `{"id":"d213a09e-6790-11eb-8cea-bb3b333200ed","customer_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -323,7 +324,15 @@ func Test_PutFlowsId(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().FlowUpdate(req.Context(), &tt.agent, tt.expectFlow).Return(tt.responseFlow, nil)
+			mockSvc.EXPECT().FlowUpdate(
+				req.Context(),
+				&tt.agent,
+				tt.expectFlowID,
+				tt.expectName,
+				tt.expectDetail,
+				tt.expectActions,
+				tt.expectOnCompleteFlowID,
+			).Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

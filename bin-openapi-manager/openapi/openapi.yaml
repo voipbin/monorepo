@@ -2758,6 +2758,9 @@ components:
         reference_activeflow_id:
           type: string
           description: ID of the referenced activeflow.
+        on_complete_flow_id:
+          type: string
+          description: ID of the flow to be executed on completion.
         current_action:
           $ref: '#/components/schemas/FlowManagerAction'
         forward_action_id:
@@ -2817,6 +2820,9 @@ components:
           description: List of actions associated with the flow.
           items:
             $ref: '#/components/schemas/FlowManagerAction'
+        on_complete_flow_id:
+          type: string
+          description: ID of the flow to be executed on completion.
         tm_create:
           type: string
           description: Timestamp when the flow was created.

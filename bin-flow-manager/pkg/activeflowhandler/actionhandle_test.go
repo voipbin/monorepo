@@ -798,7 +798,7 @@ func Test_actionHandleConnect(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, tt.af.ID, cmconfbridge.ReferenceTypeCall, tt.af.ReferenceID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDConfbridgeJoin)
@@ -4104,7 +4104,7 @@ func Test_actionHandleCall(t *testing.T) {
 
 			flowID := tt.flowID
 			if flowID == uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.actions, false).Return(tt.responseFlow, nil)
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.actions, uuid.Nil, false).Return(tt.responseFlow, nil)
 				flowID = tt.responseFlow.ID
 			}
 

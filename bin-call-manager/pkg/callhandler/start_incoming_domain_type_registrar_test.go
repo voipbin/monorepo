@@ -140,6 +140,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 				gomock.Any(),
 				gomock.Any(),
 				gomock.Any(),
+				uuid.Nil,
 				false,
 			).DoAndReturn(func(
 				_ context.Context,
@@ -148,6 +149,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 				_ string,
 				_ string,
 				actions []fmaction.Action,
+				_ uuid.UUID,
 				_ bool,
 			) (*fmflow.Flow, error) {
 				tmp, err := json.Marshal(actions)
@@ -286,7 +288,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeConference(t *testing.
 
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectConferenceID).Return(tt.responseConference, nil)
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.expectCustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.expectCustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 
 			// startCallTypeFlow
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
@@ -415,6 +417,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 				gomock.Any(),
 				gomock.Any(),
 				gomock.Any(),
+				uuid.Nil,
 				false,
 			).DoAndReturn(func(
 				_ context.Context,
@@ -423,6 +426,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 				_ string,
 				_ string,
 				actions []fmaction.Action,
+				_ uuid.UUID,
 				_ bool,
 			) (*fmflow.Flow, error) {
 				tmp, err := json.Marshal(actions)
@@ -576,6 +580,7 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 				gomock.Any(),
 				gomock.Any(),
 				gomock.Any(),
+				uuid.Nil,
 				false,
 			).DoAndReturn(func(
 				_ context.Context,
@@ -584,6 +589,7 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 				_ string,
 				_ string,
 				actions []fmaction.Action,
+				_ uuid.UUID,
 				_ bool,
 			) (*fmflow.Flow, error) {
 				tmp, err := json.Marshal(actions)

@@ -48,6 +48,9 @@ put:
               type: array
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
+            on_complete_flow_id:
+              description: ID of the flow to be executed on completion.
+              type: string
           required:
             - name
             - detail

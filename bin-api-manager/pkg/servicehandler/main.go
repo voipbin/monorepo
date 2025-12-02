@@ -468,11 +468,27 @@ type ServiceHandler interface {
 	EmailDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ememail.WebhookMessage, error)
 
 	// flow handlers
-	FlowCreate(ctx context.Context, a *amagent.Agent, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
+	FlowCreate(
+		ctx context.Context,
+		a *amagent.Agent,
+		name string,
+		detail string,
+		actions []fmaction.Action,
+		onCompleteID uuid.UUID,
+		persist bool,
+	) (*fmflow.WebhookMessage, error)
 	FlowDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*fmflow.WebhookMessage, error)
 	FlowGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*fmflow.WebhookMessage, error)
 	FlowGets(ctx context.Context, a *amagent.Agent, pageSize uint64, pageToken string) ([]*fmflow.WebhookMessage, error)
-	FlowUpdate(ctx context.Context, a *amagent.Agent, f *fmflow.Flow) (*fmflow.WebhookMessage, error)
+	FlowUpdate(
+		ctx context.Context,
+		a *amagent.Agent,
+		id uuid.UUID,
+		name string,
+		detail string,
+		actions []fmaction.Action,
+		onCompleteID uuid.UUID,
+	) (*fmflow.WebhookMessage, error)
 
 	// grpupcall handlers
 	GroupcallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmgroupcall.WebhookMessage, error)

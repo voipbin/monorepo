@@ -2213,18 +2213,18 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(ctx, a, id, name, deta
 }
 
 // FlowCreate mocks base method.
-func (m *MockServiceHandler) FlowCreate(ctx context.Context, a *agent.Agent, name, detail string, actions []action.Action, persist bool) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowCreate(ctx context.Context, a *agent.Agent, name, detail string, actions []action.Action, onCompleteID uuid.UUID, persist bool) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowCreate", ctx, a, name, detail, actions, persist)
+	ret := m.ctrl.Call(m, "FlowCreate", ctx, a, name, detail, actions, onCompleteID, persist)
 	ret0, _ := ret[0].(*flow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowCreate indicates an expected call of FlowCreate.
-func (mr *MockServiceHandlerMockRecorder) FlowCreate(ctx, a, name, detail, actions, persist any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) FlowCreate(ctx, a, name, detail, actions, onCompleteID, persist any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockServiceHandler)(nil).FlowCreate), ctx, a, name, detail, actions, persist)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockServiceHandler)(nil).FlowCreate), ctx, a, name, detail, actions, onCompleteID, persist)
 }
 
 // FlowDelete mocks base method.
@@ -2273,18 +2273,18 @@ func (mr *MockServiceHandlerMockRecorder) FlowGets(ctx, a, pageSize, pageToken a
 }
 
 // FlowUpdate mocks base method.
-func (m *MockServiceHandler) FlowUpdate(ctx context.Context, a *agent.Agent, f *flow.Flow) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, actions []action.Action, onCompleteID uuid.UUID) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdate", ctx, a, f)
+	ret := m.ctrl.Call(m, "FlowUpdate", ctx, a, id, name, detail, actions, onCompleteID)
 	ret0, _ := ret[0].(*flow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowUpdate indicates an expected call of FlowUpdate.
-func (mr *MockServiceHandlerMockRecorder) FlowUpdate(ctx, a, f any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) FlowUpdate(ctx, a, id, name, detail, actions, onCompleteID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockServiceHandler)(nil).FlowUpdate), ctx, a, f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockServiceHandler)(nil).FlowUpdate), ctx, a, id, name, detail, actions, onCompleteID)
 }
 
 // GroupcallCreate mocks base method.
