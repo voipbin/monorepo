@@ -9,6 +9,8 @@ create table flow_flows(
 
   actions json,
 
+  on_complete_flow_id BINARY(16) NOT NULL,
+
   -- timestamps
   tm_create datetime(6),  -- create
   tm_update datetime(6),  -- update

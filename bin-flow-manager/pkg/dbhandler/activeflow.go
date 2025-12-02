@@ -29,6 +29,8 @@ var (
 		string(activeflow.FieldReferenceID),
 		string(activeflow.FieldReferenceActiveflowID),
 
+		string(activeflow.FieldOnCompleteFlowID),
+
 		string(activeflow.FieldStackMap),
 		string(activeflow.FieldCurrentStackID),
 		string(activeflow.FieldCurrentAction),
@@ -62,6 +64,8 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 		&res.ReferenceType,
 		&res.ReferenceID,
 		&res.ReferenceActiveflowID,
+
+		&res.OnCompleteFlowID,
 
 		&stackMap,
 
@@ -125,6 +129,8 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 			f.ReferenceType,
 			f.ReferenceID.Bytes(),
 			f.ReferenceActiveflowID.Bytes(),
+
+			f.OnCompleteFlowID.Bytes(),
 
 			tmpStackMap,
 

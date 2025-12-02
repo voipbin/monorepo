@@ -75,7 +75,7 @@ func (h *listenHandler) v1FlowsIDPut(ctx context.Context, m *sock.Request) (*soc
 		return nil, err
 	}
 
-	tmp, err := h.flowHandler.Update(ctx, flowID, req.Name, req.Detail, req.Actions)
+	tmp, err := h.flowHandler.Update(ctx, flowID, req.Name, req.Detail, req.Actions, req.OnCompleteFlowID)
 	if err != nil {
 		log.Errorf("Could not update the flow info. err: %v", err)
 		return nil, err
@@ -155,6 +155,7 @@ func (h *listenHandler) v1FlowsPost(ctx context.Context, m *sock.Request) (*sock
 		req.Detail,
 		req.Persist,
 		req.Actions,
+		req.OnCompleteFlowID,
 	)
 	if err != nil {
 		log.Errorf("Could not create anew flow. err: %v", err)

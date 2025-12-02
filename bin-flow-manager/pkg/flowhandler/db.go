@@ -39,15 +39,17 @@ func (h *flowHandler) Create(
 	detail string,
 	persist bool,
 	actions []action.Action,
+	onCompleteFlowID uuid.UUID,
 ) (*flow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Create",
-		"customer_id": customerID,
-		"flow_type":   flowType,
-		"name":        name,
-		"detail":      detail,
-		"persist":     persist,
-		"actions":     actions,
+		"func":                "Create",
+		"customer_id":         customerID,
+		"flow_type":           flowType,
+		"name":                name,
+		"detail":              detail,
+		"persist":             persist,
+		"actions":             actions,
+		"on_complete_flow_id": onCompleteFlowID,
 	})
 
 	// generates the actions
@@ -71,6 +73,8 @@ func (h *flowHandler) Create(
 		Persist: persist,
 
 		Actions: a,
+
+		OnCompleteFlowID: onCompleteFlowID,
 
 		TMCreate: h.util.TimeGetCurTime(),
 		TMUpdate: dbhandler.DefaultTimeStamp,
@@ -121,13 +125,14 @@ func (h *flowHandler) Gets(ctx context.Context, token string, size uint64, filte
 }
 
 // Update updates the flow info and return the updated flow
-func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, actions []action.Action) (*flow.Flow, error) {
+func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, actions []action.Action, onCompleteFlowID uuid.UUID) (*flow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Update",
-		"flow_id": id,
-		"name":    name,
-		"detail":  detail,
-		"actions": actions,
+		"func":                "Update",
+		"flow_id":             id,
+		"name":                name,
+		"detail":              detail,
+		"actions":             actions,
+		"on_complete_flow_id": onCompleteFlowID,
 	})
 	log.Debug("Updating the flow.")
 
@@ -140,9 +145,10 @@ func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name string, det
 	log.WithField("new_actions", tmpActions).Debug("Created the new actions tmp.")
 
 	fields := map[flow.Field]any{
-		flow.FieldName:    name,
-		flow.FieldDetail:  detail,
-		flow.FieldActions: tmpActions,
+		flow.FieldName:             name,
+		flow.FieldDetail:           detail,
+		flow.FieldActions:          tmpActions,
+		flow.FieldOnCompleteFlowID: onCompleteFlowID,
 	}
 
 	if err := h.db.FlowUpdate(ctx, id, fields); err != nil {

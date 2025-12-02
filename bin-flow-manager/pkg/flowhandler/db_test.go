@@ -24,12 +24,13 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		flowType   flow.Type
-		flowName   string
-		detail     string
-		persist    bool
-		actions    []action.Action
+		customerID       uuid.UUID
+		flowType         flow.Type
+		flowName         string
+		detail           string
+		persist          bool
+		actions          []action.Action
+		onCompleteFlowID uuid.UUID
 
 		responseUUID uuid.UUID
 		responseFlow *flow.Flow
@@ -47,6 +48,7 @@ func Test_Create(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 			},
+			onCompleteFlowID: uuid.FromStringOrNil("9ccfb956-ce18-11f0-bdeb-af04faf83ec2"),
 
 			responseUUID: uuid.FromStringOrNil("a29bcd2e-0295-11f0-a03b-bf8d2fff2101"),
 			responseFlow: &flow.Flow{
@@ -59,12 +61,13 @@ func Test_Create(t *testing.T) {
 		{
 			name: "test empty",
 
-			customerID: uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
-			flowType:   flow.TypeFlow,
-			flowName:   "test",
-			detail:     "test detail",
-			persist:    true,
-			actions:    []action.Action{},
+			customerID:       uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			flowType:         flow.TypeFlow,
+			flowName:         "test",
+			detail:           "test detail",
+			persist:          true,
+			actions:          []action.Action{},
+			onCompleteFlowID: uuid.Nil,
 
 			responseUUID: uuid.FromStringOrNil("a2c051d0-0295-11f0-897c-0ffe1f3c6359"),
 			responseFlow: &flow.Flow{
@@ -77,12 +80,13 @@ func Test_Create(t *testing.T) {
 		{
 			name: "test empty with persist false",
 
-			customerID: uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
-			flowType:   flow.TypeFlow,
-			flowName:   "test",
-			detail:     "test detail",
-			persist:    false,
-			actions:    []action.Action{},
+			customerID:       uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			flowType:         flow.TypeFlow,
+			flowName:         "test",
+			detail:           "test detail",
+			persist:          false,
+			actions:          []action.Action{},
+			onCompleteFlowID: uuid.Nil,
 
 			responseUUID: uuid.FromStringOrNil("a2e4a45e-0295-11f0-b0d2-9b991bf4aa3d"),
 			responseFlow: &flow.Flow{
@@ -125,7 +129,7 @@ func Test_Create(t *testing.T) {
 			}
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, tt.responseFlow)
 
-			res, err := h.Create(ctx, tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions)
+			res, err := h.Create(ctx, tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions, tt.onCompleteFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -290,10 +294,11 @@ func Test_Update(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id       uuid.UUID
-		flowName string
-		detail   string
-		actions  []action.Action
+		id               uuid.UUID
+		flowName         string
+		detail           string
+		actions          []action.Action
+		onCompleteFlowID uuid.UUID
 
 		responseFlow       *flow.Flow
 		expectUpdateFiedls map[flow.Field]any
@@ -310,6 +315,7 @@ func Test_Update(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 			},
+			onCompleteFlowID: uuid.FromStringOrNil("9d74ce00-ce18-11f0-ba12-37c102015df6"),
 
 			responseFlow: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -332,6 +338,7 @@ func Test_Update(t *testing.T) {
 						Type: action.TypeAnswer,
 					},
 				},
+				flow.FieldOnCompleteFlowID: uuid.FromStringOrNil("9d74ce00-ce18-11f0-ba12-37c102015df6"),
 			},
 			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -370,7 +377,7 @@ func Test_Update(t *testing.T) {
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow)
 
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
-			res, err := h.Update(ctx, tt.id, tt.flowName, tt.detail, tt.actions)
+			res, err := h.Update(ctx, tt.id, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

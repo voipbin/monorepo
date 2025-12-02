@@ -42,11 +42,17 @@ func (h *activeflowHandler) Create(
 		log = log.WithField("id", id)
 	}
 
-	actions, err := h.actionGetsFromFlow(ctx, flowID, customerID)
+	f, err := h.reqHandler.FlowV1FlowGet(ctx, flowID)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not get actions from the flow. flow_id: %s", flowID)
+		return nil, errors.Wrapf(err, "could not get flow. flow_id: %s", flowID)
 	}
-	stackMap := h.stackmapHandler.Create(actions)
+
+	if f.CustomerID != customerID {
+		return nil, fmt.Errorf("the customer has no permission. customer_id: %s", customerID)
+	}
+
+	// create stack map
+	stackMap := h.stackmapHandler.Create(f.Actions)
 
 	// create activeflow
 	tmp := &activeflow.Activeflow{
@@ -61,6 +67,8 @@ func (h *activeflowHandler) Create(
 		ReferenceType:         referenceType,
 		ReferenceID:           referenceID,
 		ReferenceActiveflowID: referenceActiveflowID,
+
+		OnCompleteFlowID: f.OnCompleteFlowID,
 
 		StackMap: stackMap,
 

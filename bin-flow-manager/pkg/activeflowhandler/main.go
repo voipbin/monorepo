@@ -47,10 +47,12 @@ const (
 	variableActiveflowReferenceID           = "voipbin.activeflow.reference_id"
 	variableActiveflowReferenceActiveflowID = "voipbin.activeflow.reference_activeflow_id"
 	variableActiveflowFlowID                = "voipbin.activeflow.flow_id"
+	variableActiveflowCompleteCount         = "voipbin.activeflow.complete_count" // indicates how many times the activeflow has completed(by on complete flow id)
 )
 
 const (
-	maxNextActionLoopCount = 1000 // max loop count for next action
+	maxNextActionLoopCount     = 1000 // max loop count for next action
+	maxActiveflowCompleteCount = 5    // max loop count for activeflow (by on complete flow id)
 )
 
 // ActiveflowHandler defines

@@ -12,6 +12,10 @@ import (
 
 // Stop stops activeflow
 func (h *activeflowHandler) Stop(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Stop",
+		"activeflow_id": id,
+	})
 
 	af, err := h.Get(ctx, id)
 	if err != nil {
@@ -26,6 +30,17 @@ func (h *activeflowHandler) Stop(ctx context.Context, id uuid.UUID) (*activeflow
 	res, err := h.updateStatus(ctx, id, activeflow.StatusEnded)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not update activeflow status. activeflow_id: %s, status: %s", id, activeflow.StatusEnded)
+	}
+
+	// start on complete flow if configured
+	if res.OnCompleteFlowID != uuid.Nil {
+		log.Debugf("The activeflow has on_complete_flow configured. on_complete_flow_id: %s", res.OnCompleteFlowID)
+		tmp, err := h.startOnCompleteFlow(ctx, res)
+		if err != nil {
+			log.Errorf("could not start on complete flow. activeflow_id: %s, err: %v", res.ID, err)
+		} else if tmp != nil {
+			log.WithField("new_activeflow", tmp).Debugf("Started on complete flow. new_activeflow_id: %s", tmp.ID)
+		}
 	}
 
 	return res, nil

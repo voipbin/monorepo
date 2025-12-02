@@ -10,6 +10,8 @@ create table flow_activeflows(
   reference_id            binary(16),
   reference_activeflow_id binary(16),
 
+  on_complete_flow_id BINARY(16) NOT NULL,
+  
   stack_map json,
 
   current_stack_id  binary(16),

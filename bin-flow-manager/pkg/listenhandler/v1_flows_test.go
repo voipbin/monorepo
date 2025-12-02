@@ -23,12 +23,13 @@ func Test_v1FlowsPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		expectedCustomerID uuid.UUID
-		expectedType       flow.Type
-		expectedName       string
-		expectedDetail     string
-		expectedPersist    bool
-		expectedActions    []action.Action
+		expectedCustomerID       uuid.UUID
+		expectedType             flow.Type
+		expectedName             string
+		expectedDetail           string
+		expectedPersist          bool
+		expectedActions          []action.Action
+		expectedOnCompleteFlowID uuid.UUID
 	}{
 		{
 			name: "empty actions",
@@ -39,12 +40,13 @@ func Test_v1FlowsPost(t *testing.T) {
 				Data:     []byte(`{"customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","type":"flow","name":"test","detail":"test detail","actions":[]}`),
 			},
 
-			expectedCustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
-			expectedType:       flow.TypeFlow,
-			expectedName:       "test",
-			expectedDetail:     "test detail",
-			expectedPersist:    false,
-			expectedActions:    []action.Action{},
+			expectedCustomerID:       uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
+			expectedType:             flow.TypeFlow,
+			expectedName:             "test",
+			expectedDetail:           "test detail",
+			expectedPersist:          false,
+			expectedActions:          []action.Action{},
+			expectedOnCompleteFlowID: uuid.Nil,
 		},
 		{
 			name: "normal",
@@ -52,9 +54,9 @@ func Test_v1FlowsPost(t *testing.T) {
 				URI:      "/v1/flows",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","actions":[{"type":"echo"},{"type":"talk","option":{"text":"hello world\nworld2"}}]}`),
+				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","actions":[{"type":"echo"},{"type":"talk","option":{"text":"hello world\nworld2"}}],"on_complete_flow_id":"8ab0b1d4-ce19-11f0-86c2-8be677c58411"}`),
 			},
-			expectedCustomerID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+			expectedCustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			expectedType:       flow.TypeFlow,
 			expectedName:       "test",
 			expectedDetail:     "test detail",
@@ -70,72 +72,7 @@ func Test_v1FlowsPost(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
-			name: "has 2 actions",
-			request: &sock.Request{
-				URI:      "/v1/flows",
-				Method:   sock.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","actions":[{"type":"answer"},{"type":"echo"}]}`),
-			},
-			expectedCustomerID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
-			expectedType:       flow.TypeFlow,
-			expectedName:       "test",
-			expectedDetail:     "test detail",
-			expectedPersist:    false,
-			expectedActions: []action.Action{
-				{
-					Type: action.TypeAnswer,
-				},
-				{
-					Type: action.TypeEcho,
-				},
-			},
-		},
-		{
-			name: "has 2 actions with customer_id",
-			request: &sock.Request{
-				URI:      "/v1/flows",
-				Method:   sock.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","actions":[{"type":"answer"},{"type":"echo"}]}`),
-			},
-			expectedCustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
-			expectedType:       flow.TypeFlow,
-			expectedName:       "test",
-			expectedDetail:     "test detail",
-			expectedPersist:    false,
-			expectedActions: []action.Action{
-				{
-					Type: action.TypeAnswer,
-				},
-				{
-					Type: action.TypeEcho,
-				},
-			},
-		},
-		{
-			name: "type conference",
-			request: &sock.Request{
-				URI:      "/v1/flows",
-				Method:   sock.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"type":"conference","name":"test","detail":"test detail","customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","actions":[{"type":"answer"},{"type":"echo"}]}`),
-			},
-			expectedCustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
-			expectedType:       flow.TypeConference,
-			expectedName:       "test",
-			expectedDetail:     "test detail",
-			expectedPersist:    false,
-			expectedActions: []action.Action{
-				{
-					Type: action.TypeAnswer,
-				},
-				{
-					Type: action.TypeEcho,
-				},
-			},
+			expectedOnCompleteFlowID: uuid.FromStringOrNil("8ab0b1d4-ce19-11f0-86c2-8be677c58411"),
 		},
 	}
 
@@ -152,7 +89,16 @@ func Test_v1FlowsPost(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().Create(gomock.Any(), tt.expectedCustomerID, tt.expectedType, tt.expectedName, tt.expectedDetail, tt.expectedPersist, tt.expectedActions).Return(&flow.Flow{}, nil)
+			mockFlowHandler.EXPECT().Create(
+				gomock.Any(),
+				tt.expectedCustomerID,
+				tt.expectedType,
+				tt.expectedName,
+				tt.expectedDetail,
+				tt.expectedPersist,
+				tt.expectedActions,
+				tt.expectedOnCompleteFlowID,
+			).Return(&flow.Flow{}, nil)
 
 			if _, err := h.processRequest(tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -208,7 +154,7 @@ func Test_v1FlowsGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}]`),
+				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 		{
@@ -246,7 +192,7 @@ func Test_v1FlowsGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"e1acb018-b099-11ee-b942-ebca8278ad69","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}]`),
+				Data:       []byte(`[{"id":"e1acb018-b099-11ee-b942-ebca8278ad69","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 		{
@@ -294,7 +240,7 @@ func Test_v1FlowsGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"13a7aeaa-0c4d-11eb-8210-073d8779e386","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]},{"id":"3645134e-0c4d-11eb-a2da-4bb8abe75c48","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}]}]`),
+				Data:       []byte(`[{"id":"13a7aeaa-0c4d-11eb-8210-073d8779e386","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"},{"id":"3645134e-0c4d-11eb-a2da-4bb8abe75c48","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 		{
@@ -352,7 +298,7 @@ func Test_v1FlowsGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"49e66560-7f4c-11ec-9d15-2396902a0309","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}]`),
+				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"49e66560-7f4c-11ec-9d15-2396902a0309","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 	}
@@ -481,7 +427,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}`),
+				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 		{
@@ -510,7 +456,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","persist":true,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}`),
+				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","persist":true,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -548,13 +494,14 @@ func Test_v1FlowsIDPut(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		expectedflowID  uuid.UUID
-		expectedName    string
-		expectedDetail  string
-		expectedActions []action.Action
-
 		responseFlow *flow.Flow
-		expectedRes  *sock.Response
+
+		expectedflowID           uuid.UUID
+		expectedName             string
+		expectedDetail           string
+		expectedActions          []action.Action
+		expectedOnCompleteFlowID uuid.UUID
+		expectedRes              *sock.Response
 	}{
 		{
 			name: "normal",
@@ -562,7 +509,7 @@ func Test_v1FlowsIDPut(t *testing.T) {
 				URI:      "/v1/flows/b6768dd6-676f-11eb-8f00-7fb6aa43e2dc",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[{"type":"answer"},{"type":"echo"}]}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[{"type":"answer"},{"type":"echo"}],"on_complete_flow_id":"8a7e0694-ce19-11f0-a304-97efac450d48"}`),
 			},
 
 			responseFlow: &flow.Flow{
@@ -594,10 +541,11 @@ func Test_v1FlowsIDPut(t *testing.T) {
 					Type: action.TypeEcho,
 				},
 			},
+			expectedOnCompleteFlowID: uuid.FromStringOrNil("8a7e0694-ce19-11f0-a304-97efac450d48"),
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}]}`),
+				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -615,7 +563,7 @@ func Test_v1FlowsIDPut(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().Update(gomock.Any(), tt.expectedflowID, tt.expectedName, tt.expectedDetail, tt.expectedActions).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().Update(gomock.Any(), tt.expectedflowID, tt.expectedName, tt.expectedDetail, tt.expectedActions, tt.expectedOnCompleteFlowID).Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -659,7 +607,7 @@ func Test_v1FlowsIDDelete(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"89ecd1f6-67c6-11eb-815a-a75d4cc3df3e","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"89ecd1f6-67c6-11eb-815a-a75d4cc3df3e","customer_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -742,7 +690,7 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}]}`),
+				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
