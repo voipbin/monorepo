@@ -308,6 +308,71 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 <p>By combining sequential flow actions with the ability to trigger interrupt actions at any time, VoIPBIN provides a robust, programmable environment that can handle both predictable call scenarios and unexpected events with equal ease.</p>
 </section>
 </section>
+<section id="the-on-complete-flow-id">
+<h2>The on complete flow id<a class="headerlink" href="#the-on-complete-flow-id" title="Link to this heading"></a></h2>
+<p>The on_complete_flow_id allows a flow to automatically trigger another flow in a new session once the current flow completes. This feature addresses a key limitation of call-based flows: when a call ends, the flow execution ends immediately, preventing any post-call actions (After Call Work) from running.</p>
+<p>With on_complete_flow_id, developers can define a follow-up flow that executes after the call or flow ends, enabling tasks such as call-summary generation, sending emails, processing recordings, or running analytics.</p>
+<section id="how-it-works">
+<h3>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>             <span class="n">VoIPBIN</span> <span class="n">Engine</span>              <span class="n">Flow</span> <span class="n">A</span>                <span class="n">Flow</span> <span class="n">B</span>
+<span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="o">---</span> <span class="n">Incoming</span> <span class="n">Call</span> <span class="o">--&gt;|</span>                        <span class="o">|</span>                     <span class="o">|</span>
+<span class="o">|</span>                      <span class="o">|--</span> <span class="n">Start</span> <span class="n">Flow</span> <span class="n">A</span> <span class="o">-------&gt;|</span>                     <span class="o">|</span>
+<span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span> <span class="n">Execute</span> <span class="n">actions</span>     <span class="o">|</span>
+<span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span> <span class="n">answer</span><span class="o">/</span><span class="n">talk</span><span class="o">/...</span>     <span class="o">|</span>
+<span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="o">&lt;--</span> <span class="n">Call</span> <span class="n">Progress</span> <span class="o">--&gt;|</span>                        <span class="o">|</span>                     <span class="o">|</span>
+<span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>                     <span class="o">|</span>
+<span class="n">X</span> <span class="o">---</span> <span class="n">Hangup</span> <span class="o">---------&gt;|</span>                        <span class="o">|</span>                     <span class="o">|</span>
+                       <span class="o">|--</span> <span class="n">Stop</span> <span class="n">Flow</span> <span class="n">A</span> <span class="o">--------&gt;|</span>                     <span class="o">|</span>
+                       <span class="o">|</span>                        <span class="n">X</span> <span class="p">(</span><span class="n">Flow</span> <span class="n">A</span> <span class="n">stops</span><span class="p">)</span>      <span class="o">|</span>
+                       <span class="o">|</span>                                              <span class="o">|</span>
+                       <span class="o">|</span>                                              <span class="o">|</span>
+            <span class="n">Check</span> <span class="n">on_complete_flow_id</span>                                 <span class="o">|</span>
+                       <span class="o">|</span>                                              <span class="o">|</span>
+                       <span class="o">|</span>                                              <span class="o">|</span>
+                       <span class="o">|--</span> <span class="n">Start</span> <span class="n">NEW</span> <span class="n">session</span> <span class="o">------------------------&gt;|</span>
+                       <span class="o">|</span>                                           <span class="p">(</span><span class="n">inherit</span> <span class="n">variables</span><span class="p">)</span>
+                       <span class="o">|</span>                                              <span class="o">|</span>
+                       <span class="o">|--</span> <span class="n">Start</span> <span class="n">Flow</span> <span class="n">B</span> <span class="o">-----------------------------&gt;|</span>
+                                                                      <span class="o">|</span> <span class="n">Execute</span> <span class="n">ACW</span> <span class="n">actions</span>
+                                                                      <span class="o">|</span> <span class="n">summarize</span><span class="o">/</span><span class="n">email</span><span class="o">/...</span>
+                                                                      <span class="o">|</span>
+                                                                      <span class="n">X</span> <span class="p">(</span><span class="n">Flow</span> <span class="n">B</span> <span class="n">ends</span><span class="p">)</span>
+                                                                        <span class="n">If</span> <span class="n">Flow</span> <span class="n">B</span> <span class="n">has</span> <span class="n">on_complete_flow_id</span>
+                                                                        <span class="ow">and</span> <span class="n">depth</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="n">then</span> <span class="n">start</span> <span class="n">another</span> <span class="n">chain</span>
+</pre></div>
+</div>
+<p>When a flow ends—either by reaching the end of its action list, encountering a stop action, or due to call termination—VoIPBIN checks whether on_complete_flow_id is defined.</p>
+<p>If so, VoIPBIN starts the referenced flow as a new independent session.</p>
+<p>Most runtime variables from the original flow (e.g., ${voipbin.recording.id}, ${voipbin.call.id}) are inherited automatically, allowing seamless post-call workflows without requiring manual variable passing.</p>
+</section>
+</section>
+<section id="execution-limits">
+<h2>Execution limits<a class="headerlink" href="#execution-limits" title="Link to this heading"></a></h2>
+<p>To prevent infinite recursion, VoIPBIN enforces:</p>
+<ul class="simple">
+<li><p>A maximum of 5 chained on-complete executions. Beyond this limit, no further follow-up flows are triggered.</p></li>
+<li><p>Circular references should be avoided, even though safeguards exist.</p></li>
+</ul>
+</section>
+<section id="behavior-on-termination">
+<h2>Behavior on termination<a class="headerlink" href="#behavior-on-termination" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>If the flow fails, on_complete_flow_id is not triggered.</p></li>
+<li><p>If the flow is forcefully terminated (e.g., due to call hangup), the on-complete flow still runs.</p></li>
+</ul>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flow_initial&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;on_complete_flow_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flow_after_call_work&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This configuration ensures that when <em>flow_initial</em> completes—regardless of how the call ended—the <em>flow_after_call_work</em> flow starts immediately in a new session, while preserving key session variables from the original flow.</p>
+</section>
 </section>
 
 </main>
@@ -338,6 +403,13 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 <li><a class="reference internal" href="#integration-and-best-practices">Integration and Best Practices</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#the-on-complete-flow-id">The on complete flow id</a><ul>
+<li><a class="reference internal" href="#how-it-works">How it works</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#execution-limits">Execution limits</a></li>
+<li><a class="reference internal" href="#behavior-on-termination">Behavior on termination</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 </ul>

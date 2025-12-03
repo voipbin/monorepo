@@ -187,3 +187,77 @@ Integration and Best Practices
 
 By combining sequential flow actions with the ability to trigger interrupt actions at any time, VoIPBIN provides a robust, programmable environment that can handle both predictable call scenarios and unexpected events with equal ease.
 
+The on complete flow id
+-----------------------
+
+The on_complete_flow_id allows a flow to automatically trigger another flow in a new session once the current flow completes. This feature addresses a key limitation of call-based flows: when a call ends, the flow execution ends immediately, preventing any post-call actions (After Call Work) from running.
+
+With on_complete_flow_id, developers can define a follow-up flow that executes after the call or flow ends, enabling tasks such as call-summary generation, sending emails, processing recordings, or running analytics.
+
+How it works
++++++++++++++
+
+.. code::
+
+  Caller             VoIPBIN Engine              Flow A                Flow B
+  |                      |                        |                     |
+  | --- Incoming Call -->|                        |                     |
+  |                      |-- Start Flow A ------->|                     |
+  |                      |                        | Execute actions     |
+  |                      |                        | answer/talk/...     |
+  |                      |                        |                     |
+  | <-- Call Progress -->|                        |                     |
+  |                      |                        |                     |
+  X --- Hangup --------->|                        |                     |
+                         |-- Stop Flow A -------->|                     |
+                         |                        X (Flow A stops)      |
+                         |                                              |
+                         |                                              |
+              Check on_complete_flow_id                                 |
+                         |                                              |
+                         |                                              |
+                         |-- Start NEW session ------------------------>|
+                         |                                           (inherit variables)
+                         |                                              |
+                         |-- Start Flow B ----------------------------->|
+                                                                        | Execute ACW actions
+                                                                        | summarize/email/...
+                                                                        |
+                                                                        X (Flow B ends)
+                                                                          If Flow B has on_complete_flow_id 
+                                                                          and depth < 5 then start another chain
+
+
+When a flow ends—either by reaching the end of its action list, encountering a stop action, or due to call termination—VoIPBIN checks whether on_complete_flow_id is defined.
+
+If so, VoIPBIN starts the referenced flow as a new independent session.
+
+Most runtime variables from the original flow (e.g., ${voipbin.recording.id}, ${voipbin.call.id}) are inherited automatically, allowing seamless post-call workflows without requiring manual variable passing.
+
+Execution limits
+----------------
+
+To prevent infinite recursion, VoIPBIN enforces:
+
+* A maximum of 5 chained on-complete executions. Beyond this limit, no further follow-up flows are triggered.
+
+* Circular references should be avoided, even though safeguards exist.
+
+Behavior on termination
+-----------------------
+
+* If the flow fails, on_complete_flow_id is not triggered.
+
+* If the flow is forcefully terminated (e.g., due to call hangup), the on-complete flow still runs.
+
+Example
+--------
+
+.. code:: json
+
+  {
+    "id": "flow_initial",
+    "on_complete_flow_id": "flow_after_call_work"
+  }
+
+This configuration ensures that when *flow_initial* completes—regardless of how the call ended—the *flow_after_call_work* flow starts immediately in a new session, while preserving key session variables from the original flow.
