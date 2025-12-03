@@ -25,7 +25,11 @@ type ToolResponse struct {
 type FunctionCallName string
 
 const (
+	FunctionCallNameNone FunctionCallName = ""
+
 	FunctionCallNameConnect     FunctionCallName = "connect"
 	FunctionCallNameMessageSend FunctionCallName = "message_send"
 	FunctionCallNameEmailSend   FunctionCallName = "email_send"
+	FunctionCallNameServiceStop FunctionCallName = "service_stop"
+	FunctionCallNameStop        FunctionCallName = "stop"
 )

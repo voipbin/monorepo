@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	ememail "monorepo/bin-email-manager/models/email"
 	fmaction "monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/activeflow"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	mmmessage "monorepo/bin-message-manager/models/message"
 	reflect "reflect"
@@ -410,6 +411,190 @@ func Test_toolHandleEmailSend(t *testing.T) {
 			).Return(tt.responseMessage, nil)
 
 			res, err := h.toolHandleEmailSend(ctx, tt.aicall, tt.tool)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_toolHandleServiceStop(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aicall *aicall.AIcall
+		tool   *message.ToolCall
+
+		expectMessageContent string
+		expectRes            map[string]any
+	}{
+		{
+			name: "normal",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9e110dbc-d07d-11f0-9496-ab3dacff7ae1"),
+					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("9e4caf8e-d07d-11f0-ba2d-5799bd8fb0b5"),
+			},
+			tool: &message.ToolCall{
+				ID:   "9e70cf90-d07d-11f0-83f0-fb4840f79cfa",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name:      message.FunctionCallNameServiceStop,
+					Arguments: `{}`,
+				},
+			},
+
+			expectMessageContent: `{"tool_call_id":"9e70cf90-d07d-11f0-83f0-fb4840f79cfa","result":"success","message":"Service stopped successfully.","resource_type":"service","resource_id":"9e110dbc-d07d-11f0-9496-ab3dacff7ae1"}`,
+			expectRes: map[string]any{
+				"result":        "success",
+				"message":       "Service stopped successfully.",
+				"tool_call_id":  "9e70cf90-d07d-11f0-83f0-fb4840f79cfa",
+				"resource_type": "service",
+				"resource_id":   "9e110dbc-d07d-11f0-9496-ab3dacff7ae1",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.aicall.ActiveflowID, tt.aicall.ID).Return(nil)
+			mockMessage.EXPECT().Create(
+				ctx,
+				tt.aicall.CustomerID,
+				tt.aicall.ID,
+				message.DirectionOutgoing,
+				message.RoleTool,
+				tt.expectMessageContent,
+				nil,
+				tt.tool.ID,
+			).Return(&message.Message{Content: tt.expectMessageContent}, nil)
+
+			res, err := h.toolHandleServiceStop(ctx, tt.aicall, tt.tool)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_toolHandleStop(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aicall *aicall.AIcall
+		tool   *message.ToolCall
+
+		responseActiveflow *fmactiveflow.Activeflow
+
+		expectMessageContent string
+		expectRes            map[string]any
+	}{
+		{
+			name: "normal",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c41debb8-d07f-11f0-b990-7b50d26bd157"),
+					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("c454ff5e-d07f-11f0-91a8-1350b22b1220"),
+			},
+			tool: &message.ToolCall{
+				ID:   "c482d2c6-d07f-11f0-9feb-c38f67824563",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name:      message.FunctionCallNameServiceStop,
+					Arguments: `{}`,
+				},
+			},
+
+			responseActiveflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c454ff5e-d07f-11f0-91a8-1350b22b1220"),
+				},
+			},
+
+			expectMessageContent: `{"tool_call_id":"c482d2c6-d07f-11f0-9feb-c38f67824563","result":"success","message":"Activeflow stopped successfully.","resource_type":"activeflow","resource_id":"c454ff5e-d07f-11f0-91a8-1350b22b1220"}`,
+			expectRes: map[string]any{
+				"result":        "success",
+				"message":       "Activeflow stopped successfully.",
+				"tool_call_id":  "c482d2c6-d07f-11f0-9feb-c38f67824563",
+				"resource_type": "activeflow",
+				"resource_id":   "c454ff5e-d07f-11f0-91a8-1350b22b1220",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.aicall.ActiveflowID).Return(tt.responseActiveflow, nil)
+			mockMessage.EXPECT().Create(
+				ctx,
+				tt.aicall.CustomerID,
+				tt.aicall.ID,
+				message.DirectionOutgoing,
+				message.RoleTool,
+				tt.expectMessageContent,
+				nil,
+				tt.tool.ID,
+			).Return(&message.Message{Content: tt.expectMessageContent}, nil)
+
+			res, err := h.toolHandleStop(ctx, tt.aicall, tt.tool)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

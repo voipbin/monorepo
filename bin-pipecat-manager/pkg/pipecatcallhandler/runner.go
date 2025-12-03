@@ -297,6 +297,7 @@ func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) erro
 		Type     string                 `json:"type"`
 		Function ammessage.FunctionCall `json:"function"`
 	}{}
+
 	if errBind := c.BindJSON(&request); errBind != nil {
 		return fmt.Errorf("could not bind tool request JSON: %w", errBind)
 	}

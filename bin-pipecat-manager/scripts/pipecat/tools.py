@@ -4,14 +4,28 @@ import json
 from loguru import logger
 import aiohttp
 import asyncio
+from enum import Enum
+
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.frames.frames import FunctionCallResultProperties
+
+class ToolName(str, Enum):
+    FINALIZE = "tool_finalize"        # General finalization tool
+    
+    # NOTICE: The following tool names must match those defined in the ai-manager.
+    CONNECT = "connect"               # Connects caller to endpoints
+    EMAIL_SEND = "email_send"         # Sends emails
+    MESSAGE_SEND = "message_send"     # Sends SMS messages
+    SERVICE_STOP = "service_stop"     # Stops current AI talk and proceeds to next Action
+    STOP = "stop"                     # Stops current activeflow execution
+
+TOOLNAMES = [tool.value for tool in ToolName]
 
 tools = [
     {
         "type": "function",
         "function": {
-            "name": "tool_finalize",
+            "name": ToolName.FINALIZE.value,
             "description": """
 A general-purpose tool that triggers a follow-up LLM response at the appropriate point after 
 tool execution (e.g., SMS, Email, or database updates). 
@@ -27,7 +41,7 @@ This tool should be called only once when a final response from the LLM is neede
     {
         "type": "function",
         "function": {
-            "name": "connect",
+            "name": ToolName.CONNECT.value,
             "description": """
 Establishes a call from a source endpoint to one or more destination endpoints. 
 Use this when you need to connect a caller to specific endpoints like agents, conferences, or lines. 
@@ -84,69 +98,7 @@ Each endpoint must include a type and target, and optionally a target_name for d
     {
         "type": "function",
         "function": {
-            "name": "message_send",
-            "description": """
-Sends an SMS text message from a source telephone number to one or more destination telephone numbers.
-Use this when you need to deliver SMS messages between phone numbers.
-The source and destination types must be "tel".
-""",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "source": {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type":        "string",
-                                "enum":        ["tel"],
-                                "description": "must be tel",
-                            },
-                            "target": {
-                                "type":        "string",
-                                "description": "+E.164 formatted phone number",
-                            },
-                            "target_name": {
-                                "type":        "string",
-                                "description": "optional display name for the number",
-                            },
-                        },
-                        "required": ["type", "target"],
-                    },
-                    "destinations": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "type":        "string",
-                                    "enum":        ["tel"],
-                                    "description": "must be tel",
-                                },
-                                "target": {
-                                    "type":        "string",
-                                    "description": "+E.164 formatted phone number",
-                                },
-                                "target_name": {
-                                    "type":        "string",
-                                    "description": "optional display name for the number",
-                                },
-                            },
-                            "required": ["type", "target"],
-                        },
-                    },
-                    "text": {
-                        "type":        "string",
-                        "description": "SMS message content",
-                    },
-                },
-                "required": ["destinations", "text"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "email_send",
+            "name": ToolName.EMAIL_SEND.value,
             "description": "Sends an email with subject, content, and optional attachments to one or more destination email addresses.",
             "parameters": {
                 "type": "object",
@@ -209,14 +161,103 @@ The source and destination types must be "tel".
             }
         }
     },
+    {
+        "type": "function",
+        "function": {
+            "name": ToolName.MESSAGE_SEND.value,
+            "description": """
+Sends an SMS text message from a source telephone number to one or more destination telephone numbers.
+Use this when you need to deliver SMS messages between phone numbers.
+The source and destination types must be "tel".
+""",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "source": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type":        "string",
+                                "enum":        ["tel"],
+                                "description": "must be tel",
+                            },
+                            "target": {
+                                "type":        "string",
+                                "description": "+E.164 formatted phone number",
+                            },
+                            "target_name": {
+                                "type":        "string",
+                                "description": "optional display name for the number",
+                            },
+                        },
+                        "required": ["type", "target"],
+                    },
+                    "destinations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type":        "string",
+                                    "enum":        ["tel"],
+                                    "description": "must be tel",
+                                },
+                                "target": {
+                                    "type":        "string",
+                                    "description": "+E.164 formatted phone number",
+                                },
+                                "target_name": {
+                                    "type":        "string",
+                                    "description": "optional display name for the number",
+                                },
+                            },
+                            "required": ["type", "target"],
+                        },
+                    },
+                    "text": {
+                        "type":        "string",
+                        "description": "SMS message content",
+                    },
+                },
+                "required": ["destinations", "text"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": ToolName.SERVICE_STOP.value,
+            "description": """
+Stops the currently ongoing talk conversation and immediately proceeds to the next Action.
+Use this when you want to terminate the current talk without any additional input.
+""",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": ToolName.STOP.value,
+            "description": """
+Immediately stops the currently ongoing flow execution.
+Use this to completely terminate the current process without executing subsequent actions.
+""",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    }
 ]
-
-TOOLS = ["tool_finalize", "connect", "message_send", "email_send"]
-
 
 def tool_register(llm_service, pipecatcall_id):
     def create_wrapper(tool_name, pipecatcall_id):
-        if tool_name == "tool_finalize":
+        if tool_name == ToolName.FINALIZE.value:
             async def wrapper(params: FunctionCallParams):
                 return await tool_finalize(params, pipecatcall_id)
         else:
@@ -224,15 +265,15 @@ def tool_register(llm_service, pipecatcall_id):
                 return await tool_execute(tool_name, params, pipecatcall_id)
         return wrapper
 
-    for tool_name in TOOLS:
+    for tool_name in TOOLNAMES:
         wrapper = create_wrapper(tool_name, pipecatcall_id)
         llm_service.register_function(tool_name, wrapper)
 
 
 def tool_unregister(llm_service):
     """Unregisters tools from the LLM service."""
-    for func_name in TOOLS:
-        llm_service.unregister_function(func_name)
+    for tool_name in TOOLNAMES:
+        llm_service.unregister_function(tool_name)
 
 
 async def tool_finalize(params: FunctionCallParams, pipecatcall_id: str):
