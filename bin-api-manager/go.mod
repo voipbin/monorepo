@@ -91,7 +91,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39
-	google.golang.org/api v0.256.0
+	google.golang.org/api v0.257.0
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab
@@ -207,9 +207,9 @@ require (
 	golang.org/x/oauth2 v0.33.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/genproto v0.0.0-20251124214823-79d6a2a48846 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20251124214823-79d6a2a48846 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251124214823-79d6a2a48846 // indirect
+	google.golang.org/genproto v0.0.0-20251202230838-ff82c1b0f217 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/grpc v1.77.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
