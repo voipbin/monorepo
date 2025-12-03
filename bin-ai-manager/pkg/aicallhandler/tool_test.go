@@ -14,7 +14,6 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	ememail "monorepo/bin-email-manager/models/email"
 	fmaction "monorepo/bin-flow-manager/models/action"
-	"monorepo/bin-flow-manager/models/activeflow"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	mmmessage "monorepo/bin-message-manager/models/message"
 	reflect "reflect"
@@ -541,7 +540,7 @@ func Test_toolHandleStop(t *testing.T) {
 				},
 			},
 
-			responseActiveflow: &activeflow.Activeflow{
+			responseActiveflow: &fmactiveflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c454ff5e-d07f-11f0-91a8-1350b22b1220"),
 				},
