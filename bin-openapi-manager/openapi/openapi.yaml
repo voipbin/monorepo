@@ -2580,6 +2580,9 @@ components:
           x-enum-varnames:
             - FlowManagerActionOptionTalkDigitsHandleNone
             - FlowManagerActionOptionTalkDigitsHandleNext
+        async:
+          type: boolean
+          description: If true, the talk action will not block the flow execution.
 
     FlowManagerActionOptionTranscribeStart:
       type: object

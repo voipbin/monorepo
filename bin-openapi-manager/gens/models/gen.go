@@ -2252,6 +2252,9 @@ type FlowManagerActionOptionStreamEcho struct {
 
 // FlowManagerActionOptionTalk defines model for FlowManagerActionOptionTalk.
 type FlowManagerActionOptionTalk struct {
+	// Async If true, the talk action will not block the flow execution.
+	Async *bool `json:"async,omitempty"`
+
 	// DigitsHandle Defines the action when it receives digits.
 	DigitsHandle *FlowManagerActionOptionTalkDigitsHandle `json:"digits_handle,omitempty"`
 
