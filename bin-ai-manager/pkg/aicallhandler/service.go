@@ -113,3 +113,19 @@ func (h *aicallHandler) serviceStartReferenceTypeConversation(
 
 	return res, nil
 }
+
+func (h *aicallHandler) serviceStop(ctx context.Context, c *aicall.AIcall) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "serviceStop",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("Stopping the aicall service.")
+
+	tmp, err := h.ProcessTerminating(ctx, c.ID)
+	if err != nil {
+		return fmt.Errorf("could not start terminating the aicall. err: %v", err)
+	}
+	log.WithField("aicall", tmp).Debugf("Stopped the aicall service successfully.")
+
+	return nil
+}

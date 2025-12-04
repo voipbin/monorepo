@@ -60,22 +60,27 @@ func (h *aicallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*a
 }
 
 // ProcessTerminate ends a aicall process
-func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
+func (h *aicallHandler) ProcessTerminate(ctx context.Context, c *aicall.AIcall) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "ProcessTerminate",
-		"aicall_id": ac.ID,
+		"aicall_id": c.ID,
 	})
-	log.Debugf("Terminating aicall process. aicall: %v", ac)
+	log.Debugf("Terminating aicall process. aicall: %v", c)
+
+	if c.Status == aicall.StatusTerminated {
+		log.Debugf("Aicall is already terminated. aicall_id: %s", c.ID)
+		return c, nil
+	}
 
 	// stop the pipecatcall
-	if ac.PipecatcallID != uuid.Nil {
-		pc, err := h.reqHandler.PipecatV1PipecatcallGet(ctx, ac.PipecatcallID)
+	if c.PipecatcallID != uuid.Nil {
+		pc, err := h.reqHandler.PipecatV1PipecatcallGet(ctx, c.PipecatcallID)
 		if err != nil {
 			return nil, errors.Wrap(err, "could not get the pipecatcall correctly")
 		}
 
-		log.Debugf("Terminating the pipecatcall. pipecatcall_id: %s", ac.PipecatcallID)
-		tmp, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, ac.PipecatcallID)
+		log.Debugf("Terminating the pipecatcall. pipecatcall_id: %s", c.PipecatcallID)
+		tmp, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, c.PipecatcallID)
 		if err != nil {
 			log.Errorf("Could not terminate the pipecatcall. err: %v", err)
 		} else {
@@ -84,14 +89,16 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, ac *aicall.AIcall)
 	}
 
 	// terminate the confbridge
-	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, ac.ConfbridgeID)
+	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, c.ConfbridgeID)
 	if err != nil {
+		// we could not terminate the confbridge, but we don't return the error here.
+		// just log and continue
 		log.Errorf("Could not terminate the confbridge. err: %v", err)
-		return nil, errors.Wrap(err, "could not terminate the confbridge")
+	} else {
+		log.WithField("confbridge", tmp).Debugf("Terminated the confbridge. confbridge_id: %s", tmp.ID)
 	}
-	log.WithField("confbridge", tmp).Debugf("Terminated the confbridge. confbridge_id: %s", tmp.ID)
 
-	res, err := h.UpdateStatus(ctx, ac.ID, aicall.StatusTerminated)
+	res, err := h.UpdateStatus(ctx, c.ID, aicall.StatusTerminated)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not end the aicall")
 	}
@@ -105,17 +112,21 @@ func (h *aicallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID) (*
 		"func":      "ProcessTerminating",
 		"aicall_id": id,
 	})
+	log.Debugf("Terminating the aicall. aicall_id: %s", id)
 
-	tmp, err := h.UpdateStatus(ctx, id, aicall.StatusTerminating)
+	res, err := h.UpdateStatus(ctx, id, aicall.StatusTerminating)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not start terminating the aicall")
 	}
 
-	res, err := h.ProcessTerminate(ctx, tmp)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not terminate the aicall")
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, res.ActiveflowID, res.ID); errStop != nil {
+		return nil, errors.Wrapf(errStop, "could not stop the aicall")
 	}
-	log.WithField("aicall", res).Debug("Terminated aicall process")
+
+	// exit the call from the conference bridge
+	if errKick := h.reqHandler.CallV1ConfbridgeCallKick(ctx, res.ConfbridgeID, res.ReferenceID); errKick != nil {
+		return nil, errors.Wrapf(errKick, "could not kick the call from the conference bridge")
+	}
 
 	return res, nil
 }

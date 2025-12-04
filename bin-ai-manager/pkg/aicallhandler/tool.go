@@ -249,7 +249,7 @@ func (h *aicallHandler) toolHandleServiceStop(ctx context.Context, c *aicall.AIc
 	log.Debugf("handling tool service_stop.")
 
 	tmpMessageContent := newToolResult(tool.ID)
-	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, c.ActiveflowID, c.ID); errStop != nil {
+	if errStop := h.serviceStop(ctx, c); errStop != nil {
 		fillFailed(tmpMessageContent, errStop)
 	} else {
 		fillSuccess(tmpMessageContent, "service", c.ID.String(), "Service stopped successfully.")

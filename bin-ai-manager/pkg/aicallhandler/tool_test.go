@@ -440,6 +440,8 @@ func Test_toolHandleServiceStop(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
 				},
 				ActiveflowID: uuid.FromStringOrNil("9e4caf8e-d07d-11f0-ba2d-5799bd8fb0b5"),
+				ConfbridgeID: uuid.FromStringOrNil("eaf9f682-d0bb-11f0-adb3-33c1048e74d8"),
+				ReferenceID:  uuid.FromStringOrNil("eb270d66-d0bb-11f0-87e0-279f3253f2c7"),
 			},
 			tool: &message.ToolCall{
 				ID:   "9e70cf90-d07d-11f0-83f0-fb4840f79cfa",
@@ -485,7 +487,14 @@ func Test_toolHandleServiceStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			// updateStatus
+			mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.aicall.ID, aicall.StatusTerminating).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusTerminating, tt.aicall)
+
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.aicall.ActiveflowID, tt.aicall.ID).Return(nil)
+			mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.aicall.ConfbridgeID, tt.aicall.ReferenceID).Return(nil)
+
 			mockMessage.EXPECT().Create(
 				ctx,
 				tt.aicall.CustomerID,
