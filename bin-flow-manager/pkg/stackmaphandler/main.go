@@ -25,7 +25,7 @@ type StackmapHandler interface {
 
 	AddActions(stackMap map[uuid.UUID]*stack.Stack, targetStackID uuid.UUID, targetActionID uuid.UUID, actions []action.Action) error
 	GetAction(stackMap map[uuid.UUID]*stack.Stack, startStackID uuid.UUID, actionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action, error)
-	GetNextAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, currentAction *action.Action, relaseStack bool) (uuid.UUID, *action.Action)
+	GetNextAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, currentActionID uuid.UUID, relaseStack bool) (uuid.UUID, *action.Action)
 
 	PushStackByActions(stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, actions []action.Action, currentStackID uuid.UUID, currentActionID uuid.UUID) (*stack.Stack, error)
 	PopStack(stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID) (*stack.Stack, error)

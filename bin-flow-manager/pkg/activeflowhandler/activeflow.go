@@ -115,9 +115,11 @@ func (h *activeflowHandler) PopStackWithStackID(ctx context.Context, af *activef
 		return errors.Wrapf(err, "could not pop the stack. stack_id: %s", af.CurrentStackID)
 	}
 
+	forwardStackID, forwardAction := h.stackmapHandler.GetNextAction(af.StackMap, tmp.ReturnStackID, tmp.ReturnActionID, true)
+
 	// update forward actions
-	af.ForwardStackID = tmp.ReturnStackID
-	af.ForwardActionID = tmp.ReturnActionID
+	af.ForwardStackID = forwardStackID
+	af.ForwardActionID = forwardAction.ID
 
 	// update activeflow
 	if err := h.updateStackProgress(ctx, af); err != nil {

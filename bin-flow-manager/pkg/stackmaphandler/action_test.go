@@ -413,9 +413,9 @@ func Test_GetNextAction(t *testing.T) {
 	tests := []struct {
 		name string
 
-		stackMap       map[uuid.UUID]*stack.Stack
-		currentStackID uuid.UUID
-		currentAction  *action.Action
+		stackMap        map[uuid.UUID]*stack.Stack
+		currentStackID  uuid.UUID
+		currentActionID uuid.UUID
 
 		expectedResStackID  uuid.UUID
 		expectedResAction   *action.Action
@@ -441,11 +441,8 @@ func Test_GetNextAction(t *testing.T) {
 					ReturnActionID: action.IDEmpty,
 				},
 			},
-			currentStackID: stack.IDMain,
-			currentAction: &action.Action{
-				ID:   uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
-				Type: action.TypeAnswer,
-			},
+			currentStackID:  stack.IDMain,
+			currentActionID: uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
 
 			expectedResStackID: stack.IDMain,
 			expectedResAction: &action.Action{
@@ -495,12 +492,8 @@ func Test_GetNextAction(t *testing.T) {
 					ReturnActionID: action.IDEmpty,
 				},
 			},
-			currentStackID: stack.IDMain,
-			currentAction: &action.Action{
-				ID:     uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
-				Type:   action.TypeAnswer,
-				NextID: uuid.FromStringOrNil("f75cdd64-d3b6-11ec-9ef6-af4e5a66b496"),
-			},
+			currentStackID:  stack.IDMain,
+			currentActionID: uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
 
 			expectedResStackID: stack.IDMain,
 			expectedResAction: &action.Action{
@@ -573,11 +566,8 @@ func Test_GetNextAction(t *testing.T) {
 					ReturnActionID: uuid.FromStringOrNil("342f0e56-d3b7-11ec-a9a6-1b8c6f3600ee"),
 				},
 			},
-			currentStackID: uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
-			currentAction: &action.Action{
-				ID:   uuid.FromStringOrNil("f5c379b2-d466-11ec-af74-6fee9d235883"),
-				Type: action.TypeAnswer,
-			},
+			currentStackID:  uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
+			currentActionID: uuid.FromStringOrNil("f5c379b2-d466-11ec-af74-6fee9d235883"),
 
 			expectedResStackID: stack.IDMain,
 			expectedResAction: &action.Action{
@@ -650,11 +640,8 @@ func Test_GetNextAction(t *testing.T) {
 					ReturnActionID: uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
 				},
 			},
-			currentStackID: uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
-			currentAction: &action.Action{
-				ID:   uuid.FromStringOrNil("f5c379b2-d466-11ec-af74-6fee9d235883"),
-				Type: action.TypeAnswer,
-			},
+			currentStackID:  uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
+			currentActionID: uuid.FromStringOrNil("f5c379b2-d466-11ec-af74-6fee9d235883"),
 
 			expectedResStackID: stack.IDMain,
 			expectedResAction: &action.Action{
@@ -705,10 +692,8 @@ func Test_GetNextAction(t *testing.T) {
 					ReturnActionID: action.IDEmpty,
 				},
 			},
-			currentStackID: stack.IDMain,
-			currentAction: &action.Action{
-				ID: action.IDStart,
-			},
+			currentStackID:  stack.IDMain,
+			currentActionID: action.IDStart,
 
 			expectedResStackID: stack.IDMain,
 			expectedResAction: &action.Action{
@@ -740,7 +725,7 @@ func Test_GetNextAction(t *testing.T) {
 
 			h := &stackHandler{}
 
-			resStackID, resAction := h.GetNextAction(tt.stackMap, tt.currentStackID, tt.currentAction, true)
+			resStackID, resAction := h.GetNextAction(tt.stackMap, tt.currentStackID, tt.currentActionID, true)
 
 			if !reflect.DeepEqual(resStackID, tt.expectedResStackID) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedResStackID, resStackID)

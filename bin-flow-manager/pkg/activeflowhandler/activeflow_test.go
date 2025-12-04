@@ -263,7 +263,9 @@ func Test_PopStackWithStackID(t *testing.T) {
 		af      *activeflow.Activeflow
 		stackID uuid.UUID
 
-		responseStack *stack.Stack
+		responseStack          *stack.Stack
+		responseForwardStackID uuid.UUID
+		responseForwardAction  *action.Action
 
 		expectUpdateFields map[activeflow.Field]any
 	}{
@@ -310,6 +312,9 @@ func Test_PopStackWithStackID(t *testing.T) {
 				ReturnStackID:  stack.IDMain,
 				ReturnActionID: uuid.FromStringOrNil("fac2d2b4-f9e3-11ef-be40-130c380abed9"),
 			},
+			responseForwardStackID: stack.IDMain,
+			responseForwardAction:  &action.Action{ID: uuid.FromStringOrNil("fac2d2b4-f9e3-11ef-be40-130c380abed9")},
+
 			expectUpdateFields: map[activeflow.Field]any{
 				activeflow.FieldCurrentStackID: uuid.FromStringOrNil("fba1274e-f9e3-11ef-8a79-afb93b277619"),
 				activeflow.FieldCurrentAction:  action.Action{},
@@ -365,6 +370,7 @@ func Test_PopStackWithStackID(t *testing.T) {
 			ctx := context.Background()
 
 			mockStack.EXPECT().PopStack(tt.af.StackMap, tt.stackID).Return(tt.responseStack, nil)
+			mockStack.EXPECT().GetNextAction(tt.af.StackMap, tt.responseStack.ReturnStackID, tt.responseStack.ReturnActionID, true).Return(tt.responseForwardStackID, tt.responseForwardAction)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.af.ID, tt.expectUpdateFields).Return(nil)
 
 			if err := h.PopStackWithStackID(ctx, tt.af, tt.stackID); err != nil {
@@ -381,7 +387,9 @@ func Test_PopStack(t *testing.T) {
 
 		af *activeflow.Activeflow
 
-		responseStack *stack.Stack
+		responseStack          *stack.Stack
+		responseForwardStackID uuid.UUID
+		responseForwardAction  *action.Action
 
 		expectStackID      uuid.UUID
 		expectUpdateFields map[activeflow.Field]any
@@ -428,6 +436,11 @@ func Test_PopStack(t *testing.T) {
 				ReturnStackID:  stack.IDMain,
 				ReturnActionID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
 			},
+			responseForwardStackID: stack.IDMain,
+			responseForwardAction: &action.Action{
+				ID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
+			},
+
 			expectStackID: uuid.FromStringOrNil("a555f502-f9e5-11ef-bbbe-b363e26fda0f"),
 			expectUpdateFields: map[activeflow.Field]any{
 				activeflow.FieldCurrentStackID: uuid.FromStringOrNil("a555f502-f9e5-11ef-bbbe-b363e26fda0f"),
@@ -484,6 +497,7 @@ func Test_PopStack(t *testing.T) {
 			ctx := context.Background()
 
 			mockStack.EXPECT().PopStack(tt.af.StackMap, tt.expectStackID).Return(tt.responseStack, nil)
+			mockStack.EXPECT().GetNextAction(tt.af.StackMap, tt.responseStack.ReturnStackID, tt.responseStack.ReturnActionID, true).Return(tt.responseForwardStackID, tt.responseForwardAction)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.af.ID, tt.expectUpdateFields).Return(nil)
 
 			if err := h.PopStack(ctx, tt.af); err != nil {
@@ -601,7 +615,9 @@ func Test_ServiceStop(t *testing.T) {
 
 		responseActiveflow *activeflow.Activeflow
 
-		responseStack *stack.Stack
+		responseStack          *stack.Stack
+		responseForwardStackID uuid.UUID
+		responseForwardAction  *action.Action
 
 		expectStackID      uuid.UUID
 		expectUpdateFields map[activeflow.Field]any
@@ -639,7 +655,6 @@ func Test_ServiceStop(t *testing.T) {
 				},
 				ExecutedActions: []action.Action{},
 			},
-
 			responseStack: &stack.Stack{
 				ID: uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
 				Actions: []action.Action{
@@ -649,6 +664,10 @@ func Test_ServiceStop(t *testing.T) {
 				},
 				ReturnStackID:  stack.IDMain,
 				ReturnActionID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
+			},
+			responseForwardStackID: stack.IDMain,
+			responseForwardAction: &action.Action{
+				ID: uuid.FromStringOrNil("a5887874-f9e5-11ef-a64e-3f6c58935e86"),
 			},
 
 			expectStackID: uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
@@ -708,6 +727,7 @@ func Test_ServiceStop(t *testing.T) {
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
 			mockStack.EXPECT().PopStack(tt.responseActiveflow.StackMap, tt.expectStackID).Return(tt.responseStack, nil)
+			mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseStack.ReturnStackID, tt.responseStack.ReturnActionID, true).Return(tt.responseForwardStackID, tt.responseForwardAction)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
 
 			if err := h.ServiceStop(ctx, tt.id, tt.serviceID); err != nil {
