@@ -105,13 +105,5 @@ func (h *aicallHandler) EventPMPipecatcallInitialized(ctx context.Context, evt *
 		return
 	}
 
-	if cc.ReferenceType != aicall.ReferenceTypeCall {
-		return
-	}
-
-	log.Debugf("Stopping currently playing media. aicall_id: %s, call_id: %s", cc.ID, cc.ReferenceID)
-	if errStop := h.reqHandler.CallV1CallMediaStop(ctx, cc.ReferenceID); errStop != nil {
-		log.Errorf("Could not stop the media on the call during pipecatcall initialization. err: %v", errStop)
-		return
-	}
+	log.Debugf("The aicall's pipecatcall has initiated. aicall_id: %s, pipecatcall_id: %s", cc.ID, evt.ID)
 }

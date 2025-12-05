@@ -115,7 +115,6 @@ func Test_EventPMPipecatcallInitialized(t *testing.T) {
 		responseAIcall *aicall.AIcall
 
 		expectedAICallID uuid.UUID
-		expectedCallID   uuid.UUID
 	}{
 		{
 			name: "normal",
@@ -137,7 +136,6 @@ func Test_EventPMPipecatcallInitialized(t *testing.T) {
 			},
 
 			expectedAICallID: uuid.FromStringOrNil("021532d8-cb5c-11f0-8f38-df7986b6fe53"),
-			expectedCallID:   uuid.FromStringOrNil("0246703c-cb5c-11f0-ba32-e30e51dfb4e2"),
 		},
 	}
 
@@ -164,7 +162,6 @@ func Test_EventPMPipecatcallInitialized(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AIcallGet(ctx, tt.expectedAICallID).Return(tt.responseAIcall, nil)
-			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.expectedCallID).Return(nil)
 
 			h.EventPMPipecatcallInitialized(ctx, tt.evt)
 		})
