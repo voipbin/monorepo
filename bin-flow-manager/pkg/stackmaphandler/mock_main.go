@@ -87,18 +87,18 @@ func (mr *MockStackmapHandlerMockRecorder) GetAction(stackMap, startStackID, act
 }
 
 // GetNextAction mocks base method.
-func (m *MockStackmapHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, currentAction *action.Action, relaseStack bool) (uuid.UUID, *action.Action) {
+func (m *MockStackmapHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID, currentActionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNextAction", stackMap, currentStackID, currentAction, relaseStack)
+	ret := m.ctrl.Call(m, "GetNextAction", stackMap, currentStackID, currentActionID, releaseStack)
 	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(*action.Action)
 	return ret0, ret1
 }
 
 // GetNextAction indicates an expected call of GetNextAction.
-func (mr *MockStackmapHandlerMockRecorder) GetNextAction(stackMap, currentStackID, currentAction, relaseStack any) *gomock.Call {
+func (mr *MockStackmapHandlerMockRecorder) GetNextAction(stackMap, currentStackID, currentActionID, releaseStack any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextAction", reflect.TypeOf((*MockStackmapHandler)(nil).GetNextAction), stackMap, currentStackID, currentAction, relaseStack)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextAction", reflect.TypeOf((*MockStackmapHandler)(nil).GetNextAction), stackMap, currentStackID, currentActionID, releaseStack)
 }
 
 // PopStack mocks base method.

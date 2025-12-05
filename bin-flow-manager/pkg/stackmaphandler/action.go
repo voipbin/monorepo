@@ -79,16 +79,16 @@ func (h *stackHandler) GetAction(stackMap map[uuid.UUID]*stack.Stack, startStack
 // GetNextAction returns next action.
 // it checks all of related stacks.
 // if it couldn't find next action, returns finish action.
-func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, currentAction *action.Action, relaseStack bool) (uuid.UUID, *action.Action) {
+func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, currentActionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "GetNextAction",
 		"current_stack_id":  currentStackID,
-		"current_action_id": currentAction.ID,
+		"current_action_id": currentActionID,
 	})
-	log.WithField("action", currentAction).Debugf("Getting next action.")
+	log.Debugf("Getting next action.")
 
 	tmpStackID := currentStackID
-	tmpActionID := currentAction.ID
+	tmpActionID := currentActionID
 	for range maxStackCount {
 
 		if tmpStackID == stack.IDEmpty {
@@ -145,7 +145,7 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 		tmpStackID = s.ReturnStackID
 		tmpActionID = s.ReturnActionID
 
-		if relaseStack {
+		if releaseStack {
 			h.DeleteStack(stackMap, s.ID)
 		}
 	}

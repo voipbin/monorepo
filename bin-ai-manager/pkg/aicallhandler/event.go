@@ -39,11 +39,11 @@ func (h *aicallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *cmconf
 		return
 	}
 
-	if cc.Status != aicall.StatusPausing {
+	if cc.ConfbridgeID != evt.ID {
 		return
 	}
 
-	_, err = h.ProcessPause(ctx, cc)
+	_, err = h.ProcessTerminate(ctx, cc)
 	if err != nil {
 		return
 	}

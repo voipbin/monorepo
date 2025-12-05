@@ -277,7 +277,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 			if tt.responseActiveflow.ForwardStackID != stack.IDEmpty && tt.responseActiveflow.ForwardActionID != action.IDEmpty {
 				mockStack.EXPECT().GetAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.ForwardStackID, tt.responseActiveflow.ForwardActionID, true).Return(tt.responseStackID, tt.responseAction, nil)
 			} else {
-				mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, &tt.responseActiveflow.CurrentAction, true).Return(tt.responseStackID, tt.responseAction)
+				mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID, true).Return(tt.responseStackID, tt.responseAction)
 			}
 
 			mockVar.EXPECT().Get(ctx, tt.id).Return(&variable.Variable{}, nil)

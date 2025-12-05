@@ -178,7 +178,7 @@ func Test_updateNextAction(t *testing.T) {
 			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.activeflowID).Return(nil)
 
-			mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, &tt.responseActiveflow.CurrentAction, true).Return(tt.responseStackID, tt.responseAction)
+			mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID, true).Return(tt.responseStackID, tt.responseAction)
 
 			mockVar.EXPECT().Get(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
 			mockVar.EXPECT().SubstituteOption(ctx, tt.responseAction.Option, tt.responseVariable)

@@ -285,7 +285,7 @@ func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID u
 		}
 	} else {
 		log.Debugf("The forward action ID does not exist. current_stack_id: %s, current_action_id: %s", af.CurrentStackID, &af.CurrentAction.ID)
-		resStackID, resAct = h.stackmapHandler.GetNextAction(af.StackMap, af.CurrentStackID, &af.CurrentAction, true)
+		resStackID, resAct = h.stackmapHandler.GetNextAction(af.StackMap, af.CurrentStackID, af.CurrentAction.ID, true)
 	}
 	log.Debugf("Found next action. stack_id: %s, action_id: %s, action_type: %s", resStackID, resAct.ID, resAct.Type)
 

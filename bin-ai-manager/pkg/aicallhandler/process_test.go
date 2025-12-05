@@ -90,7 +90,7 @@ func Test_ProcessStart(t *testing.T) {
 	}
 }
 
-func Test_ProcessTerminated(t *testing.T) {
+func Test_ProcessTerminate(t *testing.T) {
 
 	tests := []struct {
 		name string

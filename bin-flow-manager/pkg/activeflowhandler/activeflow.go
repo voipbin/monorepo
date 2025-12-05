@@ -10,16 +10,24 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // ServiceStop stops the service in the activeflow.
 // the service should run in the current stack.
 func (h *activeflowHandler) ServiceStop(ctx context.Context, id uuid.UUID, serviceID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ServiceStop",
+		"activeflow_id": id,
+		"service_id":    serviceID,
+	})
+
 	af, err := h.Get(ctx, id)
 	if err != nil {
 		return errors.Wrapf(err, "could not get activeflow info. activeflow_id: %s", id)
 	}
 
+	log.Debugf("Stopping service. service_id: %s", serviceID)
 	if errPop := h.PopStackWithStackID(ctx, af, serviceID); errPop != nil {
 		return errors.Wrapf(errPop, "could not pop the stack. stack_id: %s", serviceID)
 	}
@@ -107,9 +115,11 @@ func (h *activeflowHandler) PopStackWithStackID(ctx context.Context, af *activef
 		return errors.Wrapf(err, "could not pop the stack. stack_id: %s", af.CurrentStackID)
 	}
 
+	forwardStackID, forwardAction := h.stackmapHandler.GetNextAction(af.StackMap, tmp.ReturnStackID, tmp.ReturnActionID, true)
+
 	// update forward actions
-	af.ForwardStackID = tmp.ReturnStackID
-	af.ForwardActionID = tmp.ReturnActionID
+	af.ForwardStackID = forwardStackID
+	af.ForwardActionID = forwardAction.ID
 
 	// update activeflow
 	if err := h.updateStackProgress(ctx, af); err != nil {
