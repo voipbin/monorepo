@@ -15,6 +15,7 @@ class ToolName(str, Enum):
     # NOTICE: The following tool names must match those defined in the ai-manager.
     CONNECT = "connect"               # Connects caller to endpoints
     EMAIL_SEND = "email_send"         # Sends emails
+    MEDIA_STOP = "media_stop"         # Stops current media playback
     MESSAGE_SEND = "message_send"     # Sends SMS messages
     SERVICE_STOP = "service_stop"     # Stops current AI talk and proceeds to next Action
     STOP = "stop"                     # Stops current activeflow execution
@@ -158,6 +159,20 @@ Each endpoint must include a type and target, and optionally a target_name for d
                     "subject",
                     "content"
                 ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": ToolName.MEDIA_STOP.value,
+            "description": """
+Stops the media currently playing on the active call. Use this to immediately halt any ongoing audio playback.
+""",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
             }
         }
     },

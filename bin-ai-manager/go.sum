@@ -176,6 +176,8 @@ cloud.google.com/go/dialogflow v1.19.0/go.mod h1:JVmlG1TwykZDtxtTXujec4tQ+D8SBFM
 cloud.google.com/go/dialogflow v1.29.0/go.mod h1:b+2bzMe+k1s9V+F2jbJwpHPzrnIyHihAdRFMtn2WXuM=
 cloud.google.com/go/dialogflow v1.71.0 h1:P2VLpdyxu1gxsocyVWGfLzxvZ8Esxh2KULHhNuZ3FXI=
 cloud.google.com/go/dialogflow v1.71.0/go.mod h1:mP4XrpgDvPYBP+cdLxFC1WJJlkwuy0H8L1Lada9No/M=
+cloud.google.com/go/dialogflow v1.72.0 h1:oRWB3devV/6ulrL5ch4aIXXAzH0IOQpG+zCFpLQfE+U=
+cloud.google.com/go/dialogflow v1.72.0/go.mod h1:vFkeDO7ishnfakWVLlbgIynQGTFJ/YaVMlYmSn5M+1o=
 cloud.google.com/go/dlp v1.6.0/go.mod h1:9eyB2xIhpU0sVwUixfBubDoRwP+GjeUoxxeueZmqvmM=
 cloud.google.com/go/dlp v1.7.0/go.mod h1:68ak9vCiMBjbasxeVD17hVPxDEck+ExiHavX8kiHG+Q=
 cloud.google.com/go/documentai v1.7.0/go.mod h1:lJvftZB5NRiFSX4moiye1SMxHx0Bc3x1+p9e/RfXYiU=
@@ -597,6 +599,8 @@ github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/joonix/log v0.0.0-20230221083239-7988383bab32 h1:GxIQqf2YqcBY7m0psVNLFCzT5LxtwMk9C2Jim9SJFXY=
 github.com/joonix/log v0.0.0-20230221083239-7988383bab32/go.mod h1:mrkUt/UvBG3A43gw7uJGd7brC6pGNRrk9pugsOVWVGQ=
+github.com/joonix/log v0.0.0-20251205082533-cd78070927ea h1:stEUyo7t2aIv0oxvkOq6WHkkGgitzibxyVUPi4UWDy4=
+github.com/joonix/log v0.0.0-20251205082533-cd78070927ea/go.mod h1:0HP/YfP5vUasO+XUk+0RdOH9jD1oFH4NTCTJ580xClA=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
@@ -658,6 +662,7 @@ github.com/sagikazarmark/locafero v0.12.0/go.mod h1:sZh36u/YSZ918v0Io+U9ogLYQJ9t
 github.com/sashabaranov/go-openai v1.41.2 h1:vfPRBZNMpnqu8ELsclWcAvF19lDNgh1t6TVfFFOPiSM=
 github.com/sashabaranov/go-openai v1.41.2/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/sirupsen/logrus v1.9.0/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
+github.com/sirupsen/logrus v1.9.1/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/smotes/purse v1.0.1 h1:BqEEZD5m7WrAIiEJirknHjbTdrF0S60f2s+qBP3oGd8=

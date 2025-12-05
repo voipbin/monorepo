@@ -55,12 +55,12 @@ replace monorepo/bin-tts-manager => ../bin-tts-manager
 replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
-	cloud.google.com/go/dialogflow v1.71.0
+	cloud.google.com/go/dialogflow v1.72.0
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
+	github.com/joonix/log v0.0.0-20251205082533-cd78070927ea
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2

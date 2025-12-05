@@ -105,6 +105,8 @@ func (h *aicallHandler) EventPMPipecatcallInitialized(ctx context.Context, evt *
 		return
 	}
 
+	log.Debugf("The aicall's pipecatcall has initiated. aicall_id: %s, pipecatcall_id: %s", cc.ID, evt.ID)
+
 	if cc.ReferenceType != aicall.ReferenceTypeCall {
 		return
 	}
