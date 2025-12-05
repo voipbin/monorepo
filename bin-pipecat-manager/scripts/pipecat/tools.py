@@ -165,7 +165,7 @@ Each endpoint must include a type and target, and optionally a target_name for d
     {
         "type": "function",
         "function": {
-            "name": ToolName.MeDIA_STOP.value,
+            "name": ToolName.MEDIA_STOP.value,
             "description": """
 Stops the media currently playing on the active call. Use this to immediately halt any ongoing audio playback.
 """,
