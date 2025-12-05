@@ -17,6 +17,9 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "ToolHandle",
 		"aicall_id": id,
+		"tool_id":   toolID,
+		"tool_type": toolType,
+		"function":  function,
 	})
 
 	c, err := h.Get(ctx, id)
@@ -38,26 +41,36 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 	log.WithField("message", tmp).Debugf("Created the tool message for the actions. message_id: %s", tmp.ID)
 
-	switch tool.Function.Name {
-	case message.FunctionCallNameConnect:
-		return h.toolHandleConnect(ctx, c, tool)
+	var tmpMessageContent *messageContent
 
-	case message.FunctionCallNameEmailSend:
-		return h.toolHandleEmailSend(ctx, c, tool)
+	mapFunctions := map[message.FunctionCallName]func(context.Context, *aicall.AIcall, *message.ToolCall) *messageContent{
+		message.FunctionCallNameConnect:     h.toolHandleConnect,
+		message.FunctionCallNameEmailSend:   h.toolHandleEmailSend,
+		message.FunctionCallNameMediaStop:   h.toolHandleMediaStop,
+		message.FunctionCallNameMessageSend: h.toolHandleMessageSend,
+		message.FunctionCallNameServiceStop: h.toolHandleServiceStop,
+		message.FunctionCallNameStop:        h.toolHandleStop,
+	}
 
-	case message.FunctionCallNameMessageSend:
-		return h.toolHandleMessageSend(ctx, c, tool)
-
-	case message.FunctionCallNameServiceStop:
-		return h.toolHandleServiceStop(ctx, c, tool)
-
-	case message.FunctionCallNameStop:
-		return h.toolHandleStop(ctx, c, tool)
-
-	default:
+	if fn, exists := mapFunctions[tool.Function.Name]; exists {
+		tmpMessageContent = fn(ctx, c, tool)
+	} else {
 		log.Debugf("unknown tool call: %s", tool.Function.Name)
 		return nil, fmt.Errorf("unknown tool call: %s", tool.Function.Name)
 	}
+
+	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create the tool message")
+	}
+	log.WithField("message", msg).Debugf("Created the tool response message. message_id: %s", msg.ID)
+
+	res, err := h.unmarshalToolResponse(msg)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
+	}
+
+	return res, nil
 }
 
 type messageContent struct {
@@ -111,16 +124,19 @@ func (h *aicallHandler) unmarshalToolResponse(tmp *message.Message) (map[string]
 	return res, nil
 }
 
-func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) (map[string]any, error) {
+func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleConnect",
 		"aicall_id": c.ID,
 	})
 	log.Debugf("handling tool connect.")
 
+	res := newToolResult(tool.ID)
+
 	var tmpOpt fmaction.OptionConnect
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
-		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
+		fillFailed(res, errUnmarshal)
+		return res
 	}
 
 	opt := fmaction.ConvertOption(tmpOpt)
@@ -131,20 +147,14 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		},
 	}
 
-	tmpMessageContent := newToolResult(tool.ID)
 	af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, c.ActiveflowID, actions)
 	if err != nil {
-		fillFailed(tmpMessageContent, err)
-	} else {
-		log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
-		fillSuccess(tmpMessageContent, "", "", "")
+		fillFailed(res, err)
+		return res
 	}
 
-	tmp, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the tool message")
-	}
-	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
+	log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
+	fillSuccess(res, "activeflow", af.ID.String(), "Added connect action successfully.")
 
 	go func() {
 		// this will connect the call right away
@@ -156,62 +166,51 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
 	}()
 
-	res, err := h.unmarshalToolResponse(tmp)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
-	}
-
-	return res, nil
+	return res
 }
 
-func (h *aicallHandler) toolHandleMessageSend(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) (map[string]any, error) {
+func (h *aicallHandler) toolHandleMessageSend(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleMessageSend",
 		"aicall_id": c.ID,
 	})
 	log.Debugf("handling tool message_send.")
 
+	res := newToolResult(tool.ID)
+
 	var tmpOpt fmaction.OptionMessageSend
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
-		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
+		fillFailed(res, errUnmarshal)
+		return res
 	}
 
-	tmpMessageContent := newToolResult(tool.ID)
 	msgID := h.utilHandler.UUIDCreate()
 	tmpRes, err := h.reqHandler.MessageV1MessageSend(ctx, msgID, c.CustomerID, tmpOpt.Source, tmpOpt.Destinations, tmpOpt.Text)
 	if err != nil {
-		fillFailed(tmpMessageContent, err)
-	} else {
-		fillSuccess(tmpMessageContent, "message", tmpRes.ID.String(), "Message sent successfully.")
+		fillFailed(res, err)
+		return res
 	}
 
-	tmp, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the tool message")
-	}
-	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
+	fillSuccess(res, "message", tmpRes.ID.String(), "Message sent successfully.")
 
-	res, err := h.unmarshalToolResponse(tmp)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
-	}
-
-	return res, nil
+	return res
 }
 
-func (h *aicallHandler) toolHandleEmailSend(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) (map[string]any, error) {
+func (h *aicallHandler) toolHandleEmailSend(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleEmailSend",
 		"aicall_id": c.ID,
 	})
 	log.Debugf("handling tool email_send.")
 
+	res := newToolResult(tool.ID)
+
 	var tmpOpt fmaction.OptionEmailSend
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
-		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the tool option correctly")
+		fillFailed(res, errUnmarshal)
+		return res
 	}
 
-	tmpMessageContent := newToolResult(tool.ID)
 	tmpRes, err := h.reqHandler.EmailV1EmailSend(
 		ctx,
 		c.CustomerID,
@@ -222,79 +221,74 @@ func (h *aicallHandler) toolHandleEmailSend(ctx context.Context, c *aicall.AIcal
 		tmpOpt.Attachments,
 	)
 	if err != nil {
-		fillFailed(tmpMessageContent, err)
-	} else {
-		fillSuccess(tmpMessageContent, "email", tmpRes.ID.String(), "Email sent successfully.")
+		fillFailed(res, err)
+		return res
 	}
 
-	tmp, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the tool message")
-	}
-	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
+	fillSuccess(res, "email", tmpRes.ID.String(), "Email sent successfully.")
 
-	res, err := h.unmarshalToolResponse(tmp)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
-	}
-
-	return res, nil
+	return res
 }
 
-func (h *aicallHandler) toolHandleServiceStop(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) (map[string]any, error) {
+func (h *aicallHandler) toolHandleServiceStop(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleServiceStop",
 		"aicall_id": c.ID,
 	})
 	log.Debugf("handling tool service_stop.")
 
-	tmpMessageContent := newToolResult(tool.ID)
+	res := newToolResult(tool.ID)
 	if errStop := h.serviceStop(ctx, c); errStop != nil {
-		fillFailed(tmpMessageContent, errStop)
-	} else {
-		fillSuccess(tmpMessageContent, "service", c.ID.String(), "Service stopped successfully.")
+		fillFailed(res, errStop)
+		return res
 	}
 
-	tmp, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the tool message")
-	}
-	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
+	fillSuccess(res, "service", c.ID.String(), "Service stopped successfully.")
 
-	res, err := h.unmarshalToolResponse(tmp)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
-	}
-
-	return res, nil
+	return res
 }
 
-func (h *aicallHandler) toolHandleStop(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) (map[string]any, error) {
+func (h *aicallHandler) toolHandleStop(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleStop",
 		"aicall_id": c.ID,
 	})
 	log.Debugf("handling tool stop.")
 
-	tmpMessageContent := newToolResult(tool.ID)
+	res := newToolResult(tool.ID)
 	tmpActiveflow, err := h.reqHandler.FlowV1ActiveflowStop(ctx, c.ActiveflowID)
 	if err != nil {
-		fillFailed(tmpMessageContent, err)
-	} else {
-		log.WithField("activeflow", tmpActiveflow).Debugf("Stopped the activeflow. activeflow_id: %s", c.ActiveflowID)
-		fillSuccess(tmpMessageContent, "activeflow", tmpActiveflow.ID.String(), "Activeflow stopped successfully.")
+		fillFailed(res, err)
+		return res
 	}
 
-	tmp, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the tool message")
-	}
-	log.WithField("message", tmp).Debugf("Created the tool response message. message_id: %s", tmp.ID)
+	log.WithField("activeflow", tmpActiveflow).Debugf("Stopped the activeflow. activeflow_id: %s", c.ActiveflowID)
+	fillSuccess(res, "activeflow", tmpActiveflow.ID.String(), "Activeflow stopped successfully.")
 
-	res, err := h.unmarshalToolResponse(tmp)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
+	return res
+}
+
+func (h *aicallHandler) toolHandleMediaStop(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleMediaStop",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool stop.")
+
+	res := newToolResult(tool.ID)
+	if c.ReferenceType != aicall.ReferenceTypeCall {
+		fillFailed(res, fmt.Errorf("invalid reference type for media stop"))
+		return res
 	}
 
-	return res, nil
+	log.Debugf("Stopping call media playing. call_id: %s", c.ReferenceID)
+	if errStop := h.reqHandler.CallV1CallMediaStop(ctx, c.ReferenceID); errStop != nil {
+		fillFailed(res, errStop)
+		return res
+	}
+
+	log.Debugf("Stopped the call media playing. call_id: %s", c.ReferenceID)
+	fillSuccess(res, "call", c.ReferenceID.String(), "Call media stopped successfully.")
+
+	return res
 }

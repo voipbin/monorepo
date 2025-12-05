@@ -31,11 +31,10 @@ func Test_toolHandleConnect(t *testing.T) {
 		aicall *aicall.AIcall
 		tool   *message.ToolCall
 
-		responseMessage *message.Message
+		responseActiveflow *fmactiveflow.Activeflow
 
 		expectActions []fmaction.Action
-		expectContent string
-		expectRes     map[string]any
+		expectRes     *messageContent
 	}{
 		{
 			name: "normal",
@@ -73,8 +72,10 @@ func Test_toolHandleConnect(t *testing.T) {
 				},
 			},
 
-			responseMessage: &message.Message{
-				Content: `{"message":"","resource_id":"","resource_type":"","result":"success","tool_call_id":"1a6f5f40-f06f-11ef-8f5e-3f3b1d2e8e2f"}`,
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0990a6f0-bba3-11f0-9abf-a3303095e6e6"),
+				},
 			},
 
 			expectActions: []fmaction.Action{
@@ -100,13 +101,12 @@ func Test_toolHandleConnect(t *testing.T) {
 					},
 				},
 			},
-			expectContent: `{"tool_call_id":"1a6f5f40-f06f-11ef-8f5e-3f3b1d2e8e2f","result":"success","message":"","resource_type":"","resource_id":""}`,
-			expectRes: map[string]any{
-				"result":        "success",
-				"message":       "",
-				"tool_call_id":  "1a6f5f40-f06f-11ef-8f5e-3f3b1d2e8e2f",
-				"resource_type": "",
-				"resource_id":   "",
+			expectRes: &messageContent{
+				Result:       "success",
+				Message:      "Added connect action successfully.",
+				ToolCallID:   "1a6f5f40-f06f-11ef-8f5e-3f3b1d2e8e2f",
+				ResourceType: "activeflow",
+				ResourceID:   "0990a6f0-bba3-11f0-9abf-a3303095e6e6",
 			},
 		},
 	}
@@ -135,14 +135,10 @@ func Test_toolHandleConnect(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, tt.expectActions).Return(&fmactiveflow.Activeflow{}, nil)
-			mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleTool, tt.expectContent, nil, tt.tool.ID).Return(tt.responseMessage, nil)
+			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, tt.expectActions).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().AIV1AIcallTerminate(gomock.Any(), tt.aicall.ID).Return(&aicall.AIcall{}, nil)
 
-			res, err := h.toolHandleConnect(ctx, tt.aicall, tt.tool)
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
+			res := h.toolHandleConnect(ctx, tt.aicall, tt.tool)
 
 			time.Sleep(100 * time.Millisecond)
 			if !reflect.DeepEqual(res, tt.expectRes) {
@@ -161,13 +157,11 @@ func Test_toolHandleMessageSend(t *testing.T) {
 
 		responseUUIDMessageID uuid.UUID
 		responseMMMessage     *mmmessage.Message
-		responseMessage       *message.Message
 
 		expectSource       *commonaddress.Address
 		expectDestinations []commonaddress.Address
 		expectText         string
-		expectContent      string
-		expectRes          map[string]any
+		expectRes          *messageContent
 	}{
 		{
 			name: "normal",
@@ -210,9 +204,6 @@ func Test_toolHandleMessageSend(t *testing.T) {
 					ID: uuid.FromStringOrNil("4c8ad7cc-bbb3-11f0-a7ed-4f8dd1e691ca"),
 				},
 			},
-			responseMessage: &message.Message{
-				Content: `{"message":"Message sent successfully.","resource_id":"4c8ad7cc-bbb3-11f0-a7ed-4f8dd1e691ca","resource_type":"message","result":"success","tool_call_id":"4c620144-bbb3-11f0-823e-77b11be82ade"}`,
-			},
 
 			expectSource: &commonaddress.Address{
 				Type:   "tel",
@@ -228,14 +219,13 @@ func Test_toolHandleMessageSend(t *testing.T) {
 					Target: "+22222222",
 				},
 			},
-			expectText:    "test message",
-			expectContent: `{"tool_call_id":"4c620144-bbb3-11f0-823e-77b11be82ade","result":"success","message":"Message sent successfully.","resource_type":"message","resource_id":"4c8ad7cc-bbb3-11f0-a7ed-4f8dd1e691ca"}`,
-			expectRes: map[string]any{
-				"result":        "success",
-				"message":       "Message sent successfully.",
-				"tool_call_id":  "4c620144-bbb3-11f0-823e-77b11be82ade",
-				"resource_type": "message",
-				"resource_id":   "4c8ad7cc-bbb3-11f0-a7ed-4f8dd1e691ca",
+			expectText: "test message",
+			expectRes: &messageContent{
+				ToolCallID:   "4c620144-bbb3-11f0-823e-77b11be82ade",
+				Result:       "success",
+				Message:      "Message sent successfully.",
+				ResourceType: "message",
+				ResourceID:   "4c8ad7cc-bbb3-11f0-a7ed-4f8dd1e691ca",
 			},
 		},
 	}
@@ -265,14 +255,9 @@ func Test_toolHandleMessageSend(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDMessageID)
-
 			mockReq.EXPECT().MessageV1MessageSend(ctx, tt.responseUUIDMessageID, tt.aicall.CustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(tt.responseMMMessage, nil)
-			mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleTool, tt.expectContent, nil, tt.tool.ID).Return(tt.responseMessage, nil)
 
-			res, err := h.toolHandleMessageSend(ctx, tt.aicall, tt.tool)
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
+			res := h.toolHandleMessageSend(ctx, tt.aicall, tt.tool)
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
@@ -291,12 +276,11 @@ func Test_toolHandleEmailSend(t *testing.T) {
 		responseEmail   *ememail.Email
 		responseMessage *message.Message
 
-		expectDestinations   []commonaddress.Address
-		expectSubject        string
-		expectContent        string
-		expectAttachments    []ememail.Attachment
-		expectMessageContent string
-		expectRes            map[string]any
+		expectDestinations []commonaddress.Address
+		expectSubject      string
+		expectContent      string
+		expectAttachments  []ememail.Attachment
+		expectRes          *messageContent
 	}{
 		{
 			name: "normal",
@@ -336,9 +320,6 @@ func Test_toolHandleEmailSend(t *testing.T) {
 					ID: uuid.FromStringOrNil("45e4d190-c23c-11f0-b814-43aec86b987f"),
 				},
 			},
-			responseMessage: &message.Message{
-				Content: `{"message":"Email sent successfully.","resource_id":"45e4d190-c23c-11f0-b814-43aec86b987f","resource_type":"email","result":"success","tool_call_id":"6ed073c6-c23b-11f0-9ada-035c2e737106"}`,
-			},
 
 			expectDestinations: []commonaddress.Address{
 				{
@@ -350,16 +331,15 @@ func Test_toolHandleEmailSend(t *testing.T) {
 					Target: "test2@voipbin.net",
 				},
 			},
-			expectSubject:        "test subject",
-			expectContent:        `test content`,
-			expectAttachments:    []ememail.Attachment{},
-			expectMessageContent: `{"tool_call_id":"6ed073c6-c23b-11f0-9ada-035c2e737106","result":"success","message":"Email sent successfully.","resource_type":"email","resource_id":"45e4d190-c23c-11f0-b814-43aec86b987f"}`,
-			expectRes: map[string]any{
-				"result":        "success",
-				"message":       "Email sent successfully.",
-				"resource_type": "email",
-				"resource_id":   "45e4d190-c23c-11f0-b814-43aec86b987f",
-				"tool_call_id":  "6ed073c6-c23b-11f0-9ada-035c2e737106",
+			expectSubject:     "test subject",
+			expectContent:     `test content`,
+			expectAttachments: []ememail.Attachment{},
+			expectRes: &messageContent{
+				ToolCallID:   "6ed073c6-c23b-11f0-9ada-035c2e737106",
+				Result:       "success",
+				Message:      "Email sent successfully.",
+				ResourceType: "email",
+				ResourceID:   "45e4d190-c23c-11f0-b814-43aec86b987f",
 			},
 		},
 	}
@@ -398,21 +378,7 @@ func Test_toolHandleEmailSend(t *testing.T) {
 				tt.expectAttachments,
 			).Return(tt.responseEmail, nil)
 
-			mockMessage.EXPECT().Create(
-				ctx,
-				tt.aicall.CustomerID,
-				tt.aicall.ID,
-				message.DirectionOutgoing,
-				message.RoleTool,
-				tt.expectMessageContent,
-				nil,
-				tt.tool.ID,
-			).Return(tt.responseMessage, nil)
-
-			res, err := h.toolHandleEmailSend(ctx, tt.aicall, tt.tool)
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
+			res := h.toolHandleEmailSend(ctx, tt.aicall, tt.tool)
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
@@ -428,8 +394,7 @@ func Test_toolHandleServiceStop(t *testing.T) {
 		aicall *aicall.AIcall
 		tool   *message.ToolCall
 
-		expectMessageContent string
-		expectRes            map[string]any
+		expectRes *messageContent
 	}{
 		{
 			name: "normal",
@@ -452,13 +417,12 @@ func Test_toolHandleServiceStop(t *testing.T) {
 				},
 			},
 
-			expectMessageContent: `{"tool_call_id":"9e70cf90-d07d-11f0-83f0-fb4840f79cfa","result":"success","message":"Service stopped successfully.","resource_type":"service","resource_id":"9e110dbc-d07d-11f0-9496-ab3dacff7ae1"}`,
-			expectRes: map[string]any{
-				"result":        "success",
-				"message":       "Service stopped successfully.",
-				"tool_call_id":  "9e70cf90-d07d-11f0-83f0-fb4840f79cfa",
-				"resource_type": "service",
-				"resource_id":   "9e110dbc-d07d-11f0-9496-ab3dacff7ae1",
+			expectRes: &messageContent{
+				ToolCallID:   "9e70cf90-d07d-11f0-83f0-fb4840f79cfa",
+				Result:       "success",
+				Message:      "Service stopped successfully.",
+				ResourceType: "service",
+				ResourceID:   "9e110dbc-d07d-11f0-9496-ab3dacff7ae1",
 			},
 		},
 	}
@@ -495,21 +459,7 @@ func Test_toolHandleServiceStop(t *testing.T) {
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.aicall.ActiveflowID, tt.aicall.ID).Return(nil)
 			mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.aicall.ConfbridgeID, tt.aicall.ReferenceID).Return(nil)
 
-			mockMessage.EXPECT().Create(
-				ctx,
-				tt.aicall.CustomerID,
-				tt.aicall.ID,
-				message.DirectionOutgoing,
-				message.RoleTool,
-				tt.expectMessageContent,
-				nil,
-				tt.tool.ID,
-			).Return(&message.Message{Content: tt.expectMessageContent}, nil)
-
-			res, err := h.toolHandleServiceStop(ctx, tt.aicall, tt.tool)
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
+			res := h.toolHandleServiceStop(ctx, tt.aicall, tt.tool)
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
@@ -527,8 +477,7 @@ func Test_toolHandleStop(t *testing.T) {
 
 		responseActiveflow *fmactiveflow.Activeflow
 
-		expectMessageContent string
-		expectRes            map[string]any
+		expectRes *messageContent
 	}{
 		{
 			name: "normal",
@@ -555,13 +504,12 @@ func Test_toolHandleStop(t *testing.T) {
 				},
 			},
 
-			expectMessageContent: `{"tool_call_id":"c482d2c6-d07f-11f0-9feb-c38f67824563","result":"success","message":"Activeflow stopped successfully.","resource_type":"activeflow","resource_id":"c454ff5e-d07f-11f0-91a8-1350b22b1220"}`,
-			expectRes: map[string]any{
-				"result":        "success",
-				"message":       "Activeflow stopped successfully.",
-				"tool_call_id":  "c482d2c6-d07f-11f0-9feb-c38f67824563",
-				"resource_type": "activeflow",
-				"resource_id":   "c454ff5e-d07f-11f0-91a8-1350b22b1220",
+			expectRes: &messageContent{
+				Result:       "success",
+				Message:      "Activeflow stopped successfully.",
+				ToolCallID:   "c482d2c6-d07f-11f0-9feb-c38f67824563",
+				ResourceType: "activeflow",
+				ResourceID:   "c454ff5e-d07f-11f0-91a8-1350b22b1220",
 			},
 		},
 	}
@@ -591,21 +539,82 @@ func Test_toolHandleStop(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.aicall.ActiveflowID).Return(tt.responseActiveflow, nil)
-			mockMessage.EXPECT().Create(
-				ctx,
-				tt.aicall.CustomerID,
-				tt.aicall.ID,
-				message.DirectionOutgoing,
-				message.RoleTool,
-				tt.expectMessageContent,
-				nil,
-				tt.tool.ID,
-			).Return(&message.Message{Content: tt.expectMessageContent}, nil)
 
-			res, err := h.toolHandleStop(ctx, tt.aicall, tt.tool)
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+			res := h.toolHandleStop(ctx, tt.aicall, tt.tool)
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
 			}
+		})
+	}
+}
+
+func Test_toolHandleMediaStop(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aicall *aicall.AIcall
+		tool   *message.ToolCall
+
+		expectRes *messageContent
+	}{
+		{
+			name: "normal",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6d3c498c-d1f3-11f0-bf4d-17a05c30f202"),
+					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
+				},
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("6d9b17fa-d1f3-11f0-bfb9-db362a8ff4da"),
+			},
+			tool: &message.ToolCall{
+				ID:   "6dc4c2f8-d1f3-11f0-8aed-5b0028fe1d06",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name:      message.FunctionCallNameMediaStop,
+					Arguments: `{}`,
+				},
+			},
+
+			expectRes: &messageContent{
+				Result:       "success",
+				Message:      "Call media stopped successfully.",
+				ToolCallID:   "6dc4c2f8-d1f3-11f0-8aed-5b0028fe1d06",
+				ResourceType: "call",
+				ResourceID:   "6d9b17fa-d1f3-11f0-bfb9-db362a8ff4da",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.aicall.ReferenceID).Return(nil)
+
+			res := h.toolHandleMediaStop(ctx, tt.aicall, tt.tool)
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)

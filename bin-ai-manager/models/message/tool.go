@@ -28,8 +28,9 @@ const (
 	FunctionCallNameNone FunctionCallName = ""
 
 	FunctionCallNameConnect     FunctionCallName = "connect"
-	FunctionCallNameMessageSend FunctionCallName = "message_send"
 	FunctionCallNameEmailSend   FunctionCallName = "email_send"
+	FunctionCallNameMediaStop   FunctionCallName = "media_stop"
+	FunctionCallNameMessageSend FunctionCallName = "message_send"
 	FunctionCallNameServiceStop FunctionCallName = "service_stop"
 	FunctionCallNameStop        FunctionCallName = "stop"
 )
