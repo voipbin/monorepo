@@ -273,7 +273,7 @@ func (h *aicallHandler) toolHandleMediaStop(ctx context.Context, c *aicall.AIcal
 		"func":      "toolHandleMediaStop",
 		"aicall_id": c.ID,
 	})
-	log.Debugf("handling tool stop.")
+	log.Debugf("handling tool media_stop.")
 
 	res := newToolResult(tool.ID)
 	if c.ReferenceType != aicall.ReferenceTypeCall {
