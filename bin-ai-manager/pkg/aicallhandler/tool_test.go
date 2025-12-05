@@ -544,7 +544,7 @@ func Test_toolHandleStop(t *testing.T) {
 				ID:   "c482d2c6-d07f-11f0-9feb-c38f67824563",
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
-					Name:      message.FunctionCallNameServiceStop,
+					Name:      message.FunctionCallNameStop,
 					Arguments: `{}`,
 				},
 			},
