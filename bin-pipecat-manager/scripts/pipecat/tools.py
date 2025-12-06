@@ -275,15 +275,21 @@ Use this to completely terminate the current process without executing subsequen
         "function": {
             "name": ToolName.SET_VARIABLES.value,
             "description": """
-Sets variables as key-value pairs for the current flow execution.
+Sets variables as key-value pairs for the current flow execution. Use this tool when instructed to save or set a variable.",
 """,
             "parameters": {
                 "type": "object",
-                "description": "A map of string keys to string values. Example: {\"key1\": \"value1\"}",
-                "properties": {},
-                "additionalProperties": {
-                    "type": "string"
-                }
+                "properties": {
+                    "variables": {
+                        "type": "object",
+                        "description": "A map of string keys to string values. Example: {\"key1\": \"value1\"}",
+                        "properties": {},
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": []
             }
         }
     },
