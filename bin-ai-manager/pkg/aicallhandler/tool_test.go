@@ -662,7 +662,7 @@ func Test_toolHandleSetVariables(t *testing.T) {
 			},
 			expectRes: &messageContent{
 				Result:       "success",
-				Message:      "Variable set successfully.",
+				Message:      "Variables set successfully.",
 				ToolCallID:   "e005d49e-d2b9-11f0-bb53-2f0f52e36b88",
 				ResourceType: "activeflow",
 				ResourceID:   "dfd7b384-d2b9-11f0-a6cf-576bb7892c7c",
