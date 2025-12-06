@@ -279,13 +279,10 @@ Sets variables as key-value pairs for the current flow execution. Use this tool 
 """,
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "type": "object",
-                    "description": "A map of string keys to string values. Example: {\"key1\": \"value1\"}",
-                    "properties": {},
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                "description": "A map of string keys to string values. Example: {\"key1\": \"value1\"}",
+                "properties": {},
+                "additionalProperties": {
+                    "type": "string"
                 },
                 "required": []
             }
