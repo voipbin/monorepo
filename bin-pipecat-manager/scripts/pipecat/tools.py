@@ -275,7 +275,7 @@ Use this to completely terminate the current process without executing subsequen
         "function": {
             "name": ToolName.SET_VARIABLES.value,
             "description": """
-Sets variables as key-value pairs for the current flow execution. Use this tool when instructed to save or set a variable.",
+Sets variables as key-value pairs for the current flow execution. Use this tool when instructed to save or set a variable.
 """,
             "parameters": {
                 "type": "object",

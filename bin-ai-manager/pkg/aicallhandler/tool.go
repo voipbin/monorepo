@@ -316,8 +316,8 @@ func (h *aicallHandler) toolHandleSetVariables(ctx context.Context, c *aicall.AI
 		return res
 	}
 
-	log.Debugf("Set activeflow variable successfully. activeflow_id: %s", c.ActiveflowID)
-	fillSuccess(res, "activeflow", c.ActiveflowID.String(), "Variable set successfully.")
+	log.Debugf("Set activeflow variables successfully. activeflow_id: %s", c.ActiveflowID)
+	fillSuccess(res, "activeflow", c.ActiveflowID.String(), "Variables set successfully.")
 
 	return res
 }
@@ -330,12 +330,6 @@ func (h *aicallHandler) toolHandleGetVariables(ctx context.Context, c *aicall.AI
 	log.Debugf("handling tool get_variables.")
 
 	res := newToolResult(tool.ID)
-
-	mapVariables := map[string]string{}
-	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &mapVariables); errUnmarshal != nil {
-		fillFailed(res, errUnmarshal)
-		return res
-	}
 
 	tmp, err := h.reqHandler.FlowV1VariableGet(ctx, c.ActiveflowID)
 	if err != nil {
