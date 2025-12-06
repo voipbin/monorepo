@@ -15,10 +15,12 @@ class ToolName(str, Enum):
     # NOTICE: The following tool names must match those defined in the ai-manager.
     CONNECT = "connect"               # Connects caller to endpoints
     EMAIL_SEND = "email_send"         # Sends emails
+    GET_VARIABLES = "get_variables"   # Gets flow variables
     MEDIA_STOP = "media_stop"         # Stops current media playback
     MESSAGE_SEND = "message_send"     # Sends SMS messages
     SERVICE_STOP = "service_stop"     # Stops current AI talk and proceeds to next Action
-    STOP = "stop"                     # Stops current activeflow execution
+    SET_VARIABLES = "set_variables"   # Sets flow variables
+    STOP = "stop"                     # Stops current flow execution
 
 TOOLNAMES = [tool.value for tool in ToolName]
 
@@ -260,6 +262,36 @@ Use this when you want to terminate the current talk without any additional inpu
             "description": """
 Immediately stops the currently ongoing flow execution.
 Use this to completely terminate the current process without executing subsequent actions.
+""",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": ToolName.SET_VARIABLES.value,
+            "description": """
+Sets variables as key-value pairs for the current flow execution.
+""",
+            "parameters": {
+                "type": "object",
+                "description": "A map of string keys to string values. Example: {\"key1\": \"value1\"}",
+                "additionalProperties": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": ToolName.GET_VARIABLES.value,
+            "description": """
+Retrieves all currently set key-value variables for the current flow execution.
 """,
             "parameters": {
                 "type": "object",
