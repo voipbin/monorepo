@@ -27,10 +27,12 @@ type FunctionCallName string
 const (
 	FunctionCallNameNone FunctionCallName = ""
 
-	FunctionCallNameConnect     FunctionCallName = "connect"
-	FunctionCallNameEmailSend   FunctionCallName = "email_send"
-	FunctionCallNameMediaStop   FunctionCallName = "media_stop"
-	FunctionCallNameMessageSend FunctionCallName = "message_send"
-	FunctionCallNameServiceStop FunctionCallName = "service_stop"
-	FunctionCallNameStop        FunctionCallName = "stop"
+	FunctionCallNameConnect      FunctionCallName = "connect"
+	FunctionCallNameEmailSend    FunctionCallName = "email_send"
+	FunctionCallNameGetVariables FunctionCallName = "get_variables"
+	FunctionCallNameMediaStop    FunctionCallName = "media_stop"
+	FunctionCallNameMessageSend  FunctionCallName = "message_send"
+	FunctionCallNameServiceStop  FunctionCallName = "service_stop"
+	FunctionCallNameSetVariables FunctionCallName = "set_variables"
+	FunctionCallNameStop         FunctionCallName = "stop"
 )

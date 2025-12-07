@@ -15,6 +15,7 @@ import (
 	ememail "monorepo/bin-email-manager/models/email"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+	fmvariable "monorepo/bin-flow-manager/models/variable"
 	mmmessage "monorepo/bin-message-manager/models/message"
 	reflect "reflect"
 	"testing"
@@ -615,6 +616,169 @@ func Test_toolHandleMediaStop(t *testing.T) {
 			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.aicall.ReferenceID).Return(nil)
 
 			res := h.toolHandleMediaStop(ctx, tt.aicall, tt.tool)
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_toolHandleSetVariables(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aicall *aicall.AIcall
+		tool   *message.ToolCall
+
+		expectedVariables map[string]string
+		expectRes         *messageContent
+	}{
+		{
+			name: "normal",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("df982c0a-d2b9-11f0-ae66-3b3a174682e4"),
+					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("dfd7b384-d2b9-11f0-a6cf-576bb7892c7c"),
+			},
+			tool: &message.ToolCall{
+				ID:   "e005d49e-d2b9-11f0-bb53-2f0f52e36b88",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name: message.FunctionCallNameSetVariables,
+					Arguments: `{
+						"key1": "value1",
+						"key2": "value2"
+					}`,
+				},
+			},
+
+			expectedVariables: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
+			expectRes: &messageContent{
+				Result:       "success",
+				Message:      "Variables set successfully.",
+				ToolCallID:   "e005d49e-d2b9-11f0-bb53-2f0f52e36b88",
+				ResourceType: "activeflow",
+				ResourceID:   "dfd7b384-d2b9-11f0-a6cf-576bb7892c7c",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.aicall.ActiveflowID, tt.expectedVariables).Return(nil)
+
+			res := h.toolHandleSetVariables(ctx, tt.aicall, tt.tool)
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_toolHandleGetVariables(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aicall *aicall.AIcall
+		tool   *message.ToolCall
+
+		responseVariable *fmvariable.Variable
+
+		expectRes *messageContent
+	}{
+		{
+			name: "normal",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d21ceb22-d2c0-11f0-a553-8f1245a47cf1"),
+					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("d281281c-d2c0-11f0-b5b7-6744b7d2eeac"),
+			},
+			tool: &message.ToolCall{
+				ID:   "d2581cba-d2c0-11f0-97f8-efbee72f536d",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name:      message.FunctionCallNameGetVariables,
+					Arguments: `{}`,
+				},
+			},
+
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{
+					"key1": "value1",
+					"key2": "value2",
+				},
+			},
+
+			expectRes: &messageContent{
+				Result:       "success",
+				Message:      `{"key1":"value1","key2":"value2"}`,
+				ToolCallID:   "d2581cba-d2c0-11f0-97f8-efbee72f536d",
+				ResourceType: "activeflow",
+				ResourceID:   "d281281c-d2c0-11f0-b5b7-6744b7d2eeac",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.aicall.ActiveflowID).Return(tt.responseVariable, nil)
+
+			res := h.toolHandleGetVariables(ctx, tt.aicall, tt.tool)
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)

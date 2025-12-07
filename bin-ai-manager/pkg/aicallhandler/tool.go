@@ -44,12 +44,14 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	var tmpMessageContent *messageContent
 
 	mapFunctions := map[message.FunctionCallName]func(context.Context, *aicall.AIcall, *message.ToolCall) *messageContent{
-		message.FunctionCallNameConnect:     h.toolHandleConnect,
-		message.FunctionCallNameEmailSend:   h.toolHandleEmailSend,
-		message.FunctionCallNameMediaStop:   h.toolHandleMediaStop,
-		message.FunctionCallNameMessageSend: h.toolHandleMessageSend,
-		message.FunctionCallNameServiceStop: h.toolHandleServiceStop,
-		message.FunctionCallNameStop:        h.toolHandleStop,
+		message.FunctionCallNameConnect:      h.toolHandleConnect,
+		message.FunctionCallNameEmailSend:    h.toolHandleEmailSend,
+		message.FunctionCallNameGetVariables: h.toolHandleGetVariables,
+		message.FunctionCallNameMediaStop:    h.toolHandleMediaStop,
+		message.FunctionCallNameMessageSend:  h.toolHandleMessageSend,
+		message.FunctionCallNameServiceStop:  h.toolHandleServiceStop,
+		message.FunctionCallNameSetVariables: h.toolHandleSetVariables,
+		message.FunctionCallNameStop:         h.toolHandleStop,
 	}
 
 	if fn, exists := mapFunctions[tool.Function.Name]; exists {
@@ -289,6 +291,60 @@ func (h *aicallHandler) toolHandleMediaStop(ctx context.Context, c *aicall.AIcal
 
 	log.Debugf("Stopped the call media playing. call_id: %s", c.ReferenceID)
 	fillSuccess(res, "call", c.ReferenceID.String(), "Call media stopped successfully.")
+
+	return res
+}
+
+func (h *aicallHandler) toolHandleSetVariables(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleSetVariables",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool set_variables.")
+
+	res := newToolResult(tool.ID)
+
+	mapVariables := map[string]string{}
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &mapVariables); errUnmarshal != nil {
+		fillFailed(res, errUnmarshal)
+		return res
+	}
+
+	log.Debugf("Setting the activeflow variables. activeflow_id: %s", c.ActiveflowID)
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, mapVariables); errSet != nil {
+		fillFailed(res, errSet)
+		return res
+	}
+
+	log.Debugf("Set activeflow variables successfully. activeflow_id: %s", c.ActiveflowID)
+	fillSuccess(res, "activeflow", c.ActiveflowID.String(), "Variables set successfully.")
+
+	return res
+}
+
+func (h *aicallHandler) toolHandleGetVariables(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleGetVariables",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool get_variables.")
+
+	res := newToolResult(tool.ID)
+
+	tmp, err := h.reqHandler.FlowV1VariableGet(ctx, c.ActiveflowID)
+	if err != nil {
+		fillFailed(res, err)
+		return res
+	}
+
+	tmpMessage, err := json.Marshal(tmp.Variables)
+	if err != nil {
+		fillFailed(res, err)
+		return res
+	}
+
+	log.Debugf("Got activeflow variables successfully. activeflow_id: %s", c.ActiveflowID)
+	fillSuccess(res, "activeflow", c.ActiveflowID.String(), string(tmpMessage))
 
 	return res
 }
