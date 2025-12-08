@@ -876,7 +876,6 @@ func Test_toolHandleGetAIcallMessages(t *testing.T) {
 
 			mockDB.EXPECT().AIcallGet(ctx, tt.expectAIcallID).Return(tt.responseAIcall, nil)
 			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
-			// mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseAIcall.ActiveflowID).Return(tt.responseVariable, nil)
 
 			res := h.toolHandleGetAIcallMessages(ctx, tt.aicall, tt.tool)
 
