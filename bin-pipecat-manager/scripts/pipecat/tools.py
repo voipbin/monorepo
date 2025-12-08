@@ -302,7 +302,7 @@ Retrieves all currently set key-value variables for the current flow execution.
                 "required": []
             }
         }
-    }
+    },
     {
         "type": "function",
         "function": {

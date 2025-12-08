@@ -813,7 +813,7 @@ func Test_toolHandleGetAIcallMessages(t *testing.T) {
 				ID:   "cfb2f874-d3ea-11f0-957d-939b29f6bdf8",
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
-					Name: message.FunctionCallNameGetVariables,
+					Name: message.FunctionCallNameGetAIcallMessages,
 					Arguments: `{
 					"aicall_id": "cfe9753e-d3ea-11f0-a686-3b5c56d58abf"
 					}`,
