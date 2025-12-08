@@ -13,14 +13,15 @@ class ToolName(str, Enum):
     FINALIZE = "tool_finalize"        # General finalization tool
     
     # NOTICE: The following tool names must match those defined in the ai-manager.
-    CONNECT = "connect"               # Connects caller to endpoints
-    EMAIL_SEND = "email_send"         # Sends emails
-    GET_VARIABLES = "get_variables"   # Gets flow variables
-    MEDIA_STOP = "media_stop"         # Stops current media playback
-    MESSAGE_SEND = "message_send"     # Sends SMS messages
-    SERVICE_STOP = "service_stop"     # Stops current AI talk and proceeds to next Action
-    SET_VARIABLES = "set_variables"   # Sets flow variables
-    STOP = "stop"                     # Stops current flow execution
+    CONNECT_CALL = "connect_call"                   # Connects caller to endpoints
+    GET_VARIABLES = "get_variables"                 # Gets flow variables
+    GET_AICALL_MESSAGES = "get_aicall_messages"     # Gets AI call messages
+    SEND_EMAIL = "send_email"                       # Sends emails
+    SEND_MESSAGE = "send_message"                   # Sends SMS messages
+    SET_VARIABLES = "set_variables"                 # Sets flow variables
+    STOP_FLOW = "stop_flow"                         # Stops current flow execution
+    STOP_MEDIA = "stop_media"                       # Stops current media playback
+    STOP_SERVICE = "stop_service"                   # Stops current AI talk and proceeds to next Action
 
 TOOLNAMES = [tool.value for tool in ToolName]
 
@@ -44,7 +45,7 @@ This tool should be called only once when a final response from the LLM is neede
     {
         "type": "function",
         "function": {
-            "name": ToolName.CONNECT.value,
+            "name": ToolName.CONNECT_CALL.value,
             "description": """
 Establishes a call from a source endpoint to one or more destination endpoints. 
 Use this when you need to connect a caller to specific endpoints like agents, conferences, or lines. 
@@ -101,7 +102,7 @@ Each endpoint must include a type and target, and optionally a target_name for d
     {
         "type": "function",
         "function": {
-            "name": ToolName.EMAIL_SEND.value,
+            "name": ToolName.SEND_EMAIL.value,
             "description": "Sends an email with subject, content, and optional attachments to one or more destination email addresses.",
             "parameters": {
                 "type": "object",
@@ -167,7 +168,7 @@ Each endpoint must include a type and target, and optionally a target_name for d
     {
         "type": "function",
         "function": {
-            "name": ToolName.MEDIA_STOP.value,
+            "name": ToolName.STOP_MEDIA.value,
             "description": """
 Stops the media currently playing on the active call. Use this to immediately halt any ongoing audio playback.
 """,
@@ -181,7 +182,7 @@ Stops the media currently playing on the active call. Use this to immediately ha
     {
         "type": "function",
         "function": {
-            "name": ToolName.MESSAGE_SEND.value,
+            "name": ToolName.SEND_MESSAGE.value,
             "description": """
 Sends an SMS text message from a source telephone number to one or more destination telephone numbers.
 Use this when you need to deliver SMS messages between phone numbers.
@@ -243,7 +244,7 @@ The source and destination types must be "tel".
     {
         "type": "function",
         "function": {
-            "name": ToolName.SERVICE_STOP.value,
+            "name": ToolName.STOP_SERVICE.value,
             "description": """
 Stops the currently ongoing talk conversation and immediately proceeds to the next Action.
 Use this when you want to terminate the current talk without any additional input.
@@ -258,7 +259,7 @@ Use this when you want to terminate the current talk without any additional inpu
     {
         "type": "function",
         "function": {
-            "name": ToolName.STOP.value,
+            "name": ToolName.STOP_FLOW.value,
             "description": """
 Immediately stops the currently ongoing flow execution.
 Use this to completely terminate the current process without executing subsequent actions.
@@ -301,7 +302,27 @@ Retrieves all currently set key-value variables for the current flow execution.
                 "required": []
             }
         }
-    }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": ToolName.GET_AICALL_MESSAGES.value,
+            "description": """
+Retrieves all messages associated with the specified AI call.
+Use this to fetch the complete message history for a given aicall_id.
+""",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "aicall_id": {
+                        "type": "string",
+                        "description": "The ID of the AI call whose messages should be retrieved."
+                    }
+                },
+                "required": ["aicall_id"]
+            }
+        }
+    },
 ]
 
 def tool_register(llm_service, pipecatcall_id):

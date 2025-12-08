@@ -128,8 +128,8 @@ require (
 	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
 	golang.org/x/net v0.47.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
 	google.golang.org/genproto v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect

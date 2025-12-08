@@ -51,7 +51,7 @@ func Test_toolHandleConnect(t *testing.T) {
 				ID:   "1a6f5f40-f06f-11ef-8f5e-3f3b1d2e8e2f",
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
-					Name: message.FunctionCallNameConnect,
+					Name: message.FunctionCallNameConnectCall,
 					Arguments: `{
 						"source": {
 							"type":   "tel",
@@ -178,7 +178,7 @@ func Test_toolHandleMessageSend(t *testing.T) {
 				ID:   "4c620144-bbb3-11f0-823e-77b11be82ade",
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
-					Name: message.FunctionCallNameMessageSend,
+					Name: message.FunctionCallNameSendMessage,
 					Arguments: `{
 						"source": {
 							"type":   "tel",
@@ -297,7 +297,7 @@ func Test_toolHandleEmailSend(t *testing.T) {
 				ID:   "6ed073c6-c23b-11f0-9ada-035c2e737106",
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
-					Name: message.FunctionCallNameEmailSend,
+					Name: message.FunctionCallNameSendEmail,
 					Arguments: `{
 						"destinations": [
 							{
@@ -413,7 +413,7 @@ func Test_toolHandleServiceStop(t *testing.T) {
 				ID:   "9e70cf90-d07d-11f0-83f0-fb4840f79cfa",
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
-					Name:      message.FunctionCallNameServiceStop,
+					Name:      message.FunctionCallNameStopService,
 					Arguments: `{}`,
 				},
 			},
@@ -494,7 +494,7 @@ func Test_toolHandleStop(t *testing.T) {
 				ID:   "c482d2c6-d07f-11f0-9feb-c38f67824563",
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
-					Name:      message.FunctionCallNameStop,
+					Name:      message.FunctionCallNameStopFlow,
 					Arguments: `{}`,
 				},
 			},
@@ -574,7 +574,7 @@ func Test_toolHandleMediaStop(t *testing.T) {
 				ID:   "6dc4c2f8-d1f3-11f0-8aed-5b0028fe1d06",
 				Type: message.ToolTypeFunction,
 				Function: message.FunctionCall{
-					Name:      message.FunctionCallNameMediaStop,
+					Name:      message.FunctionCallNameStopMedia,
 					Arguments: `{}`,
 				},
 			},
@@ -779,6 +779,105 @@ func Test_toolHandleGetVariables(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.aicall.ActiveflowID).Return(tt.responseVariable, nil)
 
 			res := h.toolHandleGetVariables(ctx, tt.aicall, tt.tool)
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_toolHandleGetAIcallMessages(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aicall *aicall.AIcall
+		tool   *message.ToolCall
+
+		responseAIcall   *aicall.AIcall
+		responseMessages []*message.Message
+
+		expectAIcallID uuid.UUID
+		expectRes      *messageContent
+	}{
+		{
+			name: "normal",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cf5c98b2-d3ea-11f0-9500-f3a3c5333dd6"),
+					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
+				},
+			},
+			tool: &message.ToolCall{
+				ID:   "cfb2f874-d3ea-11f0-957d-939b29f6bdf8",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name: message.FunctionCallNameGetAIcallMessages,
+					Arguments: `{
+					"aicall_id": "cfe9753e-d3ea-11f0-a686-3b5c56d58abf"
+					}`,
+				},
+			},
+
+			responseAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cfe9753e-d3ea-11f0-a686-3b5c56d58abf"),
+					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
+				},
+			},
+			responseMessages: []*message.Message{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("05a8c208-d46b-11f0-b4ce-3f2afb9cba1b"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("05e43a7c-d46b-11f0-ad07-e7fb818d821b"),
+					},
+				},
+			},
+
+			expectAIcallID: uuid.FromStringOrNil("cfe9753e-d3ea-11f0-a686-3b5c56d58abf"),
+			expectRes: &messageContent{
+				Result:       "success",
+				Message:      `[{"id":"05a8c208-d46b-11f0-b4ce-3f2afb9cba1b","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000"},{"id":"05e43a7c-d46b-11f0-ad07-e7fb818d821b","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000"}]`,
+				ToolCallID:   "cfb2f874-d3ea-11f0-957d-939b29f6bdf8",
+				ResourceType: "messages",
+				ResourceID:   "cfe9753e-d3ea-11f0-a686-3b5c56d58abf",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AIcallGet(ctx, tt.expectAIcallID).Return(tt.responseAIcall, nil)
+			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+
+			res := h.toolHandleGetAIcallMessages(ctx, tt.aicall, tt.tool)
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)

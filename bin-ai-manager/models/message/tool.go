@@ -27,12 +27,13 @@ type FunctionCallName string
 const (
 	FunctionCallNameNone FunctionCallName = ""
 
-	FunctionCallNameConnect      FunctionCallName = "connect"
-	FunctionCallNameEmailSend    FunctionCallName = "email_send"
-	FunctionCallNameGetVariables FunctionCallName = "get_variables"
-	FunctionCallNameMediaStop    FunctionCallName = "media_stop"
-	FunctionCallNameMessageSend  FunctionCallName = "message_send"
-	FunctionCallNameServiceStop  FunctionCallName = "service_stop"
-	FunctionCallNameSetVariables FunctionCallName = "set_variables"
-	FunctionCallNameStop         FunctionCallName = "stop"
+	FunctionCallNameConnectCall       FunctionCallName = "connect_call"
+	FunctionCallNameGetVariables      FunctionCallName = "get_variables"
+	FunctionCallNameGetAIcallMessages FunctionCallName = "get_aicall_messages"
+	FunctionCallNameSendEmail         FunctionCallName = "send_email"
+	FunctionCallNameSendMessage       FunctionCallName = "send_message"
+	FunctionCallNameSetVariables      FunctionCallName = "set_variables"
+	FunctionCallNameStopMedia         FunctionCallName = "stop_media"
+	FunctionCallNameStopFlow          FunctionCallName = "stop_flow"
+	FunctionCallNameStopService       FunctionCallName = "stop_service"
 )
