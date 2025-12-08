@@ -44,14 +44,15 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	var tmpMessageContent *messageContent
 
 	mapFunctions := map[message.FunctionCallName]func(context.Context, *aicall.AIcall, *message.ToolCall) *messageContent{
-		message.FunctionCallNameConnect:      h.toolHandleConnect,
-		message.FunctionCallNameEmailSend:    h.toolHandleEmailSend,
-		message.FunctionCallNameGetVariables: h.toolHandleGetVariables,
-		message.FunctionCallNameMediaStop:    h.toolHandleMediaStop,
-		message.FunctionCallNameMessageSend:  h.toolHandleMessageSend,
-		message.FunctionCallNameServiceStop:  h.toolHandleServiceStop,
-		message.FunctionCallNameSetVariables: h.toolHandleSetVariables,
-		message.FunctionCallNameStop:         h.toolHandleStop,
+		message.FunctionCallNameConnectCall:       h.toolHandleConnect,
+		message.FunctionCallNameGetVariables:      h.toolHandleGetVariables,
+		message.FunctionCallNameGetAIcallMessages: h.toolHandleGetAIcallMessages,
+		message.FunctionCallNameSendEmail:         h.toolHandleEmailSend,
+		message.FunctionCallNameSendMessage:       h.toolHandleMessageSend,
+		message.FunctionCallNameSetVariables:      h.toolHandleSetVariables,
+		message.FunctionCallNameStopFlow:          h.toolHandleStop,
+		message.FunctionCallNameStopMedia:         h.toolHandleMediaStop,
+		message.FunctionCallNameStopService:       h.toolHandleServiceStop,
 	}
 
 	if fn, exists := mapFunctions[tool.Function.Name]; exists {
@@ -345,6 +346,54 @@ func (h *aicallHandler) toolHandleGetVariables(ctx context.Context, c *aicall.AI
 
 	log.Debugf("Got activeflow variables successfully. activeflow_id: %s", c.ActiveflowID)
 	fillSuccess(res, "activeflow", c.ActiveflowID.String(), string(tmpMessage))
+
+	return res
+}
+
+func (h *aicallHandler) toolHandleGetAIcallMessages(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleGetAIcallMessages",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool get_aicall_messages.")
+
+	res := newToolResult(tool.ID)
+
+	req := struct {
+		AICallID uuid.UUID `json:"aicall_id"`
+	}{}
+
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &req); errUnmarshal != nil {
+		fillFailed(res, errUnmarshal)
+		return res
+	}
+
+	// get ai call info
+	tmp, err := h.Get(ctx, req.AICallID)
+	if err != nil {
+		fillFailed(res, err)
+		return res
+	}
+
+	if tmp.CustomerID != c.CustomerID {
+		fillFailed(res, fmt.Errorf("aicall customer id does not match"))
+		return res
+	}
+
+	messages, err := h.messageHandler.Gets(ctx, tmp.ID, 1000, "", map[string]string{})
+	if err != nil {
+		fillFailed(res, err)
+		return res
+	}
+
+	tmpMessage, err := json.Marshal(messages)
+	if err != nil {
+		fillFailed(res, err)
+		return res
+	}
+
+	log.Debugf("Got aicall messages successfully. aicall_id: %s", c.ID)
+	fillSuccess(res, "messages", tmp.ID.String(), string(tmpMessage))
 
 	return res
 }
