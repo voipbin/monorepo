@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
@@ -24,13 +23,13 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 		id            uuid.UUID
 		cusotmerID    uuid.UUID
 		activeflowID  uuid.UUID
-		referenceType pipecatcall.ReferenceType
+		referenceType pmpipecatcall.ReferenceType
 		referenceID   uuid.UUID
-		llmType       pipecatcall.LLMType
+		llmType       pmpipecatcall.LLMType
 		llmMessages   []map[string]any
-		sttType       pipecatcall.STTType
+		sttType       pmpipecatcall.STTType
 		sttLanguage   string
-		ttsType       pipecatcall.TTSType
+		ttsType       pmpipecatcall.TTSType
 		ttsLanguage   string
 		ttsVoiceID    string
 
@@ -45,12 +44,12 @@ func Test_PipecatV1PipecatcallStart(t *testing.T) {
 			id:            uuid.FromStringOrNil("775a5cb0-b45c-11f0-b77f-eb8a93884b92"),
 			cusotmerID:    uuid.FromStringOrNil("087c5196-aba5-11f0-b874-67331df11790"),
 			activeflowID:  uuid.FromStringOrNil("08b77244-aba5-11f0-867c-83627171cc5f"),
-			referenceType: pipecatcall.ReferenceTypeCall,
+			referenceType: pmpipecatcall.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("08ea1dac-aba5-11f0-98a0-075b9b4bcd29"),
 			llmType:       "openai.gpt-3.5-turbo",
-			sttType:       pipecatcall.STTTypeDeepgram,
+			sttType:       pmpipecatcall.STTTypeDeepgram,
 			sttLanguage:   "en-US",
-			ttsType:       pipecatcall.TTSTypeElevenLabs,
+			ttsType:       pmpipecatcall.TTSTypeElevenLabs,
 			ttsLanguage:   "ko-KR",
 			ttsVoiceID:    "09132436-aba5-11f0-835c-236dfc483b0e",
 			llmMessages: []map[string]any{
