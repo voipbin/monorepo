@@ -1184,3 +1184,46 @@ func (h *activeflowHandler) actionHandleAISummary(ctx context.Context, af *activ
 
 	return nil
 }
+
+// actionHandleAITask handles action ai_task with activeflow.
+// it starts ai task service.
+func (h *activeflowHandler) actionHandleAITask(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "actionHandleAITask",
+		"activeflow_id": af.ID,
+	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
+	act := &af.CurrentAction
+
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
+	var opt action.OptionAITask
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
+		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		return err
+	}
+
+	referenceType := amaicall.ReferenceTypeCall
+	if af.ReferenceType == activeflow.ReferenceTypeConversation {
+		referenceType = amaicall.ReferenceTypeConversation
+	}
+
+	// start service
+	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.ID, referenceType, af.ReferenceID, false, amaicall.GenderNone, "", 30000)
+	if err != nil {
+		return errors.Wrap(err, "Could not start the service.")
+	}
+	log.WithField("service", sv).Debugf("Started service. service_type: %s, service_id: %s", sv.Type, sv.ID)
+
+	// push the actions
+	if errPush := h.PushStack(ctx, af, sv.ID, sv.PushActions); errPush != nil {
+		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+		return errors.Wrapf(errPush, "Could not push the actions to the stack.")
+	}
+
+	return nil
+}

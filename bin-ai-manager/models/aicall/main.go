@@ -65,6 +65,7 @@ type Gender string
 
 // list of genders
 const (
+	GenderNone    Gender = ""
 	GenderMale    Gender = "male"
 	GenderFemale  Gender = "female"
 	GenderNuetral Gender = "neutral"

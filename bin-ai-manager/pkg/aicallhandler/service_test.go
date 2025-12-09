@@ -86,7 +86,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				},
 				{
 					Role:    "system",
-					Content: defaultCommonSystemPrompt,
+					Content: defaultCommonAIcallSystemPrompt,
 				},
 			},
 			responseUUIDAction: uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
@@ -111,14 +111,14 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				Status:        aicall.StatusInitiating,
 			},
 			expectMessageTexts: []string{
-				defaultCommonSystemPrompt,
+				defaultCommonAIcallSystemPrompt,
 				"hello, this is init prompt message.",
 			},
 			expectLLMType: pmpipecatcall.LLMType("openai.gpt-4"),
 			expectLLMMessages: []map[string]any{
 				{
 					"role":    "system",
-					"content": defaultCommonSystemPrompt,
+					"content": defaultCommonAIcallSystemPrompt,
 				},
 				{
 					"role":    "system",
@@ -316,7 +316,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				},
 				{
 					Role:    "system",
-					Content: defaultCommonSystemPrompt,
+					Content: defaultCommonAIcallSystemPrompt,
 				},
 			},
 
@@ -325,7 +325,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			expectLLMMessages: []map[string]any{
 				{
 					"role":    "system",
-					"content": defaultCommonSystemPrompt,
+					"content": defaultCommonAIcallSystemPrompt,
 				},
 				{
 					"role":    "system",

@@ -59,6 +59,11 @@ type OptionAITalk struct {
 	Duration int             `json:"duration,omitempty"` // ai talk duration. seconds
 }
 
+// OptionAITask defines action ai_task's option
+type OptionAITask struct {
+	AIID uuid.UUID `json:"ai_id,omitempty"`
+}
+
 // OptionAMD defines action amd's option.
 type OptionAMD struct {
 	MachineHandle OptionAMDMachineHandleType `json:"machine_handle,omitempty"` // hangup,continue if the machine answered a call
