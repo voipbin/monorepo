@@ -758,6 +758,7 @@ func Test_FlowV1ActiveflowServiceStop(t *testing.T) {
 
 		activeflowID uuid.UUID
 		serviceID    uuid.UUID
+		delay        int
 
 		response *sock.Response
 
@@ -766,10 +767,11 @@ func Test_FlowV1ActiveflowServiceStop(t *testing.T) {
 		expectRes     *fmactiveflow.Activeflow
 	}{
 		{
-			name: "normal",
+			name: "normal without delay",
 
 			activeflowID: uuid.FromStringOrNil("cad183f0-f9ea-11ef-84f4-63c4cb4776ac"),
 			serviceID:    uuid.FromStringOrNil("cb1b9472-f9ea-11ef-9c09-4f2e84854f03"),
+			delay:        0,
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -784,6 +786,26 @@ func Test_FlowV1ActiveflowServiceStop(t *testing.T) {
 				Data:     []byte(`{"service_id":"cb1b9472-f9ea-11ef-9c09-4f2e84854f03"}`),
 			},
 		},
+		{
+			name: "normal with delay",
+
+			activeflowID: uuid.FromStringOrNil("fa3c1f48-d526-11f0-9afd-17b3b5a86a13"),
+			serviceID:    uuid.FromStringOrNil("fa6f0908-d526-11f0-8798-37901c20bc7e"),
+			delay:        4000,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/activeflows/fa3c1f48-d526-11f0-9afd-17b3b5a86a13/service_stop",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"service_id":"fa6f0908-d526-11f0-8798-37901c20bc7e"}`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -795,11 +817,15 @@ func Test_FlowV1ActiveflowServiceStop(t *testing.T) {
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
-
 			ctx := context.Background()
-			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if errStop := reqHandler.FlowV1ActiveflowServiceStop(ctx, tt.activeflowID, tt.serviceID); errStop != nil {
+			if tt.delay > 0 {
+				mockSock.EXPECT().RequestPublishWithDelay(tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+			} else {
+				mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			}
+
+			if errStop := reqHandler.FlowV1ActiveflowServiceStop(ctx, tt.activeflowID, tt.serviceID, tt.delay); errStop != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errStop)
 			}
 		})

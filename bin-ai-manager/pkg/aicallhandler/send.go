@@ -4,7 +4,6 @@ import (
 	"context"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -60,33 +59,27 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 	})
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
-	res, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", res.ID)
+	res, errTerminate := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
+	if errTerminate != nil {
+		return nil, errors.Wrapf(errTerminate, "could not create the message. aicall_id: %s", res.ID)
 	}
 
 	newPipecatcallID := h.utilHandler.UUIDCreate()
-	c, err = h.UpdatePipecatcallID(ctx, c.ID, newPipecatcallID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not update the pipecatcall id for existing aicall. aicall_id: %s", c.ID)
+	c, errTerminate = h.UpdatePipecatcallID(ctx, c.ID, newPipecatcallID)
+	if errTerminate != nil {
+		return nil, errors.Wrapf(errTerminate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", c.ID)
 	}
 
 	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, res.ID)
-	pc, err := h.startPipecatcall(ctx, c)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)
+	pc, errTerminate := h.startPipecatcall(ctx, c)
+	if errTerminate != nil {
+		return nil, errors.Wrapf(errTerminate, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	go func() {
-		time.Sleep(defaultPipecatcallTimeout)
-		tmp, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
-		if err != nil {
-			log.Errorf("Could not terminate the pipecatcall correctly. err: %v", err)
-			return
-		}
-		log.WithField("pipecatcall_terminate", tmp).Debugf("Terminated the pipecatcall correctly.")
-	}()
+	if errTerminate = h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultPipecatcallTerminateDelay); errTerminate != nil {
+		return nil, errors.Wrapf(errTerminate, "could not send the pipecatcall terminate request correctly")
+	}
 
 	return res, nil
 }

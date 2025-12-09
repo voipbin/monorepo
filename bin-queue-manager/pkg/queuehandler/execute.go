@@ -81,7 +81,7 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 
 	default:
 		log.Errorf("Unsupported routing method. Exit from the queue. routing_method: %s", q.RoutingMethod)
-		if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID); errStop != nil {
+		if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID, 0); errStop != nil {
 			log.Errorf("Could not stop the queuecall service. err: %v", errStop)
 		}
 		return

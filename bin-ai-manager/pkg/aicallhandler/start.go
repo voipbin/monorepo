@@ -9,7 +9,6 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -153,15 +152,9 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	go func() {
-		time.Sleep(defaultPipecatcallTimeout)
-		tmpPipecatcall, err := h.reqHandler.PipecatV1PipecatcallTerminate(context.Background(), pc.HostID, pc.ID)
-		if err != nil {
-			log.Errorf("Could not terminate the pipecatcall correctly. err: %v", err)
-			return
-		}
-		log.WithField("pipecatcall_terminate", tmpPipecatcall).Debugf("Terminated the pipecatcall correctly.")
-	}()
+	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultPipecatcallTerminateDelay); errTerminate != nil {
+		log.Errorf("Could not send the pipecatcall terminate request correctly. err: %v", errTerminate)
+	}
 
 	return res, nil
 }
