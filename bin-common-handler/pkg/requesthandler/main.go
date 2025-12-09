@@ -841,7 +841,7 @@ type RequestHandler interface {
 	FlowV1ActiveflowStop(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowAddActions(ctx context.Context, activeflowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowPushActions(ctx context.Context, activeflowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.Activeflow, error)
-	FlowV1ActiveflowServiceStop(ctx context.Context, activeflowID uuid.UUID, serviceID uuid.UUID) error
+	FlowV1ActiveflowServiceStop(ctx context.Context, activeflowID uuid.UUID, serviceID uuid.UUID, delay int) error
 
 	// flow-manager flow
 	FlowV1FlowCreate(
@@ -963,6 +963,7 @@ type RequestHandler interface {
 	) (*pmpipecatcall.Pipecatcall, error)
 	PipecatV1PipecatcallGet(ctx context.Context, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
 	PipecatV1PipecatcallTerminate(ctx context.Context, hostID string, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
+	PipecatV1PipecatcallTerminateWithDelay(ctx context.Context, hostID string, pipecatcallID uuid.UUID, delay int) error
 
 	// queue-manager queue
 	QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]qmqueue.Queue, error)

@@ -2,13 +2,16 @@ package requesthandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -152,6 +155,7 @@ func Test_PipecatV1PipecatcallTerminate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
+		expectRes     *pmpipecatcall.Pipecatcall
 
 		response *sock.Response
 	}{
@@ -166,6 +170,12 @@ func Test_PipecatV1PipecatcallTerminate(t *testing.T) {
 				URI:    "/v1/pipecatcalls/1c506288-aba6-11f0-9faa-cfb11d9d5e47/stop",
 				Method: sock.RequestMethodPost,
 			},
+			expectRes: &pmpipecatcall.Pipecatcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("1c506288-aba6-11f0-9faa-cfb11d9d5e47"),
+				},
+			},
+
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -183,12 +193,68 @@ func Test_PipecatV1PipecatcallTerminate(t *testing.T) {
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
-
 			ctx := context.Background()
+
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			_, err := reqHandler.PipecatV1PipecatcallTerminate(ctx, tt.hostID, tt.id)
+			res, err := reqHandler.PipecatV1PipecatcallTerminate(ctx, tt.hostID, tt.id)
 			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match. expect: %+v, got: %+v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_PipecatV1PipecatcallTerminateWithDelay(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		hostID string
+		id     uuid.UUID
+		delay  int
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *pmpipecatcall.Pipecatcall
+
+		response *sock.Response
+	}{
+		{
+			name: "normal",
+
+			hostID: "a9a82a5a-d525-11f0-b8ed-3b8db5b10030",
+			id:     uuid.FromStringOrNil("a9d5e134-d525-11f0-a6df-fbfbfa8e096f"),
+			delay:  30000,
+
+			expectTarget: "bin-manager.pipecat-manager.request.a9a82a5a-d525-11f0-b8ed-3b8db5b10030",
+			expectRequest: &sock.Request{
+				URI:    "/v1/pipecatcalls/a9d5e134-d525-11f0-a6df-fbfbfa8e096f/stop",
+				Method: sock.RequestMethodPost,
+			},
+
+			expectRes: &pmpipecatcall.Pipecatcall{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublishWithDelay(tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+
+			if err := reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, tt.hostID, tt.id, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

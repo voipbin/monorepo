@@ -250,7 +250,7 @@ func (r *requestHandler) FlowV1ActiveflowPushActions(ctx context.Context, active
 }
 
 // FlowV1ActiveflowPushActions pushes actions to next to the current action of the given activeflow.
-func (r *requestHandler) FlowV1ActiveflowServiceStop(ctx context.Context, activeflowID uuid.UUID, serviceID uuid.UUID) error {
+func (r *requestHandler) FlowV1ActiveflowServiceStop(ctx context.Context, activeflowID uuid.UUID, serviceID uuid.UUID, delay int) error {
 
 	uri := fmt.Sprintf("/v1/activeflows/%s/service_stop", activeflowID)
 
@@ -261,7 +261,7 @@ func (r *requestHandler) FlowV1ActiveflowServiceStop(ctx context.Context, active
 		return errors.Wrapf(err, "could not marshal the request")
 	}
 
-	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/service_stop", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/service_stop", requestTimeoutDefault, delay, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

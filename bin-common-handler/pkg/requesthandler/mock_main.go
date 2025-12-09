@@ -3666,17 +3666,17 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowPushActions(ctx, activ
 }
 
 // FlowV1ActiveflowServiceStop mocks base method.
-func (m *MockRequestHandler) FlowV1ActiveflowServiceStop(ctx context.Context, activeflowID, serviceID uuid.UUID) error {
+func (m *MockRequestHandler) FlowV1ActiveflowServiceStop(ctx context.Context, activeflowID, serviceID uuid.UUID, delay int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowV1ActiveflowServiceStop", ctx, activeflowID, serviceID)
+	ret := m.ctrl.Call(m, "FlowV1ActiveflowServiceStop", ctx, activeflowID, serviceID, delay)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FlowV1ActiveflowServiceStop indicates an expected call of FlowV1ActiveflowServiceStop.
-func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowServiceStop(ctx, activeflowID, serviceID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowServiceStop(ctx, activeflowID, serviceID, delay any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowServiceStop", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowServiceStop), ctx, activeflowID, serviceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowServiceStop", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowServiceStop), ctx, activeflowID, serviceID, delay)
 }
 
 // FlowV1ActiveflowStop mocks base method.
@@ -4348,6 +4348,20 @@ func (m *MockRequestHandler) PipecatV1PipecatcallTerminate(ctx context.Context, 
 func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallTerminate(ctx, hostID, pipecatcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallTerminate", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallTerminate), ctx, hostID, pipecatcallID)
+}
+
+// PipecatV1PipecatcallTerminateWithDelay mocks base method.
+func (m *MockRequestHandler) PipecatV1PipecatcallTerminateWithDelay(ctx context.Context, hostID string, pipecatcallID uuid.UUID, delay int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PipecatV1PipecatcallTerminateWithDelay", ctx, hostID, pipecatcallID, delay)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PipecatV1PipecatcallTerminateWithDelay indicates an expected call of PipecatV1PipecatcallTerminateWithDelay.
+func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallTerminateWithDelay(ctx, hostID, pipecatcallID, delay any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallTerminateWithDelay", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallTerminateWithDelay), ctx, hostID, pipecatcallID, delay)
 }
 
 // QueueV1QueueCreate mocks base method.

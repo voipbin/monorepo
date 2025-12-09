@@ -83,8 +83,8 @@ func (r *requestHandler) PipecatV1PipecatcallGet(ctx context.Context, pipecallID
 // PipecatV1PipecatcallTerminate sends a request to pipecat-manager
 // to terminate an pipecatcall.
 // it returns pipecatcall if it succeed.
-func (r *requestHandler) PipecatV1PipecatcallTerminate(ctx context.Context, hostID string, aicallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error) {
-	uri := fmt.Sprintf("/v1/pipecatcalls/%s/stop", aicallID)
+func (r *requestHandler) PipecatV1PipecatcallTerminate(ctx context.Context, hostID string, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error) {
+	uri := fmt.Sprintf("/v1/pipecatcalls/%s/stop", pipecatcallID)
 
 	queueName := fmt.Sprintf("%s.%s", outline.QueueNamePipecatRequest, hostID)
 	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodPost, "pipecat/pipecatcalls/<pipecatcall-id>/terminate", requestTimeoutDefault, 0, ContentTypeNone, nil)
@@ -98,4 +98,23 @@ func (r *requestHandler) PipecatV1PipecatcallTerminate(ctx context.Context, host
 	}
 
 	return &res, nil
+}
+
+// PipecatV1PipecatcallTerminateWithDelay sends a request to pipecat-manager
+// to terminate an pipecatcall with given delay.
+func (r *requestHandler) PipecatV1PipecatcallTerminateWithDelay(ctx context.Context, hostID string, pipecatcallID uuid.UUID, delay int) error {
+	uri := fmt.Sprintf("/v1/pipecatcalls/%s/stop", pipecatcallID)
+
+	queueName := fmt.Sprintf("%s.%s", outline.QueueNamePipecatRequest, hostID)
+	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodPost, "pipecat/pipecatcalls/<pipecatcall-id>/terminate", requestTimeoutDefault, delay, ContentTypeNone, nil)
+	if err != nil {
+		return err
+	}
+
+	var res pmpipecatcall.Pipecatcall
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return errParse
+	}
+
+	return nil
 }

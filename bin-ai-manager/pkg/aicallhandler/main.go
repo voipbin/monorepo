@@ -4,7 +4,6 @@ package aicallhandler
 
 import (
 	"context"
-	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
@@ -87,7 +86,7 @@ const (
 	defaultPipecatcallSTTType    = pmpipecatcall.STTTypeDeepgram
 	defaultPipecatcallTTSVoiceID = "EXAVITQu4vr4xnSDxMaL" // Rachel
 
-	defaultPipecatcallTimeout = time.Second * 30
+	defaultPipecatcallTerminateDelay = 30000 // 30 seconds
 )
 
 var mapDefaultTTSVoiceIDByTTSType = map[ai.TTSType]string{
