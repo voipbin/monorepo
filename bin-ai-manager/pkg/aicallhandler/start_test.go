@@ -490,6 +490,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				tt.responseAIcall.Language,
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
+			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultPipecatcallTerminateDelay).Return(nil)
 
 			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {

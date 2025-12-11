@@ -32,7 +32,7 @@ func (h *queuecallHandler) Kick(ctx context.Context, id uuid.UUID) (*queuecall.Q
 	}
 
 	// send the forward request
-	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID); errStop != nil {
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID, 0); errStop != nil {
 		return nil, errors.Wrapf(errStop, "Could not stop the activeflow. activeflow_id: %s", qc.ReferenceActiveflowID)
 	}
 
@@ -99,7 +99,7 @@ func (h *queuecallHandler) kickForce(ctx context.Context, id uuid.UUID) (*queuec
 		return nil, fmt.Errorf("already done")
 	}
 
-	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID); errStop != nil {
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID, 0); errStop != nil {
 		log.Errorf("Could not stop the activeflow. err: %v", errStop)
 	}
 

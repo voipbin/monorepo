@@ -35,6 +35,12 @@ var (
 	ActionNext Action = Action{
 		ID: IDNext,
 	}
+
+	// ActionEmpty is used to represent an empty action.
+	// This is used to halt action execution without moving to the next action.
+	ActionEmpty Action = Action{
+		ID: IDEmpty,
+	}
 )
 
 // Type type
@@ -59,7 +65,7 @@ const (
 
 	// TypeAITalk starts a talk with ai.
 	// ai-manager
-	// required media: call
+	// required media: none
 	TypeAITalk Type = "ai_talk"
 
 	// TypeAITask execute the tasks with ai.
@@ -71,6 +77,11 @@ const (
 	// call-manager
 	// required media: call
 	TypeBeep Type = "beep"
+
+	// TypeBlock blocks the action execution until continue to next action request.
+	// flow-manager
+	// required media: non-rtc
+	TypeBlock Type = "block"
 
 	// TypeBranch gets the variable then execute the correspond action.
 	// for example. gets the dtmf input saved variable and jump to the action.
@@ -239,7 +250,7 @@ const (
 
 	// TypeTranscribeRecording transcribes the recording file and send it to the webhook.
 	// transcribe-manager
-	// required media: call
+	// required media: none
 	TypeTranscribeRecording Type = "transcribe_recording"
 
 	// TypeVariableSet sets the variable.
@@ -260,6 +271,7 @@ var TypeListAll []Type = []Type{
 	TypeAISummary,
 	TypeAITalk,
 	TypeBeep,
+	TypeBlock,
 	TypeBranch,
 	TypeCall,
 	TypeConditionCallDigits,
@@ -297,30 +309,55 @@ var TypeListAll []Type = []Type{
 	TypeWebhookSend,
 }
 
-// TypeListMediaRequired list of media required action types
-var TypeListMediaRequired []Type = []Type{
-	TypeAMD,
-	TypeAnswer,
-	TypeBeep,
-	TypeConditionCallDigits,
-	TypeConditionCallStatus,
-	TypeConfbridgeJoin,
-	TypeConferenceJoin,
-	TypeConnect,
-	TypeDigitsReceive,
-	TypeDigitsSend,
-	TypeEcho,
-	TypeExternalMediaStart,
-	TypeExternalMediaStop,
-	TypeHangup,
-	TypeMute,
-	TypePlay,
-	TypeQueueJoin,
-	TypeRecordingStart,
-	TypeRecordingStop,
-	TypeSleep,
-	TypeStreamEcho,
-	TypeTalk,
-	TypeTranscribeStart,
-	TypeTranscribeStop,
+type MediaType string
+
+const (
+	MediaTypeNonRealTimeCommunication MediaType = "non_rtc"
+	MediaTypeRealTimeCommunication    MediaType = "rtc"
+	MediaTypeNone                     MediaType = ""
+)
+
+var MapRequiredMediasByType = map[Type][]MediaType{
+	TypeAMD:                 {MediaTypeRealTimeCommunication},
+	TypeAnswer:              {MediaTypeRealTimeCommunication},
+	TypeAISummary:           {MediaTypeNonRealTimeCommunication},
+	TypeAITalk:              {MediaTypeNone},
+	TypeBeep:                {MediaTypeRealTimeCommunication},
+	TypeBlock:               {MediaTypeNonRealTimeCommunication},
+	TypeBranch:              {MediaTypeNone},
+	TypeCall:                {MediaTypeNone},
+	TypeConditionCallDigits: {MediaTypeRealTimeCommunication},
+	TypeConditionCallStatus: {MediaTypeRealTimeCommunication},
+	TypeConditionDatetime:   {MediaTypeNone},
+	TypeConditionVariable:   {MediaTypeNone},
+	TypeConfbridgeJoin:      {MediaTypeRealTimeCommunication},
+	TypeConferenceJoin:      {MediaTypeRealTimeCommunication},
+	TypeConnect:             {MediaTypeRealTimeCommunication},
+	TypeConversationSend:    {MediaTypeNone},
+	TypeDigitsReceive:       {MediaTypeRealTimeCommunication},
+	TypeDigitsSend:          {MediaTypeRealTimeCommunication},
+	TypeEcho:                {MediaTypeRealTimeCommunication},
+	TypeEmailSend:           {MediaTypeNone},
+	TypeEmpty:               {MediaTypeNone},
+	TypeExternalMediaStart:  {MediaTypeRealTimeCommunication},
+	TypeExternalMediaStop:   {MediaTypeRealTimeCommunication},
+	TypeFetch:               {MediaTypeNone},
+	TypeFetchFlow:           {MediaTypeNone},
+	TypeGoto:                {MediaTypeNone},
+	TypeHangup:              {MediaTypeRealTimeCommunication},
+	TypeMessageSend:         {MediaTypeNone},
+	TypeMute:                {MediaTypeRealTimeCommunication},
+	TypePlay:                {MediaTypeRealTimeCommunication},
+	TypeQueueJoin:           {MediaTypeRealTimeCommunication},
+	TypeRecordingStart:      {MediaTypeRealTimeCommunication},
+	TypeRecordingStop:       {MediaTypeRealTimeCommunication},
+	TypeSleep:               {MediaTypeRealTimeCommunication},
+	TypeStop:                {MediaTypeNone},
+	TypeStreamEcho:          {MediaTypeRealTimeCommunication},
+	TypeTalk:                {MediaTypeRealTimeCommunication},
+	TypeTranscribeStart:     {MediaTypeRealTimeCommunication},
+	TypeTranscribeStop:      {MediaTypeRealTimeCommunication},
+	TypeTranscribeRecording: {MediaTypeNone},
+	TypeVariableSet:         {MediaTypeNone},
+	TypeWebhookSend:         {MediaTypeNone},
 }

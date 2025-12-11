@@ -9,7 +9,6 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -144,15 +143,9 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	go func() {
-		time.Sleep(defaultPipecatcallTimeout)
-		tmpPipecatcall, err := h.reqHandler.PipecatV1PipecatcallTerminate(context.Background(), pc.HostID, pc.ID)
-		if err != nil {
-			log.Errorf("Could not terminate the pipecatcall correctly. err: %v", err)
-			return
-		}
-		log.WithField("pipecatcall_terminate", tmpPipecatcall).Debugf("Terminated the pipecatcall correctly.")
-	}()
+	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultPipecatcallTerminateDelay); errTerminate != nil {
+		log.Errorf("Could not send the pipecatcall terminate request correctly. err: %v", errTerminate)
+	}
 
 	return res, nil
 }
@@ -412,21 +405,15 @@ func (h *aicallHandler) StartTask(
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	go func() {
-		time.Sleep(defaultPipecatcallTimeout)
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, res.ActiveflowID, res.ID, defaultPipecatcallTerminateDelay); errStop != nil {
+		log.Errorf("Could not stop the service. err: %v", errStop)
+		return nil, errors.Wrapf(errStop, "could not send the service stop request")
+	}
 
-		if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, res.ActiveflowID, res.ID); errStop != nil {
-			log.Errorf("Could not stop the service. err: %v", errStop)
-			return
-		}
-
-		tmp, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
-		if err != nil {
-			log.Errorf("Could not terminate the pipecatcall correctly. err: %v", err)
-			return
-		}
-		log.WithField("pipecatcall_terminate", tmp).Debugf("Terminated the pipecatcall correctly.")
-	}()
+	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultPipecatcallTerminateDelay); errTerminate != nil {
+		log.Errorf("Could not terminate the pipecatcall correctly. err: %v", errTerminate)
+		return nil, errors.Wrapf(errTerminate, "could not send the pipecatcall terminate request")
+	}
 
 	return res, nil
 }

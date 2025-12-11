@@ -251,6 +251,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 		responseUUIDPipecatcallID uuid.UUID
 		responseMessages          []*message.Message
+		responsePipecatcall       *pmpipecatcall.Pipecatcall
 
 		expectMessageText string
 		expectLLMMessages []map[string]any
@@ -318,6 +319,12 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 					Role:    "system",
 					Content: defaultCommonAIcallSystemPrompt,
 				},
+			},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("540051a8-d530-11f0-94c9-bb8688a942c4"),
+				},
+				HostID: "host-12345",
 			},
 
 			expectMessageText: "hello world",
@@ -397,12 +404,14 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				tt.expectTTSType,
 				tt.responseAIcall.Language,
 				tt.expectTTSVoiceID,
-			).Return(&pmpipecatcall.Pipecatcall{}, nil)
+			).Return(tt.responsePipecatcall, nil)
+			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultPipecatcallTerminateDelay).Return(nil)
 
 			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
+
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Expected result %#v, got %#v", tt.expectRes, res)
 			}

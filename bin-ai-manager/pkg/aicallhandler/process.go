@@ -119,7 +119,7 @@ func (h *aicallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID) (*
 		return nil, errors.Wrap(err, "could not start terminating the aicall")
 	}
 
-	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, res.ActiveflowID, res.ID); errStop != nil {
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, res.ActiveflowID, res.ID, 0); errStop != nil {
 		return nil, errors.Wrapf(errStop, "could not stop the aicall")
 	}
 
