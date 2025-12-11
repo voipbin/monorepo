@@ -65,7 +65,7 @@ const (
 
 	// TypeAITalk starts a talk with ai.
 	// ai-manager
-	// required media: call
+	// required media: none
 	TypeAITalk Type = "ai_talk"
 
 	// TypeBeep plays the beep sound.
@@ -245,7 +245,7 @@ const (
 
 	// TypeTranscribeRecording transcribes the recording file and send it to the webhook.
 	// transcribe-manager
-	// required media: call
+	// required media: none
 	TypeTranscribeRecording Type = "transcribe_recording"
 
 	// TypeVariableSet sets the variable.
