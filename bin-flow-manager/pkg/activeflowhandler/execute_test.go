@@ -470,6 +470,18 @@ func Test_verifyActionType(t *testing.T) {
 
 			expectedRes: true,
 		},
+		{
+			name: "normal_block_on_non_rtc_flow",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeAI,
+				CurrentAction: action.Action{
+					Type: action.TypeBlock,
+				},
+			},
+
+			expectedRes: true,
+		},
 
 		// 2. Mismatch Failure Cases
 		{

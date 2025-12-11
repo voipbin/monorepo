@@ -266,6 +266,7 @@ var TypeListAll []Type = []Type{
 	TypeAISummary,
 	TypeAITalk,
 	TypeBeep,
+	TypeBlock,
 	TypeBranch,
 	TypeCall,
 	TypeConditionCallDigits,
@@ -301,34 +302,6 @@ var TypeListAll []Type = []Type{
 	TypeTranscribeRecording,
 	TypeVariableSet,
 	TypeWebhookSend,
-}
-
-// TypeListMediaRequired list of media required action types
-var TypeListMediaRequired []Type = []Type{
-	TypeAMD,
-	TypeAnswer,
-	TypeBeep,
-	TypeConditionCallDigits,
-	TypeConditionCallStatus,
-	TypeConfbridgeJoin,
-	TypeConferenceJoin,
-	TypeConnect,
-	TypeDigitsReceive,
-	TypeDigitsSend,
-	TypeEcho,
-	TypeExternalMediaStart,
-	TypeExternalMediaStop,
-	TypeHangup,
-	TypeMute,
-	TypePlay,
-	TypeQueueJoin,
-	TypeRecordingStart,
-	TypeRecordingStop,
-	TypeSleep,
-	TypeStreamEcho,
-	TypeTalk,
-	TypeTranscribeStart,
-	TypeTranscribeStop,
 }
 
 type MediaType string

@@ -4713,3 +4713,52 @@ func Test_actionHandleAISummary(t *testing.T) {
 		})
 	}
 }
+
+func Test_actionHandleBlock(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflow *activeflow.Activeflow
+	}{
+		{
+			name: "normal",
+
+			activeflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("24c3a8ba-d63c-11f0-8dfa-bff300d7753a"),
+					CustomerID: uuid.FromStringOrNil("2400dbd0-0cc2-11f0-8a2a-9fe2790a79ce"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockVariable := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler:   mockAction,
+				variableHandler: mockVariable,
+				stackmapHandler: mockStack,
+			}
+			ctx := context.Background()
+
+			if errCall := h.actionHandleBlock(ctx, tt.activeflow); errCall != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		})
+	}
+}
