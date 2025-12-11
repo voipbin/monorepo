@@ -93,7 +93,7 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 	log.Debugf("Executing the action. action_id: %s, action_type: %s", af.CurrentAction.ID, af.CurrentAction.Type)
 
 	// verify the reference type and action type
-	if !h.verifyActionType(ctx, af) {
+	if !h.verifyActionType(af) {
 		log.Infof("The action type and reference type are not valid. Move to the next action. action_type: %s, reference_type: %s", af.CurrentAction.Type, af.ReferenceType)
 		return &action.ActionNext, nil
 	}
@@ -119,6 +119,15 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 			return nil, errHandle
 		}
 		return &action.ActionNext, nil
+
+	case action.TypeBlock:
+		if errHandle := h.actionHandleBlock(ctx, af); errHandle != nil {
+			log.Errorf("Could not handle the block action correctly. err: %v", errHandle)
+			return nil, errHandle
+		}
+
+		// note: after block action, no further action is executed until unblocked.
+		return &action.ActionEmpty, nil
 
 	case action.TypeBranch:
 		if errHandle := h.actionHandleBranch(ctx, af); errHandle != nil {
@@ -262,22 +271,37 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 
 // verifyActionType verifies the given activeflow's action is valid for the reference type.
 // return true if the reference type and action type are valid
-func (h *activeflowHandler) verifyActionType(ctx context.Context, af *activeflow.Activeflow) bool {
+func (h *activeflowHandler) verifyActionType(af *activeflow.Activeflow) bool {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "verifyActionType",
 		"activeflow_id": af.ID,
 	})
 
-	if af.ReferenceType == activeflow.ReferenceTypeCall {
-		return true
+	// get action media type from the reference type
+	mediaType, ok := activeflow.MapActionMediaTypeByReferenceType[af.ReferenceType]
+	if !ok {
+		log.Errorf("The reference type is not found in the action media map. reference_type: %s", af.ReferenceType)
+		return false
 	}
 
-	for _, actionType := range action.TypeListMediaRequired {
-		if af.CurrentAction.Type == actionType {
-			log.Infof("The given activeflow's action type requires media. reference_type: %s, action_type: %s", af.ReferenceType, af.CurrentAction.Type)
-			return false
+	// get required media types for the action type
+	requiredMediaTypes, ok := action.MapRequiredMediasByType[af.CurrentAction.Type]
+	if !ok {
+		log.Errorf("The action type is not found in the required media map. action_type: %s", af.CurrentAction.Type)
+		return false
+	}
+
+	for _, requiredMediaType := range requiredMediaTypes {
+		if requiredMediaType == action.MediaTypeNone {
+			// no specific media type is required
+			return true
+		}
+
+		if requiredMediaType == mediaType {
+			// the media type is matched
+			return true
 		}
 	}
 
-	return true
+	return false
 }

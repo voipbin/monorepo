@@ -85,3 +85,15 @@ func (a *Activeflow) Matches(x interface{}) bool {
 func (a *Activeflow) String() string {
 	return fmt.Sprintf("%v", *a)
 }
+
+var MapActionMediaTypeByReferenceType = map[ReferenceType]action.MediaType{
+	ReferenceTypeNone: action.MediaTypeNone,
+
+	ReferenceTypeCall: action.MediaTypeRealTimeCommunication,
+
+	ReferenceTypeAI:           action.MediaTypeNonRealTimeCommunication,
+	ReferenceTypeConversation: action.MediaTypeNonRealTimeCommunication,
+	ReferenceTypeRecording:    action.MediaTypeNonRealTimeCommunication,
+	ReferenceTypeTranscribe:   action.MediaTypeNonRealTimeCommunication,
+	ReferenceTypeCampaign:     action.MediaTypeNonRealTimeCommunication,
+}

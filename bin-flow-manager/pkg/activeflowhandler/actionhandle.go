@@ -1184,3 +1184,14 @@ func (h *activeflowHandler) actionHandleAISummary(ctx context.Context, af *activ
 
 	return nil
 }
+
+// actionHandleBlock handles action block with activeflow.
+func (h *activeflowHandler) actionHandleBlock(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "actionHandleBlock",
+		"activeflow_id": af.ID,
+	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
+	return nil
+}

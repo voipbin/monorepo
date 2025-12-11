@@ -75,6 +75,11 @@ type OptionBeep struct {
 	// no option
 }
 
+// OptionBlock defines action block's option.
+type OptionBlock struct {
+	// no option
+}
+
 // OptionBranch defines action branch's option.
 type OptionBranch struct {
 	Variable        string               `json:"variable,omitempty"`
