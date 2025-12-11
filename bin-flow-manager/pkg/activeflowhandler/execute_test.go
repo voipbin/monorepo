@@ -423,3 +423,168 @@ func Test_executeAction(t *testing.T) {
 		})
 	}
 }
+
+func Test_verifyActionType(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflow *activeflow.Activeflow
+
+		expectedRes bool
+	}{
+		// 1. Normal Success Cases
+		{
+			name: "normal_non_rtc_match",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeAI,
+				CurrentAction: action.Action{
+					Type: action.TypeAISummary,
+				},
+			},
+
+			expectedRes: true,
+		},
+		{
+			name: "normal_rtc_match",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeCall,
+				CurrentAction: action.Action{
+					Type: action.TypePlay,
+				},
+			},
+
+			expectedRes: true,
+		},
+		{
+			name: "normal_universal_action_variable_set",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeCall,
+				CurrentAction: action.Action{
+					Type: action.TypeVariableSet,
+				},
+			},
+
+			expectedRes: true,
+		},
+
+		// 2. Mismatch Failure Cases
+		{
+			name: "fail_rtc_flow_with_non_rtc_action",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeCall,
+				CurrentAction: action.Action{
+					Type: action.TypeAISummary,
+				},
+			},
+
+			expectedRes: false,
+		},
+		{
+			name: "fail_non_rtc_flow_with_rtc_action",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeAI,
+				CurrentAction: action.Action{
+					Type: action.TypeHangup,
+				},
+			},
+
+			expectedRes: false,
+		},
+		{
+			name: "fail_rtc_flow_with_block_action",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeCall,
+				CurrentAction: action.Action{
+					Type: action.TypeBlock,
+				},
+			},
+
+			expectedRes: false,
+		},
+
+		// 3. Modified Logic Cases (Universal Actions)
+		{
+			name: "success_aitalk_on_ai_flow",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeAI,
+				CurrentAction: action.Action{
+					Type: action.TypeAITalk,
+				},
+			},
+
+			expectedRes: true,
+		},
+		{
+			name: "success_transcribe_recording_on_transcribe_flow",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeTranscribe,
+				CurrentAction: action.Action{
+					Type: action.TypeTranscribeRecording,
+				},
+			},
+
+			expectedRes: true,
+		},
+
+		// 4. Edge Cases
+		{
+			name: "fail_invalid_reference_type",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: "invalid_type",
+				CurrentAction: action.Action{
+					Type: action.TypePlay,
+				},
+			},
+
+			expectedRes: false,
+		},
+		{
+			name: "fail_invalid_action_type",
+
+			activeflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeCall,
+				CurrentAction: action.Action{
+					Type: "invalid_action",
+				},
+			},
+
+			expectedRes: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
+
+			h := &activeflowHandler{
+				utilHandler:     mockUtil,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				stackmapHandler: mockStack,
+				variableHandler: mockVar,
+			}
+
+			res := h.verifyActionType(tt.activeflow)
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
