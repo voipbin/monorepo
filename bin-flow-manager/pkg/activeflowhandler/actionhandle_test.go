@@ -4757,8 +4757,6 @@ func Test_actionHandleBlock(t *testing.T) {
 			if errCall := h.actionHandleBlock(ctx, tt.activeflow); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
 			}
-
-			time.Sleep(500 * time.Millisecond)
 		})
 	}
 }
