@@ -36,6 +36,8 @@ var (
 		ID: IDNext,
 	}
 
+	// ActionEmpty is used to represent an empty action.
+	// This is used to halt action execution without moving to the next action.
 	ActionEmpty Action = Action{
 		ID: IDEmpty,
 	}
@@ -73,7 +75,7 @@ const (
 
 	// TypeBlock blocks the action execution until continue to next action request.
 	// flow-manager
-	// required media: none
+	// required media: non-rtc
 	TypeBlock Type = "block"
 
 	// TypeBranch gets the variable then execute the correspond action.
