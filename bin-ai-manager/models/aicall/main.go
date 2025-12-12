@@ -69,7 +69,7 @@ const (
 	GenderNone    Gender = ""
 	GenderMale    Gender = "male"
 	GenderFemale  Gender = "female"
-	GenderNuetral Gender = "neutral"
+	GenderNeutral Gender = "neutral"
 )
 
 // Message defines
