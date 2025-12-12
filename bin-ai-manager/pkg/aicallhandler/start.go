@@ -299,7 +299,7 @@ func (h *aicallHandler) startPipecatcall(ctx context.Context, c *aicall.AIcall) 
 
 func (h *aicallHandler) startPipecatcallTask(ctx context.Context, c *aicall.AIcall) (*pmpipecatcall.Pipecatcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "startPipecatcall",
+		"func":      "startPipecatcallTask",
 		"aicall_id": c.ID,
 	})
 
