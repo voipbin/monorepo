@@ -168,21 +168,6 @@ func (mr *MockAIcallHandlerMockRecorder) Gets(ctx, size, token, filters any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAIcallHandler)(nil).Gets), ctx, size, token, filters)
 }
 
-// ProcessPause mocks base method.
-func (m *MockAIcallHandler) ProcessPause(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProcessPause", ctx, ac)
-	ret0, _ := ret[0].(*aicall.AIcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ProcessPause indicates an expected call of ProcessPause.
-func (mr *MockAIcallHandlerMockRecorder) ProcessPause(ctx, ac any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessPause", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessPause), ctx, ac)
-}
-
 // ProcessStart mocks base method.
 func (m *MockAIcallHandler) ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -199,33 +184,18 @@ func (mr *MockAIcallHandlerMockRecorder) ProcessStart(ctx, cb any) *gomock.Call 
 }
 
 // ProcessTerminate mocks base method.
-func (m *MockAIcallHandler) ProcessTerminate(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error) {
+func (m *MockAIcallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProcessTerminate", ctx, cb)
+	ret := m.ctrl.Call(m, "ProcessTerminate", ctx, id)
 	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ProcessTerminate indicates an expected call of ProcessTerminate.
-func (mr *MockAIcallHandlerMockRecorder) ProcessTerminate(ctx, cb any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) ProcessTerminate(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessTerminate", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessTerminate), ctx, cb)
-}
-
-// ProcessTerminating mocks base method.
-func (m *MockAIcallHandler) ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProcessTerminating", ctx, id)
-	ret0, _ := ret[0].(*aicall.AIcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ProcessTerminating indicates an expected call of ProcessTerminating.
-func (mr *MockAIcallHandlerMockRecorder) ProcessTerminating(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessTerminating", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessTerminating), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessTerminate", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessTerminate), ctx, id)
 }
 
 // Send mocks base method.
@@ -256,6 +226,21 @@ func (m *MockAIcallHandler) ServiceStart(ctx context.Context, aiID, activeflowID
 func (mr *MockAIcallHandlerMockRecorder) ServiceStart(ctx, aiID, activeflowID, referenceType, referenceID, gender, language any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockAIcallHandler)(nil).ServiceStart), ctx, aiID, activeflowID, referenceType, referenceID, gender, language)
+}
+
+// ServiceStartTypeTask mocks base method.
+func (m *MockAIcallHandler) ServiceStartTypeTask(ctx context.Context, aiID, activeflowID uuid.UUID) (*service.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceStartTypeTask", ctx, aiID, activeflowID)
+	ret0, _ := ret[0].(*service.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceStartTypeTask indicates an expected call of ServiceStartTypeTask.
+func (mr *MockAIcallHandlerMockRecorder) ServiceStartTypeTask(ctx, aiID, activeflowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStartTypeTask", reflect.TypeOf((*MockAIcallHandler)(nil).ServiceStartTypeTask), ctx, aiID, activeflowID)
 }
 
 // Start mocks base method.

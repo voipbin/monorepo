@@ -490,7 +490,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				tt.responseAIcall.Language,
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
-			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultPipecatcallTerminateDelay).Return(nil)
+			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
 			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
@@ -721,187 +721,6 @@ func Test_getPipecatcallTTSInfo(t *testing.T) {
 	}
 }
 
-// func Test_getTTSType(t *testing.T) {
-// 	tests := []struct {
-// 		name string
-
-// 		ttsType ai.TTSType
-
-// 		expectRes ai.TTSType
-// 	}{
-// 		{
-// 			name: "normal",
-
-// 			ttsType: ai.TTSTypeCartesia,
-
-// 			expectRes: ai.TTSTypeCartesia,
-// 		},
-// 		{
-// 			name: "tts type is none",
-
-// 			ttsType: ai.TTSTypeNone,
-
-// 			expectRes: defaultTTSType,
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockAI := aihandler.NewMockAIHandler(mc)
-// 			mockMessage := messagehandler.NewMockMessageHandler(mc)
-
-// 			h := &aicallHandler{
-// 				utilHandler:    mockUtil,
-// 				reqHandler:     mockReq,
-// 				notifyHandler:  mockNotify,
-// 				db:             mockDB,
-// 				aiHandler:      mockAI,
-// 				messageHandler: mockMessage,
-// 			}
-
-// 			res := h.getTTSType(tt.ttsType)
-
-// 			if !reflect.DeepEqual(res, tt.expectRes) {
-// 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
-
-// func Test_getPipecatcallTTSType(t *testing.T) {
-// 	tests := []struct {
-// 		name string
-
-// 		aicall  *aicall.AIcall
-// 		ttsType ai.TTSType
-
-// 		expectRes pmpipecatcall.TTSType
-// 	}{
-// 		{
-// 			name: "normal",
-
-// 			aicall: &aicall.AIcall{
-// 				ReferenceType: aicall.ReferenceTypeCall,
-// 			},
-// 			ttsType: ai.TTSTypeElevenLabs,
-
-// 			expectRes: pmpipecatcall.TTSTypeElevenLabs,
-// 		},
-// 		{
-// 			name: "reference type is not call",
-
-// 			aicall: &aicall.AIcall{
-// 				ReferenceType: aicall.ReferenceTypeConversation,
-// 			},
-// 			ttsType: ai.TTSTypeElevenLabs,
-
-// 			expectRes: pmpipecatcall.TTSTypeNone,
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockAI := aihandler.NewMockAIHandler(mc)
-// 			mockMessage := messagehandler.NewMockMessageHandler(mc)
-
-// 			h := &aicallHandler{
-// 				utilHandler:    mockUtil,
-// 				reqHandler:     mockReq,
-// 				notifyHandler:  mockNotify,
-// 				db:             mockDB,
-// 				aiHandler:      mockAI,
-// 				messageHandler: mockMessage,
-// 			}
-
-// 			res := h.getPipecatcallTTSType(tt.aicall, tt.ttsType)
-
-// 			if !reflect.DeepEqual(res, tt.expectRes) {
-// 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
-
-// func Test_getPipecatcallVoiceID(t *testing.T) {
-// 	tests := []struct {
-// 		name string
-
-// 		ttsType ai.TTSType
-// 		voiceID string
-
-// 		expectRes string
-// 	}{
-// 		{
-// 			name: "normal",
-
-// 			ttsType: ai.TTSTypeElevenLabs,
-// 			voiceID: "a18a75ec-b62d-11f0-9102-d3923076d044",
-
-// 			expectRes: "a18a75ec-b62d-11f0-9102-d3923076d044",
-// 		},
-// 		{
-// 			name: "voice id is empty",
-
-// 			ttsType: ai.TTSTypeElevenLabs,
-// 			voiceID: "",
-
-// 			expectRes: mapDefaultTTSVoiceIDByTTSType[ai.TTSTypeElevenLabs],
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockAI := aihandler.NewMockAIHandler(mc)
-// 			mockMessage := messagehandler.NewMockMessageHandler(mc)
-
-// 			h := &aicallHandler{
-// 				utilHandler:    mockUtil,
-// 				reqHandler:     mockReq,
-// 				notifyHandler:  mockNotify,
-// 				db:             mockDB,
-// 				aiHandler:      mockAI,
-// 				messageHandler: mockMessage,
-// 			}
-
-// 			res, err := h.getPipecatcallVoiceID(tt.ttsType, tt.voiceID)
-// 			if err != nil {
-// 				t.Errorf("unexpected error: %v", err)
-// 			}
-
-// 			if !reflect.DeepEqual(res, tt.expectRes) {
-// 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
-
 func Test_startPipecatcall(t *testing.T) {
 	tests := []struct {
 		name string
@@ -1035,6 +854,7 @@ func Test_startAIcall(t *testing.T) {
 		confbridgeID  uuid.UUID
 		gender        aicall.Gender
 		language      string
+		isTask        bool
 
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
@@ -1061,6 +881,7 @@ func Test_startAIcall(t *testing.T) {
 			confbridgeID:  uuid.FromStringOrNil("b3864e5c-b659-11f0-ab17-6b281e446482"),
 			gender:        aicall.GenderMale,
 			language:      "en-US",
+			isTask:        false,
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
@@ -1092,7 +913,7 @@ func Test_startAIcall(t *testing.T) {
 				"voipbin.aicall.pipecatcall_id":  "b3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
-				defaultCommonSystemPrompt,
+				defaultCommonAIcallSystemPrompt,
 				"You are a helpful assistant.",
 			},
 			expectRes: &aicall.AIcall{
@@ -1156,7 +977,7 @@ func Test_startAIcall(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			res, err := h.startAIcall(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language)
+			res, err := h.startAIcall(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -1231,6 +1052,7 @@ func Test_startInitMessages(t *testing.T) {
 
 		ai     *ai.AI
 		aicall *aicall.AIcall
+		isTask bool
 
 		responseSubstitutes []string
 
@@ -1251,13 +1073,41 @@ func Test_startInitMessages(t *testing.T) {
 				},
 				ActiveflowID: uuid.FromStringOrNil("7a0651d0-c055-11f0-a70e-8fe16492a013"),
 			},
+			isTask: false,
 
 			responseSubstitutes: []string{
 				"You are a super helpful assistant.",
 				"Bruce Wayne is Batman.",
 			},
 			expectMessageTexts: []string{
-				defaultCommonSystemPrompt,
+				defaultCommonAIcallSystemPrompt,
+				"You are a super helpful assistant.",
+				`{"initial_system_prompt":"Bruce Wayne is Batman."}`,
+			},
+		},
+		{
+			name: "has all and isTask true ",
+
+			ai: &ai.AI{
+				InitPrompt: "You are a helpful assistant.",
+				EngineData: map[string]any{
+					"initial_system_prompt": "Bruce Wayne is Batman.",
+				},
+			},
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("79c5557e-d49e-11f0-813f-fb8e8df71bb6"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("79f79174-d49e-11f0-96e7-430b2e8fc74c"),
+			},
+			isTask: true,
+
+			responseSubstitutes: []string{
+				"You are a super helpful assistant.",
+				"Bruce Wayne is Batman.",
+			},
+			expectMessageTexts: []string{
+				defaultCommonAItaskSystemPrompt,
 				"You are a super helpful assistant.",
 				`{"initial_system_prompt":"Bruce Wayne is Batman."}`,
 			},
@@ -1272,9 +1122,10 @@ func Test_startInitMessages(t *testing.T) {
 				},
 				ActiveflowID: uuid.FromStringOrNil("60e6ed6e-c054-11f0-9d64-573dab8aa82d"),
 			},
+			isTask: false,
 
 			expectMessageTexts: []string{
-				defaultCommonSystemPrompt,
+				defaultCommonAIcallSystemPrompt,
 			},
 		},
 		{
@@ -1289,10 +1140,11 @@ func Test_startInitMessages(t *testing.T) {
 				},
 				ActiveflowID: uuid.FromStringOrNil("fa31d6a0-b659-11f0-8ec0-4f223b1fe9db"),
 			},
+			isTask: false,
 
 			responseSubstitutes: []string{"You are a super helpful assistant."},
 			expectMessageTexts: []string{
-				defaultCommonSystemPrompt,
+				defaultCommonAIcallSystemPrompt,
 				"You are a super helpful assistant.",
 			},
 		},
@@ -1331,8 +1183,151 @@ func Test_startInitMessages(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			if err := h.startInitMessages(ctx, tt.ai, tt.aicall); err != nil {
+			if err := h.startInitMessages(ctx, tt.ai, tt.aicall, tt.isTask); err != nil {
 				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func Test_StartTask(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aiID         uuid.UUID
+		activeflowID uuid.UUID
+
+		responseAI                *ai.AI
+		responseUUIDPipecatcallID uuid.UUID
+		responseUUIDAIcallID      uuid.UUID
+		responseMessages          []*message.Message
+		responsePipecatcall       *pmpipecatcall.Pipecatcall
+
+		expectAIcall          *aicall.AIcall
+		expectMessageContents []string
+		expectLLMLessages     []map[string]any
+	}{
+		{
+			name: "normal",
+
+			aiID:         uuid.FromStringOrNil("c1d5f4e2-30de-11f0-8bbf-d773a2d31d73"),
+			activeflowID: uuid.FromStringOrNil("c1f4b4e4-30de-11f0-8bbf-d773a2d31d73"),
+
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c1d5f4e2-30de-11f0-8bbf-d773a2d31d73"),
+					CustomerID: uuid.FromStringOrNil("da5752be-d798-11f0-9181-d3db413a82d0"),
+				},
+				EngineType:  ai.EngineType("test"),
+				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				EngineData:  map[string]any{},
+
+				InitPrompt: "",
+			},
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("d9f74cd4-d798-11f0-9e0e-c3713b24ebdc"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("da2a0df4-d798-11f0-a8c3-6348c9284ca2"),
+			responseMessages: []*message.Message{
+				{
+					Role:    message.RoleSystem,
+					Content: defaultCommonAItaskSystemPrompt,
+				},
+			},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d9f74cd4-d798-11f0-9e0e-c3713b24ebdc"),
+				},
+			},
+
+			expectAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("da2a0df4-d798-11f0-a8c3-6348c9284ca2"),
+					CustomerID: uuid.FromStringOrNil("da5752be-d798-11f0-9181-d3db413a82d0"),
+				},
+				AIID:          uuid.FromStringOrNil("c1d5f4e2-30de-11f0-8bbf-d773a2d31d73"),
+				ActiveflowID:  uuid.FromStringOrNil("c1f4b4e4-30de-11f0-8bbf-d773a2d31d73"),
+				ReferenceType: aicall.ReferenceTypeTask,
+				ReferenceID:   uuid.Nil,
+				PipecatcallID: uuid.FromStringOrNil("d9f74cd4-d798-11f0-9e0e-c3713b24ebdc"),
+				Status:        aicall.StatusInitiating,
+			},
+			expectMessageContents: []string{
+				defaultCommonAItaskSystemPrompt,
+			},
+			expectLLMLessages: []map[string]any{
+				{
+					"role":    "system",
+					"content": defaultCommonAItaskSystemPrompt,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
+			mockDB.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.expectAIcall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), aicall.EventTypeStatusInitializing, gomock.Any())
+
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
+
+			for _, m := range tt.expectMessageContents {
+				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
+			}
+
+			mockMessage.EXPECT().Gets(ctx, tt.expectAIcall.ID, uint64(100), "", map[string]string{}).Return(tt.responseMessages, nil)
+			mockReq.EXPECT().PipecatV1PipecatcallStart(
+				ctx,
+				tt.expectAIcall.PipecatcallID,
+				tt.expectAIcall.CustomerID,
+				tt.expectAIcall.ActiveflowID,
+				pmpipecatcall.ReferenceTypeAICall,
+				tt.expectAIcall.ID,
+				pmpipecatcall.LLMType(tt.expectAIcall.AIEngineModel),
+				tt.expectLLMLessages,
+				pmpipecatcall.STTTypeNone,
+				"",
+				pmpipecatcall.TTSTypeNone,
+				"",
+				"",
+			).Return(tt.responsePipecatcall, nil)
+
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.expectAIcall.ActiveflowID, tt.expectAIcall.ID, defaultAITaskTimeout).Return(nil)
+			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
+
+			res, err := h.StartTask(ctx, tt.aiID, tt.activeflowID)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectAIcall) {
+				t.Errorf("expected: %v, got: %v", tt.expectAIcall, res)
 			}
 		})
 	}

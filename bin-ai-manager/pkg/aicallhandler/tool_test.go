@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -17,6 +18,7 @@ import (
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
 	mmmessage "monorepo/bin-message-manager/models/message"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	reflect "reflect"
 	"testing"
 	"time"
@@ -395,6 +397,8 @@ func Test_toolHandleServiceStop(t *testing.T) {
 		aicall *aicall.AIcall
 		tool   *message.ToolCall
 
+		responsePipecatcall *pmpipecatcall.Pipecatcall
+
 		expectRes *messageContent
 	}{
 		{
@@ -416,6 +420,13 @@ func Test_toolHandleServiceStop(t *testing.T) {
 					Name:      message.FunctionCallNameStopService,
 					Arguments: `{}`,
 				},
+			},
+
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("afccf4a0-d706-11f0-80c0-13fda659f870"),
+				},
+				HostID: "1.2.3.4",
 			},
 
 			expectRes: &messageContent{
@@ -452,13 +463,25 @@ func Test_toolHandleServiceStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			// updateStatus
-			mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.aicall.ID, aicall.StatusTerminating).Return(nil)
+			// // updateStatus
+			// mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.aicall.ID, aicall.StatusTerminating).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusTerminating, tt.aicall)
+			// mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusTerminating, tt.aicall)
 
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.aicall.ActiveflowID, tt.aicall.ID, 0).Return(nil)
-			mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.aicall.ConfbridgeID, tt.aicall.ReferenceID).Return(nil)
+
+			if tt.aicall.PipecatcallID != uuid.Nil {
+				mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.aicall.PipecatcallID).Return(tt.responsePipecatcall, nil)
+				mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID).Return(tt.responsePipecatcall, nil)
+			}
+
+			if tt.aicall.ConfbridgeID != uuid.Nil {
+				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
+			}
+
+			mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.aicall.ID, aicall.StatusTerminated).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusTerminated, tt.aicall)
 
 			res := h.toolHandleServiceStop(ctx, tt.aicall, tt.tool)
 

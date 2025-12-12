@@ -43,7 +43,7 @@ func (h *aicallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *cmconf
 		return
 	}
 
-	_, err = h.ProcessTerminate(ctx, cc)
+	_, err = h.ProcessTerminate(ctx, cc.ID)
 	if err != nil {
 		return
 	}
@@ -57,7 +57,7 @@ func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call)
 		return
 	}
 
-	_, err = h.ProcessTerminate(ctx, cc)
+	_, err = h.ProcessTerminate(ctx, cc.ID)
 	if err != nil {
 		return
 	}

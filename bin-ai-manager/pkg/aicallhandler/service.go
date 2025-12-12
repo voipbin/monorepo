@@ -114,6 +114,39 @@ func (h *aicallHandler) serviceStartReferenceTypeConversation(
 	return res, nil
 }
 
+func (h *aicallHandler) ServiceStartTypeTask(
+	ctx context.Context,
+	aiID uuid.UUID,
+	activeflowID uuid.UUID,
+) (*commonservice.Service, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ServiceStartTypeTask",
+		"ai_id":         aiID,
+		"activeflow_id": activeflowID,
+	})
+
+	cc, err := h.StartTask(ctx, aiID, activeflowID)
+	if err != nil {
+		log.Errorf("Could not start aicall. err: %v", err)
+		return nil, fmt.Errorf("could not start aicall. err: %v", err)
+	}
+	log.WithField("aicall", cc).Debugf("Started aicall. aicall_id: %s", cc.ID)
+
+	res := &commonservice.Service{
+		ID:   cc.ID,
+		Type: commonservice.TypeAIcall,
+		PushActions: []fmaction.Action{
+			{
+				ID:     h.utilHandler.UUIDCreate(),
+				Type:   fmaction.TypeBlock,
+				Option: fmaction.ConvertOption(fmaction.OptionBlock{}),
+			},
+		},
+	}
+
+	return res, nil
+}
+
 func (h *aicallHandler) serviceStop(ctx context.Context, c *aicall.AIcall) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "serviceStop",
@@ -121,7 +154,7 @@ func (h *aicallHandler) serviceStop(ctx context.Context, c *aicall.AIcall) error
 	})
 	log.Debugf("Stopping the aicall service.")
 
-	tmp, err := h.ProcessTerminating(ctx, c.ID)
+	tmp, err := h.ProcessTerminate(ctx, c.ID)
 	if err != nil {
 		return fmt.Errorf("could not start terminating the aicall. err: %v", err)
 	}

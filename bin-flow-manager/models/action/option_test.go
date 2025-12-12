@@ -1206,3 +1206,50 @@ func Test_marshal_OptionTalk(t *testing.T) {
 		})
 	}
 }
+
+func Test_marshal_OptionAITask(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectedRes OptionAITask
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			option: []byte(`{
+				"ai_id": "5ac82032-d482-11f0-b683-4b780579e9b6"
+			}`),
+
+			expectedRes: OptionAITask{
+				AIID: uuid.FromStringOrNil("5ac82032-d482-11f0-b683-4b780579e9b6"),
+			},
+		},
+		{
+			name: "empty",
+
+			option: []byte(`{}`),
+
+			expectedRes: OptionAITask{
+				AIID: uuid.Nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionAITask{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectedRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}

@@ -71,6 +71,7 @@ var (
 	// service
 	regV1ServicesTypeAIcall  = regexp.MustCompile("/v1/services/type/aicall$")
 	regV1ServicesTypeSummary = regexp.MustCompile("/v1/services/type/summary$")
+	regV1ServicesTypeTask    = regexp.MustCompile("/v1/services/type/task$")
 
 	// summary
 	regV1SummariesGet = regexp.MustCompile(`/v1/summaries\?`)
@@ -280,6 +281,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ServicesTypeSummary.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ServicesTypeSummaryPost(ctx, m)
 		requestType = "/v1/services/type/summary"
+
+	// POST /services/type/task
+	case regV1ServicesTypeTask.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ServicesTypeTaskPost(ctx, m)
+		requestType = "/v1/services/type/task"
 
 	/////////////////
 	// summaries

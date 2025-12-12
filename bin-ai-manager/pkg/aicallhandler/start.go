@@ -68,16 +68,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 	}
 
 	// start ai call
-	res, err := h.startAIcall(
-		ctx,
-		a,
-		activeflowID,
-		aicall.ReferenceTypeCall,
-		referenceID,
-		cb.ID,
-		gender,
-		language,
-	)
+	res, err := h.startAIcall(ctx, a, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, false)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 	}
@@ -124,7 +115,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	res, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
 		log.Debugf("Could not get the aicall by reference id. Start a new aicall. reference_id: %s. err: %v", referenceID, err)
-		res, err = h.startAIcall(ctx, a, activeflowID, aicall.ReferenceTypeConversation, referenceID, uuid.Nil, gender, language)
+		res, err = h.startAIcall(ctx, a, activeflowID, aicall.ReferenceTypeConversation, referenceID, uuid.Nil, gender, language, false)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
@@ -152,7 +143,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultPipecatcallTerminateDelay); errTerminate != nil {
+	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerminate != nil {
 		log.Errorf("Could not send the pipecatcall terminate request correctly. err: %v", errTerminate)
 	}
 
@@ -172,16 +163,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 	})
 
 	// start ai call
-	tmp, err := h.startAIcall(
-		ctx,
-		c,
-		uuid.Nil,
-		aicall.ReferenceTypeNone,
-		uuid.Nil,
-		uuid.Nil,
-		gender,
-		language,
-	)
+	tmp, err := h.startAIcall(ctx, c, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language, false)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall with no reference")
 	}
@@ -315,14 +297,55 @@ func (h *aicallHandler) startPipecatcall(ctx context.Context, c *aicall.AIcall) 
 	return res, nil
 }
 
-func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aicall.AIcall) error {
+func (h *aicallHandler) startPipecatcallTask(ctx context.Context, c *aicall.AIcall) (*pmpipecatcall.Pipecatcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "startPipecatcallTask",
+		"aicall_id": c.ID,
+	})
+
+	// get llmMessages for pipecatcall
+	llmType := pmpipecatcall.LLMType(c.AIEngineModel)
+	llmMessages, err := h.getPipecatcallMessages(ctx, c)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the messages for pipecatcall")
+	}
+	log.Debugf("Got %d messages for pipecatcall", len(llmMessages))
+
+	res, err := h.reqHandler.PipecatV1PipecatcallStart(
+		ctx,
+		c.PipecatcallID,
+		c.CustomerID,
+		c.ActiveflowID,
+		pmpipecatcall.ReferenceTypeAICall,
+		c.ID,
+		llmType,
+		llmMessages,
+		pmpipecatcall.STTTypeNone,
+		"",
+		pmpipecatcall.TTSTypeNone,
+		"",
+		"",
+	)
+	if err != nil {
+		log.Errorf("Could not start pipecatcall. err: %v", err)
+		return nil, errors.Wrap(err, "could not start pipecatcall")
+	}
+	log.WithField("pipecatcall", res).Debugf("Started pipecatcall. pipecatcall_id: %s", res.ID)
+
+	return res, nil
+}
+
+func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aicall.AIcall, isTask bool) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "startInitMessages",
 		"aicall_id": c.ID,
 	})
 
-	messages := []string{
-		defaultCommonSystemPrompt,
+	messages := []string{}
+	if isTask {
+		messages = append(messages, defaultCommonAItaskSystemPrompt)
+	} else {
+		messages = append(messages, defaultCommonAIcallSystemPrompt)
 	}
 
 	// parse init prompt
@@ -357,6 +380,7 @@ func (h *aicallHandler) startAIcall(
 	confbridgeID uuid.UUID,
 	gender aicall.Gender,
 	language string,
+	isTask bool,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startAIcall",
@@ -380,10 +404,48 @@ func (h *aicallHandler) startAIcall(
 	log.Debugf("Set activeflow variables for aicall. aicall_id: %s", res.ID)
 
 	// start initial messages
-	if errInitMessages := h.startInitMessages(ctx, a, res); errInitMessages != nil {
+	if errInitMessages := h.startInitMessages(ctx, a, res, isTask); errInitMessages != nil {
 		return nil, errors.Wrapf(errInitMessages, "could not start initial messages for aicall. aicall_id: %s", res.ID)
 	}
 	log.Debugf("Initialized messages for aicall. aicall_id: %s", res.ID)
+
+	return res, nil
+}
+
+func (h *aicallHandler) StartTask(ctx context.Context, aiID uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "StartTask",
+		"ai_id":         aiID,
+		"activeflow_id": activeflowID,
+	})
+	log.Debugf("Starting a new aicall task")
+
+	c, err := h.aiHandler.Get(ctx, aiID)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get ai info")
+	}
+
+	res, err := h.startAIcall(ctx, c, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, uuid.Nil, aicall.GenderNone, "", true)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not start AIcall")
+	}
+
+	// start pipecatcall
+	pc, err := h.startPipecatcallTask(ctx, res)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)
+	}
+	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
+
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, res.ActiveflowID, res.ID, defaultAITaskTimeout); errStop != nil {
+		log.Errorf("Could not stop the service. err: %v", errStop)
+		return nil, errors.Wrapf(errStop, "could not send the service stop request")
+	}
+
+	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerminate != nil {
+		log.Errorf("Could not terminate the pipecatcall correctly. err: %v", errTerminate)
+		return nil, errors.Wrapf(errTerminate, "could not send the pipecatcall terminate request")
+	}
 
 	return res, nil
 }

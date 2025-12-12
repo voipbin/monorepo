@@ -7,6 +7,7 @@ import (
 	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -160,6 +161,80 @@ func Test_processV1ServicesTypeSummaryPost(t *testing.T) {
 				tt.expectedReferenceID,
 				tt.expectedLanguage,
 			).Return(tt.responseService, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ServicesTypeTaskPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *sock.Request
+
+		responseService *commonservice.Service
+
+		expectedAIID         uuid.UUID
+		expectedActiveflowID uuid.UUID
+		expectRes            *sock.Response
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/services/type/task",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"ai_id":"5c787144-d70b-11f0-9427-f395dfcba4f1","activeflow_id":"5ca61dba-d70b-11f0-8736-9fcf694b9301"}`),
+			},
+
+			responseService: &commonservice.Service{
+				ID:   uuid.FromStringOrNil("5cc6ce70-d70b-11f0-b271-5bfd90b50be7"),
+				Type: commonservice.TypeAIcall,
+				PushActions: []fmaction.Action{
+					{
+						ID:   uuid.FromStringOrNil("5cea16f0-d70b-11f0-91ac-0bcc871a5da5"),
+						Type: fmaction.TypeBlock,
+					},
+				},
+			},
+
+			expectedAIID:         uuid.FromStringOrNil("5c787144-d70b-11f0-9427-f395dfcba4f1"),
+			expectedActiveflowID: uuid.FromStringOrNil("5ca61dba-d70b-11f0-8736-9fcf694b9301"),
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"5cc6ce70-d70b-11f0-b271-5bfd90b50be7","type":"aicall","push_actions":[{"id":"5cea16f0-d70b-11f0-91ac-0bcc871a5da5","next_id":"00000000-0000-0000-0000-000000000000","type":"block"}]}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockSummary := summaryhandler.NewMockSummaryHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:    mockSock,
+				summaryHandler: mockSummary,
+				aicallHandler:  mockAIcall,
+			}
+
+			mockAIcall.EXPECT().ServiceStartTypeTask(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID).Return(tt.responseService, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

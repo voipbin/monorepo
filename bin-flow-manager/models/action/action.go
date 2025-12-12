@@ -68,6 +68,11 @@ const (
 	// required media: none
 	TypeAITalk Type = "ai_talk"
 
+	// TypeAITask execute the tasks with ai.
+	// ai-manager
+	// required media: none
+	TypeAITask Type = "ai_task"
+
 	// TypeBeep plays the beep sound.
 	// call-manager
 	// required media: call
