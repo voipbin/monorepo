@@ -98,3 +98,32 @@ func (r *requestHandler) AIV1ServiceTypeSummaryStart(
 
 	return &res, nil
 }
+
+// AIV1ServiceTypeTaskStart sends a request to ai-manager
+// to starts a task service.
+// it returns created service if it succeed.
+func (r *requestHandler) AIV1ServiceTypeTaskStart(ctx context.Context, aiID uuid.UUID, activeflowID uuid.UUID) (*service.Service, error) {
+	uri := "/v1/services/type/task"
+
+	data := &airequest.V1DataServicesTypeTaskPost{
+		AIID:         aiID,
+		ActiveflowID: activeflowID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/services/type/task", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res service.Service
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}

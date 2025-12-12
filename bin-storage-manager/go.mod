@@ -73,7 +73,7 @@ require (
 )
 
 require (
-	github.com/go-redsync/redsync/v4 v4.14.1
+	github.com/go-redsync/redsync/v4 v4.15.0
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
@@ -98,7 +98,7 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.54.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cncf/xds/go v0.0.0-20251110193048-8bfbf64dc13e // indirect
+	github.com/cncf/xds/go v0.0.0-20251210132809-ee656c7534f5 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.36.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.0 // indirect
@@ -144,7 +144,7 @@ require (
 	golang.org/x/time v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect

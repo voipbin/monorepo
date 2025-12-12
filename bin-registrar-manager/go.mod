@@ -67,7 +67,7 @@ require (
 	go.uber.org/mock v0.6.0
 	golang.org/x/sys v0.39.0 // indirect
 	google.golang.org/genproto v0.0.0-20251202230838-ff82c1b0f217 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
 
