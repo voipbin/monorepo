@@ -47,10 +47,6 @@ func (h *aicallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *cmconf
 	if err != nil {
 		return
 	}
-	// _, err = h.ProcessTerminate(ctx, cc)
-	// if err != nil {
-	// 	return
-	// }
 }
 
 // EventCMCallHangup handles the call-manager's call_hangup event
@@ -65,11 +61,6 @@ func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call)
 	if err != nil {
 		return
 	}
-
-	// _, err = h.ProcessTerminate(ctx, cc)
-	// if err != nil {
-	// 	return
-	// }
 }
 
 func (h *aicallHandler) EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF) {
