@@ -1218,23 +1218,26 @@ func (h *activeflowHandler) actionHandleAITask(ctx context.Context, af *activefl
 		return err
 	}
 
-	referenceType := amaicall.ReferenceTypeCall
-	if af.ReferenceType == activeflow.ReferenceTypeConversation {
-		referenceType = amaicall.ReferenceTypeConversation
-	}
+	// send the service start request
+	// TODO: Need to implement AI task service start
 
-	// start service
-	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.ID, referenceType, af.ReferenceID, false, amaicall.GenderNone, "", 30000)
-	if err != nil {
-		return errors.Wrap(err, "Could not start the service.")
-	}
-	log.WithField("service", sv).Debugf("Started service. service_type: %s, service_id: %s", sv.Type, sv.ID)
+	// referenceType := amaicall.ReferenceTypeCall
+	// if af.ReferenceType == activeflow.ReferenceTypeConversation {
+	// 	referenceType = amaicall.ReferenceTypeConversation
+	// }
 
-	// push the actions
-	if errPush := h.PushStack(ctx, af, sv.ID, sv.PushActions); errPush != nil {
-		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
-		return errors.Wrapf(errPush, "Could not push the actions to the stack.")
-	}
+	// // start service
+	// sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.ID, referenceType, af.ReferenceID, false, amaicall.GenderNone, "", 30000)
+	// if err != nil {
+	// 	return errors.Wrap(err, "Could not start the service.")
+	// }
+	// log.WithField("service", sv).Debugf("Started service. service_type: %s, service_id: %s", sv.Type, sv.ID)
+
+	// // push the actions
+	// if errPush := h.PushStack(ctx, af, sv.ID, sv.PushActions); errPush != nil {
+	// 	log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+	// 	return errors.Wrapf(errPush, "Could not push the actions to the stack.")
+	// }
 
 	return nil
 }

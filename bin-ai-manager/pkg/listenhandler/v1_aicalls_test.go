@@ -324,7 +324,7 @@ func Test_processV1AIcallsIDTerminatePost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ProcessTerminating(gomock.Any(), tt.expectedID).Return(tt.responseAIcall, nil)
+			mockAIcall.EXPECT().ProcessTerminate(gomock.Any(), tt.expectedID).Return(tt.responseAIcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

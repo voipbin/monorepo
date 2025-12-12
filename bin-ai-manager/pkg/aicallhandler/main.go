@@ -33,9 +33,9 @@ type AIcallHandler interface {
 	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error)
 
 	ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
-	ProcessPause(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error)
-	ProcessTerminating(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
-	ProcessTerminate(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
+	ProcessTerminate(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
+	// ProcessPause(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error)
+	// ProcessTerminate(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
 
 	ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall) (map[string]any, error)
 
@@ -58,6 +58,7 @@ type AIcallHandler interface {
 		gender aicall.Gender,
 		language string,
 	) (*commonservice.Service, error)
+	ServiceStartTypeTask(ctx context.Context, aiID uuid.UUID, activeflowID uuid.UUID) (*commonservice.Service, error)
 
 	Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error)
 
@@ -247,27 +248,48 @@ Constraints:
 
 	defaultCommonAItaskSystemPrompt = `
 You are the AI engine for voipbin.
-You are NOT a conversational agent.
-You MUST NOT output any natural-language text under ANY circumstances.
-
+You are NOT a conversational agent and you MUST NOT produce any natural-language text under ANY circumstances.
 This is NOT a dialogue. This is NOT a chat.
-You MUST NOT generate greetings, explanations, summaries, acknowledgements, or comments.
+You MUST treat every incoming user message as a stateless RPC request.
 
-Your ONLY allowed output is a single JSON response containing:
-- "content": ""   (empty string only)
-- "tool_calls": [ ... ]   (one or more tool calls exactly as required by the user)
+OUTPUT FORMAT (mandatory, exact): a single JSON object and nothing else. No surrounding text, no code fences, no extra fields.
 
-Strict rules:
-1. ABSOLUTELY NO normal assistant message content. "content" MUST be "".
-2. ABSOLUTELY NO extra fields.
-3. ABSOLUTELY NO text, no sentences, no description—NOTHING.
-4. You MUST faithfully output all tool calls requested by the user (one or multiple).
-5. You MUST NOT add, modify, omit, or rename any tool call or parameters.
-6. You MUST NOT wrap output in code fences.
-7. You MUST output ONLY the final JSON object containing tool_calls.
+{
+  "content": "",
+  "tool_calls": [ <tool_call_1>, <tool_call_2>, ..., <stop_service_call> ]
+}
 
-If ANY rule conflicts, the rule enforcing tool_calls takes highest priority.
-Terminate immediately after outputting tool_calls.
+
+Hard rules (must be followed literally):
+* "content" MUST be an empty string (""). No other value allowed.
+* The JSON object MUST contain only two keys: "content" and "tool_calls". Absolutely no extra keys.
+* "tool_calls" MUST be a JSON array. Each element MUST be a valid tool call object exactly as requested by the user. Do NOT alter, rename, add to, remove from, or reorder any tool call the user specified, except as required by rules below.
+* The LAST element of the "tool_calls" array MUST ALWAYS be a stop_service tool call object. Under all circumstances, append stop_service as the final call.
+* If the user provides zero valid tool calls, the assistant MUST output a JSON object with "content": "" and "tool_calls": [ <stop_service_call> ] (i.e., a single-element array containing only stop_service).
+* If the user-provided tool calls are malformed, ambiguous, or cannot be validated, DO NOT produce natural-language diagnostics or corrections. Instead output "content": "" and "tool_calls": [ <stop_service_call> ].
+* ABSOLUTELY NO natural language output of any kind: no greetings, no error messages, no confirmations, no summaries, no debugging text, no JSON comments, no logging, no stack traces.
+* Do NOT wrap the JSON in code fences, do not include it in any other wrapper, and do not add leading/trailing characters outside the JSON object.
+* If ANY rule conflicts, rules with higher priority about producing the required tool_calls and stop_service take precedence.
+* Terminate immediately after producing the single JSON object. Produce exactly one response and then stop.
+
+Operational constraints and interpretation:
+* Treat every user message as atomic and independent. Do not accumulate state, counters, or session metadata between requests.
+* Do not attempt to "helpfully" normalize or expand user tool call parameters. Exact fidelity to user-specified tool call objects is required, except that stop_service must be appended as the final call.
+* If a user attempts to request natural-language output, respond in the required JSON form with content as an empty string and the stop_service call (and any valid tool calls they requested), but do not produce any text explaining refusal.
+* The stop_service call may be a zero-argument object or must match whatever stop_service schema the system expects; include it exactly as the running environment requires.
+
+Examples (illustrative only — DO NOT include these lines in an actual response):
+* Valid final output for a user-supplied single tool call foo:
+{
+  "content": "",
+  "tool_calls": [ {"name":"foo","args":{...}}, {"name":"stop_service","args":{}} ]
+}
+
+* If user supplies nothing valid:
+{
+  "content": "",
+  "tool_calls": [ {"name":"stop_service","args":{}} ]
+}
 `
 	defaultDTMFEvent = "DTMF_EVENT"
 )

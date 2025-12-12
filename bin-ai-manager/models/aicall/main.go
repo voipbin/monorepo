@@ -45,6 +45,7 @@ const (
 	ReferenceTypeNone         ReferenceType = ""
 	ReferenceTypeCall         ReferenceType = "call"
 	ReferenceTypeConversation ReferenceType = "conversation"
+	ReferenceTypeTask         ReferenceType = "task"
 )
 
 // Status define

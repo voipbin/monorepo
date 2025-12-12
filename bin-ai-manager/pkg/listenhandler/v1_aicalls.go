@@ -180,7 +180,7 @@ func (h *listenHandler) processV1AIcallsIDTerminatePost(ctx context.Context, m *
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	tmp, err := h.aicallHandler.ProcessTerminating(ctx, id)
+	tmp, err := h.aicallHandler.ProcessTerminate(ctx, id)
 	if err != nil {
 		log.Errorf("Could not terminate aicall. err: %v", err)
 		return simpleResponse(500), nil

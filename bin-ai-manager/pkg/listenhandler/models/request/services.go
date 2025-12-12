@@ -37,3 +37,11 @@ type V1DataServicesTypeSummaryPost struct {
 
 	Language string `json:"language,omitempty"`
 }
+
+// V1DataServicesTypeTaskPost is
+// data type request struct for
+// /v1/services/task POST
+type V1DataServicesTypeTaskPost struct {
+	AIID         uuid.UUID `json:"ai_id"`
+	ActiveflowID uuid.UUID `json:"activeflow_id"`
+}

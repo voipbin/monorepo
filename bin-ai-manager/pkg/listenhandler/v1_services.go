@@ -86,3 +86,37 @@ func (h *listenHandler) processV1ServicesTypeSummaryPost(ctx context.Context, m 
 
 	return res, nil
 }
+
+// processV1ServicesTypeTaskPost handles POST /v1/services/type/task request
+func (h *listenHandler) processV1ServicesTypeTaskPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ServicesTypeTaskPost",
+		"request": m,
+	})
+
+	var req request.V1DataServicesTypeTaskPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.aicallHandler.ServiceStartTypeTask(ctx, req.AIID, req.ActiveflowID)
+	if err != nil {
+		log.Errorf("Could not start task service. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

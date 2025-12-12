@@ -297,6 +297,44 @@ func (h *aicallHandler) startPipecatcall(ctx context.Context, c *aicall.AIcall) 
 	return res, nil
 }
 
+func (h *aicallHandler) startPipecatcallTask(ctx context.Context, c *aicall.AIcall) (*pmpipecatcall.Pipecatcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "startPipecatcall",
+		"aicall_id": c.ID,
+	})
+
+	// get llmMessages for pipecatcall
+	llmType := pmpipecatcall.LLMType(c.AIEngineModel)
+	llmMessages, err := h.getPipecatcallMessages(ctx, c)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the messages for pipecatcall")
+	}
+	log.Debugf("Got %d messages for pipecatcall", len(llmMessages))
+
+	res, err := h.reqHandler.PipecatV1PipecatcallStart(
+		ctx,
+		c.PipecatcallID,
+		c.CustomerID,
+		c.ActiveflowID,
+		pmpipecatcall.ReferenceTypeAICall,
+		c.ID,
+		llmType,
+		llmMessages,
+		pmpipecatcall.STTTypeNone,
+		"",
+		pmpipecatcall.TTSTypeNone,
+		"",
+		"",
+	)
+	if err != nil {
+		log.Errorf("Could not start pipecatcall. err: %v", err)
+		return nil, errors.Wrap(err, "could not start pipecatcall")
+	}
+	log.WithField("pipecatcall", res).Debugf("Started pipecatcall. pipecatcall_id: %s", res.ID)
+
+	return res, nil
+}
+
 func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aicall.AIcall, isTask bool) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "startInitMessages",
@@ -378,8 +416,6 @@ func (h *aicallHandler) StartTask(
 	ctx context.Context,
 	aiID uuid.UUID,
 	activeflowID uuid.UUID,
-	referenceType aicall.ReferenceType,
-	referenceID uuid.UUID,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "StartTask",
@@ -393,13 +429,13 @@ func (h *aicallHandler) StartTask(
 		return nil, errors.Wrap(err, "could not get ai info")
 	}
 
-	res, err := h.startAIcall(ctx, c, activeflowID, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, aicall.GenderNone, "", true)
+	res, err := h.startAIcall(ctx, c, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, uuid.Nil, aicall.GenderNone, "", true)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not start AIcall")
 	}
 
 	// start pipecatcall
-	pc, err := h.startPipecatcall(ctx, res)
+	pc, err := h.startPipecatcallTask(ctx, res)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)
 	}
