@@ -249,6 +249,7 @@ type RequestHandler interface {
 		language string,
 		requestTimeout int,
 	) (*service.Service, error)
+	AIV1ServiceTypeTaskStart(ctx context.Context, aiID uuid.UUID, activeflowID uuid.UUID) (*service.Service, error)
 
 	// ai-manager summary
 	AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amsummary.Summary, error)

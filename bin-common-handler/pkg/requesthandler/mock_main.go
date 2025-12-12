@@ -364,6 +364,21 @@ func (mr *MockRequestHandlerMockRecorder) AIV1ServiceTypeSummaryStart(ctx, custo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ServiceTypeSummaryStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ServiceTypeSummaryStart), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, requestTimeout)
 }
 
+// AIV1ServiceTypeTaskStart mocks base method.
+func (m *MockRequestHandler) AIV1ServiceTypeTaskStart(ctx context.Context, aiID, activeflowID uuid.UUID) (*service.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1ServiceTypeTaskStart", ctx, aiID, activeflowID)
+	ret0, _ := ret[0].(*service.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1ServiceTypeTaskStart indicates an expected call of AIV1ServiceTypeTaskStart.
+func (mr *MockRequestHandlerMockRecorder) AIV1ServiceTypeTaskStart(ctx, aiID, activeflowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ServiceTypeTaskStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ServiceTypeTaskStart), ctx, aiID, activeflowID)
+}
+
 // AIV1SummaryCreate mocks base method.
 func (m *MockRequestHandler) AIV1SummaryCreate(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string, timeout int) (*summary.Summary, error) {
 	m.ctrl.T.Helper()

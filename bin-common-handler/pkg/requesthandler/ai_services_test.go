@@ -175,3 +175,67 @@ func Test_AIV1ServiceTypeSummaryStart(t *testing.T) {
 		})
 	}
 }
+
+func Test_AIV1ServiceTypeTaskStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		aiID         uuid.UUID
+		activeflowID uuid.UUID
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *service.Service
+	}{
+		{
+			name: "normal",
+
+			aiID:         uuid.FromStringOrNil("17e0c1ca-d7a2-11f0-b895-272756e82e9c"),
+			activeflowID: uuid.FromStringOrNil("18093aba-d7a2-11f0-8461-7f7066a41d60"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"1832a922-d7a2-11f0-ab7c-af445f822391"}`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:      "/v1/services/type/task",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"ai_id":"17e0c1ca-d7a2-11f0-b895-272756e82e9c","activeflow_id":"18093aba-d7a2-11f0-8461-7f7066a41d60"}`),
+			},
+			expectRes: &service.Service{
+				ID: uuid.FromStringOrNil("1832a922-d7a2-11f0-ab7c-af445f822391"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			cf, err := reqHandler.AIV1ServiceTypeTaskStart(ctx, tt.aiID, tt.activeflowID)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(cf, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, cf)
+			}
+		})
+	}
+}
