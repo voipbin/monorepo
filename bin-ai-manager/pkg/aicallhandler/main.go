@@ -85,7 +85,7 @@ const (
 	defaultPipecatcallSTTType    = pmpipecatcall.STTTypeDeepgram
 	defaultPipecatcallTTSVoiceID = "EXAVITQu4vr4xnSDxMaL" // Rachel
 
-	defaultPipecatcallTerminateDelay = 30000 // 30 seconds
+	defaultAITaskTimeout = 30000 // 30 seconds
 )
 
 var mapDefaultTTSVoiceIDByTTSType = map[ai.TTSType]string{

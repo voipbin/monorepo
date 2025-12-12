@@ -9,7 +9,7 @@ import (
 
 // V1DataServicesTypeAIcallPost is
 // data type request struct for
-// /v1/services/aicall POST
+// /v1/services/type/aicall POST
 type V1DataServicesTypeAIcallPost struct {
 	AIID uuid.UUID `json:"ai_id"`
 
@@ -25,7 +25,7 @@ type V1DataServicesTypeAIcallPost struct {
 
 // V1DataServicesTypeSummaryPost is
 // data type request struct for
-// /v1/services/summary POST
+// /v1/services/type/summary POST
 type V1DataServicesTypeSummaryPost struct {
 	CustomerID uuid.UUID `json:"customer_id,omitempty"`
 
@@ -40,7 +40,7 @@ type V1DataServicesTypeSummaryPost struct {
 
 // V1DataServicesTypeTaskPost is
 // data type request struct for
-// /v1/services/task POST
+// /v1/services/type/task POST
 type V1DataServicesTypeTaskPost struct {
 	AIID         uuid.UUID `json:"ai_id"`
 	ActiveflowID uuid.UUID `json:"activeflow_id"`

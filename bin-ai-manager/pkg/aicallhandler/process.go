@@ -59,11 +59,11 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*ai
 		}
 
 		log.WithField("pipecatcall", pc).Debugf("Terminating the pipecatcall. pipecatcall_id: %s", pc.ID)
-		tmp, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
+		tmpPC, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
 		if err != nil {
 			log.Errorf("Could not terminate the pipecatcall. err: %v", err)
 		} else {
-			log.WithField("pipecatcall", tmp).Debugf("Terminated the pipecatcall. pipecatcall_id: %s", tmp.ID)
+			log.WithField("pipecatcall", tmpPC).Debugf("Terminated the pipecatcall. pipecatcall_id: %s", tmpPC.ID)
 		}
 	}
 

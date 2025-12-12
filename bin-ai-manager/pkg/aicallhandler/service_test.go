@@ -405,7 +405,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				tt.responseAIcall.Language,
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
-			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultPipecatcallTerminateDelay).Return(nil)
+			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
 			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
@@ -583,8 +583,8 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 				"",
 			).Return(tt.responsePipecatcall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.activeflowID, tt.expectAIcall.ID, defaultPipecatcallTerminateDelay).Return(nil)
-			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultPipecatcallTerminateDelay).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.activeflowID, tt.expectAIcall.ID, defaultAITaskTimeout).Return(nil)
+			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
 

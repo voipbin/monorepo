@@ -77,7 +77,7 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	if errTerminate = h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultPipecatcallTerminateDelay); errTerminate != nil {
+	if errTerminate = h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerminate != nil {
 		return nil, errors.Wrapf(errTerminate, "could not send the pipecatcall terminate request correctly")
 	}
 

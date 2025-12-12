@@ -143,7 +143,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultPipecatcallTerminateDelay); errTerminate != nil {
+	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerminate != nil {
 		log.Errorf("Could not send the pipecatcall terminate request correctly. err: %v", errTerminate)
 	}
 
@@ -412,11 +412,7 @@ func (h *aicallHandler) startAIcall(
 	return res, nil
 }
 
-func (h *aicallHandler) StartTask(
-	ctx context.Context,
-	aiID uuid.UUID,
-	activeflowID uuid.UUID,
-) (*aicall.AIcall, error) {
+func (h *aicallHandler) StartTask(ctx context.Context, aiID uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "StartTask",
 		"ai_id":         aiID,
@@ -441,12 +437,12 @@ func (h *aicallHandler) StartTask(
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, res.ActiveflowID, res.ID, defaultPipecatcallTerminateDelay); errStop != nil {
+	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, res.ActiveflowID, res.ID, defaultAITaskTimeout); errStop != nil {
 		log.Errorf("Could not stop the service. err: %v", errStop)
 		return nil, errors.Wrapf(errStop, "could not send the service stop request")
 	}
 
-	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultPipecatcallTerminateDelay); errTerminate != nil {
+	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerminate != nil {
 		log.Errorf("Could not terminate the pipecatcall correctly. err: %v", errTerminate)
 		return nil, errors.Wrapf(errTerminate, "could not send the pipecatcall terminate request")
 	}
