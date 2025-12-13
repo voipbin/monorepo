@@ -4760,3 +4760,94 @@ func Test_actionHandleBlock(t *testing.T) {
 		})
 	}
 }
+
+func Test_actionHandleAITask(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflow *activeflow.Activeflow
+
+		responseService *commonservice.Service
+		responseStack   *stack.Stack
+
+		expectedAIID         uuid.UUID
+		expectedActiveflowID uuid.UUID
+	}{
+		{
+			name: "normal",
+
+			activeflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0a654508-d82d-11f0-8375-cf2f9e9a57bd"),
+					CustomerID: uuid.FromStringOrNil("2400dbd0-0cc2-11f0-8a2a-9fe2790a79ce"),
+				},
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("0ac4b362-d82d-11f0-be96-dbc11e9e990b"),
+					Type: action.TypeAITask,
+					Option: map[string]any{
+						"ai_id": "0a97c1fe-d82d-11f0-acd8-eb982bf58519",
+					},
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{},
+			},
+
+			responseService: &commonservice.Service{
+				ID:   uuid.FromStringOrNil("0aee7c9c-d82d-11f0-b6e0-7facd81609a1"),
+				Type: commonservice.TypeAIcall,
+				PushActions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("0b16ff14-d82d-11f0-b548-5b3cd5e5ab44"),
+					},
+				},
+			},
+			responseStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("0aee7c9c-d82d-11f0-b6e0-7facd81609a1"),
+				Actions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("0b16ff14-d82d-11f0-b548-5b3cd5e5ab44"),
+					},
+				},
+			},
+
+			expectedAIID:         uuid.FromStringOrNil("0a97c1fe-d82d-11f0-acd8-eb982bf58519"),
+			expectedActiveflowID: uuid.FromStringOrNil("0a654508-d82d-11f0-8375-cf2f9e9a57bd"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockVariable := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler:   mockAction,
+				variableHandler: mockVariable,
+				stackmapHandler: mockStack,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().AIV1ServiceTypeTaskStart(ctx, tt.expectedAIID, tt.expectedActiveflowID).Return(tt.responseService, nil)
+
+			// push stack
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any()).Return(nil)
+
+			if errCall := h.actionHandleAITask(ctx, tt.activeflow); errCall != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		})
+	}
+}
