@@ -270,6 +270,7 @@ var TypeListAll []Type = []Type{
 	TypeAnswer,
 	TypeAISummary,
 	TypeAITalk,
+	TypeAITask,
 	TypeBeep,
 	TypeBlock,
 	TypeBranch,
