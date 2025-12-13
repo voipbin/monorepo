@@ -236,7 +236,7 @@ func Test_ActiveflowCreate(t *testing.T) {
 				activeflowID,
 				tt.agent.CustomerID,
 				flowID,
-				fmactiveflow.ReferenceTypeNone,
+				fmactiveflow.ReferenceTypeAPI,
 				uuid.Nil,
 				uuid.Nil,
 			).Return(tt.responseActiveflow, nil)

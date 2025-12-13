@@ -120,6 +120,13 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 		}
 		return &action.ActionNext, nil
 
+	case action.TypeAITask:
+		if errHandle := h.actionHandleAITask(ctx, af); errHandle != nil {
+			log.Errorf("Could not handle the ai task action correctly. err: %v", errHandle)
+			return nil, errHandle
+		}
+		return &action.ActionNext, nil
+
 	case action.TypeBlock:
 		if errHandle := h.actionHandleBlock(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the block action correctly. err: %v", errHandle)
