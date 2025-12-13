@@ -62,6 +62,7 @@ type ReferenceType string
 const (
 	ReferenceTypeNone         ReferenceType = ""             // none
 	ReferenceTypeAI           ReferenceType = "ai"           // ai
+	ReferenceTypeAPI          ReferenceType = "api"          // api
 	ReferenceTypeCall         ReferenceType = "call"         // call
 	ReferenceTypeCampaign     ReferenceType = "campaign"     // campaign
 	ReferenceTypeConversation ReferenceType = "conversation" // conversation
@@ -92,6 +93,7 @@ var MapActionMediaTypeByReferenceType = map[ReferenceType]action.MediaType{
 	ReferenceTypeCall: action.MediaTypeRealTimeCommunication,
 
 	ReferenceTypeAI:           action.MediaTypeNonRealTimeCommunication,
+	ReferenceTypeAPI:          action.MediaTypeNonRealTimeCommunication,
 	ReferenceTypeConversation: action.MediaTypeNonRealTimeCommunication,
 	ReferenceTypeRecording:    action.MediaTypeNonRealTimeCommunication,
 	ReferenceTypeTranscribe:   action.MediaTypeNonRealTimeCommunication,
