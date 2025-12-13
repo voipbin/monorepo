@@ -41,8 +41,6 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 	log.WithField("message", tmp).Debugf("Created the tool message for the actions. message_id: %s", tmp.ID)
 
-	var tmpMessageContent *messageContent
-
 	mapFunctions := map[message.FunctionCallName]func(context.Context, *aicall.AIcall, *message.ToolCall) *messageContent{
 		message.FunctionCallNameConnectCall:       h.toolHandleConnect,
 		message.FunctionCallNameGetVariables:      h.toolHandleGetVariables,
@@ -55,6 +53,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameStopService:       h.toolHandleServiceStop,
 	}
 
+	var tmpMessageContent *messageContent
 	if fn, exists := mapFunctions[tool.Function.Name]; exists {
 		tmpMessageContent = fn(ctx, c, tool)
 	} else {
