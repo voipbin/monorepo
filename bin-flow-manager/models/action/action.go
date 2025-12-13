@@ -323,6 +323,7 @@ var MapRequiredMediasByType = map[Type][]MediaType{
 	TypeAnswer:              {MediaTypeRealTimeCommunication},
 	TypeAISummary:           {MediaTypeNonRealTimeCommunication},
 	TypeAITalk:              {MediaTypeNone},
+	TypeAITask:              {MediaTypeNonRealTimeCommunication},
 	TypeBeep:                {MediaTypeRealTimeCommunication},
 	TypeBlock:               {MediaTypeNonRealTimeCommunication},
 	TypeBranch:              {MediaTypeNone},
