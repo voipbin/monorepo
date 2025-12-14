@@ -363,7 +363,13 @@ def tool_register(llm_service, pipecatcall_id):
 def tool_unregister(llm_service):
     """Unregisters tools from the LLM service."""
     for tool_name in TOOLNAMES:
-        llm_service.unregister_function(tool_name)
+        try:
+            llm_service.unregister_function(tool_name)
+        except KeyError:
+            logger.debug(f"Tool '{tool_name}' was not registered or already removed.")
+            pass
+        except Exception as e:
+            logger.warning(f"Error while unregistering tool '{tool_name}': {e}")
 
 
 async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_id: str):
