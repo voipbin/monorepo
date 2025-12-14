@@ -403,7 +403,7 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
 
                 logger.info(f"[{tool_name}] Success: {status}")
                 properties = FunctionCallResultProperties(
-                    run_llm=False,
+                    run_llm=True,
                 )
 
                 await params.result_callback(
