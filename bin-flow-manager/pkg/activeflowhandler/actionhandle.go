@@ -443,7 +443,7 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 
 	var opt action.OptionConferenceJoin
 	if err := json.Unmarshal(tmpOption, &opt); err != nil {
-		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		log.Errorf("Could not unmarshal the conference_join option. err: %v", err)
 		return err
 	}
 	log = log.WithField("conference_id", opt.ConferenceID)
@@ -751,7 +751,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 
 	var opt action.OptionQueueJoin
 	if err := json.Unmarshal(tmpOption, &opt); err != nil {
-		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		log.Errorf("Could not unmarshal the queue_join option. err: %v", err)
 		return err
 	}
 	log = log.WithField("queue_id", opt.QueueID)
@@ -1062,7 +1062,7 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 
 	var opt action.OptionAITalk
 	if err := json.Unmarshal(tmpOption, &opt); err != nil {
-		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		log.Errorf("Could not unmarshal the ai_task option. err: %v", err)
 		return err
 	}
 
@@ -1214,7 +1214,7 @@ func (h *activeflowHandler) actionHandleAITask(ctx context.Context, af *activefl
 
 	var opt action.OptionAITask
 	if err := json.Unmarshal(tmpOption, &opt); err != nil {
-		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		log.Errorf("Could not unmarshal the ai_task option. err: %v", err)
 		return err
 	}
 
