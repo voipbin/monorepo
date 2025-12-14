@@ -673,8 +673,10 @@ func Test_toolHandleSetVariables(t *testing.T) {
 				Function: message.FunctionCall{
 					Name: message.FunctionCallNameSetVariables,
 					Arguments: `{
-						"key1": "value1",
-						"key2": "value2"
+						"variables": {
+							"key1": "value1",
+							"key2": "value2"
+						}
 					}`,
 				},
 			},

@@ -304,14 +304,17 @@ func (h *aicallHandler) toolHandleSetVariables(ctx context.Context, c *aicall.AI
 
 	res := newToolResult(tool.ID)
 
-	mapVariables := map[string]string{}
-	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &mapVariables); errUnmarshal != nil {
+	req := struct {
+		Variables map[string]string `json:"variables"`
+	}{}
+
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &req); errUnmarshal != nil {
 		fillFailed(res, errUnmarshal)
 		return res
 	}
 
 	log.Debugf("Setting the activeflow variables. activeflow_id: %s", c.ActiveflowID)
-	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, mapVariables); errSet != nil {
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, req.Variables); errSet != nil {
 		fillFailed(res, errSet)
 		return res
 	}
