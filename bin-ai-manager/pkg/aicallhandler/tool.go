@@ -41,8 +41,6 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 	log.WithField("message", tmp).Debugf("Created the tool message for the actions. message_id: %s", tmp.ID)
 
-	var tmpMessageContent *messageContent
-
 	mapFunctions := map[message.FunctionCallName]func(context.Context, *aicall.AIcall, *message.ToolCall) *messageContent{
 		message.FunctionCallNameConnectCall:       h.toolHandleConnect,
 		message.FunctionCallNameGetVariables:      h.toolHandleGetVariables,
@@ -55,6 +53,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameStopService:       h.toolHandleServiceStop,
 	}
 
+	var tmpMessageContent *messageContent
 	if fn, exists := mapFunctions[tool.Function.Name]; exists {
 		tmpMessageContent = fn(ctx, c, tool)
 	} else {
@@ -305,14 +304,17 @@ func (h *aicallHandler) toolHandleSetVariables(ctx context.Context, c *aicall.AI
 
 	res := newToolResult(tool.ID)
 
-	mapVariables := map[string]string{}
-	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &mapVariables); errUnmarshal != nil {
+	req := struct {
+		Variables map[string]string `json:"variables"`
+	}{}
+
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &req); errUnmarshal != nil {
 		fillFailed(res, errUnmarshal)
 		return res
 	}
 
 	log.Debugf("Setting the activeflow variables. activeflow_id: %s", c.ActiveflowID)
-	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, mapVariables); errSet != nil {
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, req.Variables); errSet != nil {
 		fillFailed(res, errSet)
 		return res
 	}

@@ -1,5 +1,4 @@
 import common
-import requests
 import json
 from loguru import logger
 import aiohttp
@@ -10,8 +9,6 @@ from pipecat.services.llm_service import FunctionCallParams
 from pipecat.frames.frames import FunctionCallResultProperties
 
 class ToolName(str, Enum):
-    FINALIZE = "tool_finalize"        # General finalization tool
-    
     # NOTICE: The following tool names must match those defined in the ai-manager.
     CONNECT_CALL = "connect_call"                   # Connects caller to endpoints
     GET_VARIABLES = "get_variables"                 # Gets flow variables
@@ -29,22 +26,6 @@ tools = [
     {
         "type": "function",
         "function": {
-            "name": ToolName.FINALIZE.value,
-            "description": """
-A general-purpose tool that triggers a follow-up LLM response at the appropriate point after 
-tool execution (e.g., SMS, Email, or database updates). 
-This tool should be called only once when a final response from the LLM is needed.
-""",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
             "name": ToolName.CONNECT_CALL.value,
             "description": """
 Establishes a call from a source endpoint to one or more destination endpoints. 
@@ -55,6 +36,11 @@ Each endpoint must include a type and target, and optionally a target_name for d
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "run_llm": {
+                        "type": "boolean",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
+                        "default": False
+                    },
                     "source": {
                         "type": "object",
                         "properties": {
@@ -107,6 +93,11 @@ Each endpoint must include a type and target, and optionally a target_name for d
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "run_llm": {
+                        "type": "boolean",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
+                        "default": False
+                    },
                     "destinations": {
                         "type": "array",
                         "items": {
@@ -174,7 +165,13 @@ Stops the media currently playing on the active call. Use this to immediately ha
 """,
             "parameters": {
                 "type": "object",
-                "properties": {},
+                "properties": {
+                    "run_llm": {
+                        "type": "boolean",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
+                        "default": False
+                    },
+                },
                 "required": []
             }
         }
@@ -191,6 +188,11 @@ The source and destination types must be "tel".
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "run_llm": {
+                        "type": "boolean",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
+                        "default": False
+                    },
                     "source": {
                         "type": "object",
                         "properties": {
@@ -276,16 +278,27 @@ Use this to completely terminate the current process without executing subsequen
         "function": {
             "name": ToolName.SET_VARIABLES.value,
             "description": """
-Sets variables as key-value pairs for the current flow execution. Use this tool when instructed to save or set a variable.
+Saves one or more variables to the flow context.
+Pass a dictionary object to the 'variables' argument where keys are variable names and values are the content to save.
 """,
             "parameters": {
                 "type": "object",
-                "description": "A map of string keys to string values. Example: {\"key1\": \"value1\"}",
-                "properties": {},
-                "additionalProperties": {
-                    "type": "string"
+                "description": "Parameters for setting variables in the flow context.",
+                "properties": {
+                    "run_llm": {
+                        "type": "boolean",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
+                        "default": False
+                    },
+                    "variables": {
+                        "type": "object",
+                        "description": "A dictionary containing key-value pairs to be saved. Example: {'ai_summary': 'text...', 'status': 'done'}",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
                 },
-                "required": []
+                "required": ["variables"]
             }
         }
     },
@@ -298,7 +311,13 @@ Retrieves all currently set key-value variables for the current flow execution.
 """,
             "parameters": {
                 "type": "object",
-                "properties": {},
+                "properties": {
+                    "run_llm": {
+                        "type": "boolean",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
+                        "default": False
+                    },
+                },
                 "required": []
             }
         }
@@ -314,6 +333,11 @@ Use this to fetch the complete message history for a given aicall_id.
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "run_llm": {
+                        "type": "boolean",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
+                        "default": False
+                    },
                     "aicall_id": {
                         "type": "string",
                         "description": "The ID of the AI call whose messages should be retrieved."
@@ -327,12 +351,8 @@ Use this to fetch the complete message history for a given aicall_id.
 
 def tool_register(llm_service, pipecatcall_id):
     def create_wrapper(tool_name, pipecatcall_id):
-        if tool_name == ToolName.FINALIZE.value:
-            async def wrapper(params: FunctionCallParams):
-                return await tool_finalize(params, pipecatcall_id)
-        else:
-            async def wrapper(params: FunctionCallParams):
-                return await tool_execute(tool_name, params, pipecatcall_id)
+        async def wrapper(params: FunctionCallParams):
+            return await tool_execute(tool_name, params, pipecatcall_id)
         return wrapper
 
     for tool_name in TOOLNAMES:
@@ -346,34 +366,21 @@ def tool_unregister(llm_service):
         llm_service.unregister_function(tool_name)
 
 
-async def tool_finalize(params: FunctionCallParams, pipecatcall_id: str):
-    """Finalizes the tool execution and triggers a follow-up LLM response."""
-    logger.info(f"[tool_finalize] Finalizing tool execution. pipecatcall_id: {pipecatcall_id}")
-
-    properties = FunctionCallResultProperties(
-        run_llm=True,  # Trigger LLM response after finalization
-    )
-
-    await params.result_callback(
-        {
-            "status": "ok",
-            "data": {"message": "Tool execution finalized."},
-        },
-        properties=properties,
-    )
-
-
 async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_id: str):
     """Generic executor for tool calls (connect, message_send, etc)."""
-    logger.info(f"[{tool_name}] Executing with params: {json.dumps(params.arguments, ensure_ascii=False)}")
     
+    args = params.arguments if isinstance(params.arguments, dict) else {}
+    logger.info(f"[{tool_name}] Executing. Args: {json.dumps(args, ensure_ascii=False)}")
+
+    should_run_llm = args.pop("run_llm", False)
+
     http_url = f"{common.PIPECATCALL_HTTP_URL}/{pipecatcall_id}/tools"
     http_body = {
         "id": params.tool_call_id,
         "type": "function",
         "function": {
             "name": tool_name,
-            "arguments": json.dumps(params.arguments, ensure_ascii=False),
+            "arguments": json.dumps(args, ensure_ascii=False),
         },
     }
     logger.debug(f"[{tool_name}] POST {http_url} with body: {json.dumps(http_body, ensure_ascii=False)}")
@@ -403,7 +410,7 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
 
                 logger.info(f"[{tool_name}] Success: {status}")
                 properties = FunctionCallResultProperties(
-                    run_llm=False,
+                    run_llm=should_run_llm,
                 )
 
                 await params.result_callback(
@@ -413,13 +420,6 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
                     },
                     properties=properties,
                 )
-
-    except requests.exceptions.RequestException as e:
-        logger.error(f"[{tool_name}] Request failed: {e}")
-        await params.result_callback({
-            "status": "error",
-            "error": str(e),
-        })
 
     except asyncio.TimeoutError:
         logger.error(f"[{tool_name}] Request timed out after 10s")

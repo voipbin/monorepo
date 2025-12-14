@@ -443,7 +443,7 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 
 	var opt action.OptionConferenceJoin
 	if err := json.Unmarshal(tmpOption, &opt); err != nil {
-		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		log.Errorf("Could not unmarshal the conference_join option. err: %v", err)
 		return err
 	}
 	log = log.WithField("conference_id", opt.ConferenceID)
@@ -751,7 +751,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 
 	var opt action.OptionQueueJoin
 	if err := json.Unmarshal(tmpOption, &opt); err != nil {
-		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		log.Errorf("Could not unmarshal the queue_join option. err: %v", err)
 		return err
 	}
 	log = log.WithField("queue_id", opt.QueueID)
@@ -1062,7 +1062,7 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 
 	var opt action.OptionAITalk
 	if err := json.Unmarshal(tmpOption, &opt); err != nil {
-		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		log.Errorf("Could not unmarshal the ai_talk option. err: %v", err)
 		return err
 	}
 
@@ -1192,6 +1192,44 @@ func (h *activeflowHandler) actionHandleBlock(ctx context.Context, af *activeflo
 		"activeflow_id": af.ID,
 	})
 	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
+	return nil
+}
+
+// actionHandleAITask handles action ai_task with activeflow.
+// it starts ai task service.
+func (h *activeflowHandler) actionHandleAITask(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "actionHandleAITask",
+		"activeflow_id": af.ID,
+	})
+	log.WithField("action", af.CurrentAction).Debugf("Executing action handle. type: %s, action_id: %s", af.CurrentAction.Type, af.CurrentAction.ID)
+
+	act := &af.CurrentAction
+
+	tmpOption, err := json.Marshal(act.Option)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the option. err: %v", err)
+	}
+
+	var opt action.OptionAITask
+	if err := json.Unmarshal(tmpOption, &opt); err != nil {
+		log.Errorf("Could not unmarshal the ai_task option. err: %v", err)
+		return err
+	}
+
+	// start service
+	sv, err := h.reqHandler.AIV1ServiceTypeTaskStart(ctx, opt.AIID, af.ID)
+	if err != nil {
+		return errors.Wrap(err, "Could not start the service.")
+	}
+	log.WithField("service", sv).Debugf("Started service. service_type: %s, service_id: %s", sv.Type, sv.ID)
+
+	// push the actions
+	if errPush := h.PushStack(ctx, af, sv.ID, sv.PushActions); errPush != nil {
+		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+		return errors.Wrapf(errPush, "Could not push the actions to the stack.")
+	}
 
 	return nil
 }
