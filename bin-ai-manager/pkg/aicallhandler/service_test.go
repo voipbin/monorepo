@@ -252,6 +252,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 		responseUUIDPipecatcallID uuid.UUID
 		responseMessages          []*message.Message
 		responsePipecatcall       *pmpipecatcall.Pipecatcall
+		responseUUIDActionID      uuid.UUID
 
 		expectMessageText string
 		expectLLMMessages []map[string]any
@@ -326,6 +327,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				},
 				HostID: "host-12345",
 			},
+			responseUUIDActionID: uuid.FromStringOrNil("d6bbba02-d921-11f0-b788-73cf53c67fe9"),
 
 			expectMessageText: "hello world",
 			expectLLMType:     pmpipecatcall.LLMType("openai.gpt-4"),
@@ -347,9 +349,15 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			expectTTSType:    pmpipecatcall.TTSTypeElevenLabs,
 			expectTTSVoiceID: "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
 			expectRes: &commonservice.Service{
-				ID:          uuid.FromStringOrNil("15e0eebc-b886-11f0-9165-53c1245e306f"),
-				Type:        commonservice.TypeAIcall,
-				PushActions: []fmaction.Action{},
+				ID:   uuid.FromStringOrNil("15e0eebc-b886-11f0-9165-53c1245e306f"),
+				Type: commonservice.TypeAIcall,
+				PushActions: []fmaction.Action{
+					{
+						ID:     uuid.FromStringOrNil("d6bbba02-d921-11f0-b788-73cf53c67fe9"),
+						Type:   fmaction.TypeBlock,
+						Option: fmaction.ConvertOption(fmaction.OptionBlock{}),
+					},
+				},
 			},
 		},
 	}
@@ -406,6 +414,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
 
 			res, err := h.ServiceStart(ctx, tt.aiID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
