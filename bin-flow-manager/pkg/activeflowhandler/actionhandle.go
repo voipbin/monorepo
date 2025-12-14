@@ -1062,7 +1062,7 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 
 	var opt action.OptionAITalk
 	if err := json.Unmarshal(tmpOption, &opt); err != nil {
-		log.Errorf("Could not unmarshal the ai_task option. err: %v", err)
+		log.Errorf("Could not unmarshal the ai_talk option. err: %v", err)
 		return err
 	}
 

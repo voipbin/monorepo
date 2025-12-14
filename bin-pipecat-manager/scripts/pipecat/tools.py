@@ -38,7 +38,7 @@ Each endpoint must include a type and target, and optionally a target_name for d
                 "properties": {
                     "run_llm": {
                         "type": "boolean",
-                        "description": "Set to false if the AI should remain silent after the transfer initiates. Set to true if the AI needs to confirm the transfer verbally.",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
                         "default": False
                     },
                     "source": {
@@ -95,7 +95,7 @@ Each endpoint must include a type and target, and optionally a target_name for d
                 "properties": {
                     "run_llm": {
                         "type": "boolean",
-                        "description": "Set to false if the AI should remain silent after the transfer initiates. Set to true if the AI needs to confirm the transfer verbally.",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
                         "default": False
                     },
                     "destinations": {
@@ -168,7 +168,7 @@ Stops the media currently playing on the active call. Use this to immediately ha
                 "properties": {
                     "run_llm": {
                         "type": "boolean",
-                        "description": "Set to false if the AI should remain silent after the transfer initiates. Set to true if the AI needs to confirm the transfer verbally.",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
                         "default": False
                     },
                 },
@@ -190,7 +190,7 @@ The source and destination types must be "tel".
                 "properties": {
                     "run_llm": {
                         "type": "boolean",
-                        "description": "Set to false if the AI should remain silent after the transfer initiates. Set to true if the AI needs to confirm the transfer verbally.",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
                         "default": False
                     },
                     "source": {
@@ -287,7 +287,7 @@ Pass a dictionary object to the 'variables' argument where keys are variable nam
                 "properties": {
                     "run_llm": {
                         "type": "boolean",
-                        "description": "Set to false if the AI should remain silent after the transfer initiates. Set to true if the AI needs to confirm the transfer verbally.",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
                         "default": False
                     },
                     "variables": {
@@ -314,7 +314,7 @@ Retrieves all currently set key-value variables for the current flow execution.
                 "properties": {
                     "run_llm": {
                         "type": "boolean",
-                        "description": "Set to false if the AI should remain silent after the transfer initiates. Set to true if the AI needs to confirm the transfer verbally.",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
                         "default": False
                     },
                 },
@@ -335,7 +335,7 @@ Use this to fetch the complete message history for a given aicall_id.
                 "properties": {
                     "run_llm": {
                         "type": "boolean",
-                        "description": "Set to false if the AI should remain silent after the transfer initiates. Set to true if the AI needs to confirm the transfer verbally.",
+                        "description": "Set to false if the AI should remain silent after executing this action. Set to true if the AI needs to provide a verbal confirmation or response.",
                         "default": False
                     },
                     "aicall_id": {
