@@ -367,7 +367,6 @@ def tool_unregister(llm_service):
             llm_service.unregister_function(tool_name)
         except KeyError:
             logger.debug(f"Tool '{tool_name}' was not registered or already removed.")
-            pass
         except Exception as e:
             logger.warning(f"Error while unregistering tool '{tool_name}': {e}")
 
