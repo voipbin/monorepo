@@ -438,6 +438,7 @@ func (h *aicallHandler) StartTask(ctx context.Context, aiID uuid.UUID, activeflo
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
 	if errTerminate := h.reqHandler.AIV1AIcallTerminateWithDelay(ctx, res.ID, defaultAITaskTimeout); errTerminate != nil {
+		// note: the delayed termination request has failed, but we just log it and continue
 		log.Errorf("Could not send the aicall terminate request correctly. err: %v", errTerminate)
 	}
 
