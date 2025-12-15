@@ -57,7 +57,7 @@ func Test_AstPlaybackStop(t *testing.T) {
 
 			err := reqHandler.AstPlaybackStop(context.Background(), tt.asteriskID, tt.playbackID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

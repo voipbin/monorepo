@@ -853,17 +853,21 @@ func Test_v1ActiveflowsIDContinuePost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		expectedActiveflowID uuid.UUID
-		expectedRes          *sock.Response
+		expectedActiveflowID    uuid.UUID
+		expectedCurrentActionID uuid.UUID
+		expectedRes             *sock.Response
 	}{
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/activeflows/b18dff18-d95f-11f0-bfac-33e92e084f79/continue",
-				Method: sock.RequestMethodPost,
+				URI:      "/v1/activeflows/b18dff18-d95f-11f0-bfac-33e92e084f79/continue",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"current_action_id": "32a94ff6-d967-11f0-a3d8-b3111a754c3b"}`),
 			},
 
-			expectedActiveflowID: uuid.FromStringOrNil("b18dff18-d95f-11f0-bfac-33e92e084f79"),
+			expectedActiveflowID:    uuid.FromStringOrNil("b18dff18-d95f-11f0-bfac-33e92e084f79"),
+			expectedCurrentActionID: uuid.FromStringOrNil("32a94ff6-d967-11f0-a3d8-b3111a754c3b"),
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -886,7 +890,7 @@ func Test_v1ActiveflowsIDContinuePost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().ExecuteContinue(gomock.Any(), tt.expectedActiveflowID).Return(nil)
+			mockActive.EXPECT().ExecuteContinue(gomock.Any(), tt.expectedActiveflowID, tt.expectedCurrentActionID).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

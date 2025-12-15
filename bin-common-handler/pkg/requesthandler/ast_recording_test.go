@@ -55,7 +55,7 @@ func Test_AstRecordingStop(t *testing.T) {
 
 			err := reqHandler.AstRecordingStop(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -106,7 +106,7 @@ func Test_AstRecordingPause(t *testing.T) {
 
 			err := reqHandler.AstRecordingPause(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -157,7 +157,7 @@ func Test_AstRecordingUnpause(t *testing.T) {
 
 			err := reqHandler.AstRecordingUnpause(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -208,7 +208,7 @@ func Test_AstRecordingMute(t *testing.T) {
 
 			err := reqHandler.AstRecordingMute(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -259,7 +259,7 @@ func Test_AstRecordingUnmute(t *testing.T) {
 
 			err := reqHandler.AstRecordingUnmute(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

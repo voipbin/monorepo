@@ -150,7 +150,7 @@ func Test_AIV1AIGet(t *testing.T) {
 
 			res, err := reqHandler.AIV1AIGet(ctx, tt.aiID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
