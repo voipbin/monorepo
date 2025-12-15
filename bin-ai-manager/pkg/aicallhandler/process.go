@@ -48,12 +48,14 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*ai
 	}
 
 	// stop the aicall service
+	log.Debugf("Stopping activeflow service. activeflow_id: %s", tmp.ID)
 	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, tmp.ActiveflowID, tmp.ID, 0); errStop != nil {
 		log.Infof("Could not stop the service. But stopping the aicall anyways. err: %v", errStop)
 	}
 
 	if tmp.ReferenceType != aicall.ReferenceTypeCall {
 		// trigger the activeflow execution to continue the flow
+		log.WithField("aicall", tmp).Debugf("The aicall is not a call reference type. Executing the activeflow again. activeflow_id: %s", tmp.ActiveflowID)
 		if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, tmp.ActiveflowID); errExecute != nil {
 			log.Infof("Could not execute the activeflow after stopping the service. err: %v", errExecute)
 		}
