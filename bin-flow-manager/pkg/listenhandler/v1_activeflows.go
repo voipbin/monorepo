@@ -251,8 +251,8 @@ func (h *listenHandler) v1ActiveflowsIDExecutePost(ctx context.Context, m *sock.
 	id := uuid.FromStringOrNil(tmpVals[3])
 
 	go func() {
-		if err := h.activeflowHandler.Execute(ctx, id); err != nil {
-			log.Errorf("Could not execute the active-flow correctly. err: %v", err)
+		if err := h.activeflowHandler.Execute(context.Background(), id); err != nil {
+			log.Errorf("Could not execute the activeflow correctly. err: %v", err)
 		}
 	}()
 
@@ -396,6 +396,32 @@ func (h *listenHandler) v1ActiveflowsIDServiceStopPost(ctx context.Context, m *s
 	if errStop := h.activeflowHandler.ServiceStop(ctx, id, req.ServiceID); errStop != nil {
 		return nil, errors.Wrapf(errStop, "Could not stop the service. service_id: %s", req.ServiceID)
 	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
+// v1ActiveflowsIDContinuePost handles
+// /v1/activeflows/{id}/continue Post
+func (h *listenHandler) v1ActiveflowsIDContinuePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1ActiveflowsIDContinuePost",
+		"request": m,
+	})
+
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/continue"
+	tmpVals := strings.Split(m.URI, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	go func() {
+		if errContinue := h.activeflowHandler.ExecuteContinue(context.Background(), id); errContinue != nil {
+			log.Errorf("Could not continue the activeflow correctly. err: %v", errContinue)
+		}
+	}()
 
 	res := &sock.Response{
 		StatusCode: 200,
