@@ -228,7 +228,7 @@ func Test_AIV1AIcallGet(t *testing.T) {
 
 			res, err := reqHandler.AIV1AIcallGet(ctx, tt.aicallID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {

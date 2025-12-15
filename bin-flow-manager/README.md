@@ -191,7 +191,7 @@ $ go build ./cmd/...
 	TMDelete string `json:"tm_delete"`
 ```
 
-## active-flow
+## activeflow
 
 ```
 	CallID     uuid.UUID `json:"call_id"`

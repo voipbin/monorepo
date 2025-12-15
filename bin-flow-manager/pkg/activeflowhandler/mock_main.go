@@ -132,6 +132,20 @@ func (mr *MockActiveflowHandlerMockRecorder) Execute(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockActiveflowHandler)(nil).Execute), ctx, id)
 }
 
+// ExecuteContinue mocks base method.
+func (m *MockActiveflowHandler) ExecuteContinue(ctx context.Context, activeflowID, caID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExecuteContinue", ctx, activeflowID, caID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExecuteContinue indicates an expected call of ExecuteContinue.
+func (mr *MockActiveflowHandlerMockRecorder) ExecuteContinue(ctx, activeflowID, caID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteContinue", reflect.TypeOf((*MockActiveflowHandler)(nil).ExecuteContinue), ctx, activeflowID, caID)
+}
+
 // ExecuteNextAction mocks base method.
 func (m *MockActiveflowHandler) ExecuteNextAction(ctx context.Context, callID, caID uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()

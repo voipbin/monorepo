@@ -65,7 +65,7 @@ func Test_AstAMIRedirect(t *testing.T) {
 
 			err := reqHandler.AstAMIRedirect(context.Background(), tt.asteriskID, tt.channelID, tt.context, tt.exten, tt.priority)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

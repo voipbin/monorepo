@@ -31,6 +31,40 @@ func (h *activeflowHandler) Execute(ctx context.Context, activeflowID uuid.UUID)
 	return nil
 }
 
+// ExecuteContinue continues the actions.
+// This unblocks the blocked activeflow and triggers the flow execution.
+// The caID parameter is the current action ID that must match the activeflow's current action.
+// This validation ensures the caller has the correct state before continuing the flow.
+func (h *activeflowHandler) ExecuteContinue(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "ExecuteContinue",
+		"activeflow_id":     activeflowID,
+		"current_action_id": caID,
+	})
+
+	// get activeflow info
+	af, err := h.Get(ctx, activeflowID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get activeflow info. activeflow_id: %s", activeflowID)
+	}
+
+	// todo: Maybe, we need to add the status for pause or similar for the activeflow and check here.
+	// but for now, we just check the current action type.
+	if af.CurrentAction.Type != action.TypeBlock {
+		log.Infof("The activeflow is not blocked. current_action_type: %s", af.CurrentAction.Type)
+		return fmt.Errorf("the activeflow is not blocked. activeflow_id: %s", activeflowID)
+	}
+
+	// execute the next action
+	tmp, err := h.ExecuteNextAction(ctx, activeflowID, caID)
+	if err != nil {
+		return errors.Wrapf(err, "could not execute the next action. activeflow_id: %s", activeflowID)
+	}
+	log.WithField("action", tmp).Debugf("Completed the activeflow execution. activeflow_id: %s", activeflowID)
+
+	return nil
+}
+
 // ExecuteNextAction gets the next action from the activeflow and execute.
 func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) (*action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{

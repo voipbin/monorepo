@@ -63,3 +63,10 @@ type V1DataActiveFlowsIDAddActionPost struct {
 type V1DataActiveFlowsIDServiceStopPost struct {
 	ServiceID uuid.UUID `json:"service_id"`
 }
+
+// V1DataActiveFlowsIDContinuePost is
+// data type request struct for
+// /v1/activeflows/{id}/continue POST
+type V1DataActiveFlowsIDContinuePost struct {
+	CurrentActionID uuid.UUID `json:"current_action_id"`
+}

@@ -68,7 +68,7 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 
 			res, err := reqHandler.ConferenceV1ConferenceGet(context.Background(), tt.conferenceID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
