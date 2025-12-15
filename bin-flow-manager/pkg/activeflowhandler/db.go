@@ -184,7 +184,7 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 	return nil
 }
 
-// updateCurrentAction updates the current action in active-flow.
+// updateCurrentAction updates the current action in activeflow.
 // returns updated active flow
 func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUID, stackID uuid.UUID, act *action.Action) (*activeflow.Activeflow, error) {
 
@@ -270,8 +270,9 @@ func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID u
 		return nil, fmt.Errorf("the activeflow ended. status: %s", af.Status)
 	}
 
-	if af.CurrentAction.ID != action.IDEmpty && af.CurrentAction.ID != caID {
-		return nil, fmt.Errorf("current action does not match. current_action_id: %s, target_current_action_id: %s", af.CurrentAction.ID, caID)
+	// validate activeflow and the given current action id
+	if errValidate := h.validateCurrentActionID(af, caID); errValidate != nil {
+		return nil, errors.Wrapf(errValidate, "could not pass the current action id validation")
 	}
 
 	// get next action

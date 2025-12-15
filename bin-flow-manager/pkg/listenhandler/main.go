@@ -48,6 +48,7 @@ var (
 	regV1ActiveflowsGet               = regexp.MustCompile(`/v1/activeflows\?`)
 	regV1Activeflows                  = regexp.MustCompile("/v1/activeflows$")
 	regV1ActiveflowsID                = regexp.MustCompile("/v1/activeflows/" + regUUID + "$")
+	regV1ActiveflowsIDContinue        = regexp.MustCompile("/v1/activeflows/" + regUUID + "/continue$")
 	regV1ActiveflowsIDExecute         = regexp.MustCompile("/v1/activeflows/" + regUUID + "/execute$")
 	regV1ActiveflowsIDNext            = regexp.MustCompile("/v1/activeflows/" + regUUID + "/next$")
 	regV1ActiveflowsIDForwardActionID = regexp.MustCompile("/v1/activeflows/" + regUUID + "/forward_action_id$")
@@ -189,6 +190,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ActiveflowsIDForwardActionID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/activeflows/<activeflow-id>/forward_action_id"
 		response, err = h.v1ActiveflowsIDForwardActionIDPut(ctx, m)
+
+	// activeflows/<activeflow-id>/continue
+	case regV1ActiveflowsIDContinue.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/activeflows/<activeflow-id>/continue"
+		response, err = h.v1ActiveflowsIDContinuePost(ctx, m)
 
 	// activeflows/<activeflow-id>/execute
 	case regV1ActiveflowsIDExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

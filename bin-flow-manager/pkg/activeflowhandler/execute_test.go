@@ -92,7 +92,7 @@ func Test_Execute(t *testing.T) {
 
 			// updateNextAction
 			mockDB.EXPECT().ActiveflowGetWithLock(gomock.Any(), tt.id).Return(tt.responseActiveflow, nil)
-			mockStack.EXPECT().GetNextAction(gomock.Any(), gomock.Any(), gomock.Any(), true).Return(tt.responseStackID, tt.responseAction)
+			mockStack.EXPECT().GetNextAction(gomock.Any(), gomock.Any(), action.IDStart, true).Return(tt.responseStackID, tt.responseAction)
 			mockVar.EXPECT().Get(ctx, tt.id).Return(&variable.Variable{}, nil)
 			mockVar.EXPECT().SubstituteOption(ctx, tt.responseAction.Option, &variable.Variable{})
 			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.id)
@@ -104,6 +104,102 @@ func Test_Execute(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
 			if err := h.Execute(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_ExecuteContinue(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseActiveflow *activeflow.Activeflow
+		responseStackID    uuid.UUID
+		responseAction     *action.Action
+
+		expectedCurrentActionID uuid.UUID
+	}{
+		{
+			name: "normal",
+
+			id: uuid.FromStringOrNil("e39e41aa-d961-11f0-a0d0-b74f3528eec5"),
+
+			responseActiveflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e39e41aa-d961-11f0-a0d0-b74f3528eec5"),
+				},
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("e3cc4ef6-d961-11f0-8220-9bd166180dec"),
+					Type: action.TypeBlock,
+				},
+				ReferenceType: activeflow.ReferenceTypeCall,
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("e3cc4ef6-d961-11f0-8220-9bd166180dec"),
+								Type: action.TypeBlock,
+							},
+							{
+								ID:   uuid.FromStringOrNil("e3f5373a-d961-11f0-9f24-4b5ff9d5b907"),
+								Type: action.TypeAnswer,
+							},
+						},
+					},
+				},
+			},
+			responseStackID: stack.IDMain,
+			responseAction: &action.Action{
+				ID:   uuid.FromStringOrNil("e3f5373a-d961-11f0-9f24-4b5ff9d5b907"),
+				Type: action.TypeAnswer,
+			},
+
+			expectedCurrentActionID: uuid.FromStringOrNil("e3cc4ef6-d961-11f0-8220-9bd166180dec"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
+
+			h := &activeflowHandler{
+				utilHandler:     mockUtil,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				stackmapHandler: mockStack,
+				variableHandler: mockVar,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+
+			// updateNextAction
+			mockDB.EXPECT().ActiveflowGetWithLock(gomock.Any(), tt.id).Return(tt.responseActiveflow, nil)
+			mockStack.EXPECT().GetNextAction(gomock.Any(), gomock.Any(), tt.expectedCurrentActionID, true).Return(tt.responseStackID, tt.responseAction)
+			mockVar.EXPECT().Get(ctx, tt.id).Return(&variable.Variable{}, nil)
+			mockVar.EXPECT().SubstituteOption(ctx, tt.responseAction.Option, &variable.Variable{})
+			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.id)
+
+			// executeAction
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
+
+			if err := h.ExecuteContinue(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

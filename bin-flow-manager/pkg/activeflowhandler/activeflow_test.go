@@ -736,3 +736,95 @@ func Test_ServiceStop(t *testing.T) {
 		})
 	}
 }
+
+func Test_validateCurrentActionID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		af   *activeflow.Activeflow
+		caID uuid.UUID
+
+		expectedError bool
+	}{
+		{
+			name: "success_current_action_empty",
+			af: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					ID: action.IDEmpty,
+				},
+			},
+			caID:          uuid.FromStringOrNil("0f789bd0-d95e-11f0-a2fa-c30934e3496e"),
+			expectedError: false,
+		},
+		{
+			name: "success_continue_block_action",
+			af: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("0faf3ac8-d95e-11f0-95b0-cb1e6deb9c62"),
+					Type: action.TypeBlock,
+				},
+			},
+			caID:          action.IDContinue,
+			expectedError: false,
+		},
+		{
+			name: "fail_continue_but_not_block_action",
+			af: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("0fdd83d8-d95e-11f0-96f5-37341a3b89a9"),
+					Type: action.TypePlay, // Not Block
+				},
+			},
+			caID:          action.IDContinue,
+			expectedError: true,
+		},
+		{
+			name: "success_id_matched",
+			af: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					ID: uuid.FromStringOrNil("100ae53a-d95e-11f0-9a3d-cffaf4c82614"),
+				},
+			},
+			caID:          uuid.FromStringOrNil("100ae53a-d95e-11f0-9a3d-cffaf4c82614"),
+			expectedError: false,
+		},
+		{
+			name: "fail_id_mismatched",
+			af: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					ID: uuid.FromStringOrNil("1033f1f0-d95e-11f0-9d55-1b84cd5b06df"),
+				},
+			},
+			caID:          uuid.FromStringOrNil("0c3dbf8a-f9ea-11ef-87bb-0b801c31899c"),
+			expectedError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			// Initialize Mocks (Standard procedure based on your style, though not used in this specific method logic)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackmaphandler.NewMockStackmapHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+
+			h := &activeflowHandler{
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				variableHandler: mockVariableHandler,
+				stackmapHandler: mockStack,
+				actionHandler:   mockAction,
+			}
+
+			err := h.validateCurrentActionID(tt.af, tt.caID)
+			if (err != nil) != tt.expectedError {
+				t.Errorf("validateCurrentActionID() error = %v, wantErr %v", err, tt.expectedError)
+			}
+		})
+	}
+}

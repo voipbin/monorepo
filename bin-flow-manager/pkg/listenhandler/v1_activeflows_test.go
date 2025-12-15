@@ -847,3 +847,56 @@ func Test_v1ActiveflowsIDServiceStop(t *testing.T) {
 		})
 	}
 }
+
+func Test_v1ActiveflowsIDContinuePost(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		expectedActiveflowID uuid.UUID
+		expectedRes          *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/activeflows/b18dff18-d95f-11f0-bfac-33e92e084f79/continue",
+				Method: sock.RequestMethodPost,
+			},
+
+			expectedActiveflowID: uuid.FromStringOrNil("b18dff18-d95f-11f0-bfac-33e92e084f79"),
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:       mockSock,
+				flowHandler:       mockFlowHandler,
+				activeflowHandler: mockActive,
+			}
+
+			mockActive.EXPECT().ExecuteContinue(gomock.Any(), tt.expectedActiveflowID).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+
+			time.Sleep(time.Millisecond * 100)
+		})
+	}
+}
