@@ -32,7 +32,7 @@ func (h *activeflowHandler) Execute(ctx context.Context, activeflowID uuid.UUID)
 }
 
 // ExecuteContinue continues the actions.
-// This unblocks the blocked activeflow and trigger the flow execution.
+// This unblocks the blocked activeflow and triggers the flow execution.
 func (h *activeflowHandler) ExecuteContinue(ctx context.Context, activeflowID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ExecuteContinue",

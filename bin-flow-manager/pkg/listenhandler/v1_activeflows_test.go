@@ -1,7 +1,6 @@
 package listenhandler
 
 import (
-	"context"
 	"reflect"
 	"testing"
 	"time"
@@ -886,10 +885,9 @@ func Test_v1ActiveflowsIDContinuePost(t *testing.T) {
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActive,
 			}
-			ctx := context.Background()
 
 			mockActive.EXPECT().ExecuteContinue(gomock.Any(), tt.expectedActiveflowID).Return(nil)
-			res, err := h.v1ActiveflowsIDContinuePost(ctx, tt.request)
+			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
