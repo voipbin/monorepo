@@ -169,7 +169,23 @@ func (r *requestHandler) FlowV1ActiveflowExecute(ctx context.Context, activeflow
 
 	uri := fmt.Sprintf("/v1/activeflows/%s/execute", activeflowID)
 
-	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/execute", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return err
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
+	return nil
+}
+
+// FlowV1ActiveflowContinue continues the blocked activeflow
+func (r *requestHandler) FlowV1ActiveflowContinue(ctx context.Context, activeflowID uuid.UUID) error {
+
+	uri := fmt.Sprintf("/v1/activeflows/%s/continue", activeflowID)
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/continue", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return err
 	}

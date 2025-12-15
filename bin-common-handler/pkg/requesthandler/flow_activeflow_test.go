@@ -275,20 +275,20 @@ func Test_FlowV1ActiveflowExecute(t *testing.T) {
 		response *sock.Response
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("fde4653a-a7b5-11ec-a7ae-83d2f5255ec0"),
+			activeflowID: uuid.FromStringOrNil("fde4653a-a7b5-11ec-a7ae-83d2f5255ec0"),
 
-			"bin-manager.flow-manager.request",
-			&sock.Request{
+			expectQueue: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/activeflows/fde4653a-a7b5-11ec-a7ae-83d2f5255ec0/execute",
 				Method:   sock.RequestMethodPost,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
-				DataType:   ContentTypeJSON,
+				DataType:   ContentTypeNone,
 			},
 		},
 	}
@@ -306,6 +306,57 @@ func Test_FlowV1ActiveflowExecute(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FlowV1ActiveflowExecute(context.Background(), tt.activeflowID); err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_FlowV1ActiveflowContinue(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflowID uuid.UUID
+
+		expectQueue   string
+		expectRequest *sock.Request
+
+		response *sock.Response
+	}{
+		{
+			name: "normal",
+
+			activeflowID: uuid.FromStringOrNil("c4530008-d964-11f0-966c-db132d81fa67"),
+
+			expectQueue: "bin-manager.flow-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/activeflows/c4530008-d964-11f0-966c-db132d81fa67/continue",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeNone,
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeNone,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.FlowV1ActiveflowContinue(context.Background(), tt.activeflowID); err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
 
