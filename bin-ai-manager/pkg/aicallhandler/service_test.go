@@ -592,9 +592,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 				"",
 			).Return(tt.responsePipecatcall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.activeflowID, tt.expectAIcall.ID, defaultAITaskTimeout).Return(nil)
-			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
-
+			mockReq.EXPECT().AIV1AIcallTerminateWithDelay(ctx, tt.expectAIcall.ID, defaultAITaskTimeout).Return(nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
 
 			res, err := h.ServiceStartTypeTask(ctx, tt.aiID, tt.activeflowID)
