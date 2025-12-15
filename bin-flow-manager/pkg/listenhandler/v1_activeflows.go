@@ -418,9 +418,9 @@ func (h *listenHandler) v1ActiveflowsIDContinuePost(ctx context.Context, m *sock
 	id := uuid.FromStringOrNil(tmpVals[3])
 
 	var req request.V1DataActiveFlowsIDContinuePost
-	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
-		return nil, err
+	if errUnmarshal := json.Unmarshal(m.Data, &req); errUnmarshal != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
+		return nil, errUnmarshal
 	}
 
 	go func() {
