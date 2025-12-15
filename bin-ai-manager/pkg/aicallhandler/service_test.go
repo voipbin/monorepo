@@ -429,7 +429,6 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 		responseAI                *ai.AI
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
-		responseUUIDActionID      uuid.UUID
 
 		responseMessages    []*message.Message
 		responsePipecatcall *pmpipecatcall.Pipecatcall
@@ -455,7 +454,6 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 			},
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("c4c99736-b885-11f0-b96c-436111319838"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("486ab602-d70c-11f0-9665-1b75a7a17c15"),
-			responseUUIDActionID:      uuid.FromStringOrNil("e303579a-d712-11f0-a8eb-dfce8d23e196"),
 			responseMessages: []*message.Message{
 				{
 					Role:    "system",
@@ -505,7 +503,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 				Type: commonservice.TypeAIcall,
 				PushActions: []fmaction.Action{
 					{
-						ID:     uuid.FromStringOrNil("e303579a-d712-11f0-a8eb-dfce8d23e196"),
+						ID:     uuid.FromStringOrNil("486ab602-d70c-11f0-9665-1b75a7a17c15"),
 						Type:   fmaction.TypeBlock,
 						Option: map[string]any{},
 					},
@@ -585,8 +583,6 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.activeflowID, tt.expectAIcall.ID, defaultAITaskTimeout).Return(nil)
 			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
-
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
 
 			res, err := h.ServiceStartTypeTask(ctx, tt.aiID, tt.activeflowID)
 			if err != nil {

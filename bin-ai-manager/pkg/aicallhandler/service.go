@@ -137,7 +137,8 @@ func (h *aicallHandler) ServiceStartTypeTask(
 		Type: commonservice.TypeAIcall,
 		PushActions: []fmaction.Action{
 			{
-				ID:     h.utilHandler.UUIDCreate(),
+				// note: using the same id as service id. this is required because we need to continue/unblock the flow later using the aicall's id.
+				ID:     cc.ID,
 				Type:   fmaction.TypeBlock,
 				Option: fmaction.ConvertOption(fmaction.OptionBlock{}),
 			},

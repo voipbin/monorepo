@@ -182,10 +182,18 @@ func (r *requestHandler) FlowV1ActiveflowExecute(ctx context.Context, activeflow
 }
 
 // FlowV1ActiveflowContinue continues the blocked activeflow
-func (r *requestHandler) FlowV1ActiveflowContinue(ctx context.Context, activeflowID uuid.UUID) error {
+func (r *requestHandler) FlowV1ActiveflowContinue(ctx context.Context, activeflowID uuid.UUID, currentActionID uuid.UUID) error {
 
 	uri := fmt.Sprintf("/v1/activeflows/%s/continue", activeflowID)
-	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/continue", requestTimeoutDefault, 0, ContentTypeNone, nil)
+
+	m, err := json.Marshal(fmrequest.V1DataActiveFlowsIDContinuePost{
+		CurrentActionID: currentActionID,
+	})
+	if err != nil {
+		return err
+	}
+
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/activeflows/<activeflow-id>/continue", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

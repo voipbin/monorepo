@@ -165,20 +165,25 @@ func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Active
 
 func (h *activeflowHandler) validateCurrentActionID(af *activeflow.Activeflow, caID uuid.UUID) error {
 	if af.CurrentAction.ID == action.IDEmpty {
+		// the activeflow's current action id is empty.
 		return nil
 	}
 
-	if caID == action.IDContinue {
-		// the current action id is continue.
-		// check the current action is block action. only block action can continue.
-		if af.CurrentAction.Type != action.TypeBlock {
-			return fmt.Errorf("the given current action id is continue, but the activeflow's current action is not block action. activeflow_id: %s, current_action_id: %s", af.ID, af.CurrentAction.ID)
-		}
-	} else {
-		if af.CurrentAction.ID != caID {
-			return fmt.Errorf("the given current action id is not matched. activeflow_id: %s, current_action_id: %s, given_current_action_id: %s", af.ID, af.CurrentAction.ID, caID)
-		}
+	if af.CurrentAction.ID != caID {
+		return fmt.Errorf("the given current action id is not matched. activeflow_id: %s, current_action_id: %s, given_current_action_id: %s", af.ID, af.CurrentAction.ID, caID)
 	}
+
+	// if caID == action.IDContinue {
+	// 	// the current action id is continue.
+	// 	// check the current action is block action. only block action can continue.
+	// 	if af.CurrentAction.Type != action.TypeBlock {
+	// 		return fmt.Errorf("the given current action id is continue, but the activeflow's current action is not block action. activeflow_id: %s, current_action_id: %s", af.ID, af.CurrentAction.ID)
+	// 	}
+	// } else {
+	// 	if af.CurrentAction.ID != caID {
+	// 		return fmt.Errorf("the given current action id is not matched. activeflow_id: %s, current_action_id: %s, given_current_action_id: %s", af.ID, af.CurrentAction.ID, caID)
+	// 	}
+	// }
 
 	return nil
 }

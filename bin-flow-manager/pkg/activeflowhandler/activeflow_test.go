@@ -758,28 +758,6 @@ func Test_validateCurrentActionID(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "success_continue_block_action",
-			af: &activeflow.Activeflow{
-				CurrentAction: action.Action{
-					ID:   uuid.FromStringOrNil("0faf3ac8-d95e-11f0-95b0-cb1e6deb9c62"),
-					Type: action.TypeBlock,
-				},
-			},
-			caID:          action.IDContinue,
-			expectedError: false,
-		},
-		{
-			name: "fail_continue_but_not_block_action",
-			af: &activeflow.Activeflow{
-				CurrentAction: action.Action{
-					ID:   uuid.FromStringOrNil("0fdd83d8-d95e-11f0-96f5-37341a3b89a9"),
-					Type: action.TypePlay, // Not Block
-				},
-			},
-			caID:          action.IDContinue,
-			expectedError: true,
-		},
-		{
 			name: "success_id_matched",
 			af: &activeflow.Activeflow{
 				CurrentAction: action.Action{

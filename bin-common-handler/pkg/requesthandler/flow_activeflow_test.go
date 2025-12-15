@@ -318,7 +318,8 @@ func Test_FlowV1ActiveflowContinue(t *testing.T) {
 	tests := []struct {
 		name string
 
-		activeflowID uuid.UUID
+		activeflowID    uuid.UUID
+		currentActionID uuid.UUID
 
 		expectQueue   string
 		expectRequest *sock.Request
@@ -328,13 +329,15 @@ func Test_FlowV1ActiveflowContinue(t *testing.T) {
 		{
 			name: "normal",
 
-			activeflowID: uuid.FromStringOrNil("c4530008-d964-11f0-966c-db132d81fa67"),
+			activeflowID:    uuid.FromStringOrNil("c4530008-d964-11f0-966c-db132d81fa67"),
+			currentActionID: uuid.FromStringOrNil("9f01711a-d967-11f0-bd91-8b75e39d86f5"),
 
 			expectQueue: "bin-manager.flow-manager.request",
 			expectRequest: &sock.Request{
 				URI:      "/v1/activeflows/c4530008-d964-11f0-966c-db132d81fa67/continue",
 				Method:   sock.RequestMethodPost,
-				DataType: ContentTypeNone,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"current_action_id":"9f01711a-d967-11f0-bd91-8b75e39d86f5"}`),
 			},
 
 			response: &sock.Response{
@@ -356,7 +359,7 @@ func Test_FlowV1ActiveflowContinue(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FlowV1ActiveflowContinue(context.Background(), tt.activeflowID); err != nil {
+			if err := reqHandler.FlowV1ActiveflowContinue(context.Background(), tt.activeflowID, tt.currentActionID); err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
 

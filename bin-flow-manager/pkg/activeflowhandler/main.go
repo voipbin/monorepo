@@ -79,7 +79,7 @@ type ActiveflowHandler interface {
 	ServiceStop(ctx context.Context, id uuid.UUID, serviceID uuid.UUID) error
 
 	Execute(ctx context.Context, id uuid.UUID) error
-	ExecuteContinue(ctx context.Context, activeflowID uuid.UUID) error
+	ExecuteContinue(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) error
 	ExecuteNextAction(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
 
 	EventCallHangup(ctx context.Context, c *cmcall.Call) error
