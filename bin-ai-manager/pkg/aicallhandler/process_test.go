@@ -101,7 +101,7 @@ func Test_ProcessTerminate(t *testing.T) {
 		responsePipecatcall *pmpipecatcall.Pipecatcall
 	}{
 		{
-			name: "normal",
+			name: "normal - reference type is task",
 
 			id: uuid.FromStringOrNil("dd188916-d791-11f0-b284-4359b8729dde"),
 
@@ -111,10 +111,31 @@ func Test_ProcessTerminate(t *testing.T) {
 				},
 				ConfbridgeID:  uuid.FromStringOrNil("a213c5f8-d794-11f0-9e01-3738b1dbf1d6"),
 				PipecatcallID: uuid.FromStringOrNil("a2460c84-d794-11f0-a9e3-8ffda8bbf25b"),
+				ReferenceType: aicall.ReferenceTypeTask,
 			},
 			responsePipecatcall: &pmpipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a2460c84-d794-11f0-a9e3-8ffda8bbf25b"),
+				},
+				HostID: "host-12345",
+			},
+		},
+		{
+			name: "normal - reference type is call",
+
+			id: uuid.FromStringOrNil("d9ee9868-d9d8-11f0-bf0e-13aea4f95ca9"),
+
+			responseAicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d9ee9868-d9d8-11f0-bf0e-13aea4f95ca9"),
+				},
+				ConfbridgeID:  uuid.FromStringOrNil("da1c1086-d9d8-11f0-b6e2-73784ba2c3f2"),
+				PipecatcallID: uuid.FromStringOrNil("da4a0d92-d9d8-11f0-9dfe-4b563d93e22c"),
+				ReferenceType: aicall.ReferenceTypeCall,
+			},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("da4a0d92-d9d8-11f0-9dfe-4b563d93e22c"),
 				},
 				HostID: "host-12345",
 			},
