@@ -125,6 +125,24 @@ func (r *requestHandler) AIV1AIcallTerminate(ctx context.Context, aicallID uuid.
 	return &res, nil
 }
 
+// AIV1AIcallTerminateWithDelay sends a request to ai-manager
+// to terminate an aicall after delayed time.
+// it returns null if it succeed.
+func (r *requestHandler) AIV1AIcallTerminateWithDelay(ctx context.Context, aicallID uuid.UUID, delay int) error {
+	uri := fmt.Sprintf("/v1/aicalls/%s/terminate", aicallID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/aicalls/<aicall-id>/terminate", requestTimeoutDefault, delay, ContentTypeNone, nil)
+	if err != nil {
+		return err
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
+	return nil
+}
+
 // AIV1AIcallToolExecute sends a request to ai-manager
 // to execute the tool on the given aicall.
 // it returns response message if it succeed.

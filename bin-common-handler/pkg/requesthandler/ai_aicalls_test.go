@@ -362,6 +362,59 @@ func Test_AIV1AIcallTerminate(t *testing.T) {
 	}
 }
 
+func Test_AIV1AIcallTerminateWithDelay(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		aicallID uuid.UUID
+		delay    int
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+	}{
+		{
+			name: "normal",
+
+			aicallID: uuid.FromStringOrNil("05cdc0e8-d953-11f0-a77c-73b75aa0e129"),
+			delay:    300000,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:    "/v1/aicalls/05cdc0e8-d953-11f0-a77c-73b75aa0e129/terminate",
+				Method: sock.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublishWithDelay(tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+
+			err := reqHandler.AIV1AIcallTerminateWithDelay(ctx, tt.aicallID, tt.delay)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+		})
+	}
+}
+
 func Test_AIV1AIcallToolExecute(t *testing.T) {
 
 	tests := []struct {

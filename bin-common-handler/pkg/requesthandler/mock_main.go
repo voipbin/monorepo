@@ -259,6 +259,20 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallTerminate(ctx, aicallID any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallTerminate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallTerminate), ctx, aicallID)
 }
 
+// AIV1AIcallTerminateWithDelay mocks base method.
+func (m *MockRequestHandler) AIV1AIcallTerminateWithDelay(ctx context.Context, aicallID uuid.UUID, delay int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIcallTerminateWithDelay", ctx, aicallID, delay)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIV1AIcallTerminateWithDelay indicates an expected call of AIV1AIcallTerminateWithDelay.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallTerminateWithDelay(ctx, aicallID, delay any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallTerminateWithDelay", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallTerminateWithDelay), ctx, aicallID, delay)
+}
+
 // AIV1AIcallToolExecute mocks base method.
 func (m *MockRequestHandler) AIV1AIcallToolExecute(ctx context.Context, aicallID uuid.UUID, toolID string, toolType message.ToolType, function *message.FunctionCall) (map[string]any, error) {
 	m.ctrl.T.Helper()
