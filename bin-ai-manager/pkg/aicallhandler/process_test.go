@@ -144,7 +144,7 @@ func Test_ProcessTerminate(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAicall, nil)
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID, 0).Return(nil)
 			if tt.responseAicall.ReferenceType != aicall.ReferenceTypeCall {
-				mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseAicall.ActiveflowID).Return(nil)
+				mockReq.EXPECT().FlowV1ActiveflowContinue(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID).Return(nil)
 			}
 
 			if tt.responseAicall.PipecatcallID != uuid.Nil {

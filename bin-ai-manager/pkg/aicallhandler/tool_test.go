@@ -466,7 +466,7 @@ func Test_toolHandleServiceStop(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.aicall.ActiveflowID, tt.aicall.ID, 0).Return(nil)
 			if tt.aicall.ReferenceType != aicall.ReferenceTypeCall {
-				mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.aicall.ActiveflowID).Return(nil)
+				mockReq.EXPECT().FlowV1ActiveflowContinue(ctx, tt.aicall.ActiveflowID, tt.aicall.ID).Return(nil)
 			}
 
 			if tt.aicall.PipecatcallID != uuid.Nil {
