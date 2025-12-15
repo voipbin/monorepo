@@ -347,9 +347,15 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			expectTTSType:    pmpipecatcall.TTSTypeElevenLabs,
 			expectTTSVoiceID: "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
 			expectRes: &commonservice.Service{
-				ID:          uuid.FromStringOrNil("15e0eebc-b886-11f0-9165-53c1245e306f"),
-				Type:        commonservice.TypeAIcall,
-				PushActions: []fmaction.Action{},
+				ID:   uuid.FromStringOrNil("15e0eebc-b886-11f0-9165-53c1245e306f"),
+				Type: commonservice.TypeAIcall,
+				PushActions: []fmaction.Action{
+					{
+						ID:     uuid.FromStringOrNil("15e0eebc-b886-11f0-9165-53c1245e306f"),
+						Type:   fmaction.TypeBlock,
+						Option: fmaction.ConvertOption(fmaction.OptionBlock{}),
+					},
+				},
 			},
 		},
 	}
@@ -581,8 +587,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 				"",
 			).Return(tt.responsePipecatcall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.activeflowID, tt.expectAIcall.ID, defaultAITaskTimeout).Return(nil)
-			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
+			mockReq.EXPECT().AIV1AIcallTerminateWithDelay(ctx, tt.expectAIcall.ID, defaultAITaskTimeout).Return(nil)
 
 			res, err := h.ServiceStartTypeTask(ctx, tt.aiID, tt.activeflowID)
 			if err != nil {

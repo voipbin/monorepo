@@ -463,12 +463,11 @@ func Test_toolHandleServiceStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			// // updateStatus
-			// mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.aicall.ID, aicall.StatusTerminating).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
-			// mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusTerminating, tt.aicall)
-
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.aicall.ActiveflowID, tt.aicall.ID, 0).Return(nil)
+			if tt.aicall.ReferenceType != aicall.ReferenceTypeCall {
+				mockReq.EXPECT().FlowV1ActiveflowContinue(ctx, tt.aicall.ActiveflowID, tt.aicall.ID).Return(nil)
+			}
 
 			if tt.aicall.PipecatcallID != uuid.Nil {
 				mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.aicall.PipecatcallID).Return(tt.responsePipecatcall, nil)

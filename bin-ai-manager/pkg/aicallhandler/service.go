@@ -106,9 +106,17 @@ func (h *aicallHandler) serviceStartReferenceTypeConversation(
 	log.WithField("aicall", cc).Debugf("Started aicall. aicall_id: %s", cc.ID)
 
 	res := &commonservice.Service{
-		ID:          cc.ID,
-		Type:        commonservice.TypeAIcall,
-		PushActions: []fmaction.Action{},
+		ID:   cc.ID,
+		Type: commonservice.TypeAIcall,
+		PushActions: []fmaction.Action{
+			{
+				// Note: Using the same action ID as the service ID here.
+				// This is required because we need to continue/unblock the flow later using the AIcall's ID.
+				ID:     cc.ID,
+				Type:   fmaction.TypeBlock,
+				Option: fmaction.ConvertOption(fmaction.OptionBlock{}),
+			},
+		},
 	}
 
 	return res, nil

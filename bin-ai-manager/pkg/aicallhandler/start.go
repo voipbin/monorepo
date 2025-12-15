@@ -437,14 +437,9 @@ func (h *aicallHandler) StartTask(ctx context.Context, aiID uuid.UUID, activeflo
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
-	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, res.ActiveflowID, res.ID, defaultAITaskTimeout); errStop != nil {
-		log.Errorf("Could not stop the service. err: %v", errStop)
-		return nil, errors.Wrapf(errStop, "could not send the service stop request")
-	}
-
-	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerminate != nil {
-		log.Errorf("Could not terminate the pipecatcall correctly. err: %v", errTerminate)
-		return nil, errors.Wrapf(errTerminate, "could not send the pipecatcall terminate request")
+	if errTerminate := h.reqHandler.AIV1AIcallTerminateWithDelay(ctx, res.ID, defaultAITaskTimeout); errTerminate != nil {
+		// note: the delayed termination request has failed, but we just log it and continue
+		log.Errorf("Could not send the aicall terminate request correctly. err: %v", errTerminate)
 	}
 
 	return res, nil
