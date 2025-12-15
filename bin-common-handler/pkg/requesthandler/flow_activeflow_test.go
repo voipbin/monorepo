@@ -110,7 +110,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedQueue, tt.expectedRequest).Return(tt.response, nil)
 			res, err := reqHandler.FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, tt.referenceType, tt.referenceID, tt.referenceActiveflowID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
@@ -175,7 +175,7 @@ func Test_FlowV1ActiveflowGetNextAction(t *testing.T) {
 
 			res, err := reqHandler.FlowV1ActiveflowGetNextAction(context.Background(), tt.activeflowID, tt.currentActionID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
@@ -255,7 +255,7 @@ func Test_FlowV1ActiveflowUpdateForwardActionID(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FlowV1ActiveflowUpdateForwardActionID(context.Background(), tt.activeflowID, tt.forwardActionID, tt.forwardNow); err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 		})
@@ -306,7 +306,7 @@ func Test_FlowV1ActiveflowExecute(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FlowV1ActiveflowExecute(context.Background(), tt.activeflowID); err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 		})
@@ -360,7 +360,7 @@ func Test_FlowV1ActiveflowContinue(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FlowV1ActiveflowContinue(context.Background(), tt.activeflowID, tt.currentActionID); err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 		})
@@ -419,7 +419,7 @@ func Test_FlowV1ActiveflowDelete(t *testing.T) {
 
 			res, err := reqHandler.FlowV1ActiveflowDelete(context.Background(), tt.activeflowID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
@@ -482,7 +482,7 @@ func Test_FlowV1ActiveflowStop(t *testing.T) {
 
 			res, err := reqHandler.FlowV1ActiveflowStop(ctx, tt.activeflowID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {

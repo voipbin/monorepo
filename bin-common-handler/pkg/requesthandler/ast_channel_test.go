@@ -59,7 +59,7 @@ func Test_AstChannelAnswer(t *testing.T) {
 
 			err := reqHandler.AstChannelAnswer(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -134,7 +134,7 @@ func Test_AstChannelContinue(t *testing.T) {
 
 			err := reqHandler.AstChannelContinue(context.Background(), tt.asteriskID, tt.channelID, tt.context, tt.extension, tt.priority, tt.label)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -216,7 +216,7 @@ func Test_ChannelAstChannelVariableGet(t *testing.T) {
 
 			res, err := reqHandler.AstChannelVariableGet(context.Background(), tt.asteriskID, tt.channelID, tt.variable)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if res != tt.expectRes {
@@ -290,7 +290,7 @@ func Test_ChannelAstChannelVariableSet(t *testing.T) {
 
 			err := reqHandler.AstChannelVariableSet(context.Background(), tt.asteriskID, tt.channelID, tt.variable, tt.value)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -372,7 +372,7 @@ func Test_ChannelAstChannelHangup(t *testing.T) {
 
 			err := reqHandler.AstChannelHangup(context.Background(), tt.asteriskID, tt.channelID, tt.hangupCause, tt.delay)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -503,7 +503,7 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 
 			res, err := reqHandler.AstChannelCreateSnoop(ctx, tt.asteriskID, tt.channelID, tt.snoopID, tt.appArgs, tt.spy, tt.whisper)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if !reflect.DeepEqual(tt.expectRes, res) {
@@ -1114,7 +1114,7 @@ func Test_AstChannelRing(t *testing.T) {
 
 			err := reqHandler.AstChannelRing(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -1161,7 +1161,7 @@ func Test_AstChannelHoldOn(t *testing.T) {
 
 			err := reqHandler.AstChannelHoldOn(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -1208,7 +1208,7 @@ func Test_AstChannelHoldOff(t *testing.T) {
 
 			err := reqHandler.AstChannelHoldOff(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -1255,7 +1255,7 @@ func Test_AstChannelMusicOnHoldOn(t *testing.T) {
 
 			err := reqHandler.AstChannelMusicOnHoldOn(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -1302,7 +1302,7 @@ func Test_AstChannelMusicOnHoldOff(t *testing.T) {
 
 			err := reqHandler.AstChannelMusicOnHoldOff(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -1349,7 +1349,7 @@ func Test_AstChannelSilenceOn(t *testing.T) {
 
 			err := reqHandler.AstChannelSilenceOn(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -1396,7 +1396,7 @@ func Test_AstChannelSilenceOff(t *testing.T) {
 
 			err := reqHandler.AstChannelSilenceOff(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -1447,7 +1447,7 @@ func Test_AstChannelMuteOn(t *testing.T) {
 
 			err := reqHandler.AstChannelMuteOn(context.Background(), tt.asteriskID, tt.channelID, tt.direction)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -1498,7 +1498,7 @@ func Test_AstChannelMuteOff(t *testing.T) {
 
 			err := reqHandler.AstChannelMuteOff(context.Background(), tt.asteriskID, tt.channelID, tt.direction)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

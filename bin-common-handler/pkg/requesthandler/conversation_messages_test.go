@@ -73,7 +73,7 @@ func Test_ConversationV1MessageGet(t *testing.T) {
 
 			res, err := reqHandler.ConversationV1MessageGet(ctx, tt.messageID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {

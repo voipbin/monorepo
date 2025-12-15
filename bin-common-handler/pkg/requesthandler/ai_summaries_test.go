@@ -224,7 +224,7 @@ func Test_AIV1SummaryGet(t *testing.T) {
 
 			res, err := reqHandler.AIV1SummaryGet(ctx, tt.summaryID)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {

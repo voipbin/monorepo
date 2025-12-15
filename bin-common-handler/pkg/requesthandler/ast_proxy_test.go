@@ -60,7 +60,7 @@ func Test_AstProxyRecordingFileMove(t *testing.T) {
 
 			err := reqHandler.AstProxyRecordingFileMove(context.Background(), tt.asteriskID, tt.filenames, requestTimeoutDefault)
 			if err != nil {
-				t.Errorf("Wrong match. expact: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
