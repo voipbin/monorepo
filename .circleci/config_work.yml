@@ -1151,6 +1151,7 @@ jobs:
           project-id: voipbin
           project-repository: bin-queue-manager
           image-name: queue-manager
+          source-directory: bin-queue-manager
 
   # bin-registrar-manager
   bin-registrar-manager-test:
