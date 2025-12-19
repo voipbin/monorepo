@@ -351,7 +351,7 @@ workflows:
             - release-approval
 
   bin-dbscheme-manager:
-    when: << pipeline.parameters.run-bin-dbscheme-bin-manager >>
+    when: << pipeline.parameters.run-bin-dbscheme-manager >>
     jobs:
       - bin-dbscheme-manager-test
       - bin-dbscheme-manager-build:
