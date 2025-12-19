@@ -4,7 +4,7 @@ script_location = main
 # Create database
 # CREATE DATABASE voipbin CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-sqlalchemy.url = mysql://root:root@127.0.0.1:3306/voipbin
+sqlalchemy.url = mysql://root@localhost/bin_manager
 
 
 [post_write_hooks]
