@@ -961,8 +961,7 @@ jobs:
           source-directory: bin-dbscheme-manager
 
   bin-dbscheme-manager-build:
-    docker:
-      - image: *gcp_image
+    docker: *gcp_image
     steps:
       - docker-build:
           source-directory: bin-dbscheme-manager
