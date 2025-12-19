@@ -1378,7 +1378,7 @@ jobs:
     docker: *gcp_image
     steps:
       - docker-build:
-          project-id: voip
+          project-id: voipbin
           project-repository: voip-asterisk-proxy
           source-directory: voip-asterisk-proxy
 
