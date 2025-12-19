@@ -1622,7 +1622,6 @@ commands:
             echo "Image pushed to << parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1"
 
 
-
   docker-release:
     description: "release the docker image"
     parameters:
