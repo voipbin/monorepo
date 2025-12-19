@@ -353,20 +353,12 @@ workflows:
   bin-dbscheme-manager:
     when: << pipeline.parameters.run-bin-dbscheme-manager >>
     jobs:
-      # - bin-dbscheme-manager-test
       - bin-dbscheme-manager-build:
           <<: *context_production
-          # requires:
-          #   - bin-dbscheme-manager-test
       - release-approval:
           type: approval
           requires:
             - bin-dbscheme-manager-build
-      # - bin-dbscheme-manager-release:
-      #     <<: *context_production
-      #     requires:
-      #       - bin-dbscheme-manager-build
-      #       - release-approval
 
   bin-email-manager:
     when: 
@@ -952,14 +944,6 @@ jobs:
           source-directory: bin-customer-manager
           image-name: customer-manager
 
-  # # bin-dbscheme-manager
-  # bin-dbscheme-manager-test:
-  #   docker:
-  #     - image: cimg/go:1.24
-  #   steps:
-  #     - go-test:
-  #         source-directory: bin-dbscheme-manager
-
   bin-dbscheme-manager-build:
     docker: *gcp_image
     steps:
@@ -967,14 +951,6 @@ jobs:
           source-directory: bin-dbscheme-manager
           project-id: voipbin
           project-repository: bin-database
-
-  # bin-dbscheme-manager-release:
-  #   docker:
-  #     - image: google/cloud-sdk:debian_component_based
-  #   steps:
-  #     - go-release:
-  #         source-directory: bin-dbscheme-manager
-  #         image-name: dbscheme-manager
 
   # bin-email-manager
   bin-email-manager-test:
@@ -1694,5 +1670,5 @@ commands:
             find . -type f -exec sed -i -e "s|\${CARTESIA_API_KEY}|$CC_CARTESIA_API_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${DEEPGRAM_API_KEY}|$CC_DEEPGRAM_API_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${MAILGUN_API_KEY}|$CC_MAILGUN_API_KEY|g" {} +
-            kustomize edit set image << parameters.image-name >>-image=<< parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1
+            kustomize edit set image << parameters.image-name >>-image=docker.io/<< parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
