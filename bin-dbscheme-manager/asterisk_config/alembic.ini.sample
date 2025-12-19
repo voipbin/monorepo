@@ -38,7 +38,7 @@ script_location = config
 # Create database
 # CREATE DATABASE asterisk CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-sqlalchemy.url = mysql://root:root@127.0.0.1:3306/asterisk
+sqlalchemy.url = mysql://root@localhost/asterisk
 
 [post_write_hooks]
 # post_write_hooks defines scripts or Python functions that are run
