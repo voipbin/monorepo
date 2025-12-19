@@ -985,18 +985,23 @@ jobs:
   bin-flow-manager-build:
     docker: *gcp_image
     steps:
-      - go-build:
-          namespace: bin-manager
+      - docker-build:
+          # namespace: bin-manager
           source-directory: bin-flow-manager
-          image-name: flow-manager
+          project-id: voipbin
+          project-repository: bin-flow-manager
+          # image-name: flow-manager
 
   bin-flow-manager-release:
     docker: *gcloud_image
     steps:
-      - go-release:
-          namespace: bin-manager
+      - docker-release:
+          # namespace: bin-manager
           source-directory: bin-flow-manager
           image-name: flow-manager
+          project-id: voipbin
+          project-repository: bin-flow-manager
+
 
   # bin-hook-manager
   bin-hook-manager-test:
@@ -1601,9 +1606,9 @@ commands:
   docker-release:
     description: "release the docker image"
     parameters:
-      namespace:
-        type: string
-        default: "none"
+      # namespace:
+      #   type: string
+      #   default: "none"
       source-directory:
         type: string
         default: "none"
