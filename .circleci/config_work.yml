@@ -1402,21 +1402,18 @@ commands:
             cd << parameters.source-directory >>
             go mod download
             go mod vendor          
-
       - run:
           name: Install latest golangci-lint
           command: |
             curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
             sudo mv ./bin/golangci-lint /usr/local/bin/
             golangci-lint version
-
       - run:
           name: Linting and vet
           command: |
             cd << parameters.source-directory >>
             golangci-lint run -v --timeout 5m
             go vet $(go list ./...)
-
       - run:
           name: Testing
           command: |
@@ -1424,13 +1421,11 @@ commands:
             go test -coverprofile cp.out -v $(go list ./...)
             go tool cover -html=cp.out -o cp.html
             go tool cover -func=cp.out
-
       - run:
           name: Run gotestsum
           command: |
             cd << parameters.source-directory >>
             gotestsum --junitfile test-results.xml
-
       - store_test_results:
           path: << parameters.source-directory >>/test-results.xml
 
@@ -1453,21 +1448,18 @@ commands:
           name: Install extra dependencies
           command: |
             sudo apt-get update && sudo apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-
       - run:
           name: Install latest golangci-lint
           command: |
             curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
             sudo mv ./bin/golangci-lint /usr/local/bin/
             golangci-lint version
-
       - run:
           name: Linting and vet
           command: |
             cd << parameters.source-directory >>
             golangci-lint run -v --timeout 5m
             go vet $(go list ./...)
-
       - run:
           name: Testing
           command: |
@@ -1475,7 +1467,6 @@ commands:
             go test -coverprofile cp.out -v $(go list ./...)
             go tool cover -html=cp.out -o cp.html
             go tool cover -func=cp.out
-
       - run:
           name: Run gotestsum
           command: |
@@ -1484,117 +1475,6 @@ commands:
 
       - store_test_results:
           path: << parameters.source-directory >>/test-results.xml
-
-  # go-build:
-  #   description: "build the go application docker image"
-  #   parameters:
-  #     namespace:
-  #       type: string
-  #       default: "none"
-  #     source-directory:
-  #       type: string
-  #       default: "none"
-  #     image-name:
-  #       type: string
-  #       default: "none"
-
-  #   steps:
-  #     - run: echo working on << parameters.source-directory >>
-  #     - setup_remote_docker
-  #     - checkout
-  #     - run:
-  #         name: Config service account
-  #         command: |
-  #           echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
-  #           gcloud auth activate-service-account --key-file=./google_service_account.json
-  #           gcloud config set project $CC_GCP_PROJECT_ID
-  #           gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
-
-  #     - run:
-  #         name: Config registry
-  #         command: |
-  #           cat google_service_account.json | docker login -u _json_key_base64 --password-stdin pkg.dev
-  #           gcloud auth activate-service-account --key-file=google_service_account.json
-  #           gcloud auth configure-docker $CC_REGISTRY_LOCATION
-
-  #     - run:
-  #         name: Building Docker image and push
-  #         command: |
-  #           docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:latest -f << parameters.source-directory >>/Dockerfile .
-  #           docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
-  #           docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:latest
-  #           echo "Image pushed to $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1"
-
-
-  # go-release:
-  #   description: "release the docker image"
-  #   parameters:
-  #     namespace:
-  #       type: string
-  #       default: "none"
-  #     source-directory:
-  #       type: string
-  #       default: "none"
-  #     image-name:
-  #       type: string
-  #       default: "none"
-  #   steps:
-  #     - run: echo working on << parameters.source-directory >>
-  #     - setup_remote_docker
-  #     - checkout
-  #     - run:
-  #         name: Config service account
-  #         command: |
-  #           echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
-  #           gcloud auth activate-service-account --key-file=./google_service_account.json
-  #           gcloud config set project $CC_GCP_PROJECT_ID
-  #           gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
-
-  #     - run:
-  #         name: Release
-  #         command: |
-  #           cd << parameters.source-directory >>/k8s
-  #           find . -type f -exec sed -i -e "s|\${AUTHTOKEN_MESSAGEBIRD}|$CC_AUTHTOKEN_MESSAGEBIRD|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${AUTHTOKEN_OPENAI}|$CC_AUTHTOKEN_OPENAI|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${DATABASE_DSN}|$CC_DATABASE_DSN|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${DATABASE_DSN_ASTERISK}|$CC_DATABASE_DSN_ASTERISK|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${GCP_BUCKET_NAME_MEDIA}|$CC_GCP_BUCKET_NAME_MEDIA|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${GCP_BUCKET_NAME_TMP}|$CC_GCP_BUCKET_NAME_TMP|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${GCP_CLUSTER_NAME}|$CC_GCP_CLUSTER_NAME|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${GCP_CLUSTER_REGION}|$CC_GCP_CLUSTER_REGION|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${GCP_CLUSTER_ZONE}|$CC_GCP_CLUSTER_ZONE|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${GCP_PROJECT_ID}|$CC_GCP_PROJECT_ID|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${GCP_SERVICE_ACCOUNT}|$CC_GCP_SERVICE_ACCOUNT|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${GCP_SERVICE_ACCOUNT_BASE64}|$CC_GCP_SERVICE_ACCOUNT_BASE64|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${JWT_KEY}|$CC_JWT_KEY|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${PROMETHEUS_ENDPOINT}|$CC_PROMETHEUS_ENDPOINT|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${PROMETHEUS_LISTEN_ADDRESS}|$CC_PROMETHEUS_LISTEN_ADDRESS|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${RABBITMQ_ADDRESS}|$CC_RABBITMQ_ADDRESS|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${REDIS_ADDRESS}|$CC_REDIS_ADDRESS|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${REDIS_PASSWORD}|$CC_REDIS_PASSWORD|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${REDIS_DATABASE}|$CC_REDIS_DATABASE|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${SSL_PRIVKEY_API_BASE64}|$CC_SSL_PRIVKEY_API_BASE64|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${SSL_CERT_API_BASE64}|$CC_SSL_CERT_API_BASE64|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${SSL_PRIVKEY_HOOK_BASE64}|$CC_SSL_PRIVKEY_HOOK_BASE64|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${SSL_CERT_HOOK_BASE64}|$CC_SSL_CERT_HOOK_BASE64|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${TELNYX_CONNECTION_ID}|$CC_TELNYX_CONNECTION_ID|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${TELNYX_PROFILE_ID}|$CC_TELNYX_PROFILE_ID|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${TELNYX_TOKEN}|$CC_TELNYX_TOKEN|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${TWILIO_SID}|$CC_TWILIO_SID|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${TWILIO_TOKEN}|$CC_TWILIO_TOKEN|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${AWS_ACCESS_KEY}|$CC_AWS_ACCESS_KEY|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${AWS_SECRET_KEY}|$CC_AWS_SECRET_KEY|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${SENDGRID_API_KEY}|$CC_SENDGRID_API_KEY|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${HOMER_API_ADDRESS}|$CC_HOMER_API_ADDRESS|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${HOMER_AUTH_TOKEN}|$CC_HOMER_AUTH_TOKEN|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${HOMER_WHITELIST}|$CC_HOMER_WHITELIST|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${ELEVENLABS_API_KEY}|$CC_ELEVENLABS_API_KEY|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${CARTESIA_API_KEY}|$CC_CARTESIA_API_KEY|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${DEEPGRAM_API_KEY}|$CC_DEEPGRAM_API_KEY|g" {} +
-  #           find . -type f -exec sed -i -e "s|\${MAILGUN_API_KEY}|$CC_MAILGUN_API_KEY|g" {} +
-  #           kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
-  #           kubectl apply -k ./ -v6
-
 
   docker-build:
     description: "build the docker image"
@@ -1609,20 +1489,26 @@ commands:
         type: string
         default: "none"
 
-
     steps:
       - run: echo working on << parameters.source-directory >>
       - setup_remote_docker
       - checkout
-
       - run:
           name: Building Docker image
           command: |
             docker login -u $CC_DOCKERHUB_USERNAME -p $CC_DOCKERHUB_PASSWORD
             docker build --tag << parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1 -f << parameters.source-directory >>/Dockerfile .
             docker push << parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1
-            echo "Image pushed to << parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1"
 
+            if [ "$CIRCLE_BRANCH" == "main" ]; then
+              echo "Branch is main. Pushing latest tag..."
+              docker tag << parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1 << parameters.project-id >>/<< parameters.project-repository >>:latest
+              docker push << parameters.project-id >>/<< parameters.project-repository >>:latest
+            else
+              echo "Branch is $CIRCLE_BRANCH, skipping latest tag."
+            fi
+
+            echo "Image pushed to << parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1"
 
   docker-release:
     description: "release the docker image"
