@@ -1,5 +1,5 @@
 # common-handler
-common-handler for bin-manager group
+common-handler for bin namespace.
 
 # Update all project
 ```
