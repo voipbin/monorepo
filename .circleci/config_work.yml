@@ -63,7 +63,7 @@ parameters:
     type: boolean
     default: false
 
-  run-bin-dbscheme-bin-manager:
+  run-bin-dbscheme-manager:
     type: boolean
     default: false
 
