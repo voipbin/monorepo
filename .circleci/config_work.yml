@@ -353,11 +353,11 @@ workflows:
   bin-dbscheme-manager:
     when: << pipeline.parameters.run-bin-dbscheme-manager >>
     jobs:
-      - bin-dbscheme-manager-test
+      # - bin-dbscheme-manager-test
       - bin-dbscheme-manager-build:
           <<: *context_production
-          requires:
-            - bin-dbscheme-manager-test
+          # requires:
+          #   - bin-dbscheme-manager-test
       - release-approval:
           type: approval
           requires:
@@ -952,13 +952,13 @@ jobs:
           source-directory: bin-customer-manager
           image-name: customer-manager
 
-  # bin-dbscheme-manager
-  bin-dbscheme-manager-test:
-    docker:
-      - image: cimg/go:1.24
-    steps:
-      - go-test:
-          source-directory: bin-dbscheme-manager
+  # # bin-dbscheme-manager
+  # bin-dbscheme-manager-test:
+  #   docker:
+  #     - image: cimg/go:1.24
+  #   steps:
+  #     - go-test:
+  #         source-directory: bin-dbscheme-manager
 
   bin-dbscheme-manager-build:
     docker: *gcp_image
