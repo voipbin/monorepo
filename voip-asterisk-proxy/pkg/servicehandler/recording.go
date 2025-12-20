@@ -39,7 +39,9 @@ func (h *serviceHandler) recordingFileUpload(ctx context.Context, filename strin
 	if err != nil {
 		return errors.Wrapf(err, "failed to open source file. source_filepath: %s", sourceFilepath)
 	}
-	defer sourceFile.Close()
+	defer func() {
+		_ = sourceFile.Close()
+	}()
 
 	destinationFilepath := fmt.Sprintf("%s/%s", h.recordingBucketDirectory, filename)
 	wc := h.client.Bucket(h.recordingBucketName).Object(destinationFilepath).NewWriter(ctx)

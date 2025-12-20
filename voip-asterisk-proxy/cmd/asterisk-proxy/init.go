@@ -88,6 +88,8 @@ func initVariable() {
 	pflag.String("recording_asterisk_directory", defaultRecordingAsteriskDirectory, "recording directory of the Asterisk server")
 	pflag.String("recording_bucket_directory", defaultRecordingBucketDirectory, "recording directory of the bucket")
 
+	pflag.Bool("kubernetes_disabled", false, "Disable Kubernetes integration")
+
 	pflag.Parse()
 
 	// ari_address
@@ -321,6 +323,16 @@ func initVariable() {
 	}
 	recordingBucketDirectory = viper.GetString("recording_bucket_directory")
 
+	// kubernetes_disabled
+	if errFlag := viper.BindPFlag("kubernetes_disabled", pflag.Lookup("kubernetes_disabled")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("kubernetes_disabled", "KUBERNETES_DISABLED"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	kubernetesDisabled = viper.GetBool("kubernetes_disabled")
 }
 
 // initLog inits log settings.
