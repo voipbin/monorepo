@@ -37,7 +37,7 @@ func (h *listenHandler) ariSendRequestToAsterisk(m *sock.Request) (int, []byte, 
 	}
 
 	res, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if err != nil {
 		return 0, nil, err
 	}

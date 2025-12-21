@@ -56,6 +56,8 @@ var (
 	recordingBucketName        = ""
 	recordingAsteriskDirectory = ""
 	recordingBucketDirectory   = ""
+
+	kubernetesDisabled = false
 )
 
 const (
@@ -91,9 +93,12 @@ func main() {
 		return
 	}
 
-	if errSet := setProxyInfoAnnotation(asteriskID); errSet != nil {
-		log.Errorf("Could not initiate proxy info annotation handler. err: %v", errSet)
-		return
+	if !kubernetesDisabled {
+		log.Infof("Kubernetes integration is enabled. Attempting to set pod annotation.")
+		if errSet := setProxyInfoAnnotation(asteriskID); errSet != nil {
+			log.Errorf("Could not initiate proxy info annotation handler. err: %v", errSet)
+			return
+		}
 	}
 
 	// create rabbitmq listen requet queue names

@@ -23,7 +23,9 @@ func (h *eventHandler) eventARIRun() error {
 
 			continue
 		}
-		defer h.ariSock.Close()
+		defer func() {
+			_ = h.ariSock.Close()
+		}()
 
 		// receive ARI events
 		for {

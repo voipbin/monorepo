@@ -63,7 +63,7 @@ func Test_ariSendRequestToAsterisk(t *testing.T) {
 
 			// setup dummy server
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprintf(w, "%s", tt.response)
+				_, _ = fmt.Fprintf(w, "%s", tt.response)
 			}))
 			defer ts.Close()
 
