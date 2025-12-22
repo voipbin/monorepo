@@ -144,10 +144,7 @@ func cmdGets() *cobra.Command {
 }
 
 func executeCreate(customerHandler customerhandler.CustomerHandler, email string) error {
-	method := viper.GetString("webhook_method")
-	uri := viper.GetString("webhook_uri")
-
-	fmt.Printf("\nCreating Customer: %s (Webhook: %s [%s])\n", email, uri, method)
+	fmt.Printf("\nCreating Customer: %s", email)
 	res, err := customerHandler.Create(
 		context.Background(),
 		viper.GetString("name"),
@@ -183,7 +180,10 @@ func executeGets(customerHandler customerhandler.CustomerHandler, limit int, tok
 }
 
 func executeGet(customerHandler customerhandler.CustomerHandler, id string) error {
-	targetID := uuid.FromStringOrNil(id)
+	targetID, err := uuid.FromString(id)
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID format")
+	}
 
 	fmt.Printf("\nRetrieving Customer ID: %s...\n", id)
 	res, err := customerHandler.Get(context.Background(), targetID)
