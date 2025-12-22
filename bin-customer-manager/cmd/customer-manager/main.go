@@ -37,7 +37,6 @@ var chDone = make(chan bool, 1)
 func main() {
 	if errInit := config.InitAll(); errInit != nil {
 		logrus.Fatalf("Could not init config. err: %v", errInit)
-		return
 	}
 	config.ParseFlags()
 
@@ -137,7 +136,7 @@ func initCache() (cachehandler.CacheHandler, error) {
 	return res, nil
 }
 
-// initSignal inits sinal settings.
+// initSignal inits signal settings.
 func initSignal() {
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()

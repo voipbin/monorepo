@@ -68,12 +68,12 @@ func initVariable() error {
 	}
 
 	for flagKey, envKey := range bindings {
-		if err := viper.BindPFlag(flagKey, pflag.Lookup(flagKey)); err != nil {
-			return errors.Wrapf(err, "could not bind the flag")
+		if errBind := viper.BindPFlag(flagKey, pflag.Lookup(flagKey)); errBind != nil {
+			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
 		}
 
-		if err := viper.BindEnv(flagKey, envKey); err != nil {
-			return errors.Wrapf(err, "could not bind the env")
+		if errBind := viper.BindEnv(flagKey, envKey); errBind != nil {
+			return errors.Wrapf(errBind, "could not bind the env. key: %s", envKey)
 		}
 	}
 

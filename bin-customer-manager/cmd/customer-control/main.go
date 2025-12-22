@@ -33,7 +33,6 @@ const serviceName = commonoutline.ServiceNameCustomerManager
 func main() {
 	if errInit := config.InitAll(); errInit != nil {
 		log.Fatalf("Could not init config. err: %v", errInit)
-		return
 	}
 
 	cmd := initCommand()
@@ -73,14 +72,19 @@ func cmdCreate() *cobra.Command {
 	flags.String("webhook_method", "POST", "Webhook HTTP method")
 	flags.String("webhook_uri", "", "Webhook URI")
 
-	_ = viper.BindPFlags(flags)
+	if errBind := viper.BindPFlags(flags); errBind != nil {
+		log.Fatalf("Failed to bind flags: %v", errBind)
+	}
+
 	return cmd
 }
 
 func runCreate(cmd *cobra.Command, args []string) {
 	email := viper.GetString("email")
 	if email == "" {
-		_ = survey.AskOne(&survey.Input{Message: "Email (Required):"}, &email, survey.WithValidator(survey.Required))
+		if errAsk := survey.AskOne(&survey.Input{Message: "Email (Required):"}, &email, survey.WithValidator(survey.Required)); errAsk != nil {
+			log.Fatalf("Failed to get email: %v", errAsk)
+		}
 	}
 
 	customerHandler, err := initHandler()
@@ -126,7 +130,9 @@ func cmdGets() *cobra.Command {
 	flags.Int("limit", 100, "Limit the number of customers to retrieve")
 	flags.String("token", "", "Retrieve customers before this token (pagination)")
 
-	_ = viper.BindPFlags(flags)
+	if errBind := viper.BindPFlags(flags); errBind != nil {
+		log.Fatalf("Failed to bind flags: %v", errBind)
+	}
 
 	return cmd
 }
@@ -148,7 +154,6 @@ func executeCreate(customerHandler customerhandler.CustomerHandler, email string
 	)
 	if err != nil {
 		log.Fatalf("Failed to create customer: %v", err)
-		return
 	}
 
 	fmt.Printf("Success! customer: %v\n", res)
@@ -160,7 +165,6 @@ func executeGets(customerHandler customerhandler.CustomerHandler, limit int, tok
 	res, err := customerHandler.Gets(context.Background(), uint64(limit), token, nil)
 	if err != nil {
 		log.Fatalf("Failed to retrieve customers: %v", err)
-		return
 	}
 
 	fmt.Printf("Success! customers count: %d\n", len(res))
@@ -176,7 +180,6 @@ func executeGet(customerHandler customerhandler.CustomerHandler, id string) {
 	res, err := customerHandler.Get(context.Background(), targetID)
 	if err != nil {
 		log.Fatalf("Failed to retrieve customer: %v", err)
-		return
 	}
 
 	fmt.Println("\n--- Customer Information ---")
@@ -192,7 +195,6 @@ func executeGet(customerHandler customerhandler.CustomerHandler, id string) {
 	tmp, err := json.MarshalIndent(res, "", "  ")
 	if err != nil {
 		log.Fatalf("Failed to marshal customer: %v", err)
-		return
 	}
 	fmt.Println("\n--- Raw Data (JSON) ---")
 	fmt.Println(string(tmp))
