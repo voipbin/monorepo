@@ -105,6 +105,7 @@ func initDatabase() (*sql.DB, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "database open error")
 	}
+
 	if err := res.Ping(); err != nil {
 		return nil, errors.Wrap(err, "database ping error")
 	}

@@ -25,6 +25,9 @@ type Config struct {
 	RedisDatabase        int
 }
 
+// BindConfig binds CLI flags and environment variables for configuration,
+// and initializes global logging via initLog. Callers should be aware that
+// this function configures process-wide logrus logging.
 func BindConfig(cmd *cobra.Command) error {
 	initLog()
 
@@ -62,8 +65,8 @@ func BindConfig(cmd *cobra.Command) error {
 	return nil
 }
 
-func Get() Config {
-	return globalConfig
+func Get() *Config {
+	return &globalConfig
 }
 
 func LoadGlobalConfig() {
