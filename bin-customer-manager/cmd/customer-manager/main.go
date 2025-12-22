@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"os"
+	"os/signal"
+	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -12,8 +14,10 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-customer-manager/internal/config"
 	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/customerhandler"
@@ -27,37 +31,36 @@ const serviceName = commonoutline.ServiceNameCustomerManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-)
+// var (
+// 	databaseDSN             = ""
+// 	prometheusEndpoint      = ""
+// 	prometheusListenAddress = ""
+// 	rabbitMQAddress         = ""
+// 	redisAddress            = ""
+// 	redisDatabase           = 0
+// 	redisPassword           = ""
+// )
 
 func main() {
-	log := logrus.WithField("func", "main")
+	config.InitAll()
+	config.ParseFlags()
+	initSignal()
 
-	// connect to database
-	sqlDB, err := sql.Open("mysql", databaseDSN)
+	log := logrus.WithField("func", "main")
+	log.WithField("config", config.GlobalConfig).Debugf("Hello world. The customer-manager is running...")
+
+	sqlDB, err := initDatabase()
 	if err != nil {
-		log.Errorf("Could not access to database. err: %v", err)
-		return
-	} else if err := sqlDB.Ping(); err != nil {
-		log.Errorf("Could not set the connection correctly. err: %v", err)
+		log.Errorf("Could not init the database. err: %v", err)
 		return
 	}
-
 	defer func() {
 		_ = sqlDB.Close()
 	}()
 
-	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
-	if err := cache.Connect(); err != nil {
-		log.Errorf("Could not connect to cache server. err: %v", err)
+	cache, err := initCache()
+	if err != nil {
+		log.Errorf("Could not init the cache. err: %v", err)
 		return
 	}
 
@@ -81,7 +84,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.GlobalConfig.RabbitMQAddress)
 	sockHandler.Connect()
 
 	// create handler
@@ -114,4 +117,30 @@ func runListen(
 	}
 
 	return nil
+}
+
+func initDatabase() (*sql.DB, error) {
+	res, err := sql.Open("mysql", config.GlobalConfig.DatabaseDSN)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not access to the database")
+	} else if err := res.Ping(); err != nil {
+		return nil, errors.Wrapf(err, "could not set the database connection correctly")
+	}
+
+	return res, nil
+}
+
+func initCache() (cachehandler.CacheHandler, error) {
+	res := cachehandler.NewHandler(config.GlobalConfig.RedisAddress, config.GlobalConfig.RedisPassword, config.GlobalConfig.RedisDatabase)
+	if err := res.Connect(); err != nil {
+		return nil, errors.Wrapf(err, "could not connect to cache server")
+	}
+
+	return res, nil
+}
+
+// initSignal inits sinal settings.
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go signalHandler()
 }
