@@ -18,6 +18,8 @@ import (
 
 	"database/sql"
 
+	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"

@@ -1,11 +1,7 @@
 package config
 
 import (
-	"net/http"
-	"time"
-
 	joonix "github.com/joonix/log"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -38,7 +34,7 @@ type Config struct {
 func InitAll() {
 	initLog()
 	initVariable()
-	initProm(GlobalConfig.PrometheusEndpoint, GlobalConfig.PrometheusListenAddr)
+	// initProm(GlobalConfig.PrometheusEndpoint, GlobalConfig.PrometheusListenAddr)
 }
 
 func ParseFlags() {
@@ -92,17 +88,17 @@ func initLog() {
 	logrus.SetLevel(logrus.DebugLevel)
 }
 
-func initProm(endpoint, listen string) {
-	http.Handle(endpoint, promhttp.Handler())
-	go func() {
-		for {
-			err := http.ListenAndServe(listen, nil)
-			if err != nil {
-				logrus.Errorf("Could not start prometheus listener: %v", err)
-				time.Sleep(time.Second * 1)
-				continue
-			}
-			break
-		}
-	}()
-}
+// func initProm(endpoint, listen string) {
+// 	http.Handle(endpoint, promhttp.Handler())
+// 	go func() {
+// 		for {
+// 			err := http.ListenAndServe(listen, nil)
+// 			if err != nil {
+// 				logrus.Errorf("Could not start prometheus listener: %v", err)
+// 				time.Sleep(time.Second * 1)
+// 				continue
+// 			}
+// 			break
+// 		}
+// 	}()
+// }

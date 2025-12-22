@@ -2,9 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -15,6 +17,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-customer-manager/internal/config"
@@ -45,6 +48,7 @@ func main() {
 	config.InitAll()
 	config.ParseFlags()
 	initSignal()
+	initProm(config.GlobalConfig.PrometheusEndpoint, config.GlobalConfig.PrometheusListenAddr)
 
 	log := logrus.WithField("func", "main")
 	log.WithField("config", config.GlobalConfig).Debugf("Hello world. The customer-manager is running...")
@@ -143,4 +147,19 @@ func initCache() (cachehandler.CacheHandler, error) {
 func initSignal() {
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
+}
+
+func initProm(endpoint, listen string) {
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		for {
+			err := http.ListenAndServe(listen, nil)
+			if err != nil {
+				logrus.Errorf("Could not start prometheus listener: %v", err)
+				time.Sleep(time.Second * 1)
+				continue
+			}
+			break
+		}
+	}()
 }
