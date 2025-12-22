@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -187,7 +188,15 @@ func executeGet(customerHandler customerhandler.CustomerHandler, id string) {
 	fmt.Printf("Webhook: %s [%s]\n", res.WebhookURI, res.WebhookMethod)
 	fmt.Printf("Detail:  %s\n", res.Detail)
 	fmt.Println("----------------------------")
-	fmt.Printf("\n%v", res)
+
+	tmp, err := json.MarshalIndent(res, "", "  ")
+	if err != nil {
+		log.Fatalf("Failed to marshal customer: %v", err)
+		return
+	}
+	fmt.Println("\n--- Raw Data (JSON) ---")
+	fmt.Println(string(tmp))
+	fmt.Println("-----------------------")
 }
 
 func initHandler() (customerhandler.CustomerHandler, error) {
