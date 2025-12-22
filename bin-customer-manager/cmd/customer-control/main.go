@@ -90,12 +90,11 @@ func runCreate(cmd *cobra.Command, args []string) {
 	executeCreate(customerHandler, email)
 }
 
-// cmdGet는 단일 조회를 정의합니다. (Usage: customer get <id>)
 func cmdGet() *cobra.Command {
 	return &cobra.Command{
 		Use:   "get [id]",
 		Short: "Get a customer by ID",
-		Args:  cobra.ExactArgs(1), // ID 인자가 반드시 1개 있어야 함
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			handler, err := initHandler()
 			if err != nil {
@@ -106,7 +105,6 @@ func cmdGet() *cobra.Command {
 	}
 }
 
-// cmdGets는 목록 조회를 정의합니다.
 func cmdGets() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gets",
@@ -118,14 +116,14 @@ func cmdGets() *cobra.Command {
 			}
 
 			limit := viper.GetInt("limit")
-			after := viper.GetString("after")
-			executeGets(handler, limit, after)
+			token := viper.GetString("token")
+			executeGets(handler, limit, token)
 		},
 	}
 
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of customers to retrieve")
-	flags.String("after", "", "Retrieve customers after this ID (pagination)")
+	flags.String("token", "", "Retrieve customers before this token (pagination)")
 
 	_ = viper.BindPFlags(flags)
 
@@ -136,7 +134,7 @@ func executeCreate(customerHandler customerhandler.CustomerHandler, email string
 	method := viper.GetString("webhook_method")
 	uri := viper.GetString("webhook_uri")
 
-	fmt.Printf("\n🚀 Creating Customer: %s (Webhook: %s [%s])\n", email, uri, method)
+	fmt.Printf("\nCreating Customer: %s (Webhook: %s [%s])\n", email, uri, method)
 	res, err := customerHandler.Create(
 		context.Background(),
 		viper.GetString("name"),
@@ -152,19 +150,19 @@ func executeCreate(customerHandler customerhandler.CustomerHandler, email string
 		return
 	}
 
-	fmt.Printf("✅ Success! customer: %v\n", res)
+	fmt.Printf("Success! customer: %v\n", res)
 }
 
-func executeGets(customerHandler customerhandler.CustomerHandler, limit int, after string) {
-	fmt.Printf("\n🚀 Retrieving Customers (Limit: %d, After: %s)...\n", limit, after)
+func executeGets(customerHandler customerhandler.CustomerHandler, limit int, token string) {
+	fmt.Printf("\nRetrieving Customers (limit: %d, token: %s)...\n", limit, token)
 
-	res, err := customerHandler.Gets(context.Background(), uint64(limit), after, nil)
+	res, err := customerHandler.Gets(context.Background(), uint64(limit), token, nil)
 	if err != nil {
 		log.Fatalf("Failed to retrieve customers: %v", err)
 		return
 	}
 
-	fmt.Printf("✅ Success! customers count: %d\n", len(res))
+	fmt.Printf("Success! customers count: %d\n", len(res))
 	for _, c := range res {
 		fmt.Printf(" - [%s] %s (%s)\n", c.ID, c.Name, c.Email)
 	}
@@ -173,7 +171,7 @@ func executeGets(customerHandler customerhandler.CustomerHandler, limit int, aft
 func executeGet(customerHandler customerhandler.CustomerHandler, id string) {
 	targetID := uuid.FromStringOrNil(id)
 
-	fmt.Printf("\n🚀 Retrieving Customer ID: %s...\n", id)
+	fmt.Printf("\nRetrieving Customer ID: %s...\n", id)
 	res, err := customerHandler.Get(context.Background(), targetID)
 	if err != nil {
 		log.Fatalf("Failed to retrieve customer: %v", err)
@@ -181,14 +179,15 @@ func executeGet(customerHandler customerhandler.CustomerHandler, id string) {
 	}
 
 	fmt.Println("\n--- Customer Information ---")
-	fmt.Printf("🆔 ID:      %s\n", res.ID)
-	fmt.Printf("👤 Name:    %s\n", res.Name)
-	fmt.Printf("📧 Email:   %s\n", res.Email)
-	fmt.Printf("📞 Phone:   %s\n", res.PhoneNumber)
-	fmt.Printf("🏠 Address: %s\n", res.Address)
-	fmt.Printf("🔗 Webhook: %s [%s]\n", res.WebhookURI, res.WebhookMethod)
-	fmt.Printf("📝 Detail:  %s\n", res.Detail)
+	fmt.Printf("ID:      %s\n", res.ID)
+	fmt.Printf("Name:    %s\n", res.Name)
+	fmt.Printf("Email:   %s\n", res.Email)
+	fmt.Printf("Phone:   %s\n", res.PhoneNumber)
+	fmt.Printf("Address: %s\n", res.Address)
+	fmt.Printf("Webhook: %s [%s]\n", res.WebhookURI, res.WebhookMethod)
+	fmt.Printf("Detail:  %s\n", res.Detail)
 	fmt.Println("----------------------------")
+	fmt.Printf("\n%v", res)
 }
 
 func initHandler() (customerhandler.CustomerHandler, error) {
