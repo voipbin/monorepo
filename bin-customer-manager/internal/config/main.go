@@ -2,6 +2,7 @@ package config
 
 import (
 	joonix "github.com/joonix/log"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -31,18 +32,21 @@ type Config struct {
 	RedisDatabase        int
 }
 
-func InitAll() {
+func InitAll() error {
 	initLog()
-	initVariable()
-	// initProm(GlobalConfig.PrometheusEndpoint, GlobalConfig.PrometheusListenAddr)
+
+	if errVariable := initVariable(); errVariable != nil {
+		return errors.Wrap(errVariable, "could not init variable")
+	}
+
+	return nil
 }
 
 func ParseFlags() {
 	pflag.Parse()
 }
 
-func initVariable() {
-	log := logrus.WithField("func", "initVariable")
+func initVariable() error {
 	viper.AutomaticEnv()
 
 	pflag.String("rabbitmq_address", defaultRabbitMQAddress, "RabbitMQ server address")
@@ -65,10 +69,11 @@ func initVariable() {
 
 	for flagKey, envKey := range bindings {
 		if err := viper.BindPFlag(flagKey, pflag.Lookup(flagKey)); err != nil {
-			log.Fatalf("Error binding flag %s: %v", flagKey, err)
+			return errors.Wrapf(err, "could not bind the flag")
 		}
+
 		if err := viper.BindEnv(flagKey, envKey); err != nil {
-			log.Fatalf("Error binding env %s: %v", envKey, err)
+			return errors.Wrapf(err, "could not bind the env")
 		}
 	}
 
@@ -81,24 +86,11 @@ func initVariable() {
 		RedisPassword:        viper.GetString("redis_password"),
 		RedisDatabase:        viper.GetInt("redis_database"),
 	}
+
+	return nil
 }
 
 func initLog() {
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
 }
-
-// func initProm(endpoint, listen string) {
-// 	http.Handle(endpoint, promhttp.Handler())
-// 	go func() {
-// 		for {
-// 			err := http.ListenAndServe(listen, nil)
-// 			if err != nil {
-// 				logrus.Errorf("Could not start prometheus listener: %v", err)
-// 				time.Sleep(time.Second * 1)
-// 				continue
-// 			}
-// 			break
-// 		}
-// 	}()
-// }

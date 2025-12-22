@@ -34,19 +34,13 @@ const serviceName = commonoutline.ServiceNameCustomerManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-// var (
-// 	databaseDSN             = ""
-// 	prometheusEndpoint      = ""
-// 	prometheusListenAddress = ""
-// 	rabbitMQAddress         = ""
-// 	redisAddress            = ""
-// 	redisDatabase           = 0
-// 	redisPassword           = ""
-// )
-
 func main() {
-	config.InitAll()
+	if errInit := config.InitAll(); errInit != nil {
+		logrus.Fatalf("Could not init config. err: %v", errInit)
+		return
+	}
 	config.ParseFlags()
+
 	initSignal()
 	initProm(config.GlobalConfig.PrometheusEndpoint, config.GlobalConfig.PrometheusListenAddr)
 

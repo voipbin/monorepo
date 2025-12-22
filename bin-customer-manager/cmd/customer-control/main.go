@@ -30,7 +30,10 @@ import (
 const serviceName = commonoutline.ServiceNameCustomerManager
 
 func main() {
-	config.InitAll()
+	if errInit := config.InitAll(); errInit != nil {
+		log.Fatalf("Could not init config. err: %v", errInit)
+		return
+	}
 
 	cmd := initCommand()
 	if errExecute := cmd.Execute(); errExecute != nil {
@@ -45,16 +48,15 @@ func initCommand() *cobra.Command {
 	}
 
 	customerCmd := &cobra.Command{Use: "customer", Short: "Customer operation"}
-	customerCmd.AddCommand(newCreateCmd())
-	customerCmd.AddCommand(newGetCmd())
-	customerCmd.AddCommand(newGetsCmd())
+	customerCmd.AddCommand(cmdCreate())
+	customerCmd.AddCommand(cmdGet())
+	customerCmd.AddCommand(cmdGets())
 
 	rootCmd.AddCommand(customerCmd)
 	return rootCmd
 }
 
-// newCreateCmd는 'create' 명령어를 정의합니다.
-func newCreateCmd() *cobra.Command {
+func cmdCreate() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create a new customer",
@@ -88,8 +90,8 @@ func runCreate(cmd *cobra.Command, args []string) {
 	executeCreate(customerHandler, email)
 }
 
-// newGetCmd는 단일 조회를 정의합니다. (Usage: customer get <id>)
-func newGetCmd() *cobra.Command {
+// cmdGet는 단일 조회를 정의합니다. (Usage: customer get <id>)
+func cmdGet() *cobra.Command {
 	return &cobra.Command{
 		Use:   "get [id]",
 		Short: "Get a customer by ID",
@@ -104,8 +106,8 @@ func newGetCmd() *cobra.Command {
 	}
 }
 
-// newGetsCmd는 목록 조회를 정의합니다.
-func newGetsCmd() *cobra.Command {
+// cmdGets는 목록 조회를 정의합니다.
+func cmdGets() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gets",
 		Short: "Get customer list",
@@ -156,7 +158,6 @@ func executeCreate(customerHandler customerhandler.CustomerHandler, email string
 func executeGets(customerHandler customerhandler.CustomerHandler, limit int, after string) {
 	fmt.Printf("\n🚀 Retrieving Customers (Limit: %d, After: %s)...\n", limit, after)
 
-	// 세 번째 인자(필터)는 일단 nil로 처리
 	res, err := customerHandler.Gets(context.Background(), uint64(limit), after, nil)
 	if err != nil {
 		log.Fatalf("Failed to retrieve customers: %v", err)
