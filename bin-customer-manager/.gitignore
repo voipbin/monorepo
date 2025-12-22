@@ -1,4 +1,5 @@
 vendor
 customer-manager
+customer-control
 .vscode
 !cmd/*
