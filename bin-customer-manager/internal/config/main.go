@@ -1,6 +1,8 @@
 package config
 
 import (
+	"sync"
+
 	joonix "github.com/joonix/log"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -8,9 +10,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-// GlobalConfig holds all validated configurations and is initialized once by InitAll.
-// It must be treated as read-only after initialization and must not be modified at runtime.
-var GlobalConfig Config
+var (
+	globalConfig Config
+	once         sync.Once
+)
 
 type Config struct {
 	RabbitMQAddress      string
@@ -59,16 +62,23 @@ func BindConfig(cmd *cobra.Command) error {
 	return nil
 }
 
+func Get() Config {
+	return globalConfig
+}
+
 func LoadGlobalConfig() {
-	GlobalConfig = Config{
-		RabbitMQAddress:      viper.GetString("rabbitmq_address"),
-		PrometheusEndpoint:   viper.GetString("prometheus_endpoint"),
-		PrometheusListenAddr: viper.GetString("prometheus_listen_address"),
-		DatabaseDSN:          viper.GetString("database_dsn"),
-		RedisAddress:         viper.GetString("redis_address"),
-		RedisPassword:        viper.GetString("redis_password"),
-		RedisDatabase:        viper.GetInt("redis_database"),
-	}
+	once.Do(func() {
+		globalConfig = Config{
+			RabbitMQAddress:      viper.GetString("rabbitmq_address"),
+			PrometheusEndpoint:   viper.GetString("prometheus_endpoint"),
+			PrometheusListenAddr: viper.GetString("prometheus_listen_address"),
+			DatabaseDSN:          viper.GetString("database_dsn"),
+			RedisAddress:         viper.GetString("redis_address"),
+			RedisPassword:        viper.GetString("redis_password"),
+			RedisDatabase:        viper.GetInt("redis_database"),
+		}
+		logrus.Debug("Configuration has been loaded and locked.")
+	})
 }
 
 func initLog() {

@@ -144,7 +144,7 @@ func cmdGets() *cobra.Command {
 }
 
 func executeCreate(customerHandler customerhandler.CustomerHandler, email string) error {
-	fmt.Printf("\nCreating Customer: %s", email)
+	fmt.Printf("\nCreating Customer: %s\n", email)
 	res, err := customerHandler.Create(
 		context.Background(),
 		viper.GetString("name"),
@@ -227,7 +227,7 @@ func initHandler() (customerhandler.CustomerHandler, error) {
 }
 
 func initDatabase() (*sql.DB, error) {
-	res, err := sql.Open("mysql", config.GlobalConfig.DatabaseDSN)
+	res, err := sql.Open("mysql", config.Get().DatabaseDSN)
 	if err != nil {
 		return nil, errors.Wrap(err, "database open error")
 	}
@@ -240,7 +240,7 @@ func initDatabase() (*sql.DB, error) {
 }
 
 func initCache() (cachehandler.CacheHandler, error) {
-	res := cachehandler.NewHandler(config.GlobalConfig.RedisAddress, config.GlobalConfig.RedisPassword, config.GlobalConfig.RedisDatabase)
+	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
 	if err := res.Connect(); err != nil {
 		return nil, err
 	}
@@ -249,7 +249,7 @@ func initCache() (cachehandler.CacheHandler, error) {
 
 func initCustomerHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (customerhandler.CustomerHandler, error) {
 	db := dbhandler.NewHandler(sqlDB, cache)
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.GlobalConfig.RabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)

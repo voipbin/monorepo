@@ -57,10 +57,10 @@ func main() {
 
 func runDaemon() error {
 	initSignal()
-	initProm(config.GlobalConfig.PrometheusEndpoint, config.GlobalConfig.PrometheusListenAddr)
+	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddr)
 
 	log := logrus.WithField("func", "runDaemon")
-	log.WithField("config", config.GlobalConfig).Info("Starting customer-manager...")
+	log.WithField("config", config.Get()).Info("Starting customer-manager...")
 
 	sqlDB, err := initDatabase()
 	if err != nil {
@@ -87,7 +87,7 @@ func runDaemon() error {
 func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.GlobalConfig.RabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
@@ -101,7 +101,7 @@ func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 func initDatabase() (*sql.DB, error) {
-	res, err := sql.Open("mysql", config.GlobalConfig.DatabaseDSN)
+	res, err := sql.Open("mysql", config.Get().DatabaseDSN)
 	if err != nil {
 		return nil, errors.Wrap(err, "database open error")
 	}
@@ -112,7 +112,7 @@ func initDatabase() (*sql.DB, error) {
 }
 
 func initCache() (cachehandler.CacheHandler, error) {
-	res := cachehandler.NewHandler(config.GlobalConfig.RedisAddress, config.GlobalConfig.RedisPassword, config.GlobalConfig.RedisDatabase)
+	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
 	if err := res.Connect(); err != nil {
 		return nil, errors.Wrap(err, "cache connect error")
 	}
