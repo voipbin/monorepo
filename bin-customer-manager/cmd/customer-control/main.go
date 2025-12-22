@@ -68,14 +68,14 @@ func newCreateCmd() *cobra.Command {
 	flags.String("webhook_method", "POST", "Webhook HTTP method")
 	flags.String("webhook_uri", "", "Webhook URI")
 
-	viper.BindPFlags(flags)
+	_ = viper.BindPFlags(flags)
 	return cmd
 }
 
 func runCreate(cmd *cobra.Command, args []string) {
 	email := viper.GetString("email")
 	if email == "" {
-		survey.AskOne(&survey.Input{Message: "Email (Required):"}, &email, survey.WithValidator(survey.Required))
+		_ = survey.AskOne(&survey.Input{Message: "Email (Required):"}, &email, survey.WithValidator(survey.Required))
 	}
 
 	customerHandler, err := initHandler()
@@ -123,7 +123,7 @@ func newGetsCmd() *cobra.Command {
 	flags.Int("limit", 100, "Limit the number of customers to retrieve")
 	flags.String("after", "", "Retrieve customers after this ID (pagination)")
 
-	viper.BindPFlags(flags)
+	_ = viper.BindPFlags(flags)
 
 	return cmd
 }
