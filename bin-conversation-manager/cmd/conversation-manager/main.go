@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 
@@ -11,6 +10,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
@@ -67,7 +67,7 @@ func signalHandler() {
 // connectDatabase connects to the database and cachehandler
 func createDBHandler() (dbhandler.DBHandler, error) {
 	// connect to database
-	db, err := sql.Open("mysql", databaseDSN)
+	db, err := commondatabasehandler.Connect(databaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
 		return nil, err

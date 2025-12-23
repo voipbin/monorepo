@@ -7,6 +7,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -47,24 +48,20 @@ func main() {
 	fmt.Printf("hello world\n")
 
 	// connect to the database asterisk
-	sqlAst, err := sql.Open("mysql", databaseDSNAsterisk)
+	sqlAst, err := commondatabasehandler.Connect(databaseDSNAsterisk)
 	if err != nil {
 		log.Errorf("Could not access to database asterisk. err: %v", err)
 		return
 	}
-	defer func() {
-		_ = sqlAst.Close()
-	}()
+	defer commondatabasehandler.Close(sqlAst)
 
 	// connect to the database bin-manager
-	sqlBin, err := sql.Open("mysql", databaseDSNBin)
+	sqlBin, err := commondatabasehandler.Connect(databaseDSNBin)
 	if err != nil {
 		log.Errorf("Could not access to database bin-manager. err: %v", err)
 		return
 	}
-	defer func() {
-		_ = sqlBin.Close()
-	}()
+	defer commondatabasehandler.Close(sqlBin)
 
 	// connect to cache
 	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)

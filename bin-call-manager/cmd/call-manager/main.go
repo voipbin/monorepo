@@ -6,6 +6,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
@@ -51,17 +52,12 @@ func main() {
 	log := logrus.WithField("func", "main")
 
 	// connect to database
-	sqlDB, err := sql.Open("mysql", databaseDSN)
+	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
-	} else if err := sqlDB.Ping(); err != nil {
-		log.Errorf("Could not set the connection correctly. err: %v", err)
-		return
 	}
-	defer func() {
-		_ = sqlDB.Close()
-	}()
+	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to cache
 	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)

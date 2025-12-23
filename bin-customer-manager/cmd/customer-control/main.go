@@ -8,6 +8,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -213,7 +214,7 @@ func executeGet(customerHandler customerhandler.CustomerHandler, id string) erro
 }
 
 func initHandler() (customerhandler.CustomerHandler, error) {
-	db, err := initDatabase()
+	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
 		return nil, err
 	}
@@ -224,19 +225,6 @@ func initHandler() (customerhandler.CustomerHandler, error) {
 	}
 
 	return initCustomerHandler(db, cache)
-}
-
-func initDatabase() (*sql.DB, error) {
-	res, err := sql.Open("mysql", config.Get().DatabaseDSN)
-	if err != nil {
-		return nil, errors.Wrap(err, "database open error")
-	}
-
-	if err := res.Ping(); err != nil {
-		return nil, errors.Wrap(err, "database ping error")
-	}
-
-	return res, nil
 }
 
 func initCache() (cachehandler.CacheHandler, error) {
