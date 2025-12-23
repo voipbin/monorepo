@@ -13,7 +13,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
 )
 
 // BucketHandler intreface for GCP bucket handler
@@ -93,11 +92,11 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 		return nil
 	}
 
-	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, storage.ScopeFullControl)
-	if err != nil {
-		log.Errorf("Could not create credentials from json. err: %v", err)
-		return nil
-	}
+	// creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, storage.ScopeFullControl)
+	// if err != nil {
+	// 	log.Errorf("Could not create credentials from json. err: %v", err)
+	// 	return nil
+	// }
 
 	// parse service account
 	conf, err := google.JWTConfigFromJSON(decodedCredential)
@@ -107,7 +106,7 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 	}
 
 	// create client
-	client, err := storage.NewClient(context.Background(), option.WithTokenSource(creds.TokenSource))
+	client, err := storage.NewClient(context.Background())
 	if err != nil {
 		log.Errorf("Could not create a new client. err: %v", err)
 		return nil
