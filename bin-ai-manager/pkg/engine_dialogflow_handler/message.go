@@ -11,7 +11,6 @@ import (
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2"
 	dialogflowpb "cloud.google.com/go/dialogflow/apiv2/dialogflowpb"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 
 	"monorepo/bin-ai-manager/models/message"
@@ -37,16 +36,6 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AI
 		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the ai engine data")
 	}
 
-	decodedCredential, err := DecodeBase64(data.CredentialBase64)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not decode the credential base64")
-	}
-
-	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, dialogflow.DefaultAuthScopes()...)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create credentials from json")
-	}
-
 	endpoint := GetEndpointAddress(data.Region)
 	log.WithFields(logrus.Fields{
 		"endpoint": endpoint,
@@ -54,7 +43,6 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AI
 
 	// Create a Dialogflow client with the credentials in-memory
 	client, err := dialogflow.NewSessionsClient(ctx,
-		option.WithTokenSource(creds.TokenSource),
 		option.WithEndpoint(endpoint),
 	)
 	if err != nil {

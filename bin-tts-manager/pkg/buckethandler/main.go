@@ -92,12 +92,6 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 		return nil
 	}
 
-	// creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, storage.ScopeFullControl)
-	// if err != nil {
-	// 	log.Errorf("Could not create credentials from json. err: %v", err)
-	// 	return nil
-	// }
-
 	// parse service account
 	conf, err := google.JWTConfigFromJSON(decodedCredential)
 	if err != nil {

@@ -5,8 +5,8 @@ package filehandler
 import (
 	"context"
 	"crypto/sha1"
-	"encoding/base64"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -18,11 +18,11 @@ import (
 	accounthandler "monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
 
+	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/storage"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
 )
 
 const (
@@ -88,29 +88,45 @@ func NewFileHandler(
 ) FileHandler {
 	log := logrus.WithField("func", "NewFileHandler")
 
-	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
-	if err != nil {
-		log.Errorf("Error decoding base64 credential: %v", err)
-		return nil
+	var client *storage.Client
+	var accessID string
+	var privateKey []byte
+	var err error
+	ctx := context.Background()
+
+	envCredPath := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	if envCredPath != "" {
+		log.Infof("Found GOOGLE_APPLICATION_CREDENTIALS at: %s", envCredPath)
+
+		jsonContent, err := os.ReadFile(envCredPath)
+		if err != nil {
+			log.Errorf("Failed to read credential file: %v", err)
+			return nil
+		}
+
+		conf, err := google.JWTConfigFromJSON(jsonContent)
+		if err != nil {
+			log.Errorf("Failed to parse credential JSON: %v", err)
+			return nil
+		}
+
+		accessID = conf.Email
+		privateKey = conf.PrivateKey
+		client, err = storage.NewClient(ctx)
+	} else {
+		log.Info("No GOOGLE_APPLICATION_CREDENTIALS, trying ADC/Metadata")
+
+		client, err = storage.NewClient(ctx)
+		privateKey = nil
+		if metadata.OnGCE() {
+			accessID, _ = metadata.EmailWithContext(ctx, "default")
+		} else {
+			log.Warn("Could not determine Service Account Email (Not on GCE/GKE)")
+		}
 	}
 
-	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, storage.ScopeFullControl)
 	if err != nil {
-		log.Errorf("Could not create credentials from json. err: %v", err)
-		return nil
-	}
-
-	// parse service account
-	conf, err := google.JWTConfigFromJSON(decodedCredential)
-	if err != nil {
-		logrus.Errorf("Could not parse the credential file. err: %v", err)
-		return nil
-	}
-
-	// Create storage client using the decoded credentials
-	client, err := storage.NewClient(context.Background(), option.WithTokenSource(creds.TokenSource))
-	if err != nil {
-		log.Errorf("Could not create a new storage client. Error: %v", err)
+		log.Errorf("Failed to create client: %v", err)
 		return nil
 	}
 
@@ -124,8 +140,8 @@ func NewFileHandler(
 		projectID:   projectID,
 		bucketMedia: bucketMedia,
 		bucketTmp:   bucketTmp,
-		accessID:    conf.Email,
-		privateKey:  conf.PrivateKey,
+		accessID:    accessID,
+		privateKey:  privateKey,
 	}
 
 	return h

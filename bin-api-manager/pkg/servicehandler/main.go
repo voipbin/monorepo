@@ -4,7 +4,6 @@ package servicehandler
 
 import (
 	"context"
-	"encoding/base64"
 	multipart "mime/multipart"
 	"net/http"
 	"time"
@@ -78,8 +77,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
 
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
@@ -807,20 +804,8 @@ func NewServiceHandler(
 ) ServiceHandler {
 	log := logrus.WithField("func", "NewServiceHandler")
 
-	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
-	if err != nil {
-		log.Errorf("Error decoding base64 credential: %v", err)
-		return nil
-	}
-
-	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, storage.ScopeFullControl)
-	if err != nil {
-		log.Errorf("Could not create credentials from json: %v", err)
-		return nil
-	}
-
 	// Create storage client using the decoded credentials
-	storageClient, err := storage.NewClient(context.Background(), option.WithTokenSource(creds.TokenSource))
+	storageClient, err := storage.NewClient(context.Background())
 	if err != nil {
 		log.Errorf("Could not create a new storage client. error: %v", err)
 		return nil

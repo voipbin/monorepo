@@ -7,6 +7,8 @@ import (
 	"monorepo/bin-storage-manager/models/file"
 	"time"
 
+	credentials "cloud.google.com/go/iam/credentials/apiv1"
+	"cloud.google.com/go/iam/credentials/apiv1/credentialspb"
 	"cloud.google.com/go/storage"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -135,7 +137,6 @@ func (h *fileHandler) bucketfileGetAttrs(ctx context.Context, bucketName string,
 
 // bucketfileGenerateDownloadURI returns google cloud storage signed url for file download
 func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath string, expire time.Time) (string, error) {
-
 	// create opt
 	opts := &storage.SignedURLOptions{
 		Scheme:         storage.SigningSchemeV2,
@@ -143,6 +144,26 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 		GoogleAccessID: h.accessID,
 		PrivateKey:     h.privateKey,
 		Expires:        expire,
+	}
+
+	if opts.PrivateKey == nil {
+		c, err := credentials.NewIamCredentialsClient(context.Background())
+		if err != nil {
+			return "", err
+		}
+		defer c.Close()
+
+		opts.SignBytes = func(b []byte) ([]byte, error) {
+			req := &credentialspb.SignBlobRequest{
+				Name:    "projects/-/serviceAccounts/" + h.accessID,
+				Payload: b,
+			}
+			resp, err := c.SignBlob(context.Background(), req)
+			if err != nil {
+				return nil, err
+			}
+			return resp.SignedBlob, nil
+		}
 	}
 
 	// get downloadable url
