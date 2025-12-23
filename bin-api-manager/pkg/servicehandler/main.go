@@ -823,8 +823,8 @@ func NewServiceHandler(
 	}
 
 	// Create storage client using the decoded credentials
-	logrus.Info(">>> CHECKING VERSION: 2025-12-23 FIX APPLIED <<<")
-	storageClient, err := storage.NewClient(ctx, option.WithCredentials(creds))
+	logrus.Info(">>> CHECKING VERSION: 2025-12-23 FIX APPLIED 2 <<<")
+	storageClient, err := storage.NewClient(ctx, option.WithTokenSource(creds.TokenSource))
 	if err != nil {
 		log.Errorf("Could not create a new storage client. Error: %v", err)
 		return nil
