@@ -87,15 +87,13 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 	})
 	log.Debugf("Creating a new bucket handler.")
 
-	ctx := context.Background()
-
 	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
 	if err != nil {
 		log.Errorf("Error decoding base64 credential: %v", err)
 		return nil
 	}
 
-	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, storage.ScopeFullControl)
+	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, storage.ScopeFullControl)
 	if err != nil {
 		log.Errorf("Could not create credentials from json. err: %v", err)
 		return nil
@@ -104,14 +102,14 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 	// parse service account
 	conf, err := google.JWTConfigFromJSON(decodedCredential)
 	if err != nil {
-		logrus.Errorf("Could not parse the credential file. err: %v", err)
+		log.Errorf("Could not parse the credential file. err: %v", err)
 		return nil
 	}
 
 	// create client
-	client, err := storage.NewClient(ctx, option.WithTokenSource(creds.TokenSource))
+	client, err := storage.NewClient(context.Background(), option.WithTokenSource(creds.TokenSource))
 	if err != nil {
-		logrus.Errorf("Could not create a new client. err: %v", err)
+		log.Errorf("Could not create a new client. err: %v", err)
 		return nil
 	}
 

@@ -40,13 +40,13 @@ func NewAudioHandler(ctx context.Context, awsAccessKey string, awsSecretKey stri
 
 	gcpClient, err := gcpGetClient(ctx, gcpCredentialBase64)
 	if err != nil {
-		log.Errorf("Could not create a new client. err: %v", err)
+		log.Errorf("Could not create a new gcp client. err: %v", err)
 		return nil
 	}
 
 	awsClient, err := awsGetClient(awsAccessKey, awsSecretKey)
 	if err != nil {
-		log.Errorf("Could not create a new client. err: %v", err)
+		log.Errorf("Could not create a new aws client. err: %v", err)
 		return nil
 	}
 

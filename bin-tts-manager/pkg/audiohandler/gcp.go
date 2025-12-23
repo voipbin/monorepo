@@ -11,6 +11,7 @@ import (
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -39,8 +40,7 @@ func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.C
 
 	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, texttospeech.DefaultAuthScopes()...)
 	if err != nil {
-		log.Errorf("Could not create credentials from json. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create credentials from json")
 	}
 
 	res, err := texttospeech.NewClient(
@@ -50,8 +50,7 @@ func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.C
 		option.WithEndpoint(defaultGCPEndpoint),
 	)
 	if err != nil {
-		logrus.Errorf("Could not create a new client. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create a new client")
 	}
 
 	return res, nil
