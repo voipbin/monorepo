@@ -78,6 +78,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 
 	"monorepo/bin-api-manager/pkg/dbhandler"
@@ -815,8 +816,14 @@ func NewServiceHandler(
 		return nil
 	}
 
+	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, storage.ScopeFullControl)
+	if err != nil {
+		log.Errorf("Could not create credentials from json. err: %v", err)
+		return nil
+	}
+
 	// Create storage client using the decoded credentials
-	storageClient, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
+	storageClient, err := storage.NewClient(ctx, option.WithCredentials(creds))
 	if err != nil {
 		log.Printf("Could not create a new storage client. Error: %v", err)
 		return nil

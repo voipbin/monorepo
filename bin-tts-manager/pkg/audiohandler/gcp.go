@@ -11,7 +11,9 @@ import (
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -22,12 +24,9 @@ const (
 )
 
 func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.Client, error) {
-	log := logrus.WithField("func", "gcpGetClient")
-
 	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
 	if err != nil {
-		log.Printf("Error decoding base64 credential: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not decode the base64 credential")
 	}
 
 	keepAliveParams := keepalive.ClientParameters{
@@ -36,15 +35,19 @@ func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.C
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
+	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, texttospeech.DefaultAuthScopes()...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to process credentials")
+	}
+
 	res, err := texttospeech.NewClient(
 		ctx,
-		option.WithCredentialsJSON(decodedCredential),
+		option.WithCredentials(creds),
 		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),
 		option.WithEndpoint(defaultGCPEndpoint),
 	)
 	if err != nil {
-		logrus.Errorf("Could not create a new client. err: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not create a new client")
 	}
 
 	return res, nil

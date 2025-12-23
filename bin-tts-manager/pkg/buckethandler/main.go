@@ -102,8 +102,14 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 		return nil
 	}
 
+	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, storage.ScopeFullControl)
+	if err != nil {
+		logrus.Errorf("failed to process credentials: %v", err)
+		return nil
+	}
+
 	// create client
-	client, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
+	client, err := storage.NewClient(ctx, option.WithCredentials(creds))
 	if err != nil {
 		logrus.Errorf("Could not create a new client. err: %v", err)
 		return nil

@@ -7,7 +7,6 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 	"time"
@@ -87,6 +86,9 @@ func NewFileHandler(
 	bucketMedia string,
 	bucketTmp string,
 ) FileHandler {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "NewFileHandler",
+	})
 
 	ctx := context.Background()
 
@@ -103,10 +105,15 @@ func NewFileHandler(
 		return nil
 	}
 
-	// Create storage client using the decoded credentials
-	client, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
+	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, storage.ScopeFullControl)
 	if err != nil {
-		log.Printf("Could not create a new storage client. Error: %v", err)
+		log.Errorf("Could not create credentials from json. err: %v", err)
+		return nil
+	}
+
+	client, err := storage.NewClient(ctx, option.WithCredentials(creds))
+	if err != nil {
+		log.Errorf("Could not create storage client. err: %v", err)
 		return nil
 	}
 
