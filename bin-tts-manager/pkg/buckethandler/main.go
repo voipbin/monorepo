@@ -91,7 +91,13 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 
 	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
 	if err != nil {
-		log.Printf("Error decoding base64 credential: %v", err)
+		log.Errorf("Error decoding base64 credential: %v", err)
+		return nil
+	}
+
+	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, storage.ScopeFullControl)
+	if err != nil {
+		log.Errorf("Could not create credentials from json. err: %v", err)
 		return nil
 	}
 
@@ -103,8 +109,7 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 	}
 
 	// create client
-	//nolint:staticcheck
-	client, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
+	client, err := storage.NewClient(ctx, option.WithTokenSource(creds.TokenSource))
 	if err != nil {
 		logrus.Errorf("Could not create a new client. err: %v", err)
 		return nil

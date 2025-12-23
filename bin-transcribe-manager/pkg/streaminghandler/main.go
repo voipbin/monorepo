@@ -5,7 +5,6 @@ package streaminghandler
 import (
 	"context"
 	"encoding/base64"
-	"log"
 	"sync"
 	"time"
 
@@ -21,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming/types"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
@@ -94,15 +94,22 @@ func NewStreamingHandler(
 	awsAccessKey string,
 	awsSecretKey string,
 ) StreamingHandler {
+	log := logrus.WithField("func", "NewStreamingHandler")
 
 	decodedCredential, err := base64.StdEncoding.DecodeString(gcpCredentialBase64)
 	if err != nil {
-		log.Printf("Error decoding base64 credential: %v", err)
+		log.Errorf("Error decoding base64 credential: %v", err)
+		return nil
+	}
+
+	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, speech.DefaultAuthScopes()...)
+	if err != nil {
+		log.Errorf("Could not create credentials from json. err: %v", err)
 		return nil
 	}
 
 	// create gcp client
-	gcpClient, err := speech.NewClient(context.Background(), option.WithCredentialsJSON(decodedCredential))
+	gcpClient, err := speech.NewClient(context.Background(), option.WithTokenSource(creds.TokenSource))
 	if err != nil {
 		logrus.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil

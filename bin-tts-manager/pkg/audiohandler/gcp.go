@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"cloud.google.com/go/storage"
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/gofrs/uuid"
@@ -38,17 +37,14 @@ func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.C
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
-	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, storage.ScopeFullControl)
+	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, texttospeech.DefaultAuthScopes()...)
 	if err != nil {
 		log.Errorf("Could not create credentials from json. err: %v", err)
 		return nil, err
 	}
-	logrus.Info(">>> CHECKING VERSION: 2025-12-23 FIX APPLIED (V3 - TokenSource) <<<")
 
-	//nolint:staticcheck
 	res, err := texttospeech.NewClient(
 		ctx,
-		// option.WithCredentialsJSON(decodedCredential),
 		option.WithTokenSource(creds.TokenSource),
 		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),
 		option.WithEndpoint(defaultGCPEndpoint),
