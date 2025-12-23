@@ -36,6 +36,7 @@ func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.C
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
+	//nolint:staticcheck
 	res, err := texttospeech.NewClient(
 		ctx,
 		option.WithCredentialsJSON(decodedCredential),

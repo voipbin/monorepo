@@ -103,6 +103,7 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 	}
 
 	// create client
+	//nolint:staticcheck
 	client, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
 		logrus.Errorf("Could not create a new client. err: %v", err)
