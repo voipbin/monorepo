@@ -807,25 +807,22 @@ func NewServiceHandler(
 ) ServiceHandler {
 	log := logrus.WithField("func", "NewServiceHandler")
 
-	// init storage client
-	ctx := context.Background()
-
 	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
 	if err != nil {
 		log.Errorf("Error decoding base64 credential: %v", err)
 		return nil
 	}
 
-	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, storage.ScopeFullControl)
+	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, storage.ScopeFullControl)
 	if err != nil {
 		log.Errorf("Could not create credentials from json: %v", err)
 		return nil
 	}
 
 	// Create storage client using the decoded credentials
-	storageClient, err := storage.NewClient(ctx, option.WithTokenSource(creds.TokenSource))
+	storageClient, err := storage.NewClient(context.Background(), option.WithTokenSource(creds.TokenSource))
 	if err != nil {
-		log.Errorf("Could not create a new storage client. Error: %v", err)
+		log.Errorf("Could not create a new storage client. error: %v", err)
 		return nil
 	}
 

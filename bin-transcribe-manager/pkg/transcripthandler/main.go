@@ -86,7 +86,7 @@ func NewTranscriptHandler(
 	// create client speech
 	clientSpeech, err := speech.NewClient(context.Background(), option.WithTokenSource(creds.TokenSource))
 	if err != nil {
-		logrus.Errorf("Could not create a new client for speech. err: %v", err)
+		log.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil
 	}
 

@@ -79,7 +79,7 @@ func init() {
 func NewBucketHandler(credentialBase64 string, projectID string, bucketName string, osMediaBucketDirectory string, osAddress string) BucketHandler {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                      "NewBucketHandler",
-		"credential_path":           credentialBase64,
+		"credential_len":            len(credentialBase64),
 		"project_id":                projectID,
 		"bucket_name":               bucketName,
 		"os_media_bucket_directory": osMediaBucketDirectory,
