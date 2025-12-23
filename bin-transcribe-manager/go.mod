@@ -70,7 +70,7 @@ require (
 	github.com/smotes/purse v1.0.1
 	go.uber.org/mock v0.6.0
 	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/oauth2 v0.34.0
+	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0
 	google.golang.org/api v0.258.0
@@ -155,7 +155,7 @@ require (
 	golang.org/x/time v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251222181119-0a764e51fe1b // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251222181119-0a764e51fe1b // indirect
-	google.golang.org/grpc v1.77.0 // indirect
+	google.golang.org/grpc v1.78.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect

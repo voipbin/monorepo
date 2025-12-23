@@ -65,7 +65,7 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	google.golang.org/api v0.258.0
 	google.golang.org/genproto v0.0.0-20251222181119-0a764e51fe1b // indirect
-	google.golang.org/grpc v1.77.0
+	google.golang.org/grpc v1.78.0
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
 

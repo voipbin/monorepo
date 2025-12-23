@@ -91,7 +91,6 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93
-	golang.org/x/oauth2 v0.34.0
 	google.golang.org/api v0.258.0
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013
@@ -208,6 +207,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.23.0 // indirect
 	golang.org/x/mod v0.31.0 // indirect
+	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	google.golang.org/genproto v0.0.0-20251222181119-0a764e51fe1b // indirect

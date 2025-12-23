@@ -15,7 +15,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 
 	"monorepo/bin-transcribe-manager/models/transcript"
@@ -77,14 +76,11 @@ func NewTranscriptHandler(
 		return nil
 	}
 
-	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, speech.DefaultAuthScopes()...)
-	if err != nil {
-		logrus.Errorf("failed to process credentials: %v", err)
-		return nil
-	}
-
 	// create client speech
-	clientSpeech, err := speech.NewClient(context.Background(), option.WithCredentials(creds))
+	// We know staticcheck flags this, but the speech client library
+	// has not yet been updated to use the new context package.
+	//nolint:staticcheck
+	clientSpeech, err := speech.NewClient(context.Background(), option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
 		logrus.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil

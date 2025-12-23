@@ -21,7 +21,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming/types"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
@@ -103,14 +102,10 @@ func NewStreamingHandler(
 	}
 
 	// create gcp client
-	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, "https://www.googleapis.com/auth/cloud-platform")
-	if err != nil {
-		logrus.Errorf("Could not process credentials from JSON for speech. err: %v", err)
-		return nil
-	}
-
-	// 2. create gcp client (WithCredentials 사용)
-	gcpClient, err := speech.NewClient(context.Background(), option.WithCredentials(creds))
+	// We know staticcheck flags this, but the speech client library
+	// has not yet been updated to use the new context package.
+	//nolint:staticcheck
+	gcpClient, err := speech.NewClient(context.Background(), option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
 		logrus.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil

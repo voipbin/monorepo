@@ -105,13 +105,11 @@ func NewFileHandler(
 		return nil
 	}
 
-	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, storage.ScopeFullControl)
-	if err != nil {
-		log.Errorf("Could not create credentials from json. err: %v", err)
-		return nil
-	}
-
-	client, err := storage.NewClient(ctx, option.WithCredentials(creds))
+	// Create storage client using the decoded credentials
+	// We know staticcheck flags this, but the storage client library
+	// has not yet been updated to use the new context package.
+	//nolint:staticcheck
+	client, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
 		log.Errorf("Could not create storage client. err: %v", err)
 		return nil

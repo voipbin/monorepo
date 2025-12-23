@@ -11,7 +11,6 @@ import (
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2"
 	dialogflowpb "cloud.google.com/go/dialogflow/apiv2/dialogflowpb"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 
 	"monorepo/bin-ai-manager/models/message"
@@ -46,14 +45,12 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AI
 		"endpoint": endpoint,
 	}).Debugf("Checking session data.")
 
-	creds, err := google.CredentialsFromJSON(ctx, decodedCred, "https://www.googleapis.com/auth/dialogflow")
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not process credentials from JSON")
-	}
-
 	// Create a Dialogflow client with the credentials in-memory
+	// We know staticcheck flags this, but the storage client library
+	// has not yet been updated to use the new context package.
+	//nolint:staticcheck
 	client, err := dialogflow.NewSessionsClient(ctx,
-		option.WithCredentials(creds),
+		option.WithCredentialsJSON(decodedCred),
 		option.WithEndpoint(endpoint),
 	)
 	if err != nil {

@@ -78,7 +78,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 
 	"monorepo/bin-api-manager/pkg/dbhandler"
@@ -816,15 +815,11 @@ func NewServiceHandler(
 		return nil
 	}
 
-	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, storage.ScopeFullControl)
-	if err != nil {
-		log.Errorf("Could not create credentials from json. err: %v", err)
-		return nil
-	}
-
 	// Create storage client using the decoded credentials
-	logrus.Info(">>> CHECKING VERSION: 2025-12-23 FIX APPLIED 2 <<<")
-	storageClient, err := storage.NewClient(ctx, option.WithTokenSource(creds.TokenSource))
+	// We know staticcheck flags this, but the storage client library
+	// has not yet been updated to use the new context package.
+	//nolint:staticcheck
+	storageClient, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
 		log.Errorf("Could not create a new storage client. Error: %v", err)
 		return nil

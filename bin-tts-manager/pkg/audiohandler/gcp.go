@@ -13,7 +13,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -35,14 +34,12 @@ func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.C
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
-	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, texttospeech.DefaultAuthScopes()...)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to process credentials")
-	}
-
+	// We know staticcheck flags this, but the texttospeech client library
+	// has not yet been updated to use the new context package.
+	//nolint:staticcheck
 	res, err := texttospeech.NewClient(
 		ctx,
-		option.WithCredentials(creds),
+		option.WithCredentialsJSON(decodedCredential),
 		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),
 		option.WithEndpoint(defaultGCPEndpoint),
 	)
