@@ -812,7 +812,7 @@ func NewServiceHandler(
 
 	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
 	if err != nil {
-		log.Printf("Error decoding base64 credential: %v", err)
+		log.Errorf("Error decoding base64 credential: %v", err)
 		return nil
 	}
 
@@ -825,7 +825,7 @@ func NewServiceHandler(
 	// Create storage client using the decoded credentials
 	storageClient, err := storage.NewClient(ctx, option.WithCredentials(creds))
 	if err != nil {
-		log.Printf("Could not create a new storage client. Error: %v", err)
+		log.Errorf("Could not create a new storage client. Error: %v", err)
 		return nil
 	}
 
