@@ -21,7 +21,6 @@ const (
 	defaultRedisAddress            = "127.0.0.1:6379"
 	defaultRedisDatabase           = 1
 	defaultRedisPassword           = ""
-	defaultGCPCredentialBase64     = ""
 	defaultGCPProjectID            = ""
 	defaultGCPBucketNameMedia      = ""
 	defaultGCPBucketNameTmp        = ""
@@ -51,7 +50,6 @@ func initVariable() {
 	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
 	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
-	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "Base64 encoded GCP credential.")
 	pflag.String("gcp_project_id", defaultGCPProjectID, "GCP project id.")
 	pflag.String("gcp_bucket_name_media", defaultGCPBucketNameMedia, "GCP bucket name for media storage.")
 	pflag.String("gcp_bucket_name_tmp", defaultGCPBucketNameTmp, "GCP bucket name for tmp storage.")
@@ -134,17 +132,6 @@ func initVariable() {
 		panic(errEnv)
 	}
 	redisDatabase = viper.GetInt("redis_database")
-
-	// gcp_credential_base64
-	if errFlag := viper.BindPFlag("gcp_credential_base64", pflag.Lookup("gcp_credential_base64")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("gcp_credential_base64", "GCP_CREDENTIAL_BASE64"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	gcpCredentialBase64 = viper.GetString("gcp_credential_base64")
 
 	// gcp_project_id
 	if errFlag := viper.BindPFlag("gcp_project_id", pflag.Lookup("gcp_project_id")); errFlag != nil {

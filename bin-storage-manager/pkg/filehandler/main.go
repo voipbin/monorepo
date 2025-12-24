@@ -81,7 +81,6 @@ func NewFileHandler(
 	db dbhandler.DBHandler,
 	accountHandler accounthandler.AccountHandler,
 
-	credentialBase64 string,
 	projectID string,
 	bucketMedia string,
 	bucketTmp string,
@@ -120,7 +119,12 @@ func NewFileHandler(
 		privateKey = nil
 		if metadata.OnGCE() {
 			log.Debugf("The service is running on the GCE")
-			accessID, _ = metadata.EmailWithContext(ctx, "default")
+			email, err := metadata.EmailWithContext(ctx, "default")
+			if err != nil {
+				log.Errorf("Failed to retrieve service account email from metadata: %v", err)
+			} else {
+				accessID = email
+			}
 		} else {
 			log.Warn("Could not determine Service Account Email (Not on GCE/GKE)")
 		}
@@ -131,6 +135,7 @@ func NewFileHandler(
 		return nil
 	}
 
+	log.Debugf("Checking account. project_id: %s, bucket_media: %s, bucket_tmp: %s, access_id: %s", projectID, bucketMedia, bucketTmp, accessID)
 	res := &fileHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),
 		notifyHandler:  notifyHandler,
@@ -144,7 +149,6 @@ func NewFileHandler(
 		accessID:    accessID,
 		privateKey:  privateKey,
 	}
-	log.Debugf("Created filehandler. project_id: %s, bucket_media: %s, bucket_tmp: %s, access_id: %s", projectID, bucketMedia, bucketTmp, accessID)
 
 	return res
 }

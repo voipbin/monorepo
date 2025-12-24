@@ -68,7 +68,6 @@ func initVariable() {
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
 	pflag.String("ssl_privkey_base64", defaultSSLPrivKeyBase64, "Base64 encoded private key for ssl connection.")
 	pflag.String("ssl_cert_base64", defaultSSLCertBase64, "Base64 encoded cert key for ssl connection.")
-	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "Base64 encoded GCP credential.")
 	pflag.String("gcp_project_id", defaultGCPProjectID, "GCP project id.")
 	pflag.String("gcp_bucket_name", defaultGCPBucketName, "GCP bucket name for tmp storage.")
 	pflag.String("jwt_key", defaultJWTKey, "JWT Key for parse the jwt.")
@@ -174,17 +173,6 @@ func initVariable() {
 		panic(errEnv)
 	}
 	sslCertBase64 = viper.GetString("ssl_cert_base64")
-
-	// gcp_credential_base64
-	if errFlag := viper.BindPFlag("gcp_credential_base64", pflag.Lookup("gcp_credential_base64")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("gcp_credential_base64", "GCP_CREDENTIAL_BASE64"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	gcpCredentialBase64 = viper.GetString("gcp_credential_base64")
 
 	// gcp_project_id
 	if errFlag := viper.BindPFlag("gcp_project_id", pflag.Lookup("gcp_project_id")); errFlag != nil {

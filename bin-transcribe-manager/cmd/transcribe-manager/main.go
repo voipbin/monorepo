@@ -38,7 +38,6 @@ var (
 	redisAddress            = ""
 	redisDatabase           = 0
 	redisPassword           = ""
-	gcpCredentialBase64     = ""
 
 	awsAccessKey = ""
 	awsSecretKey = ""
@@ -98,8 +97,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager)
-	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler, gcpCredentialBase64)
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, gcpCredentialBase64, awsAccessKey, awsSecretKey)
+	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, awsAccessKey, awsSecretKey)
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
 	// run request listener

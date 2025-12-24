@@ -2,7 +2,6 @@ package audiohandler
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"monorepo/bin-tts-manager/models/tts"
 	"os"
@@ -13,7 +12,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -23,29 +21,15 @@ const (
 	defaultGCPEndpoint = "eu-texttospeech.googleapis.com:443"
 )
 
-func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.Client, error) {
-	log := logrus.WithField("func", "gcpGetClient")
-
-	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
-	if err != nil {
-		log.Printf("Error decoding base64 credential: %v", err)
-		return nil, err
-	}
-
+func gcpGetClient(ctx context.Context) (*texttospeech.Client, error) {
 	keepAliveParams := keepalive.ClientParameters{
 		Time:                30 * time.Second, // Ping every 30 seconds
 		Timeout:             10 * time.Second, // Wait 10 seconds for response
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
-	creds, err := google.CredentialsFromJSON(ctx, decodedCredential, texttospeech.DefaultAuthScopes()...)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create credentials from json")
-	}
-
 	res, err := texttospeech.NewClient(
 		ctx,
-		option.WithTokenSource(creds.TokenSource),
 		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),
 		option.WithEndpoint(defaultGCPEndpoint),
 	)

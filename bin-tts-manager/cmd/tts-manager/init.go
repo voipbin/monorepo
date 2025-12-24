@@ -17,7 +17,6 @@ const (
 	defaultPrometheusEndpoint      = "/metrics"
 	defaultPrometheusListenAddress = ":2112"
 	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
-	defaultGCPCredentialBase64     = ""
 	defaultGCPProjectID            = ""
 	defaultGCPBucketName           = ""
 	defaultAWSAccessKey            = ""
@@ -45,7 +44,6 @@ func initVariable() {
 	pflag.String("rabbitmq_address", defaultRabbitMQAddress, "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
 	pflag.String("prometheus_endpoint", defaultPrometheusEndpoint, "URL for the Prometheus metrics endpoint")
 	pflag.String("prometheus_listen_address", defaultPrometheusListenAddress, "Address for Prometheus to listen on (e.g., localhost:8080)")
-	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "Base64 encoded GCP credential.")
 	pflag.String("gcp_project_id", defaultGCPProjectID, "GCP project id.")
 	pflag.String("gcp_bucket_name", defaultGCPBucketName, "GCP bucket name for tmp storage.")
 	pflag.String("aws_access_key", defaultAWSAccessKey, "AWS access key.")
@@ -85,17 +83,6 @@ func initVariable() {
 		panic(errEnv)
 	}
 	prometheusListenAddress = viper.GetString("prometheus_listen_address")
-
-	// gcp_credential_base64
-	if errFlag := viper.BindPFlag("gcp_credential_base64", pflag.Lookup("gcp_credential_base64")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("gcp_credential_base64", "GCP_CREDENTIAL_BASE64"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	gcpCredentialBase64 = viper.GetString("gcp_credential_base64")
 
 	// gcp_project_id
 	if errFlag := viper.BindPFlag("gcp_project_id", pflag.Lookup("gcp_project_id")); errFlag != nil {

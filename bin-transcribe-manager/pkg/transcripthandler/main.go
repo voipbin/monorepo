@@ -4,7 +4,6 @@ package transcripthandler
 
 import (
 	"context"
-	"encoding/base64"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -14,8 +13,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
 
 	"monorepo/bin-transcribe-manager/models/transcript"
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
@@ -66,25 +63,11 @@ func NewTranscriptHandler(
 	reqHandler requesthandler.RequestHandler,
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
-
-	credentialBase64 string,
 ) TranscriptHandler {
 	log := logrus.WithField("func", "NewTranscriptHandler")
 
-	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
-	if err != nil {
-		log.Errorf("Error decoding base64 credential: %v", err)
-		return nil
-	}
-
-	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, speech.DefaultAuthScopes()...)
-	if err != nil {
-		log.Errorf("Could not create credentials from json. err: %v", err)
-		return nil
-	}
-
 	// create client speech
-	clientSpeech, err := speech.NewClient(context.Background(), option.WithTokenSource(creds.TokenSource))
+	clientSpeech, err := speech.NewClient(context.Background())
 	if err != nil {
 		log.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil

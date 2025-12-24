@@ -4,11 +4,12 @@ package buckethandler
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
+	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/storage"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -75,10 +76,9 @@ func init() {
 }
 
 // NewBucketHandler create bucket handler
-func NewBucketHandler(credentialBase64 string, projectID string, bucketName string, osMediaBucketDirectory string, osAddress string) BucketHandler {
+func NewBucketHandler(projectID string, bucketName string, osMediaBucketDirectory string, osAddress string) BucketHandler {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                      "NewBucketHandler",
-		"credential_len":            len(credentialBase64),
 		"project_id":                projectID,
 		"bucket_name":               bucketName,
 		"os_media_bucket_directory": osMediaBucketDirectory,
@@ -86,25 +86,54 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 	})
 	log.Debugf("Creating a new bucket handler.")
 
-	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
-	if err != nil {
-		log.Errorf("Error decoding base64 credential: %v", err)
-		return nil
+	var client *storage.Client
+	var accessID string
+	var privateKey []byte
+	var errClient error
+	ctx := context.Background()
+
+	envCredPath := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	if envCredPath != "" {
+		log.Infof("Found GOOGLE_APPLICATION_CREDENTIALS at: %s", envCredPath)
+
+		jsonContent, err := os.ReadFile(envCredPath)
+		if err != nil {
+			log.Errorf("Failed to read credential file: %v", err)
+			return nil
+		}
+
+		conf, err := google.JWTConfigFromJSON(jsonContent)
+		if err != nil {
+			log.Errorf("Failed to parse credential JSON: %v", err)
+			return nil
+		}
+
+		accessID = conf.Email
+		privateKey = conf.PrivateKey
+		client, errClient = storage.NewClient(ctx)
+	} else {
+		log.Info("No GOOGLE_APPLICATION_CREDENTIALS, trying ADC/Metadata")
+
+		client, errClient = storage.NewClient(ctx)
+		privateKey = nil
+		if metadata.OnGCE() {
+			log.Debugf("The service is running on the GCE")
+			email, err := metadata.EmailWithContext(ctx, "default")
+			if err != nil {
+				log.Errorf("Failed to retrieve service account email from metadata: %v", err)
+			} else {
+				accessID = email
+			}
+		} else {
+			log.Warn("Could not determine Service Account Email (Not on GCE/GKE)")
+		}
 	}
 
-	// parse service account
-	conf, err := google.JWTConfigFromJSON(decodedCredential)
-	if err != nil {
-		log.Errorf("Could not parse the credential file. err: %v", err)
+	if errClient != nil {
+		log.Errorf("Failed to create client: %v", errClient)
 		return nil
 	}
-
-	// create client
-	client, err := storage.NewClient(context.Background())
-	if err != nil {
-		log.Errorf("Could not create a new client. err: %v", err)
-		return nil
-	}
+	log.Debugf("Checking account. project_id: %s, access_id: %s", projectID, accessID)
 
 	tmpAddress := strings.ReplaceAll(osAddress, ".", "-")
 	osLocalAddress := fmt.Sprintf("%s.bin-manager.pod.cluster.local", tmpAddress)
@@ -115,8 +144,8 @@ func NewBucketHandler(credentialBase64 string, projectID string, bucketName stri
 
 		projectID:  projectID,
 		bucketName: bucketName,
-		accessID:   conf.Email,
-		privateKey: conf.PrivateKey,
+		accessID:   accessID,
+		privateKey: privateKey,
 
 		osBucketDirectory: osMediaBucketDirectory,
 		osLocalAddress:    osLocalAddress,

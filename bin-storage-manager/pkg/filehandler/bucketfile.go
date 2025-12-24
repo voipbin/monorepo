@@ -169,10 +169,10 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 	}
 
 	// get downloadable url
-	u, err := storage.SignedURL(bucketName, filepath, opts)
+	res, err := storage.SignedURL(bucketName, filepath, opts)
 	if err != nil {
 		return "", errors.Wrapf(err, "could not get the signed url. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
 
-	return u, nil
+	return res, nil
 }

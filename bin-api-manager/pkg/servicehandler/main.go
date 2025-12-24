@@ -796,7 +796,6 @@ func NewServiceHandler(
 	dbHandler dbhandler.DBHandler,
 	websockHandler websockhandler.WebsockHandler,
 
-	credentialBase64 string,
 	projectID string,
 	bucketName string,
 

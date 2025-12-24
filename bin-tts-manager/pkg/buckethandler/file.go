@@ -6,7 +6,10 @@ import (
 	"os"
 	"time"
 
+	credentials "cloud.google.com/go/iam/credentials/apiv1"
+	"cloud.google.com/go/iam/credentials/apiv1/credentialspb"
 	"cloud.google.com/go/storage"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -72,12 +75,6 @@ func (h *bucketHandler) FileExist(ctx context.Context, target string) bool {
 
 // FileGetDownloadURL returns google cloud storage signed url for file download
 func (h *bucketHandler) FileGetDownloadURL(target string, expire time.Time) (string, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":   "FileGetDownloadURL",
-		"target": target,
-		"expire": expire,
-	})
-
 	start := time.Now()
 
 	// create opt
@@ -89,17 +86,39 @@ func (h *bucketHandler) FileGetDownloadURL(target string, expire time.Time) (str
 		Expires:        expire,
 	}
 
-	// get downloadable url
-	u, err := storage.SignedURL(h.bucketName, target, opts)
+	if opts.PrivateKey == nil {
+		c, err := credentials.NewIamCredentialsClient(context.Background())
+		if err != nil {
+			return "", err
+		}
+		defer func() {
+			_ = c.Close()
+		}()
+
+		opts.SignBytes = func(b []byte) ([]byte, error) {
+			req := &credentialspb.SignBlobRequest{
+				Name:    "projects/-/serviceAccounts/" + h.accessID,
+				Payload: b,
+			}
+
+			resp, err := c.SignBlob(context.Background(), req)
+			if err != nil {
+				return nil, errors.Wrapf(err, "could not get sign blob")
+			}
+
+			return resp.SignedBlob, nil
+		}
+	}
+
+	res, err := storage.SignedURL(h.bucketName, target, opts)
 	if err != nil {
-		log.Errorf("Could not get signed url. err: %v", err)
-		return "", err
+		return "", errors.Wrapf(err, "could not get the signed url. bucket_name: %s, filepath: %s", h.bucketName, target)
 	}
 
 	elapsed := time.Since(start)
 	promBucketURLProcessTime.Observe(float64(elapsed.Milliseconds()))
 
-	return u, nil
+	return res, nil
 }
 
 // FileGet downloads the given target file.
