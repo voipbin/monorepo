@@ -22,8 +22,8 @@ const (
 )
 
 // gcpGetClient creates a Google Cloud Text-to-Speech client using Application Default Credentials (ADC).
-// It no longer accepts explicit credential data; callers must ensure the environment is configured
-// for ADC (for example via GOOGLE_APPLICATION_CREDENTIALS or in-cluster metadata).
+// Callers must ensure the environment is configured for ADC (for example via
+// GOOGLE_APPLICATION_CREDENTIALS, workload identity, or in-cluster metadata).
 func gcpGetClient(ctx context.Context) (*texttospeech.Client, error) {
 	keepAliveParams := keepalive.ClientParameters{
 		Time:                30 * time.Second, // Ping every 30 seconds

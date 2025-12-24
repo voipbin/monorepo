@@ -124,11 +124,12 @@ func NewFileHandler(
 			email, err := metadata.EmailWithContext(ctx, "default")
 			if err != nil {
 				log.Errorf("Failed to retrieve service account email from metadata: %v", err)
+				return nil
 			} else {
 				accessID = email
 			}
 		} else {
-			log.Errorf("Could not determine Service Account Email (Not on GCE/GKE)")
+			log.Errorf("Could not determine Google Cloud credentials: GOOGLE_APPLICATION_CREDENTIALS is not set, not running on GCE/GKE metadata, and no service account email is available")
 			return nil
 		}
 	}
@@ -140,7 +141,7 @@ func NewFileHandler(
 
 	var iamClient *credentials.IamCredentialsClient
 	if privateKey == nil {
-		var err error
+		log.Debugf("The private key is nil. Creating IAM Credentials Client.")
 		tmpClient, err := credentials.NewIamCredentialsClient(ctx)
 		if err != nil {
 			log.Errorf("Failed to create IAM Credentials Client: %v", err)

@@ -155,10 +155,12 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 				Name:    "projects/-/serviceAccounts/" + h.accessID,
 				Payload: b,
 			}
+
 			resp, err := h.iamClient.SignBlob(context.Background(), req)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrapf(err, "could not sign the blob using IAM SignBlob API")
 			}
+
 			return resp.SignedBlob, nil
 		}
 	}

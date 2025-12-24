@@ -65,7 +65,7 @@ require (
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/oauth2 v0.34.0
 	golang.org/x/text v0.32.0 // indirect
-	google.golang.org/api v0.258.0
+	google.golang.org/api v0.258.0 // indirect
 	google.golang.org/genproto v0.0.0-20251222181119-0a764e51fe1b // indirect
 	google.golang.org/grpc v1.78.0 // indirect
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a // indirect
@@ -73,6 +73,7 @@ require (
 )
 
 require (
+	cloud.google.com/go/compute/metadata v0.9.0
 	cloud.google.com/go/iam v1.5.3
 	github.com/go-redsync/redsync/v4 v4.15.0
 	github.com/go-sql-driver/mysql v1.9.3
@@ -90,7 +91,6 @@ require (
 	cloud.google.com/go v0.123.0 // indirect
 	cloud.google.com/go/auth v0.18.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
-	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	cloud.google.com/go/monitoring v1.24.3 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.30.0 // indirect
