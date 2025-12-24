@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-storage-manager/models/file"
 	"time"
 
-	credentials "cloud.google.com/go/iam/credentials/apiv1"
 	"cloud.google.com/go/iam/credentials/apiv1/credentialspb"
 	"cloud.google.com/go/storage"
 	"github.com/pkg/errors"
@@ -147,20 +146,16 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 	}
 
 	if opts.PrivateKey == nil {
-		c, err := credentials.NewIamCredentialsClient(context.Background())
-		if err != nil {
-			return "", err
+		if h.iamClient == nil {
+			return "", errors.New("the IAM Client is nil but PrivateKey is missing")
 		}
-		defer func() {
-			_ = c.Close()
-		}()
 
 		opts.SignBytes = func(b []byte) ([]byte, error) {
 			req := &credentialspb.SignBlobRequest{
 				Name:    "projects/-/serviceAccounts/" + h.accessID,
 				Payload: b,
 			}
-			resp, err := c.SignBlob(context.Background(), req)
+			resp, err := h.iamClient.SignBlob(context.Background(), req)
 			if err != nil {
 				return nil, err
 			}

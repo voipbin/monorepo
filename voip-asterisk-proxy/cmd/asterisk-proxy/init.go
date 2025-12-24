@@ -37,8 +37,6 @@ const (
 	defaultRedisPassword = ""
 	defaultRedisDB       = 1
 
-	defaultGCPCredentialBase64 = ""
-
 	defaultRecordingBucketName        = ""
 	defaultRecordingAsteriskDirectory = "/var/spool/asterisk/recording"
 	defaultRecordingBucketDirectory   = "/mnt/media/recording"
@@ -81,8 +79,6 @@ func initVariable() {
 	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
 	pflag.String("redis_password", defaultRedisPassword, "Password of the Redis server")
 	pflag.Int("redis_database", defaultRedisDB, "Redis database index to use (default is 1)")
-
-	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "gcp credential base64")
 
 	pflag.String("recording_bucket_name", defaultRecordingBucketName, "recording bucket name")
 	pflag.String("recording_asterisk_directory", defaultRecordingAsteriskDirectory, "recording directory of the Asterisk server")
@@ -278,17 +274,6 @@ func initVariable() {
 		panic(errEnv)
 	}
 	prometheusListenAddress = viper.GetString("prometheus_listen_address")
-
-	// recording_asterisk_directory
-	if errFlag := viper.BindPFlag("gcp_credential_base64", pflag.Lookup("gcp_credential_base64")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("gcp_credential_base64", "GCP_CREDENTIAL_BASE64"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	gcpCredentialBase64 = viper.GetString("gcp_credential_base64")
 
 	// recording_bucket_name
 	if errFlag := viper.BindPFlag("recording_bucket_name", pflag.Lookup("recording_bucket_name")); errFlag != nil {

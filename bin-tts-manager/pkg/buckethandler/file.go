@@ -92,7 +92,9 @@ func (h *bucketHandler) FileGetDownloadURL(target string, expire time.Time) (str
 			return "", err
 		}
 		defer func() {
-			_ = c.Close()
+			if err := c.Close(); err != nil {
+				logrus.WithField("func", "FileGetDownloadURL").Errorf("Could not close credentials client. err: %v", err)
+			}
 		}()
 
 		opts.SignBytes = func(b []byte) ([]byte, error) {

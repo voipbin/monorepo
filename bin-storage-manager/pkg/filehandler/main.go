@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-storage-manager/pkg/dbhandler"
 
 	"cloud.google.com/go/compute/metadata"
+	credentials "cloud.google.com/go/iam/credentials/apiv1"
 	"cloud.google.com/go/storage"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -64,7 +65,8 @@ type fileHandler struct {
 	db             dbhandler.DBHandler
 	accountHandler accounthandler.AccountHandler
 
-	client *storage.Client
+	client    *storage.Client
+	iamClient *credentials.IamCredentialsClient
 
 	projectID string
 
@@ -135,6 +137,18 @@ func NewFileHandler(
 		return nil
 	}
 
+	var iamClient *credentials.IamCredentialsClient
+	if privateKey == nil {
+		var err error
+		tmpClient, err := credentials.NewIamCredentialsClient(ctx)
+		if err != nil {
+			log.Errorf("Failed to create IAM Credentials Client: %v", err)
+			return nil
+		}
+
+		iamClient = tmpClient
+	}
+
 	log.Debugf("Checking account. project_id: %s, bucket_media: %s, bucket_tmp: %s, access_id: %s", projectID, bucketMedia, bucketTmp, accessID)
 	res := &fileHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),
@@ -143,6 +157,7 @@ func NewFileHandler(
 		accountHandler: accountHandler,
 
 		client:      client,
+		iamClient:   iamClient,
 		projectID:   projectID,
 		bucketMedia: bucketMedia,
 		bucketTmp:   bucketTmp,

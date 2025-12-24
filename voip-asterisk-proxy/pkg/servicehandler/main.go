@@ -4,12 +4,9 @@ package servicehandler
 
 import (
 	"context"
-	"encoding/base64"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
 )
 
 type ServiceHandler interface {
@@ -24,25 +21,13 @@ type serviceHandler struct {
 	recordingBucketDirectory   string
 }
 
-func NewServiceHandler(gcpCredentialBase64 string, recordingBucketName string, recordingAsteriskDirectory string, recordingBucketDirectory string) ServiceHandler {
+func NewServiceHandler(recordingBucketName string, recordingAsteriskDirectory string, recordingBucketDirectory string) ServiceHandler {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "NewServiceHandler",
 	})
 
-	decodedCredential, err := base64.StdEncoding.DecodeString(gcpCredentialBase64)
-	if err != nil {
-		log.Errorf("Error decoding base64 credential: %v", err)
-		return nil
-	}
-
-	creds, err := google.CredentialsFromJSON(context.Background(), decodedCredential, storage.ScopeFullControl)
-	if err != nil {
-		log.Errorf("Could not create credentials from json. err: %v", err)
-		return nil
-	}
-
 	// Create storage client using the decoded credentials
-	client, err := storage.NewClient(context.Background(), option.WithTokenSource(creds.TokenSource))
+	client, err := storage.NewClient(context.Background())
 	if err != nil {
 		log.Errorf("Could not create a new storage client. Error: %v", err)
 		return nil
