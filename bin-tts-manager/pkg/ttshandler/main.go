@@ -55,8 +55,6 @@ func init() {
 func NewTTSHandler(
 	awsAccessKey string,
 	awsSecretKey string,
-	projectID string,
-	bucketName string,
 	mediaBucketDirectory string,
 	localAddress string,
 	requestHandler requesthandler.RequestHandler,
@@ -64,8 +62,6 @@ func NewTTSHandler(
 ) TTSHandler {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "NewTTSHandler",
-		"project_id":             projectID,
-		"bucket_name":            bucketName,
 		"media_bucket_directory": mediaBucketDirectory,
 		"local_address":          localAddress,
 	})
@@ -78,7 +74,7 @@ func NewTTSHandler(
 		return nil
 	}
 
-	bucketHandler := buckethandler.NewBucketHandler(projectID, bucketName, mediaBucketDirectory, localAddress)
+	bucketHandler := buckethandler.NewBucketHandler(mediaBucketDirectory, localAddress)
 	if bucketHandler == nil {
 		log.Errorf("Could not create bucket handler.")
 		return nil

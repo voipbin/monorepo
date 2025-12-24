@@ -84,28 +84,6 @@ func initVariable() {
 	}
 	prometheusListenAddress = viper.GetString("prometheus_listen_address")
 
-	// gcp_project_id
-	if errFlag := viper.BindPFlag("gcp_project_id", pflag.Lookup("gcp_project_id")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("gcp_project_id", "GCP_PROJECT_ID"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	gcpProjectID = viper.GetString("gcp_project_id")
-
-	// gcp_bucket_name
-	if errFlag := viper.BindPFlag("gcp_bucket_name", pflag.Lookup("gcp_bucket_name")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("gcp_bucket_name", "GCP_BUCKET_NAME"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	gcpBucketName = viper.GetString("gcp_bucket_name")
-
 	// aws_access_key
 	if errFlag := viper.BindPFlag("aws_access_key", pflag.Lookup("aws_access_key")); errFlag != nil {
 		log.Errorf("Error binding flag: %v", errFlag)

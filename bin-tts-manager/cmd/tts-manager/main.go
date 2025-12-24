@@ -30,9 +30,6 @@ var (
 	prometheusListenAddress = ""
 	rabbitMQAddress         = ""
 
-	gcpProjectID  = ""
-	gcpBucketName = ""
-
 	awsAccessKey     = ""
 	awsSecretKey     = ""
 	elevenlabsAPIKey = ""
@@ -71,7 +68,7 @@ func run() error {
 	podID := os.Getenv("HOSTNAME")
 	listenAddress := fmt.Sprintf("%s:8080", localAddress)
 
-	ttsHandler := ttshandler.NewTTSHandler(awsAccessKey, awsSecretKey, gcpProjectID, gcpBucketName, "/shared-data", localAddress, reqHandler, notifyHandler)
+	ttsHandler := ttshandler.NewTTSHandler(awsAccessKey, awsSecretKey, "/shared-data", localAddress, reqHandler, notifyHandler)
 	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, listenAddress, podID, elevenlabsAPIKey)
 
 	// run listener

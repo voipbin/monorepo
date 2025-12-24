@@ -128,7 +128,8 @@ func NewFileHandler(
 				accessID = email
 			}
 		} else {
-			log.Warn("Could not determine Service Account Email (Not on GCE/GKE)")
+			log.Errorf("Could not determine Service Account Email (Not on GCE/GKE)")
+			return nil
 		}
 	}
 
