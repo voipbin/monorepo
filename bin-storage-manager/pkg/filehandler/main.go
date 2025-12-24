@@ -144,7 +144,7 @@ func NewFileHandler(
 		accessID:    accessID,
 		privateKey:  privateKey,
 	}
-	log.WithField("file_handler", res).Debugf("Created filehandler")
+	log.Debugf("Created filehandler. project_id: %s, bucket_media: %s, bucket_tmp: %s, access_id: %s", projectID, bucketMedia, bucketTmp, accessID)
 
 	return res
 }
