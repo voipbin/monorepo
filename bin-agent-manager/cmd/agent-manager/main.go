@@ -67,7 +67,6 @@ func runDaemon() error {
 
 	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
 		return errors.Wrapf(err, "could not connect to the database")
 	}
 	defer commondatabasehandler.Close(sqlDB)
@@ -141,6 +140,7 @@ func startServiceListen(sockHandler sockhandler.SockHandler, agentHandler agenth
 	// run
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameAgentRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", errRun)
+		return errRun
 	}
 
 	return nil

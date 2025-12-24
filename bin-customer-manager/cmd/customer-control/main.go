@@ -216,7 +216,7 @@ func executeGet(customerHandler customerhandler.CustomerHandler, id string) erro
 func initHandler() (customerhandler.CustomerHandler, error) {
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not connect to the database")
 	}
 
 	cache, err := initCache()

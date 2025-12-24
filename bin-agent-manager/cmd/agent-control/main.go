@@ -106,7 +106,7 @@ func resolveUUID(flagName string, promptMessage string) (uuid.UUID, error) {
 
 		res = uuid.FromStringOrNil(tmp)
 		if res == uuid.Nil {
-			return uuid.Nil, fmt.Errorf("invalid %s format: %s", promptMessage, res)
+			return uuid.Nil, fmt.Errorf("invalid %s format: %s", promptMessage, tmp)
 		}
 	}
 
@@ -183,7 +183,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 
 func cmdGet() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get [id]",
+		Use:   "get",
 		Short: "Get an agent by ID",
 		RunE:  runGet,
 	}
@@ -243,6 +243,7 @@ func cmdGets() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of agents to retrieve")
 	flags.String("token", "", "Retrieve agents before this token (pagination)")
+	flags.String("customer_id", "", "Customer ID to filter")
 
 	if errBind := viper.BindPFlags(flags); errBind != nil {
 		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
@@ -315,7 +316,7 @@ func runUpdatePermission(cmd *cobra.Command, args []string) error {
 
 	res, err := handler.UpdatePermission(context.Background(), id, agent.Permission(viper.GetUint64("permission")))
 	if err != nil {
-		return errors.Wrap(err, "failed to retrieve agents")
+		return errors.Wrap(err, "failed to update agent permission")
 	}
 
 	logrus.WithField("res", res).Infof("Updated agent permission")

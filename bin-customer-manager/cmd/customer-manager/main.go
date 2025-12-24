@@ -65,7 +65,6 @@ func runDaemon() error {
 
 	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
 		return errors.Wrapf(err, "could not connect to the database")
 	}
 	defer commondatabasehandler.Close(sqlDB)
