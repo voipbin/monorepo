@@ -806,7 +806,7 @@ func NewServiceHandler(
 	// Create storage client using the decoded credentials
 	storageClient, err := storage.NewClient(context.Background())
 	if err != nil {
-		log.Errorf("Could not create a new storage client. error: %v", err)
+		log.Errorf("Could not create a new storage client. Please ensure the environment is configured for Application Default Credentials (ADC) (for example via GOOGLE_APPLICATION_CREDENTIALS, workload identity, or in-cluster metadata). error: %v", err)
 		return nil
 	}
 
