@@ -148,7 +148,7 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 
 	if opts.PrivateKey == nil {
 		if h.iamClient == nil {
-			return "", errors.New("the IAM Client is nil but PrivateKey is missing")
+			return "", errors.New("No private key found and IAM Credentials Client is not configured. Cannot generate signed URLs.")
 		}
 
 		opts.SignBytes = func(b []byte) ([]byte, error) {

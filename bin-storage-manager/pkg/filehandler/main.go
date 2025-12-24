@@ -145,6 +145,11 @@ func NewFileHandler(
 	}
 
 	var iamClient *credentials.IamCredentialsClient
+	// privateKey is set when GOOGLE_APPLICATION_CREDENTIALS points to a service account
+	// JSON file and we parse it via google.JWTConfigFromJSON above. In that case we can
+	// sign blobs locally and do not need an IAM Credentials client. When no JSON file
+	// is provided (ADC/metadata scenarios), privateKey remains nil and we rely on the
+	// IAM Credentials API instead, so we create an IamCredentialsClient here.
 	if privateKey == nil {
 		log.Debugf("The private key is nil. Creating IAM Credentials Client.")
 		tmpClient, err := credentials.NewIamCredentialsClient(ctx)
