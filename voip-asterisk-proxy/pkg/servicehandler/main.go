@@ -29,7 +29,7 @@ func NewServiceHandler(recordingBucketName string, recordingAsteriskDirectory st
 	// Create storage client using the decoded credentials
 	client, err := storage.NewClient(context.Background())
 	if err != nil {
-		log.Errorf("Could not create a new storage client. Please ensure the environment is configured for Application Default Credentials (ADC) (for example via GOOGLE_APPLICATION_CREDENTIALS, workload identity, or in-cluster metadata). error: %v", err)
+		log.Errorf("Could not create a new storage client. Please ensure the environment is configured for Application Default Credentials (ADC), for example by setting the GOOGLE_APPLICATION_CREDENTIALS environment variable, using workload identity, or relying on the metadata server when running on GCP infrastructure. error: %v", err)
 		return nil
 	}
 

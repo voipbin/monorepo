@@ -129,8 +129,13 @@ func NewFileHandler(
 				accessID = email
 			}
 		} else {
-			log.Errorf("Could not determine Google Cloud credentials: GOOGLE_APPLICATION_CREDENTIALS is not set, not running on GCE/GKE metadata, and no service account email is available")
-			return nil
+			if localEmail := os.Getenv("GOOGLE_SERVICE_ACCOUNT_EMAIL"); localEmail != "" {
+				log.Infof("Using explicit service account email from env: %s", localEmail)
+				accessID = localEmail
+			} else {
+				log.Errorf("Could not determine Service Account Email. Not running on GCE/GKE and GOOGLE_SERVICE_ACCOUNT_EMAIL is not set.")
+				return nil
+			}
 		}
 	}
 
