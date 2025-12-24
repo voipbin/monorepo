@@ -48,11 +48,12 @@ func main() {
 		},
 	}
 
-	if err := config.BindConfig(rootCmd); err != nil {
-		logrus.Fatalf("Failed to bind config: %v", err)
+	if errBind := config.BindConfig(rootCmd); errBind != nil {
+		logrus.Fatalf("Failed to bind config: %v", errBind)
 	}
 
-	if err := rootCmd.Execute(); err != nil {
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Errorf("Command execution failed: %v", errExecute)
 		os.Exit(1)
 	}
 }
@@ -76,8 +77,8 @@ func runDaemon() error {
 		return err
 	}
 
-	if err := startServices(sqlDB, cache); err != nil {
-		return err
+	if errStart := startServices(sqlDB, cache); errStart != nil {
+		return errStart
 	}
 
 	<-chDone
@@ -106,18 +107,6 @@ func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	return nil
 }
 
-// func initDatabase() (*sql.DB, error) {
-// 	res, err := sql.Open("mysql", config.Get().DatabaseDSN)
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, "database open error")
-// 	}
-
-// 	if err := res.Ping(); err != nil {
-// 		return nil, errors.Wrap(err, "database ping error")
-// 	}
-// 	return res, nil
-// }
-
 func initCache() (cachehandler.CacheHandler, error) {
 	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
 	if err := res.Connect(); err != nil {
@@ -145,72 +134,13 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-// // channels
-// var chSigs = make(chan os.Signal, 1)
-// var chDone = make(chan bool, 1)
-
-// func main() {
-// 	log := logrus.WithField("func", "main")
-
-// 	// connect to database
-// 	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
-// 	if err != nil {
-// 		log.Errorf("Could not access to database. err: %v", err)
-// 		return
-// 	}
-// 	defer commondatabasehandler.Close(sqlDB)
-
-// 	// connect to cache
-// 	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
-// 	if err := cache.Connect(); err != nil {
-// 		log.Errorf("Could not connect to cache server. err: %v", err)
-// 		return
-// 	}
-
-// 	if err := run(sqlDB, cache); err != nil {
-// 		log.Errorf("Run func has finished. err: %v", err)
-// 	}
-// 	<-chDone
-// }
-
-// // signalHandler catches signals and set the done
-// func signalHandler() {
-// 	sig := <-chSigs
-// 	logrus.Debugf("Received signal. sig: %v", sig)
-// 	chDone <- true
-// }
-
-// // run runs the listen
-// func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-
-// 	// rabbitmq sock connect
-// 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
-// 	sockHandler.Connect()
-
-// 	// create handlers
-// 	db := dbhandler.NewHandler(sqlDB, cache)
-// 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-// 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
-// 	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
-
-// 	if err := runListen(sockHandler, agentHandler); err != nil {
-// 		return err
-// 	}
-
-// 	if err := runSubscribe(sockHandler, agentHandler); err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
 // startServiceListen runs the listen service
 func startServiceListen(sockHandler sockhandler.SockHandler, agentHandler agenthandler.AgentHandler) error {
 	listenHandler := listenhandler.NewListenHandler(sockHandler, agentHandler)
 
 	// run
-	if err := listenHandler.Run(string(commonoutline.QueueNameAgentRequest), string(commonoutline.QueueNameDelay)); err != nil {
-		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameAgentRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
+		logrus.Errorf("Could not run the listenhandler correctly. err: %v", errRun)
 	}
 
 	return nil
@@ -230,8 +160,8 @@ func startServiceSubscribe(
 	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameAgentSubscribe), subscribeTargets, agentHandler)
 
 	// run
-	if err := subHandler.Run(); err != nil {
-		return err
+	if errRun := subHandler.Run(); errRun != nil {
+		return errRun
 	}
 
 	return nil
