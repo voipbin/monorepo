@@ -50,7 +50,6 @@ const (
 var (
 	databaseDSN             = ""
 	gcpBucketName           = ""
-	gcpCredentialBase64     = ""
 	gcpProjectID            = ""
 	jwtKey                  = ""
 	prometheusEndpoint      = ""
@@ -153,7 +152,7 @@ func run(
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
 	streamHandler := streamhandler.NewStreamHandler(requestHandler, addressListenStream)
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler)
-	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, gcpCredentialBase64, gcpProjectID, gcpBucketName, jwtKey)
+	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, gcpProjectID, gcpBucketName, jwtKey)
 
 	go runSubscribe(sockHandler, zmqPubHandler)
 	go runListenHTTP(serviceHandler)

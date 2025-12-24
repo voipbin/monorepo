@@ -21,7 +21,6 @@ const (
 	defaultRedisAddress            = "127.0.0.1:6379"
 	defaultRedisDatabase           = 1
 	defaultRedisPassword           = ""
-	defaultGCPCredentialBase64     = ""
 	defaultAWSAccessKey            = ""
 	defaultAWSSecretKey            = ""
 )
@@ -53,7 +52,6 @@ func initVariable() {
 	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
 	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
-	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "Base64 encoded GCP credential.")
 	pflag.String("aws_access_key", defaultAWSAccessKey, "AWS access key.")
 	pflag.String("aws_secret_key", defaultAWSSecretKey, "AWS secret key.")
 	pflag.Parse()
@@ -134,17 +132,6 @@ func initVariable() {
 		panic(errEnv)
 	}
 	redisDatabase = viper.GetInt("redis_database")
-
-	// gcp_credential_base64
-	if errFlag := viper.BindPFlag("gcp_credential_base64", pflag.Lookup("gcp_credential_base64")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", errFlag)
-		panic(errFlag)
-	}
-	if errEnv := viper.BindEnv("gcp_credential_base64", "GCP_CREDENTIAL_BASE64"); errEnv != nil {
-		log.Errorf("Error binding env: %v", errEnv)
-		panic(errEnv)
-	}
-	gcpCredentialBase64 = viper.GetString("gcp_credential_base64")
 
 	// aws_access_key
 	if errFlag := viper.BindPFlag("aws_access_key", pflag.Lookup("aws_access_key")); errFlag != nil {

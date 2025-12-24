@@ -46,8 +46,6 @@ spec:
               value: ${REDIS_PASSWORD}
             - name: REDIS_DATABASE
               value: "1"
-            - name: GCP_CREDENTIAL_BASE64
-              value: ${GCP_SERVICE_ACCOUNT_BASE64}
             - name: AWS_ACCESS_KEY
               value: ${AWS_ACCESS_KEY}
             - name: AWS_SECRET_KEY

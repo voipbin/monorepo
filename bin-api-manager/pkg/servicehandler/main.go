@@ -4,7 +4,6 @@ package servicehandler
 
 import (
 	"context"
-	"encoding/base64"
 	multipart "mime/multipart"
 	"net/http"
 	"time"
@@ -78,7 +77,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
 
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
@@ -798,7 +796,6 @@ func NewServiceHandler(
 	dbHandler dbhandler.DBHandler,
 	websockHandler websockhandler.WebsockHandler,
 
-	credentialBase64 string,
 	projectID string,
 	bucketName string,
 
@@ -806,19 +803,10 @@ func NewServiceHandler(
 ) ServiceHandler {
 	log := logrus.WithField("func", "NewServiceHandler")
 
-	// init storage client
-	ctx := context.Background()
-
-	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
-	if err != nil {
-		log.Printf("Error decoding base64 credential: %v", err)
-		return nil
-	}
-
 	// Create storage client using the decoded credentials
-	storageClient, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
+	storageClient, err := storage.NewClient(context.Background())
 	if err != nil {
-		log.Printf("Could not create a new storage client. Error: %v", err)
+		log.Errorf("Could not create a new storage client. Please ensure the environment is configured for Application Default Credentials (ADC) (for example via GOOGLE_APPLICATION_CREDENTIALS, workload identity, or in-cluster metadata). error: %v", err)
 		return nil
 	}
 

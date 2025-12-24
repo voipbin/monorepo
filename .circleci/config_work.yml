@@ -1551,8 +1551,6 @@ commands:
             find . -type f -exec sed -i -e "s|\${GCP_CLUSTER_REGION}|$CC_GCP_CLUSTER_REGION|g" {} +
             find . -type f -exec sed -i -e "s|\${GCP_CLUSTER_ZONE}|$CC_GCP_CLUSTER_ZONE|g" {} +
             find . -type f -exec sed -i -e "s|\${GCP_PROJECT_ID}|$CC_GCP_PROJECT_ID|g" {} +
-            find . -type f -exec sed -i -e "s|\${GCP_SERVICE_ACCOUNT}|$CC_GCP_SERVICE_ACCOUNT|g" {} +
-            find . -type f -exec sed -i -e "s|\${GCP_SERVICE_ACCOUNT_BASE64}|$CC_GCP_SERVICE_ACCOUNT_BASE64|g" {} +
             find . -type f -exec sed -i -e "s|\${JWT_KEY}|$CC_JWT_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${PROMETHEUS_ENDPOINT}|$CC_PROMETHEUS_ENDPOINT|g" {} +
             find . -type f -exec sed -i -e "s|\${PROMETHEUS_LISTEN_ADDRESS}|$CC_PROMETHEUS_LISTEN_ADDRESS|g" {} +

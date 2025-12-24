@@ -54,8 +54,6 @@ spec:
               value: ${SSL_PRIVKEY_API_BASE64}
             - name: SSL_CERT_BASE64
               value: ${SSL_CERT_API_BASE64}
-            - name: GCP_CREDENTIAL_BASE64
-              value: ${GCP_SERVICE_ACCOUNT_BASE64}
             - name: GCP_PROJECT_ID
               value: ${GCP_PROJECT_ID}
             - name: GCP_BUCKET_NAME
