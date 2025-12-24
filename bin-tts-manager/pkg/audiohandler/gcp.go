@@ -2,7 +2,6 @@ package audiohandler
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"monorepo/bin-tts-manager/models/tts"
 	"os"
@@ -22,12 +21,10 @@ const (
 	defaultGCPEndpoint = "eu-texttospeech.googleapis.com:443"
 )
 
-func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.Client, error) {
-	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not decode the base64 credential")
-	}
-
+// gcpGetClient creates a Google Cloud Text-to-Speech client using Application Default Credentials (ADC).
+// Callers must ensure the environment is configured for ADC (for example via
+// GOOGLE_APPLICATION_CREDENTIALS, workload identity, or in-cluster metadata).
+func gcpGetClient(ctx context.Context) (*texttospeech.Client, error) {
 	keepAliveParams := keepalive.ClientParameters{
 		Time:                30 * time.Second, // Ping every 30 seconds
 		Timeout:             10 * time.Second, // Wait 10 seconds for response
@@ -39,7 +36,6 @@ func gcpGetClient(ctx context.Context, credentialBase64 string) (*texttospeech.C
 	//nolint:staticcheck
 	res, err := texttospeech.NewClient(
 		ctx,
-		option.WithCredentialsJSON(decodedCredential),
 		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),
 		option.WithEndpoint(defaultGCPEndpoint),
 	)

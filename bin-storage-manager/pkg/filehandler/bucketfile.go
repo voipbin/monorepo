@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-storage-manager/models/file"
 	"time"
 
+	"cloud.google.com/go/iam/credentials/apiv1/credentialspb"
 	"cloud.google.com/go/storage"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -145,11 +146,31 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 		Expires:        expire,
 	}
 
+	if opts.PrivateKey == nil {
+		if h.iamClient == nil {
+			return "", errors.New("No private key found and IAM Credentials Client is not configured. Cannot generate signed URLs.")
+		}
+
+		opts.SignBytes = func(b []byte) ([]byte, error) {
+			req := &credentialspb.SignBlobRequest{
+				Name:    "projects/-/serviceAccounts/" + h.accessID,
+				Payload: b,
+			}
+
+			resp, err := h.iamClient.SignBlob(context.Background(), req)
+			if err != nil {
+				return nil, errors.Wrapf(err, "could not sign the blob using IAM SignBlob API")
+			}
+
+			return resp.SignedBlob, nil
+		}
+	}
+
 	// get downloadable url
-	u, err := storage.SignedURL(bucketName, filepath, opts)
+	res, err := storage.SignedURL(bucketName, filepath, opts)
 	if err != nil {
 		return "", errors.Wrapf(err, "could not get the signed url. bucket_name: %s, filepath: %s", bucketName, filepath)
 	}
 
-	return u, nil
+	return res, nil
 }

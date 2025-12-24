@@ -22,8 +22,6 @@ type TTSHandler interface {
 }
 
 type ttsHandler struct {
-	credentailPath string
-
 	audioHandler  audiohandler.AudioHandler
 	bucketHandler buckethandler.BucketHandler
 
@@ -57,9 +55,6 @@ func init() {
 func NewTTSHandler(
 	awsAccessKey string,
 	awsSecretKey string,
-	credentialBase64 string,
-	projectID string,
-	bucketName string,
 	mediaBucketDirectory string,
 	localAddress string,
 	requestHandler requesthandler.RequestHandler,
@@ -67,29 +62,25 @@ func NewTTSHandler(
 ) TTSHandler {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "NewTTSHandler",
-		"project_id":             projectID,
-		"bucket_name":            bucketName,
 		"media_bucket_directory": mediaBucketDirectory,
 		"local_address":          localAddress,
 	})
 	log.Debugf("Creating a new TTSHandler.")
 
 	ctx := context.Background()
-	audioHandler := audiohandler.NewAudioHandler(ctx, awsAccessKey, awsSecretKey, credentialBase64)
+	audioHandler := audiohandler.NewAudioHandler(ctx, awsAccessKey, awsSecretKey)
 	if audioHandler == nil {
 		log.Errorf("Could not create audio handler.")
 		return nil
 	}
 
-	bucketHandler := buckethandler.NewBucketHandler(credentialBase64, projectID, bucketName, mediaBucketDirectory, localAddress)
+	bucketHandler := buckethandler.NewBucketHandler(mediaBucketDirectory, localAddress)
 	if bucketHandler == nil {
 		log.Errorf("Could not create bucket handler.")
 		return nil
 	}
 
 	h := &ttsHandler{
-		credentailPath: credentialBase64,
-
 		audioHandler:  audioHandler,
 		bucketHandler: bucketHandler,
 

@@ -4,8 +4,6 @@ package streaminghandler
 
 import (
 	"context"
-	"encoding/base64"
-	"log"
 	"sync"
 	"time"
 
@@ -21,7 +19,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming/types"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
 	"monorepo/bin-transcribe-manager/models/transcribe"
@@ -90,31 +87,22 @@ func NewStreamingHandler(
 	transcriptHandler transcripthandler.TranscriptHandler,
 
 	listenAddress string,
-	gcpCredentialBase64 string,
 	awsAccessKey string,
 	awsSecretKey string,
 ) StreamingHandler {
-
-	decodedCredential, err := base64.StdEncoding.DecodeString(gcpCredentialBase64)
-	if err != nil {
-		log.Printf("Error decoding base64 credential: %v", err)
-		return nil
-	}
+	log := logrus.WithField("func", "NewStreamingHandler")
 
 	// create gcp client
-	// We know staticcheck flags this, but the speech client library
-	// has not yet been updated to use the new context package.
-	//nolint:staticcheck
-	gcpClient, err := speech.NewClient(context.Background(), option.WithCredentialsJSON(decodedCredential))
+	gcpClient, err := speech.NewClient(context.Background())
 	if err != nil {
-		logrus.Errorf("Could not create a new client for speech. err: %v", err)
+		log.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil
 	}
 
 	// create aws client
 	awsClient, err := awsNewClient(awsAccessKey, awsSecretKey)
 	if err != nil {
-		logrus.Errorf("Could not create a new client for speech. err: %v", err)
+		log.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil
 	}
 

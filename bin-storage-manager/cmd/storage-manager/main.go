@@ -40,10 +40,9 @@ var (
 	redisDatabase           = 0
 	redisPassword           = ""
 
-	gcpCredentialBase64 = ""
-	gcpProjectID        = ""
-	gcpBucketNameMedia  = ""
-	gcpBucketNameTmp    = ""
+	gcpProjectID       = ""
+	gcpBucketNameMedia = ""
+	gcpBucketNameTmp   = ""
 )
 
 func main() {
@@ -108,7 +107,7 @@ func run(dbHandler dbhandler.DBHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
 	accountHandler := accounthandler.NewAccountHandler(notifyHandler, dbHandler)
-	fileHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, accountHandler, gcpCredentialBase64, gcpProjectID, gcpBucketNameMedia, gcpBucketNameTmp)
+	fileHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, accountHandler, gcpProjectID, gcpBucketNameMedia, gcpBucketNameTmp)
 	storageHandler := storagehandler.NewStorageHandler(reqHandler, fileHandler, gcpBucketNameMedia)
 
 	// run listener

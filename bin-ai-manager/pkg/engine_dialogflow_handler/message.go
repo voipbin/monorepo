@@ -36,23 +36,11 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AI
 		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the ai engine data")
 	}
 
-	decodedCred, err := DecodeBase64(data.CredentialBase64)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not decode the credential base64")
-	}
 	endpoint := GetEndpointAddress(data.Region)
-	log.WithFields(logrus.Fields{
-		"endpoint": endpoint,
-	}).Debugf("Checking session data.")
+	log.WithField("endpoint", endpoint).Debugf("Checking session data.")
 
 	// Create a Dialogflow client with the credentials in-memory
-	// We know staticcheck flags this, but the storage client library
-	// has not yet been updated to use the new context package.
-	//nolint:staticcheck
-	client, err := dialogflow.NewSessionsClient(ctx,
-		option.WithCredentialsJSON(decodedCred),
-		option.WithEndpoint(endpoint),
-	)
+	client, err := dialogflow.NewSessionsClient(ctx, option.WithEndpoint(endpoint))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the dialogflow client")
 	}
