@@ -151,7 +151,9 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 		if err != nil {
 			return "", err
 		}
-		defer c.Close()
+		defer func() {
+			_ = c.Close()
+		}()
 
 		opts.SignBytes = func(b []byte) ([]byte, error) {
 			req := &credentialspb.SignBlobRequest{

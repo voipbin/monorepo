@@ -91,7 +91,7 @@ func NewFileHandler(
 	var client *storage.Client
 	var accessID string
 	var privateKey []byte
-	var err error
+	var errClient error
 	ctx := context.Background()
 
 	envCredPath := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
@@ -112,11 +112,11 @@ func NewFileHandler(
 
 		accessID = conf.Email
 		privateKey = conf.PrivateKey
-		client, err = storage.NewClient(ctx)
+		client, errClient = storage.NewClient(ctx)
 	} else {
 		log.Info("No GOOGLE_APPLICATION_CREDENTIALS, trying ADC/Metadata")
 
-		client, err = storage.NewClient(ctx)
+		client, errClient = storage.NewClient(ctx)
 		privateKey = nil
 		if metadata.OnGCE() {
 			accessID, _ = metadata.EmailWithContext(ctx, "default")
@@ -125,8 +125,8 @@ func NewFileHandler(
 		}
 	}
 
-	if err != nil {
-		log.Errorf("Failed to create client: %v", err)
+	if errClient != nil {
+		log.Errorf("Failed to create client: %v", errClient)
 		return nil
 	}
 
