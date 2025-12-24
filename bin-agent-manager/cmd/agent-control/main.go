@@ -182,11 +182,20 @@ func runCreate(cmd *cobra.Command, args []string) error {
 }
 
 func cmdGet() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "get [id]",
 		Short: "Get an agent by ID",
 		RunE:  runGet,
 	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Agent ID")
+
+	if errBind := viper.BindPFlags(flags); errBind != nil {
+		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
+	}
+
+	return cmd
 }
 
 func runGet(cmd *cobra.Command, args []string) error {
