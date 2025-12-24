@@ -119,6 +119,7 @@ func NewFileHandler(
 		client, errClient = storage.NewClient(ctx)
 		privateKey = nil
 		if metadata.OnGCE() {
+			log.Debugf("The service is running on the GCE")
 			accessID, _ = metadata.EmailWithContext(ctx, "default")
 		} else {
 			log.Warn("Could not determine Service Account Email (Not on GCE/GKE)")
@@ -130,7 +131,7 @@ func NewFileHandler(
 		return nil
 	}
 
-	h := &fileHandler{
+	res := &fileHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),
 		notifyHandler:  notifyHandler,
 		db:             db,
@@ -143,8 +144,9 @@ func NewFileHandler(
 		accessID:    accessID,
 		privateKey:  privateKey,
 	}
+	log.WithField("file_handler", res).Debugf("Created filehandler")
 
-	return h
+	return res
 }
 
 // Init initialize the bucket
