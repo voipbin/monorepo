@@ -136,6 +136,7 @@ func (h *fileHandler) bucketfileGetAttrs(ctx context.Context, bucketName string,
 
 // bucketfileGenerateDownloadURI returns google cloud storage signed url for file download
 func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath string, expire time.Time) (string, error) {
+
 	// create opt
 	opts := &storage.SignedURLOptions{
 		Scheme:         storage.SigningSchemeV2,
