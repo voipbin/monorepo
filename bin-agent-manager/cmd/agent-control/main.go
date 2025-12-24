@@ -37,6 +37,39 @@ func main() {
 	}
 }
 
+func initHandler() (agenthandler.AgentHandler, error) {
+	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	if err != nil {
+		return nil, err
+	}
+
+	cache, err := initCache()
+	if err != nil {
+		return nil, err
+	}
+
+	return initAgentHandler(db, cache)
+}
+
+func initCache() (cachehandler.CacheHandler, error) {
+	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
+	if err := res.Connect(); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func initAgentHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (agenthandler.AgentHandler, error) {
+	db := dbhandler.NewHandler(sqlDB, cache)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
+	sockHandler.Connect()
+
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
+
+	return agenthandler.NewAgentHandler(reqHandler, db, notifyHandler), nil
+}
+
 func initCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "agent-control",
@@ -55,9 +88,29 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdCreate())
 	cmdSub.AddCommand(cmdGet())
 	cmdSub.AddCommand(cmdGets())
+	cmdSub.AddCommand(cmdUpdatePermission())
 
 	rootCmd.AddCommand(cmdSub)
 	return rootCmd
+}
+
+func resolveUUID(flagName string, promptMessage string) (uuid.UUID, error) {
+
+	res := uuid.FromStringOrNil(viper.GetString(flagName))
+	if res == uuid.Nil {
+		tmp := ""
+		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", promptMessage)}
+		if errAsk := survey.AskOne(prompt, &tmp, survey.WithValidator(survey.Required)); errAsk != nil {
+			return uuid.Nil, errors.Wrap(errAsk, "input canceled")
+		}
+
+		res = uuid.FromStringOrNil(tmp)
+		if res == uuid.Nil {
+			return uuid.Nil, fmt.Errorf("invalid %s format: %s", promptMessage, res)
+		}
+	}
+
+	return res, nil
 }
 
 func cmdCreate() *cobra.Command {
@@ -68,13 +121,12 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("name", "", "Customer name")
+	flags.String("customer_id", "", "Customer ID")
+	flags.String("username", "", "Username")
+	flags.String("password", "", "Password")
+	flags.Uint64("permission", 0, "Permission")
+	flags.String("name", "", "Agent name")
 	flags.String("detail", "", "Description")
-	flags.String("email", "", "Customer email (required)")
-	flags.String("phone_number", "", "Phone number")
-	flags.String("address", "", "Physical address")
-	flags.String("webhook_method", "POST", "Webhook HTTP method")
-	flags.String("webhook_uri", "", "Webhook URI")
 
 	if errBind := viper.BindPFlags(flags); errBind != nil {
 		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
@@ -85,17 +137,9 @@ func cmdCreate() *cobra.Command {
 
 func runCreate(cmd *cobra.Command, args []string) error {
 
-	customerID := uuid.FromStringOrNil(viper.GetString("customer_id"))
-	if customerID == uuid.Nil {
-		tmp := ""
-		if errAsk := survey.AskOne(&survey.Input{Message: "Customer ID (Required):"}, &tmp, survey.WithValidator(survey.Required)); errAsk != nil {
-			return errors.Wrap(errAsk, "failed to get customer ID")
-		}
-
-		customerID = uuid.FromStringOrNil(tmp)
-		if customerID == uuid.Nil {
-			return errors.New("invalid customer ID format")
-		}
+	customerID, err := resolveUUID("customer_id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
 	username := viper.GetString("username")
@@ -140,119 +184,24 @@ func runCreate(cmd *cobra.Command, args []string) error {
 func cmdGet() *cobra.Command {
 	return &cobra.Command{
 		Use:   "get [id]",
-		Short: "Get a customer by ID",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			handler, err := initHandler()
-			if err != nil {
-				return errors.Wrap(err, "failed to initialize handlers")
-			}
-
-			return runGet(handler, args[0])
-		},
+		Short: "Get an agent by ID",
+		RunE:  runGet,
 	}
 }
 
-func cmdGets() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "gets",
-		Short: "Get agent list",
-		RunE:  runGets,
-		// RunE: func(cmd *cobra.Command, args []string) error {
-		// 	handler, err := initHandler()
-		// 	if err != nil {
-		// 		return errors.Wrap(err, "failed to initialize handlers")
-		// 	}
-
-		// 	limit := viper.GetInt("limit")
-		// 	token := viper.GetString("token")
-
-		// 	return runGets(handler, limit, token)
-		// },
-	}
-
-	flags := cmd.Flags()
-	flags.Int("limit", 100, "Limit the number of customers to retrieve")
-	flags.String("token", "", "Retrieve customers before this token (pagination)")
-
-	if errBind := viper.BindPFlags(flags); errBind != nil {
-		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
-	}
-
-	return cmd
-}
-
-// func executeCreate(handler agenthandler.AgentHandler, email string) error {
-
-// 	// handler.Create(
-// 	// 	ctx,
-// 	// 	viper.GetString("customer_id")
-// 	// )
-
-// 	fmt.Printf("\nCreating Agent: %s\n", email)
-// 	res, err := handler.Create(
-// 		context.Background(),
-// 		viper.GetString("name"),
-// 		viper.GetString("detail"),
-// 		email,
-// 		viper.GetString("phone_number"),
-// 		viper.GetString("address"),
-// 		customer.WebhookMethod(viper.GetString("webhook_method")),
-// 		viper.GetString("webhook_uri"),
-// 	)
-// 	if err != nil {
-// 		return errors.Wrap(err, "failed to create customer")
-// 	}
-
-// 	fmt.Printf("Success! customer: %v\n", res)
-// 	return nil
-// }
-
-func runGets(cmd *cobra.Command, args []string) error {
+func runGet(cmd *cobra.Command, args []string) error {
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID := viper.GetString("customer_id")
-	if customerID == "" {
-		if errAsk := survey.AskOne(&survey.Input{Message: "Customer ID (Required):"}, &customerID, survey.WithValidator(survey.Required)); errAsk != nil {
-			return errors.Wrap(errAsk, "failed to get customer ID")
-		}
-
-		if customerID == "" {
-			return errors.New("invalid customer ID format")
-		}
-	}
-	limit := viper.GetInt("limit")
-	token := viper.GetString("token")
-
-	filters := map[string]string{
-		"customer_id": customerID,
-	}
-
-	fmt.Printf("\nRetrieving Agents... limit: %d, token: %s, filters: %v\n", limit, token, filters)
-	res, err := handler.Gets(context.Background(), uint64(limit), token, filters)
+	agentID, err := resolveUUID("id", "Agent ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to retrieve agents")
+		return errors.Wrap(err, "failed to resolve agent ID")
 	}
 
-	fmt.Printf("Success! agents count: %d\n", len(res))
-	for _, c := range res {
-		fmt.Printf(" - [%s] %s (%s)\n", c.ID, c.Name, c.Status)
-	}
-
-	return nil
-}
-
-func runGet(handler agenthandler.AgentHandler, id string) error {
-	targetID, err := uuid.FromString(id)
-	if err != nil {
-		return errors.Wrap(err, "invalid customer ID format")
-	}
-
-	fmt.Printf("\nRetrieving Agent ID: %s...\n", id)
-	res, err := handler.Get(context.Background(), targetID)
+	fmt.Printf("\nRetrieving Agent ID: %s...\n", agentID)
+	res, err := handler.Get(context.Background(), agentID)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve agent")
 	}
@@ -275,35 +224,91 @@ func runGet(handler agenthandler.AgentHandler, id string) error {
 	return nil
 }
 
-func initHandler() (agenthandler.AgentHandler, error) {
-	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
-	if err != nil {
-		return nil, err
+func cmdGets() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "gets",
+		Short: "Get agent list",
+		RunE:  runGets,
 	}
 
-	cache, err := initCache()
-	if err != nil {
-		return nil, err
+	flags := cmd.Flags()
+	flags.Int("limit", 100, "Limit the number of agents to retrieve")
+	flags.String("token", "", "Retrieve agents before this token (pagination)")
+
+	if errBind := viper.BindPFlags(flags); errBind != nil {
+		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
 	}
 
-	return initAgentHandler(db, cache)
+	return cmd
 }
 
-func initCache() (cachehandler.CacheHandler, error) {
-	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
-	if err := res.Connect(); err != nil {
-		return nil, err
+func runGets(cmd *cobra.Command, args []string) error {
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
 	}
-	return res, nil
+
+	customerID, err := resolveUUID("customer_id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve customer ID")
+	}
+
+	limit := viper.GetInt("limit")
+	token := viper.GetString("token")
+
+	filters := map[string]string{
+		"customer_id": customerID.String(),
+	}
+
+	fmt.Printf("\nRetrieving Agents... limit: %d, token: %s, filters: %v\n", limit, token, filters)
+	res, err := handler.Gets(context.Background(), uint64(limit), token, filters)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve agents")
+	}
+
+	fmt.Printf("Success! agents count: %d\n", len(res))
+	for _, c := range res {
+		fmt.Printf(" - [%s] %s (%s)\n", c.ID, c.Name, c.Status)
+	}
+
+	return nil
 }
 
-func initAgentHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (agenthandler.AgentHandler, error) {
-	db := dbhandler.NewHandler(sqlDB, cache)
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
-	sockHandler.Connect()
+func cmdUpdatePermission() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-permission",
+		Short: "Update agent permission",
+		RunE:  runUpdatePermission,
+	}
 
-	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName)
+	flags := cmd.Flags()
+	flags.String("id", "", "Agent ID")
+	flags.Uint64("permission", 0, "New Permission Bitmask")
 
-	return agenthandler.NewAgentHandler(reqHandler, db, notifyHandler), nil
+	if errBind := viper.BindPFlags(flags); errBind != nil {
+		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
+	}
+
+	return cmd
+}
+
+func runUpdatePermission(cmd *cobra.Command, args []string) error {
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	id, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve agent ID")
+	}
+
+	res, err := handler.UpdatePermission(context.Background(), id, agent.Permission(viper.GetUint64("permission")))
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve agents")
+	}
+
+	logrus.WithField("res", res).Infof("Updated agent permission")
+	return nil
 }
