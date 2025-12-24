@@ -37,14 +37,10 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AI
 	}
 
 	endpoint := GetEndpointAddress(data.Region)
-	log.WithFields(logrus.Fields{
-		"endpoint": endpoint,
-	}).Debugf("Checking session data.")
+	log.WithField("endpoint", endpoint).Debugf("Checking session data.")
 
 	// Create a Dialogflow client with the credentials in-memory
-	client, err := dialogflow.NewSessionsClient(ctx,
-		option.WithEndpoint(endpoint),
-	)
+	client, err := dialogflow.NewSessionsClient(ctx, option.WithEndpoint(endpoint))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the dialogflow client")
 	}
