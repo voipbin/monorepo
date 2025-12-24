@@ -6,6 +6,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -45,14 +46,12 @@ func main() {
 	log.Info("Starting billing-manager.")
 
 	// connect to database
-	sqlDB, err := sql.Open("mysql", databaseDSN)
+	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
-	defer func() {
-		_ = sqlDB.Close()
-	}()
+	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to cache
 	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)

@@ -1,6 +1,12 @@
 package databasehandler
 
 import (
+	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -14,6 +20,30 @@ const (
 	// DefaultTimeStamp is a placeholder for a default timestamp value used in specific queries.
 	DefaultTimeStamp = "9999-01-01 00:00:00.000000"
 )
+
+func Connect(dsn string) (*sql.DB, error) {
+	res, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, errors.Wrap(err, "database open error")
+	}
+
+	if err := res.Ping(); err != nil {
+		return nil, errors.Wrap(err, "database ping error")
+	}
+
+	return res, nil
+}
+
+func Close(db *sql.DB) {
+	if db == nil {
+		return
+	}
+
+	if errClose := db.Close(); errClose != nil {
+		logrus.Errorf("Could not close the database connection err: %v", errClose)
+		return
+	}
+}
 
 // PrepareUpdateFields processes a map of fields intended for an update operation (e.g., in a database).
 // It converts specific types to a database-friendly format.

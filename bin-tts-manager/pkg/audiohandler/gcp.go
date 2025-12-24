@@ -31,6 +31,9 @@ func gcpGetClient(ctx context.Context) (*texttospeech.Client, error) {
 		PermitWithoutStream: true,             // Send pings even if there are no active streams
 	}
 
+	// We know staticcheck flags this, but the texttospeech client library
+	// has not yet been updated to use the new context package.
+	//nolint:staticcheck
 	res, err := texttospeech.NewClient(
 		ctx,
 		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),
