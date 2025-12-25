@@ -95,18 +95,18 @@ func initCommand() *cobra.Command {
 	return rootCmd
 }
 
-func resolveUUID(flagName string, promptMessage string) (uuid.UUID, error) {
+func resolveUUID(flagName string, label string) (uuid.UUID, error) {
 	res := uuid.FromStringOrNil(viper.GetString(flagName))
 	if res == uuid.Nil {
 		tmp := ""
-		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", promptMessage)}
+		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", label)}
 		if errAsk := survey.AskOne(prompt, &tmp, survey.WithValidator(survey.Required)); errAsk != nil {
 			return uuid.Nil, errors.Wrap(errAsk, "input canceled")
 		}
 
 		res = uuid.FromStringOrNil(tmp)
 		if res == uuid.Nil {
-			return uuid.Nil, fmt.Errorf("invalid %s format: %s", promptMessage, tmp)
+			return uuid.Nil, fmt.Errorf("invalid format for %s: '%s' is not a valid UUID", label, tmp)
 		}
 	}
 
@@ -215,7 +215,7 @@ func runGet(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("\n--- Agent Information ---")
-	fmt.Printf("ID:      %s\n", res.ID)
+	fmt.Printf("ID:    %s\n", res.ID)
 	fmt.Printf("Customer ID: %s\n", res.CustomerID)
 	fmt.Printf("Name:    %s\n", res.Name)
 	fmt.Printf("Detail:    %s\n", res.Detail)
@@ -292,7 +292,7 @@ func cmdUpdatePermission() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Agent ID")
-	flags.Uint64("permission", 0, "New Permission Bitmask")
+	flags.Uint64("permission", uint64(agent.PermissionNone), "New Permission Bitmask")
 
 	if errBind := viper.BindPFlags(flags); errBind != nil {
 		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))

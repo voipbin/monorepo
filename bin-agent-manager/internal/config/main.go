@@ -18,13 +18,13 @@ var (
 // Config holds process-wide configuration values loaded from command-line
 // flags and environment variables for the bin-agent-manager service.
 type Config struct {
-	RabbitMQAddress         string
-	PrometheusEndpoint      string
-	PrometheusListenAddress string
-	DatabaseDSN             string
-	RedisAddress            string
-	RedisPassword           string
-	RedisDatabase           int
+	RabbitMQAddress         string // RabbitMQAddress is the address (including host and port) of the RabbitMQ server.
+	PrometheusEndpoint      string // PrometheusEndpoint is the HTTP path at which Prometheus metrics are exposed.
+	PrometheusListenAddress string // PrometheusListenAddress is the network address on which the Prometheus metrics HTTP server listens (for example, ":8080").
+	DatabaseDSN             string // DatabaseDSN is the data source name used to connect to the primary database.
+	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
+	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
+	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 }
 
 func BootStrap(cmd *cobra.Command) error {

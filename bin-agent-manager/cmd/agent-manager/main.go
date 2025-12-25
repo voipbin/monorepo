@@ -73,7 +73,7 @@ func runDaemon() error {
 
 	cache, err := initCache()
 	if err != nil {
-		return errors.Wrapf(err, "could not init the cache")
+		return errors.Wrapf(err, "could not initialize the cache")
 	}
 
 	if errStart := startServices(sqlDB, cache); errStart != nil {
