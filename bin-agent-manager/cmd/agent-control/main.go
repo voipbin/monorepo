@@ -45,7 +45,7 @@ func initHandler() (agenthandler.AgentHandler, error) {
 
 	cache, err := initCache()
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not initiate the cache")
+		return nil, errors.Wrapf(err, "could not initialize the cache")
 	}
 
 	return initAgentHandler(db, cache)
