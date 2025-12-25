@@ -48,7 +48,7 @@ func main() {
 		},
 	}
 
-	if errBind := config.BindConfig(rootCmd); errBind != nil {
+	if errBind := config.BootStrap(rootCmd); errBind != nil {
 		logrus.Fatalf("Failed to bind config: %v", errBind)
 	}
 
@@ -77,7 +77,7 @@ func runDaemon() error {
 	}
 
 	if errStart := startServices(sqlDB, cache); errStart != nil {
-		return errStart
+		return errors.Wrapf(errStart, "could not start services")
 	}
 
 	<-chDone
@@ -128,8 +128,8 @@ func initProm(endpoint, listen string) {
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
 		if err := http.ListenAndServe(listen, nil); err != nil {
-			// Treat Prometheus server startup failure as fatal to avoid running without metrics.
-			logrus.Fatalf("Prometheus server error: %v", err)
+			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
+			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()
 }

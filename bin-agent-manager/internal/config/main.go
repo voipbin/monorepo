@@ -15,6 +15,8 @@ var (
 	once         sync.Once
 )
 
+// Config holds process-wide configuration values loaded from command-line
+// flags and environment variables for the bin-agent-manager service.
 type Config struct {
 	RabbitMQAddress         string
 	PrometheusEndpoint      string
@@ -25,13 +27,18 @@ type Config struct {
 	RedisDatabase           int
 }
 
-// BindConfig binds CLI flags and environment variables for configuration,
-// and calls initLog, which sets the global logrus logging configuration,
-// including the formatter and log level. This modifies process-wide logging
-// state and affects all subsequent logrus logging in the application.
-func BindConfig(cmd *cobra.Command) error {
+func BootStrap(cmd *cobra.Command) error {
 	initLog()
+	if errBind := bindConfig(cmd); errBind != nil {
+		return errors.Wrapf(errBind, "could not bind config")
+	}
 
+	return nil
+}
+
+// bindConfig binds CLI flags and environment variables for configuration.
+// It maps command-line flags to environment variables using Viper.
+func bindConfig(cmd *cobra.Command) error {
 	viper.AutomaticEnv()
 	f := cmd.PersistentFlags()
 
@@ -70,6 +77,9 @@ func Get() *Config {
 	return &globalConfig
 }
 
+// LoadGlobalConfig loads configuration from viper into the global singleton.
+// NOTE: This must be called AFTER BootStrap (or BindConfig) has been executed.
+// If called before binding, it will load empty/default values.
 func LoadGlobalConfig() {
 	once.Do(func() {
 		globalConfig = Config{

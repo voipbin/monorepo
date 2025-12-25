@@ -80,7 +80,7 @@ func initCommand() *cobra.Command {
 		},
 	}
 
-	if err := config.BindConfig(rootCmd); err != nil {
+	if err := config.BootStrap(rootCmd); err != nil {
 		cobra.CheckErr(errors.Wrap(err, "failed to bind infrastructure config"))
 	}
 
@@ -123,7 +123,7 @@ func cmdCreate() *cobra.Command {
 	flags := cmd.Flags()
 	flags.String("customer_id", "", "Customer ID")
 	flags.String("username", "", "Username")
-	flags.String("password", "", "Password")
+	flags.String("password", "", "Password (WARNING: using --password will expose the password in process lists and shell history; prefer entering it interactively)")
 	flags.Uint64("permission", 0, "Permission")
 	flags.String("name", "", "Agent name")
 	flags.String("detail", "", "Description")
@@ -350,7 +350,17 @@ func runUpdatePassword(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve agent ID")
 	}
 
-	res, err := handler.UpdatePassword(context.Background(), id, viper.GetString("password"))
+	password := viper.GetString("password")
+	if password == "" {
+		prompt := &survey.Password{
+			Message: "New Password:",
+		}
+		if err := survey.AskOne(prompt, &password, survey.WithValidator(survey.Required)); err != nil {
+			return errors.Wrap(err, "failed to read password")
+		}
+	}
+
+	res, err := handler.UpdatePassword(context.Background(), id, password)
 	if err != nil {
 		return errors.Wrap(err, "failed to update agent password")
 	}
