@@ -89,6 +89,7 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdGet())
 	cmdSub.AddCommand(cmdGets())
 	cmdSub.AddCommand(cmdUpdatePermission())
+	cmdSub.AddCommand(cmdUpdatePassword())
 
 	rootCmd.AddCommand(cmdSub)
 	return rootCmd
@@ -320,5 +321,44 @@ func runUpdatePermission(cmd *cobra.Command, args []string) error {
 	}
 
 	logrus.WithField("res", res).Infof("Updated agent permission")
+	return nil
+}
+
+func cmdUpdatePassword() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-password",
+		Short: "Update agent password",
+		RunE:  runUpdatePassword,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Agent ID")
+	flags.String("password", "", "New Password")
+
+	if errBind := viper.BindPFlags(flags); errBind != nil {
+		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
+	}
+
+	return cmd
+}
+
+func runUpdatePassword(cmd *cobra.Command, args []string) error {
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	id, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve agent ID")
+	}
+
+	res, err := handler.UpdatePassword(context.Background(), id, viper.GetString("password"))
+	if err != nil {
+		return errors.Wrap(err, "failed to update agent password")
+	}
+
+	logrus.WithField("res", res).Infof("Updated agent password")
 	return nil
 }
