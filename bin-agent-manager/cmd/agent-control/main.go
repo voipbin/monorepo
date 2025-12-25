@@ -76,6 +76,10 @@ func initCommand() *cobra.Command {
 		Short: "Voipbin Agent Management CLI",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			config.LoadGlobalConfig()
+			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
+				return errors.Wrap(errBind, "failed to bind flags")
+			}
+
 			return nil
 		},
 	}
@@ -127,10 +131,6 @@ func cmdCreate() *cobra.Command {
 	flags.Uint64("permission", 0, "Permission")
 	flags.String("name", "", "Agent name")
 	flags.String("detail", "", "Description")
-
-	if errBind := viper.BindPFlags(flags); errBind != nil {
-		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
-	}
 
 	return cmd
 }
@@ -190,10 +190,6 @@ func cmdGet() *cobra.Command {
 	flags := cmd.Flags()
 	flags.String("id", "", "Agent ID")
 
-	if errBind := viper.BindPFlags(flags); errBind != nil {
-		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
-	}
-
 	return cmd
 }
 
@@ -244,10 +240,6 @@ func cmdGets() *cobra.Command {
 	flags.String("token", "", "Retrieve agents before this token (pagination)")
 	flags.String("customer_id", "", "Customer ID to filter")
 
-	if errBind := viper.BindPFlags(flags); errBind != nil {
-		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
-	}
-
 	return cmd
 }
 
@@ -294,10 +286,6 @@ func cmdUpdatePermission() *cobra.Command {
 	flags.String("id", "", "Agent ID")
 	flags.Uint64("permission", uint64(agent.PermissionNone), "New Permission Bitmask")
 
-	if errBind := viper.BindPFlags(flags); errBind != nil {
-		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
-	}
-
 	return cmd
 }
 
@@ -331,10 +319,6 @@ func cmdUpdatePassword() *cobra.Command {
 	flags := cmd.Flags()
 	flags.String("id", "", "Agent ID")
 	flags.String("password", "", "New Password")
-
-	if errBind := viper.BindPFlags(flags); errBind != nil {
-		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
-	}
 
 	return cmd
 }
