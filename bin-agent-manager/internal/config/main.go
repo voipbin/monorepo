@@ -27,7 +27,7 @@ type Config struct {
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 }
 
-func BootStrap(cmd *cobra.Command) error {
+func Bootstrap(cmd *cobra.Command) error {
 	initLog()
 	if errBind := bindConfig(cmd); errBind != nil {
 		return errors.Wrapf(errBind, "could not bind config")
@@ -78,7 +78,7 @@ func Get() *Config {
 }
 
 // LoadGlobalConfig loads configuration from viper into the global singleton.
-// NOTE: This must be called AFTER BootStrap (or BindConfig) has been executed.
+// NOTE: This must be called AFTER BootStrap (which calls bindConfig) has been executed.
 // If called before binding, it will load empty/default values.
 func LoadGlobalConfig() {
 	once.Do(func() {

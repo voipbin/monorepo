@@ -48,7 +48,7 @@ func main() {
 		},
 	}
 
-	if errBind := config.BootStrap(rootCmd); errBind != nil {
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
 		logrus.Fatalf("Failed to bind config: %v", errBind)
 	}
 

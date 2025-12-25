@@ -76,15 +76,11 @@ func initCommand() *cobra.Command {
 		Short: "Voipbin Agent Management CLI",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			config.LoadGlobalConfig()
-			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
-				return errors.Wrap(errBind, "failed to bind flags")
-			}
-
 			return nil
 		},
 	}
 
-	if err := config.BootStrap(rootCmd); err != nil {
+	if err := config.Bootstrap(rootCmd); err != nil {
 		cobra.CheckErr(errors.Wrap(err, "failed to bind infrastructure config"))
 	}
 
@@ -122,6 +118,13 @@ func cmdCreate() *cobra.Command {
 		Use:   "create",
 		Short: "Create a new agent",
 		RunE:  runCreate,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
+				return errors.Wrap(errBind, "failed to bind flags")
+			}
+
+			return nil
+		},
 	}
 
 	flags := cmd.Flags()
@@ -185,6 +188,13 @@ func cmdGet() *cobra.Command {
 		Use:   "get",
 		Short: "Get an agent by ID",
 		RunE:  runGet,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
+				return errors.Wrap(errBind, "failed to bind flags")
+			}
+
+			return nil
+		},
 	}
 
 	flags := cmd.Flags()
@@ -233,6 +243,13 @@ func cmdGets() *cobra.Command {
 		Use:   "gets",
 		Short: "Get agent list",
 		RunE:  runGets,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
+				return errors.Wrap(errBind, "failed to bind flags")
+			}
+
+			return nil
+		},
 	}
 
 	flags := cmd.Flags()
@@ -280,6 +297,13 @@ func cmdUpdatePermission() *cobra.Command {
 		Use:   "update-permission",
 		Short: "Update agent permission",
 		RunE:  runUpdatePermission,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
+				return errors.Wrap(errBind, "failed to bind flags")
+			}
+
+			return nil
+		},
 	}
 
 	flags := cmd.Flags()
@@ -314,6 +338,13 @@ func cmdUpdatePassword() *cobra.Command {
 		Use:   "update-password",
 		Short: "Update agent password",
 		RunE:  runUpdatePassword,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
+				return errors.Wrap(errBind, "failed to bind flags")
+			}
+
+			return nil
+		},
 	}
 
 	flags := cmd.Flags()
