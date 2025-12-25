@@ -1,4 +1,5 @@
 vendor
 agent-manager
+agent-control
 .vscode
 !cmd/*

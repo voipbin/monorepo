@@ -15,6 +15,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -62,13 +63,11 @@ func runDaemon() error {
 	log := logrus.WithField("func", "runDaemon")
 	log.WithField("config", config.Get()).Info("Starting customer-manager...")
 
-	sqlDB, err := initDatabase()
+	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "could not connect to the database")
 	}
-	defer func() {
-		_ = sqlDB.Close()
-	}()
+	defer commondatabasehandler.Close(sqlDB)
 
 	cache, err := initCache()
 	if err != nil {
@@ -98,18 +97,6 @@ func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	listenHandler := listenhandler.NewListenHandler(sockHandler, reqHandler, customerHandler, accesskeyHandler)
 
 	return listenHandler.Run(string(commonoutline.QueueNameCustomerRequest), string(commonoutline.QueueNameDelay))
-}
-
-func initDatabase() (*sql.DB, error) {
-	res, err := sql.Open("mysql", config.Get().DatabaseDSN)
-	if err != nil {
-		return nil, errors.Wrap(err, "database open error")
-	}
-
-	if err := res.Ping(); err != nil {
-		return nil, errors.Wrap(err, "database ping error")
-	}
-	return res, nil
 }
 
 func initCache() (cachehandler.CacheHandler, error) {
