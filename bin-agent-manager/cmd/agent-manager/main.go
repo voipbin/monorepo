@@ -73,7 +73,7 @@ func runDaemon() error {
 
 	cache, err := initCache()
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "could not init the cache")
 	}
 
 	if errStart := startServices(sqlDB, cache); errStart != nil {
@@ -108,8 +108,8 @@ func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 func initCache() (cachehandler.CacheHandler, error) {
 	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
-	if err := res.Connect(); err != nil {
-		return nil, errors.Wrap(err, "cache connect error")
+	if errConnect := res.Connect(); errConnect != nil {
+		return nil, errors.Wrap(errConnect, "cache connect error")
 	}
 	return res, nil
 }
@@ -128,7 +128,8 @@ func initProm(endpoint, listen string) {
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
 		if err := http.ListenAndServe(listen, nil); err != nil {
-			logrus.Errorf("Prometheus server error: %v", err)
+			// Treat Prometheus server startup failure as fatal to avoid running without metrics.
+			logrus.Fatalf("Prometheus server error: %v", err)
 		}
 	}()
 }

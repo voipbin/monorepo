@@ -26,8 +26,9 @@ type Config struct {
 }
 
 // BindConfig binds CLI flags and environment variables for configuration,
-// and initializes global logging via initLog. Callers should be aware that
-// this function configures process-wide logrus logging.
+// and calls initLog, which sets the global logrus logging configuration,
+// including the formatter and log level. This modifies process-wide logging
+// state and affects all subsequent logrus logging in the application.
 func BindConfig(cmd *cobra.Command) error {
 	initLog()
 

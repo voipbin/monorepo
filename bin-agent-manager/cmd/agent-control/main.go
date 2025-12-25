@@ -40,12 +40,12 @@ func main() {
 func initHandler() (agenthandler.AgentHandler, error) {
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not connect to the database")
 	}
 
 	cache, err := initCache()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not initiate the cache")
 	}
 
 	return initAgentHandler(db, cache)
@@ -53,8 +53,8 @@ func initHandler() (agenthandler.AgentHandler, error) {
 
 func initCache() (cachehandler.CacheHandler, error) {
 	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
-	if err := res.Connect(); err != nil {
-		return nil, err
+	if errConnect := res.Connect(); errConnect != nil {
+		return nil, errors.Wrapf(errConnect, "could not connect to the cache")
 	}
 	return res, nil
 }
@@ -96,7 +96,6 @@ func initCommand() *cobra.Command {
 }
 
 func resolveUUID(flagName string, promptMessage string) (uuid.UUID, error) {
-
 	res := uuid.FromStringOrNil(viper.GetString(flagName))
 	if res == uuid.Nil {
 		tmp := ""
@@ -137,7 +136,6 @@ func cmdCreate() *cobra.Command {
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-
 	customerID, err := resolveUUID("customer_id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
@@ -304,7 +302,6 @@ func cmdUpdatePermission() *cobra.Command {
 }
 
 func runUpdatePermission(cmd *cobra.Command, args []string) error {
-
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
@@ -343,7 +340,6 @@ func cmdUpdatePassword() *cobra.Command {
 }
 
 func runUpdatePassword(cmd *cobra.Command, args []string) error {
-
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
