@@ -41,6 +41,12 @@ func Bootstrap(cmd *cobra.Command) error {
 
 	// set base domain names
 	common.SetBaseDomainNames(Get().DomainNameExtension, Get().DomainNameTrunk)
+	if Get().DomainNameExtension == "" {
+		return errors.New("domain_name_extension config value is required")
+	}
+	if Get().DomainNameTrunk == "" {
+		return errors.New("domain_name_trunk config value is required")
+	}
 
 	return nil
 }

@@ -21,6 +21,11 @@ func SetBaseDomainNames(extensionBase string, trunkBase string) {
 		"func": "SetBaseDomainNames",
 	})
 
+	if extensionBase == "" || trunkBase == "" {
+		log.Warn("Base domain names cannot be empty. Initialization skipped.")
+		return
+	}
+
 	initOnce.Do(func() {
 		baseDomainNameExtension = extensionBase
 		baseDomainNameTrunk = trunkBase
