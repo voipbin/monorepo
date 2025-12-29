@@ -39,13 +39,8 @@ func Bootstrap(cmd *cobra.Command) error {
 	}
 	loadGlobalConfig()
 
-	// set base domain names
-	common.SetBaseDomainNames(Get().DomainNameExtension, Get().DomainNameTrunk)
-	if Get().DomainNameExtension == "" {
-		return errors.New("domain_name_extension config value is required")
-	}
-	if Get().DomainNameTrunk == "" {
-		return errors.New("domain_name_trunk config value is required")
+	if errSet := common.SetBaseDomainNames(Get().DomainNameExtension, Get().DomainNameTrunk); errSet != nil {
+		return errors.Wrapf(errSet, "could not set base domain names")
 	}
 
 	return nil

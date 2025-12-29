@@ -120,7 +120,10 @@ func Test_Create(t *testing.T) {
 				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
-			common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net")
+
+			if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
+			}
 
 			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(nil, fmt.Errorf(""))
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)

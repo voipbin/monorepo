@@ -66,7 +66,10 @@ func Test_ContactGetsByDomainID(t *testing.T) {
 				dbBin: mockDBBin,
 			}
 			ctx := context.Background()
-			common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net")
+
+			if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
+			}
 
 			mockDBAst.EXPECT().AstContactGetsByEndpoint(ctx, tt.expectEndpoint).Return(tt.responseContacts, nil)
 			res, err := h.ContactGetsByExtension(ctx, tt.customerID, tt.ext)
@@ -114,7 +117,13 @@ func Test_ContactRefreshByEndpoint(t *testing.T) {
 				dbBin: mockDBBin,
 			}
 			ctx := context.Background()
-			common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net")
+
+			common.ResetBaseDomainNamesForTest()
+			defer common.ResetBaseDomainNamesForTest()
+
+			if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
+			}
 
 			mockDBAst.EXPECT().AstContactDeleteFromCache(ctx, tt.expectEndpoint).Return(nil)
 			if err := h.ContactRefreshByEndpoint(ctx, tt.customerID, tt.extension); err != nil {

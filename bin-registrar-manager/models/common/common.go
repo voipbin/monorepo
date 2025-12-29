@@ -1,6 +1,7 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -16,22 +17,43 @@ var (
 )
 
 // SetBaseDomainNames sets the base domain names for extension and trunk realms
-func SetBaseDomainNames(extensionBase string, trunkBase string) {
+func SetBaseDomainNames(extensionBase string, trunkBase string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "SetBaseDomainNames",
 	})
 
-	if extensionBase == "" || trunkBase == "" {
-		log.Warn("Base domain names cannot be empty. Initialization skipped.")
-		return
+	if extensionBase == "" {
+		return errors.New("base_domain_name_extension cannot be empty")
 	}
 
+	if trunkBase == "" {
+		return errors.New("base_domain_name_trunk cannot be empty")
+	}
+
+	initialized := false
 	initOnce.Do(func() {
 		baseDomainNameExtension = extensionBase
 		baseDomainNameTrunk = trunkBase
+		initialized = true
 
 		log.Infof("Set base domain names. base_domain_name_extension: %s, base_domain_name_trunk: %s", baseDomainNameExtension, baseDomainNameTrunk)
 	})
+
+	if !initialized {
+		return errors.New("already initialized")
+	}
+
+	return nil
+}
+
+// ResetBaseDomainNamesForTest resets the global domain variables and the sync.Once state.
+// CAUTION: This function is intended for TESTING PURPOSES ONLY.
+// Do not call this in production code.
+func ResetBaseDomainNamesForTest() {
+	baseDomainNameExtension = ""
+	baseDomainNameTrunk = ""
+
+	initOnce = sync.Once{}
 }
 
 // GenerateEndpointExtension returns the endpoint of the given customer with extension

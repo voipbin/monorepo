@@ -126,7 +126,10 @@ func Test_Create(t *testing.T) {
 			notifyHandler: mockNotify,
 		}
 		ctx := context.Background()
-		common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net")
+
+		if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", errSet)
+		}
 
 		mockDBAst.EXPECT().AstAORCreate(ctx, tt.expectAOR).Return(nil)
 		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
