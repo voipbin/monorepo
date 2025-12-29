@@ -46,6 +46,14 @@ func SetBaseDomainNames(extensionBase string, trunkBase string) error {
 	return nil
 }
 
+func getBaseDomainNameExtension() string {
+	return baseDomainNameExtension
+}
+
+func getBaseDomainNameTrunk() string {
+	return baseDomainNameTrunk
+}
+
 // ResetBaseDomainNamesForTest resets the global domain variables and the sync.Once state.
 // CAUTION: This function is intended for TESTING PURPOSES ONLY.
 // Do not call this in production code.
@@ -65,12 +73,12 @@ func GenerateEndpointExtension(customerID uuid.UUID, extension string) string {
 
 // GenerateRealmExtension returns the realm of the given customer
 func GenerateRealmExtension(customerID uuid.UUID) string {
-	res := fmt.Sprintf("%s.%s", customerID.String(), baseDomainNameExtension)
+	res := fmt.Sprintf("%s.%s", customerID.String(), getBaseDomainNameExtension())
 	return res
 }
 
 // GenerateRealmTrunkDomain returns the realm of the given turnk's domain name
 func GenerateRealmTrunkDomain(domainName string) string {
-	res := fmt.Sprintf("%s.%s", domainName, baseDomainNameTrunk)
+	res := fmt.Sprintf("%s.%s", domainName, getBaseDomainNameTrunk())
 	return res
 }

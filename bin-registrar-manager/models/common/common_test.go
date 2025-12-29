@@ -35,6 +35,9 @@ func Test_GenerateEndpointExtension(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			ResetBaseDomainNamesForTest()
+			defer ResetBaseDomainNamesForTest()
+
 			if errSet := SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
@@ -171,7 +174,6 @@ func Test_SetBaseDomainNames(t *testing.T) {
 			defer ResetBaseDomainNamesForTest()
 
 			err := SetBaseDomainNames(tt.inputExtBase, tt.inputTrunkBase)
-
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SetBaseDomainNames() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -183,10 +185,10 @@ func Test_SetBaseDomainNames(t *testing.T) {
 				}
 			}
 
-			if !reflect.DeepEqual(baseDomainNameExtension, tt.expectExtBase) {
+			if !reflect.DeepEqual(getBaseDomainNameExtension(), tt.expectExtBase) {
 				t.Errorf("Extension mismatch. expect: %s, got: %s", tt.expectExtBase, baseDomainNameExtension)
 			}
-			if !reflect.DeepEqual(baseDomainNameTrunk, tt.expectTrunkBase) {
+			if !reflect.DeepEqual(getBaseDomainNameTrunk(), tt.expectTrunkBase) {
 				t.Errorf("Trunk mismatch. expect: %s, got: %s", tt.expectTrunkBase, baseDomainNameTrunk)
 			}
 		})

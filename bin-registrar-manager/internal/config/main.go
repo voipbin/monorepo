@@ -94,8 +94,8 @@ func Get() *Config {
 }
 
 // loadGlobalConfig loads configuration from viper into the global singleton.
-// NOTE: This must be called AFTER Bootstrap (which calls bindConfig) has been executed.
-// If called before binding, it will load empty/default values.
+// NOTE: This is an internal helper invoked by Bootstrap after bindConfig has been executed.
+// It relies on configuration already being bound; calling it before binding would load empty/default values.
 func loadGlobalConfig() {
 	once.Do(func() {
 		globalConfig = Config{
