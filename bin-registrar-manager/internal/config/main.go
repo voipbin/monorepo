@@ -33,10 +33,13 @@ type Config struct {
 
 func Bootstrap(cmd *cobra.Command) error {
 	initLog()
+
 	if errBind := bindConfig(cmd); errBind != nil {
 		return errors.Wrapf(errBind, "could not bind config")
 	}
+	loadGlobalConfig()
 
+	// set base domain names
 	common.SetBaseDomainNames(Get().DomainNameExtension, Get().DomainNameTrunk)
 
 	return nil
@@ -89,10 +92,10 @@ func Get() *Config {
 	return &globalConfig
 }
 
-// LoadGlobalConfig loads configuration from viper into the global singleton.
+// loadGlobalConfig loads configuration from viper into the global singleton.
 // NOTE: This must be called AFTER Bootstrap (which calls bindConfig) has been executed.
 // If called before binding, it will load empty/default values.
-func LoadGlobalConfig() {
+func loadGlobalConfig() {
 	once.Do(func() {
 		globalConfig = Config{
 			RabbitMQAddress:         viper.GetString("rabbitmq_address"),

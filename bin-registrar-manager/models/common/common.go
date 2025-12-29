@@ -2,31 +2,31 @@ package common
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
-// list of const variables
+// list of base domain name variables
 var (
 	baseDomainNameExtension = "" // base domain name for extension realm
 	baseDomainNameTrunk     = "" // base domain name for trunk realm
+	initOnce                sync.Once
 )
 
-func SetBaseDomainNames(extensionDomain string, trunkDomain string) {
+// SetBaseDomainNames sets the base domain names for extension and trunk realms
+func SetBaseDomainNames(extensionBase string, trunkBase string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "SetBaseDomainNames",
 	})
 
-	if extensionDomain != "" {
-		baseDomainNameExtension = extensionDomain
-	}
+	initOnce.Do(func() {
+		baseDomainNameExtension = extensionBase
+		baseDomainNameTrunk = trunkBase
 
-	if trunkDomain != "" {
-		baseDomainNameTrunk = trunkDomain
-	}
-
-	log.Infof("Set base domain names. base_domain_name_extension: %s, base_domain_name_trunk: %s", baseDomainNameExtension, baseDomainNameTrunk)
+		log.Infof("Set base domain names. base_domain_name_extension: %s, base_domain_name_trunk: %s", baseDomainNameExtension, baseDomainNameTrunk)
+	})
 }
 
 // GenerateEndpointExtension returns the endpoint of the given customer with extension
