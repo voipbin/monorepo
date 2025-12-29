@@ -2,19 +2,26 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
-	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
+	"monorepo/bin-registrar-manager/internal/config"
 	"monorepo/bin-registrar-manager/pkg/cachehandler"
 	"monorepo/bin-registrar-manager/pkg/contacthandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
@@ -30,58 +37,88 @@ const serviceName = commonoutline.ServiceNameRegistrarManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSNAsterisk     = ""
-	databaseDSNBin          = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-)
-
 func main() {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "main",
-	})
-	fmt.Printf("hello world\n")
-
-	// connect to the database asterisk
-	sqlAst, err := commondatabasehandler.Connect(databaseDSNAsterisk)
-	if err != nil {
-		log.Errorf("Could not access to database asterisk. err: %v", err)
-		return
-	}
-	defer commondatabasehandler.Close(sqlAst)
-
-	// connect to the database bin-manager
-	sqlBin, err := commondatabasehandler.Connect(databaseDSNBin)
-	if err != nil {
-		log.Errorf("Could not access to database bin-manager. err: %v", err)
-		return
-	}
-	defer commondatabasehandler.Close(sqlBin)
-
-	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
-	if err := cache.Connect(); err != nil {
-		log.Errorf("Could not connect to cache server. err: %v", err)
-		return
+	rootCmd := &cobra.Command{
+		Use:   "registrar-manager",
+		Short: "Voipbin Registrar Manager Daemon",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			config.LoadGlobalConfig()
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDaemon()
+		},
 	}
 
-	if errRun := run(sqlAst, sqlBin, cache); errRun != nil {
-		log.Errorf("Could not run. err: %v", errRun)
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
+		logrus.Fatalf("Failed to bind config: %v", errBind)
 	}
-	<-chDone
 
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Errorf("Command execution failed: %v", errExecute)
+		os.Exit(1)
+	}
 }
 
-// signalHandler catches signals and set the done
-func signalHandler() {
-	sig := <-chSigs
-	logrus.Debugf("Received signal. sig: %v", sig)
-	chDone <- true
+func runDaemon() error {
+	initSignal()
+	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
+
+	log := logrus.WithField("func", "runDaemon")
+	log.WithField("config", config.Get()).Info("Starting agent-manager...")
+
+	sqlDBBin, err := commondatabasehandler.Connect(config.Get().DatabaseDSNBin)
+	if err != nil {
+		return errors.Wrapf(err, "could not connect to the database")
+	}
+	defer commondatabasehandler.Close(sqlDBBin)
+
+	sqlDBAsterisk, err := commondatabasehandler.Connect(config.Get().DatabaseDSNAsterisk)
+	if err != nil {
+		return errors.Wrapf(err, "could not connect to the database")
+	}
+	defer commondatabasehandler.Close(sqlDBAsterisk)
+
+	cache, err := initCache()
+	if err != nil {
+		return errors.Wrapf(err, "could not initialize the cache")
+	}
+
+	if errStart := run(sqlDBAsterisk, sqlDBBin, cache); errStart != nil {
+		return errors.Wrapf(errStart, "could not start services")
+	}
+
+	<-chDone
+	log.Info("Agent-manager stopped safely.")
+	return nil
+}
+
+func initCache() (cachehandler.CacheHandler, error) {
+	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
+	if errConnect := res.Connect(); errConnect != nil {
+		return nil, errors.Wrap(errConnect, "cache connect error")
+	}
+	return res, nil
+}
+
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go func() {
+		sig := <-chSigs
+		logrus.Infof("Received signal: %v", sig)
+		chDone <- true
+	}()
+}
+
+func initProm(endpoint, listen string) {
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
+		if err := http.ListenAndServe(listen, nil); err != nil {
+			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
+			logrus.Errorf("Prometheus server error: %v", err)
+		}
+	}()
 }
 
 // NewWorker creates worker interface
@@ -93,7 +130,7 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 	dbAst := dbhandler.NewHandler(sqlAst, cache)
 	dbBin := dbhandler.NewHandler(sqlBin, cache)
 
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	// create handlers
