@@ -9,6 +9,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-registrar-manager/models/astcontact"
+	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
@@ -66,6 +67,11 @@ func Test_ContactGetsByDomainID(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			defer common.ResetBaseDomainNamesForTest()
+			if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
+			}
+
 			mockDBAst.EXPECT().AstContactGetsByEndpoint(ctx, tt.expectEndpoint).Return(tt.responseContacts, nil)
 			res, err := h.ContactGetsByExtension(ctx, tt.customerID, tt.ext)
 			if err != nil {
@@ -112,6 +118,11 @@ func Test_ContactRefreshByEndpoint(t *testing.T) {
 				dbBin: mockDBBin,
 			}
 			ctx := context.Background()
+
+			defer common.ResetBaseDomainNamesForTest()
+			if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
+			}
 
 			mockDBAst.EXPECT().AstContactDeleteFromCache(ctx, tt.expectEndpoint).Return(nil)
 			if err := h.ContactRefreshByEndpoint(ctx, tt.customerID, tt.extension); err != nil {

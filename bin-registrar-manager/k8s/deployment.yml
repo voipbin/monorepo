@@ -40,6 +40,10 @@ spec:
               value: ${REDIS_PASSWORD}
             - name: REDIS_DATABASE
               value: "1"
+            - name: DOMAIN_NAME_EXTENSION
+              value: ${DOMAIN_NAME_EXTENSION}
+            - name: DOMAIN_NAME_TRUNK
+              value: ${DOMAIN_NAME_TRUNK}
           ports:
             - name: metrics
               protocol: "TCP"

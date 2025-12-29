@@ -1,6 +1,7 @@
 package config
 
 import (
+	"monorepo/bin-registrar-manager/models/common"
 	"sync"
 
 	joonix "github.com/joonix/log"
@@ -26,12 +27,20 @@ type Config struct {
 	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
+	DomainNameExtension     string // DomainNameExtension is the base domain name for extension realm.
+	DomainNameTrunk         string // DomainNameTrunk is the base domain name for trunk realm.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
 	initLog()
+
 	if errBind := bindConfig(cmd); errBind != nil {
 		return errors.Wrapf(errBind, "could not bind config")
+	}
+	loadGlobalConfig()
+
+	if errSet := common.SetBaseDomainNames(Get().DomainNameExtension, Get().DomainNameTrunk); errSet != nil {
+		return errors.Wrapf(errSet, "could not set base domain names")
 	}
 
 	return nil
@@ -51,6 +60,8 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
+	f.String("domain_name_extension", "", "Base domain name for extension realm")
+	f.String("domain_name_trunk", "", "Base domain name for trunk realm")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -61,6 +72,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
+		"domain_name_extension":     "DOMAIN_NAME_EXTENSION",
+		"domain_name_trunk":         "DOMAIN_NAME_TRUNK",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -80,10 +93,10 @@ func Get() *Config {
 	return &globalConfig
 }
 
-// LoadGlobalConfig loads configuration from viper into the global singleton.
-// NOTE: This must be called AFTER Bootstrap (which calls bindConfig) has been executed.
-// If called before binding, it will load empty/default values.
-func LoadGlobalConfig() {
+// loadGlobalConfig loads configuration from viper into the global singleton.
+// NOTE: This is an internal helper invoked by Bootstrap after bindConfig has been executed.
+// It relies on configuration already being bound; calling it before binding would load empty/default values.
+func loadGlobalConfig() {
 	once.Do(func() {
 		globalConfig = Config{
 			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
@@ -94,6 +107,8 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
+			DomainNameExtension:     viper.GetString("domain_name_extension"),
+			DomainNameTrunk:         viper.GetString("domain_name_trunk"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

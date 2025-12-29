@@ -41,10 +41,6 @@ func main() {
 	rootCmd := &cobra.Command{
 		Use:   "registrar-manager",
 		Short: "Voipbin Registrar Manager Daemon",
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			config.LoadGlobalConfig()
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runDaemon()
 		},
