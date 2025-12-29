@@ -1577,5 +1577,7 @@ commands:
             find . -type f -exec sed -i -e "s|\${CARTESIA_API_KEY}|$CC_CARTESIA_API_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${DEEPGRAM_API_KEY}|$CC_DEEPGRAM_API_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${MAILGUN_API_KEY}|$CC_MAILGUN_API_KEY|g" {} +
+            find . -type f -exec sed -i -e "s|\${DOMAIN_NAME_EXTENSION}|$CC_DOMAIN_NAME_EXTENSION|g" {} +
+            find . -type f -exec sed -i -e "s|\${DOMAIN_NAME_TRUNK}|$CC_DOMAIN_NAME_TRUNK|g" {} +
             kustomize edit set image << parameters.image-name >>-image=docker.io/<< parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
