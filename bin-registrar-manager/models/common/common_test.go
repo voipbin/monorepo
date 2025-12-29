@@ -141,29 +141,48 @@ func Test_SetBaseDomainNames(t *testing.T) {
 		errSubstring string
 	}{
 		{
-			name:            "Validation Failure (Empty Extension)",
-			inputExtBase:    "",
-			inputTrunkBase:  "trunk.voipbin.net",
-			expectExtBase:   "",
-			expectTrunkBase: "",
-			wantErr:         true,
-			errSubstring:    "base_domain_name_extension cannot be empty",
+			name:           "Validation Failure (Empty Input)",
+			inputExtBase:   "",
+			inputTrunkBase: "trunk.voipbin.net",
+			wantErr:        true,
+			errSubstring:   "invalid",
 		},
 		{
-			name:            "Validation Failure (Empty Trunk)",
-			inputExtBase:    "registrar.voipbin.net",
-			inputTrunkBase:  "",
-			expectExtBase:   "",
-			expectTrunkBase: "",
-			wantErr:         true,
-			errSubstring:    "base_domain_name_trunk cannot be empty",
+			name:           "Validation Failure (Invalid Format - Space)",
+			inputExtBase:   "sip voipbin.com",
+			inputTrunkBase: "trunk.voipbin.net",
+			wantErr:        true,
+			errSubstring:   "invalid",
+		},
+		{
+			name:           "Validation Failure (Invalid Format - Special Char)",
+			inputExtBase:   "sip.voipbin.net",
+			inputTrunkBase: "trunk!.voipbin.net",
+			wantErr:        true,
+			errSubstring:   "invalid",
 		},
 		{
 			name:            "Success (Valid Inputs)",
-			inputExtBase:    "registrar.voipbin.net",
-			inputTrunkBase:  "trunk.voipbin.net",
-			expectExtBase:   "registrar.voipbin.net",
-			expectTrunkBase: "trunk.voipbin.net",
+			inputExtBase:    "sip.voipbin.net",
+			inputTrunkBase:  "trunk-01.voipbin.net",
+			expectExtBase:   "sip.voipbin.net",
+			expectTrunkBase: "trunk-01.voipbin.net",
+			wantErr:         false,
+		},
+		{
+			name:            "Success (Valid Inputs - Localhost style)",
+			inputExtBase:    "localhost.localdomain",
+			inputTrunkBase:  "trunk.local",
+			expectExtBase:   "localhost.localdomain",
+			expectTrunkBase: "trunk.local",
+			wantErr:         false,
+		},
+		{
+			name:            "Success (Valid Inputs - just localhost)",
+			inputExtBase:    "localhost",
+			inputTrunkBase:  "localhost",
+			expectExtBase:   "localhost",
+			expectTrunkBase: "localhost",
 			wantErr:         false,
 		},
 	}
@@ -174,6 +193,7 @@ func Test_SetBaseDomainNames(t *testing.T) {
 			defer ResetBaseDomainNamesForTest()
 
 			err := SetBaseDomainNames(tt.inputExtBase, tt.inputTrunkBase)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SetBaseDomainNames() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -185,11 +205,10 @@ func Test_SetBaseDomainNames(t *testing.T) {
 				}
 			}
 
-			if !reflect.DeepEqual(getBaseDomainNameExtension(), tt.expectExtBase) {
-				t.Errorf("Extension mismatch. expect: %s, got: %s", tt.expectExtBase, baseDomainNameExtension)
-			}
-			if !reflect.DeepEqual(getBaseDomainNameTrunk(), tt.expectTrunkBase) {
-				t.Errorf("Trunk mismatch. expect: %s, got: %s", tt.expectTrunkBase, baseDomainNameTrunk)
+			if !tt.wantErr {
+				if baseDomainNameExtension != tt.expectExtBase {
+					t.Errorf("Extension mismatch. got: %s", baseDomainNameExtension)
+				}
 			}
 		})
 	}

@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"sync"
 
 	"github.com/gofrs/uuid"
@@ -16,18 +17,27 @@ var (
 	initOnce                sync.Once
 )
 
-// SetBaseDomainNames sets the base domain names for extension and trunk realms
+// regex to validate domain format (RFC 1123 compliant mostly)
+// Alphanumeric, hyphens, dots. No spaces.
+var domainRegex = regexp.MustCompile(`^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$`)
+
+func isValidDomain(domain string) bool {
+	if len(domain) > 253 {
+		return false
+	}
+	return domainRegex.MatchString(domain)
+}
+
 func SetBaseDomainNames(extensionBase string, trunkBase string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "SetBaseDomainNames",
 	})
 
-	if extensionBase == "" {
-		return errors.New("base_domain_name_extension cannot be empty")
+	if !isValidDomain(extensionBase) {
+		return errors.New("base_domain_name_extension is invalid (check format)")
 	}
-
-	if trunkBase == "" {
-		return errors.New("base_domain_name_trunk cannot be empty")
+	if !isValidDomain(trunkBase) {
+		return errors.New("base_domain_name_trunk is invalid (check format)")
 	}
 
 	initialized := false
@@ -36,7 +46,7 @@ func SetBaseDomainNames(extensionBase string, trunkBase string) error {
 		baseDomainNameTrunk = trunkBase
 		initialized = true
 
-		log.Infof("Set base domain names. base_domain_name_extension: %s, base_domain_name_trunk: %s", baseDomainNameExtension, baseDomainNameTrunk)
+		log.Infof("Set base domain names. ext: %s, trunk: %s", baseDomainNameExtension, baseDomainNameTrunk)
 	})
 
 	if !initialized {
