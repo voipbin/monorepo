@@ -67,9 +67,7 @@ func Test_ContactGetsByDomainID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			common.ResetBaseDomainNamesForTest()
 			defer common.ResetBaseDomainNamesForTest()
-
 			if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
@@ -121,9 +119,7 @@ func Test_ContactRefreshByEndpoint(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			common.ResetBaseDomainNamesForTest()
 			defer common.ResetBaseDomainNamesForTest()
-
 			if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}

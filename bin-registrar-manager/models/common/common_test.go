@@ -35,12 +35,10 @@ func Test_GenerateEndpointExtension(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			ResetBaseDomainNamesForTest()
-			defer ResetBaseDomainNamesForTest()
-
 			if errSet := SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
+			defer ResetBaseDomainNamesForTest()
 
 			res := GenerateEndpointExtension(tt.customerID, tt.extension)
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -73,12 +71,10 @@ func Test_GenerateRealmExtension(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			ResetBaseDomainNamesForTest()
-			defer ResetBaseDomainNamesForTest()
-
 			if errSet := SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
+			defer ResetBaseDomainNamesForTest()
 
 			res := GenerateRealmExtension(tt.customerID)
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -111,12 +107,10 @@ func Test_GenerateRealmTrunk(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			ResetBaseDomainNamesForTest()
-			defer ResetBaseDomainNamesForTest()
-
 			if errSet := SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
+			defer ResetBaseDomainNamesForTest()
 
 			res := GenerateRealmTrunkDomain(tt.trunkDomain)
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -189,14 +183,13 @@ func Test_SetBaseDomainNames(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ResetBaseDomainNamesForTest()
-			defer ResetBaseDomainNamesForTest()
 
 			err := SetBaseDomainNames(tt.inputExtBase, tt.inputTrunkBase)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SetBaseDomainNames() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			defer ResetBaseDomainNamesForTest()
 
 			if tt.wantErr && err != nil {
 				if !strings.Contains(err.Error(), tt.errSubstring) {
@@ -219,13 +212,12 @@ func Test_SetBaseDomainNames(t *testing.T) {
 
 // Test_SetBaseDomainNames_DuplicateCall verifies the "base domain names have already been initialized and cannot be changed" error.
 func Test_SetBaseDomainNames_DuplicateCall(t *testing.T) {
-	ResetBaseDomainNamesForTest()
-	defer ResetBaseDomainNamesForTest()
 
 	err := SetBaseDomainNames("first.com", "trunk.first.com")
 	if err != nil {
 		t.Errorf("First call failed: %v", err)
 	}
+	defer ResetBaseDomainNamesForTest()
 
 	err = SetBaseDomainNames("second.com", "trunk.second.com")
 	if err == nil {

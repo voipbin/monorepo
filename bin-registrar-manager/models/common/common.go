@@ -34,10 +34,10 @@ func SetBaseDomainNames(extensionBase string, trunkBase string) error {
 	})
 
 	if !isValidDomain(extensionBase) {
-		return errors.New("base_domain_name_extension is invalid (check format)")
+		return errors.New("extension base domain name is invalid (check format)")
 	}
 	if !isValidDomain(trunkBase) {
-		return errors.New("base_domain_name_trunk is invalid (check format)")
+		return errors.New("trunk base domain name is invalid (check format)")
 	}
 
 	initialized := false
