@@ -65,17 +65,17 @@ func runDaemon() error {
 	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
 
 	log := logrus.WithField("func", "runDaemon")
-	log.WithField("config", config.Get()).Info("Starting agent-manager...")
+	log.WithField("config", config.Get()).Info("Starting registrar-manager...")
 
 	sqlDBBin, err := commondatabasehandler.Connect(config.Get().DatabaseDSNBin)
 	if err != nil {
-		return errors.Wrapf(err, "could not connect to the database")
+		return errors.Wrapf(err, "could not connect to the voipbin database")
 	}
 	defer commondatabasehandler.Close(sqlDBBin)
 
 	sqlDBAsterisk, err := commondatabasehandler.Connect(config.Get().DatabaseDSNAsterisk)
 	if err != nil {
-		return errors.Wrapf(err, "could not connect to the database")
+		return errors.Wrapf(err, "could not connect to the asterisk database")
 	}
 	defer commondatabasehandler.Close(sqlDBAsterisk)
 
@@ -89,7 +89,7 @@ func runDaemon() error {
 	}
 
 	<-chDone
-	log.Info("Agent-manager stopped safely.")
+	log.Info("Registrar-manager stopped safely.")
 	return nil
 }
 

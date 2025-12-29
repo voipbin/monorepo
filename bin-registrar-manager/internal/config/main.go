@@ -16,7 +16,6 @@ var (
 )
 
 // Config holds process-wide configuration values loaded from command-line
-// flags and environment variables for the bin-agent-manager service.
 type Config struct {
 	RabbitMQAddress         string // RabbitMQAddress is the address (including host and port) of the RabbitMQ server.
 	PrometheusEndpoint      string // PrometheusEndpoint is the HTTP path at which Prometheus metrics are exposed.
