@@ -40,6 +40,10 @@ spec:
               value: ${REDIS_PASSWORD}
             - name: REDIS_DATABASE
               value: "1"
+            - name: DOMAIN_NAME_EXTENSION
+              value: "registrar.voipbin.net"
+            - name: DOMAIN_NAME_TRUNK
+              value: "trunk.voipbin.net"
           ports:
             - name: metrics
               protocol: "TCP"

@@ -14,6 +14,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/models/trunk"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
@@ -119,6 +120,7 @@ func Test_Create(t *testing.T) {
 				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
+			common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net")
 
 			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(nil, fmt.Errorf(""))
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)

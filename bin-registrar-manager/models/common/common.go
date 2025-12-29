@@ -4,13 +4,30 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // list of const variables
-const (
-	baseDomainNameExtension = "registrar.voipbin.net" // base domain name for extension realm
-	baseDomainNameTrunk     = "trunk.voipbin.net"     // base domain name for trunk realm
+var (
+	baseDomainNameExtension = "" // base domain name for extension realm
+	baseDomainNameTrunk     = "" // base domain name for trunk realm
 )
+
+func SetBaseDomainNames(extensionDomain string, trunkDomain string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "SetBaseDomainNames",
+	})
+
+	if extensionDomain != "" {
+		baseDomainNameExtension = extensionDomain
+	}
+
+	if trunkDomain != "" {
+		baseDomainNameTrunk = trunkDomain
+	}
+
+	log.Infof("Set base domain names. base_domain_name_extension: %s, base_domain_name_trunk: %s", baseDomainNameExtension, baseDomainNameTrunk)
+}
 
 // GenerateEndpointExtension returns the endpoint of the given customer with extension
 func GenerateEndpointExtension(customerID uuid.UUID, extension string) string {

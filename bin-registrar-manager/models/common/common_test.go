@@ -33,6 +33,7 @@ func Test_GenerateEndpointExtension(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
+			SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net")
 
 			res := GenerateEndpointExtension(tt.customerID, tt.extension)
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -66,6 +67,7 @@ func Test_GenerateRealmExtension(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
+			SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net")
 
 			res := GenerateRealmExtension(tt.customerID)
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -99,6 +101,7 @@ func Test_GenerateRealmTrunk(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
+			SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net")
 
 			res := GenerateRealmTrunkDomain(tt.trunkDomain)
 			if reflect.DeepEqual(tt.expectRes, res) == false {

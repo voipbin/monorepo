@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astendpoint"
+	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
@@ -124,8 +125,8 @@ func Test_Create(t *testing.T) {
 			dbBin:         mockDBBin,
 			notifyHandler: mockNotify,
 		}
-
 		ctx := context.Background()
+		common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net")
 
 		mockDBAst.EXPECT().AstAORCreate(ctx, tt.expectAOR).Return(nil)
 		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
