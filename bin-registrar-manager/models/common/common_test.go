@@ -193,7 +193,7 @@ func Test_SetBaseDomainNames(t *testing.T) {
 	}
 }
 
-// Test_SetBaseDomainNames_DuplicateCall verifies the "already initialized" error.
+// Test_SetBaseDomainNames_DuplicateCall verifies the "base domain names have already been initialized and cannot be changed" error.
 func Test_SetBaseDomainNames_DuplicateCall(t *testing.T) {
 	ResetBaseDomainNamesForTest()
 	defer ResetBaseDomainNamesForTest()
@@ -206,8 +206,8 @@ func Test_SetBaseDomainNames_DuplicateCall(t *testing.T) {
 	err = SetBaseDomainNames("second.com", "trunk.second.com")
 	if err == nil {
 		t.Errorf("Expected error on second call, but got nil")
-	} else if err.Error() != "already initialized" {
-		t.Errorf("Expected 'already initialized' error, got: %v", err)
+	} else if err.Error() != "base domain names have already been initialized and cannot be changed" {
+		t.Errorf("Expected 'base domain names have already been initialized and cannot be changed' error, got: %v", err)
 	}
 
 	if baseDomainNameExtension != "first.com" {

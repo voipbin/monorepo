@@ -40,7 +40,7 @@ func SetBaseDomainNames(extensionBase string, trunkBase string) error {
 	})
 
 	if !initialized {
-		return errors.New("already initialized")
+		return errors.New("base domain names have already been initialized and cannot be changed")
 	}
 
 	return nil
