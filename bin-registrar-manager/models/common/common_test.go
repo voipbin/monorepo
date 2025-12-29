@@ -193,7 +193,6 @@ func Test_SetBaseDomainNames(t *testing.T) {
 			defer ResetBaseDomainNamesForTest()
 
 			err := SetBaseDomainNames(tt.inputExtBase, tt.inputTrunkBase)
-
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SetBaseDomainNames() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -206,8 +205,12 @@ func Test_SetBaseDomainNames(t *testing.T) {
 			}
 
 			if !tt.wantErr {
-				if baseDomainNameExtension != tt.expectExtBase {
-					t.Errorf("Extension mismatch. got: %s", baseDomainNameExtension)
+				if getBaseDomainNameExtension() != tt.expectExtBase {
+					t.Errorf("Extension mismatch. got: %s", getBaseDomainNameExtension())
+				}
+
+				if getBaseDomainNameTrunk() != tt.expectTrunkBase {
+					t.Errorf("Trunk mismatch. got: %s", getBaseDomainNameTrunk())
 				}
 			}
 		})
@@ -231,7 +234,10 @@ func Test_SetBaseDomainNames_DuplicateCall(t *testing.T) {
 		t.Errorf("Expected 'base domain names have already been initialized and cannot be changed' error, got: %v", err)
 	}
 
-	if baseDomainNameExtension != "first.com" {
-		t.Errorf("Global value changed unexpectedly. got: %s", baseDomainNameExtension)
+	if getBaseDomainNameExtension() != "first.com" {
+		t.Errorf("Global value changed unexpectedly. got: %s", getBaseDomainNameExtension())
+	}
+	if getBaseDomainNameTrunk() != "trunk.first.com" {
+		t.Errorf("Global value changed unexpectedly. got: %s", getBaseDomainNameTrunk())
 	}
 }

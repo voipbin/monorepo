@@ -57,10 +57,20 @@ func SetBaseDomainNames(extensionBase string, trunkBase string) error {
 }
 
 func getBaseDomainNameExtension() string {
+	if baseDomainNameExtension == "" {
+		logrus.WithFields(logrus.Fields{
+			"func": "getBaseDomainNameExtension",
+		}).Panic("baseDomainNameExtension is not initialized; call SetBaseDomainNames before generating realms or endpoints")
+	}
 	return baseDomainNameExtension
 }
 
 func getBaseDomainNameTrunk() string {
+	if baseDomainNameTrunk == "" {
+		logrus.WithFields(logrus.Fields{
+			"func": "getBaseDomainNameTrunk",
+		}).Panic("baseDomainNameTrunk is not initialized; call SetBaseDomainNames before generating realms or endpoints")
+	}
 	return baseDomainNameTrunk
 }
 
@@ -87,7 +97,7 @@ func GenerateRealmExtension(customerID uuid.UUID) string {
 	return res
 }
 
-// GenerateRealmTrunkDomain returns the realm of the given turnk's domain name
+// GenerateRealmTrunkDomain returns the realm of the given trunk's domain name
 func GenerateRealmTrunkDomain(domainName string) string {
 	res := fmt.Sprintf("%s.%s", domainName, getBaseDomainNameTrunk())
 	return res
