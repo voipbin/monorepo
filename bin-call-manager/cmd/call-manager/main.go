@@ -9,6 +9,7 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -69,7 +70,9 @@ func main() {
 	// run
 	if errRun := run(sqlDB, cache); errRun != nil {
 		log.Errorf("Could not run the process correctly. err: %v", errRun)
+		return
 	}
+
 	<-chDone
 }
 
@@ -104,13 +107,13 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	ariEventHandler := arieventhandler.NewEventHandler(sockHandler, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 
 	// run subscribe listener
-	if err := runSubscribe(sockHandler, ariEventHandler, callHandler, groupcallHandler, confbridgeHandler); err != nil {
-		return err
+	if errSubscribe := runSubscribe(sockHandler, ariEventHandler, callHandler, groupcallHandler, confbridgeHandler); errSubscribe != nil {
+		return errors.Wrapf(errSubscribe, "could not run subscribe listener correctly")
 	}
 
 	// run request listener
-	if err := runRequestListen(sockHandler, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler); err != nil {
-		return err
+	if errListen := runRequestListen(sockHandler, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler); errListen != nil {
+		return errors.Wrapf(errListen, "could not start request listener correctly")
 	}
 
 	return nil
@@ -136,11 +139,19 @@ func runSubscribe(
 	}
 	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")
 
-	ariEventListenHandler := subscribehandler.NewSubscribeHandler(sockHandler, commonoutline.QueueNameCallSubscribe, subscribeTargets, ariEventHandler, callHandler, groupcallHandler, confbridgeHandler)
+	ariEventListenHandler := subscribehandler.NewSubscribeHandler(
+		sockHandler,
+		commonoutline.QueueNameCallSubscribe,
+		subscribeTargets,
+		ariEventHandler,
+		callHandler,
+		groupcallHandler,
+		confbridgeHandler,
+	)
 
 	// run
 	if err := ariEventListenHandler.Run(); err != nil {
-		log.Errorf("Could not run the ari event listen handler correctly. err: %v", err)
+		return errors.Wrapf(err, "could not run the ari event listen handler correctly")
 	}
 
 	return nil
@@ -156,15 +167,11 @@ func runRequestListen(
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
 ) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "runRequestListen",
-	})
-
 	listenHandler := listenhandler.NewListenHandler(sockHandler, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler)
 
 	// run
-	if err := listenHandler.Run(string(commonoutline.QueueNameCallRequest), string(commonoutline.QueueNameDelay)); err != nil {
-		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameCallRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the listenhandler correctly")
 	}
 
 	return nil
