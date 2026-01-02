@@ -68,6 +68,11 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
+		"twilio_sid":                "TWILIO_SID",
+		"twilio_token":              "TWILIO_TOKEN",
+		"telnyx_connection_id":      "TELNYX_CONNECTION_ID",
+		"telnyx_profile_id":         "TELNYX_PROFILE_ID",
+		"telnyx_token":              "TELNYX_TOKEN",
 	}
 
 	for flagKey, envKey := range bindings {
