@@ -30,6 +30,20 @@ type NumberHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error)
 	Delete(ctx context.Context, id uuid.UUID) (*number.Number, error)
+	Register(
+		ctx context.Context,
+		customerID uuid.UUID,
+		num string,
+		callFlowID uuid.UUID,
+		messageFlowID uuid.UUID,
+		name string,
+		detail string,
+		providerName number.ProviderName,
+		providerReferenceID string,
+		status number.Status,
+		t38Enabled bool,
+		emergencyEnabled bool,
+	) (*number.Number, error)
 
 	UpdateInfo(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*number.Number, error)
 	UpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error)

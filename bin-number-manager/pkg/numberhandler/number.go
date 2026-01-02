@@ -42,7 +42,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 		return nil, fmt.Errorf("could not create a number from the telnyx. err: %v", err)
 	}
 
-	res, err := h.dbCreate(
+	res, err := h.Register(
 		ctx,
 		customerID,
 		num,
@@ -60,12 +60,73 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 		log.Errorf("Could not create the number record. err: %v", err)
 		return nil, errors.Wrap(err, "could not create the number record")
 	}
+	log.WithField("number", res).Debugf("Created number correctly. number_id: %s", res.ID)
 
 	// generate and update purchased number's tags
 	tags := h.generateTags(ctx, res)
 	if errUpdate := h.numberHandlerTelnyx.NumberUpdateTags(ctx, res, tags); errUpdate != nil {
-		log.Errorf("Could not updated the number tags. err: %v", errUpdate)
+		log.Errorf("Could not updated the number tags from the provider. err: %v", errUpdate)
 	}
+
+	return res, nil
+}
+
+// Register adds a number record to the database without purchasing it from a provider.
+// Unlike Create, which purchases the number from a provider (e.g. Telnyx), Register is used for existing numbers.
+func (h *numberHandler) Register(
+	ctx context.Context,
+	customerID uuid.UUID,
+	num string,
+	callFlowID uuid.UUID,
+	messageFlowID uuid.UUID,
+	name string,
+	detail string,
+	providerName number.ProviderName,
+	providerReferenceID string,
+	status number.Status,
+	t38Enabled bool,
+	emergencyEnabled bool,
+) (*number.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "Register",
+		"number": num,
+	})
+	log.Debugf("Registering number. number_id: %s", num)
+
+	filters := map[string]string{
+		"deleted": "false",
+		"number":  num,
+	}
+
+	existedNumbers, err := h.dbGets(ctx, 1, "", filters)
+	if err != nil {
+		log.Errorf("Could not check existed number. number: %s, err: %v", num, err)
+		return nil, errors.Wrap(err, "could not check existed number")
+	}
+	if len(existedNumbers) > 0 {
+		log.Errorf("The number already exists. number: %s", num)
+		return nil, fmt.Errorf("the number already exists")
+	}
+
+	res, err := h.dbCreate(
+		ctx,
+		customerID,
+		num,
+		callFlowID,
+		messageFlowID,
+		name,
+		detail,
+		providerName,
+		providerReferenceID,
+		status,
+		t38Enabled,
+		emergencyEnabled,
+	)
+	if err != nil {
+		log.Errorf("Could not create the number record. err: %v", err)
+		return nil, errors.Wrap(err, "could not create the number record")
+	}
+	log.WithField("number", res).Debugf("Registered number correctly. number_id: %s", res.ID)
 
 	return res, nil
 }
