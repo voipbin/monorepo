@@ -45,6 +45,10 @@ func initCommand() *cobra.Command {
 		Short: "Voipbin Customer Management CLI",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			config.LoadGlobalConfig()
+			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
+				return errors.Wrap(errBind, "failed to bind flags")
+			}
+
 			return nil
 		},
 	}
