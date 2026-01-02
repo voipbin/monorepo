@@ -86,7 +86,7 @@ func initNumberHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (numberha
 }
 
 func initCommand() *cobra.Command {
-	rootCmd := &cobra.Command{
+	cmdRoot := &cobra.Command{
 		Use:   "number-control",
 		Short: "Voipbin Number Management CLI",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -99,18 +99,18 @@ func initCommand() *cobra.Command {
 		},
 	}
 
-	if err := config.Bootstrap(rootCmd); err != nil {
+	if err := config.Bootstrap(cmdRoot); err != nil {
 		cobra.CheckErr(errors.Wrap(err, "failed to bind infrastructure config"))
 	}
 
 	cmdSub := &cobra.Command{Use: "number", Short: "Number operations"}
 	cmdSub.AddCommand(cmdCreate())
 	cmdSub.AddCommand(cmdGet())
-	cmdSub.AddCommand(cmdGets())
+	cmdSub.AddCommand(cmdList())
 	cmdSub.AddCommand(cmdDelete())
 
-	rootCmd.AddCommand(cmdSub)
-	return rootCmd
+	cmdRoot.AddCommand(cmdSub)
+	return cmdRoot
 }
 
 func resolveUUID(flagName string, label string) (uuid.UUID, error) {
@@ -249,11 +249,11 @@ func runGet(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func cmdGets() *cobra.Command {
+func cmdList() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "gets",
+		Use:   "list",
 		Short: "Get number list",
-		RunE:  runGets,
+		RunE:  runList,
 	}
 
 	flags := cmd.Flags()
@@ -264,7 +264,7 @@ func cmdGets() *cobra.Command {
 	return cmd
 }
 
-func runGets(cmd *cobra.Command, args []string) error {
+func runList(cmd *cobra.Command, args []string) error {
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")

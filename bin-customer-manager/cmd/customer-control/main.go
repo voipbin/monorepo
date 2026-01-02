@@ -48,16 +48,16 @@ func initCommand() *cobra.Command {
 		},
 	}
 
-	if err := config.BindConfig(rootCmd); err != nil {
-		cobra.CheckErr(errors.Wrap(err, "failed to bind infrastructure config"))
+	if err := config.Bootstrap(rootCmd); err != nil {
+		cobra.CheckErr(errors.Wrap(err, "failed to bootstrap config"))
 	}
 
-	customerCmd := &cobra.Command{Use: "customer", Short: "Customer operation"}
-	customerCmd.AddCommand(cmdCreate())
-	customerCmd.AddCommand(cmdGet())
-	customerCmd.AddCommand(cmdGets())
+	cmdSub := &cobra.Command{Use: "customer", Short: "Customer operation"}
+	cmdSub.AddCommand(cmdCreate())
+	cmdSub.AddCommand(cmdGet())
+	cmdSub.AddCommand(cmdList())
 
-	rootCmd.AddCommand(customerCmd)
+	rootCmd.AddCommand(cmdSub)
 	return rootCmd
 }
 
@@ -116,9 +116,9 @@ func cmdGet() *cobra.Command {
 	}
 }
 
-func cmdGets() *cobra.Command {
+func cmdList() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "gets",
+		Use:   "list",
 		Short: "Get customer list",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			handler, err := initHandler()
