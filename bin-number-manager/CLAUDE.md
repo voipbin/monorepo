@@ -32,6 +32,10 @@ go vet $(go list ./...)
 # Generate mocks (each handler package has its own mock generator)
 go generate ./pkg/numberhandler/...
 go generate ./pkg/dbhandler/...
+go generate ./pkg/cachehandler/...
+go generate ./pkg/requestexternal/...
+go generate ./pkg/numberhandlertelnyx/...
+go generate ./pkg/numberhandlertwilio/...
 ```
 
 ## Architecture
@@ -46,9 +50,10 @@ The service follows a layered architecture with handler separation:
 4. **pkg/numberhandler/** - Core business logic for number operations
 5. **pkg/numberhandlertelnyx/** - Telnyx provider-specific implementation
 6. **pkg/numberhandlertwilio/** - Twilio provider-specific implementation
-7. **pkg/dbhandler/** - Database operations with MySQL and Redis cache
-8. **pkg/requestexternal/** - HTTP client for external provider APIs
-9. **models/** - Data structures (number, availablenumber, providernumber)
+7. **pkg/dbhandler/** - Database operations with MySQL
+8. **pkg/cachehandler/** - Redis cache operations for number lookups
+9. **pkg/requestexternal/** - HTTP client for external provider APIs
+10. **models/** - Data structures (number, availablenumber, providernumber)
 
 ### Inter-Service Communication
 
