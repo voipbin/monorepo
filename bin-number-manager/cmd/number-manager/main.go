@@ -92,7 +92,7 @@ func runDaemon() error {
 	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
 
 	log := logrus.WithField("func", "runDaemon")
-	log.WithField("config", config.Get()).Info("Starting agent-manager...")
+	log.WithField("config", config.Get()).Info("Starting number-manager...")
 
 	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
