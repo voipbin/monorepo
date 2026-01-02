@@ -16,7 +16,7 @@ var (
 )
 
 // Config holds process-wide configuration values loaded from command-line
-// flags and environment variables for the bin-agent-manager service.
+// flags and environment variables for the service.
 type Config struct {
 	RabbitMQAddress         string // RabbitMQAddress is the address (including host and port) of the RabbitMQ server.
 	PrometheusEndpoint      string // PrometheusEndpoint is the HTTP path at which Prometheus metrics are exposed.
@@ -88,7 +88,7 @@ func Get() *Config {
 }
 
 // LoadGlobalConfig loads configuration from viper into the global singleton.
-// NOTE: This must be called AFTER BootStrap (which calls bindConfig) has been executed.
+// NOTE: This must be called AFTER Bootstrap (which calls bindConfig) has been executed.
 // If called before binding, it will load empty/default values.
 func LoadGlobalConfig() {
 	once.Do(func() {

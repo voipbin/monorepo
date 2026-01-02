@@ -38,8 +38,8 @@ var chDone = make(chan bool, 1)
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:   "agent-manager",
-		Short: "Voipbin Agent Manager Daemon",
+		Use:   "number-manager",
+		Short: "Voipbin Number Manager Daemon",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			config.LoadGlobalConfig()
 			return nil
