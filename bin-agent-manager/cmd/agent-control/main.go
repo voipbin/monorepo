@@ -75,11 +75,11 @@ func initCommand() *cobra.Command {
 		Use:   "agent-control",
 		Short: "Voipbin Agent Management CLI",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			config.LoadGlobalConfig()
 			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
 				return errors.Wrap(errBind, "failed to bind flags")
 			}
 
+			config.LoadGlobalConfig()
 			return nil
 		},
 	}
@@ -391,12 +391,12 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	fmt.Println("-----------------------")
 
 	confirm := false
-	if err := survey.AskOne(&survey.Confirm{Message: fmt.Sprintf("Are you sure you want to delete customer %s?", targetID)}, &confirm); err != nil {
+	if err := survey.AskOne(&survey.Confirm{Message: fmt.Sprintf("Are you sure you want to delete agent %s?", targetID)}, &confirm); err != nil {
 		return errors.Wrap(err, "failed to get confirmation")
 	}
 
 	if !confirm {
-		fmt.Println("Deletion cancelled")
+		fmt.Println("Deletion canceled")
 		return nil
 	}
 
