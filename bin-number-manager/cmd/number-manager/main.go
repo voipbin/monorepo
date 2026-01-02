@@ -36,22 +36,6 @@ const serviceName = commonoutline.ServiceNameNumberManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-
-	twilioSID          = ""
-	twilioToken        = ""
-	telnyxConnectionID = ""
-	telnyxProfileID    = ""
-	telnyxToken        = ""
-)
-
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "agent-manager",
@@ -73,29 +57,6 @@ func main() {
 		logrus.Errorf("Command execution failed: %v", errExecute)
 		os.Exit(1)
 	}
-
-	log := logrus.WithField("func", "main")
-	log.Debugf("Hello world. Starting number-manager.")
-
-	// connect to database
-	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
-	if err != nil {
-		log.Errorf("Could not access to database. err: %v", err)
-		return
-	}
-	defer commondatabasehandler.Close(sqlDB)
-
-	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
-	if err := cache.Connect(); err != nil {
-		log.Errorf("Could not connect to cache server. err: %v", err)
-		return
-	}
-
-	if errRun := runServices(sqlDB, cache); errRun != nil {
-		log.Errorf("The run returned error. err: %v", errRun)
-	}
-	<-chDone
 }
 
 func initCache() (cachehandler.CacheHandler, error) {
@@ -149,7 +110,7 @@ func runDaemon() error {
 	}
 
 	<-chDone
-	log.Info("Agent-manager stopped safely.")
+	log.Info("The number-manager stopped safely.")
 	return nil
 }
 
@@ -157,7 +118,7 @@ func runDaemon() error {
 func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	// create handlers
@@ -165,8 +126,8 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName)
 
-	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(reqHandler, db, telnyxConnectionID, telnyxProfileID, telnyxToken)
-	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(reqHandler, db, twilioSID, twilioToken)
+	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(reqHandler, db, config.Get().TelnyxConnectionID, config.Get().TelnyxProfileID, config.Get().TelnyxToken)
+	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(reqHandler, db, config.Get().TwilioSID, config.Get().TwilioToken)
 
 	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, nHandlerTelnyx, nHandlerTwilio)
 
