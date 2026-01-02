@@ -25,6 +25,11 @@ type Config struct {
 	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
+	TwilioSID               string // TwilioSID is the SID for Twilio API authentication.
+	TwilioToken             string // TwilioToken is the token for Twilio API authentication.
+	TelnyxConnectionID      string // TelnyxConnectionID is the connection ID for Telnyx API authentication.
+	TelnyxProfileID         string // TelnyxProfileID is the profile ID for Telnyx API authentication.
+	TelnyxToken             string // TelnyxToken is the token for Telnyx API authentication.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -49,6 +54,11 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
+	f.String("twilio_sid", "", "Twilio SID")
+	f.String("twilio_token", "", "Twilio Token")
+	f.String("telnyx_connection_id", "", "Telnyx Connection ID")
+	f.String("telnyx_profile_id", "", "Telnyx Profile ID")
+	f.String("telnyx_token", "", "Telnyx Token")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -58,6 +68,11 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
+		"twilio_sid":                "TWILIO_SID",
+		"twilio_token":              "TWILIO_TOKEN",
+		"telnyx_connection_id":      "TELNYX_CONNECTION_ID",
+		"telnyx_profile_id":         "TELNYX_PROFILE_ID",
+		"telnyx_token":              "TELNYX_TOKEN",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -90,6 +105,11 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
+			TwilioSID:               viper.GetString("twilio_sid"),
+			TwilioToken:             viper.GetString("twilio_token"),
+			TelnyxConnectionID:      viper.GetString("telnyx_connection_id"),
+			TelnyxProfileID:         viper.GetString("telnyx_profile_id"),
+			TelnyxToken:             viper.GetString("telnyx_token"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
