@@ -130,7 +130,7 @@ func cmdGet() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("id", "", "Number ID")
+	flags.String("id", "", "Customer ID")
 
 	return cmd
 }
@@ -157,7 +157,7 @@ func cmdDelete() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("id", "", "Number ID")
+	flags.String("id", "", "Customer ID")
 
 	return cmd
 
@@ -257,7 +257,7 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	}
 
 	if !confirm {
-		fmt.Println("Deletion cancelled")
+		fmt.Println("Deletion canceled")
 		return nil
 	}
 
