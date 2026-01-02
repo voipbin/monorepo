@@ -16,22 +16,20 @@ var (
 )
 
 // Config holds process-wide configuration values loaded from command-line
-// flags and environment variables for the bin-number-manager service.
+// flags and environment variables for the service.
 type Config struct {
-	RabbitMQAddress         string
-	PrometheusEndpoint      string
-	PrometheusListenAddress string
-	DatabaseDSN             string
-	RedisAddress            string
-	RedisPassword           string
-	RedisDatabase           int
-
-	TelnyxConnectionID string
-	TelnyxProfileID    string
-	TelnyxToken        string
-
-	TwilioSID   string
-	TwilioToken string
+	RabbitMQAddress         string // RabbitMQAddress is the address (including host and port) of the RabbitMQ server.
+	PrometheusEndpoint      string // PrometheusEndpoint is the HTTP path at which Prometheus metrics are exposed.
+	PrometheusListenAddress string // PrometheusListenAddress is the network address on which the Prometheus metrics HTTP server listens (for example, ":8080").
+	DatabaseDSN             string // DatabaseDSN is the data source name used to connect to the primary database.
+	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
+	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
+	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
+	TwilioSID               string // TwilioSID is the SID for Twilio API authentication.
+	TwilioToken             string // TwilioToken is the token for Twilio API authentication.
+	TelnyxConnectionID      string // TelnyxConnectionID is the connection ID for Telnyx API authentication.
+	TelnyxProfileID         string // TelnyxProfileID is the profile ID for Telnyx API authentication.
+	TelnyxToken             string // TelnyxToken is the token for Telnyx API authentication.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -44,6 +42,7 @@ func Bootstrap(cmd *cobra.Command) error {
 }
 
 // bindConfig binds CLI flags and environment variables for configuration.
+// It maps command-line flags to environment variables using Viper.
 func bindConfig(cmd *cobra.Command) error {
 	viper.AutomaticEnv()
 	f := cmd.PersistentFlags()
@@ -55,13 +54,11 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
-
-	f.String("telnyx_connection_id", "", "Telnyx connection ID")
-	f.String("telnyx_profile_id", "", "Telnyx profile ID")
-	f.String("telnyx_token", "", "Telnyx API token")
-
-	f.String("twilio_sid", "", "Twilio account SID")
-	f.String("twilio_token", "", "Twilio auth token")
+	f.String("twilio_sid", "", "Twilio SID")
+	f.String("twilio_token", "", "Twilio Token")
+	f.String("telnyx_connection_id", "", "Telnyx Connection ID")
+	f.String("telnyx_profile_id", "", "Telnyx Profile ID")
+	f.String("telnyx_token", "", "Telnyx Token")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -71,11 +68,11 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
+		"twilio_sid":                "TWILIO_SID",
+		"twilio_token":              "TWILIO_TOKEN",
 		"telnyx_connection_id":      "TELNYX_CONNECTION_ID",
 		"telnyx_profile_id":         "TELNYX_PROFILE_ID",
 		"telnyx_token":              "TELNYX_TOKEN",
-		"twilio_sid":                "TWILIO_SID",
-		"twilio_token":              "TWILIO_TOKEN",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -97,6 +94,7 @@ func Get() *Config {
 
 // LoadGlobalConfig loads configuration from viper into the global singleton.
 // NOTE: This must be called AFTER Bootstrap (which calls bindConfig) has been executed.
+// If called before binding, it will load empty/default values.
 func LoadGlobalConfig() {
 	once.Do(func() {
 		globalConfig = Config{
@@ -107,13 +105,11 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
-
-			TelnyxConnectionID: viper.GetString("telnyx_connection_id"),
-			TelnyxProfileID:    viper.GetString("telnyx_profile_id"),
-			TelnyxToken:        viper.GetString("telnyx_token"),
-
-			TwilioSID:   viper.GetString("twilio_sid"),
-			TwilioToken: viper.GetString("twilio_token"),
+			TwilioSID:               viper.GetString("twilio_sid"),
+			TwilioToken:             viper.GetString("twilio_token"),
+			TelnyxConnectionID:      viper.GetString("telnyx_connection_id"),
+			TelnyxProfileID:         viper.GetString("telnyx_profile_id"),
+			TelnyxToken:             viper.GetString("telnyx_token"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
