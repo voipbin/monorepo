@@ -124,7 +124,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 
 func cmdGet() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get [id]",
+		Use:   "get",
 		Short: "Get a customer by ID",
 		RunE:  runGet,
 	}
@@ -151,7 +151,7 @@ func cmdList() *cobra.Command {
 
 func cmdDelete() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete [id]",
+		Use:   "delete",
 		Short: "Delete a customer",
 		RunE:  runDelete,
 	}
@@ -160,7 +160,6 @@ func cmdDelete() *cobra.Command {
 	flags.String("id", "", "Customer ID")
 
 	return cmd
-
 }
 
 func runList(cmd *cobra.Command, args []string) error {
