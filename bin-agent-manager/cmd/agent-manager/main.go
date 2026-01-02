@@ -76,7 +76,7 @@ func runDaemon() error {
 		return errors.Wrapf(err, "could not initialize the cache")
 	}
 
-	if errStart := startServices(sqlDB, cache); errStart != nil {
+	if errStart := runServices(sqlDB, cache); errStart != nil {
 		return errors.Wrapf(errStart, "could not start services")
 	}
 
@@ -85,7 +85,7 @@ func runDaemon() error {
 	return nil
 }
 
-func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
@@ -95,12 +95,12 @@ func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
 	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
 
-	if errListen := startServiceListen(sockHandler, agentHandler); errListen != nil {
-		return errors.Wrapf(errListen, "failed to start service listen")
+	if errListen := runServiceListen(sockHandler, agentHandler); errListen != nil {
+		return errors.Wrapf(errListen, "failed to run service listen")
 	}
 
-	if errSubscribe := startServiceSubscribe(sockHandler, agentHandler); errSubscribe != nil {
-		return errors.Wrapf(errSubscribe, "failed to start service subscribe")
+	if errSubscribe := runServiceSubscribe(sockHandler, agentHandler); errSubscribe != nil {
+		return errors.Wrapf(errSubscribe, "failed to run service subscribe")
 	}
 
 	return nil
@@ -134,8 +134,8 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-// startServiceListen runs the listen service
-func startServiceListen(sockHandler sockhandler.SockHandler, agentHandler agenthandler.AgentHandler) error {
+// runServiceListen runs the listen service
+func runServiceListen(sockHandler sockhandler.SockHandler, agentHandler agenthandler.AgentHandler) error {
 	listenHandler := listenhandler.NewListenHandler(sockHandler, agentHandler)
 
 	// run
@@ -147,8 +147,8 @@ func startServiceListen(sockHandler sockhandler.SockHandler, agentHandler agenth
 	return nil
 }
 
-// startServiceSubscribe runs the subscribed event handler
-func startServiceSubscribe(
+// runServiceSubscribe runs the subscribed event handler
+func runServiceSubscribe(
 	sockHandler sockhandler.SockHandler,
 	agentHandler agenthandler.AgentHandler,
 ) error {
