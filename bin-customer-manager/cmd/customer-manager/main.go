@@ -47,8 +47,8 @@ func main() {
 		},
 	}
 
-	if err := config.BindConfig(rootCmd); err != nil {
-		logrus.Fatalf("Failed to bind config: %v", err)
+	if err := config.Bootstrap(rootCmd); err != nil {
+		logrus.Fatalf("Failed to bootstrap config: %v", err)
 	}
 
 	if err := rootCmd.Execute(); err != nil {

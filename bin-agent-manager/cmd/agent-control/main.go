@@ -71,32 +71,33 @@ func initAgentHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (agenthand
 }
 
 func initCommand() *cobra.Command {
-	rootCmd := &cobra.Command{
+	cmdRoot := &cobra.Command{
 		Use:   "agent-control",
 		Short: "Voipbin Agent Management CLI",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			config.LoadGlobalConfig()
 			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
 				return errors.Wrap(errBind, "failed to bind flags")
 			}
 
+			config.LoadGlobalConfig()
 			return nil
 		},
 	}
 
-	if err := config.Bootstrap(rootCmd); err != nil {
+	if err := config.Bootstrap(cmdRoot); err != nil {
 		cobra.CheckErr(errors.Wrap(err, "failed to bind infrastructure config"))
 	}
 
 	cmdSub := &cobra.Command{Use: "agent", Short: "Agent operation"}
 	cmdSub.AddCommand(cmdCreate())
 	cmdSub.AddCommand(cmdGet())
-	cmdSub.AddCommand(cmdGets())
+	cmdSub.AddCommand(cmdList())
 	cmdSub.AddCommand(cmdUpdatePermission())
 	cmdSub.AddCommand(cmdUpdatePassword())
+	cmdSub.AddCommand(cmdDelete())
 
-	rootCmd.AddCommand(cmdSub)
-	return rootCmd
+	cmdRoot.AddCommand(cmdSub)
+	return cmdRoot
 }
 
 func resolveUUID(flagName string, label string) (uuid.UUID, error) {
@@ -228,11 +229,11 @@ func runGet(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func cmdGets() *cobra.Command {
+func cmdList() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "gets",
+		Use:   "list",
 		Short: "Get agent list",
-		RunE:  runGets,
+		RunE:  runList,
 	}
 
 	flags := cmd.Flags()
@@ -243,7 +244,7 @@ func cmdGets() *cobra.Command {
 	return cmd
 }
 
-func runGets(cmd *cobra.Command, args []string) error {
+func runList(cmd *cobra.Command, args []string) error {
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
@@ -350,5 +351,61 @@ func runUpdatePassword(cmd *cobra.Command, args []string) error {
 	}
 
 	logrus.WithField("res", res).Infof("Updated agent password")
+	return nil
+}
+
+func cmdDelete() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "Delete an agent",
+		RunE:  runDelete,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Agent ID")
+
+	return cmd
+}
+
+func runDelete(cmd *cobra.Command, args []string) error {
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve agent ID")
+	}
+
+	a, err := handler.Get(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve agent")
+	}
+
+	fmt.Printf("\n-- Agent Information --\n")
+	fmt.Printf("ID:    %s\n", a.ID)
+	fmt.Printf("Customer ID: %s\n", a.CustomerID)
+	fmt.Printf("Name:    %s\n", a.Name)
+	fmt.Printf("Detail:    %s\n", a.Detail)
+	fmt.Println("-----------------------")
+
+	confirm := false
+	if err := survey.AskOne(&survey.Confirm{Message: fmt.Sprintf("Are you sure you want to delete agent %s?", targetID)}, &confirm); err != nil {
+		return errors.Wrap(err, "failed to get confirmation")
+	}
+
+	if !confirm {
+		fmt.Println("Deletion canceled")
+		return nil
+	}
+
+	fmt.Printf("\nDeleting Agent ID: %s...\n", targetID)
+	res, err := handler.Delete(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete agent")
+	}
+
+	logrus.WithField("res", res).Infof("Deleted agent")
 	return nil
 }

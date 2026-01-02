@@ -25,12 +25,19 @@ type Config struct {
 	RedisDatabase        int
 }
 
-// BindConfig binds CLI flags and environment variables for configuration,
-// and initializes global logging via initLog. Callers should be aware that
-// this function configures process-wide logrus logging.
-func BindConfig(cmd *cobra.Command) error {
+func Bootstrap(cmd *cobra.Command) error {
 	initLog()
 
+	if errBind := bindConfig(cmd); errBind != nil {
+		return errors.Wrap(errBind, "could not bind config")
+	}
+
+	return nil
+}
+
+// bindConfig binds CLI flags and environment variables for configuration.
+// It maps command-line flags to environment variables using Viper.
+func bindConfig(cmd *cobra.Command) error {
 	viper.AutomaticEnv()
 	f := cmd.PersistentFlags()
 
