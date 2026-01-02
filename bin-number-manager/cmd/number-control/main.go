@@ -320,6 +320,35 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve number ID")
 	}
 
+	n, err := handler.Get(context.Background(), numberID)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve number")
+	}
+
+	fmt.Printf("\n--- Number Information ---\n")
+	fmt.Printf("ID:             %s\n", n.ID)
+	fmt.Printf("Number:         %s\n", n.Number)
+	fmt.Printf("Customer ID:    %s\n", n.CustomerID)
+	fmt.Printf("Call Flow ID:   %s\n", n.CallFlowID)
+	fmt.Printf("Message Flow ID: %s\n", n.MessageFlowID)
+	fmt.Printf("Name:           %s\n", n.Name)
+	fmt.Printf("Provider:       %s\n", n.ProviderName)
+	fmt.Printf("Status:         %s\n", n.Status)
+	fmt.Println("----------------------------")
+
+	confirm := false
+	prompt := &survey.Confirm{
+		Message: fmt.Sprintf("Are you sure you want to delete number %s?", numberID),
+	}
+	if err := survey.AskOne(prompt, &confirm); err != nil {
+		return errors.Wrap(err, "confirmation canceled")
+	}
+
+	if !confirm {
+		fmt.Println("Deletion canceled")
+		return nil
+	}
+
 	fmt.Printf("\nDeleting Number ID: %s...\n", numberID)
 	res, err := handler.Delete(context.Background(), numberID)
 	if err != nil {
