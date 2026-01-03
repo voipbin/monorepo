@@ -286,7 +286,7 @@ func Test_dbUpdatePermission(t *testing.T) {
 
 			mockDB.EXPECT().AgentSetPermission(ctx, tt.id, tt.permission).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentUpdated, tt.responseAgent)
 
 			res, err := h.dbUpdatePermission(ctx, tt.id, tt.permission)
 			if err != nil {

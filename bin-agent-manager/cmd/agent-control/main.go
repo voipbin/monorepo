@@ -301,7 +301,7 @@ func runUpdatePermission(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve agent ID")
 	}
 
-	res, err := handler.UpdatePermission(context.Background(), id, agent.Permission(viper.GetUint64("permission")))
+	res, err := handler.UpdatePermissionRaw(context.Background(), id, agent.Permission(viper.GetUint64("permission")))
 	if err != nil {
 		return errors.Wrap(err, "failed to update agent permission")
 	}
