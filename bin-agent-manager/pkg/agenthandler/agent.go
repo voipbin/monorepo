@@ -173,7 +173,7 @@ func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) bool {
 
 	agents, err := h.dbGets(ctx, 1000, "", filters)
 	if err != nil {
-		log.Errorf("Could not get agents info. err: %v", err)
+		log.Warnf("Could not get agents info while verifying other admin agents. Treating the given agent as sole admin and denying operation as a fail-safe. agent_id: %s, err: %v", id.String(), err)
 		return true
 	}
 
@@ -262,9 +262,11 @@ func (h *agentHandler) UpdatePermission(ctx context.Context, id uuid.UUID, permi
 		return nil, fmt.Errorf("agent id is guest agent")
 	}
 
-	onlyAdmin := h.isOnlyAdmin(ctx, id)
-	if onlyAdmin {
-		return nil, fmt.Errorf("the agent is the only admin")
+	if permission != agent.PermissionCustomerAdmin {
+		onlyAdmin := h.isOnlyAdmin(ctx, id)
+		if onlyAdmin {
+			return nil, fmt.Errorf("the agent is the only admin")
+		}
 	}
 
 	res, err := h.UpdatePermissionRaw(ctx, id, permission)
@@ -275,6 +277,10 @@ func (h *agentHandler) UpdatePermission(ctx context.Context, id uuid.UUID, permi
 	return res, nil
 }
 
+// UpdatePermissionRaw updates the agent's permission without performing
+// admin validation checks (such as guest-agent or only-admin checks).
+// Callers are responsible for ensuring any required permission validation
+// before invoking this method.
 func (h *agentHandler) UpdatePermissionRaw(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error) {
 	res, err := h.dbUpdatePermission(ctx, id, permission)
 	if err != nil {

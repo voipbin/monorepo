@@ -424,7 +424,7 @@ func Test_UpdatePermission(t *testing.T) {
 			name: "normal",
 
 			id:         uuid.FromStringOrNil("88316036-2d93-11ef-9364-2309605d8162"),
-			permission: agent.PermissionCustomerAdmin,
+			permission: agent.PermissionCustomerManager,
 
 			agentBefore: &agent.Agent{
 				Identity: commonidentity.Identity{
@@ -438,7 +438,7 @@ func Test_UpdatePermission(t *testing.T) {
 					ID:         uuid.FromStringOrNil("88316036-2d93-11ef-9364-2309605d8162"),
 					CustomerID: uuid.FromStringOrNil("8b6e633a-2d93-11ef-9e20-035255403063"),
 				},
-				Permission: agent.PermissionCustomerAdmin,
+				Permission: agent.PermissionCustomerManager,
 			},
 		},
 	}
@@ -493,7 +493,7 @@ func Test_UpdatePermission_error(t *testing.T) {
 			name: "not found",
 
 			id:         uuid.FromStringOrNil("88316036-2d93-11ef-9364-2309605d8162"),
-			permission: agent.PermissionCustomerAdmin,
+			permission: agent.PermissionCustomerManager,
 
 			agentBefore: nil,
 			adminList:   nil,
