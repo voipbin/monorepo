@@ -211,7 +211,7 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 			},
 		},
 		{
-			"type extension",
+			"type extension explicit",
 
 			&channel.Channel{
 				// extension:2000
