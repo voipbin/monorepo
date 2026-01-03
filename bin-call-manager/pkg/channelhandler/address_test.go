@@ -210,6 +210,45 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 				Target: "2000",
 			},
 		},
+		{
+			"type extension explicit",
+
+			&channel.Channel{
+				// extension:2000
+				DestinationNumber: "extension%3A2000",
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeDomain: "60a6292a-e8de-11f0-b37a-07eea6c7482e.registrar.voipbin.net",
+				},
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeExtension,
+				Target: "2000",
+			},
+		},
+		{
+			"type sip",
+
+			&channel.Channel{
+				// sip:user@example.com
+				DestinationNumber: "sip%3Auser%40example.com",
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "user@example.com",
+			},
+		},
+		{
+			"type tel explicit",
+
+			&channel.Channel{
+				// tel:+821100000001
+				DestinationNumber: "tel%3A%2B821100000001",
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+		},
 	}
 
 	for _, tt := range tests {
