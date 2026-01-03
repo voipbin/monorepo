@@ -251,6 +251,21 @@ func (mr *MockAgentHandlerMockRecorder) UpdatePermission(ctx, id, permission any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePermission", reflect.TypeOf((*MockAgentHandler)(nil).UpdatePermission), ctx, id, permission)
 }
 
+// UpdatePermissionRaw mocks base method.
+func (m *MockAgentHandler) UpdatePermissionRaw(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePermissionRaw", ctx, id, permission)
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdatePermissionRaw indicates an expected call of UpdatePermissionRaw.
+func (mr *MockAgentHandlerMockRecorder) UpdatePermissionRaw(ctx, id, permission any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePermissionRaw", reflect.TypeOf((*MockAgentHandler)(nil).UpdatePermissionRaw), ctx, id, permission)
+}
+
 // UpdateStatus mocks base method.
 func (m *MockAgentHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error) {
 	m.ctrl.T.Helper()

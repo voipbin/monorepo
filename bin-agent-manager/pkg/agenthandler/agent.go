@@ -115,11 +115,8 @@ func (h *agentHandler) Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, 
 		return nil, errors.Errorf("agent is guest agent")
 	}
 
-	onlyAdmin, err := h.isOnlyAdmin(ctx, id)
-	if err != nil {
-		log.Errorf("Could not check the agent is the only admin. erR: %v", err)
-		return nil, errors.Wrapf(err, "could not check the agent is the only admin")
-	} else if onlyAdmin {
+	onlyAdmin := h.isOnlyAdmin(ctx, id)
+	if onlyAdmin {
 		return nil, errors.Errorf("the agent is the only admin")
 	}
 
@@ -149,9 +146,9 @@ func (h *agentHandler) deleteForce(ctx context.Context, id uuid.UUID) (*agent.Ag
 }
 
 // isOnlyAdmin returns true if the given agent is the only admin
-func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) (bool, error) {
+func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "isDeletable",
+		"func":     "isOnlyAdmin",
 		"agent_id": id,
 	})
 
@@ -159,12 +156,13 @@ func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) (bool, err
 	a, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get agent info. err: %v", err)
-		return false, err
+		return true
 	}
 
 	if !a.HasPermission(agent.PermissionCustomerAdmin) && !a.HasPermission(agent.PermissionProjectSuperAdmin) {
 		// the agent has no admin permission. no need to check the other agent
-		return false, nil
+		log.Debugf("The agent has no admin permission.")
+		return false
 	}
 
 	// get agents
@@ -175,8 +173,8 @@ func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) (bool, err
 
 	agents, err := h.dbGets(ctx, 1000, "", filters)
 	if err != nil {
-		log.Errorf("Could not get agents info. err: %v", err)
-		return false, errors.Wrapf(err, "could not get agents info")
+		log.Warnf("Could not get agents info while verifying other admin agents. Treating the given agent as sole admin and denying operation as a fail-safe. agent_id: %s, err: %v", id.String(), err)
+		return true
 	}
 
 	// check that there is another admin agent
@@ -188,11 +186,11 @@ func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) (bool, err
 		if a.HasPermission(agent.PermissionCustomerAdmin) || a.HasPermission(agent.PermissionProjectSuperAdmin) {
 			// found admin permission agent.
 			// return the true
-			return false, nil
+			return false
 		}
 	}
 
-	return true, nil
+	return true
 }
 
 // Login validate the username and password.
@@ -264,18 +262,28 @@ func (h *agentHandler) UpdatePermission(ctx context.Context, id uuid.UUID, permi
 		return nil, fmt.Errorf("agent id is guest agent")
 	}
 
-	onlyAdmin, err := h.isOnlyAdmin(ctx, id)
-	if err != nil {
-		log.Errorf("Could not check the agent is the only admin. err: %v", err)
-		return nil, errors.Wrapf(err, "could not check the agent is the only admin")
-	} else if onlyAdmin {
-		log.Debugf("The agent is the only admin. only_admin: %v", onlyAdmin)
-		return nil, errors.Wrapf(err, "the agent is the only admin")
+	if permission != agent.PermissionCustomerAdmin {
+		onlyAdmin := h.isOnlyAdmin(ctx, id)
+		if onlyAdmin {
+			return nil, fmt.Errorf("the agent is the only admin")
+		}
 	}
 
+	res, err := h.UpdatePermissionRaw(ctx, id, permission)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not update the agent permission")
+	}
+
+	return res, nil
+}
+
+// UpdatePermissionRaw updates the agent's permission without performing
+// admin validation checks (such as guest-agent or only-admin checks).
+// Callers are responsible for ensuring any required permission validation
+// before invoking this method.
+func (h *agentHandler) UpdatePermissionRaw(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error) {
 	res, err := h.dbUpdatePermission(ctx, id, permission)
 	if err != nil {
-		log.Errorf("Could not update the agent permission. err: %v", err)
 		return nil, errors.Wrap(err, "could not update the agent permission")
 	}
 

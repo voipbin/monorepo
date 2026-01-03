@@ -224,7 +224,7 @@ func (h *agentHandler) dbUpdatePermission(ctx context.Context, id uuid.UUID, per
 		log.Errorf("Could not get updated agent. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentUpdated, res)
 
 	return res, nil
 }
