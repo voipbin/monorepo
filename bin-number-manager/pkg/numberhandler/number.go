@@ -98,7 +98,7 @@ func (h *numberHandler) Register(
 		"number":  num,
 	}
 
-	existedNumbers, err := h.dbGets(ctx, 1, "", filters)
+	existedNumbers, err := h.dbList(ctx, 1, "", filters)
 	if err != nil {
 		log.Errorf("Could not check existed number. number: %s, err: %v", num, err)
 		return nil, errors.Wrap(err, "could not check existed number")
@@ -198,7 +198,7 @@ func (h *numberHandler) Gets(ctx context.Context, pageSize uint64, pageToken str
 	})
 	log.Debugf("Gets.")
 
-	res, err := h.dbGets(ctx, pageSize, pageToken, filters)
+	res, err := h.dbList(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get numbers. err: %v", err)
 		return nil, errors.Wrap(err, "could not get numbers")

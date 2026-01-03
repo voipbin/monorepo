@@ -117,8 +117,8 @@ func (h *numberHandler) dbGet(ctx context.Context, id uuid.UUID) (*number.Number
 	return number, nil
 }
 
-// dbGets returns list of numbers info of the given customer_id
-func (h *numberHandler) dbGets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
+// dbList returns list of numbers info of the given customer_id
+func (h *numberHandler) dbList(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "dbGets",
 		"page_size":  pageSize,
