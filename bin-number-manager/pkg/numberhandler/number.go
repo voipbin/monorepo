@@ -65,7 +65,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	// generate and update purchased number's tags
 	tags := h.generateTags(ctx, res)
 	if errUpdate := h.numberHandlerTelnyx.NumberUpdateTags(ctx, res, tags); errUpdate != nil {
-		log.Errorf("Could not updated the number tags from the provider. err: %v", errUpdate)
+		log.Errorf("Could not update the number tags from the provider. err: %v", errUpdate)
 	}
 
 	return res, nil
@@ -91,7 +91,7 @@ func (h *numberHandler) Register(
 		"func":   "Register",
 		"number": num,
 	})
-	log.Debugf("Registering number. number_id: %s", num)
+	log.Debugf("Registering number. number: %s", num)
 
 	filters := map[string]string{
 		"deleted": "false",
@@ -100,8 +100,8 @@ func (h *numberHandler) Register(
 
 	existedNumbers, err := h.dbList(ctx, 1, "", filters)
 	if err != nil {
-		log.Errorf("Could not check existed number. number: %s, err: %v", num, err)
-		return nil, errors.Wrap(err, "could not check existed number")
+		log.Errorf("Could not check existing number. number: %s, err: %v", num, err)
+		return nil, errors.Wrap(err, "could not check existing number")
 	}
 	if len(existedNumbers) > 0 {
 		log.Errorf("The number already exists. number: %s", num)

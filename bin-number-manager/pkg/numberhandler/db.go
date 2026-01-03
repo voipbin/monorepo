@@ -120,7 +120,7 @@ func (h *numberHandler) dbGet(ctx context.Context, id uuid.UUID) (*number.Number
 // dbList returns list of numbers info of the given customer_id
 func (h *numberHandler) dbList(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "dbGets",
+		"func":       "dbList",
 		"page_size":  pageSize,
 		"page_token": pageToken,
 		"filters":    filters,
@@ -212,10 +212,10 @@ func (h *numberHandler) dbUpdateRenew(ctx context.Context, id uuid.UUID) (*numbe
 	return res, nil
 }
 
-// dbGetsByTMRenew returns list of numbers info
-func (h *numberHandler) dbGetsByTMRenew(ctx context.Context, tmRenew string) ([]*number.Number, error) {
+// dbListByTMRenew returns list of numbers info
+func (h *numberHandler) dbListByTMRenew(ctx context.Context, tmRenew string) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "dbGetsByTMRenew",
+		"func":     "dbListByTMRenew",
 		"tm_renew": tmRenew,
 	})
 
