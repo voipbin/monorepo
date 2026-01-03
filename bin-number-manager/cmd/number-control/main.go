@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"monorepo/bin-number-manager/internal/config"
+	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/pkg/cachehandler"
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/numberhandler"
@@ -105,6 +106,7 @@ func initCommand() *cobra.Command {
 
 	cmdSub := &cobra.Command{Use: "number", Short: "Number operations"}
 	cmdSub.AddCommand(cmdCreate())
+	cmdSub.AddCommand(cmdRegister())
 	cmdSub.AddCommand(cmdGet())
 	cmdSub.AddCommand(cmdList())
 	cmdSub.AddCommand(cmdDelete())
@@ -194,6 +196,65 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	logrus.WithField("res", res).Infof("Created a new number")
+	return nil
+}
+
+func cmdRegister() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "register",
+		Short: "Register a new number",
+		RunE:  runRegister,
+	}
+
+	flags := cmd.Flags()
+	flags.String("customer_id", "", "Customer ID")
+	flags.String("number", "", "Phone number (e.g., +15551234567)")
+	flags.String("call_flow_id", "", "Call flow ID")
+	flags.String("message_flow_id", "", "Message flow ID")
+	flags.String("name", "", "Number name")
+	flags.String("detail", "", "Description")
+
+	return cmd
+}
+
+func runRegister(cmd *cobra.Command, args []string) error {
+	customerID, err := resolveUUID("customer_id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve customer ID")
+	}
+
+	num, err := resolveString("number", "Phone number", true)
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve phone number")
+	}
+
+	callFlowID := uuid.FromStringOrNil(viper.GetString("call_flow_id"))
+	messageFlowID := uuid.FromStringOrNil(viper.GetString("message_flow_id"))
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.Register(
+		context.Background(),
+		customerID,
+		num,
+		callFlowID,
+		messageFlowID,
+		viper.GetString("name"),
+		viper.GetString("detail"),
+		number.ProviderNameNone,
+		"",
+		number.StatusActive,
+		false,
+		false,
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to register number")
+	}
+
+	logrus.WithField("res", res).Infof("Registered a new number")
 	return nil
 }
 

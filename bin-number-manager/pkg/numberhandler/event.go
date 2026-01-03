@@ -25,7 +25,7 @@ func (h *numberHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer
 		"deleted":     "false",
 	}
 
-	nbs, err := h.dbGets(ctx, 10000, "", filters)
+	nbs, err := h.dbList(ctx, 10000, "", filters)
 	if err != nil {
 		log.Errorf("Could not get numbers. err: %v", err)
 		return errors.Wrap(err, "could not get numbers")

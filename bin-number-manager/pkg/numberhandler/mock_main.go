@@ -148,6 +148,21 @@ func (mr *MockNumberHandlerMockRecorder) Gets(ctx, pageSize, pageToken, filters 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockNumberHandler)(nil).Gets), ctx, pageSize, pageToken, filters)
 }
 
+// Register mocks base method.
+func (m *MockNumberHandler) Register(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string, providerName number.ProviderName, providerReferenceID string, status number.Status, t38Enabled, emergencyEnabled bool) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Register", ctx, customerID, num, callFlowID, messageFlowID, name, detail, providerName, providerReferenceID, status, t38Enabled, emergencyEnabled)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Register indicates an expected call of Register.
+func (mr *MockNumberHandlerMockRecorder) Register(ctx, customerID, num, callFlowID, messageFlowID, name, detail, providerName, providerReferenceID, status, t38Enabled, emergencyEnabled any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockNumberHandler)(nil).Register), ctx, customerID, num, callFlowID, messageFlowID, name, detail, providerName, providerReferenceID, status, t38Enabled, emergencyEnabled)
+}
+
 // RenewNumbers mocks base method.
 func (m *MockNumberHandler) RenewNumbers(ctx context.Context, days, hours int, tmRenew string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()

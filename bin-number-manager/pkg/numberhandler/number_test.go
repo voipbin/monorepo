@@ -2,6 +2,7 @@ package numberhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -111,6 +112,7 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
 
 			mockTelnyx.EXPECT().NumberPurchase(tt.number).Return(tt.responseTelnyx, nil)
+			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[string]string{"deleted": "false", "number": tt.number}).Return([]*number.Number{}, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber).Return(nil)
 			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
@@ -125,6 +127,180 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 
 			if reflect.DeepEqual(tt.responseNumber, res) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseNumber, res)
+			}
+		})
+	}
+}
+
+func Test_Register(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID          uuid.UUID
+		callFlowID          uuid.UUID
+		messageFlowID       uuid.UUID
+		number              string
+		numberName          string
+		detail              string
+		providerName        number.ProviderName
+		providerReferenceID string
+		status              number.Status
+		t38Enabled          bool
+		emergencyEnabled    bool
+
+		responseUUID uuid.UUID
+		responseGets []*number.Number
+
+		expectCreateNumber *number.Number
+		responseNumber     *number.Number
+
+		expectRes *number.Number
+	}{
+		{
+			name: "normal",
+
+			customerID:          uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+			callFlowID:          uuid.FromStringOrNil("1b38eca6-a864-11ec-a2a1-6f2bb4ef8c7e"),
+			messageFlowID:       uuid.FromStringOrNil("3ba45c68-8821-11ec-bc88-2367c938e4d5"),
+			number:              "+821021656521",
+			numberName:          "test name",
+			detail:              "test detail",
+			providerName:        number.ProviderNameNone,
+			providerReferenceID: "",
+			status:              number.StatusActive,
+			t38Enabled:          false,
+			emergencyEnabled:    false,
+
+			responseUUID: uuid.FromStringOrNil("96c97670-7315-11ed-8501-739535181602"),
+			responseGets: []*number.Number{},
+
+			expectCreateNumber: &number.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("96c97670-7315-11ed-8501-739535181602"),
+					CustomerID: uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+				},
+				Number:           "+821021656521",
+				CallFlowID:       uuid.FromStringOrNil("1b38eca6-a864-11ec-a2a1-6f2bb4ef8c7e"),
+				MessageFlowID:    uuid.FromStringOrNil("3ba45c68-8821-11ec-bc88-2367c938e4d5"),
+				Name:             "test name",
+				Detail:           "test detail",
+				ProviderName:     number.ProviderNameNone,
+				Status:           number.StatusActive,
+				T38Enabled:       false,
+				EmergencyEnabled: false,
+			},
+			responseNumber: &number.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("96c97670-7315-11ed-8501-739535181602"),
+					CustomerID: uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+				},
+				Number:       "+821021656521",
+				ProviderName: number.ProviderNameNone,
+			},
+			expectRes: &number.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("96c97670-7315-11ed-8501-739535181602"),
+					CustomerID: uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+				},
+				Number:       "+821021656521",
+				ProviderName: number.ProviderNameNone,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := numberHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[string]string{"deleted": "false", "number": tt.number}).Return(tt.responseGets, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().NumberCreate(ctx, tt.expectCreateNumber).Return(nil)
+			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberCreated, tt.responseNumber)
+
+			res, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, tt.providerName, tt.providerReferenceID, tt.status, tt.t38Enabled, tt.emergencyEnabled)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if reflect.DeepEqual(tt.expectRes, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_Register_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		callFlowID    uuid.UUID
+		messageFlowID uuid.UUID
+		number        string
+		numberName    string
+		detail        string
+
+		mockGetsResult []*number.Number
+		mockGetsErr    error
+	}{
+		{
+			name: "already exists",
+
+			customerID: uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+			number:     "+821021656521",
+
+			mockGetsResult: []*number.Number{
+				{
+					Number: "+821021656521",
+				},
+			},
+		},
+		{
+			name: "db error",
+
+			customerID: uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
+			number:     "+821021656521",
+
+			mockGetsErr: fmt.Errorf("db error"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := numberHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[string]string{"deleted": "false", "number": tt.number}).Return(tt.mockGetsResult, tt.mockGetsErr)
+
+			_, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, number.ProviderNameNone, "", number.StatusActive, false, false)
+			if err == nil {
+				t.Errorf("Wrong match. expect error, got nil")
 			}
 		})
 	}

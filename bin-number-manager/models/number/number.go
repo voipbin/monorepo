@@ -40,6 +40,7 @@ type ProviderName string
 
 // list of NumberProvider
 const (
+	ProviderNameNone        ProviderName = ""
 	ProviderNameTelnyx      ProviderName = "telnyx"
 	ProviderNameTwilio      ProviderName = "twilio"
 	ProviderNameMessagebird ProviderName = "messagebird"

@@ -52,7 +52,7 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 	})
 
 	// get list of numbers
-	numbers, err := h.dbGetsByTMRenew(ctx, tmRenew)
+	numbers, err := h.dbListByTMRenew(ctx, tmRenew)
 	if err != nil {
 		log.Errorf("Could not get list of numbers. err: %v", err)
 		return nil, errors.Wrap(err, "could not get list of numbers")
