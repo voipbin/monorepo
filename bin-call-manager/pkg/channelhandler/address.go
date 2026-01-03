@@ -78,6 +78,18 @@ func (h *channelHandler) AddressGetDestinationWithoutSpecificType(cn *channel.Ch
 		addressType = commonaddress.TypeLine
 		target = strings.TrimPrefix(tmpTarget, string(commonaddress.TypeLine)+":")
 
+	case strings.HasPrefix(tmpTarget, string(commonaddress.TypeExtension)+":"):
+		addressType = commonaddress.TypeExtension
+		target = strings.TrimPrefix(tmpTarget, string(commonaddress.TypeExtension)+":")
+
+	case strings.HasPrefix(tmpTarget, string(commonaddress.TypeSIP)+":"):
+		addressType = commonaddress.TypeSIP
+		target = strings.TrimPrefix(tmpTarget, string(commonaddress.TypeSIP)+":")
+
+	case strings.HasPrefix(tmpTarget, string(commonaddress.TypeTel)+":"):
+		addressType = commonaddress.TypeTel
+		target = strings.TrimPrefix(tmpTarget, string(commonaddress.TypeTel)+":")
+
 	default:
 		addressType = commonaddress.TypeExtension
 		target = tmpTarget
