@@ -91,6 +91,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		return fmt.Errorf("could not get the listen ip address")
 	}
 	listenAddress := fmt.Sprintf("%s:%d", listenIP, 8080)
+	log.Debugf("Listening address... listten_address: %s", listenAddress)
 
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
@@ -129,6 +130,7 @@ func runListen(
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
+	log.Debugf("Running listen handler")
 
 	listenHandler := listenhandler.NewListenHandler(hostID, sockHandler, reqHandler, transcribeHandler, transcriptHandler)
 
@@ -171,6 +173,7 @@ func runStreaming(steramingHandler streaminghandler.StreamingHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runStreaming",
 	})
+	log.Debugf("Running streaming handler")
 
 	go func() {
 		if errRun := steramingHandler.Run(); errRun != nil {
