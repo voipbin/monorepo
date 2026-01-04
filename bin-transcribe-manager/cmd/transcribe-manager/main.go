@@ -14,6 +14,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transcribe-manager/pkg/cachehandler"
@@ -62,7 +63,11 @@ func main() {
 		return
 	}
 
-	_ = run(sqlDB, cache)
+	if errRun := run(sqlDB, cache); errRun != nil {
+		logrus.Errorf("Could not run transcribe-manager. err: %v", errRun)
+		return
+	}
+
 	<-chDone
 }
 
@@ -102,18 +107,18 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
 	// run request listener
-	if err := runListen(sockHandler, hostID, reqHandler, transcriptHandler, transcribeHandler); err != nil {
-		return err
+	if errListen := runListen(sockHandler, hostID, reqHandler, transcriptHandler, transcribeHandler); errListen != nil {
+		return errors.Wrapf(errListen, "could not run the listen handler")
 	}
 
 	// run subscribe listener
 	if errSubscribe := runSubscribe(sockHandler, transcribeHandler); errSubscribe != nil {
-		return errSubscribe
+		return errors.Wrapf(errSubscribe, "could not run the subscribe handler")
 	}
 
 	// run streaming listener
 	if errStreaming := runStreaming(streamingHandler); errStreaming != nil {
-		return errStreaming
+		return errors.Wrapf(errStreaming, "could not run the streaming handler")
 	}
 
 	return nil
