@@ -85,6 +85,8 @@ type streamingHandler struct {
 	gcpClient *speech.Client
 	awsClient *transcribestreaming.Client
 
+	providerPriority []STTProvider // Validated list of providers in priority order
+
 	mapStreaming map[uuid.UUID]*streaming.Streaming
 	muSteaming   sync.Mutex
 }
