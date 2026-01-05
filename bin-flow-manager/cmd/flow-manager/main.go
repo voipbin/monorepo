@@ -1,8 +1,12 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -12,8 +16,12 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
+	"monorepo/bin-flow-manager/internal/config"
 	"monorepo/bin-flow-manager/pkg/actionhandler"
 	"monorepo/bin-flow-manager/pkg/activeflowhandler"
 	"monorepo/bin-flow-manager/pkg/cachehandler"
@@ -30,29 +38,27 @@ const serviceName = commonoutline.ServiceNameFlowManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-)
-
 func main() {
-	fmt.Printf("Hello world!\n")
-
-	// create dbhandler
-	dbHandler, err := createDBHandler()
-	if err != nil {
-		logrus.Errorf("Could not connect to the database or failed to initiate the cachehandler. err: ")
-		return
+	rootCmd := &cobra.Command{
+		Use:   "flow-manager",
+		Short: "Voipbin Flow Manager Daemon",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			config.LoadGlobalConfig()
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDaemon()
+		},
 	}
 
-	// run the service
-	run(dbHandler)
-	<-chDone
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
+		logrus.Fatalf("Failed to bootstrap config: %v", errBind)
+	}
+
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Errorf("Command execution failed: %v", errExecute)
+		os.Exit(1)
+	}
 }
 
 // signalHandler catches signals and set the done
