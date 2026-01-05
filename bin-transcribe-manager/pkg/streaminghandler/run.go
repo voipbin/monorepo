@@ -21,7 +21,7 @@ func (h *streamingHandler) Run() error {
 	log.Debugf("Listening the audiosocket steram. address: %s", h.listenAddress)
 	listener, err := net.Listen("tcp", h.listenAddress)
 	if err != nil {
-		return errors.Wrapf(err, "could not listen on the address. addres: %s", h.listenAddress)
+		return errors.Wrapf(err, "could not listen on the address. address: %s", h.listenAddress)
 	}
 
 	go func() {

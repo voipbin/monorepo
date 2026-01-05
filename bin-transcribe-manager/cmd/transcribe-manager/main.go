@@ -175,13 +175,13 @@ func runSubscribe(
 }
 
 // runStreaming runs the ARI event listen service
-func runStreaming(steramingHandler streaminghandler.StreamingHandler) error {
+func runStreaming(streamhingHandler streaminghandler.StreamingHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runStreaming",
 	})
 	log.Debugf("Running streaming handler")
 
-	if errRun := steramingHandler.Run(); errRun != nil {
+	if errRun := streamhingHandler.Run(); errRun != nil {
 		return errors.Wrapf(errRun, "could not run the streaminghandler correctly.")
 	}
 
