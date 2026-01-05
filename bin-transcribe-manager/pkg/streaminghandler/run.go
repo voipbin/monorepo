@@ -2,7 +2,6 @@ package streaminghandler
 
 import (
 	"context"
-	"fmt"
 	"monorepo/bin-transcribe-manager/models/streaming"
 	"net"
 	"time"
@@ -21,19 +20,23 @@ func (h *streamingHandler) Run() error {
 	log.Debugf("Listening the audiosocket steram. address: %s", h.listenAddress)
 	listener, err := net.Listen("tcp", h.listenAddress)
 	if err != nil {
-		return errors.Wrapf(err, "could not listen on the address. addres: %s", h.listenAddress)
+		return errors.Wrapf(err, "could not listen on the address. address: %s", h.listenAddress)
 	}
 
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			fmt.Println("Error accepting connection:", err)
-			continue
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				log.Errorf("Error accepting connection: %v", err)
+				continue
+			}
+			log.Debugf("Accepted connection. remote_addr: %s", conn.RemoteAddr())
+
+			go h.runStart(conn) // Handle connection concurrently
 		}
-		log.Debugf("Accepted connection. remote_addr: %s", conn.RemoteAddr())
+	}()
 
-		go h.runStart(conn) // Handle connection concurrently
-	}
+	return nil
 }
 
 func (h *streamingHandler) runStart(conn net.Conn) {

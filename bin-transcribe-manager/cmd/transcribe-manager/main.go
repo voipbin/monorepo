@@ -14,6 +14,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transcribe-manager/pkg/cachehandler"
@@ -62,7 +63,11 @@ func main() {
 		return
 	}
 
-	_ = run(sqlDB, cache)
+	if errRun := run(sqlDB, cache); errRun != nil {
+		logrus.Errorf("Could not run transcribe-manager. err: %v", errRun)
+		return
+	}
+
 	<-chDone
 }
 
@@ -91,6 +96,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		return fmt.Errorf("could not get the listen ip address")
 	}
 	listenAddress := fmt.Sprintf("%s:%d", listenIP, 8080)
+	log.Debugf("Listening address... listen_address: %s", listenAddress)
 
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
@@ -101,18 +107,18 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
 	// run request listener
-	if err := runListen(sockHandler, hostID, reqHandler, transcriptHandler, transcribeHandler); err != nil {
-		return err
+	if errListen := runListen(sockHandler, hostID, reqHandler, transcriptHandler, transcribeHandler); errListen != nil {
+		return errors.Wrapf(errListen, "could not run the listen handler")
 	}
 
 	// run subscribe listener
 	if errSubscribe := runSubscribe(sockHandler, transcribeHandler); errSubscribe != nil {
-		return errSubscribe
+		return errors.Wrapf(errSubscribe, "could not run the subscribe handler")
 	}
 
 	// run streaming listener
 	if errStreaming := runStreaming(streamingHandler); errStreaming != nil {
-		return errStreaming
+		return errors.Wrapf(errStreaming, "could not run the streaming handler")
 	}
 
 	return nil
@@ -129,13 +135,14 @@ func runListen(
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
+	log.Debugf("Running listen handler")
 
 	listenHandler := listenhandler.NewListenHandler(hostID, sockHandler, reqHandler, transcribeHandler, transcriptHandler)
 
 	// run
 	listenQueue := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
-	if err := listenHandler.Run(string(commonoutline.QueueNameTranscribeRequest), listenQueue, string(commonoutline.QueueNameDelay)); err != nil {
-		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameTranscribeRequest), listenQueue, string(commonoutline.QueueNameDelay)); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the listenhandler correctly.")
 	}
 
 	return nil
@@ -149,6 +156,7 @@ func runSubscribe(
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runSubscribe",
 	})
+	log.Debugf("Running subscribe handler")
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
@@ -159,24 +167,23 @@ func runSubscribe(
 	ariEventListenHandler := subscribehandler.NewSubscribeHandler(sockHandler, commonoutline.QueueNameTranscribeSubscribe, subscribeTargets, transcribeHandler)
 
 	// run
-	if err := ariEventListenHandler.Run(); err != nil {
-		log.Errorf("Could not run the ari event listen handler correctly. err: %v", err)
+	if errRun := ariEventListenHandler.Run(); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the subscribehandler correctly.")
 	}
 
 	return nil
 }
 
 // runStreaming runs the ARI event listen service
-func runStreaming(steramingHandler streaminghandler.StreamingHandler) error {
+func runStreaming(streamhingHandler streaminghandler.StreamingHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runStreaming",
 	})
+	log.Debugf("Running streaming handler")
 
-	go func() {
-		if errRun := steramingHandler.Run(); errRun != nil {
-			log.Errorf("Could not run the streaming handler correctly. err: %v", errRun)
-		}
-	}()
+	if errRun := streamhingHandler.Run(); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the streaminghandler correctly.")
+	}
 
 	return nil
 }
