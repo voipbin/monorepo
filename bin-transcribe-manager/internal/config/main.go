@@ -55,6 +55,8 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("redis_database", 0, "Redis database index")
 	f.String("aws_access_key", "", "AWS access key")
 	f.String("aws_secret_key", "", "AWS secret key")
+	f.String("pod_ip", "", "Pod IP address for streaming listener")
+	f.Int("streaming_listen_port", 8080, "Streaming listener port")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -66,6 +68,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_database":            "REDIS_DATABASE",
 		"aws_access_key":            "AWS_ACCESS_KEY",
 		"aws_secret_key":            "AWS_SECRET_KEY",
+		"pod_ip":                    "POD_IP",
+		"streaming_listen_port":     "STREAMING_LISTEN_PORT",
 	}
 
 	for flagKey, envKey := range bindings {
