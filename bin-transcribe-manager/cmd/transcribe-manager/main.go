@@ -135,11 +135,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	hostID := uuid.Must(uuid.NewV4())
 	log.Debugf("Generated host id. host_id: %s", hostID)
 
-	listenIP := os.Getenv("POD_IP")
-	if listenIP == "" {
-		return fmt.Errorf("could not get the listen ip address")
+	if config.Get().PodIP == "" {
+		return fmt.Errorf("could not get the listen ip address: POD_IP not configured")
 	}
-	listenAddress := fmt.Sprintf("%s:%d", listenIP, 8080)
+	listenAddress := fmt.Sprintf("%s:%d", config.Get().PodIP, config.Get().StreamingListenPort)
 	log.Debugf("Listening address... listen_address: %s", listenAddress)
 
 	// create handlers
