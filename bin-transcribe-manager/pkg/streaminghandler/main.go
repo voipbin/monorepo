@@ -27,6 +27,14 @@ import (
 	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
 )
 
+// STTProvider represents a speech-to-text provider type
+type STTProvider string
+
+const (
+	STTProviderGCP STTProvider = "GCP"
+	STTProviderAWS STTProvider = "AWS"
+)
+
 // StreamingHandler define
 type StreamingHandler interface {
 	Run() error
