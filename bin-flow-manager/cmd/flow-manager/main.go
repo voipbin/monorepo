@@ -1,8 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -12,8 +15,12 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
+	"monorepo/bin-flow-manager/internal/config"
 	"monorepo/bin-flow-manager/pkg/actionhandler"
 	"monorepo/bin-flow-manager/pkg/activeflowhandler"
 	"monorepo/bin-flow-manager/pkg/cachehandler"
@@ -30,87 +37,112 @@ const serviceName = commonoutline.ServiceNameFlowManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-)
-
 func main() {
-	fmt.Printf("Hello world!\n")
+	rootCmd := &cobra.Command{
+		Use:   "flow-manager",
+		Short: "Voipbin Flow Manager Daemon",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			config.LoadGlobalConfig()
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDaemon()
+		},
+	}
 
-	// create dbhandler
-	dbHandler, err := createDBHandler()
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
+		logrus.Fatalf("Failed to bootstrap config: %v", errBind)
+	}
+
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Errorf("Command execution failed: %v", errExecute)
+		os.Exit(1)
+	}
+}
+
+func runDaemon() error {
+	initSignal()
+	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
+
+	log := logrus.WithField("func", "runDaemon")
+	log.WithField("config", config.Get()).Info("Starting flow-manager...")
+
+	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
-		logrus.Errorf("Could not connect to the database or failed to initiate the cachehandler. err: ")
+		return errors.Wrapf(err, "could not connect to the database")
+	}
+	defer commondatabasehandler.Close(sqlDB)
+
+	cache, err := initCache()
+	if err != nil {
+		return errors.Wrapf(err, "could not initialize the cache")
+	}
+
+	if errStart := runServices(sqlDB, cache); errStart != nil {
+		return errors.Wrapf(errStart, "could not start services")
+	}
+
+	<-chDone
+	log.Info("Flow-manager stopped safely.")
+	return nil
+}
+
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go func() {
+		sig := <-chSigs
+		logrus.Infof("Received signal: %v", sig)
+		chDone <- true
+	}()
+}
+
+func initProm(endpoint, listen string) {
+	// Skip Prometheus initialization if endpoint or listen address is not configured
+	if endpoint == "" || listen == "" {
+		logrus.Debug("Prometheus metrics server disabled (endpoint or listen address not configured)")
 		return
 	}
 
-	// run the service
-	run(dbHandler)
-	<-chDone
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
+		if err := http.ListenAndServe(listen, nil); err != nil {
+			logrus.Errorf("Prometheus server error: %v", err)
+		}
+	}()
 }
 
-// signalHandler catches signals and set the done
-func signalHandler() {
-	sig := <-chSigs
-	logrus.Debugf("Received signal. sig: %v", sig)
-	chDone <- true
-}
-
-// connectDatabase connects to the database and cachehandler
-func createDBHandler() (dbhandler.DBHandler, error) {
-	// connect to database
-	db, err := commondatabasehandler.Connect(databaseDSN)
-	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
-		return nil, err
+func initCache() (cachehandler.CacheHandler, error) {
+	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
+	if errConnect := res.Connect(); errConnect != nil {
+		return nil, errors.Wrap(errConnect, "cache connect error")
 	}
-
-	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
-	if err := cache.Connect(); err != nil {
-		logrus.Errorf("Could not connect to cache server. err: %v", err)
-		return nil, err
-	}
-
-	// create dbhandler
-	dbHandler := dbhandler.NewHandler(db, cache)
-
-	return dbHandler, nil
+	return res, nil
 }
 
-func run(dbHandler dbhandler.DBHandler) {
-	log := logrus.WithField("func", "run")
+func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	db := dbhandler.NewHandler(sqlDB, cache)
 
-	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
-	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
 
 	actionHandler := actionhandler.NewActionHandler()
-	variableHandler := variablehandler.NewVariableHandler(dbHandler, reqHandler)
-	activeflowHandler := activeflowhandler.NewActiveflowHandler(dbHandler, reqHandler, notifyHandler, actionHandler, variableHandler)
-	flowHandler := flowhandler.NewFlowHandler(dbHandler, reqHandler, notifyHandler, actionHandler, activeflowHandler)
+	variableHandler := variablehandler.NewVariableHandler(db, reqHandler)
+	activeflowHandler := activeflowhandler.NewActiveflowHandler(db, reqHandler, notifyHandler, actionHandler, variableHandler)
+	flowHandler := flowhandler.NewFlowHandler(db, reqHandler, notifyHandler, actionHandler, activeflowHandler)
 
-	// run listen
 	if errListen := runListen(sockHandler, flowHandler, activeflowHandler, variableHandler); errListen != nil {
-		log.Errorf("Could not run the listen correctly. err: %v", errListen)
-		return
+		return errors.Wrapf(errListen, "failed to run service listen")
 	}
 
-	// run sbuscriber
-	if errSubs := runSubscribe(sockHandler, string(commonoutline.QueueNameFlowSubscribe), flowHandler, activeflowHandler); errSubs != nil {
-		log.Errorf("Could not run the subscriber correctly. err: %v", errSubs)
-		return
+	if errSubscribe := runSubscribe(sockHandler, flowHandler, activeflowHandler); errSubscribe != nil {
+		return errors.Wrapf(errSubscribe, "failed to run service subscribe")
 	}
+
+	return nil
 }
 
 // runListen runs the listen service
@@ -133,14 +165,12 @@ func runListen(
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(sockHandler sockhandler.SockHandler, subscribeQueue string, flowHandler flowhandler.FlowHandler, activeflowHandler activeflowhandler.ActiveflowHandler) error {
-
+func runSubscribe(sockHandler sockhandler.SockHandler, flowHandler flowhandler.FlowHandler, activeflowHandler activeflowhandler.ActiveflowHandler) error {
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCustomerEvent),
 	}
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, subscribeQueue, subscribeTargets, flowHandler, activeflowHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameFlowSubscribe), subscribeTargets, flowHandler, activeflowHandler)
 
-	// run
 	if err := subHandler.Run(); err != nil {
 		return err
 	}
