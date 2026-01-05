@@ -104,6 +104,8 @@ func LoadGlobalConfig() {
 			RedisDatabase:           viper.GetInt("redis_database"),
 			AWSAccessKey:            viper.GetString("aws_access_key"),
 			AWSSecretKey:            viper.GetString("aws_secret_key"),
+			PodIP:                   viper.GetString("pod_ip"),
+			StreamingListenPort:     viper.GetInt("streaming_listen_port"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
