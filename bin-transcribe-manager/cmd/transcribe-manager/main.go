@@ -3,7 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -15,8 +18,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
+	"monorepo/bin-transcribe-manager/internal/config"
 	"monorepo/bin-transcribe-manager/pkg/cachehandler"
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 	"monorepo/bin-transcribe-manager/pkg/listenhandler"
@@ -32,50 +38,88 @@ const serviceName = "transcribe-manager"
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-
-	awsAccessKey = ""
-	awsSecretKey = ""
-)
-
 func main() {
-	fmt.Printf("Starting transcribe-manager.\n")
+	rootCmd := &cobra.Command{
+		Use:   "transcribe-manager",
+		Short: "Voipbin Transcribe Manager Daemon",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			config.LoadGlobalConfig()
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDaemon()
+		},
+	}
 
-	// connect to database
-	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
-	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
+		logrus.Fatalf("Failed to bootstrap config: %v", errBind)
+	}
+
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Errorf("Command execution failed: %v", errExecute)
+		os.Exit(1)
+	}
+}
+
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go func() {
+		sig := <-chSigs
+		logrus.Infof("Received signal: %v", sig)
+		chDone <- true
+	}()
+}
+
+func initProm(endpoint, listen string) {
+	// Skip Prometheus initialization if endpoint or listen address is not configured
+	if endpoint == "" || listen == "" {
+		logrus.Debug("Prometheus metrics disabled (endpoint or listen address not configured)")
 		return
+	}
+
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
+		if err := http.ListenAndServe(listen, nil); err != nil {
+			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
+			logrus.Errorf("Prometheus server error: %v", err)
+		}
+	}()
+}
+
+func initCache() (cachehandler.CacheHandler, error) {
+	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
+	if errConnect := res.Connect(); errConnect != nil {
+		return nil, errors.Wrap(errConnect, "cache connect error")
+	}
+	return res, nil
+}
+
+func runDaemon() error {
+	initSignal()
+	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
+
+	log := logrus.WithField("func", "runDaemon")
+	log.WithField("config", config.Get()).Info("Starting transcribe-manager...")
+
+	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	if err != nil {
+		return errors.Wrapf(err, "could not connect to the database")
 	}
 	defer commondatabasehandler.Close(sqlDB)
 
-	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
-	if err := cache.Connect(); err != nil {
-		logrus.Errorf("Could not connect to cache server. err: %v", err)
-		return
+	cache, err := initCache()
+	if err != nil {
+		return errors.Wrapf(err, "could not initialize the cache")
 	}
 
 	if errRun := run(sqlDB, cache); errRun != nil {
-		logrus.Errorf("Could not run transcribe-manager. err: %v", errRun)
-		return
+		return errors.Wrapf(errRun, "could not run transcribe-manager")
 	}
 
 	<-chDone
-}
-
-// signalHandler catches signals and set the done
-func signalHandler() {
-	sig := <-chSigs
-	logrus.Debugf("Received signal. sig: %v", sig)
-	chDone <- true
+	log.Info("Transcribe-manager stopped safely.")
+	return nil
 }
 
 // run runs the call-manager
@@ -85,7 +129,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	})
 
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	hostID := uuid.Must(uuid.NewV4())
@@ -103,7 +147,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager)
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, awsAccessKey, awsSecretKey)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
 	// run request listener
