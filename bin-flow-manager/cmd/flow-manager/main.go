@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -115,6 +114,31 @@ func initCache() (cachehandler.CacheHandler, error) {
 	return res, nil
 }
 
+func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	db := dbhandler.NewHandler(sqlDB, cache)
+
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
+	sockHandler.Connect()
+
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
+
+	actionHandler := actionhandler.NewActionHandler()
+	variableHandler := variablehandler.NewVariableHandler(db, reqHandler)
+	activeflowHandler := activeflowhandler.NewActiveflowHandler(db, reqHandler, notifyHandler, actionHandler, variableHandler)
+	flowHandler := flowhandler.NewFlowHandler(db, reqHandler, notifyHandler, actionHandler, activeflowHandler)
+
+	if errListen := runListen(sockHandler, flowHandler, activeflowHandler, variableHandler); errListen != nil {
+		return errors.Wrapf(errListen, "failed to run service listen")
+	}
+
+	if errSubscribe := runSubscribe(sockHandler, flowHandler, activeflowHandler); errSubscribe != nil {
+		return errors.Wrapf(errSubscribe, "failed to run service subscribe")
+	}
+
+	return nil
+}
+
 // signalHandler catches signals and set the done
 func signalHandler() {
 	sig := <-chSigs
@@ -124,53 +148,18 @@ func signalHandler() {
 
 // connectDatabase connects to the database and cachehandler
 func createDBHandler() (dbhandler.DBHandler, error) {
-	// connect to database
-	db, err := commondatabasehandler.Connect(databaseDSN)
+	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "could not access database")
 	}
 
-	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
+	cache := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
 	if err := cache.Connect(); err != nil {
-		logrus.Errorf("Could not connect to cache server. err: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "could not connect to cache server")
 	}
 
-	// create dbhandler
 	dbHandler := dbhandler.NewHandler(db, cache)
-
 	return dbHandler, nil
-}
-
-func run(dbHandler dbhandler.DBHandler) {
-	log := logrus.WithField("func", "run")
-
-	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
-	sockHandler.Connect()
-
-	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
-
-	actionHandler := actionhandler.NewActionHandler()
-	variableHandler := variablehandler.NewVariableHandler(dbHandler, reqHandler)
-	activeflowHandler := activeflowhandler.NewActiveflowHandler(dbHandler, reqHandler, notifyHandler, actionHandler, variableHandler)
-	flowHandler := flowhandler.NewFlowHandler(dbHandler, reqHandler, notifyHandler, actionHandler, activeflowHandler)
-
-	// run listen
-	if errListen := runListen(sockHandler, flowHandler, activeflowHandler, variableHandler); errListen != nil {
-		log.Errorf("Could not run the listen correctly. err: %v", errListen)
-		return
-	}
-
-	// run sbuscriber
-	if errSubs := runSubscribe(sockHandler, string(commonoutline.QueueNameFlowSubscribe), flowHandler, activeflowHandler); errSubs != nil {
-		log.Errorf("Could not run the subscriber correctly. err: %v", errSubs)
-		return
-	}
 }
 
 // runListen runs the listen service
@@ -193,14 +182,12 @@ func runListen(
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(sockHandler sockhandler.SockHandler, subscribeQueue string, flowHandler flowhandler.FlowHandler, activeflowHandler activeflowhandler.ActiveflowHandler) error {
-
+func runSubscribe(sockHandler sockhandler.SockHandler, flowHandler flowhandler.FlowHandler, activeflowHandler activeflowhandler.ActiveflowHandler) error {
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCustomerEvent),
 	}
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, subscribeQueue, subscribeTargets, flowHandler, activeflowHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameFlowSubscribe), subscribeTargets, flowHandler, activeflowHandler)
 
-	// run
 	if err := subHandler.Run(); err != nil {
 		return err
 	}
