@@ -21,6 +21,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-transcribe-manager/internal/config"
 	"monorepo/bin-transcribe-manager/models/streaming"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
@@ -123,19 +124,45 @@ func NewStreamingHandler(
 		awsClient = nil
 	}
 
-	// Validate at least one provider is available
-	var providers []string
-	if gcpClient != nil {
-		providers = append(providers, "GCP")
+	// Parse and validate STT provider priority
+	priorityList := strings.Split(config.Get().STTProviderPriority, ",")
+	var validatedProviders []STTProvider
+
+	for _, providerStr := range priorityList {
+		providerStr = strings.TrimSpace(providerStr)
+		provider := STTProvider(providerStr)
+
+		// Validate provider name
+		if provider != STTProviderGCP && provider != STTProviderAWS {
+			log.Errorf("Unknown STT provider in priority list: %s. Valid providers: %s, %s",
+				providerStr, STTProviderGCP, STTProviderAWS)
+			return nil
+		}
+
+		// Validate provider is initialized
+		if provider == STTProviderGCP && gcpClient == nil {
+			log.Errorf("STT provider '%s' listed in priority but not initialized (check GCP credentials)", STTProviderGCP)
+			return nil
+		}
+		if provider == STTProviderAWS && awsClient == nil {
+			log.Errorf("STT provider '%s' listed in priority but not initialized (check AWS credentials)", STTProviderAWS)
+			return nil
+		}
+
+		validatedProviders = append(validatedProviders, provider)
 	}
-	if awsClient != nil {
-		providers = append(providers, "AWS")
-	}
-	if len(providers) == 0 {
-		log.Error("No STT providers available - at least one provider must be configured")
+
+	if len(validatedProviders) == 0 {
+		log.Error("No valid STT providers in priority list")
 		return nil
 	}
-	log.Infof("STT providers initialized: %s", strings.Join(providers, ", "))
+
+	// Convert to string slice for logging
+	providerNames := make([]string, len(validatedProviders))
+	for i, p := range validatedProviders {
+		providerNames[i] = string(p)
+	}
+	log.Infof("STT provider priority: %s", strings.Join(providerNames, " → "))
 
 	return &streamingHandler{
 		utilHandler:       utilhandler.NewUtilHandler(),
@@ -145,8 +172,9 @@ func NewStreamingHandler(
 
 		listenAddress: listenAddress,
 
-		gcpClient: gcpClient,
-		awsClient: awsClient,
+		gcpClient:        gcpClient,
+		awsClient:        awsClient,
+		providerPriority: validatedProviders,
 
 		mapStreaming: make(map[uuid.UUID]*streaming.Streaming),
 		muSteaming:   sync.Mutex{},
