@@ -27,6 +27,8 @@ type Config struct {
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 	AWSAccessKey            string // AWSAccessKey is the AWS access key for AWS services.
 	AWSSecretKey            string // AWSSecretKey is the AWS secret key for AWS services.
+	PodIP                   string // PodIP is the IP address on which the AudioSocket streaming listener binds (typically the pod's IP in Kubernetes).
+	StreamingListenPort     int    // StreamingListenPort is the TCP port on which the AudioSocket streaming listener binds (default: 8080).
 }
 
 func Bootstrap(cmd *cobra.Command) error {
