@@ -123,7 +123,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	})
 
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	hostID := uuid.Must(uuid.NewV4())
@@ -141,7 +141,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager)
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, awsAccessKey, awsSecretKey)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
 	// run request listener
