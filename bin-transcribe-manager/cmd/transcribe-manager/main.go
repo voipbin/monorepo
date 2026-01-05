@@ -149,7 +149,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
 	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
 	if streamingHandler == nil {
-		return errors.Wrap(fmt.Errorf("no STT providers available"), "failed to initialize streaming handler")
+		return fmt.Errorf("failed to initialize streaming handler: no STT providers available")
 	}
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
