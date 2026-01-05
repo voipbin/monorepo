@@ -61,6 +61,60 @@ func main() {
 	}
 }
 
+func runDaemon() error {
+	initSignal()
+	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
+
+	log := logrus.WithField("func", "runDaemon")
+	log.WithField("config", config.Get()).Info("Starting flow-manager...")
+
+	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	if err != nil {
+		return errors.Wrapf(err, "could not connect to the database")
+	}
+	defer commondatabasehandler.Close(sqlDB)
+
+	cache, err := initCache()
+	if err != nil {
+		return errors.Wrapf(err, "could not initialize the cache")
+	}
+
+	if errStart := runServices(sqlDB, cache); errStart != nil {
+		return errors.Wrapf(errStart, "could not start services")
+	}
+
+	<-chDone
+	log.Info("Flow-manager stopped safely.")
+	return nil
+}
+
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go func() {
+		sig := <-chSigs
+		logrus.Infof("Received signal: %v", sig)
+		chDone <- true
+	}()
+}
+
+func initProm(endpoint, listen string) {
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
+		if err := http.ListenAndServe(listen, nil); err != nil {
+			logrus.Errorf("Prometheus server error: %v", err)
+		}
+	}()
+}
+
+func initCache() (cachehandler.CacheHandler, error) {
+	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
+	if errConnect := res.Connect(); errConnect != nil {
+		return nil, errors.Wrap(errConnect, "cache connect error")
+	}
+	return res, nil
+}
+
 // signalHandler catches signals and set the done
 func signalHandler() {
 	sig := <-chSigs
