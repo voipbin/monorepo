@@ -71,6 +71,12 @@ func initSignal() {
 }
 
 func initProm(endpoint, listen string) {
+	// Skip Prometheus initialization if endpoint or listen address is not configured
+	if endpoint == "" || listen == "" {
+		logrus.Debug("Prometheus metrics disabled (endpoint or listen address not configured)")
+		return
+	}
+
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
