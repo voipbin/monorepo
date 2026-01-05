@@ -24,16 +24,20 @@ func (h *streamingHandler) Run() error {
 		return errors.Wrapf(err, "could not listen on the address. addres: %s", h.listenAddress)
 	}
 
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			fmt.Println("Error accepting connection:", err)
-			continue
-		}
-		log.Debugf("Accepted connection. remote_addr: %s", conn.RemoteAddr())
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				fmt.Println("Error accepting connection:", err)
+				continue
+			}
+			log.Debugf("Accepted connection. remote_addr: %s", conn.RemoteAddr())
 
-		go h.runStart(conn) // Handle connection concurrently
-	}
+			go h.runStart(conn) // Handle connection concurrently
+		}
+	}()
+
+	return nil
 }
 
 func (h *streamingHandler) runStart(conn net.Conn) {

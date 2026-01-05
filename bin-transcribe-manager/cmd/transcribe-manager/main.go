@@ -141,8 +141,8 @@ func runListen(
 
 	// run
 	listenQueue := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
-	if err := listenHandler.Run(string(commonoutline.QueueNameTranscribeRequest), listenQueue, string(commonoutline.QueueNameDelay)); err != nil {
-		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameTranscribeRequest), listenQueue, string(commonoutline.QueueNameDelay)); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the listenhandler correctly.")
 	}
 
 	return nil
@@ -156,6 +156,7 @@ func runSubscribe(
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runSubscribe",
 	})
+	log.Debugf("Running subscribe handler")
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
@@ -166,8 +167,8 @@ func runSubscribe(
 	ariEventListenHandler := subscribehandler.NewSubscribeHandler(sockHandler, commonoutline.QueueNameTranscribeSubscribe, subscribeTargets, transcribeHandler)
 
 	// run
-	if err := ariEventListenHandler.Run(); err != nil {
-		log.Errorf("Could not run the ari event listen handler correctly. err: %v", err)
+	if errRun := ariEventListenHandler.Run(); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the subscribehandler correctly.")
 	}
 
 	return nil
@@ -180,11 +181,9 @@ func runStreaming(steramingHandler streaminghandler.StreamingHandler) error {
 	})
 	log.Debugf("Running streaming handler")
 
-	go func() {
-		if errRun := steramingHandler.Run(); errRun != nil {
-			log.Errorf("Could not run the streaming handler correctly. err: %v", errRun)
-		}
-	}()
+	if errRun := steramingHandler.Run(); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the streaminghandler correctly.")
+	}
 
 	return nil
 }
