@@ -1,13 +1,7 @@
 package main
 
 import (
-	"net/http"
-	"os/signal"
-	"syscall"
-	"time"
-
 	joonix "github.com/joonix/log"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -31,12 +25,6 @@ func init() {
 
 	// init logs
 	initLog()
-
-	// init signal handler
-	initSignal()
-
-	// init prometheus setting
-	initProm(prometheusEndpoint, prometheusListenAddress)
 
 	logrus.Info("init finished.")
 }
@@ -160,26 +148,4 @@ func initVariable() {
 func initLog() {
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
-}
-
-// initSignal inits sinal settings.
-func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	go signalHandler()
-}
-
-// initProm inits prometheus settings
-func initProm(endpoint, listen string) {
-	http.Handle(endpoint, promhttp.Handler())
-	go func() {
-		for {
-			err := http.ListenAndServe(listen, nil)
-			if err != nil {
-				logrus.Errorf("Could not start prometheus listener")
-				time.Sleep(time.Second * 1)
-				continue
-			}
-			break
-		}
-	}()
 }
