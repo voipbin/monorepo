@@ -67,13 +67,15 @@ func (h *streamingHandler) runStart(conn net.Conn) {
 	}
 	log.WithField("streaming", st).Debugf("Streaming info retrieved. streaming_id: %s", st.ID)
 
-	// Build handlers list dynamically based on available clients
+	// Build handlers list based on configured priority
 	handlers := []func(*streaming.Streaming, net.Conn) error{}
-	if h.gcpClient != nil {
-		handlers = append(handlers, h.gcpRun)
-	}
-	if h.awsClient != nil {
-		handlers = append(handlers, h.awsRun)
+	for _, provider := range h.providerPriority {
+		switch provider {
+		case STTProviderGCP:
+			handlers = append(handlers, h.gcpRun)
+		case STTProviderAWS:
+			handlers = append(handlers, h.awsRun)
+		}
 	}
 
 	if len(handlers) == 0 {
