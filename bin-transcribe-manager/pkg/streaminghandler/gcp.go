@@ -2,6 +2,7 @@ package streaminghandler
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"time"
@@ -14,6 +15,10 @@ import (
 
 // gcpRun runs the stt process using the gcp
 func (h *streamingHandler) gcpRun(st *streaming.Streaming, conn net.Conn) error {
+	if h.gcpClient == nil {
+		return fmt.Errorf("GCP provider not initialized")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "gcpRun",
 		"streaming_id":  st.ID,
