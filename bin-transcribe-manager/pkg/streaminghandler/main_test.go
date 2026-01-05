@@ -16,7 +16,9 @@ import (
 func TestMain(m *testing.M) {
 	// Set STT provider priority for tests
 	// Use AWS only since GCP credentials are not available in test environment
-	os.Setenv("STT_PROVIDER_PRIORITY", "AWS")
+	if errSet := os.Setenv("STT_PROVIDER_PRIORITY", "AWS"); errSet != nil {
+		panic(errSet)
+	}
 
 	// Initialize config - required for NewStreamingHandler
 	cmd := &cobra.Command{}
@@ -28,7 +30,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestNewStreamingHandler_AWSOnly(t *testing.T) {
+func Test_NewStreamingHandler_AWSOnly(t *testing.T) {
 	// This test verifies service works with only AWS credentials
 	// GCP will fail to initialize (no credentials in test env)
 	// AWS should succeed with valid test credentials
@@ -55,7 +57,7 @@ func TestNewStreamingHandler_AWSOnly(t *testing.T) {
 	}
 }
 
-func TestNewStreamingHandler_NoProviders(t *testing.T) {
+func Test_NewStreamingHandler_NoProviders(t *testing.T) {
 	// This test verifies service fails when neither provider is available
 	// Priority is set to AWS in TestMain
 	// AWS will fail (empty credentials provided to NewStreamingHandler)
