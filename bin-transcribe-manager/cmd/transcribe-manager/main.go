@@ -3,7 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -15,8 +18,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
+	"monorepo/bin-transcribe-manager/internal/config"
 	"monorepo/bin-transcribe-manager/pkg/cachehandler"
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 	"monorepo/bin-transcribe-manager/pkg/listenhandler"
@@ -32,43 +38,27 @@ const serviceName = "transcribe-manager"
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-
-	awsAccessKey = ""
-	awsSecretKey = ""
-)
-
 func main() {
-	fmt.Printf("Starting transcribe-manager.\n")
-
-	// connect to database
-	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
-	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
-		return
-	}
-	defer commondatabasehandler.Close(sqlDB)
-
-	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
-	if err := cache.Connect(); err != nil {
-		logrus.Errorf("Could not connect to cache server. err: %v", err)
-		return
+	rootCmd := &cobra.Command{
+		Use:   "transcribe-manager",
+		Short: "Voipbin Transcribe Manager Daemon",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			config.LoadGlobalConfig()
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDaemon()
+		},
 	}
 
-	if errRun := run(sqlDB, cache); errRun != nil {
-		logrus.Errorf("Could not run transcribe-manager. err: %v", errRun)
-		return
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
+		logrus.Fatalf("Failed to bootstrap config: %v", errBind)
 	}
 
-	<-chDone
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Errorf("Command execution failed: %v", errExecute)
+		os.Exit(1)
+	}
 }
 
 // signalHandler catches signals and set the done
