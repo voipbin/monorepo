@@ -96,7 +96,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		return fmt.Errorf("could not get the listen ip address")
 	}
 	listenAddress := fmt.Sprintf("%s:%d", listenIP, 8080)
-	log.Debugf("Listening address... listten_address: %s", listenAddress)
+	log.Debugf("Listening address... listen_address: %s", listenAddress)
 
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
