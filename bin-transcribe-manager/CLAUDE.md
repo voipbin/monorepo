@@ -92,13 +92,17 @@ cd pkg/streaminghandler && go generate
 ## Working with the Codebase
 
 ### Configuration via Environment Variables
-The service uses viper for configuration (see `cmd/transcribe-manager/init.go`). Key environment variables:
+The service uses Cobra and Viper for configuration (see `internal/config/main.go`). Key environment variables:
 - `DATABASE_DSN`: MySQL connection string
-- `REDIS_ADDR`, `REDIS_DB`, `REDIS_PASSWORD`: Redis configuration
-- `RABBIT_ADDR`: RabbitMQ connection string
+- `REDIS_ADDRESS`, `REDIS_DATABASE`, `REDIS_PASSWORD`: Redis configuration
+- `RABBITMQ_ADDRESS`: RabbitMQ connection string
 - `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`: AWS credentials for Transcribe
-- `GCP_PROJECT_ID`, `GCP_CREDENTIAL`: GCP credentials
 - `POD_IP`: Required for AudioSocket listening address (populated by Kubernetes)
+
+All configuration can also be provided via CLI flags. Run `transcribe-manager --help` for details.
+
+**Configuration Pattern:**
+Uses singleton pattern with `config.Get()` for thread-safe access. Configuration is loaded once at startup in the Cobra `PersistentPreRunE` hook.
 
 ### Adding New Transcribe Operations
 When adding new transcribe-related endpoints:
