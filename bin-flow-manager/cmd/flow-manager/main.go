@@ -139,29 +139,6 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	return nil
 }
 
-// signalHandler catches signals and set the done
-func signalHandler() {
-	sig := <-chSigs
-	logrus.Debugf("Received signal. sig: %v", sig)
-	chDone <- true
-}
-
-// connectDatabase connects to the database and cachehandler
-func createDBHandler() (dbhandler.DBHandler, error) {
-	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not access database")
-	}
-
-	cache := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
-	if err := cache.Connect(); err != nil {
-		return nil, errors.Wrap(err, "could not connect to cache server")
-	}
-
-	dbHandler := dbhandler.NewHandler(db, cache)
-	return dbHandler, nil
-}
-
 // runListen runs the listen service
 func runListen(
 	sockListen sockhandler.SockHandler,
