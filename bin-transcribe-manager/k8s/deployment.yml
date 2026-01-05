@@ -50,6 +50,8 @@ spec:
               value: ${AWS_ACCESS_KEY}
             - name: AWS_SECRET_KEY
               value: ${AWS_SECRET_KEY}
+            - name: STREAMING_LISTEN_PORT
+              value: "8080"
           resources:
             limits:
               cpu: "60m"
