@@ -109,6 +109,7 @@ func LoadGlobalConfig() {
 			AWSSecretKey:            viper.GetString("aws_secret_key"),
 			PodIP:                   viper.GetString("pod_ip"),
 			StreamingListenPort:     viper.GetInt("streaming_listen_port"),
+			STTProviderPriority:     viper.GetString("stt_provider_priority"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
