@@ -2,3 +2,4 @@ vendor
 transcribe-manager
 .vscode
 !cmd/*
+.worktrees

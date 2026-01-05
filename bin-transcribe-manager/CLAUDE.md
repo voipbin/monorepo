@@ -96,10 +96,17 @@ The service uses Cobra and Viper for configuration (see `internal/config/main.go
 - `DATABASE_DSN`: MySQL connection string
 - `REDIS_ADDRESS`, `REDIS_DATABASE`, `REDIS_PASSWORD`: Redis configuration
 - `RABBITMQ_ADDRESS`: RabbitMQ connection string
-- `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`: AWS credentials for Transcribe
+- `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`: AWS credentials for Transcribe (optional if GCP configured)
 - `POD_IP`: Required for AudioSocket listening address (populated by Kubernetes)
 
 All configuration can also be provided via CLI flags. Run `transcribe-manager --help` for details.
+
+**STT Provider Requirements:**
+- At least one STT provider must be configured (GCP or AWS)
+- GCP: Uses Application Default Credentials (ADC) - can be from service account key, gcloud CLI, GKE metadata server, etc.
+- AWS: Requires both `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables
+- If both are configured, GCP is tried first with AWS as fallback
+- Service fails to start if neither provider is available
 
 **Configuration Pattern:**
 Uses singleton pattern with `config.Get()` for thread-safe access. Configuration is loaded once at startup in the Cobra `PersistentPreRunE` hook.

@@ -4,6 +4,7 @@ package streaminghandler
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -92,19 +93,39 @@ func NewStreamingHandler(
 ) StreamingHandler {
 	log := logrus.WithField("func", "NewStreamingHandler")
 
-	// create gcp client
+	// Try to create GCP client (ADC-based)
 	gcpClient, err := speech.NewClient(context.Background())
 	if err != nil {
-		log.Errorf("Could not create a new client for speech. err: %v", err)
-		return nil
+		log.Warnf("GCP client initialization failed (credentials not available): %v", err)
+		gcpClient = nil
 	}
 
-	// create aws client
-	awsClient, err := awsNewClient(awsAccessKey, awsSecretKey)
-	if err != nil {
-		log.Errorf("Could not create a new client for speech. err: %v", err)
+	// Only try AWS if credentials are provided
+	var awsClient *transcribestreaming.Client
+	if awsAccessKey != "" && awsSecretKey != "" {
+		awsClient, err = awsNewClient(awsAccessKey, awsSecretKey)
+		if err != nil {
+			log.Warnf("AWS client initialization failed: %v", err)
+			awsClient = nil
+		}
+	} else {
+		log.Debug("AWS credentials not provided - AWS provider will be unavailable")
+		awsClient = nil
+	}
+
+	// Validate at least one provider is available
+	var providers []string
+	if gcpClient != nil {
+		providers = append(providers, "GCP")
+	}
+	if awsClient != nil {
+		providers = append(providers, "AWS")
+	}
+	if len(providers) == 0 {
+		log.Error("No STT providers available - at least one provider must be configured")
 		return nil
 	}
+	log.Infof("STT providers initialized: %s", strings.Join(providers, ", "))
 
 	return &streamingHandler{
 		utilHandler:       utilhandler.NewUtilHandler(),

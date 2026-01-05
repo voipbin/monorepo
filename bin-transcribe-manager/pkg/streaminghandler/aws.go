@@ -33,6 +33,10 @@ func awsNewClient(accessKey string, secretKey string) (*transcribestreaming.Clie
 
 // awsRun runs the STT process using AWS Transcribe Streaming
 func (h *streamingHandler) awsRun(st *streaming.Streaming, conn net.Conn) error {
+	if h.awsClient == nil {
+		return fmt.Errorf("AWS provider not initialized")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "awsRun",
 		"streaming_id":  st.ID,
