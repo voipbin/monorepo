@@ -18,6 +18,20 @@ export GOPRIVATE="gitlab.com/voipbin"
 go mod download
 go mod vendor
 go build ./cmd/...
+
+# Run with default configuration
+./flow-manager
+
+# Run with custom config via environment variables
+export DATABASE_DSN="user:pass@tcp(host:3306)/db"
+export RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672"
+./flow-manager
+
+# Run with command-line flags
+./flow-manager --database_dsn="user:pass@tcp(host:3306)/db" --rabbitmq_address="amqp://localhost:5672"
+
+# Show all available flags
+./flow-manager --help
 ```
 
 ### Testing
@@ -47,6 +61,33 @@ golangci-lint run -v --timeout 5m
 go generate ./...
 ```
 
+## Configuration
+
+Configuration is managed via the `internal/config` package using Cobra and Viper.
+
+**Configuration precedence (highest to lowest):**
+1. Command-line flags (e.g., `--database_dsn`)
+2. Environment variables (e.g., `DATABASE_DSN`)
+3. Default values
+
+**Available configuration:**
+- `--rabbitmq_address` / `RABBITMQ_ADDRESS`: RabbitMQ server address
+- `--database_dsn` / `DATABASE_DSN`: MySQL connection string
+- `--redis_address` / `REDIS_ADDRESS`: Redis server address
+- `--redis_password` / `REDIS_PASSWORD`: Redis password
+- `--redis_database` / `REDIS_DATABASE`: Redis database index
+- `--prometheus_endpoint` / `PROMETHEUS_ENDPOINT`: Prometheus metrics path
+- `--prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS`: Prometheus server address
+
+**Access config in code:**
+```go
+import "monorepo/bin-flow-manager/internal/config"
+
+// Access configuration
+dbDSN := config.Get().DatabaseDSN
+redisAddr := config.Get().RedisAddress
+```
+
 ## Architecture
 
 ### Core Concepts
@@ -68,6 +109,7 @@ go generate ./...
 
 ```
 cmd/flow-manager/         # Main application entry point
+internal/config/          # Configuration management (Cobra/Viper)
 models/                   # Data models
   action/                 # Action types and definitions
   activeflow/             # Activeflow model and status
@@ -143,14 +185,6 @@ Stacks enable nested flow execution. When pushing actions (e.g., via `patch_flow
 - Most tests follow table-driven pattern with subtests
 - Tests cover: CRUD operations, action execution, variable substitution, stack operations, error handling
 - 34 test files total across the codebase
-
-## Configuration
-
-Service runs with these primary flags (see README.md for full list):
-- `-dbDSN`: MySQL connection string
-- `-rabbit_addr`: RabbitMQ address
-- `-redis_addr`: Redis address
-- `-prom_listen_addr`: Prometheus metrics endpoint
 
 ## Monorepo Context
 
