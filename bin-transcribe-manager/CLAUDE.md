@@ -97,7 +97,8 @@ The service uses Cobra and Viper for configuration (see `internal/config/main.go
 - `REDIS_ADDRESS`, `REDIS_DATABASE`, `REDIS_PASSWORD`: Redis configuration
 - `RABBITMQ_ADDRESS`: RabbitMQ connection string
 - `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`: AWS credentials for Transcribe (optional if GCP configured)
-- `POD_IP`: Required for AudioSocket listening address (populated by Kubernetes)
+- `POD_IP`: Required. IP address for AudioSocket streaming listener (populated by Kubernetes)
+- `STREAMING_LISTEN_PORT`: Optional. TCP port for AudioSocket streaming listener (default: 8080)
 
 All configuration can also be provided via CLI flags. Run `transcribe-manager --help` for details.
 
