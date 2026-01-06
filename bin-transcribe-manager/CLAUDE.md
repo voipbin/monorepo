@@ -152,6 +152,9 @@ The GitLab CI pipeline (`.gitlab-ci.yml`) has stages:
 - Mock files follow pattern `mock_*.go` in same package as interface
 - Use table-driven tests for multiple scenarios
 - Always test error paths and edge cases (nil contexts, invalid UUIDs, etc.)
+- **Test struct initialization**: Always use explicit field names in test case structs
+  - Good: `{name: "test", input: "value", expectedRes: result}`
+  - Bad: `{"test", "value", result}`
 
 ## Important Constraints
 

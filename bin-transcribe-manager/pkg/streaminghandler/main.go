@@ -129,13 +129,9 @@ func NewStreamingHandler(
 	var validatedProviders []STTProvider
 
 	for _, providerStr := range priorityList {
-		providerStr = strings.TrimSpace(providerStr)
-		provider := STTProvider(providerStr)
-
-		// Validate provider name
-		if provider != STTProviderGCP && provider != STTProviderAWS {
-			log.Errorf("Unknown STT provider in priority list: %s. Valid providers: %s, %s",
-				providerStr, STTProviderGCP, STTProviderAWS)
+		provider, err := validateProvider(providerStr)
+		if err != nil {
+			log.Errorf("Could not validate STT provider. provider: %s, err: %v", providerStr, err)
 			return nil
 		}
 
