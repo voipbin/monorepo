@@ -9,6 +9,8 @@ import (
 	"monorepo/bin-transcribe-manager/internal/config"
 	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
 
+	speech "cloud.google.com/go/speech/apiv1"
+	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming"
 	"github.com/spf13/cobra"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -79,51 +81,98 @@ func Test_NewStreamingHandler_NoProviders(t *testing.T) {
 	}
 }
 
-func Test_NewStreamingHandler_DuplicateProviders(t *testing.T) {
+func Test_initProviders(t *testing.T) {
 	testCases := []struct {
-		name     string
-		priority string
+		name          string
+		priorityList  []string
+		gcpClient     interface{}
+		awsClient     interface{}
+		expectError   bool
+		expectedCount int
 	}{
 		{
-			name:     "duplicate AWS",
-			priority: "AWS,AWS",
+			name:          "valid single provider",
+			priorityList:  []string{"AWS"},
+			gcpClient:     nil,
+			awsClient:     "mock_aws_client",
+			expectError:   false,
+			expectedCount: 1,
 		},
 		{
-			name:     "triple AWS",
-			priority: "AWS,AWS,AWS",
+			name:          "valid two providers",
+			priorityList:  []string{"GCP", "AWS"},
+			gcpClient:     "mock_gcp_client",
+			awsClient:     "mock_aws_client",
+			expectError:   false,
+			expectedCount: 2,
 		},
 		{
-			name:     "mixed duplicates with case variations",
-			priority: "aws,AWS,Aws",
+			name:          "duplicate AWS",
+			priorityList:  []string{"AWS", "AWS"},
+			gcpClient:     nil,
+			awsClient:     "mock_aws_client",
+			expectError:   true,
+			expectedCount: 0,
+		},
+		{
+			name:          "triple AWS",
+			priorityList:  []string{"AWS", "AWS", "AWS"},
+			gcpClient:     nil,
+			awsClient:     "mock_aws_client",
+			expectError:   true,
+			expectedCount: 0,
+		},
+		{
+			name:          "case variation duplicates",
+			priorityList:  []string{"aws", "AWS"},
+			gcpClient:     nil,
+			awsClient:     "mock_aws_client",
+			expectError:   true,
+			expectedCount: 0,
+		},
+		{
+			name:          "mixed case variation duplicates",
+			priorityList:  []string{"gcp", "Gcp", "GCP"},
+			gcpClient:     "mock_gcp_client",
+			awsClient:     nil,
+			expectError:   true,
+			expectedCount: 0,
+		},
+		{
+			name:          "provider not initialized",
+			priorityList:  []string{"AWS"},
+			gcpClient:     nil,
+			awsClient:     nil,
+			expectError:   true,
+			expectedCount: 0,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if errSet := os.Setenv("STT_PROVIDER_PRIORITY", tc.priority); errSet != nil {
-				t.Fatalf("Failed to set env: %v", errSet)
+			var gcpClient *speech.Client
+			var awsClient *transcribestreaming.Client
+
+			if tc.gcpClient != nil {
+				gcpClient = &speech.Client{}
+			}
+			if tc.awsClient != nil {
+				awsClient = &transcribestreaming.Client{}
 			}
 
-			config.LoadGlobalConfig()
+			result, err := initProviders(tc.priorityList, gcpClient, awsClient)
 
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
-
-			handler := NewStreamingHandler(
-				mockReq,
-				mockNotify,
-				mockTranscript,
-				"127.0.0.1:8080",
-				"test_access_key",
-				"test_secret_key",
-			)
-
-			if handler == nil {
-				t.Errorf("Expected handler to be non-nil with priority '%s'", tc.priority)
+			if tc.expectError {
+				if err == nil {
+					t.Errorf("Expected error for priority list %v, got nil", tc.priorityList)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error for priority list %v: %v", tc.priorityList, err)
+				}
+				if len(result) != tc.expectedCount {
+					t.Errorf("Expected %d providers, got %d", tc.expectedCount, len(result))
+				}
 			}
 		})
 	}

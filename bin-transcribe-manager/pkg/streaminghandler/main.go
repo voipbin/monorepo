@@ -126,43 +126,9 @@ func NewStreamingHandler(
 
 	// Parse and validate STT provider priority
 	priorityList := strings.Split(config.Get().STTProviderPriority, ",")
-	var validatedProviders []STTProvider
-
-	for _, providerStr := range priorityList {
-		provider, err := validateProvider(providerStr)
-		if err != nil {
-			log.Errorf("Could not validate STT provider. provider: %s, err: %v", providerStr, err)
-			return nil
-		}
-
-		// Validate provider is initialized
-		if provider == STTProviderGCP && gcpClient == nil {
-			log.Errorf("STT provider '%s' listed in priority but not initialized (check GCP credentials)", STTProviderGCP)
-			return nil
-		}
-		if provider == STTProviderAWS && awsClient == nil {
-			log.Errorf("STT provider '%s' listed in priority but not initialized (check AWS credentials)", STTProviderAWS)
-			return nil
-		}
-
-		// Skip duplicates (keep first occurrence only)
-		isDuplicate := false
-		for _, existing := range validatedProviders {
-			if existing == provider {
-				log.Debugf("Skipping duplicate provider in priority list: %s", provider)
-				isDuplicate = true
-				break
-			}
-		}
-		if isDuplicate {
-			continue
-		}
-
-		validatedProviders = append(validatedProviders, provider)
-	}
-
-	if len(validatedProviders) == 0 {
-		log.Error("No valid STT providers in priority list")
+	validatedProviders, err := initProviders(priorityList, gcpClient, awsClient)
+	if err != nil {
+		log.Error(err)
 		return nil
 	}
 
