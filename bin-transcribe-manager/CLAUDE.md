@@ -63,7 +63,10 @@ go test -v ./pkg/streaminghandler
 
 ### Linting
 ```bash
-# Lint check (requires golint)
+# Comprehensive lint check (requires golangci-lint)
+golangci-lint run -v --timeout 5m
+
+# Legacy lint check (requires golint)
 golint -set_exit_status $(go list ./...)
 
 # Vet check
