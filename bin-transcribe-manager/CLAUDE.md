@@ -63,7 +63,10 @@ go test -v ./pkg/streaminghandler
 
 ### Linting
 ```bash
-# Lint check (requires golint)
+# Comprehensive lint check (requires golangci-lint)
+golangci-lint run -v --timeout 5m
+
+# Legacy lint check (requires golint)
 golint -set_exit_status $(go list ./...)
 
 # Vet check
@@ -99,6 +102,7 @@ The service uses Cobra and Viper for configuration (see `internal/config/main.go
 - `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`: AWS credentials for Transcribe (optional if GCP configured)
 - `POD_IP`: Required. IP address for AudioSocket streaming listener (populated by Kubernetes)
 - `STREAMING_LISTEN_PORT`: Optional. TCP port for AudioSocket streaming listener (default: 8080)
+- `STT_PROVIDER_PRIORITY`: Optional. Comma-separated list of STT providers in priority order (default: "GCP,AWS"). Valid values: GCP, AWS. Examples: "GCP,AWS", "AWS,GCP"
 
 All configuration can also be provided via CLI flags. Run `transcribe-manager --help` for details.
 
@@ -106,8 +110,9 @@ All configuration can also be provided via CLI flags. Run `transcribe-manager --
 - At least one STT provider must be configured (GCP or AWS)
 - GCP: Uses Application Default Credentials (ADC) - can be from service account key, gcloud CLI, GKE metadata server, etc.
 - AWS: Requires both `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables
-- If both are configured, GCP is tried first with AWS as fallback
-- Service fails to start if neither provider is available
+- Provider priority can be configured via `STT_PROVIDER_PRIORITY` (default: "GCP,AWS")
+- All providers listed in `STT_PROVIDER_PRIORITY` must be properly configured, or service will fail to start
+- Service fails to start if no providers are available or if priority configuration is invalid
 
 **Configuration Pattern:**
 Uses singleton pattern with `config.Get()` for thread-safe access. Configuration is loaded once at startup in the Cobra `PersistentPreRunE` hook.
@@ -150,6 +155,12 @@ The GitLab CI pipeline (`.gitlab-ci.yml`) has stages:
 - Mock files follow pattern `mock_*.go` in same package as interface
 - Use table-driven tests for multiple scenarios
 - Always test error paths and edge cases (nil contexts, invalid UUIDs, etc.)
+- **Test struct initialization**: Always use explicit field names in test case structs
+  - Good: `{name: "test", input: "value", expectedRes: result}`
+  - Bad: `{"test", "value", result}`
+- **Test function comments**: Do not add explanatory comments at the top of test functions
+  - Test names should be self-documenting
+  - Use inline comments only where code behavior is non-obvious
 
 ## Important Constraints
 

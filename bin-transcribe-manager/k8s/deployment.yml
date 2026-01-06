@@ -52,6 +52,8 @@ spec:
               value: ${AWS_SECRET_KEY}
             - name: STREAMING_LISTEN_PORT
               value: "8080"
+            - name: STT_PROVIDER_PRIORITY
+              value: "GCP,AWS"
           resources:
             limits:
               cpu: "60m"

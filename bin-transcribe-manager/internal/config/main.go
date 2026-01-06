@@ -29,6 +29,7 @@ type Config struct {
 	AWSSecretKey            string // AWSSecretKey is the AWS secret key for AWS services.
 	PodIP                   string // PodIP is the IP address on which the AudioSocket streaming listener binds (typically the pod's IP in Kubernetes).
 	StreamingListenPort     int    // StreamingListenPort is the TCP port on which the AudioSocket streaming listener binds (default: 8080).
+	STTProviderPriority     string // STTProviderPriority is the comma-separated list of STT providers in priority order (e.g., "GCP,AWS"). Default: "GCP,AWS"
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -57,6 +58,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("aws_secret_key", "", "AWS secret key")
 	f.String("pod_ip", "", "Pod IP address for streaming listener")
 	f.Int("streaming_listen_port", 8080, "Streaming listener port")
+	f.String("stt_provider_priority", "GCP,AWS", "STT provider priority order (comma-separated)")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -70,6 +72,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"aws_secret_key":            "AWS_SECRET_KEY",
 		"pod_ip":                    "POD_IP",
 		"streaming_listen_port":     "STREAMING_LISTEN_PORT",
+		"stt_provider_priority":     "STT_PROVIDER_PRIORITY",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -106,6 +109,7 @@ func LoadGlobalConfig() {
 			AWSSecretKey:            viper.GetString("aws_secret_key"),
 			PodIP:                   viper.GetString("pod_ip"),
 			StreamingListenPort:     viper.GetInt("streaming_listen_port"),
+			STTProviderPriority:     viper.GetString("stt_provider_priority"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
