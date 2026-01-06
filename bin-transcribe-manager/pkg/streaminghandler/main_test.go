@@ -146,6 +146,38 @@ func Test_initProviders(t *testing.T) {
 			expectError:   true,
 			expectedCount: 0,
 		},
+		{
+			name:          "trailing comma empty string",
+			priorityList:  []string{"AWS", ""},
+			gcpClient:     nil,
+			awsClient:     "mock_aws_client",
+			expectError:   true,
+			expectedCount: 0,
+		},
+		{
+			name:          "leading comma empty string",
+			priorityList:  []string{"", "AWS"},
+			gcpClient:     nil,
+			awsClient:     "mock_aws_client",
+			expectError:   true,
+			expectedCount: 0,
+		},
+		{
+			name:          "double comma empty string",
+			priorityList:  []string{"GCP", "", "AWS"},
+			gcpClient:     "mock_gcp_client",
+			awsClient:     "mock_aws_client",
+			expectError:   true,
+			expectedCount: 0,
+		},
+		{
+			name:          "empty priority list",
+			priorityList:  []string{},
+			gcpClient:     nil,
+			awsClient:     nil,
+			expectError:   true,
+			expectedCount: 0,
+		},
 	}
 
 	for _, tc := range testCases {
