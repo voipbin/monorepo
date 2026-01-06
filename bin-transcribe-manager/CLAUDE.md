@@ -155,6 +155,9 @@ The GitLab CI pipeline (`.gitlab-ci.yml`) has stages:
 - **Test struct initialization**: Always use explicit field names in test case structs
   - Good: `{name: "test", input: "value", expectedRes: result}`
   - Bad: `{"test", "value", result}`
+- **Test function comments**: Do not add explanatory comments at the top of test functions
+  - Test names should be self-documenting
+  - Use inline comments only where code behavior is non-obvious
 
 ## Important Constraints
 

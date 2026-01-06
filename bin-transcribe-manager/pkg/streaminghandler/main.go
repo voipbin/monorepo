@@ -145,6 +145,19 @@ func NewStreamingHandler(
 			return nil
 		}
 
+		// Skip duplicates (keep first occurrence only)
+		isDuplicate := false
+		for _, existing := range validatedProviders {
+			if existing == provider {
+				log.Debugf("Skipping duplicate provider in priority list: %s", provider)
+				isDuplicate = true
+				break
+			}
+		}
+		if isDuplicate {
+			continue
+		}
+
 		validatedProviders = append(validatedProviders, provider)
 	}
 

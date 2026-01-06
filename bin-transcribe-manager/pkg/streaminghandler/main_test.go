@@ -58,10 +58,6 @@ func Test_NewStreamingHandler_AWSOnly(t *testing.T) {
 }
 
 func Test_NewStreamingHandler_NoProviders(t *testing.T) {
-	// This test verifies service fails when neither provider is available
-	// Priority is set to AWS in TestMain
-	// AWS will fail (empty credentials provided to NewStreamingHandler)
-
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -78,8 +74,57 @@ func Test_NewStreamingHandler_NoProviders(t *testing.T) {
 		"",
 	)
 
-	// Should return nil when no providers available
 	if handler != nil {
 		t.Error("Expected handler to be nil when no providers available")
+	}
+}
+
+func Test_NewStreamingHandler_DuplicateProviders(t *testing.T) {
+	testCases := []struct {
+		name     string
+		priority string
+	}{
+		{
+			name:     "duplicate AWS",
+			priority: "AWS,AWS",
+		},
+		{
+			name:     "triple AWS",
+			priority: "AWS,AWS,AWS",
+		},
+		{
+			name:     "mixed duplicates with case variations",
+			priority: "aws,AWS,Aws",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if errSet := os.Setenv("STT_PROVIDER_PRIORITY", tc.priority); errSet != nil {
+				t.Fatalf("Failed to set env: %v", errSet)
+			}
+
+			config.LoadGlobalConfig()
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+
+			handler := NewStreamingHandler(
+				mockReq,
+				mockNotify,
+				mockTranscript,
+				"127.0.0.1:8080",
+				"test_access_key",
+				"test_secret_key",
+			)
+
+			if handler == nil {
+				t.Errorf("Expected handler to be non-nil with priority '%s'", tc.priority)
+			}
+		})
 	}
 }
