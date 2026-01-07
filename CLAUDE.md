@@ -76,6 +76,60 @@ go get -u ./... && go mod tidy && go mod vendor && go generate ./... && go test 
 
 **Never commit changes to bin-common-handler without updating dependent services.**
 
+## Git Workflow: Branch Management
+
+**CRITICAL: Before making ANY changes or commits, ALWAYS check the current branch first.**
+
+**If the current branch is `main`:**
+1. **STOP - DO NOT make commits on main**
+2. Ask the user to create a feature branch first
+3. Suggest a branch name following this convention: `NOJIRA-Underscored_change_summary`
+4. Wait for user confirmation before proceeding with any code changes
+
+**Example prompt when starting work:**
+```
+You're currently on the main branch. It's recommended to create a feature branch before making changes.
+
+Suggested branch name: NOJIRA-Fix_conference_customer_id
+
+Would you like to:
+1. Create and switch to this branch
+2. Use a different branch name
+3. Work on main anyway (not recommended)
+```
+
+**Correct Workflow:**
+```bash
+# Step 1: ALWAYS check current branch BEFORE making any changes
+git branch --show-current
+
+# Step 2: If on main, create feature branch BEFORE any edits
+git checkout -b NOJIRA-Descriptive_change_summary
+
+# Step 3: Make your code changes
+
+# Step 4: Run the complete update workflow (from section above)
+go get -u ./... && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+
+# Step 5: Commit changes
+git add .
+git commit -m "Descriptive commit message"
+
+# Step 6: Push to remote
+git push -u origin NOJIRA-Descriptive_change_summary
+```
+
+**Branch naming convention:**
+- Format: `NOJIRA-Underscored_change_or_plan_summary`
+- Examples:
+  - `NOJIRA-Fix_conference_customer_id`
+  - `NOJIRA-Add_user_authentication`
+  - `NOJIRA-Refactor_flow_manager_cobra_viper`
+- Use underscores (_) to separate words
+- Keep it concise but descriptive
+
+**Only proceed with working on main if the user explicitly confirms.**
+
 ## Build & Development Commands
 
 ### Prerequisites
