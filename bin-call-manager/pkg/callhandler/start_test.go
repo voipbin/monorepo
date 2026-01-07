@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	cfconference "monorepo/bin-conference-manager/models/conference"
-	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
@@ -248,7 +247,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseConference.CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, cmcustomer.IDCallManager, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseConference.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseConference.CustomerID, tt.responseFlow.ID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
 

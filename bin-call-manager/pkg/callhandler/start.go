@@ -10,7 +10,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	fmflow "monorepo/bin-flow-manager/models/flow"
@@ -464,7 +463,7 @@ func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn 
 	// create flow
 	tmpFlow, err := h.reqHandler.FlowV1FlowCreate(
 		ctx,
-		cmcustomer.IDCallManager,
+		cf.CustomerID,
 		fmflow.TypeFlow,
 		"conference incoming handle",
 		"auto-generated temp flow for conference joining incoming call",

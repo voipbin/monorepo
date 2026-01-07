@@ -105,7 +105,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.67.4 // indirect
+	github.com/prometheus/common v0.67.5 // indirect
 	github.com/prometheus/procfs v0.19.2 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
@@ -126,7 +126,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20251125145642-4e65d59e963e // indirect
-	k8s.io/utils v0.0.0-20251222233032-718f0e51e6d2 // indirect
+	k8s.io/utils v0.0.0-20260106112306-0fe9cd71b2f8 // indirect
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
 	monorepo/bin-chat-manager v0.0.0-20240313050741-a2ced5030a06 // indirect
