@@ -25,16 +25,17 @@ This is the VoIPbin monorepo - a unified backend codebase for a cloud-native CPa
 - **Event-driven architecture** - Pub/sub events via RabbitMQ and ZeroMQ
 - **Kubernetes deployment** - Services designed for GCP GKE with Prometheus monitoring
 
-## CRITICAL: After Making ANY Changes
+## CRITICAL: Before Committing Changes
 
-**Whenever you make ANY changes to a service (code, dependencies, interfaces, etc.), you MUST run this complete workflow:**
+### Regular Code Changes Workflow
+
+**For normal code changes (bug fixes, features, refactoring), run this workflow BEFORE committing:**
 
 ```bash
 # Navigate to the service directory where changes were made
 cd bin-<service-name>
 
-# Run the complete update workflow
-go get -u ./... && \
+# Run the verification workflow (NO dependency updates)
 go mod tidy && \
 go mod vendor && \
 go generate ./... && \
@@ -43,14 +44,38 @@ golangci-lint run -v --timeout 5m
 ```
 
 **What this does:**
-1. `go get -u ./...` - Updates all dependencies to latest versions
-2. `go mod tidy` - Cleans up go.mod and go.sum files
-3. `go mod vendor` - Vendors dependencies for reproducible builds
-4. `go generate ./...` - Regenerates mocks and generated code
-5. `go test ./...` - Runs all tests to ensure nothing broke
-6. `golangci-lint run -v --timeout 5m` - Lints code for quality issues
+1. `go mod tidy` - Cleans up go.mod and go.sum files
+2. `go mod vendor` - Vendors dependencies for reproducible builds
+3. `go generate ./...` - Regenerates mocks and generated code
+4. `go test ./...` - Runs all tests to ensure nothing broke
+5. `golangci-lint run -v --timeout 5m` - Lints code for quality issues
 
-**This is MANDATORY** - Do not skip any step in this workflow. The monorepo's interdependencies require this complete update cycle to maintain consistency and catch issues early.
+**This runs AFTER making changes but BEFORE `git commit`.**
+
+### Dependency Update Workflow
+
+**Only when specifically updating dependencies, run this workflow:**
+
+```bash
+# Navigate to the service directory
+cd bin-<service-name>
+
+# Run the full update workflow (WITH dependency updates)
+go get -u ./... && \
+go mod tidy && \
+go mod vendor && \
+go generate ./... && \
+go test ./... && \
+golangci-lint run -v --timeout 5m
+```
+
+**Why separate workflows?**
+- `go get -u ./...` updates ALL dependencies to latest versions
+- Mixing dependency updates with feature changes makes PR review harder
+- Dependency updates should be separate commits/PRs when possible
+- For regular code changes, only update dependencies if needed
+
+**Both workflows are MANDATORY before committing** - Do not skip any step. The monorepo's interdependencies require this to maintain consistency and catch issues early.
 
 ### Special Case: Changes to bin-common-handler
 
@@ -61,12 +86,14 @@ The `bin-common-handler` is a shared library used by ALL other services. Changes
 ```bash
 # After making changes to bin-common-handler, run from monorepo root:
 # This only updates Go projects (those with go.mod files)
-find . -maxdepth 2 -name "go.mod" -execdir bash -c "go get -u ./... && go mod tidy && go mod vendor && go generate ./... && go test ./..." \;
+find . -maxdepth 2 -name "go.mod" -execdir bash -c "go mod tidy && go mod vendor && go generate ./... && go test ./..." \;
 
 # Or update each Go service individually:
 cd bin-<service-name>
-go get -u ./... && go mod tidy && go mod vendor && go generate ./... && go test ./...
+go mod tidy && go mod vendor && go generate ./... && go test ./...
 ```
+
+**Note:** Use the regular workflow (without `go get -u`) unless you're also updating dependencies.
 
 **Why this is critical:**
 - All `bin-*-manager` services depend on `bin-common-handler` via local `replace` directives in their `go.mod`
@@ -108,8 +135,8 @@ git checkout -b NOJIRA-Descriptive_change_summary
 
 # Step 3: Make your code changes
 
-# Step 4: Run the complete update workflow (from section above)
-go get -u ./... && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+# Step 4: Run the verification workflow BEFORE committing (from section above)
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 
 # Step 5: Commit changes
 git add .
