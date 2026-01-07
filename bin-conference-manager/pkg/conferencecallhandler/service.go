@@ -45,22 +45,26 @@ func (h *conferencecallHandler) ServiceStart(
 	}
 	log.WithField("conferencecall", cc).Debugf("Created conferencecall. conferencecall_id: %s", cc.ID)
 
-	actions := []fmaction.Action{
-		{
+	actions := []fmaction.Action{}
+	if cf.PreFlowID != uuid.Nil {
+		tmpAction := fmaction.Action{
 			ID:   h.utilHandler.UUIDCreate(),
 			Type: fmaction.TypeFetchFlow,
 			Option: fmaction.ConvertOption(fmaction.OptionFetchFlow{
 				FlowID: cf.PreFlowID,
 			}),
-		},
-		{
-			ID:   h.utilHandler.UUIDCreate(),
-			Type: fmaction.TypeConfbridgeJoin,
-			Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
-				ConfbridgeID: cf.ConfbridgeID,
-			}),
-		},
+		}
+		actions = append(actions, tmpAction)
 	}
+
+	tmpAction := fmaction.Action{
+		ID:   h.utilHandler.UUIDCreate(),
+		Type: fmaction.TypeConfbridgeJoin,
+		Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+			ConfbridgeID: cf.ConfbridgeID,
+		}),
+	}
+	actions = append(actions, tmpAction)
 
 	res := &commonservice.Service{
 		ID:          cc.ID,
