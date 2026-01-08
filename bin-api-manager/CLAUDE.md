@@ -65,6 +65,48 @@ OpenAPI specs are generated using `oapi-codegen` from specs in `openapi/config_s
 
 Access Swagger UI at: `https://api.voipbin.net/swagger/index.html`
 
+### API Schema Validation
+
+**IMPORTANT: This service relies on `bin-openapi-manager` as the source of truth for API contracts.**
+
+When backend services (bin-call-manager, bin-conference-manager, etc.) expose data through this API gateway, the OpenAPI schemas in `bin-openapi-manager` must accurately reflect what those services actually return.
+
+**Validation Workflow:**
+
+When adding or modifying API endpoints:
+1. **Identify the Backend Service Model:**
+   - Determine which service handles the request (e.g., bin-call-manager for calls)
+   - Find the public-facing struct (usually `WebhookMessage` in `models/<resource>/webhook.go`)
+
+2. **Verify OpenAPI Schema:**
+   - Check that `bin-openapi-manager/openapi/openapi.yaml` has matching schema
+   - Ensure all fields in the Go struct appear in the OpenAPI schema
+   - Verify types match (string, array, enums, etc.)
+
+3. **Update if Needed:**
+   - If schema is missing or outdated, update `bin-openapi-manager/openapi/openapi.yaml`
+   - Regenerate models: `cd ../bin-openapi-manager && go generate ./...`
+   - Update this service: `go mod tidy && go mod vendor && go generate ./...`
+
+**Example:**
+```
+Backend Service:
+  bin-call-manager/models/call/webhook.go → WebhookMessage struct (23 fields)
+
+OpenAPI Schema:
+  bin-openapi-manager/openapi/openapi.yaml → CallManagerCall (must have same 23 fields)
+
+API Response:
+  This service returns the schema defined in bin-openapi-manager
+```
+
+**Common Issues:**
+- Backend service adds new field → OpenAPI schema not updated → API docs outdated
+- Enum values added → OpenAPI enum not updated → Validation errors
+- Field renamed → Breaking change → Must coordinate across all services
+
+See `bin-openapi-manager/CLAUDE.md` for detailed schema validation procedures.
+
 ## Architecture
 
 ### Monorepo Structure

@@ -775,6 +775,12 @@ components:
         format:
           $ref: '#/components/schemas/CallManagerRecordingFormat'
           description: The format of the recording file (e.g., WAV).
+        activeflow_id:
+          type: string
+          description: Activeflow ID associated with this recording.
+        on_end_flow_id:
+          type: string
+          description: Flow ID to be executed when recording ends.
         tm_start:
           type: string
           description: The start timestamp of the recording.
@@ -1701,6 +1707,9 @@ components:
         customer_id:
           type: string
           description: Unique identifier of the associated customer.
+        activeflow_id:
+          type: string
+          description: Activeflow ID associated with this conference call.
         conference_id:
           type: string
           description: Unique identifier of the associated conference.

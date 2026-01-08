@@ -41,7 +41,7 @@ func (h *serviceHandler) StorageFileGet(ctx context.Context, a *amagent.Agent, i
 		return nil, fmt.Errorf("could not find file info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager|amagent.PermissionCustomerAgent) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}

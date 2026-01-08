@@ -187,6 +187,123 @@ When modifying the OpenAPI spec:
 4. **Schema Changes**: Update appropriate schema in `components/schemas` section
 5. **Regenerate**: Always run `go generate ./...` after changes
 
+### Schema Validation Against Service Models
+
+**CRITICAL: OpenAPI schemas must accurately reflect the public-facing models defined in each service.**
+
+**The Validation Rule:**
+When services expose data publicly (via webhooks, API responses, or events), they define this through specific Go structs. The OpenAPI schemas in this repository MUST match those structs field-for-field.
+
+**Example Mapping:**
+```
+Service Model (what services actually send):
+  bin-call-manager/models/call/webhook.go → WebhookMessage struct
+
+OpenAPI Schema (what this repo documents):
+  openapi/openapi.yaml → CallManagerCall schema
+```
+
+**How to Validate:**
+
+1. **Identify the Service Model:**
+   - Look for `WebhookMessage` structs in service `models/` directories
+   - Example: `bin-call-manager/models/call/webhook.go`
+   - Example: `bin-conference-manager/models/conference/webhook.go`
+   - Example: `bin-agent-manager/models/agent/webhook.go`
+
+2. **Locate the Corresponding OpenAPI Schema:**
+   - Search `openapi/openapi.yaml` for the schema name
+   - Naming pattern: `[ServiceName][ResourceType]`
+   - Examples:
+     - `CallManagerCall` for call-manager's Call
+     - `ConferenceManagerConference` for conference-manager's Conference
+     - `AgentManagerAgent` for agent-manager's Agent
+
+3. **Field-by-Field Comparison:**
+   ```
+   Go Struct Field          →  OpenAPI Schema Field
+   ───────────────────────────────────────────────────
+   FlowID uuid.UUID         →  flow_id: type: string
+   Status Status            →  status: $ref: '#/components/schemas/CallManagerCallStatus'
+   ChainedCallIDs []uuid.UUID → chained_call_ids: type: array, items: type: string
+   TMCreate string          →  tm_create: type: string
+   ```
+
+4. **Check for Missing Fields:**
+   - Every field in the Go `WebhookMessage` struct should have a corresponding property in the OpenAPI schema
+   - Embedded structs (like `commonidentity.Identity`) should have their fields expanded in the schema
+
+5. **Verify Type Correctness:**
+   - `string` types in Go → `type: string` in OpenAPI
+   - `uuid.UUID` → `type: string` (with optional `format: uuid`)
+   - `[]Type` slices → `type: array` with `items` definition
+   - Enums → `$ref` to corresponding enum schema
+   - Nested structs → `$ref` to corresponding schema
+
+**Common Validation Scenarios:**
+
+**Adding a New Field to a Service Model:**
+```go
+// In bin-call-manager/models/call/webhook.go
+type WebhookMessage struct {
+    // ... existing fields ...
+    NewField string `json:"new_field,omitempty"`  // ← New field added
+}
+```
+
+Must update OpenAPI schema:
+```yaml
+# In openapi/openapi.yaml under CallManagerCall
+properties:
+  # ... existing properties ...
+  new_field:                    # ← Add this
+    type: string
+    description: Description of new field
+```
+
+**Adding a New Enum Value:**
+```go
+// In bin-conference-manager/models/conference/status.go
+const (
+    StatusActive  Status = "active"
+    StatusPaused  Status = "paused"   // ← New enum value
+    StatusEnded   Status = "ended"
+)
+```
+
+Must update OpenAPI enum:
+```yaml
+ConferenceManagerConferenceStatus:
+  type: string
+  enum:
+    - active
+    - paused    # ← Add this
+    - ended
+  x-enum-varnames:
+    - ConferenceManagerConferenceStatusActive
+    - ConferenceManagerConferenceStatusPaused    # ← Add this
+    - ConferenceManagerConferenceStatusEnded
+```
+
+**Service Model Locations by Manager:**
+- **bin-call-manager**: `models/call/webhook.go`, `models/groupcall/webhook.go`, `models/recording/webhook.go`
+- **bin-conference-manager**: `models/conference/webhook.go`, `models/conferencecall/webhook.go`
+- **bin-agent-manager**: `models/agent/webhook.go`
+- **bin-flow-manager**: `models/flow/webhook.go`, `models/activeflow/webhook.go`
+- Pattern: Most services follow `models/<resource>/webhook.go`
+
+**After Making Schema Changes:**
+1. Validate OpenAPI spec: `oapi-codegen -config configs/config_model/config.generate.yaml openapi/openapi.yaml > /dev/null`
+2. Regenerate models: `go generate ./...`
+3. Test in dependent services (especially `bin-api-manager`)
+4. Update documentation if public API changes
+
+**Why This Matters:**
+- API documentation at https://api.voipbin.net/docs/ must be accurate
+- External API consumers depend on correct schema definitions
+- Type mismatches cause runtime errors and customer confusion
+- Swagger UI generation relies on accurate schemas
+
 ### External Documentation
 
 OpenAPI spec includes external documentation links:
