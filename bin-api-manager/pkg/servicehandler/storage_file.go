@@ -37,12 +37,11 @@ func (h *serviceHandler) StorageFileGet(ctx context.Context, a *amagent.Agent, i
 	// get file
 	f, err := h.storageFileGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get file info from the storage-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find file info. err: %v", err)
 	}
+	log.WithField("file", f).Debugf("Found file info. file_id: %s", f.ID)
 
-	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager|amagent.PermissionCustomerAgent) {
-		log.Info("The user has no permission.")
+	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAll) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
