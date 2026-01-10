@@ -1160,6 +1160,9 @@ type CallManagerGroupcallStatus string
 
 // CallManagerRecording defines model for CallManagerRecording.
 type CallManagerRecording struct {
+	// ActiveflowId Activeflow ID associated with this recording.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
 	// CustomerId Resource's customer ID
 	CustomerId *string `json:"customer_id,omitempty"`
 
@@ -1168,6 +1171,9 @@ type CallManagerRecording struct {
 
 	// Id Resource identifier
 	Id *string `json:"id,omitempty"`
+
+	// OnEndFlowId Flow ID to be executed when recording ends.
+	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
 
 	// OwnerId Resource's owner ID
 	OwnerId *string `json:"owner_id,omitempty"`
@@ -1632,6 +1638,9 @@ type ConferenceManagerConferenceType string
 
 // ConferenceManagerConferencecall defines model for ConferenceManagerConferencecall.
 type ConferenceManagerConferencecall struct {
+	// ActiveflowId Activeflow ID associated with this conference call.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
 	// ConferenceId Unique identifier of the associated conference.
 	ConferenceId *string `json:"conference_id,omitempty"`
 

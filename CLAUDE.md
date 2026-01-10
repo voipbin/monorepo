@@ -103,6 +103,69 @@ go mod tidy && go mod vendor && go generate ./... && go test ./...
 
 **Never commit changes to bin-common-handler without updating dependent services.**
 
+### Special Case: Changes to Public-Facing Models and OpenAPI Schemas
+
+**CRITICAL: If you modify public-facing data structures in ANY service, you MUST verify and update the corresponding OpenAPI schemas in `bin-openapi-manager`.**
+
+**What are public-facing models?**
+Services expose data to external APIs, webhooks, and events through specific structs:
+- `WebhookMessage` structs (e.g., `call.WebhookMessage`, `conference.WebhookMessage`)
+- API response models that are returned to external clients
+- Any data structure used in RPC responses to `bin-api-manager`
+
+**The Rule:**
+When a service defines what data is exposed publicly (via `WebhookMessage` or similar), the corresponding OpenAPI schema in `bin-openapi-manager/openapi/openapi.yaml` MUST accurately reflect all fields.
+
+**Example Mapping:**
+```
+bin-call-manager/models/call/webhook.go → WebhookMessage struct
+    ↓ maps to ↓
+bin-openapi-manager/openapi/openapi.yaml → CallManagerCall schema
+
+bin-conference-manager/models/conference/webhook.go → WebhookMessage struct
+    ↓ maps to ↓
+bin-openapi-manager/openapi/openapi.yaml → ConferenceManagerConference schema
+```
+
+**Validation Process:**
+1. **Before modifying a WebhookMessage or public model:**
+   - Note all fields currently in the struct
+
+2. **After making changes:**
+   - Identify the corresponding OpenAPI schema in `bin-openapi-manager/openapi/openapi.yaml`
+   - Compare fields in the Go struct vs. OpenAPI schema
+   - Add any missing fields to the OpenAPI schema
+   - Remove deprecated fields from the OpenAPI schema
+   - Ensure field types match (string, array, object, etc.)
+   - Ensure enums are properly defined
+
+3. **Regenerate OpenAPI code:**
+```bash
+cd bin-openapi-manager
+go generate ./...
+```
+
+4. **Update dependent services:**
+```bash
+cd bin-api-manager
+go mod tidy && go mod vendor && go generate ./...
+```
+
+**Why this is critical:**
+- `bin-openapi-manager` is the source of truth for the public REST API contract
+- External API consumers rely on accurate OpenAPI documentation
+- API documentation (Swagger UI) must match actual service behavior
+- Type mismatches cause runtime errors and API consumer confusion
+
+**Common scenarios requiring validation:**
+- Adding new fields to a model
+- Changing field types or nullability
+- Adding new enum values
+- Renaming fields (breaking change - coordinate carefully)
+- Removing deprecated fields
+
+**Never commit changes to public-facing models without verifying OpenAPI schemas are synchronized.**
+
 ## Git Workflow: Branch Management
 
 **CRITICAL: Before making ANY changes or commits, ALWAYS check the current branch first.**
