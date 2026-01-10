@@ -49,6 +49,10 @@ func Bootstrap(cmd *cobra.Command) error {
 		return errors.Wrapf(errBind, "could not bind config")
 	}
 
+	return nil
+}
+
+func PostBootstrap() error {
 	// Initialize Prometheus monitoring
 	cfg := Get()
 	initProm(cfg.PrometheusEndpoint, cfg.PrometheusListenAddress)
@@ -71,13 +75,13 @@ func bindConfig(cmd *cobra.Command) error {
 	viper.AutomaticEnv()
 	f := cmd.PersistentFlags()
 
-	f.String("rabbitmq_address", "", "RabbitMQ server address")
-	f.String("prometheus_endpoint", "", "Prometheus metrics endpoint")
-	f.String("prometheus_listen_address", "", "Prometheus listen address")
-	f.String("database_dsn", "", "Database connection DSN")
-	f.String("redis_address", "", "Redis server address")
+	f.String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "RabbitMQ server address")
+	f.String("prometheus_endpoint", "/metrics", "Prometheus metrics endpoint")
+	f.String("prometheus_listen_address", ":2112", "Prometheus listen address")
+	f.String("database_dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "Database connection DSN")
+	f.String("redis_address", "127.0.0.1:6379", "Redis server address")
 	f.String("redis_password", "", "Redis password")
-	f.Int("redis_database", 0, "Redis database index")
+	f.Int("redis_database", 1, "Redis database index")
 	f.String("jwt_key", "", "JWT secret key for token signing")
 	f.String("gcp_project_id", "", "GCP project ID")
 	f.String("gcp_bucket_name", "", "GCP bucket name for temporary storage")

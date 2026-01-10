@@ -71,6 +71,10 @@ func main() {
 
 	config.LoadGlobalConfig()
 
+	if errPostBootstrap := config.PostBootstrap(); errPostBootstrap != nil {
+		logrus.Fatalf("Could not complete post-bootstrap. err: %v", errPostBootstrap)
+	}
+
 	if errExecute := rootCmd.Execute(); errExecute != nil {
 		logrus.Fatalf("Could not execute command. err: %v", errExecute)
 	}
