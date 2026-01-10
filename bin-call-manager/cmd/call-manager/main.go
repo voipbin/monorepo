@@ -2,7 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -10,12 +14,15 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
+	"monorepo/bin-call-manager/internal/config"
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/pkg/arieventhandler"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
@@ -35,45 +42,58 @@ import (
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-
-	homerAPIAddress = ""
-	homerAuthToken  = ""
-	homerWhitelist  = []string{}
-)
-
 func main() {
-	log := logrus.WithField("func", "main")
+	rootCmd := &cobra.Command{
+		Use:   "call-manager",
+		Short: "VoIPbin call-manager service",
+		Long:  "The call-manager service handles VoIP call management, including inbound/outbound routing and media control.",
+		RunE:  runCommand,
+	}
+
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
+		logrus.Fatalf("Could not bootstrap config. err: %v", errBind)
+	}
+
+	if errExec := rootCmd.Execute(); errExec != nil {
+		logrus.Fatalf("Could not execute command. err: %v", errExec)
+	}
+}
+
+func runCommand(cmd *cobra.Command, args []string) error {
+	config.LoadGlobalConfig()
+	cfg := config.Get()
+
+	log := logrus.WithField("func", "runCommand")
+
+	// init signal handler
+	initSignal()
+
+	// init prometheus setting
+	initProm(cfg.PrometheusEndpoint, cfg.PrometheusListenAddress)
 
 	// connect to database
-	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
+	sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
-		return
+		return errors.Wrapf(err, "could not connect to database")
 	}
 	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
+	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
 	if err := cache.Connect(); err != nil {
 		log.Errorf("Could not connect to cache server. err: %v", err)
-		return
+		return errors.Wrapf(err, "could not connect to cache")
 	}
 
 	// run
 	if errRun := run(sqlDB, cache); errRun != nil {
 		log.Errorf("Could not run the process correctly. err: %v", errRun)
-		return
+		return errRun
 	}
 
 	<-chDone
+	return nil
 }
 
 // signalHandler catches signals and set the done
@@ -83,14 +103,37 @@ func signalHandler() {
 	chDone <- true
 }
 
+// initSignal inits signal settings.
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go signalHandler()
+}
+
+// initProm inits prometheus settings
+func initProm(endpoint, listen string) {
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		for {
+			err := http.ListenAndServe(listen, nil)
+			if err != nil {
+				logrus.Errorf("Could not start prometheus listener")
+				time.Sleep(time.Second * 1)
+				continue
+			}
+			break
+		}
+	}()
+}
+
 // run runs the call-manager
 func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	cfg := config.Get()
 
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
 
 	// create handlers
@@ -102,7 +145,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	recordingHandler := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db)
-	recoveryHandler := callhandler.NewRecoveryHandler(reqHandler, homerAPIAddress, homerAuthToken, homerWhitelist)
+	recoveryHandler := callhandler.NewRecoveryHandler(reqHandler, cfg.HomerAPIAddress, cfg.HomerAuthToken, cfg.HomerWhitelist)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler, recoveryHandler)
 	ariEventHandler := arieventhandler.NewEventHandler(sockHandler, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 
