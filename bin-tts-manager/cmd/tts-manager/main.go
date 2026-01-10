@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -12,8 +15,11 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
+	"monorepo/bin-tts-manager/internal/config"
 	"monorepo/bin-tts-manager/pkg/listenhandler"
 	"monorepo/bin-tts-manager/pkg/streaminghandler"
 	"monorepo/bin-tts-manager/pkg/ttshandler"
@@ -25,39 +31,79 @@ const serviceName = commonoutline.ServiceNameTTSManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-
-	awsAccessKey     = ""
-	awsSecretKey     = ""
-	elevenlabsAPIKey = ""
-)
-
 func main() {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "main",
-	})
-
-	if errRun := run(); errRun != nil {
-		log.Errorf("Could not run. err: %v", errRun)
-		return
+	rootCmd := &cobra.Command{
+		Use:   "tts-manager",
+		Short: "Voipbin TTS Manager Daemon",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			config.LoadGlobalConfig()
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDaemon()
+		},
 	}
-	<-chDone
+
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
+		logrus.Fatalf("Failed to bootstrap config: %v", errBind)
+	}
+
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Errorf("Command execution failed: %v", errExecute)
+		os.Exit(1)
+	}
 }
 
-// signalHandler catches signals and set the done
-func signalHandler() {
-	sig := <-chSigs
-	logrus.Debugf("Received signal. sig: %v", sig)
-	chDone <- true
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go func() {
+		sig := <-chSigs
+		logrus.Infof("Received signal: %v", sig)
+		chDone <- true
+	}()
+}
+
+func initProm(endpoint, listen string) {
+	// Skip Prometheus initialization if endpoint or listen address is not configured
+	if endpoint == "" || listen == "" {
+		logrus.Debug("Prometheus metrics disabled (endpoint or listen address not configured)")
+		return
+	}
+
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
+		if err := http.ListenAndServe(listen, nil); err != nil {
+			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
+			logrus.Errorf("Prometheus server error: %v", err)
+		}
+	}()
+}
+
+func runDaemon() error {
+	initSignal()
+	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
+
+	log := logrus.WithField("func", "runDaemon")
+	log.WithField("config", config.Get()).Info("Starting tts-manager...")
+
+	if errRun := run(); errRun != nil {
+		return errors.Wrapf(errRun, "could not run tts-manager")
+	}
+
+	<-chDone
+	log.Info("TTS-manager stopped safely.")
+	return nil
 }
 
 // Run the services
 func run() error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "run",
+	})
+
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	// create listen handler
@@ -68,13 +114,14 @@ func run() error {
 	podID := os.Getenv("HOSTNAME")
 	listenAddress := fmt.Sprintf("%s:8080", localAddress)
 
-	ttsHandler := ttshandler.NewTTSHandler(awsAccessKey, awsSecretKey, "/shared-data", localAddress, reqHandler, notifyHandler)
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, listenAddress, podID, elevenlabsAPIKey)
+	ttsHandler := ttshandler.NewTTSHandler(config.Get().AWSAccessKey, config.Get().AWSSecretKey, "/shared-data", localAddress, reqHandler, notifyHandler)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, listenAddress, podID, config.Get().ElevenlabsAPIKey)
 
 	// run listener
 	go runListen(sockHandler, ttsHandler, streamingHandler, podID)
 	go runStreaming(streamingHandler)
 
+	log.Debug("All handlers started successfully")
 	return nil
 }
 

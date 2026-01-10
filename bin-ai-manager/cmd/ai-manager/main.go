@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"os"
+	"os/signal"
+	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -14,7 +16,9 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
+	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
@@ -31,62 +35,73 @@ const (
 	serviceName = commonoutline.ServiceNameAIManager
 )
 
-// channels
-var chSigs = make(chan os.Signal, 1)
-var chDone = make(chan bool, 1)
-
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-	engineKeyChatgpt        = ""
-)
+var rootCmd = &cobra.Command{
+	Use:   "ai-manager",
+	Short: "AI Manager Service",
+	Long:  "AI Manager Service for VoIPbin platform",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		config.LoadGlobalConfig()
+		config.InitPrometheus()
+		return runDaemon()
+	},
+}
 
 func main() {
-	log := logrus.WithField("func", "main")
+	if err := config.Bootstrap(rootCmd); err != nil {
+		logrus.Fatalf("Failed to bootstrap configuration: %v", err)
+	}
+
+	if err := rootCmd.Execute(); err != nil {
+		logrus.Fatalf("Failed to execute command: %v", err)
+	}
+}
+
+func runDaemon() error {
+	log := logrus.WithField("func", "runDaemon")
 	log.Info("Starting ai-manager.")
 
+	cfg := config.Get()
+
 	// connect to database
-	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
+	sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
-		return
+		return err
 	}
 	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
+	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
 	if err := cache.Connect(); err != nil {
 		logrus.Errorf("Could not connect to cache server. err: %v", err)
-		return
+		return err
 	}
 
-	_ = run(sqlDB, cache)
-	<-chDone
+	if err := run(sqlDB, cache); err != nil {
+		return err
+	}
 
-	log.Info("Finished ai-manager.")
-}
+	// Signal handling
+	chSigs := make(chan os.Signal, 1)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
-// signalHandler catches signals and set the done
-func signalHandler() {
 	sig := <-chSigs
-	logrus.Debugf("Received signal. sig: %v", sig)
-	chDone <- true
+	logrus.Infof("Received signal: %v. Shutting down gracefully...", sig)
+	log.Info("Finished ai-manager.")
+
+	return nil
 }
 
 // run runs the main thread.
 func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	log := logrus.WithField("func", "run")
+	cfg := config.Get()
 
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
 
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
@@ -94,7 +109,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	aiHandler := aihandler.NewAIHandler(requestHandler, notifyHandler, db)
 
-	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(engineKeyChatgpt)
+	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(cfg.EngineKeyChatGPT)
 	engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
 
 	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler)

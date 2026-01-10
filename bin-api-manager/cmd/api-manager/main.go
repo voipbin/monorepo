@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -19,12 +20,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	// swagger embed files
 	// gin-swagger middleware
 	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/internal/config"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/lib/service"
 	"monorepo/bin-api-manager/models/common"
@@ -38,29 +41,10 @@ import (
 	"monorepo/bin-api-manager/server"
 )
 
-// channels
-var chSigs = make(chan os.Signal, 1)
-
 const (
 	constSSLPrivFilename = "/tmp/ssl_privkey.pem"
 	constSSLCertFilename = "/tmp/ssl_cert.pem"
 	defaultAudiosockPort = 9000
-)
-
-var (
-	databaseDSN             = ""
-	gcpBucketName           = ""
-	gcpProjectID            = ""
-	jwtKey                  = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-	sslCertBase64           = ""
-	sslPrivkeyBase64        = ""
-	listenIPAudiosock       = ""
 )
 
 //	@title			VoIPBIN project API
@@ -74,12 +58,37 @@ var (
 // @host	api.voipbin.net
 // @BasePath
 func main() {
+	rootCmd := &cobra.Command{
+		Use:   "api-manager",
+		Short: "VoIPBIN API Manager - External REST API gateway",
+		Long:  "External REST API gateway with JWT authentication, Swagger UI, and microservice orchestration",
+		Run:   runDaemon,
+	}
+
+	if errBootstrap := config.Bootstrap(rootCmd); errBootstrap != nil {
+		logrus.Fatalf("Could not bootstrap config. err: %v", errBootstrap)
+	}
+
+	config.LoadGlobalConfig()
+
+	if errPostBootstrap := config.PostBootstrap(); errPostBootstrap != nil {
+		logrus.Fatalf("Could not complete post-bootstrap. err: %v", errPostBootstrap)
+	}
+
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Fatalf("Could not execute command. err: %v", errExecute)
+	}
+}
+
+func runDaemon(cmd *cobra.Command, args []string) {
 	ctx := context.Background()
 
-	log := logrus.WithField("func", "main")
+	log := logrus.WithField("func", "runDaemon")
+
+	cfg := config.Get()
 
 	// connect to database
-	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
+	sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
@@ -87,7 +96,7 @@ func main() {
 	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
+	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
 	if err := cache.Connect(); err != nil {
 		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
@@ -97,45 +106,17 @@ func main() {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// connect to rabbitmq
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
 
 	run(ctx, sockHandler, db)
 
+	// Wait for termination signal
+	chSigs := make(chan os.Signal, 1)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+
 	sig := <-chSigs
 	log.Infof("Terminating api-manager. sig: %v", sig)
-}
-
-func writeBase64(filename string, data string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":     "writeBase64",
-		"filename": filename,
-		"data":     data,
-	})
-
-	// Create or open the file
-	file, err := os.Create(filename)
-	if err != nil {
-		log.Errorf("Could not create a file. err: %v", err)
-		return err
-	}
-	defer func() {
-		_ = file.Close()
-	}()
-
-	tmp, err := base64.StdEncoding.DecodeString(data)
-	if err != nil {
-		log.Fatalf("Error decoding Base64 string: %v", err)
-	}
-
-	// Write the string data to the file
-	_, err = file.Write(tmp)
-	if err != nil {
-		log.Errorf("Could not write to file. err: %v", err)
-		return err
-	}
-
-	return nil
 }
 
 func run(
@@ -143,6 +124,7 @@ func run(
 	sockHandler sockhandler.SockHandler,
 	db dbhandler.DBHandler,
 ) {
+	cfg := config.Get()
 	addressListenStream := getAddressListenAudiosock()
 
 	// create handlers
@@ -150,7 +132,7 @@ func run(
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
 	streamHandler := streamhandler.NewStreamHandler(requestHandler, addressListenStream)
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler)
-	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, gcpProjectID, gcpBucketName, jwtKey)
+	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey)
 
 	go runSubscribe(sockHandler, zmqPubHandler)
 	go runListenHTTP(serviceHandler)
@@ -296,7 +278,8 @@ func runListenStreamsock(ctx context.Context, streamHandler streamhandler.Stream
 		"func": "runListenAudiosock",
 	})
 
-	listenAddress := fmt.Sprintf("%s:%d", listenIPAudiosock, defaultAudiosockPort)
+	cfg := config.Get()
+	listenAddress := fmt.Sprintf("%s:%d", cfg.ListenIPAudiosock, defaultAudiosockPort)
 	log.Debugf("Listening audiosock address. address: %s", listenAddress)
 
 	addr, err := net.ResolveTCPAddr("tcp", listenAddress)
@@ -330,7 +313,8 @@ func runListenStreamsock(ctx context.Context, streamHandler streamhandler.Stream
 }
 
 func getAddressListenAudiosock() string {
-	res := fmt.Sprintf("%s:%d", listenIPAudiosock, defaultAudiosockPort)
+	cfg := config.Get()
+	res := fmt.Sprintf("%s:%d", cfg.ListenIPAudiosock, defaultAudiosockPort)
 
 	return res
 }

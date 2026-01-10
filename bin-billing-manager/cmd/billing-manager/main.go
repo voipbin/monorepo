@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"os"
+	"os/signal"
+	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -13,7 +15,9 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
+	"monorepo/bin-billing-manager/internal/config"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
@@ -30,41 +34,62 @@ const (
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-)
-
 func main() {
-	log := logrus.WithField("func", "main")
+	rootCmd := &cobra.Command{
+		Use:   "billing-manager",
+		Short: "billing-manager is a billing management service",
+		Long:  `billing-manager manages billing accounts, balance tracking, and subscription management.`,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			config.LoadGlobalConfig()
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDaemon()
+		},
+	}
+
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
+		logrus.Fatalf("Failed to bootstrap config: %v", errBind)
+	}
+
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Errorf("Command execution failed: %v", errExecute)
+		os.Exit(1)
+	}
+}
+
+func runDaemon() error {
+	log := logrus.WithField("func", "runDaemon")
 
 	log.Info("Starting billing-manager.")
 
+	// init signal handler
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go signalHandler()
+
 	// connect to database
-	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
+	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
-		return
+		return err
 	}
 	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
+	cache := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
 	if err := cache.Connect(); err != nil {
 		log.Errorf("Could not connect to cache server. err: %v", err)
-		return
+		return err
 	}
 
 	// run
 	if errRun := run(sqlDB, cache); errRun != nil {
 		log.Errorf("Could not run the process correctly. err: %v", errRun)
+		return errRun
 	}
 	<-chDone
+	log.Info("billing-manager stopped safely.")
+	return nil
 }
 
 // signalHandler catches signals and set the done
@@ -81,7 +106,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)

@@ -1,0 +1,126 @@
+package config
+
+import (
+	"net/http"
+	"sync"
+	"time"
+
+	joonix "github.com/joonix/log"
+	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
+
+var (
+	globalConfig Config
+	once         sync.Once
+)
+
+// Config holds process-wide configuration values loaded from command-line
+// flags and environment variables for the service.
+type Config struct {
+	RabbitMQAddress         string // RabbitMQAddress is the address (including host and port) of the RabbitMQ server.
+	PrometheusEndpoint      string // PrometheusEndpoint is the HTTP path at which Prometheus metrics are exposed.
+	PrometheusListenAddress string // PrometheusListenAddress is the network address on which the Prometheus metrics HTTP server listens (for example, ":8080").
+	DatabaseDSN             string // DatabaseDSN is the data source name used to connect to the primary database.
+	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
+	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
+	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
+	EngineKeyChatGPT        string // EngineKeyChatGPT is the API key for ChatGPT engine.
+}
+
+func Bootstrap(cmd *cobra.Command) error {
+	initLog()
+	if errBind := bindConfig(cmd); errBind != nil {
+		return errors.Wrapf(errBind, "could not bind config")
+	}
+
+	return nil
+}
+
+// bindConfig binds CLI flags and environment variables for configuration.
+// It maps command-line flags to environment variables using Viper.
+func bindConfig(cmd *cobra.Command) error {
+	viper.AutomaticEnv()
+	f := cmd.PersistentFlags()
+
+	f.String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "RabbitMQ server address")
+	f.String("prometheus_endpoint", "/metrics", "Prometheus metrics endpoint")
+	f.String("prometheus_listen_address", ":2112", "Prometheus listen address")
+	f.String("database_dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "Database connection DSN")
+	f.String("redis_address", "127.0.0.1:6379", "Redis server address")
+	f.String("redis_password", "", "Redis password")
+	f.Int("redis_database", 1, "Redis database index")
+	f.String("engine_key_chatgpt", "", "Engine key for chatgpt")
+
+	bindings := map[string]string{
+		"rabbitmq_address":          "RABBITMQ_ADDRESS",
+		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
+		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
+		"database_dsn":              "DATABASE_DSN",
+		"redis_address":             "REDIS_ADDRESS",
+		"redis_password":            "REDIS_PASSWORD",
+		"redis_database":            "REDIS_DATABASE",
+		"engine_key_chatgpt":        "ENGINE_KEY_CHATGPT",
+	}
+
+	for flagKey, envKey := range bindings {
+		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
+			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
+		}
+
+		if errBind := viper.BindEnv(flagKey, envKey); errBind != nil {
+			return errors.Wrapf(errBind, "could not bind the env. key: %s", envKey)
+		}
+	}
+
+	return nil
+}
+
+func Get() *Config {
+	return &globalConfig
+}
+
+// LoadGlobalConfig loads configuration from viper into the global singleton.
+// NOTE: This must be called AFTER Bootstrap (which calls bindConfig) has been executed.
+// If called before binding, it will load empty/default values.
+func LoadGlobalConfig() {
+	once.Do(func() {
+		globalConfig = Config{
+			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
+			PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
+			PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
+			DatabaseDSN:             viper.GetString("database_dsn"),
+			RedisAddress:            viper.GetString("redis_address"),
+			RedisPassword:           viper.GetString("redis_password"),
+			RedisDatabase:           viper.GetInt("redis_database"),
+			EngineKeyChatGPT:        viper.GetString("engine_key_chatgpt"),
+		}
+		logrus.Debug("Configuration has been loaded and locked.")
+	})
+}
+
+func initLog() {
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
+}
+
+// InitPrometheus initializes Prometheus metrics server.
+// Must be called AFTER LoadGlobalConfig().
+func InitPrometheus() {
+	cfg := Get()
+	http.Handle(cfg.PrometheusEndpoint, promhttp.Handler())
+	go func() {
+		for {
+			err := http.ListenAndServe(cfg.PrometheusListenAddress, nil)
+			if err != nil {
+				logrus.Errorf("Could not start prometheus listener")
+				time.Sleep(time.Second * 1)
+				continue
+			}
+			break
+		}
+	}()
+}

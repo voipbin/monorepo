@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"net/http"
 	"os"
 	"time"
 
@@ -15,10 +16,14 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	joonix "github.com/joonix/log"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	"monorepo/bin-hook-manager/api"
 	"monorepo/bin-hook-manager/api/models/common"
+	"monorepo/bin-hook-manager/internal/config"
 	"monorepo/bin-hook-manager/pkg/servicehandler"
 )
 
@@ -27,15 +32,6 @@ const serviceName = commonoutline.ServiceNameHookManager
 const (
 	constSSLPrivFilename = "/tmp/ssl_privkey.pem"
 	constSSLCertFilename = "/tmp/ssl_cert.pem"
-)
-
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	sslPrivkeyBase64        = ""
-	sslCertBase64           = ""
 )
 
 // @title VoIPBIN project event hook
@@ -48,12 +44,59 @@ var (
 
 // @host hook.voipbin.net
 // @BasePath
-func main() {
 
-	log := logrus.WithField("func", "main")
+var rootCmd = &cobra.Command{
+	Use:   "hook-manager",
+	Short: "Hook Manager Service",
+	Long:  `Hook Manager handles webhook receivers for the VoIPbin platform.`,
+	Run:   runService,
+}
+
+func init() {
+	// Define flags
+	rootCmd.Flags().String("database_dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "Data Source Name for database connection (e.g., user:password@tcp(localhost:3306)/dbname)")
+	rootCmd.Flags().String("prometheus_endpoint", "/metrics", "URL for the Prometheus metrics endpoint")
+	rootCmd.Flags().String("prometheus_listen_address", ":2112", "Address for Prometheus to listen on (e.g., localhost:8080)")
+	rootCmd.Flags().String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
+	rootCmd.Flags().String("ssl_privkey_base64", "", "Base64-encoded private key")
+	rootCmd.Flags().String("ssl_cert_base64", "", "Base64-encoded cert")
+
+	// Initialize configuration
+	config.InitConfig(rootCmd)
+
+	// Initialize logging
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		logrus.Errorf("Failed to execute command: %v", err)
+		os.Exit(1)
+	}
+}
+
+func runService(cmd *cobra.Command, args []string) {
+	log := logrus.WithField("func", "runService")
+
+	cfg := config.Get()
+
+	// Initialize Prometheus
+	initProm(cfg.PrometheusEndpoint, cfg.PrometheusListenAddress)
+
+	// init ssl
+	if errWrite := writeBase64(constSSLCertFilename, cfg.SSLCertBase64); errWrite != nil {
+		log.Errorf("Could not write the ssl cert file.")
+		return
+	}
+
+	if errWrite := writeBase64(constSSLPrivFilename, cfg.SSLPrivkeyBase64); errWrite != nil {
+		log.Errorf("Could not write the ssl private key file.")
+		return
+	}
 
 	// connect to database
-	sqlDB, err := commondatabasehandler.Connect(databaseDSN)
+	sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
@@ -61,7 +104,7 @@ func main() {
 	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to rabbitmq
-	sock := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sock := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sock.Connect()
 
 	// create servicehandler
@@ -102,7 +145,27 @@ func main() {
 	if errAppRun := app.RunTLS(":443", constSSLCertFilename, constSSLPrivFilename); errAppRun != nil {
 		log.Errorf("The hook service ended with error. err: %v", errAppRun)
 	}
+}
 
+// initProm inits prometheus settings
+func initProm(endpoint, listen string) {
+	log := logrus.WithField("func", "initProm").WithFields(logrus.Fields{
+		"endpoint": endpoint,
+		"listen":   listen,
+	})
+
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		for {
+			if errListen := http.ListenAndServe(listen, nil); errListen != nil {
+				log.Errorf("Could not start prometheus listener. err: %v", errListen)
+				time.Sleep(time.Second * 1)
+				continue
+			}
+			log.Infof("Finishing the prometheus listener.")
+			break
+		}
+	}()
 }
 
 func writeBase64(filename string, data string) error {

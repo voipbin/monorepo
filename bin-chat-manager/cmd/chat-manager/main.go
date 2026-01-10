@@ -1,8 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -12,8 +15,12 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
+	joonix "github.com/joonix/log"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
+	"monorepo/bin-chat-manager/internal/config"
 	"monorepo/bin-chat-manager/pkg/cachehandler"
 	"monorepo/bin-chat-manager/pkg/chathandler"
 	"monorepo/bin-chat-manager/pkg/chatroomhandler"
@@ -29,29 +36,79 @@ const serviceName = commonoutline.ServiceNameChatManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-)
+var rootCmd = &cobra.Command{
+	Use:   "chat-manager",
+	Short: "Chat Manager Service",
+	Long:  "Chat Manager handles chat rooms and messaging functionality in the VoIPbin platform",
+	Run:   runCommand,
+}
+
+func init() {
+	// Register flags
+	config.RegisterFlags(rootCmd)
+
+	// Initialize logging
+	initLog()
+
+	// Initialize signal handling
+	initSignal()
+}
 
 func main() {
-	fmt.Printf("Hello world!\n")
+	if err := rootCmd.Execute(); err != nil {
+		logrus.Errorf("Failed to execute command: %v", err)
+		os.Exit(1)
+	}
+}
+
+func runCommand(cmd *cobra.Command, args []string) {
+	// Initialize configuration
+	config.Init(cmd)
+	cfg := config.Get()
+
+	// Initialize Prometheus
+	initProm(cfg.PrometheusEndpoint, cfg.PrometheusListenAddress)
+
+	logrus.Info("Starting chat-manager service")
 
 	// create dbhandler
-	dbHandler, err := createDBHandler()
+	dbHandler, err := createDBHandler(cfg)
 	if err != nil {
-		logrus.Errorf("Could not connect to the database or failed to initiate the cachehandler. err: ")
+		logrus.Errorf("Could not connect to the database or failed to initiate the cachehandler. err: %v", err)
 		return
 	}
 
 	// run the service
-	run(dbHandler)
+	run(dbHandler, cfg)
 	<-chDone
+}
+
+// initLog initializes log settings
+func initLog() {
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
+}
+
+// initSignal initializes signal settings
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go signalHandler()
+}
+
+// initProm initializes prometheus settings
+func initProm(endpoint, listen string) {
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		for {
+			err := http.ListenAndServe(listen, nil)
+			if err != nil {
+				logrus.Errorf("Could not start prometheus listener")
+				time.Sleep(time.Second * 1)
+				continue
+			}
+			break
+		}
+	}()
 }
 
 // signalHandler catches signals and set the done
@@ -61,17 +118,17 @@ func signalHandler() {
 	chDone <- true
 }
 
-// connectDatabase connects to the database and cachehandler
-func createDBHandler() (dbhandler.DBHandler, error) {
+// createDBHandler connects to the database and cachehandler
+func createDBHandler(cfg *config.Config) (dbhandler.DBHandler, error) {
 	// connect to database
-	db, err := commondatabasehandler.Connect(databaseDSN)
+	db, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
 		return nil, err
 	}
 
 	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
+	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
 	if err := cache.Connect(); err != nil {
 		logrus.Errorf("Could not connect to cache server. err: %v", err)
 		return nil, err
@@ -83,11 +140,11 @@ func createDBHandler() (dbhandler.DBHandler, error) {
 	return dbHandler, nil
 }
 
-func run(dbHandler dbhandler.DBHandler) {
+func run(dbHandler dbhandler.DBHandler, cfg *config.Config) {
 	log := logrus.WithField("func", "run")
 
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
 
 	// create handlers

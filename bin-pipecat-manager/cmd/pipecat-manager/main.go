@@ -2,6 +2,11 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-pipecat-manager/pkg/cachehandler"
@@ -16,10 +21,13 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"os"
 
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+
+	"monorepo/bin-pipecat-manager/internal/config"
 )
 
 const (
@@ -30,33 +38,58 @@ const (
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-var (
-	databaseDSN             = ""
-	prometheusEndpoint      = ""
-	prometheusListenAddress = ""
-	rabbitMQAddress         = ""
-	redisAddress            = ""
-	redisDatabase           = 0
-	redisPassword           = ""
-)
-
 func main() {
-	log := logrus.WithField("func", "main")
-	log.Info("Starting pipecat-manager.")
-
-	if errRun := run(); errRun != nil {
-		log.Errorf("Could not run the main thread. err: %v", errRun)
+	rootCmd := &cobra.Command{
+		Use:   "pipecat-manager",
+		Short: "Voipbin Pipecat Manager Daemon",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDaemon()
+		},
 	}
-	<-chDone
 
-	log.Info("Finished pipecat-manager.")
+	if errBind := config.Bootstrap(rootCmd); errBind != nil {
+		logrus.Fatalf("Failed to bind config: %v", errBind)
+	}
+
+	if errExecute := rootCmd.Execute(); errExecute != nil {
+		logrus.Errorf("Command execution failed: %v", errExecute)
+		os.Exit(1)
+	}
 }
 
-// signalHandler catches signals and set the done
-func signalHandler() {
-	sig := <-chSigs
-	logrus.Debugf("Received signal. sig: %v", sig)
-	chDone <- true
+func runDaemon() error {
+	initSignal()
+	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
+
+	log := logrus.WithField("func", "runDaemon")
+	log.WithField("config", config.Get()).Info("Starting pipecat-manager...")
+
+	if errRun := run(); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the main thread")
+	}
+
+	<-chDone
+	log.Info("Pipecat-manager stopped safely.")
+	return nil
+}
+
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go func() {
+		sig := <-chSigs
+		logrus.Infof("Received signal: %v", sig)
+		chDone <- true
+	}()
+}
+
+func initProm(endpoint, listen string) {
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
+		if err := http.ListenAndServe(listen, nil); err != nil {
+			logrus.Errorf("Prometheus server error: %v", err)
+		}
+	}()
 }
 
 // run runs the main thread.
@@ -70,7 +103,7 @@ func run() error {
 	log.Debugf("Connected to database and cache server.")
 
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	listenIP := os.Getenv("POD_IP")
@@ -150,14 +183,14 @@ func runHttp(httpHandler httphandler.HttpHandler) error {
 // connectDatabase connects to the database and cachehandler
 func createDBHandler() (dbhandler.DBHandler, error) {
 	// connect to database
-	db, err := commondatabasehandler.Connect(databaseDSN)
+	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
 		return nil, err
 	}
 
 	// connect to cache
-	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
+	cache := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
 	if err := cache.Connect(); err != nil {
 		logrus.Errorf("Could not connect to cache server. err: %v", err)
 		return nil, err
