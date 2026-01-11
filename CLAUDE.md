@@ -220,6 +220,45 @@ git push -u origin NOJIRA-Descriptive_change_summary
 
 **Only proceed with working on main if the user explicitly confirms.**
 
+### CRITICAL: Never Commit Directly to Main
+
+**ALWAYS work on feature branches. NEVER commit directly to `main` without explicit user permission.**
+
+**Before making ANY changes or commits:**
+1. Check current branch: `git branch --show-current`
+2. If on `main`, create a feature branch FIRST
+3. Only commit to main if user explicitly approves
+
+**This applies to ALL changes:**
+- Code changes
+- Documentation updates (including CLAUDE.md)
+- Configuration files
+- Any other modifications
+
+**Prohibited workflow:**
+```bash
+# ❌ WRONG - Committing directly to main
+git branch --show-current  # shows: main
+# ... make changes to files ...
+git add .
+git commit -m "some change"  # NEVER DO THIS ON MAIN
+```
+
+**Correct workflow:**
+```bash
+# ✅ CORRECT - Create branch first
+git branch --show-current  # shows: main
+git checkout -b NOJIRA-Descriptive_change_name  # Create feature branch FIRST
+# ... make changes to files ...
+git add .
+git commit -m "some change"  # Safe - on feature branch
+```
+
+**Exception:**
+Only commit directly to main when user explicitly says:
+- "commit this to main"
+- "yes, commit directly to main" (in response to your question)
+
 ### CRITICAL: Merging to Main Branch
 
 **NEVER merge any branch to `main` without explicit user permission.**
