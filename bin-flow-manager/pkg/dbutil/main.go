@@ -8,9 +8,19 @@ import (
 
 // GetDBFields returns ordered column names from struct tags
 func GetDBFields(model interface{}) []string {
-	val := reflect.ValueOf(model)
+	return getDBFieldsRecursive(reflect.ValueOf(model))
+}
+
+// getDBFieldsRecursive is the internal recursive function that works with reflect.Value
+func getDBFieldsRecursive(val reflect.Value) []string {
+	// Dereference pointer if needed
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
+	}
+
+	// Must be a struct at this point
+	if val.Kind() != reflect.Struct {
+		return []string{}
 	}
 
 	typ := val.Type()
@@ -18,6 +28,15 @@ func GetDBFields(model interface{}) []string {
 
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
+
+		// Handle embedded structs recursively
+		if field.Anonymous {
+			embeddedVal := val.Field(i)
+			embeddedFields := getDBFieldsRecursive(embeddedVal)
+			fields = append(fields, embeddedFields...)
+			continue
+		}
+
 		tag := field.Tag.Get("db")
 
 		// Skip fields without db tag or with "-"

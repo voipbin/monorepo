@@ -50,6 +50,14 @@ func TestGetDBFields_Basic(t *testing.T) {
 			}{},
 			expected: []string{"id", "data"},
 		},
+		{
+			name: "handles embedded structs recursively",
+			model: &struct {
+				testModel  // embedded struct
+				Extra string `db:"extra"`
+			}{},
+			expected: []string{"id", "name", "count", "extra"},
+		},
 	}
 
 	for _, tt := range tests {
