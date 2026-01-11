@@ -135,5 +135,53 @@ func prepareValuesRecursive(val reflect.Value) ([]interface{}, error) {
 
 // ScanRow scans a sql.Row/sql.Rows into a struct using db tags
 func ScanRow(row *sql.Rows, dest interface{}) error {
-	panic("not implemented")
+	destVal := reflect.ValueOf(dest)
+	if destVal.Kind() != reflect.Ptr {
+		return fmt.Errorf("dest must be a pointer to struct")
+	}
+
+	destVal = destVal.Elem()
+	if destVal.Kind() != reflect.Struct {
+		return fmt.Errorf("dest must be a pointer to struct")
+	}
+
+	// Build list of scan targets in order of db tags using recursive helper
+	scanTargets := buildScanTargetsRecursive(destVal)
+
+	// Scan the row
+	if err := row.Scan(scanTargets...); err != nil {
+		return fmt.Errorf("scan failed: %w", err)
+	}
+
+	return nil
+}
+
+// buildScanTargetsRecursive recursively builds scan targets for embedded structs
+func buildScanTargetsRecursive(val reflect.Value) []interface{} {
+	typ := val.Type()
+	scanTargets := []interface{}{}
+
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+
+		// Handle embedded structs recursively
+		if field.Anonymous {
+			embeddedVal := val.Field(i)
+			embeddedTargets := buildScanTargetsRecursive(embeddedVal)
+			scanTargets = append(scanTargets, embeddedTargets...)
+			continue
+		}
+
+		tag := field.Tag.Get("db")
+
+		// Skip fields without db tag or with "-"
+		if tag == "" || tag == "-" {
+			continue
+		}
+
+		fieldVal := val.Field(i)
+		scanTargets = append(scanTargets, fieldVal.Addr().Interface())
+	}
+
+	return scanTargets
 }

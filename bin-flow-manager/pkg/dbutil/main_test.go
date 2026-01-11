@@ -290,5 +290,54 @@ func TestPrepareValues_JSON(t *testing.T) {
 }
 
 func TestScanRow_Basic(t *testing.T) {
-	t.Skip("Not implemented yet")
+	tests := []struct {
+		name     string
+		columns  []string
+		values   []interface{}
+		dest     interface{}
+		validate func(interface{}) error
+	}{
+		{
+			name:    "scans string and int fields",
+			columns: []string{"name", "count"},
+			values:  []interface{}{"test", 42},
+			dest: &struct {
+				Name  string `db:"name"`
+				Count int    `db:"count"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					Name  string `db:"name"`
+					Count int    `db:"count"`
+				})
+				if v.Name != "test" {
+					return fmt.Errorf("expected name='test', got '%s'", v.Name)
+				}
+				if v.Count != 42 {
+					return fmt.Errorf("expected count=42, got %d", v.Count)
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rows := createMockRows(t, tt.columns, [][]interface{}{tt.values})
+			defer rows.Close()
+
+			if !rows.Next() {
+				t.Fatal("expected row")
+			}
+
+			err := ScanRow(rows, tt.dest)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if err := tt.validate(tt.dest); err != nil {
+				t.Errorf("validation failed: %v", err)
+			}
+		})
+	}
 }
