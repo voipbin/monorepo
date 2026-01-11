@@ -649,3 +649,89 @@ func TestScanRow_NullHandling(t *testing.T) {
 		})
 	}
 }
+
+func TestScanRow_JSON(t *testing.T) {
+	tests := []struct {
+		name     string
+		columns  []string
+		values   []interface{}
+		dest     interface{}
+		validate func(interface{}) error
+	}{
+		{
+			name:    "scans JSON array to slice",
+			columns: []string{"items"},
+			values:  []interface{}{`["a","b","c"]`},
+			dest: &struct {
+				Items []string `db:"items,json"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					Items []string `db:"items,json"`
+				})
+				if len(v.Items) != 3 {
+					return fmt.Errorf("expected 3 items, got %d", len(v.Items))
+				}
+				if v.Items[0] != "a" || v.Items[1] != "b" || v.Items[2] != "c" {
+					return fmt.Errorf("unexpected items: %v", v.Items)
+				}
+				return nil
+			},
+		},
+		{
+			name:    "scans NULL JSON to empty slice",
+			columns: []string{"items"},
+			values:  []interface{}{nil},
+			dest: &struct {
+				Items []string `db:"items,json"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					Items []string `db:"items,json"`
+				})
+				if len(v.Items) != 0 {
+					return fmt.Errorf("expected empty slice, got %d items", len(v.Items))
+				}
+				return nil
+			},
+		},
+		{
+			name:    "scans empty JSON array to empty slice",
+			columns: []string{"items"},
+			values:  []interface{}{`[]`},
+			dest: &struct {
+				Items []string `db:"items,json"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					Items []string `db:"items,json"`
+				})
+				if len(v.Items) != 0 {
+					return fmt.Errorf("expected empty slice, got %d items", len(v.Items))
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rows, db := createMockRows(t, tt.columns, [][]interface{}{tt.values})
+			defer db.Close()
+			defer rows.Close()
+
+			if !rows.Next() {
+				t.Fatal("expected row")
+			}
+
+			err := ScanRow(rows, tt.dest)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if err := tt.validate(tt.dest); err != nil {
+				t.Errorf("validation failed: %v", err)
+			}
+		})
+	}
+}

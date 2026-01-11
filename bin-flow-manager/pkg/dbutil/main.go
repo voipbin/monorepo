@@ -239,6 +239,10 @@ func createNullScanTarget(fieldVal reflect.Value, conversionType string) interfa
 		// UUID stored as bytes in database, scan as NullString to handle NULL
 		return new(sql.NullString)
 	}
+	if conversionType == "json" {
+		// JSON stored as string in database
+		return new(sql.NullString)
+	}
 
 	switch fieldVal.Kind() {
 	case reflect.String:
@@ -273,6 +277,17 @@ func copyFromNullType(scanTarget interface{}, fieldVal *reflect.Value, conversio
 			// NULL or empty -> uuid.Nil
 			fieldVal.Set(reflect.ValueOf(uuid.Nil))
 		}
+		return nil
+	}
+	if conversionType == "json" {
+		nullStr := scanTarget.(*sql.NullString)
+		if nullStr.Valid && len(nullStr.String) > 0 {
+			// Unmarshal JSON string into field
+			if err := json.Unmarshal([]byte(nullStr.String), fieldVal.Addr().Interface()); err != nil {
+				return fmt.Errorf("cannot unmarshal JSON: %w", err)
+			}
+		}
+		// else: NULL or empty -> leave as zero value (empty slice/struct)
 		return nil
 	}
 
