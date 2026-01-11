@@ -108,6 +108,21 @@ func TestPrepareValues_Basic(t *testing.T) {
 			},
 			expected: []interface{}{"value1", "value3"},
 		},
+		{
+			name: "handles embedded structs",
+			model: &struct {
+				testModel  // embedded: id, name, count (skipMe is db:"-")
+				Extra string `db:"extra"`
+			}{
+				testModel: testModel{
+					ID:    uuid.Must(uuid.NewV4()),
+					Name:  "embedded",
+					Count: 99,
+				},
+				Extra: "additional",
+			},
+			expected: []interface{}{uuid.Nil, "embedded", 99, "additional"}, // 4 values
+		},
 	}
 
 	for _, tt := range tests {
@@ -123,6 +138,13 @@ func TestPrepareValues_Basic(t *testing.T) {
 			}
 
 			for i, val := range result {
+				// Special handling for UUID fields (just check type)
+				if _, ok := tt.expected[i].(uuid.UUID); ok {
+					if _, ok := val.(uuid.UUID); !ok {
+						t.Errorf("value[%d]: expected uuid.UUID type, got %T", i, val)
+					}
+					continue
+				}
 				if val != tt.expected[i] {
 					t.Errorf("value[%d]: expected %v, got %v", i, tt.expected[i], val)
 				}

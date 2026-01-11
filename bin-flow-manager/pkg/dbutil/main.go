@@ -56,9 +56,19 @@ func getDBFieldsRecursive(val reflect.Value) []string {
 
 // PrepareValues converts struct fields to database values for INSERT/UPDATE
 func PrepareValues(model interface{}) ([]interface{}, error) {
-	val := reflect.ValueOf(model)
+	return prepareValuesRecursive(reflect.ValueOf(model))
+}
+
+// prepareValuesRecursive is the internal recursive function that works with reflect.Value
+func prepareValuesRecursive(val reflect.Value) ([]interface{}, error) {
+	// Dereference pointer if needed
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
+	}
+
+	// Must be a struct at this point
+	if val.Kind() != reflect.Struct {
+		return []interface{}{}, nil
 	}
 
 	typ := val.Type()
@@ -66,6 +76,18 @@ func PrepareValues(model interface{}) ([]interface{}, error) {
 
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
+
+		// Handle embedded structs recursively
+		if field.Anonymous {
+			embeddedVal := val.Field(i)
+			embeddedValues, err := prepareValuesRecursive(embeddedVal)
+			if err != nil {
+				return nil, err
+			}
+			values = append(values, embeddedValues...)
+			continue
+		}
+
 		tag := field.Tag.Get("db")
 
 		// Skip fields without db tag or with "-"
