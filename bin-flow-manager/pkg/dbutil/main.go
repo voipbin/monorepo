@@ -133,6 +133,12 @@ func prepareValuesRecursive(val reflect.Value) ([]interface{}, error) {
 	return values, nil
 }
 
+// fieldScanTarget represents a field's scan metadata
+type fieldScanTarget struct {
+	fieldVal   *reflect.Value
+	scanTarget interface{}
+}
+
 // ScanRow scans a sql.Row/sql.Rows into a struct using db tags
 func ScanRow(row *sql.Rows, dest interface{}) error {
 	destVal := reflect.ValueOf(dest)
@@ -145,30 +151,43 @@ func ScanRow(row *sql.Rows, dest interface{}) error {
 		return fmt.Errorf("dest must be a pointer to struct")
 	}
 
-	// Build list of scan targets in order of db tags using recursive helper
+	// Build list of scan targets with NULL handling
 	scanTargets := buildScanTargetsRecursive(destVal)
 
+	// Extract just the scan interfaces for row.Scan
+	scanInterfaces := make([]interface{}, len(scanTargets))
+	for i, target := range scanTargets {
+		scanInterfaces[i] = target.scanTarget
+	}
+
 	// Scan the row
-	if err := row.Scan(scanTargets...); err != nil {
+	if err := row.Scan(scanInterfaces...); err != nil {
 		return fmt.Errorf("scan failed: %w", err)
+	}
+
+	// Copy values from sql.Null* types to actual fields
+	for _, target := range scanTargets {
+		if err := copyFromNullType(target.scanTarget, target.fieldVal); err != nil {
+			return fmt.Errorf("copy from null type failed: %w", err)
+		}
 	}
 
 	return nil
 }
 
 // buildScanTargetsRecursive recursively builds scan targets for embedded structs
-func buildScanTargetsRecursive(val reflect.Value) []interface{} {
+func buildScanTargetsRecursive(val reflect.Value) []fieldScanTarget {
 	// Handle pointer dereferencing
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
 
 	if val.Kind() != reflect.Struct {
-		return []interface{}{}
+		return []fieldScanTarget{}
 	}
 
 	typ := val.Type()
-	scanTargets := []interface{}{}
+	scanTargets := []fieldScanTarget{}
 
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
@@ -189,8 +208,71 @@ func buildScanTargetsRecursive(val reflect.Value) []interface{} {
 		}
 
 		fieldVal := val.Field(i)
-		scanTargets = append(scanTargets, fieldVal.Addr().Interface())
+
+		// Create appropriate sql.Null* type based on field type
+		scanTarget := createNullScanTarget(fieldVal)
+
+		// Store both the field reference and scan target
+		fieldValCopy := fieldVal
+		scanTargets = append(scanTargets, fieldScanTarget{
+			fieldVal:   &fieldValCopy,
+			scanTarget: scanTarget,
+		})
 	}
 
 	return scanTargets
+}
+
+// createNullScanTarget creates appropriate sql.Null* type for a field
+func createNullScanTarget(fieldVal reflect.Value) interface{} {
+	switch fieldVal.Kind() {
+	case reflect.String:
+		return new(sql.NullString)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return new(sql.NullInt64)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return new(sql.NullInt64)
+	case reflect.Float32, reflect.Float64:
+		return new(sql.NullFloat64)
+	case reflect.Bool:
+		return new(sql.NullBool)
+	default:
+		// For complex types (UUID, JSON), scan directly
+		return fieldVal.Addr().Interface()
+	}
+}
+
+// copyFromNullType copies value from sql.Null* type to field if valid
+func copyFromNullType(scanTarget interface{}, fieldVal *reflect.Value) error {
+	switch v := scanTarget.(type) {
+	case *sql.NullString:
+		if v.Valid {
+			fieldVal.SetString(v.String)
+		}
+		// If NULL, leave field as zero value (empty string)
+	case *sql.NullInt64:
+		if v.Valid {
+			// Convert to appropriate int type
+			switch fieldVal.Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				fieldVal.SetInt(v.Int64)
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				fieldVal.SetUint(uint64(v.Int64))
+			}
+		}
+		// If NULL, leave field as zero value (0)
+	case *sql.NullFloat64:
+		if v.Valid {
+			fieldVal.SetFloat(v.Float64)
+		}
+		// If NULL, leave field as zero value (0.0)
+	case *sql.NullBool:
+		if v.Valid {
+			fieldVal.SetBool(v.Bool)
+		}
+		// If NULL, leave field as zero value (false)
+	default:
+		// For complex types, the value was scanned directly - no copy needed
+	}
+	return nil
 }

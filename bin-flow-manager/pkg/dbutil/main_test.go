@@ -414,3 +414,170 @@ func TestScanRow_Basic(t *testing.T) {
 		})
 	}
 }
+
+func TestScanRow_NullHandling(t *testing.T) {
+	tests := []struct {
+		name     string
+		columns  []string
+		values   []interface{}
+		dest     interface{}
+		validate func(interface{}) error
+	}{
+		{
+			name:    "converts NULL string to empty string",
+			columns: []string{"name"},
+			values:  []interface{}{nil},
+			dest: &struct {
+				Name string `db:"name"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					Name string `db:"name"`
+				})
+				if v.Name != "" {
+					return fmt.Errorf("expected empty string, got '%s'", v.Name)
+				}
+				return nil
+			},
+		},
+		{
+			name:    "converts NULL int to zero",
+			columns: []string{"count"},
+			values:  []interface{}{nil},
+			dest: &struct {
+				Count int `db:"count"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					Count int `db:"count"`
+				})
+				if v.Count != 0 {
+					return fmt.Errorf("expected 0, got %d", v.Count)
+				}
+				return nil
+			},
+		},
+		{
+			name:    "converts NULL int64 to zero",
+			columns: []string{"bigcount"},
+			values:  []interface{}{nil},
+			dest: &struct {
+				BigCount int64 `db:"bigcount"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					BigCount int64 `db:"bigcount"`
+				})
+				if v.BigCount != 0 {
+					return fmt.Errorf("expected 0, got %d", v.BigCount)
+				}
+				return nil
+			},
+		},
+		{
+			name:    "converts NULL float64 to zero",
+			columns: []string{"price"},
+			values:  []interface{}{nil},
+			dest: &struct {
+				Price float64 `db:"price"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					Price float64 `db:"price"`
+				})
+				if v.Price != 0.0 {
+					return fmt.Errorf("expected 0.0, got %f", v.Price)
+				}
+				return nil
+			},
+		},
+		{
+			name:    "converts NULL bool to false",
+			columns: []string{"active"},
+			values:  []interface{}{nil},
+			dest: &struct {
+				Active bool `db:"active"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					Active bool `db:"active"`
+				})
+				if v.Active != false {
+					return fmt.Errorf("expected false, got %v", v.Active)
+				}
+				return nil
+			},
+		},
+		{
+			name:    "handles mix of NULL and non-NULL values",
+			columns: []string{"name", "count", "active"},
+			values:  []interface{}{nil, 42, nil},
+			dest: &struct {
+				Name   string `db:"name"`
+				Count  int    `db:"count"`
+				Active bool   `db:"active"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					Name   string `db:"name"`
+					Count  int    `db:"count"`
+					Active bool   `db:"active"`
+				})
+				if v.Name != "" {
+					return fmt.Errorf("expected empty string for name, got '%s'", v.Name)
+				}
+				if v.Count != 42 {
+					return fmt.Errorf("expected count=42, got %d", v.Count)
+				}
+				if v.Active != false {
+					return fmt.Errorf("expected active=false, got %v", v.Active)
+				}
+				return nil
+			},
+		},
+		{
+			name:    "handles NULL in embedded struct fields",
+			columns: []string{"id", "name", "count"},
+			values:  []interface{}{uuid.Must(uuid.NewV4()).Bytes(), nil, nil},
+			dest: &struct {
+				testModel // embedded struct
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					testModel
+				})
+				if v.ID == uuid.Nil {
+					return fmt.Errorf("expected ID to be set")
+				}
+				if v.Name != "" {
+					return fmt.Errorf("expected empty string for name, got '%s'", v.Name)
+				}
+				if v.Count != 0 {
+					return fmt.Errorf("expected 0 for count, got %d", v.Count)
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rows, db := createMockRows(t, tt.columns, [][]interface{}{tt.values})
+			defer db.Close()
+			defer rows.Close()
+
+			if !rows.Next() {
+				t.Fatal("expected row")
+			}
+
+			err := ScanRow(rows, tt.dest)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if err := tt.validate(tt.dest); err != nil {
+				t.Errorf("validation failed: %v", err)
+			}
+		})
+	}
+}
