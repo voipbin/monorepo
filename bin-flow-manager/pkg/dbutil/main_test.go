@@ -415,6 +415,74 @@ func TestScanRow_Basic(t *testing.T) {
 	}
 }
 
+func TestScanRow_UUID(t *testing.T) {
+	testID := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name     string
+		columns  []string
+		values   []interface{}
+		dest     interface{}
+		validate func(interface{}) error
+	}{
+		{
+			name:    "scans UUID from bytes",
+			columns: []string{"id"},
+			values:  []interface{}{testID.Bytes()},
+			dest: &struct {
+				ID uuid.UUID `db:"id,uuid"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					ID uuid.UUID `db:"id,uuid"`
+				})
+				if v.ID != testID {
+					return fmt.Errorf("expected %s, got %s", testID, v.ID)
+				}
+				return nil
+			},
+		},
+		{
+			name:    "scans NULL to uuid.Nil",
+			columns: []string{"id"},
+			values:  []interface{}{nil},
+			dest: &struct {
+				ID uuid.UUID `db:"id,uuid"`
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					ID uuid.UUID `db:"id,uuid"`
+				})
+				if v.ID != uuid.Nil {
+					return fmt.Errorf("expected uuid.Nil, got %s", v.ID)
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rows, db := createMockRows(t, tt.columns, [][]interface{}{tt.values})
+			defer db.Close()
+			defer rows.Close()
+
+			if !rows.Next() {
+				t.Fatal("expected row")
+			}
+
+			err := ScanRow(rows, tt.dest)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if err := tt.validate(tt.dest); err != nil {
+				t.Errorf("validation failed: %v", err)
+			}
+		})
+	}
+}
+
 func TestScanRow_NullHandling(t *testing.T) {
 	tests := []struct {
 		name     string

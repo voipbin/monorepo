@@ -135,8 +135,9 @@ func prepareValuesRecursive(val reflect.Value) ([]interface{}, error) {
 
 // fieldScanTarget represents a field's scan metadata
 type fieldScanTarget struct {
-	fieldVal   *reflect.Value
-	scanTarget interface{}
+	fieldVal       *reflect.Value
+	scanTarget     interface{}
+	conversionType string // Conversion type from db tag (e.g., "uuid", "json")
 }
 
 // ScanRow scans a sql.Row/sql.Rows into a struct using db tags
@@ -167,7 +168,7 @@ func ScanRow(row *sql.Rows, dest interface{}) error {
 
 	// Copy values from sql.Null* types to actual fields
 	for _, target := range scanTargets {
-		if err := copyFromNullType(target.scanTarget, target.fieldVal); err != nil {
+		if err := copyFromNullType(target.scanTarget, target.fieldVal, target.conversionType); err != nil {
 			return fmt.Errorf("copy from null type failed: %w", err)
 		}
 	}
@@ -207,16 +208,24 @@ func buildScanTargetsRecursive(val reflect.Value) []fieldScanTarget {
 			continue
 		}
 
+		// Parse tag: "column_name" or "column_name,conversion_type"
+		parts := strings.Split(tag, ",")
+		conversionType := ""
+		if len(parts) > 1 {
+			conversionType = parts[1]
+		}
+
 		fieldVal := val.Field(i)
 
-		// Create appropriate sql.Null* type based on field type
-		scanTarget := createNullScanTarget(fieldVal)
+		// Create appropriate sql.Null* type based on field type and conversion
+		scanTarget := createNullScanTarget(fieldVal, conversionType)
 
 		// Store both the field reference and scan target
 		fieldValCopy := fieldVal
 		scanTargets = append(scanTargets, fieldScanTarget{
-			fieldVal:   &fieldValCopy,
-			scanTarget: scanTarget,
+			fieldVal:       &fieldValCopy,
+			scanTarget:     scanTarget,
+			conversionType: conversionType,
 		})
 	}
 
@@ -224,7 +233,13 @@ func buildScanTargetsRecursive(val reflect.Value) []fieldScanTarget {
 }
 
 // createNullScanTarget creates appropriate sql.Null* type for a field
-func createNullScanTarget(fieldVal reflect.Value) interface{} {
+func createNullScanTarget(fieldVal reflect.Value, conversionType string) interface{} {
+	// Handle special conversion types
+	if conversionType == "uuid" {
+		// UUID stored as bytes in database, scan as NullString to handle NULL
+		return new(sql.NullString)
+	}
+
 	switch fieldVal.Kind() {
 	case reflect.String:
 		return new(sql.NullString)
@@ -237,13 +252,30 @@ func createNullScanTarget(fieldVal reflect.Value) interface{} {
 	case reflect.Bool:
 		return new(sql.NullBool)
 	default:
-		// For complex types (UUID, JSON), scan directly
+		// For complex types (JSON, etc.), scan directly
 		return fieldVal.Addr().Interface()
 	}
 }
 
 // copyFromNullType copies value from sql.Null* type to field if valid
-func copyFromNullType(scanTarget interface{}, fieldVal *reflect.Value) error {
+func copyFromNullType(scanTarget interface{}, fieldVal *reflect.Value, conversionType string) error {
+	// Handle special conversion types
+	if conversionType == "uuid" {
+		nullStr := scanTarget.(*sql.NullString)
+		if nullStr.Valid && len(nullStr.String) > 0 {
+			// Convert bytes (stored as string) to UUID
+			uuidVal, err := uuid.FromBytes([]byte(nullStr.String))
+			if err != nil {
+				return fmt.Errorf("cannot convert bytes to UUID: %w", err)
+			}
+			fieldVal.Set(reflect.ValueOf(uuidVal))
+		} else {
+			// NULL or empty -> uuid.Nil
+			fieldVal.Set(reflect.ValueOf(uuid.Nil))
+		}
+		return nil
+	}
+
 	switch v := scanTarget.(type) {
 	case *sql.NullString:
 		if v.Valid {
