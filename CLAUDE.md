@@ -220,6 +220,36 @@ git push -u origin NOJIRA-Descriptive_change_summary
 
 **Only proceed with working on main if the user explicitly confirms.**
 
+### CRITICAL: Merging to Main Branch
+
+**NEVER merge any branch to `main` without explicit user permission.**
+
+**Prohibited actions without user approval:**
+- `git merge <branch>` while on main
+- `git merge <branch> --no-ff` while on main
+- Any operation that merges commits into main
+
+**Required workflow:**
+1. ✅ Push feature branches to remote: `git push -u origin <branch-name>`
+2. ✅ Create pull requests on GitHub for review
+3. ❌ **DO NOT** merge to main directly - always ask user first
+
+**If user says "push it" or similar:**
+- **ONLY push the current branch** to remote
+- **DO NOT assume** this means merge to main
+- **ASK explicitly** if merge to main is intended
+
+**Example - What to do:**
+```
+User: "push it"
+Claude: "I'll push the current branch to remote. Should I also merge it to main, or just push the feature branch?"
+```
+
+**Only merge to main when the user explicitly says:**
+- "merge to main"
+- "merge it to main and push"
+- "yes, merge to main" (in response to your question)
+
 ## Build & Development Commands
 
 ### Prerequisites
