@@ -2,6 +2,7 @@ package dbutil
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -291,11 +292,13 @@ func TestPrepareValues_JSON(t *testing.T) {
 
 func TestScanRow_Basic(t *testing.T) {
 	tests := []struct {
-		name     string
-		columns  []string
-		values   []interface{}
-		dest     interface{}
-		validate func(interface{}) error
+		name          string
+		columns       []string
+		values        []interface{}
+		dest          interface{}
+		validate      func(interface{}) error
+		expectError   bool
+		errorContains string
 	}{
 		{
 			name:    "scans string and int fields",
@@ -319,24 +322,94 @@ func TestScanRow_Basic(t *testing.T) {
 				return nil
 			},
 		},
+		{
+			name:    "rejects non-pointer argument",
+			columns: []string{"name"},
+			values:  []interface{}{"test"},
+			dest: struct {
+				Name string `db:"name"`
+			}{}, // Not a pointer
+			expectError:   true,
+			errorContains: "dest must be a pointer",
+		},
+		{
+			name:          "rejects non-struct argument",
+			columns:       []string{"name"},
+			values:        []interface{}{"test"},
+			dest:          new(string), // Pointer to string, not struct
+			expectError:   true,
+			errorContains: "dest must be a pointer to struct",
+		},
+		{
+			name:    "returns error on scan failure",
+			columns: []string{"count"},
+			values:  []interface{}{"not-a-number"}, // String instead of int
+			dest: &struct {
+				Count int `db:"count"`
+			}{},
+			expectError:   true,
+			errorContains: "scan failed",
+		},
+		{
+			name:    "scans embedded struct fields",
+			columns: []string{"id", "name", "count"},
+			values: []interface{}{
+				uuid.Must(uuid.NewV4()).Bytes(),
+				"embedded-test",
+				99,
+			},
+			dest: &struct {
+				testModel // embedded struct with id, name, count fields (db:"id,uuid", db:"name", db:"count")
+			}{},
+			validate: func(dest interface{}) error {
+				v := dest.(*struct {
+					testModel
+				})
+				// Validate embedded fields were scanned (ID should not be nil)
+				if v.ID == uuid.Nil {
+					return fmt.Errorf("expected ID to be set from embedded struct")
+				}
+				if v.Name != "embedded-test" {
+					return fmt.Errorf("expected name='embedded-test' from embedded struct, got '%s'", v.Name)
+				}
+				if v.Count != 99 {
+					return fmt.Errorf("expected count=99 from embedded struct, got %d", v.Count)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rows := createMockRows(t, tt.columns, [][]interface{}{tt.values})
-			defer rows.Close()
+			rows, db := createMockRows(t, tt.columns, [][]interface{}{tt.values})
+			defer func() { _ = db.Close() }()
+			defer func() { _ = rows.Close() }()
 
 			if !rows.Next() {
 				t.Fatal("expected row")
 			}
 
 			err := ScanRow(rows, tt.dest)
+
+			if tt.expectError {
+				if err == nil {
+					t.Fatal("expected error but got none")
+				}
+				if tt.errorContains != "" && !strings.Contains(err.Error(), tt.errorContains) {
+					t.Errorf("expected error containing '%s', got '%s'", tt.errorContains, err.Error())
+				}
+				return
+			}
+
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if err := tt.validate(tt.dest); err != nil {
-				t.Errorf("validation failed: %v", err)
+			if tt.validate != nil {
+				if err := tt.validate(tt.dest); err != nil {
+					t.Errorf("validation failed: %v", err)
+				}
 			}
 		})
 	}

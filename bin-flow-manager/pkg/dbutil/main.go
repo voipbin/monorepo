@@ -158,6 +158,15 @@ func ScanRow(row *sql.Rows, dest interface{}) error {
 
 // buildScanTargetsRecursive recursively builds scan targets for embedded structs
 func buildScanTargetsRecursive(val reflect.Value) []interface{} {
+	// Handle pointer dereferencing
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	if val.Kind() != reflect.Struct {
+		return []interface{}{}
+	}
+
 	typ := val.Type()
 	scanTargets := []interface{}{}
 

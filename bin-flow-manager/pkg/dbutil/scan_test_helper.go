@@ -9,12 +9,12 @@ import (
 )
 
 // createMockRows creates a mock sql.Rows for testing
-func createMockRows(t *testing.T, columns []string, values [][]interface{}) *sql.Rows {
+// Returns both rows and db so the caller can properly close both resources
+func createMockRows(t *testing.T, columns []string, values [][]interface{}) (*sql.Rows, *sql.DB) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("failed to create mock: %v", err)
 	}
-	// Note: Don't defer db.Close() here - the returned rows need the connection to stay open
 
 	rows := mock.NewRows(columns)
 	for _, rowValues := range values {
@@ -33,5 +33,5 @@ func createMockRows(t *testing.T, columns []string, values [][]interface{}) *sql
 		t.Fatalf("failed to create rows: %v", err)
 	}
 
-	return result
+	return result, db
 }
