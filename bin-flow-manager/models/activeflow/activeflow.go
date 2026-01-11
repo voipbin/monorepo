@@ -16,33 +16,33 @@ import (
 type Activeflow struct {
 	commonidentity.Identity
 
-	FlowID uuid.UUID `json:"flow_id,omitempty"`
-	Status Status    `json:"status,omitempty"`
+	FlowID uuid.UUID `json:"flow_id,omitempty" db:"flow_id,uuid"`
+	Status Status    `json:"status,omitempty" db:"status"`
 
-	ReferenceType         ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID           uuid.UUID     `json:"reference_id,omitempty"`
-	ReferenceActiveflowID uuid.UUID     `json:"reference_activeflow_id,omitempty"` // the activeflow which created this activeflow by the on_complete_flow setting
+	ReferenceType         ReferenceType `json:"reference_type,omitempty" db:"reference_type"`
+	ReferenceID           uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`
+	ReferenceActiveflowID uuid.UUID     `json:"reference_activeflow_id,omitempty" db:"reference_activeflow_id,uuid"` // the activeflow which created this activeflow by the on_complete_flow setting
 
-	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty"` // will be triggered when this activeflow is completed or terminated
+	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty" db:"on_complete_flow_id,uuid"` // will be triggered when this activeflow is completed or terminated
 
 	// stack
-	StackMap map[uuid.UUID]*stack.Stack `json:"stack_map,omitempty"`
+	StackMap map[uuid.UUID]*stack.Stack `json:"stack_map,omitempty" db:"stack_map,json"`
 
 	// current info
-	CurrentStackID uuid.UUID     `json:"current_stack_id,omitempty"`
-	CurrentAction  action.Action `json:"current_action,omitempty"`
+	CurrentStackID uuid.UUID     `json:"current_stack_id,omitempty" db:"current_stack_id,uuid"`
+	CurrentAction  action.Action `json:"current_action,omitempty" db:"current_action,json"`
 
 	// forward info
-	ForwardStackID  uuid.UUID `json:"forward_stack_id,omitempty"`
-	ForwardActionID uuid.UUID `json:"forward_action_id,omitempty"`
+	ForwardStackID  uuid.UUID `json:"forward_stack_id,omitempty" db:"forward_stack_id,uuid"`
+	ForwardActionID uuid.UUID `json:"forward_action_id,omitempty" db:"forward_action_id,uuid"`
 
 	// execute
-	ExecuteCount    uint64          `json:"execute_count,omitempty"`
-	ExecutedActions []action.Action `json:"executed_actions,omitempty"` // list of executed actions
+	ExecuteCount    uint64          `json:"execute_count,omitempty" db:"execute_count"`
+	ExecutedActions []action.Action `json:"executed_actions,omitempty" db:"executed_actions,json"` // list of executed actions
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Status define
