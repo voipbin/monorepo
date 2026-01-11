@@ -1,6 +1,7 @@
 package dbutil
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -111,7 +112,7 @@ func TestPrepareValues_Basic(t *testing.T) {
 		{
 			name: "handles embedded structs",
 			model: &struct {
-				testModel  // embedded: id, name, count (skipMe is db:"-")
+				testModel  // embedded: id (uuid converted to bytes), name, count (skipMe is db:"-")
 				Extra string `db:"extra"`
 			}{
 				testModel: testModel{
@@ -121,7 +122,7 @@ func TestPrepareValues_Basic(t *testing.T) {
 				},
 				Extra: "additional",
 			},
-			expected: []interface{}{uuid.Nil, "embedded", 99, "additional"}, // 4 values
+			expected: []interface{}{[]byte{}, "embedded", 99, "additional"}, // 4 values - ID is converted to []byte
 		},
 	}
 
@@ -138,16 +139,88 @@ func TestPrepareValues_Basic(t *testing.T) {
 			}
 
 			for i, val := range result {
-				// Special handling for UUID fields (just check type)
-				if _, ok := tt.expected[i].(uuid.UUID); ok {
-					if _, ok := val.(uuid.UUID); !ok {
-						t.Errorf("value[%d]: expected uuid.UUID type, got %T", i, val)
+				// Special handling for []byte fields (just check type and length)
+				if expectedBytes, ok := tt.expected[i].([]byte); ok {
+					actualBytes, ok := val.([]byte)
+					if !ok {
+						t.Errorf("value[%d]: expected []byte type, got %T", i, val)
+						continue
 					}
-					continue
+					// Just check type for empty byte slices (UUID values vary)
+					if len(expectedBytes) == 0 && len(actualBytes) == 16 {
+						continue
+					}
 				}
 				if val != tt.expected[i] {
 					t.Errorf("value[%d]: expected %v, got %v", i, tt.expected[i], val)
 				}
+			}
+		})
+	}
+}
+
+func TestPrepareValues_UUID(t *testing.T) {
+	testID := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name     string
+		model    interface{}
+		validate func([]interface{}) error
+	}{
+		{
+			name: "converts UUID to bytes",
+			model: &struct {
+				ID uuid.UUID `db:"id,uuid"`
+			}{
+				ID: testID,
+			},
+			validate: func(values []interface{}) error {
+				if len(values) != 1 {
+					return fmt.Errorf("expected 1 value, got %d", len(values))
+				}
+				bytes, ok := values[0].([]byte)
+				if !ok {
+					return fmt.Errorf("expected []byte, got %T", values[0])
+				}
+				if len(bytes) != 16 {
+					return fmt.Errorf("expected 16 bytes, got %d", len(bytes))
+				}
+				return nil
+			},
+		},
+		{
+			name: "converts uuid.Nil to nil UUID bytes",
+			model: &struct {
+				ID uuid.UUID `db:"id,uuid"`
+			}{
+				ID: uuid.Nil,
+			},
+			validate: func(values []interface{}) error {
+				if len(values) != 1 {
+					return fmt.Errorf("expected 1 value, got %d", len(values))
+				}
+				bytes, ok := values[0].([]byte)
+				if !ok {
+					return fmt.Errorf("expected []byte, got %T", values[0])
+				}
+				// uuid.Nil.Bytes() still returns 16 bytes of zeros
+				if len(bytes) != 16 {
+					return fmt.Errorf("expected 16 bytes, got %d", len(bytes))
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := PrepareValues(tt.model)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if err := tt.validate(result); err != nil {
+				t.Errorf("validation failed: %v", err)
 			}
 		})
 	}

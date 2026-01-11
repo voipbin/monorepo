@@ -2,8 +2,11 @@ package dbutil
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/gofrs/uuid"
 )
 
 // GetDBFields returns ordered column names from struct tags
@@ -59,14 +62,14 @@ func PrepareValues(model interface{}) ([]interface{}, error) {
 	return prepareValuesRecursive(reflect.ValueOf(model))
 }
 
-// prepareValuesRecursive is the internal recursive function that works with reflect.Value
+// prepareValuesRecursive is the internal recursive implementation
 func prepareValuesRecursive(val reflect.Value) ([]interface{}, error) {
-	// Dereference pointer if needed
+	// Handle pointer dereferencing
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
 
-	// Must be a struct at this point
+	// Return empty slice for non-struct types
 	if val.Kind() != reflect.Struct {
 		return []interface{}{}, nil
 	}
@@ -95,8 +98,28 @@ func prepareValuesRecursive(val reflect.Value) ([]interface{}, error) {
 			continue
 		}
 
+		// Parse tag: "column_name" or "column_name,conversion_type"
+		parts := strings.Split(tag, ",")
+		conversionType := ""
+		if len(parts) > 1 {
+			conversionType = parts[1]
+		}
+
 		fieldVal := val.Field(i)
-		values = append(values, fieldVal.Interface())
+
+		// Apply conversions based on type
+		switch conversionType {
+		case "uuid":
+			// Convert uuid.UUID to []byte
+			if fieldVal.Type() == reflect.TypeOf(uuid.UUID{}) {
+				uuidVal := fieldVal.Interface().(uuid.UUID)
+				values = append(values, uuidVal.Bytes())
+			} else {
+				return nil, fmt.Errorf("field %s: expected uuid.UUID type for uuid conversion", field.Name)
+			}
+		default:
+			values = append(values, fieldVal.Interface())
+		}
 	}
 
 	return values, nil
