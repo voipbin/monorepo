@@ -12,6 +12,7 @@ import (
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/pkg/dbutil"
 )
 
 var (
@@ -70,31 +71,22 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 	now := h.util.TimeGetCurTime()
 
-	tmpActions, err := json.Marshal(f.Actions)
+	// Set timestamps
+	f.TMCreate = now
+	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	f.TMDelete = commondatabasehandler.DefaultTimeStamp
+
+	// Use dbutil to get fields and values
+	fields := dbutil.GetDBFields(f)
+	values, err := dbutil.PrepareValues(f)
 	if err != nil {
-		return fmt.Errorf("could not marshal current_actions. FlowCreate. err: %v", err)
+		return fmt.Errorf("could not prepare values. FlowCreate. err: %v", err)
 	}
 
 	sb := squirrel.
 		Insert(flowsTable).
-		Columns(flowsFields...).
-		Values(
-			f.ID.Bytes(),
-			f.CustomerID.Bytes(),
-
-			f.Type,
-
-			f.Name,
-			f.Detail,
-
-			tmpActions,
-
-			f.OnCompleteFlowID.Bytes(),
-
-			now,                                    // tm_create
-			commondatabasehandler.DefaultTimeStamp, // tm_update
-			commondatabasehandler.DefaultTimeStamp, // tm_delete
-		).
+		Columns(fields...).
+		Values(values...).
 		PlaceholderFormat(squirrel.Question)
 
 	query, args, err := sb.ToSql()
