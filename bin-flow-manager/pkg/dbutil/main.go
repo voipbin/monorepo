@@ -2,11 +2,37 @@ package dbutil
 
 import (
 	"database/sql"
+	"reflect"
+	"strings"
 )
 
 // GetDBFields returns ordered column names from struct tags
 func GetDBFields(model interface{}) []string {
-	panic("not implemented")
+	val := reflect.ValueOf(model)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	typ := val.Type()
+	fields := []string{}
+
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		tag := field.Tag.Get("db")
+
+		// Skip fields without db tag or with "-"
+		if tag == "" || tag == "-" {
+			continue
+		}
+
+		// Parse tag: "column_name" or "column_name,conversion_type"
+		parts := strings.Split(tag, ",")
+		columnName := parts[0]
+
+		fields = append(fields, columnName)
+	}
+
+	return fields
 }
 
 // PrepareValues converts struct fields to database values for INSERT/UPDATE
