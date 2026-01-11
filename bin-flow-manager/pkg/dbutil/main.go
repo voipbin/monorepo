@@ -2,6 +2,7 @@ package dbutil
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -117,6 +118,13 @@ func prepareValuesRecursive(val reflect.Value) ([]interface{}, error) {
 			} else {
 				return nil, fmt.Errorf("field %s: expected uuid.UUID type for uuid conversion", field.Name)
 			}
+		case "json":
+			// Convert to JSON string
+			jsonBytes, err := json.Marshal(fieldVal.Interface())
+			if err != nil {
+				return nil, fmt.Errorf("field %s: cannot marshal to JSON: %w", field.Name, err)
+			}
+			values = append(values, string(jsonBytes))
 		default:
 			values = append(values, fieldVal.Interface())
 		}

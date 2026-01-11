@@ -226,6 +226,69 @@ func TestPrepareValues_UUID(t *testing.T) {
 	}
 }
 
+func TestPrepareValues_JSON(t *testing.T) {
+	type nestedStruct struct {
+		Key   string `json:"key"`
+		Value int    `json:"value"`
+	}
+
+	tests := []struct {
+		name     string
+		model    interface{}
+		expected string
+	}{
+		{
+			name: "converts slice to JSON",
+			model: &struct {
+				Items []string `db:"items,json"`
+			}{
+				Items: []string{"a", "b", "c"},
+			},
+			expected: `["a","b","c"]`,
+		},
+		{
+			name: "converts empty slice to JSON array",
+			model: &struct {
+				Items []string `db:"items,json"`
+			}{
+				Items: []string{},
+			},
+			expected: `[]`,
+		},
+		{
+			name: "converts struct to JSON",
+			model: &struct {
+				Data nestedStruct `db:"data,json"`
+			}{
+				Data: nestedStruct{Key: "test", Value: 42},
+			},
+			expected: `{"key":"test","value":42}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := PrepareValues(tt.model)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if len(result) != 1 {
+				t.Fatalf("expected 1 value, got %d", len(result))
+			}
+
+			jsonStr, ok := result[0].(string)
+			if !ok {
+				t.Fatalf("expected string, got %T", result[0])
+			}
+
+			if jsonStr != tt.expected {
+				t.Errorf("expected %s, got %s", tt.expected, jsonStr)
+			}
+		})
+	}
+}
+
 func TestScanRow_Basic(t *testing.T) {
 	t.Skip("Not implemented yet")
 }
