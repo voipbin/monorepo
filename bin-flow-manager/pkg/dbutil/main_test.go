@@ -464,8 +464,8 @@ func TestScanRow_UUID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rows, db := createMockRows(t, tt.columns, [][]interface{}{tt.values})
-			defer db.Close()
-			defer rows.Close()
+			defer func() { _ = db.Close() }()
+			defer func() { _ = rows.Close() }()
 
 			if !rows.Next() {
 				t.Fatal("expected row")
@@ -631,8 +631,8 @@ func TestScanRow_NullHandling(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rows, db := createMockRows(t, tt.columns, [][]interface{}{tt.values})
-			defer db.Close()
-			defer rows.Close()
+			defer func() { _ = db.Close() }()
+			defer func() { _ = rows.Close() }()
 
 			if !rows.Next() {
 				t.Fatal("expected row")
@@ -717,8 +717,8 @@ func TestScanRow_JSON(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rows, db := createMockRows(t, tt.columns, [][]interface{}{tt.values})
-			defer db.Close()
-			defer rows.Close()
+			defer func() { _ = db.Close() }()
+			defer func() { _ = rows.Close() }()
 
 			if !rows.Next() {
 				t.Fatal("expected row")
