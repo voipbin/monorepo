@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
@@ -16,55 +15,18 @@ import (
 )
 
 var (
-	flowsTable  = "flow_flows"
-	flowsFields = []string{
-		string(flow.FieldID),
-		string(flow.FieldCustomerID),
-
-		string(flow.FieldType),
-
-		string(flow.FieldName),
-		string(flow.FieldDetail),
-
-		string(flow.FieldActions),
-
-		string(flow.FieldOnCompleteFlowID),
-
-		string(flow.FieldTMCreate),
-		string(flow.FieldTMUpdate),
-		string(flow.FieldTMDelete),
-	}
+	flowsTable = "flow_flows"
 )
 
 // flowGetFromRow gets the flow from the row.
 func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
-	var actions string
-
 	res := &flow.Flow{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.Type,
 
-		&res.Name,
-		&res.Detail,
-
-		&actions,
-
-		&res.OnCompleteFlowID,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := dbutil.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. flowGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(actions), &res.Actions); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. FlowGet. err: %v", err)
-	}
 	res.Persist = true
-
 	return res, nil
 }
 
@@ -139,8 +101,11 @@ func (h *handler) flowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flo
 }
 
 func (h *handler) flowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+	// Get fields from model instead of hardcoded list
+	fields := dbutil.GetDBFields(&flow.Flow{})
+
 	query, args, err := squirrel.
-		Select(flowsFields...).
+		Select(fields...).
 		From(flowsTable).
 		Where(squirrel.Eq{string(flow.FieldID): id.Bytes()}).
 		PlaceholderFormat(squirrel.Question).
@@ -195,8 +160,11 @@ func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filte
 		token = h.util.TimeGetCurTime()
 	}
 
+	// Get fields from model instead of hardcoded list
+	fields := dbutil.GetDBFields(&flow.Flow{})
+
 	sb := squirrel.
-		Select(flowsFields...).
+		Select(fields...).
 		From(flowsTable).
 		Where(squirrel.Lt{string(flow.FieldTMCreate): token}).
 		OrderBy(string(flow.FieldTMCreate) + " DESC").
