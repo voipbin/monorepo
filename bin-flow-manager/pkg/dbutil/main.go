@@ -56,7 +56,28 @@ func getDBFieldsRecursive(val reflect.Value) []string {
 
 // PrepareValues converts struct fields to database values for INSERT/UPDATE
 func PrepareValues(model interface{}) ([]interface{}, error) {
-	panic("not implemented")
+	val := reflect.ValueOf(model)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	typ := val.Type()
+	values := []interface{}{}
+
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		tag := field.Tag.Get("db")
+
+		// Skip fields without db tag or with "-"
+		if tag == "" || tag == "-" {
+			continue
+		}
+
+		fieldVal := val.Field(i)
+		values = append(values, fieldVal.Interface())
+	}
+
+	return values, nil
 }
 
 // ScanRow scans a sql.Row/sql.Rows into a struct using db tags
