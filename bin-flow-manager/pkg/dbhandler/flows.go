@@ -21,7 +21,8 @@ var (
 func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 	res := &flow.Flow{}
 
-	if err := dbutil.ScanRow(row, res); err != nil {
+	// Change: dbutil.ScanRow → commondatabasehandler.ScanRow
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. flowGetFromRow. err: %v", err)
 	}
 
@@ -37,17 +38,16 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
 	f.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-	// Use dbutil to get fields and values
-	fields := dbutil.GetDBFields(f)
-	values, err := dbutil.PrepareValues(f)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not prepare values. FlowCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. FlowCreate. err: %v", err)
 	}
 
+	// Use SetMap instead of Columns/Values
 	sb := squirrel.
 		Insert(flowsTable).
-		Columns(fields...).
-		Values(values...).
+		SetMap(fields).
 		PlaceholderFormat(squirrel.Question)
 
 	query, args, err := sb.ToSql()
@@ -100,8 +100,8 @@ func (h *handler) flowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flo
 }
 
 func (h *handler) flowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
-	// Get fields from model instead of hardcoded list
-	fields := dbutil.GetDBFields(&flow.Flow{})
+	// Change: dbutil.GetDBFields → commondatabasehandler.GetDBFields
+	fields := commondatabasehandler.GetDBFields(&flow.Flow{})
 
 	query, args, err := squirrel.
 		Select(fields...).
@@ -159,8 +159,8 @@ func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filte
 		token = h.util.TimeGetCurTime()
 	}
 
-	// Get fields from model instead of hardcoded list
-	fields := dbutil.GetDBFields(&flow.Flow{})
+	// Change: dbutil.GetDBFields → commondatabasehandler.GetDBFields
+	fields := commondatabasehandler.GetDBFields(&flow.Flow{})
 
 	sb := squirrel.
 		Select(fields...).
