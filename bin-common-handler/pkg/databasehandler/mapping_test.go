@@ -208,32 +208,91 @@ func TestGetDBFields_NilPointerPanic(t *testing.T) {
 }
 
 func TestConvertValue(t *testing.T) {
+	testUUID := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
+	expectedUUIDBytes := testUUID.Bytes()
+
 	tests := []struct {
 		name           string
 		value          interface{}
 		conversionType string
 		wantType       string // Expected type name
+		wantValue      interface{} // Expected value for verification
 		wantErr        bool
 	}{
+		// UUID conversions
 		{
 			name:           "UUID to bytes",
-			value:          uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000")),
+			value:          testUUID,
 			conversionType: "uuid",
 			wantType:       "[]uint8",
+			wantValue:      expectedUUIDBytes,
 			wantErr:        false,
 		},
+		{
+			name:           "invalid type for UUID conversion",
+			value:          "not-a-uuid",
+			conversionType: "uuid",
+			wantType:       "",
+			wantValue:      nil,
+			wantErr:        true,
+		},
+		{
+			name:           "UUID passthrough without conversion type",
+			value:          testUUID,
+			conversionType: "",
+			wantType:       "uuid.UUID",
+			wantValue:      testUUID,
+			wantErr:        false,
+		},
+		// JSON conversions
 		{
 			name:           "slice to JSON",
 			value:          []string{"a", "b", "c"},
 			conversionType: "json",
 			wantType:       "[]uint8",
+			wantValue:      []byte(`["a","b","c"]`),
 			wantErr:        false,
 		},
 		{
-			name:           "primitive passthrough",
+			name:           "map to JSON via explicit conversion",
+			value:          map[string]int{"key": 123},
+			conversionType: "json",
+			wantType:       "[]uint8",
+			wantValue:      []byte(`{"key":123}`),
+			wantErr:        false,
+		},
+		// Auto-detection for complex types
+		{
+			name:           "map auto-marshaled to JSON",
+			value:          map[string]int{"key": 123},
+			conversionType: "",
+			wantType:       "[]uint8",
+			wantValue:      []byte(`{"key":123}`),
+			wantErr:        false,
+		},
+		{
+			name:           "struct auto-marshaled to JSON",
+			value:          struct{ Name string }{"test"},
+			conversionType: "",
+			wantType:       "[]uint8",
+			wantValue:      []byte(`{"Name":"test"}`),
+			wantErr:        false,
+		},
+		{
+			name:           "slice auto-marshaled to JSON",
+			value:          []int{1, 2, 3},
+			conversionType: "",
+			wantType:       "[]uint8",
+			wantValue:      []byte(`[1,2,3]`),
+			wantErr:        false,
+		},
+		// Primitive passthroughs
+		{
+			name:           "string passthrough",
 			value:          "test string",
 			conversionType: "",
 			wantType:       "string",
+			wantValue:      "test string",
 			wantErr:        false,
 		},
 		{
@@ -241,6 +300,23 @@ func TestConvertValue(t *testing.T) {
 			value:          42,
 			conversionType: "",
 			wantType:       "int",
+			wantValue:      42,
+			wantErr:        false,
+		},
+		{
+			name:           "float passthrough",
+			value:          3.14,
+			conversionType: "",
+			wantType:       "float64",
+			wantValue:      3.14,
+			wantErr:        false,
+		},
+		{
+			name:           "bool passthrough",
+			value:          true,
+			conversionType: "",
+			wantType:       "bool",
+			wantValue:      true,
 			wantErr:        false,
 		},
 	}
@@ -255,9 +331,17 @@ func TestConvertValue(t *testing.T) {
 			}
 
 			if err == nil {
+				// Verify type
 				gotType := reflect.TypeOf(result).String()
 				if gotType != tt.wantType {
 					t.Errorf("convertValue() type = %v, want %v", gotType, tt.wantType)
+				}
+
+				// Verify value when provided
+				if tt.wantValue != nil {
+					if !reflect.DeepEqual(result, tt.wantValue) {
+						t.Errorf("convertValue() value = %v, want %v", result, tt.wantValue)
+					}
 				}
 			}
 		})
