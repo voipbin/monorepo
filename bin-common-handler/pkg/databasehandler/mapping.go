@@ -1,6 +1,7 @@
 package databasehandler
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strings"
@@ -91,4 +92,42 @@ func PrepareFields(data any) (map[string]any, error) {
 	default:
 		return nil, fmt.Errorf("PrepareFields: expected struct or map, got %T", data)
 	}
+}
+
+// ScanRow scans a sql.Row/sql.Rows into a struct using db tags
+// Handles NULL values by using sql.Null* types internally
+// Supports UUID and JSON conversions via db tag conversion types
+func ScanRow(row *sql.Rows, dest interface{}) error {
+	destVal := reflect.ValueOf(dest)
+	if destVal.Kind() != reflect.Ptr {
+		return fmt.Errorf("dest must be a pointer to struct")
+	}
+
+	destVal = destVal.Elem()
+	if destVal.Kind() != reflect.Struct {
+		return fmt.Errorf("dest must be a pointer to struct")
+	}
+
+	// Build list of scan targets with NULL handling
+	scanTargets := buildScanTargetsRecursive(destVal)
+
+	// Extract just the scan interfaces for row.Scan
+	scanInterfaces := make([]interface{}, len(scanTargets))
+	for i, target := range scanTargets {
+		scanInterfaces[i] = target.scanTarget
+	}
+
+	// Scan the row
+	if err := row.Scan(scanInterfaces...); err != nil {
+		return fmt.Errorf("scan failed: %w", err)
+	}
+
+	// Copy values from sql.Null* types to actual fields
+	for _, target := range scanTargets {
+		if err := copyFromNullType(target.scanTarget, target.fieldVal, target.conversionType); err != nil {
+			return fmt.Errorf("copy from null type failed: %w", err)
+		}
+	}
+
+	return nil
 }

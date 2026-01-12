@@ -640,6 +640,21 @@ func TestPrepareFields(t *testing.T) {
 	})
 }
 
+func TestScanRow_Basic(t *testing.T) {
+	// Note: Full tests will be copied from dbutil/main_test.go
+	// This is a minimal test to verify the function exists
+
+	t.Run("rejects non-pointer", func(t *testing.T) {
+		// Create mock rows (simplified - full implementation uses test helper)
+		var dest testModel
+		err := ScanRow(nil, dest) // Non-pointer
+
+		if err == nil {
+			t.Errorf("ScanRow should reject non-pointer destination")
+		}
+	})
+}
+
 func TestConvertValue(t *testing.T) {
 	testUUID := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
 	expectedUUIDBytes := testUUID.Bytes()
