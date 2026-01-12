@@ -655,7 +655,7 @@ func TestScanRow_Basic(t *testing.T) {
 	})
 }
 
-func TestConvertValue(t *testing.T) {
+func TestConvertValueForDB(t *testing.T) {
 	testUUID := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
 	expectedUUIDBytes := testUUID.Bytes()
 
@@ -771,10 +771,10 @@ func TestConvertValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := convertValue(tt.value, tt.conversionType)
+			result, err := convertValueForDB(tt.value, tt.conversionType)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("convertValue() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("convertValueForDB() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
@@ -782,13 +782,13 @@ func TestConvertValue(t *testing.T) {
 				// Verify type
 				gotType := reflect.TypeOf(result).String()
 				if gotType != tt.wantType {
-					t.Errorf("convertValue() type = %v, want %v", gotType, tt.wantType)
+					t.Errorf("convertValueForDB() type = %v, want %v", gotType, tt.wantType)
 				}
 
 				// Verify value when provided
 				if tt.wantValue != nil {
 					if !reflect.DeepEqual(result, tt.wantValue) {
-						t.Errorf("convertValue() value = %v, want %v", result, tt.wantValue)
+						t.Errorf("convertValueForDB() value = %v, want %v", result, tt.wantValue)
 					}
 				}
 			}
