@@ -207,6 +207,117 @@ func TestGetDBFields_NilPointerPanic(t *testing.T) {
 	}
 }
 
+func TestPrepareFieldsFromStruct(t *testing.T) {
+	id := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
+
+	tests := []struct {
+		name      string
+		input     interface{}
+		wantKeys  []string
+		checkFunc func(t *testing.T, result map[string]any)
+	}{
+		{
+			name: "basic struct with primitives",
+			input: &struct {
+				Name  string `db:"name"`
+				Count int    `db:"count"`
+			}{
+				Name:  "test",
+				Count: 42,
+			},
+			wantKeys: []string{"name", "count"},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				if result["name"] != "test" {
+					t.Errorf("name = %v, want test", result["name"])
+				}
+				if result["count"] != 42 {
+					t.Errorf("count = %v, want 42", result["count"])
+				}
+			},
+		},
+		{
+			name: "struct with UUID conversion",
+			input: &struct {
+				ID uuid.UUID `db:"id,uuid"`
+			}{
+				ID: id,
+			},
+			wantKeys: []string{"id"},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				bytes, ok := result["id"].([]byte)
+				if !ok {
+					t.Errorf("id type = %T, want []byte", result["id"])
+				}
+				if len(bytes) != 16 {
+					t.Errorf("id length = %d, want 16", len(bytes))
+				}
+			},
+		},
+		{
+			name: "struct with JSON conversion",
+			input: &struct {
+				Tags []string `db:"tags,json"`
+			}{
+				Tags: []string{"a", "b"},
+			},
+			wantKeys: []string{"tags"},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				bytes, ok := result["tags"].([]byte)
+				if !ok {
+					t.Errorf("tags type = %T, want []byte", result["tags"])
+				}
+				if string(bytes) != `["a","b"]` {
+					t.Errorf("tags = %s, want [\"a\",\"b\"]", string(bytes))
+				}
+			},
+		},
+		{
+			name: "skips db:\"-\" fields",
+			input: &struct {
+				Name   string `db:"name"`
+				Secret string `db:"-"`
+			}{
+				Name:   "test",
+				Secret: "hidden",
+			},
+			wantKeys: []string{"name"},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				if _, exists := result["Secret"]; exists {
+					t.Errorf("Secret field should be skipped")
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			val := reflect.ValueOf(tt.input)
+			if val.Kind() == reflect.Ptr {
+				val = val.Elem()
+			}
+
+			result, err := prepareFieldsFromStruct(val)
+			if err != nil {
+				t.Fatalf("prepareFieldsFromStruct() error = %v", err)
+			}
+
+			if len(result) != len(tt.wantKeys) {
+				t.Errorf("got %d fields, want %d", len(result), len(tt.wantKeys))
+			}
+
+			for _, key := range tt.wantKeys {
+				if _, exists := result[key]; !exists {
+					t.Errorf("missing key: %s", key)
+				}
+			}
+
+			if tt.checkFunc != nil {
+				tt.checkFunc(t, result)
+			}
+		})
+	}
+}
+
 func TestConvertValue(t *testing.T) {
 	testUUID := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
 	expectedUUIDBytes := testUUID.Bytes()

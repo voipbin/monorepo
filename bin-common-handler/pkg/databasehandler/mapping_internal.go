@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/gofrs/uuid"
 )
@@ -49,4 +50,63 @@ func convertValue(value interface{}, conversionType string) (interface{}, error)
 
 	// Primitives pass through unchanged
 	return value, nil
+}
+
+// prepareFieldsFromStruct processes a struct value using db tags
+// Reads tags, skips db:"-" fields, applies conversions
+func prepareFieldsFromStruct(val reflect.Value) (map[string]any, error) {
+	typ := val.Type()
+	result := make(map[string]any)
+
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		fieldVal := val.Field(i)
+
+		// Handle embedded/anonymous structs recursively
+		if field.Anonymous && field.Type.Kind() == reflect.Struct {
+			embeddedFields, err := prepareFieldsFromStruct(fieldVal)
+			if err != nil {
+				return nil, fmt.Errorf("embedded struct %s: %w", field.Name, err)
+			}
+			// Merge embedded fields into result
+			for k, v := range embeddedFields {
+				result[k] = v
+			}
+			continue
+		}
+
+		// Skip unexported fields
+		if !field.IsExported() {
+			continue
+		}
+
+		// Get db tag
+		tag := field.Tag.Get("db")
+		if tag == "" {
+			continue
+		}
+
+		// Skip fields with db:"-"
+		if tag == "-" {
+			continue
+		}
+
+		// Parse tag: column_name[,conversion_type]
+		columnName := tag
+		conversionType := ""
+		if idx := strings.Index(tag, ","); idx != -1 {
+			columnName = tag[:idx]
+			conversionType = tag[idx+1:]
+		}
+
+		// Convert value
+		convertedVal, err := convertValue(fieldVal.Interface(), conversionType)
+		if err != nil {
+			return nil, fmt.Errorf("field %s (%s): %w", field.Name, columnName, err)
+		}
+
+		result[columnName] = convertedVal
+	}
+
+	return result, nil
 }
