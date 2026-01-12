@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
@@ -17,82 +16,15 @@ import (
 )
 
 var (
-	activeflowsTable  = "flow_activeflows"
-	activeflowsFields = []string{
-		string(activeflow.FieldID),
-		string(activeflow.FieldCustomerID),
-
-		string(activeflow.FieldStatus),
-		string(activeflow.FieldFlowID),
-
-		string(activeflow.FieldReferenceType),
-		string(activeflow.FieldReferenceID),
-		string(activeflow.FieldReferenceActiveflowID),
-
-		string(activeflow.FieldOnCompleteFlowID),
-
-		string(activeflow.FieldStackMap),
-		string(activeflow.FieldCurrentStackID),
-		string(activeflow.FieldCurrentAction),
-
-		string(activeflow.FieldForwardStackID),
-		string(activeflow.FieldForwardActionID),
-
-		string(activeflow.FieldExecuteCount),
-		string(activeflow.FieldExecutedActions),
-
-		string(activeflow.FieldTMCreate),
-		string(activeflow.FieldTMUpdate),
-		string(activeflow.FieldTMDelete),
-	}
+	activeflowsTable = "flow_activeflows"
 )
 
 // activeflowGetFromRow gets the activeflow from the row.
 func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, error) {
-	var currentAction string
-	var stackMap string
-	var executedActions string
-
 	res := &activeflow.Activeflow{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Status,
-		&res.FlowID,
-
-		&res.ReferenceType,
-		&res.ReferenceID,
-		&res.ReferenceActiveflowID,
-
-		&res.OnCompleteFlowID,
-
-		&stackMap,
-
-		&res.CurrentStackID,
-		&currentAction,
-
-		&res.ForwardStackID,
-		&res.ForwardActionID,
-
-		&res.ExecuteCount,
-		&executedActions,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. activeflowGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(currentAction), &res.CurrentAction); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the CurrentAction. activeflowGetFromRow. err: %v", err)
-	}
-	if err := json.Unmarshal([]byte(executedActions), &res.ExecutedActions); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the ExecutedActions. activeflowGetFromRow. err: %v", err)
-	}
-	if err := json.Unmarshal([]byte(stackMap), &res.StackMap); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the StackMap. activeflowGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -101,52 +33,21 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow) error {
 	now := h.util.TimeGetCurTime()
 
-	tmpCurrentAction, err := json.Marshal(f.CurrentAction)
+	// Set timestamps
+	f.TMCreate = now
+	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	f.TMDelete = commondatabasehandler.DefaultTimeStamp
+
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not marshal current_actions. ActiveflowCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ActiveflowCreate. err: %v", err)
 	}
 
-	tmpExecutedActions, err := json.Marshal(f.ExecutedActions)
-	if err != nil {
-		return fmt.Errorf("could not marshal executed_actions. ActiveflowCreate. err: %v", err)
-	}
-
-	tmpStackMap, err := json.Marshal(f.StackMap)
-	if err != nil {
-		return fmt.Errorf("could not marshal stack_map. ActiveflowCreate. err: %v", err)
-	}
-
+	// Use SetMap instead of Columns/Values
 	sb := squirrel.
 		Insert(activeflowsTable).
-		Columns(activeflowsFields...).
-		Values(
-			f.ID.Bytes(),
-			f.CustomerID.Bytes(),
-
-			f.Status,
-			f.FlowID.Bytes(),
-
-			f.ReferenceType,
-			f.ReferenceID.Bytes(),
-			f.ReferenceActiveflowID.Bytes(),
-
-			f.OnCompleteFlowID.Bytes(),
-
-			tmpStackMap,
-
-			f.CurrentStackID.Bytes(),
-			tmpCurrentAction,
-
-			f.ForwardStackID.Bytes(),
-			f.ForwardActionID.Bytes(),
-
-			f.ExecuteCount,
-			tmpExecutedActions,
-
-			now,                                    // tm_create
-			commondatabasehandler.DefaultTimeStamp, // tm_update
-			commondatabasehandler.DefaultTimeStamp, // tm_delete
-		).
+		SetMap(fields).
 		PlaceholderFormat(squirrel.Question)
 
 	query, args, err := sb.ToSql()
@@ -164,8 +65,9 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 
 // activeflowGetFromDB gets the activeflow info from the db.
 func (h *handler) activeflowGetFromDB(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+	fields := commondatabasehandler.GetDBFields(&activeflow.Activeflow{})
 	query, args, err := squirrel.
-		Select(activeflowsFields...).
+		Select(fields...).
 		From(activeflowsTable).
 		Where(squirrel.Eq{string(activeflow.FieldID): id.Bytes()}).
 		PlaceholderFormat(squirrel.Question).
@@ -282,8 +184,9 @@ func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64,
 		token = h.util.TimeGetCurTime()
 	}
 
+	fields := commondatabasehandler.GetDBFields(&activeflow.Activeflow{})
 	sb := squirrel.
-		Select(activeflowsFields...).
+		Select(fields...).
 		From(activeflowsTable).
 		Where(squirrel.Lt{string(activeflow.FieldTMCreate): token}).
 		OrderBy(string(activeflow.FieldTMCreate) + " DESC").
@@ -330,7 +233,11 @@ func (h *handler) ActiveflowUpdate(ctx context.Context, id uuid.UUID, fields map
 
 	fields[activeflow.FieldTMUpdate] = h.util.TimeGetCurTime()
 
-	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ActiveflowUpdate: prepare fields failed: %w", err)
+	}
+
 	q := squirrel.Update(activeflowsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{"id": id.Bytes()})
@@ -356,7 +263,11 @@ func (h *handler) ActiveflowDelete(ctx context.Context, id uuid.UUID) error {
 		activeflow.FieldTMDelete: ts,
 	}
 
-	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ActiveflowDelete: prepare fields failed: %w", err)
+	}
+
 	sb := squirrel.Update(activeflowsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(activeflow.FieldID): id.Bytes()}).

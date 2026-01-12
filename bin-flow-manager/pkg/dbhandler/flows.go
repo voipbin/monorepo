@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
@@ -15,86 +14,40 @@ import (
 )
 
 var (
-	flowsTable  = "flow_flows"
-	flowsFields = []string{
-		string(flow.FieldID),
-		string(flow.FieldCustomerID),
-
-		string(flow.FieldType),
-
-		string(flow.FieldName),
-		string(flow.FieldDetail),
-
-		string(flow.FieldActions),
-
-		string(flow.FieldOnCompleteFlowID),
-
-		string(flow.FieldTMCreate),
-		string(flow.FieldTMUpdate),
-		string(flow.FieldTMDelete),
-	}
+	flowsTable = "flow_flows"
 )
 
 // flowGetFromRow gets the flow from the row.
 func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
-	var actions string
-
 	res := &flow.Flow{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.Type,
 
-		&res.Name,
-		&res.Detail,
-
-		&actions,
-
-		&res.OnCompleteFlowID,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	// Change: dbutil.ScanRow → commondatabasehandler.ScanRow
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. flowGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(actions), &res.Actions); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. FlowGet. err: %v", err)
-	}
 	res.Persist = true
-
 	return res, nil
 }
 
 func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 	now := h.util.TimeGetCurTime()
 
-	tmpActions, err := json.Marshal(f.Actions)
+	// Set timestamps
+	f.TMCreate = now
+	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	f.TMDelete = commondatabasehandler.DefaultTimeStamp
+
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not marshal current_actions. FlowCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. FlowCreate. err: %v", err)
 	}
 
+	// Use SetMap instead of Columns/Values
 	sb := squirrel.
 		Insert(flowsTable).
-		Columns(flowsFields...).
-		Values(
-			f.ID.Bytes(),
-			f.CustomerID.Bytes(),
-
-			f.Type,
-
-			f.Name,
-			f.Detail,
-
-			tmpActions,
-
-			f.OnCompleteFlowID.Bytes(),
-
-			now,                                    // tm_create
-			commondatabasehandler.DefaultTimeStamp, // tm_update
-			commondatabasehandler.DefaultTimeStamp, // tm_delete
-		).
+		SetMap(fields).
 		PlaceholderFormat(squirrel.Question)
 
 	query, args, err := sb.ToSql()
@@ -147,8 +100,11 @@ func (h *handler) flowGetFromCache(ctx context.Context, id uuid.UUID) (*flow.Flo
 }
 
 func (h *handler) flowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+	// Change: dbutil.GetDBFields → commondatabasehandler.GetDBFields
+	fields := commondatabasehandler.GetDBFields(&flow.Flow{})
+
 	query, args, err := squirrel.
-		Select(flowsFields...).
+		Select(fields...).
 		From(flowsTable).
 		Where(squirrel.Eq{string(flow.FieldID): id.Bytes()}).
 		PlaceholderFormat(squirrel.Question).
@@ -203,8 +159,11 @@ func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filte
 		token = h.util.TimeGetCurTime()
 	}
 
+	// Change: dbutil.GetDBFields → commondatabasehandler.GetDBFields
+	fields := commondatabasehandler.GetDBFields(&flow.Flow{})
+
 	sb := squirrel.
-		Select(flowsFields...).
+		Select(fields...).
 		From(flowsTable).
 		Where(squirrel.Lt{string(flow.FieldTMCreate): token}).
 		OrderBy(string(flow.FieldTMCreate) + " DESC").
@@ -259,7 +218,11 @@ func (h *handler) flowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.
 		return nil
 	}
 
-	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("FlowUpdate: prepare fields failed: %w", err)
+	}
+
 	q := squirrel.Update(flowsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{"id": id.Bytes()})

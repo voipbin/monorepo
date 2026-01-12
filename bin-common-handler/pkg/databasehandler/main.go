@@ -2,18 +2,15 @@ package databasehandler
 
 import (
 	"database/sql"
-
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -43,63 +40,6 @@ func Close(db *sql.DB) {
 		logrus.Errorf("Could not close the database connection err: %v", errClose)
 		return
 	}
-}
-
-// PrepareUpdateFields processes a map of fields intended for an update operation (e.g., in a database).
-// It converts specific types to a database-friendly format.
-// - uuid.UUID values are converted to their byte representation.
-// - Values implementing json.Marshaler are marshaled to JSON bytes.
-// - Maps, slices, and structs are marshaled to JSON bytes if they don't implement json.Marshaler.
-// - Other types are returned as is.
-// If marshaling fails for a json.Marshaler or for map/slice/struct types, the value for that key
-// in the result map is set to nil.
-//
-// The keys of the input map (type K, constrained to ~string) are converted to plain strings
-// for the keys of the output map.
-//
-// Parameters:
-//   - fields: A map where keys are of type K (a string or string-based custom type)
-//     and values are of type any. These represent the fields to be updated.
-//
-// Returns:
-//
-//	A new map[string]any where values are processed according to the rules above.
-//	This map is suitable for use with database update operations that expect
-//	primitive or byte-slice values for complex types.
-func PrepareUpdateFields[K ~string](fields map[K]any) map[string]any {
-	res := make(map[string]any, len(fields))
-	for k, v := range fields {
-		key := string(k)
-
-		switch val := v.(type) {
-		case uuid.UUID:
-			res[key] = val.Bytes()
-
-		case json.Marshaler:
-			b, err := val.MarshalJSON()
-			if err == nil {
-				res[key] = b
-			} else {
-				res[key] = nil
-			}
-
-		default:
-			rv := reflect.ValueOf(v)
-			rt := rv.Type()
-			if rt.Kind() == reflect.Map || rt.Kind() == reflect.Slice || rt.Kind() == reflect.Struct {
-				b, err := json.Marshal(v)
-				if err == nil {
-					res[key] = b
-				} else {
-					res[key] = nil
-				}
-			} else {
-				res[key] = v
-			}
-		}
-	}
-
-	return res
 }
 
 // ApplyFields dynamically adds WHERE clauses to a squirrel.SelectBuilder based on the provided fields map.

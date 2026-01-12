@@ -14,20 +14,20 @@ import (
 type Flow struct {
 	commonidentity.Identity
 
-	Type Type `json:"type,omitempty"`
+	Type Type `json:"type,omitempty" db:"type"`
 
-	Name   string `json:"name,omitempty"`
-	Detail string `json:"detail,omitempty"`
+	Name   string `json:"name,omitempty" db:"name"`
+	Detail string `json:"detail,omitempty" db:"detail"`
 
-	Persist bool `json:"persist,omitempty"`
+	Persist bool `json:"persist,omitempty" db:"-"` // Not stored in database
 
-	Actions []action.Action `json:"actions,omitempty"`
+	Actions []action.Action `json:"actions,omitempty" db:"actions,json"`
 
-	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty"` // will be triggered when this flow is completed
+	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty" db:"on_complete_flow_id,uuid"` // will be triggered when this flow is completed
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Type defines

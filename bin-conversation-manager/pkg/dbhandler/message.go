@@ -344,7 +344,11 @@ func (h *handler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[me
 
 	fields[message.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	preparedFields := commondatabasehandler.PrepareUpdateFields(fields)
+	preparedFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("MessageUpdate: prepare fields failed: %w", err)
+	}
+
 	sb := squirrel.Update(messagesTable).
 		SetMap(preparedFields).
 		Where(squirrel.Eq{string(message.FieldID): id.Bytes()}).

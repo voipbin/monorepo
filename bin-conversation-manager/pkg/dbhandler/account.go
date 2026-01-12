@@ -264,7 +264,11 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 
 	fields[account.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("AccountUpdate: prepare fields failed: %w", err)
+	}
+
 	q := squirrel.Update(accountsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{"id": id.Bytes()})
@@ -290,7 +294,11 @@ func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 		account.FieldTMDelete: ts,
 	}
 
-	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("AccountDelete: prepare fields failed: %w", err)
+	}
+
 	sb := squirrel.Update(accountsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(account.FieldID): id.Bytes()}).

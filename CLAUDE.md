@@ -79,27 +79,119 @@ golangci-lint run -v --timeout 5m
 
 ### Special Case: Changes to bin-common-handler
 
-**CRITICAL: If you make ANY changes to `bin-common-handler`, you MUST update ALL services in the monorepo.**
+**🚨 CRITICAL: If you make ANY changes to `bin-common-handler`, you MUST update ALL 30+ services in the monorepo.**
 
-The `bin-common-handler` is a shared library used by ALL other services. Changes to it (models, handlers, interfaces, etc.) require updating every service to maintain consistency.
+The `bin-common-handler` is a shared library used by ALL other services. Changes to it require updating every service to maintain consistency across the entire monorepo.
 
+#### What Counts as a "Change to bin-common-handler"
+
+Changes that affect dependent services include:
+- ✅ Adding new functions or methods (e.g., `PrepareFields()`, `ScanRow()`)
+- ✅ Modifying existing interfaces or function signatures
+- ✅ Adding/removing fields in shared models (`models/outline`, `models/identity`)
+- ✅ Changing behavior of existing handlers
+- ✅ Updating dependencies in bin-common-handler's `go.mod`
+
+#### Complete Update Workflow
+
+**Step 1: Make changes to bin-common-handler**
 ```bash
-# After making changes to bin-common-handler, run from monorepo root:
-# This only updates Go projects (those with go.mod files)
-find . -maxdepth 2 -name "go.mod" -execdir bash -c "go mod tidy && go mod vendor && go generate ./... && go test ./..." \;
+cd bin-common-handler
 
-# Or update each Go service individually:
-cd bin-<service-name>
-go mod tidy && go mod vendor && go generate ./... && go test ./...
+# Make your changes, then run verification
+go mod tidy && \
+go mod vendor && \
+go generate ./... && \
+go test ./... && \
+golangci-lint run -v --timeout 5m
 ```
 
-**Note:** Use the regular workflow (without `go get -u`) unless you're also updating dependencies.
+**Step 2: Update ALL services in monorepo**
+```bash
+# From monorepo root, update all 30+ services
+cd /home/pchero/gitvoipbin/monorepo
 
-**Why this is critical:**
-- All `bin-*-manager` services depend on `bin-common-handler` via local `replace` directives in their `go.mod`
-- Changes to shared models, interfaces, or handlers affect every service
-- Stale vendored dependencies will cause compilation errors or runtime issues
-- Mock regeneration is required if interfaces changed
+find . -maxdepth 2 -name "go.mod" -execdir bash -c \
+  "echo 'Updating \$(basename \$(pwd))...' && \
+   go mod tidy && \
+   go mod vendor && \
+   go generate ./... && \
+   go test ./..." \;
+```
+
+**What this does for EACH service:**
+1. `go mod tidy` - Syncs go.mod with bin-common-handler changes (NOT `go get -u`)
+2. `go mod vendor` - Updates vendored bin-common-handler code
+3. `go generate ./...` - Regenerates mocks that depend on bin-common-handler interfaces
+4. `go test ./...` - Verifies the service still works with new bin-common-handler
+
+**Step 3: Verify key services compile**
+```bash
+# Spot check critical services
+cd bin-api-manager && go build ./...
+cd ../bin-call-manager && go build ./...
+cd ../bin-flow-manager && go build ./...
+```
+
+**Step 4: Commit ALL changes together**
+```bash
+cd /home/pchero/gitvoipbin/monorepo
+
+# Commit bin-common-handler changes
+git add bin-common-handler/
+git commit -m "feat(common-handler): add new database mapping utilities"
+
+# Commit dependency updates for all services
+git add */go.mod */go.sum
+git commit -m "chore: update dependencies after bin-common-handler changes"
+```
+
+#### Projects Affected
+
+**All services depend on bin-common-handler** (30+ projects):
+- bin-api-manager (REST API gateway)
+- bin-call-manager (Call routing)
+- bin-flow-manager (Flow execution)
+- bin-conference-manager (Conferencing)
+- bin-ai-manager (AI integration)
+- bin-webhook-manager (Webhooks)
+- bin-agent-manager (Agent management)
+- bin-customer-manager (Customer data)
+- And 22+ other services...
+
+#### Why This Is Critical
+
+- **Compilation errors**: Stale vendored dependencies will break builds
+- **Runtime failures**: Services may use outdated interfaces/models
+- **Test failures**: Mock regeneration required if interfaces changed
+- **Inconsistent state**: Half-updated monorepo leads to subtle bugs
+
+#### Common Mistakes to Avoid
+
+❌ **DON'T run `go get -u`** - This updates ALL dependencies, not just bin-common-handler
+❌ **DON'T skip `go generate`** - Mocks will be stale if interfaces changed
+❌ **DON'T skip `go test`** - Won't catch breaking changes until production
+❌ **DON'T commit bin-common-handler alone** - All services must be updated together
+
+✅ **DO run the complete workflow** - `go mod tidy && go mod vendor && go generate && go test`
+✅ **DO verify tests pass** for all services before committing
+✅ **DO commit bin-common-handler and dependency updates together** (can be separate commits in same PR)
+
+#### Troubleshooting
+
+**If services fail to compile after update:**
+```bash
+# Clean and retry for specific service
+cd bin-<service-name>
+rm -rf vendor/
+go clean -modcache
+go mod tidy && go mod vendor && go build ./...
+```
+
+**If tests fail in multiple services:**
+- Check if bin-common-handler changes introduced breaking changes
+- Review interface modifications
+- Verify mock regeneration completed successfully
 
 **Never commit changes to bin-common-handler without updating dependent services.**
 
