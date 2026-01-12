@@ -421,6 +421,87 @@ func TestPrepareFieldsFromStruct(t *testing.T) {
 	}
 }
 
+func TestPrepareFieldsFromMap(t *testing.T) {
+	id := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
+
+	tests := []struct {
+		name      string
+		input     map[string]any
+		checkFunc func(t *testing.T, result map[string]any)
+	}{
+		{
+			name: "primitives pass through",
+			input: map[string]any{
+				"name":  "test",
+				"count": 42,
+			},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				if result["name"] != "test" {
+					t.Errorf("name = %v, want test", result["name"])
+				}
+				if result["count"] != 42 {
+					t.Errorf("count = %v, want 42", result["count"])
+				}
+			},
+		},
+		{
+			name: "UUID auto-detected and converted",
+			input: map[string]any{
+				"id": id,
+			},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				bytes, ok := result["id"].([]byte)
+				if !ok {
+					t.Errorf("id type = %T, want []byte", result["id"])
+				}
+				if len(bytes) != 16 {
+					t.Errorf("id length = %d, want 16", len(bytes))
+				}
+			},
+		},
+		{
+			name: "slice auto-marshaled to JSON",
+			input: map[string]any{
+				"tags": []string{"a", "b"},
+			},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				_, ok := result["tags"].([]byte)
+				if !ok {
+					t.Errorf("tags type = %T, want []byte", result["tags"])
+				}
+			},
+		},
+		{
+			name: "nil value preserved",
+			input: map[string]any{
+				"optional": nil,
+			},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				if result["optional"] != nil {
+					t.Errorf("optional = %v, want nil", result["optional"])
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := prepareFieldsFromMap(tt.input)
+			if err != nil {
+				t.Fatalf("prepareFieldsFromMap() error = %v", err)
+			}
+
+			if len(result) != len(tt.input) {
+				t.Errorf("got %d fields, want %d", len(result), len(tt.input))
+			}
+
+			if tt.checkFunc != nil {
+				tt.checkFunc(t, result)
+			}
+		})
+	}
+}
+
 func TestConvertValue(t *testing.T) {
 	testUUID := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
 	expectedUUIDBytes := testUUID.Bytes()

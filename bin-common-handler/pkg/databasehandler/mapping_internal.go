@@ -110,3 +110,57 @@ func prepareFieldsFromStruct(val reflect.Value) (map[string]any, error) {
 
 	return result, nil
 }
+
+// prepareFieldsFromMap processes a map without tag awareness
+// Auto-detects UUID and JSON types, applies conversions
+func prepareFieldsFromMap(data any) (map[string]any, error) {
+	inputMap, ok := data.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("expected map[string]any, got %T", data)
+	}
+
+	result := make(map[string]any, len(inputMap))
+
+	for key, value := range inputMap {
+		// Preserve nil values
+		if value == nil {
+			result[key] = nil
+			continue
+		}
+
+		// Auto-detect UUID
+		if uuidVal, ok := value.(uuid.UUID); ok {
+			result[key] = uuidVal.Bytes()
+			continue
+		}
+
+		// Auto-detect complex types that need JSON marshaling
+		rv := reflect.ValueOf(value)
+		switch rv.Kind() {
+		case reflect.Slice, reflect.Map:
+			jsonBytes, err := json.Marshal(value)
+			if err != nil {
+				return nil, fmt.Errorf("field %s: JSON marshal failed: %w", key, err)
+			}
+			result[key] = jsonBytes
+
+		case reflect.Struct:
+			// Skip UUID (already handled)
+			if _, isUUID := value.(uuid.UUID); !isUUID {
+				jsonBytes, err := json.Marshal(value)
+				if err != nil {
+					return nil, fmt.Errorf("field %s: JSON marshal failed: %w", key, err)
+				}
+				result[key] = jsonBytes
+			} else {
+				result[key] = value
+			}
+
+		default:
+			// Primitives pass through
+			result[key] = value
+		}
+	}
+
+	return result, nil
+}
