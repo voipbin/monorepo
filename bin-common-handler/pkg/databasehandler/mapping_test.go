@@ -214,6 +214,7 @@ func TestPrepareFieldsFromStruct(t *testing.T) {
 		name      string
 		input     interface{}
 		wantKeys  []string
+		wantErr   bool
 		checkFunc func(t *testing.T, result map[string]any)
 	}{
 		{
@@ -287,6 +288,101 @@ func TestPrepareFieldsFromStruct(t *testing.T) {
 				}
 			},
 		},
+		// CRITICAL: Embedded struct handling test
+		{
+			name: "handles embedded structs",
+			input: &struct {
+				testModel // Embedded struct
+				Extra     string `db:"extra"`
+			}{
+				testModel: testModel{
+					ID:    id,
+					Name:  "embedded",
+					Count: 99,
+				},
+				Extra: "more",
+			},
+			wantKeys: []string{"id", "name", "count", "extra"},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				if result["name"] != "embedded" {
+					t.Errorf("name = %v, want embedded", result["name"])
+				}
+				if result["count"] != 99 {
+					t.Errorf("count = %v, want 99", result["count"])
+				}
+				if result["extra"] != "more" {
+					t.Errorf("extra = %v, want more", result["extra"])
+				}
+				// Verify UUID conversion
+				bytes, ok := result["id"].([]byte)
+				if !ok {
+					t.Errorf("id type = %T, want []byte", result["id"])
+				}
+				if len(bytes) != 16 {
+					t.Errorf("id length = %d, want 16", len(bytes))
+				}
+			},
+		},
+		// CRITICAL: Error propagation from embedded struct conversion
+		{
+			name: "error in embedded struct conversion",
+			input: func() interface{} {
+				// Create embedded struct with invalid UUID conversion
+				type embeddedBadUUID struct {
+					ID string `db:"id,uuid"` // string can't convert to UUID
+				}
+				result := &struct {
+					embeddedBadUUID
+				}{
+					embeddedBadUUID: embeddedBadUUID{
+						ID: "not-a-uuid",
+					},
+				}
+				return result
+			}(),
+			wantErr: true,
+		},
+		// Nice to have: Unexported fields test
+		{
+			name: "skips unexported fields",
+			input: &struct {
+				Name   string `db:"name"`
+				secret string `db:"secret"` // unexported
+			}{
+				Name:   "test",
+				secret: "hidden",
+			},
+			wantKeys: []string{"name"},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				if _, exists := result["secret"]; exists {
+					t.Errorf("secret field should be skipped")
+				}
+			},
+		},
+		// Nice to have: Fields without db tags test
+		{
+			name: "skips fields without db tags",
+			input: &struct {
+				Name  string `db:"name"`
+				NoTag string
+			}{
+				Name:  "test",
+				NoTag: "ignored",
+			},
+			wantKeys: []string{"name"},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				if _, exists := result["NoTag"]; exists {
+					t.Errorf("NoTag field should be skipped")
+				}
+			},
+		},
+		// Nice to have: Empty struct test
+		{
+			name: "handles empty struct",
+			input: &struct {
+			}{},
+			wantKeys: []string{},
+		},
 	}
 
 	for _, tt := range tests {
@@ -297,8 +393,15 @@ func TestPrepareFieldsFromStruct(t *testing.T) {
 			}
 
 			result, err := prepareFieldsFromStruct(val)
-			if err != nil {
-				t.Fatalf("prepareFieldsFromStruct() error = %v", err)
+
+			// Check error expectation
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("prepareFieldsFromStruct() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			// If we expected an error, we're done
+			if tt.wantErr {
+				return
 			}
 
 			if len(result) != len(tt.wantKeys) {
