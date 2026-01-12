@@ -46,6 +46,9 @@ func Close(db *sql.DB) {
 }
 
 // PrepareUpdateFields processes a map of fields intended for an update operation (e.g., in a database).
+// Deprecated: Use PrepareFields instead, which handles both structs and maps.
+// This function is kept for backward compatibility and now delegates to PrepareFields.
+//
 // It converts specific types to a database-friendly format.
 // - uuid.UUID values are converted to their byte representation.
 // - Values implementing json.Marshaler are marshaled to JSON bytes.
@@ -67,39 +70,55 @@ func Close(db *sql.DB) {
 //	This map is suitable for use with database update operations that expect
 //	primitive or byte-slice values for complex types.
 func PrepareUpdateFields[K ~string](fields map[K]any) map[string]any {
-	res := make(map[string]any, len(fields))
+	// Convert K ~string keys to string
+	stringMap := make(map[string]any, len(fields))
 	for k, v := range fields {
-		key := string(k)
+		stringMap[string(k)] = v
+	}
 
-		switch val := v.(type) {
-		case uuid.UUID:
-			res[key] = val.Bytes()
+	// Delegate to PrepareFields
+	result, err := PrepareFields(stringMap)
+	if err != nil {
+		// For backward compatibility, return original behavior on error
+		// (original didn't return errors)
+		logrus.Warnf("PrepareUpdateFields: PrepareFields error, falling back: %v", err)
 
-		case json.Marshaler:
-			b, err := val.MarshalJSON()
-			if err == nil {
-				res[key] = b
-			} else {
-				res[key] = nil
-			}
+		// Fallback to original logic (keep old implementation as backup)
+		res := make(map[string]any, len(fields))
+		for k, v := range fields {
+			key := string(k)
 
-		default:
-			rv := reflect.ValueOf(v)
-			rt := rv.Type()
-			if rt.Kind() == reflect.Map || rt.Kind() == reflect.Slice || rt.Kind() == reflect.Struct {
-				b, err := json.Marshal(v)
+			switch val := v.(type) {
+			case uuid.UUID:
+				res[key] = val.Bytes()
+
+			case json.Marshaler:
+				b, err := val.MarshalJSON()
 				if err == nil {
 					res[key] = b
 				} else {
 					res[key] = nil
 				}
-			} else {
-				res[key] = v
+
+			default:
+				rv := reflect.ValueOf(v)
+				rt := rv.Type()
+				if rt.Kind() == reflect.Map || rt.Kind() == reflect.Slice || rt.Kind() == reflect.Struct {
+					b, err := json.Marshal(v)
+					if err == nil {
+						res[key] = b
+					} else {
+						res[key] = nil
+					}
+				} else {
+					res[key] = v
+				}
 			}
 		}
+		return res
 	}
 
-	return res
+	return result
 }
 
 // ApplyFields dynamically adds WHERE clauses to a squirrel.SelectBuilder based on the provided fields map.

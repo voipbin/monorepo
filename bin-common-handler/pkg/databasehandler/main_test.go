@@ -121,6 +121,49 @@ func Test_PrepareUpdateFields(t *testing.T) {
 	}
 }
 
+func TestPrepareUpdateFields_BackwardCompatibility(t *testing.T) {
+	id := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
+
+	input := map[string]any{
+		"id":   id,
+		"name": "test",
+	}
+
+	// Old API
+	oldResult := PrepareUpdateFields(input)
+
+	// New API
+	newResult, err := PrepareFields(input)
+	if err != nil {
+		t.Fatalf("PrepareFields() error = %v", err)
+	}
+
+	// Results should be identical
+	if len(oldResult) != len(newResult) {
+		t.Errorf("length mismatch: old=%d, new=%d", len(oldResult), len(newResult))
+	}
+
+	for key, oldVal := range oldResult {
+		newVal, exists := newResult[key]
+		if !exists {
+			t.Errorf("key %s missing in new result", key)
+			continue
+		}
+
+		// Compare byte slices properly
+		oldBytes, oldIsBytes := oldVal.([]byte)
+		newBytes, newIsBytes := newVal.([]byte)
+
+		if oldIsBytes && newIsBytes {
+			if string(oldBytes) != string(newBytes) {
+				t.Errorf("key %s: bytes mismatch", key)
+			}
+		} else if oldVal != newVal {
+			t.Errorf("key %s: old=%v, new=%v", key, oldVal, newVal)
+		}
+	}
+}
+
 func Test_ApplyFields(t *testing.T) {
 	type filter map[string]any
 
