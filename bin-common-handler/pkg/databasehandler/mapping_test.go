@@ -580,6 +580,66 @@ func TestPrepareFieldsFromMap(t *testing.T) {
 	}
 }
 
+func TestPrepareFields(t *testing.T) {
+	id := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
+
+	t.Run("accepts struct", func(t *testing.T) {
+		input := &testModel{
+			ID:    id,
+			Name:  "test",
+			Count: 42,
+		}
+
+		result, err := PrepareFields(input)
+		if err != nil {
+			t.Fatalf("PrepareFields() error = %v", err)
+		}
+
+		if len(result) != 3 { // id, name, count (SkipMe excluded)
+			t.Errorf("got %d fields, want 3", len(result))
+		}
+
+		if _, exists := result["id"]; !exists {
+			t.Errorf("missing id field")
+		}
+		if result["name"] != "test" {
+			t.Errorf("name = %v, want test", result["name"])
+		}
+		if result["count"] != 42 {
+			t.Errorf("count = %v, want 42", result["count"])
+		}
+	})
+
+	t.Run("accepts map", func(t *testing.T) {
+		input := map[string]any{
+			"name":  "updated",
+			"count": 100,
+		}
+
+		result, err := PrepareFields(input)
+		if err != nil {
+			t.Fatalf("PrepareFields() error = %v", err)
+		}
+
+		if len(result) != 2 {
+			t.Errorf("got %d fields, want 2", len(result))
+		}
+
+		if result["name"] != "updated" {
+			t.Errorf("name = %v, want updated", result["name"])
+		}
+	})
+
+	t.Run("rejects invalid type", func(t *testing.T) {
+		input := []string{"not", "supported"}
+
+		_, err := PrepareFields(input)
+		if err == nil {
+			t.Errorf("PrepareFields() expected error for slice input")
+		}
+	})
+}
+
 func TestConvertValue(t *testing.T) {
 	testUUID := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
 	expectedUUIDBytes := testUUID.Bytes()

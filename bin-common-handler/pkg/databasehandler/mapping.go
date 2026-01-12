@@ -1,6 +1,7 @@
 package databasehandler
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -64,4 +65,30 @@ func getDBFieldsRecursive(val reflect.Value, typ reflect.Type) []string {
 	}
 
 	return fields
+}
+
+// PrepareFields converts struct or map to database-ready values
+// - Struct input: reads db tags, skips db:"-", converts UUID/JSON based on tags
+// - Map input: auto-detects types, converts UUID/JSON without tag filtering
+// Returns map[string]any suitable for squirrel.Insert().SetMap() or Update().SetMap()
+func PrepareFields(data any) (map[string]any, error) {
+	val := reflect.ValueOf(data)
+
+	// Dereference pointer if needed
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	switch val.Kind() {
+	case reflect.Struct:
+		// Tag-aware path for INSERT with structs
+		return prepareFieldsFromStruct(val)
+
+	case reflect.Map:
+		// Tag-agnostic path for UPDATE with maps
+		return prepareFieldsFromMap(data)
+
+	default:
+		return nil, fmt.Errorf("PrepareFields: expected struct or map, got %T", data)
+	}
 }
