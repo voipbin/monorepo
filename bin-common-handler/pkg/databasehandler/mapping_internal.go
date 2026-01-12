@@ -145,16 +145,12 @@ func prepareFieldsFromMap(data any) (map[string]any, error) {
 			result[key] = jsonBytes
 
 		case reflect.Struct:
-			// Skip UUID (already handled)
-			if _, isUUID := value.(uuid.UUID); !isUUID {
-				jsonBytes, err := json.Marshal(value)
-				if err != nil {
-					return nil, fmt.Errorf("field %s: JSON marshal failed: %w", key, err)
-				}
-				result[key] = jsonBytes
-			} else {
-				result[key] = value
+			// UUID already handled above, all other structs get JSON marshaled
+			jsonBytes, err := json.Marshal(value)
+			if err != nil {
+				return nil, fmt.Errorf("field %s: JSON marshal failed: %w", key, err)
 			}
+			result[key] = jsonBytes
 
 		default:
 			// Primitives pass through

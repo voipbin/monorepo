@@ -426,7 +426,8 @@ func TestPrepareFieldsFromMap(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		input     map[string]any
+		input     any // Changed from map[string]any to support error tests
+		wantErr   bool
 		checkFunc func(t *testing.T, result map[string]any)
 	}{
 		{
@@ -465,9 +466,13 @@ func TestPrepareFieldsFromMap(t *testing.T) {
 				"tags": []string{"a", "b"},
 			},
 			checkFunc: func(t *testing.T, result map[string]any) {
-				_, ok := result["tags"].([]byte)
+				bytes, ok := result["tags"].([]byte)
 				if !ok {
 					t.Errorf("tags type = %T, want []byte", result["tags"])
+				}
+				// Verify JSON content
+				if string(bytes) != `["a","b"]` {
+					t.Errorf("tags = %s, want [\"a\",\"b\"]", string(bytes))
 				}
 			},
 		},
@@ -482,17 +487,90 @@ func TestPrepareFieldsFromMap(t *testing.T) {
 				}
 			},
 		},
+		// Edge case: Empty map
+		{
+			name:  "empty map",
+			input: map[string]any{},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				if len(result) != 0 {
+					t.Errorf("expected empty map, got %d fields", len(result))
+				}
+			},
+		},
+		// Edge case: Map type conversion
+		{
+			name: "map marshaled to JSON",
+			input: map[string]any{
+				"config": map[string]int{"timeout": 30, "retries": 3},
+			},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				bytes, ok := result["config"].([]byte)
+				if !ok {
+					t.Errorf("config type = %T, want []byte", result["config"])
+				}
+				// Verify it's valid JSON
+				if len(bytes) == 0 {
+					t.Errorf("config should not be empty")
+				}
+			},
+		},
+		// Edge case: Struct type conversion
+		{
+			name: "struct marshaled to JSON",
+			input: map[string]any{
+				"metadata": struct {
+					Version string
+					Build   int
+				}{Version: "1.0", Build: 123},
+			},
+			checkFunc: func(t *testing.T, result map[string]any) {
+				bytes, ok := result["metadata"].([]byte)
+				if !ok {
+					t.Errorf("metadata type = %T, want []byte", result["metadata"])
+				}
+				expected := `{"Version":"1.0","Build":123}`
+				if string(bytes) != expected {
+					t.Errorf("metadata = %s, want %s", string(bytes), expected)
+				}
+			},
+		},
+		// Error path: Invalid input type
+		{
+			name:    "error on invalid input type",
+			input:   "not a map",
+			wantErr: true,
+		},
+		// Error path: Unmarshalable value (struct with channel can't be JSON marshaled)
+		{
+			name: "error on unmarshalable value",
+			input: map[string]any{
+				"badstruct": struct {
+					Ch chan int
+				}{Ch: make(chan int)},
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := prepareFieldsFromMap(tt.input)
-			if err != nil {
-				t.Fatalf("prepareFieldsFromMap() error = %v", err)
+
+			// Check error expectation
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("prepareFieldsFromMap() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if len(result) != len(tt.input) {
-				t.Errorf("got %d fields, want %d", len(result), len(tt.input))
+			// If we expected an error, we're done
+			if tt.wantErr {
+				return
+			}
+
+			// Verify result length matches input length
+			if inputMap, ok := tt.input.(map[string]any); ok {
+				if len(result) != len(inputMap) {
+					t.Errorf("got %d fields, want %d", len(result), len(inputMap))
+				}
 			}
 
 			if tt.checkFunc != nil {
