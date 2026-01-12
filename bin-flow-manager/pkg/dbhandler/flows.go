@@ -11,7 +11,6 @@ import (
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-flow-manager/models/flow"
-	"monorepo/bin-flow-manager/pkg/dbutil"
 )
 
 var (
