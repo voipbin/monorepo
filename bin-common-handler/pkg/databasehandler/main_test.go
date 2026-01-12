@@ -1,26 +1,12 @@
 package databasehandler
 
 import (
-	"encoding/json"
 	"strings"
 	"testing"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 )
-
-type marshalerType struct {
-	Value string
-}
-
-func (m marshalerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]string{"value": m.Value})
-}
-
-type testStruct struct {
-	A int
-	B string
-}
 
 type TestType string
 
