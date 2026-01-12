@@ -233,7 +233,11 @@ func (h *handler) ActiveflowUpdate(ctx context.Context, id uuid.UUID, fields map
 
 	fields[activeflow.FieldTMUpdate] = h.util.TimeGetCurTime()
 
-	tmpFields, _ := commondatabasehandler.PrepareFields(fields)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ActiveflowUpdate: prepare fields failed: %w", err)
+	}
+
 	q := squirrel.Update(activeflowsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{"id": id.Bytes()})
@@ -259,7 +263,11 @@ func (h *handler) ActiveflowDelete(ctx context.Context, id uuid.UUID) error {
 		activeflow.FieldTMDelete: ts,
 	}
 
-	tmpFields, _ := commondatabasehandler.PrepareFields(fields)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ActiveflowDelete: prepare fields failed: %w", err)
+	}
+
 	sb := squirrel.Update(activeflowsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(activeflow.FieldID): id.Bytes()}).

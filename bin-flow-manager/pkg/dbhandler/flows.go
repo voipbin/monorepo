@@ -218,7 +218,11 @@ func (h *handler) flowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.
 		return nil
 	}
 
-	tmpFields, _ := commondatabasehandler.PrepareFields(fields)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("FlowUpdate: prepare fields failed: %w", err)
+	}
+
 	q := squirrel.Update(flowsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{"id": id.Bytes()})

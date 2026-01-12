@@ -313,7 +313,11 @@ func (h *handler) ConversationUpdate(ctx context.Context, id uuid.UUID, fields m
 
 	fields[conversation.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	tmpFields, _ := commondatabasehandler.PrepareFields(fields)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ConversationUpdate: prepare fields failed: %w", err)
+	}
+
 	q := squirrel.Update(conversationsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{"id": id.Bytes()})

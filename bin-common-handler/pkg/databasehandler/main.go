@@ -42,18 +42,6 @@ func Close(db *sql.DB) {
 	}
 }
 
-// PrepareUpdateFields processes a map of fields intended for an update operation.
-// Deprecated: Use PrepareFields instead, which handles both structs and maps.
-// This function is kept for backward compatibility and delegates to PrepareFields.
-func PrepareUpdateFields[K ~string](fields map[K]any) map[string]any {
-	result, err := PrepareFields(fields)
-	if err != nil {
-		logrus.Warnf("PrepareUpdateFields: PrepareFields error: %v", err)
-		return nil
-	}
-	return result
-}
-
 // ApplyFields dynamically adds WHERE clauses to a squirrel.SelectBuilder based on the provided fields map.
 // It handles various data types for filter values:
 // - uuid.UUID: Converted to bytes for equality comparison.
