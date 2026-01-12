@@ -23,7 +23,7 @@ var (
 func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, error) {
 	res := &activeflow.Activeflow{}
 
-	if err := dbutil.ScanRow(row, res); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. activeflowGetFromRow. err: %v", err)
 	}
 
@@ -38,17 +38,16 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
 	f.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-	// Use dbutil to get fields and values
-	fields := dbutil.GetDBFields(f)
-	values, err := dbutil.PrepareValues(f)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not prepare values. ActiveflowCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ActiveflowCreate. err: %v", err)
 	}
 
+	// Use SetMap instead of Columns/Values
 	sb := squirrel.
 		Insert(activeflowsTable).
-		Columns(fields...).
-		Values(values...).
+		SetMap(fields).
 		PlaceholderFormat(squirrel.Question)
 
 	query, args, err := sb.ToSql()
@@ -66,7 +65,7 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 
 // activeflowGetFromDB gets the activeflow info from the db.
 func (h *handler) activeflowGetFromDB(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
-	fields := dbutil.GetDBFields(&activeflow.Activeflow{})
+	fields := commondatabasehandler.GetDBFields(&activeflow.Activeflow{})
 	query, args, err := squirrel.
 		Select(fields...).
 		From(activeflowsTable).
@@ -185,7 +184,7 @@ func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64,
 		token = h.util.TimeGetCurTime()
 	}
 
-	fields := dbutil.GetDBFields(&activeflow.Activeflow{})
+	fields := commondatabasehandler.GetDBFields(&activeflow.Activeflow{})
 	sb := squirrel.
 		Select(fields...).
 		From(activeflowsTable).
