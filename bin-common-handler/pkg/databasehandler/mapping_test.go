@@ -1,6 +1,7 @@
 package databasehandler
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -203,5 +204,62 @@ func TestGetDBFields_NilPointerPanic(t *testing.T) {
 	result := GetDBFields((*testModel)(nil))
 	if len(result) != 0 {
 		t.Errorf("expected empty result for nil pointer, got %v", result)
+	}
+}
+
+func TestConvertValue(t *testing.T) {
+	tests := []struct {
+		name           string
+		value          interface{}
+		conversionType string
+		wantType       string // Expected type name
+		wantErr        bool
+	}{
+		{
+			name:           "UUID to bytes",
+			value:          uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000")),
+			conversionType: "uuid",
+			wantType:       "[]uint8",
+			wantErr:        false,
+		},
+		{
+			name:           "slice to JSON",
+			value:          []string{"a", "b", "c"},
+			conversionType: "json",
+			wantType:       "[]uint8",
+			wantErr:        false,
+		},
+		{
+			name:           "primitive passthrough",
+			value:          "test string",
+			conversionType: "",
+			wantType:       "string",
+			wantErr:        false,
+		},
+		{
+			name:           "int passthrough",
+			value:          42,
+			conversionType: "",
+			wantType:       "int",
+			wantErr:        false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := convertValue(tt.value, tt.conversionType)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("convertValue() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if err == nil {
+				gotType := reflect.TypeOf(result).String()
+				if gotType != tt.wantType {
+					t.Errorf("convertValue() type = %v, want %v", gotType, tt.wantType)
+				}
+			}
+		})
 	}
 }
