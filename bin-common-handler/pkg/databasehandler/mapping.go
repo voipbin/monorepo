@@ -12,6 +12,10 @@ import (
 func GetDBFields(model interface{}) []string {
 	val := reflect.ValueOf(model)
 	if val.Kind() == reflect.Ptr {
+		// Check if pointer is nil
+		if val.IsNil() {
+			return []string{}
+		}
 		val = val.Elem()
 	}
 
