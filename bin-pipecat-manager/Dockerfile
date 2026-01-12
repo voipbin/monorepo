@@ -1,5 +1,5 @@
 # build
-FROM golang:1.25-alpine AS build
+FROM public.ecr.aws/docker/library/golang:1.25-alpine AS build
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
