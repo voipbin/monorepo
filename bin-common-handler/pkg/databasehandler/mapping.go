@@ -230,12 +230,38 @@ func prepareFieldsFromStruct(val reflect.Value) (map[string]any, error) {
 }
 
 // prepareFieldsFromMap processes a map without tag awareness
+// Supports map[string]any and map[CustomStringType]any via reflection
 func prepareFieldsFromMap(data any) (map[string]any, error) {
-	inputMap, ok := data.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("expected map[string]any, got %T", data)
+	// Fast path for map[string]any
+	if inputMap, ok := data.(map[string]any); ok {
+		return processMapValues(inputMap)
 	}
 
+	// Reflection path for map[CustomStringType]any
+	rv := reflect.ValueOf(data)
+	if rv.Kind() != reflect.Map {
+		return nil, fmt.Errorf("expected map, got %T", data)
+	}
+
+	// Verify key type is string-based
+	keyType := rv.Type().Key()
+	if keyType.Kind() != reflect.String {
+		return nil, fmt.Errorf("expected string-keyed map, got %s keys", keyType.Kind())
+	}
+
+	// Convert to map[string]any
+	stringMap := make(map[string]any, rv.Len())
+	iter := rv.MapRange()
+	for iter.Next() {
+		key := iter.Key().String()
+		stringMap[key] = iter.Value().Interface()
+	}
+
+	return processMapValues(stringMap)
+}
+
+// processMapValues converts map values to database-ready format
+func processMapValues(inputMap map[string]any) (map[string]any, error) {
 	result := make(map[string]any, len(inputMap))
 
 	for key, value := range inputMap {

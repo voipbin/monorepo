@@ -264,7 +264,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 
 	fields[account.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	tmpFields, _ := commondatabasehandler.PrepareFields(fields)
 	q := squirrel.Update(accountsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{"id": id.Bytes()})
@@ -290,7 +290,7 @@ func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 		account.FieldTMDelete: ts,
 	}
 
-	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	tmpFields, _ := commondatabasehandler.PrepareFields(fields)
 	sb := squirrel.Update(accountsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(account.FieldID): id.Bytes()}).

@@ -313,7 +313,7 @@ func (h *handler) ConversationUpdate(ctx context.Context, id uuid.UUID, fields m
 
 	fields[conversation.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	tmpFields := commondatabasehandler.PrepareUpdateFields(fields)
+	tmpFields, _ := commondatabasehandler.PrepareFields(fields)
 	q := squirrel.Update(conversationsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{"id": id.Bytes()})
