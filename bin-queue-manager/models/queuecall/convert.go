@@ -18,11 +18,17 @@ func ConvertStringMapToFieldMap(src map[string]any) (map[Field]any, error) {
 
 		switch field {
 		case FieldDeleted:
-			parsed, ok := val.(bool)
-			if !ok {
-				return nil, fmt.Errorf("expected bool for %s", key)
+			// Handle both bool and string types for deleted filter
+			switch v := val.(type) {
+			case bool:
+				res[field] = v
+			case string:
+				// Convert string "true"/"false" to boolean
+				res[field] = v == "true"
+			default:
+				return nil, fmt.Errorf("expected bool or string for %s, got %T", key, val)
 			}
-			res[field] = parsed
+
 
 		// Fields requiring UUID conversion
 		case FieldID, FieldCustomerID, FieldQueueID, FieldReferenceID, FieldReferenceActiveflowID, FieldForwardActionID, FieldConfbridgeID, FieldServiceAgentID:
