@@ -24,6 +24,7 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 		token   string
 
 		responseFilters    map[string]string
+		expectFilters      map[accesskey.Field]any
 		responseAccesskeys []*accesskey.Accesskey
 		expectRes          *sock.Response
 	}{
@@ -39,6 +40,9 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 
 			map[string]string{
 				"deleted": "false",
+			},
+			map[accesskey.Field]any{
+				accesskey.FieldDeleted: false,
 			},
 			[]*accesskey.Accesskey{
 				{
@@ -63,6 +67,9 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 
 			map[string]string{
 				"deleted": "false",
+			},
+			map[accesskey.Field]any{
+				accesskey.FieldDeleted: false,
 			},
 			[]*accesskey.Accesskey{
 				{
@@ -98,7 +105,7 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockAccesskey.EXPECT().Gets(gomock.Any(), tt.size, tt.token, tt.responseFilters).Return(tt.responseAccesskeys, nil)
+			mockAccesskey.EXPECT().Gets(gomock.Any(), tt.size, tt.token, tt.expectFilters).Return(tt.responseAccesskeys, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

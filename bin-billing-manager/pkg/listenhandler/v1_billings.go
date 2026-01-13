@@ -8,8 +8,58 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-billing-manager/models/billing"
 )
+
+// urlFiltersToBillingFilters converts URL string filters to typed billing.Field filters
+func (h *listenHandler) urlFiltersToBillingFilters(u *url.URL) map[billing.Field]any {
+	filters := make(map[billing.Field]any)
+
+	// parse all URL query parameters
+	for key, values := range u.Query() {
+		// skip pagination params
+		if key == PageSize || key == PageToken {
+			continue
+		}
+
+		if len(values) == 0 {
+			continue
+		}
+		value := values[0]
+
+		// map to typed fields
+		switch key {
+		case "customer_id":
+			if id := uuid.FromStringOrNil(value); id != uuid.Nil {
+				filters[billing.FieldCustomerID] = id
+			}
+		case "account_id":
+			if id := uuid.FromStringOrNil(value); id != uuid.Nil {
+				filters[billing.FieldAccountID] = id
+			}
+		case "reference_type":
+			filters[billing.FieldReferenceType] = value
+		case "reference_id":
+			if id := uuid.FromStringOrNil(value); id != uuid.Nil {
+				filters[billing.FieldReferenceID] = id
+			}
+		case "status":
+			filters[billing.FieldStatus] = value
+		case "deleted":
+			switch value {
+			case "false":
+				filters[billing.FieldDeleted] = false
+			case "true":
+				filters[billing.FieldDeleted] = true
+			}
+		}
+	}
+
+	return filters
+}
 
 // processV1BillingsGet handles GET /v1/billings request
 func (h *listenHandler) processV1BillingsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
@@ -29,7 +79,7 @@ func (h *listenHandler) processV1BillingsGet(ctx context.Context, m *sock.Reques
 	pageToken := u.Query().Get(PageToken)
 
 	// get filters
-	filters := h.utilHandler.URLParseFilters(u)
+	filters := h.urlFiltersToBillingFilters(u)
 
 	as, err := h.billingHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

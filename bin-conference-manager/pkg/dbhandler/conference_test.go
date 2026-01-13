@@ -239,19 +239,14 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 	}
 }
 
-func Test_ConferenceSet(t *testing.T) {
+func Test_ConferenceUpdate(t *testing.T) {
 
 	tests := []struct {
 		name       string
 		conference *conference.Conference
 
-		id             uuid.UUID
-		conferenceName string
-		detail         string
-		data           map[string]interface{}
-		timeout        int
-		preFlowID      uuid.UUID
-		postFlowID     uuid.UUID
+		id     uuid.UUID
+		fields map[conference.Field]any
 
 		responseCurTime string
 		expectRes       *conference.Conference
@@ -264,15 +259,17 @@ func Test_ConferenceSet(t *testing.T) {
 				},
 			},
 
-			id:             uuid.FromStringOrNil("90d83f46-1e0b-11f0-881e-db8cc51c453b"),
-			conferenceName: "update name",
-			detail:         "update detail",
-			data: map[string]interface{}{
-				"key1": "string value",
+			id: uuid.FromStringOrNil("90d83f46-1e0b-11f0-881e-db8cc51c453b"),
+			fields: map[conference.Field]any{
+				conference.FieldName:   "update name",
+				conference.FieldDetail: "update detail",
+				conference.FieldData: map[string]interface{}{
+					"key1": "string value",
+				},
+				conference.FieldTimeout:    100,
+				conference.FieldPreFlowID:  uuid.FromStringOrNil("910adef6-1e0b-11f0-be96-9b8635c520c0"),
+				conference.FieldPostFlowID: uuid.FromStringOrNil("91345970-1e0b-11f0-a446-bf10e1f783b5"),
 			},
-			timeout:    100,
-			preFlowID:  uuid.FromStringOrNil("910adef6-1e0b-11f0-be96-9b8635c520c0"),
-			postFlowID: uuid.FromStringOrNil("91345970-1e0b-11f0-a446-bf10e1f783b5"),
 
 			responseCurTime: "2023-01-03 21:35:02.809",
 			expectRes: &conference.Conference{
@@ -322,7 +319,7 @@ func Test_ConferenceSet(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
-			if err := h.ConferenceSet(ctx, tt.conference.ID, tt.conferenceName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID); err != nil {
+			if err := h.ConferenceUpdate(ctx, tt.conference.ID, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -340,7 +337,7 @@ func Test_ConferenceSet(t *testing.T) {
 	}
 }
 
-func Test_ConferenceSetRecordingID(t *testing.T) {
+func Test_ConferenceUpdateRecordingID(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -401,7 +398,10 @@ func Test_ConferenceSetRecordingID(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
-			if err := h.ConferenceSetRecordingID(ctx, tt.conference.ID, tt.recordingID); err != nil {
+			fields := map[conference.Field]any{
+				conference.FieldRecordingID: tt.recordingID,
+			}
+			if err := h.ConferenceUpdate(ctx, tt.conference.ID, fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -419,7 +419,7 @@ func Test_ConferenceSetRecordingID(t *testing.T) {
 	}
 }
 
-func Test_ConferenceSetData(t *testing.T) {
+func Test_ConferenceUpdateData(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -545,7 +545,10 @@ func Test_ConferenceSetData(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
-			if err := h.ConferenceSetData(ctx, tt.conference.ID, tt.data); err != nil {
+			fields := map[conference.Field]any{
+				conference.FieldData: tt.data,
+			}
+			if err := h.ConferenceUpdate(ctx, tt.conference.ID, fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -570,7 +573,7 @@ func Test_ConferenceGets(t *testing.T) {
 		conferences []*conference.Conference
 
 		count   int
-		filters map[string]string
+		filters map[conference.Field]any
 
 		responseCurTime string
 		expectRes       []*conference.Conference
@@ -593,9 +596,9 @@ func Test_ConferenceGets(t *testing.T) {
 			},
 
 			10,
-			map[string]string{
-				"customer_id": "91f25410-7f45-11ec-97d1-8b4f8cee4768",
-				"deleted":     "false",
+			map[conference.Field]any{
+				conference.FieldCustomerID: uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
+				conference.FieldDeleted:    false,
 			},
 
 			"2023-01-03 21:35:02.809",
@@ -658,10 +661,10 @@ func Test_ConferenceGets(t *testing.T) {
 			},
 
 			10,
-			map[string]string{
-				"customer_id": "80a965e0-7f45-11ec-a078-7f296665fa3d",
-				"deleted":     "false",
-				"type":        string(conference.TypeConference),
+			map[conference.Field]any{
+				conference.FieldCustomerID: uuid.FromStringOrNil("80a965e0-7f45-11ec-a078-7f296665fa3d"),
+				conference.FieldDeleted:    false,
+				conference.FieldType:       conference.TypeConference,
 			},
 
 			"2023-01-03 21:35:02.809",
@@ -704,8 +707,8 @@ func Test_ConferenceGets(t *testing.T) {
 			[]*conference.Conference{},
 
 			0,
-			map[string]string{
-				"customer_id": "3f84e9f4-ed84-11ee-9bfb-2bce0d221d0b",
+			map[conference.Field]any{
+				conference.FieldCustomerID: uuid.FromStringOrNil("3f84e9f4-ed84-11ee-9bfb-2bce0d221d0b"),
 			},
 
 			"2023-01-03 21:35:02.809",
@@ -809,7 +812,8 @@ func Test_ConferenceEnd(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			// ConferenceEnd calls TimeGetCurTime once, and internally ConferenceUpdate calls it again
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).Times(2)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if errDel := h.ConferenceEnd(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
@@ -910,7 +914,7 @@ func Test_ConferenceDelete(t *testing.T) {
 	}
 }
 
-func Test_ConferenceSetTranscribeID(t *testing.T) {
+func Test_ConferenceUpdateTranscribeID(t *testing.T) {
 
 	tests := []struct {
 		name         string
@@ -971,7 +975,10 @@ func Test_ConferenceSetTranscribeID(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
-			if err := h.ConferenceSetTranscribeID(ctx, tt.conference.ID, tt.transcribeID); err != nil {
+			fields := map[conference.Field]any{
+				conference.FieldTranscribeID: tt.transcribeID,
+			}
+			if err := h.ConferenceUpdate(ctx, tt.conference.ID, fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

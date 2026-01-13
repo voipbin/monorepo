@@ -10,6 +10,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-transcribe-manager/models/transcribe"
 )
 
 // EventCUCustomerDeleted handles the customer-manager's customer_deleted event
@@ -21,9 +23,9 @@ func (h *transcribeHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucu
 	log.Debugf("Deleting all transcribes of the customer. customer_id: %s", cu.ID)
 
 	// get all transcribes of the customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[transcribe.Field]any{
+		transcribe.FieldCustomerID: cu.ID,
+		transcribe.FieldDeleted:    false,
 	}
 	transcribes, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {
@@ -54,9 +56,9 @@ func (h *transcribeHandler) EventCMCallHangup(ctx context.Context, c *cmcall.Cal
 	log.Debugf("Stopping all transcribes of the call. call_id: %s", c.ID)
 
 	// get all transcribes of the call
-	filters := map[string]string{
-		"reference_id": c.ID.String(),
-		"deleted":      "false",
+	filters := map[transcribe.Field]any{
+		transcribe.FieldReferenceID: c.ID,
+		transcribe.FieldDeleted:     false,
 	}
 	transcribes, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {
@@ -87,9 +89,9 @@ func (h *transcribeHandler) EventCMConfbridgeTerminated(ctx context.Context, c *
 	log.Debugf("Stopping all transcribes of the confbridge. confbridge_id: %s", c.ID)
 
 	// get all transcribes of the confbridge
-	filters := map[string]string{
-		"reference_id": c.ID.String(),
-		"deleted":      "false",
+	filters := map[transcribe.Field]any{
+		transcribe.FieldReferenceID: c.ID,
+		transcribe.FieldDeleted:     false,
 	}
 	transcribes, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {

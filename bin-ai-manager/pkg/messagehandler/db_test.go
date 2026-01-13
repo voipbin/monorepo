@@ -131,7 +131,7 @@ func Test_Gets(t *testing.T) {
 		aicallID uuid.UUID
 		size     uint64
 		token    string
-		filters  map[string]string
+		filters  map[message.Field]any
 
 		responseMessages []*message.Message
 	}{
@@ -141,8 +141,8 @@ func Test_Gets(t *testing.T) {
 			aicallID: uuid.FromStringOrNil("5774f2dc-f262-11ef-b704-bb967f775316"),
 			size:     10,
 			token:    "2023-01-03 21:35:02.809",
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[message.Field]any{
+				message.FieldDeleted: false,
 			},
 
 			responseMessages: []*message.Message{
@@ -171,7 +171,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGets(ctx, tt.aicallID, tt.size, tt.token, tt.filters).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().MessageGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseMessages, nil)
 
 			res, err := h.Gets(ctx, tt.aicallID, tt.size, tt.token, tt.filters)
 			if err != nil {

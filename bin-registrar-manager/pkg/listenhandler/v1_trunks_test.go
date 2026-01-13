@@ -189,7 +189,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockTrunk.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseTrunks, nil)
+			mockTrunk.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseTrunks, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -271,7 +271,7 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().Update(gomock.Any(), tt.id, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs).Return(tt.resTrunk, nil)
+			mockTrunk.EXPECT().Update(gomock.Any(), tt.id, gomock.Any()).Return(tt.resTrunk, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

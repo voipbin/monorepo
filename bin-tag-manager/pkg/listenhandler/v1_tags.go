@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-tag-manager/models/tag"
 	"monorepo/bin-tag-manager/pkg/listenhandler/models/request"
 )
 
@@ -31,6 +32,12 @@ func (h *listenHandler) processV1TagsGet(ctx context.Context, req *sock.Request)
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
+	// build filters
+	filters := map[tag.Field]any{
+		tag.FieldCustomerID: customerID,
+		tag.FieldDeleted:    false,
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "processV1TagsGet",
 		"customer_id": customerID,
@@ -39,7 +46,7 @@ func (h *listenHandler) processV1TagsGet(ctx context.Context, req *sock.Request)
 	})
 	log.WithField("request", req).Debug("Received request.")
 
-	tmp, err := h.tagHandler.Gets(ctx, customerID, pageSize, pageToken)
+	tmp, err := h.tagHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get tags info. err:%v", err)
 		return simpleResponse(500), nil

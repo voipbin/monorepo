@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-number-manager/models/number"
 )
 
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
@@ -20,9 +21,9 @@ func (h *numberHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer
 	})
 
 	// get all numbers of the given customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[number.Field]any{
+		number.FieldCustomerID: cu.ID,
+		number.FieldDeleted:    false,
 	}
 
 	nbs, err := h.dbList(ctx, 10000, "", filters)
@@ -58,9 +59,9 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 	// removing call_flow_id
 	for {
 		ts := h.utilHandler.TimeGetCurTime()
-		filters := map[string]string{
-			"call_flow_id": f.ID.String(),
-			"deleted":      "false",
+		filters := map[number.Field]any{
+			number.FieldCallFlowID: f.ID,
+			number.FieldDeleted:    false,
 		}
 		numbs, err := h.db.NumberGets(ctx, 1000, ts, filters)
 		if err != nil || len(numbs) <= 0 {
@@ -69,7 +70,10 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 
 		for _, numb := range numbs {
 			log.WithField("number", numb).Debugf("Removing call_flow_id from the number. number_id: %s, number_number: %s", numb.ID, numb.Number)
-			if err := h.db.NumberUpdateCallFlowID(ctx, numb.ID, uuid.Nil); err != nil {
+			updateFields := map[number.Field]any{
+				number.FieldCallFlowID: uuid.Nil,
+			}
+			if err := h.db.NumberUpdate(ctx, numb.ID, updateFields); err != nil {
 				log.Errorf("Could not remove flow_id. err: %v", err)
 			}
 		}
@@ -83,9 +87,9 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 	// removing message_flow_id
 	for {
 		ts := h.utilHandler.TimeGetCurTime()
-		filters := map[string]string{
-			"message_flow_id": f.ID.String(),
-			"deleted":         "false",
+		filters := map[number.Field]any{
+			number.FieldMessageFlowID: f.ID,
+			number.FieldDeleted:       false,
 		}
 		numbs, err := h.db.NumberGets(ctx, 1000, ts, filters)
 		if err != nil || len(numbs) <= 0 {
@@ -94,7 +98,10 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 
 		for _, numb := range numbs {
 			log.WithField("number", numb).Debugf("Removing message_flow_id from the number. number_id: %s, number_number: %s", numb.ID, numb.Number)
-			if err := h.db.NumberUpdateMessageFlowID(ctx, numb.ID, uuid.Nil); err != nil {
+			updateFields := map[number.Field]any{
+				number.FieldMessageFlowID: uuid.Nil,
+			}
+			if err := h.db.NumberUpdate(ctx, numb.ID, updateFields); err != nil {
 				log.Errorf("Could not remove flow_id. err: %v", err)
 			}
 		}

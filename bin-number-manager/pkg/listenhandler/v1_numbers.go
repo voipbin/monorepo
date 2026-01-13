@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/pkg/listenhandler/models/request"
 )
 
@@ -142,15 +143,22 @@ func (h *listenHandler) processV1NumbersIDPut(ctx context.Context, m *sock.Reque
 
 	log.Debugf("Executing processV1NumbersIDPut. number: %s", id)
 
-	number, err := h.numberHandler.UpdateInfo(ctx, id, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
+	fields := map[number.Field]any{
+		number.FieldCallFlowID:    req.CallFlowID,
+		number.FieldMessageFlowID: req.MessageFlowID,
+		number.FieldName:          req.Name,
+		number.FieldDetail:        req.Detail,
+	}
+
+	num, err := h.numberHandler.Update(ctx, id, fields)
 	if err != nil {
 		log.Debugf("Could not update the number. number: %s, err: %v", id, err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(number)
+	data, err := json.Marshal(num)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", number, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", num, err)
 		return simpleResponse(500), nil
 	}
 
@@ -182,7 +190,10 @@ func (h *listenHandler) processV1NumbersGet(ctx context.Context, m *sock.Request
 
 	// get filters
 	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	stringFilters := h.utilHandler.URLParseFilters(u)
+
+	// Convert string filters to typed filters
+	filters := convertToTypedFilters(stringFilters)
 
 	numbers, err := h.numberHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
@@ -205,6 +216,24 @@ func (h *listenHandler) processV1NumbersGet(ctx context.Context, m *sock.Request
 	return res, nil
 }
 
+// convertToTypedFilters converts string filters to typed filters
+func convertToTypedFilters(stringFilters map[string]string) map[number.Field]any {
+	filters := make(map[number.Field]any)
+
+	for k, v := range stringFilters {
+		switch k {
+		case "customer_id", "call_flow_id", "message_flow_id":
+			filters[number.Field(k)] = uuid.FromStringOrNil(v)
+		case "deleted":
+			filters[number.FieldDeleted] = v == "false"
+		default:
+			filters[number.Field(k)] = v
+		}
+	}
+
+	return filters
+}
+
 // processV1NumbersIDFlowIDsPut handles PUT /v1/numbers/<id>/flow_id request
 func (h *listenHandler) processV1NumbersIDFlowIDsPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -224,17 +253,22 @@ func (h *listenHandler) processV1NumbersIDFlowIDsPut(ctx context.Context, m *soc
 		return simpleResponse(400), nil
 	}
 
-	log.Debugf("Executing processV1NumbersIDPut. number: %s", id)
+	log.Debugf("Executing processV1NumbersIDFlowIDsPut. number: %s", id)
 
-	number, err := h.numberHandler.UpdateFlowID(ctx, id, req.CallFlowID, req.MessageFlowID)
+	fields := map[number.Field]any{
+		number.FieldCallFlowID:    req.CallFlowID,
+		number.FieldMessageFlowID: req.MessageFlowID,
+	}
+
+	num, err := h.numberHandler.Update(ctx, id, fields)
 	if err != nil {
 		log.Debugf("Could not update the number's flow_id. number_id: %s, err: %v", id, err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(number)
+	data, err := json.Marshal(num)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", number, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", num, err)
 		return simpleResponse(500), nil
 	}
 

@@ -149,7 +149,7 @@ func Test_TrunkGets(t *testing.T) {
 
 		limit   uint64
 		token   string
-		filters map[string]string
+		filters map[trunk.Field]any
 
 		responseCurTime string
 
@@ -178,9 +178,9 @@ func Test_TrunkGets(t *testing.T) {
 
 			10,
 			"",
-			map[string]string{
-				"deleted":     "false",
-				"domain_name": "test2",
+			map[trunk.Field]any{
+				trunk.FieldDeleted:    false,
+				trunk.FieldDomainName: "test2",
 			},
 
 			"2021-02-26 18:26:49.000",
@@ -238,19 +238,14 @@ func Test_TrunkGets(t *testing.T) {
 	}
 }
 
-func Test_TrunkUpdateBasicInfo(t *testing.T) {
+func Test_TrunkUpdate(t *testing.T) {
 
 	type test struct {
-		name  string
-		trunk *trunk.Trunk
+		name        string
+		trunkCreate *trunk.Trunk
 
-		id         uuid.UUID
-		domainN    string
-		detail     string
-		authTypes  []sipauth.AuthType
-		username   string
-		password   string
-		allowedIPs []string
+		id     uuid.UUID
+		fields map[trunk.Field]any
 
 		responseCurTime string
 
@@ -269,14 +264,13 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("cbf0af5e-519e-11ee-a4c4-9f155401d234"),
-			"update name",
-			"update detail",
-			[]sipauth.AuthType{sipauth.AuthTypeBasic},
-			"test_username",
-			"test_password",
-			[]string{
-				"1.2.3.4",
-				"5.6.7.8",
+			map[trunk.Field]any{
+				trunk.FieldName:       "update name",
+				trunk.FieldDetail:     "update detail",
+				trunk.FieldAuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic},
+				trunk.FieldUsername:   "test_username",
+				trunk.FieldPassword:   "test_password",
+				trunk.FieldAllowedIPs: []string{"1.2.3.4", "5.6.7.8"},
 			},
 
 			"2021-02-26 18:26:49.000",
@@ -322,19 +316,19 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
-			if err := h.TrunkCreate(ctx, tt.trunk); err != nil {
+			if err := h.TrunkCreate(ctx, tt.trunkCreate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
-			if err := h.TrunkUpdateBasicInfo(ctx, tt.id, tt.domainN, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs); err != nil {
+			if err := h.TrunkUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().TrunkGet(ctx, tt.trunk.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TrunkGet(ctx, tt.trunkCreate.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
-			res, err := h.TrunkGet(ctx, tt.trunk.ID)
+			res, err := h.TrunkGet(ctx, tt.trunkCreate.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -3,75 +3,31 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
 
 const (
-	sipauthSelect = `
-	select
-		id,
-		reference_type,
-
-		auth_types,
-		realm,
-
-		username,
-		password,
-
-		allowed_ips,
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update
-	from
-		registrar_sip_auths
-	`
+	sipauthsTable = "registrar_sip_auths"
 )
 
 // sipauthGetFromRow gets the sipauth from the row
 func (h *handler) sipauthGetFromRow(row *sql.Rows) (*sipauth.SIPAuth, error) {
-	var authTypes sql.NullString
-	var allowedIPs sql.NullString
-
 	res := &sipauth.SIPAuth{}
-	if err := row.Scan(
-		&res.ID,
-		&res.ReferenceType,
 
-		&authTypes,
-		&res.Realm,
-
-		&res.Username,
-		&res.Password,
-
-		&allowedIPs,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. sipauthGetFromRow. err: %v", err)
 	}
 
-	// AuthTypes
-	if authTypes.Valid && authTypes.String != "" {
-		if err := json.Unmarshal([]byte(authTypes.String), &res.AuthTypes); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the auth_types. sipauthGetFromRow. err: %v", err)
-		}
-	}
+	// initialize nil slices to empty slices
 	if res.AuthTypes == nil {
 		res.AuthTypes = []sipauth.AuthType{}
-	}
-
-	// allowedIPs
-	res.AllowedIPs = []string{}
-	if allowedIPs.Valid {
-		if err := json.Unmarshal([]byte(allowedIPs.String), &res.AllowedIPs); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the allowed_ips. sipauthGetFromRow. err: %v", err)
-		}
 	}
 	if res.AllowedIPs == nil {
 		res.AllowedIPs = []string{}
@@ -80,105 +36,63 @@ func (h *handler) sipauthGetFromRow(row *sql.Rows) (*sipauth.SIPAuth, error) {
 	return res, nil
 }
 
-// SIPAuthCreate creates new Trunk record.
+// SIPAuthCreate creates new SIPAuth record.
 func (h *handler) SIPAuthCreate(ctx context.Context, t *sipauth.SIPAuth) error {
-	q := `insert into registrar_sip_auths(
-		id,
-		reference_type,
+	now := h.utilHandler.TimeGetCurTime()
 
-		auth_types,
-		realm,
+	// Set timestamps
+	t.TMCreate = now
+	t.TMUpdate = DefaultTimeStamp
 
-		username,
-		password,
-
-		allowed_ips,
-
-		tm_create,
-		tm_update
-	) values(
-		?, ?,
-		?, ?,
-		?, ?,
-		?,
-		?, ?
-	)
-	`
-
-	authTypes, err := json.Marshal(t.AuthTypes)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("could not marshal auth types. TrunkCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. SIPAuthCreate. err: %v", err)
 	}
 
-	allowedIps, err := json.Marshal(t.AllowedIPs)
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(sipauthsTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal allowed ips. TrunkCreate. err: %v", err)
+		return fmt.Errorf("could not build query. SIPAuthCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q,
-		t.ID.Bytes(),
-		t.ReferenceType,
-
-		authTypes,
-		t.Realm,
-
-		t.Username,
-		t.Password,
-
-		allowedIps,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. TrunkCreate. err: %v", err)
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. SIPAuthCreate. err: %v", err)
 	}
 
 	return nil
 }
 
-// SIPAuthUpdateAll updates all possible sipauth info
-func (h *handler) SIPAuthUpdateAll(ctx context.Context, t *sipauth.SIPAuth) error {
-	q := `
-	update registrar_sip_auths set
-		auth_types = ?,
-		realm = ?,
-
-		username = ?,
-		password = ?,
-
-		allowed_ips = ?,
-
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpAuthTypes, err := json.Marshal(t.AuthTypes)
-	if err != nil {
-		return fmt.Errorf("could not marshal the authTypes. SIPAuthUpdateAll. err: %v", err)
+// SIPAuthUpdate updates sipauth record with given fields.
+func (h *handler) SIPAuthUpdate(ctx context.Context, id uuid.UUID, fields map[sipauth.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	tmpAllowedIPs, err := json.Marshal(t.AllowedIPs)
+	fields[sipauth.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not marshal allowedIPs. SIPAuthUpdateAll. err: %v", err)
+		return fmt.Errorf("SIPAuthUpdate: prepare fields failed: %w", err)
 	}
 
-	_, err = h.db.Exec(q,
-		tmpAuthTypes,
-		t.Realm,
+	q := squirrel.Update(sipauthsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(sipauth.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
 
-		t.Username,
-		t.Password,
-
-		tmpAllowedIPs,
-
-		h.utilHandler.TimeGetCurTime(),
-
-		t.ID.Bytes(),
-	)
+	sqlStr, args, err := q.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. SIPAuthUpdateAll. err: %v", err)
+		return fmt.Errorf("SIPAuthUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("SIPAuthUpdate: exec failed: %w", err)
 	}
 
 	return nil
@@ -186,27 +100,36 @@ func (h *handler) SIPAuthUpdateAll(ctx context.Context, t *sipauth.SIPAuth) erro
 
 // SIPAuthDelete deletes the sip auth
 func (h *handler) SIPAuthDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	delete from registrar_sip_auths
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q,
-		id.Bytes(),
-	)
+	sb := squirrel.Delete(sipauthsTable).
+		Where(squirrel.Eq{string(sipauth.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. SIPAuthDelete. err: %v", err)
+		return fmt.Errorf("SIPAuthDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("SIPAuthDelete: exec failed: %w", err)
 	}
 
 	return nil
 }
 
-// SIPAuthGet returns SIPAuthGet.
+// SIPAuthGet returns SIPAuth.
 func (h *handler) SIPAuthGet(ctx context.Context, id uuid.UUID) (*sipauth.SIPAuth, error) {
+	fields := commondatabasehandler.GetDBFields(&sipauth.SIPAuth{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(sipauthsTable).
+		Where(squirrel.Eq{string(sipauth.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. SIPAuthGet. err: %v", err)
+	}
 
-	q := fmt.Sprintf("%s where id = ?", sipauthSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. SIPAuthGet. err: %v", err)
 	}
@@ -215,12 +138,15 @@ func (h *handler) SIPAuthGet(ctx context.Context, id uuid.UUID) (*sipauth.SIPAut
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. SIPAuthGet. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.sipauthGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. SIPAuthGet. err: %v", err)
+		return nil, fmt.Errorf("could not get data from row. SIPAuthGet. id: %s, err: %v", id, err)
 	}
 
 	return res, nil

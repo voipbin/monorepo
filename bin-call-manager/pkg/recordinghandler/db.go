@@ -88,7 +88,13 @@ func (h *recordingHandler) Gets(ctx context.Context, size uint64, token string, 
 		"filters": filters,
 	})
 
-	res, err := h.db.RecordingGets(ctx, size, token, filters)
+	// Convert string filters to typed filters
+	typedFilters := make(map[recording.Field]any)
+	for k, v := range filters {
+		typedFilters[recording.Field(k)] = v
+	}
+
+	res, err := h.db.RecordingGets(ctx, size, token, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get reocordings. err: %v", err)
 		return nil, err

@@ -5,54 +5,24 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-route-manager/models/route"
 )
 
 const (
-	// select query for route get
-	routeSelect = `
-	select
-		id,
-		customer_id,
-
-		provider_id,
-		priority,
-
-		target,
-
-		name,
-		detail,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		route_routes
-	`
+	routesTable = "route_routes"
 )
 
 // routeGetFromRow gets the route from the row.
 func (h *handler) routeGetFromRow(row *sql.Rows) (*route.Route, error) {
 	res := &route.Route{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.ProviderID,
-		&res.Priority,
-
-		&res.Target,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. providerGetFromRow. err: %v", err)
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
+		return nil, fmt.Errorf("could not scan the row. routeGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -60,56 +30,32 @@ func (h *handler) routeGetFromRow(row *sql.Rows) (*route.Route, error) {
 
 // RouteCreate creates a new route record
 func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-	q := `insert into route_routes(
-		id,
-		customer_id,
+	// Set timestamps
+	r.TMCreate = now
+	r.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	r.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		provider_id,
-		priority,
-
-		target,
-
-		name,
-		detail,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?,
-		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(r)
 	if err != nil {
-		return fmt.Errorf("could not prepare. RouteCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. RouteCreate. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err = stmt.ExecContext(ctx,
-		r.ID.Bytes(),
-		r.CustomerID.Bytes(),
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(routesTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		r.ProviderID.Bytes(),
-		r.Priority,
-
-		r.Target,
-
-		r.Name,
-		r.Detail,
-
-		ts,
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute query. ProviderCreate. err: %v", err)
+		return fmt.Errorf("could not build query. RouteCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. RouteCreate. err: %v", err)
 	}
 
 	_ = h.routeUpdateToCache(ctx, r.ID)
@@ -117,9 +63,8 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 	return nil
 }
 
-// providerUpdateToCache gets the provider from the DB and update the cache.
+// routeUpdateToCache gets the route from the DB and update the cache.
 func (h *handler) routeUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.routeGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -132,7 +77,7 @@ func (h *handler) routeUpdateToCache(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// providerSetToCache sets the given provider to the cache
+// routeSetToCache sets the given route to the cache
 func (h *handler) routeSetToCache(ctx context.Context, f *route.Route) error {
 	if err := h.cache.RouteSet(ctx, f); err != nil {
 		return err
@@ -141,9 +86,8 @@ func (h *handler) routeSetToCache(ctx context.Context, f *route.Route) error {
 	return nil
 }
 
-// providerGetFromCache returns provider from the cache if possible.
+// routeGetFromCache returns route from the cache if possible.
 func (h *handler) routeGetFromCache(ctx context.Context, id uuid.UUID) (*route.Route, error) {
-
 	// get from cache
 	res, err := h.cache.RouteGet(ctx, id)
 	if err != nil {
@@ -155,20 +99,18 @@ func (h *handler) routeGetFromCache(ctx context.Context, id uuid.UUID) (*route.R
 
 // routeGetFromDB gets the route info from the db.
 func (h *handler) routeGetFromDB(ctx context.Context, id uuid.UUID) (*route.Route, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", routeSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&route.Route{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(routesTable).
+		Where(squirrel.Eq{string(route.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. routeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. routeGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. routeGetFromDB. err: %v", err)
 	}
@@ -177,12 +119,15 @@ func (h *handler) routeGetFromDB(ctx context.Context, id uuid.UUID) (*route.Rout
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. routeGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.routeGetFromRow(row)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get data from row. routeGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -190,7 +135,6 @@ func (h *handler) routeGetFromDB(ctx context.Context, id uuid.UUID) (*route.Rout
 
 // RouteGet returns route.
 func (h *handler) RouteGet(ctx context.Context, id uuid.UUID) (*route.Route, error) {
-
 	res, err := h.routeGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -207,20 +151,32 @@ func (h *handler) RouteGet(ctx context.Context, id uuid.UUID) (*route.Route, err
 }
 
 // RouteGets returns list of routes.
-func (h *handler) RouteGets(ctx context.Context, token string, limit uint64) ([]*route.Route, error) {
+func (h *handler) RouteGets(ctx context.Context, token string, limit uint64, filters map[route.Field]any) ([]*route.Route, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, routeSelect)
+	fields := commondatabasehandler.GetDBFields(&route.Route{})
+	sb := squirrel.
+		Select(fields...).
+		From(routesTable).
+		Where(squirrel.GtOrEq{string(route.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where(squirrel.Lt{string(route.FieldTMCreate): token}).
+		OrderBy(string(route.FieldTMCreate) + " DESC", string(route.FieldID) + " DESC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, token, limit)
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. RouteGets. err: %v", err)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. RouteGets. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RouteGets. err: %v", err)
 	}
@@ -228,85 +184,16 @@ func (h *handler) RouteGets(ctx context.Context, token string, limit uint64) ([]
 		_ = rows.Close()
 	}()
 
-	var res []*route.Route
+	res := []*route.Route{}
 	for rows.Next() {
 		u, err := h.routeGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. RouteGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. RouteGets, err: %v", err)
 		}
-
 		res = append(res, u)
 	}
-
-	return res, nil
-}
-
-// RouteGetsByCustomerID returns list of routes.
-func (h *handler) RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, routeSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. RouteGetsByCustomerID. err: %v", err)
-	}
-	defer func() {
-		_ = rows.Close()
-	}()
-
-	var res []*route.Route
-	for rows.Next() {
-		u, err := h.routeGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. RouteGetsByCustomerID. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
-// RouteGetsByCustomerIDWithTarget returns list of routes.
-func (h *handler) RouteGetsByCustomerIDWithTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and target = ?
-		order by
-			priority asc
-	`, routeSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), target)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. RouteGetsByCustomerIDWithTarget. err: %v", err)
-	}
-	defer func() {
-		_ = rows.Close()
-	}()
-
-	var res []*route.Route
-	for rows.Next() {
-		u, err := h.routeGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. RouteGetsByCustomerIDWithTarget. err: %v", err)
-		}
-
-		res = append(res, u)
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. RouteGets. err: %v", err)
 	}
 
 	return res, nil
@@ -314,17 +201,38 @@ func (h *handler) RouteGetsByCustomerIDWithTarget(ctx context.Context, customerI
 
 // RouteDelete deletes the given route
 func (h *handler) RouteDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update route_routes set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. RouteDelete. err: %v", err)
+
+	fields := map[route.Field]any{
+		route.FieldTMUpdate: ts,
+		route.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("RouteDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(routesTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(route.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("RouteDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("RouteDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %v", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
 	}
 
 	_ = h.cache.RouteDelete(ctx, id)
@@ -333,34 +241,32 @@ func (h *handler) RouteDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // RouteUpdate updates the route information.
-func (h *handler) RouteUpdate(
-	ctx context.Context,
-	id uuid.UUID,
-	name string,
-	detail string,
-	providerID uuid.UUID,
-	priority int,
-	target string,
-) error {
-	q := `
-	update route_routes set
-		name = ?,
-		detail = ?,
-		provider_id = ?,
-		priority = ?,
-		target = ?,
+func (h *handler) RouteUpdate(ctx context.Context, id uuid.UUID, fields map[route.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
 
-		tm_update = ?
-	where
-		id = ?
-	`
+	fields[route.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	ts := h.utilHandler.TimeGetCurTime()
-	if _, err := h.db.Exec(q, name, detail, providerID.Bytes(), priority, target, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. RouteUpdate. err: %v", err)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("RouteUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(routesTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(route.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("RouteUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("RouteUpdate: exec failed: %w", err)
 	}
 
 	_ = h.routeUpdateToCache(ctx, id)
-
 	return nil
 }

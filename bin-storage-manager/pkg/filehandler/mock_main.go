@@ -150,7 +150,7 @@ func (mr *MockFileHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockFileHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error) {
+func (m *MockFileHandler) Gets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*file.File)

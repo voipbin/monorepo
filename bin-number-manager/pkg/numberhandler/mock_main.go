@@ -134,7 +134,7 @@ func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit a
 }
 
 // Gets mocks base method.
-func (m *MockNumberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
+func (m *MockNumberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, pageSize, pageToken, filters)
 	ret0, _ := ret[0].([]*number.Number)
@@ -178,32 +178,17 @@ func (mr *MockNumberHandlerMockRecorder) RenewNumbers(ctx, days, hours, tmRenew 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewNumbers", reflect.TypeOf((*MockNumberHandler)(nil).RenewNumbers), ctx, days, hours, tmRenew)
 }
 
-// UpdateFlowID mocks base method.
-func (m *MockNumberHandler) UpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error) {
+// Update mocks base method.
+func (m *MockNumberHandler) Update(ctx context.Context, id uuid.UUID, fields map[number.Field]any) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateFlowID", ctx, id, callFlowID, messageFlowID)
+	ret := m.ctrl.Call(m, "Update", ctx, id, fields)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// UpdateFlowID indicates an expected call of UpdateFlowID.
-func (mr *MockNumberHandlerMockRecorder) UpdateFlowID(ctx, id, callFlowID, messageFlowID any) *gomock.Call {
+// Update indicates an expected call of Update.
+func (mr *MockNumberHandlerMockRecorder) Update(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFlowID", reflect.TypeOf((*MockNumberHandler)(nil).UpdateFlowID), ctx, id, callFlowID, messageFlowID)
-}
-
-// UpdateInfo mocks base method.
-func (m *MockNumberHandler) UpdateInfo(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateInfo", ctx, id, callFlowID, messageFlowID, name, detail)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateInfo indicates an expected call of UpdateInfo.
-func (mr *MockNumberHandlerMockRecorder) UpdateInfo(ctx, id, callFlowID, messageFlowID, name, detail any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateInfo", reflect.TypeOf((*MockNumberHandler)(nil).UpdateInfo), ctx, id, callFlowID, messageFlowID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockNumberHandler)(nil).Update), ctx, id, fields)
 }

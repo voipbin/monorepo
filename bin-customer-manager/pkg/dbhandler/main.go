@@ -21,25 +21,14 @@ type DBHandler interface {
 	AccesskeyCreate(ctx context.Context, c *accesskey.Accesskey) error
 	AccesskeyDelete(ctx context.Context, id uuid.UUID) error
 	AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error)
-	AccesskeyGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*accesskey.Accesskey, error)
-	AccesskeySetBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) error
+	AccesskeyGets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error)
+	AccesskeyUpdate(ctx context.Context, id uuid.UUID, fields map[accesskey.Field]any) error
 
 	CustomerCreate(ctx context.Context, b *customer.Customer) error
 	CustomerDelete(ctx context.Context, id uuid.UUID) error
 	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
-	CustomerGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error)
-	CustomerSetBasicInfo(
-		ctx context.Context,
-		id uuid.UUID,
-		name string,
-		detail string,
-		email string,
-		phoneNumber string,
-		address string,
-		webhookMethod customer.WebhookMethod,
-		webhookURI string,
-	) error
-	CustomerSetBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) error
+	CustomerGets(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error)
+	CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[customer.Field]any) error
 }
 
 // handler database handler

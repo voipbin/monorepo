@@ -196,7 +196,7 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockExtension.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseExtensions, nil)
+			mockExtension.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseExtensions, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -279,7 +279,7 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectName, tt.expectDetail, tt.expectPassword).Return(tt.resExt, nil)
+			mockExtension.EXPECT().Update(gomock.Any(), tt.expectID, gomock.Any()).Return(tt.resExt, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

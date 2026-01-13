@@ -12,32 +12,32 @@ type Groupcall struct {
 	commonidentity.Identity
 	commonidentity.Owner
 
-	Status Status    `json:"status,omitempty"`
-	FlowID uuid.UUID `json:"flow_id,omitempty"`
+	Status Status    `json:"status,omitempty" db:"status"`
+	FlowID uuid.UUID `json:"flow_id,omitempty" db:"flow_id,uuid"`
 
-	Source       *commonaddress.Address  `json:"source,omitempty"`
-	Destinations []commonaddress.Address `json:"destinations,omitempty"`
+	Source       *commonaddress.Address  `json:"source,omitempty" db:"source,json"`
+	Destinations []commonaddress.Address `json:"destinations,omitempty" db:"destinations,json"`
 
-	MasterCallID      uuid.UUID `json:"master_call_id,omitempty"`
-	MasterGroupcallID uuid.UUID `json:"master_groupcall_id,omitempty"`
+	MasterCallID      uuid.UUID `json:"master_call_id,omitempty" db:"master_call_id,uuid"`
+	MasterGroupcallID uuid.UUID `json:"master_groupcall_id,omitempty" db:"master_groupcall_id,uuid"`
 
-	RingMethod   RingMethod   `json:"ring_method,omitempty"`
-	AnswerMethod AnswerMethod `json:"answer_method,omitempty"`
+	RingMethod   RingMethod   `json:"ring_method,omitempty" db:"ring_method"`
+	AnswerMethod AnswerMethod `json:"answer_method,omitempty" db:"answer_method"`
 
-	AnswerCallID uuid.UUID   `json:"answer_call_id,omitempty"` // represents answered call id.
-	CallIDs      []uuid.UUID `json:"call_ids,omitempty"`
+	AnswerCallID uuid.UUID   `json:"answer_call_id,omitempty" db:"answer_call_id,uuid"` // represents answered call id.
+	CallIDs      []uuid.UUID `json:"call_ids,omitempty" db:"call_ids,json"`
 
-	AnswerGroupcallID uuid.UUID   `json:"answer_groupcall_id,omitempty"` // represents answered groupcall id
-	GroupcallIDs      []uuid.UUID `json:"groupcall_ids,omitempty"`
+	AnswerGroupcallID uuid.UUID   `json:"answer_groupcall_id,omitempty" db:"answer_groupcall_id,uuid"` // represents answered groupcall id
+	GroupcallIDs      []uuid.UUID `json:"groupcall_ids,omitempty" db:"groupcall_ids,json"`
 
-	CallCount      int `json:"call_count,omitempty"`      // represent left number of calls for current dial
-	GroupcallCount int `json:"groupcall_count,omitempty"` // represent left number of groupcalls for current dial
-	DialIndex      int `json:"dial_index,omitempty"`      // represent current dial index. valid only ringmethod is ringall
+	CallCount      int `json:"call_count,omitempty" db:"call_count"`           // represent left number of calls for current dial
+	GroupcallCount int `json:"groupcall_count,omitempty" db:"groupcall_count"` // represent left number of groupcalls for current dial
+	DialIndex      int `json:"dial_index,omitempty" db:"dial_index"`           // represent current dial index. valid only ringmethod is ringall
 
 	// timestamp
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Status define

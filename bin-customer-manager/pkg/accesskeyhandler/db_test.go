@@ -2,14 +2,15 @@ package accesskeyhandler
 
 import (
 	"context"
+	"reflect"
+	"testing"
+	"time"
+
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
-	"reflect"
-	"testing"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -21,7 +22,7 @@ func Test_Gets(t *testing.T) {
 		name    string
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[accesskey.Field]any
 
 		result []*accesskey.Accesskey
 	}{
@@ -29,8 +30,8 @@ func Test_Gets(t *testing.T) {
 			"normal",
 			10,
 			"",
-			map[string]string{
-				"deleted": "false",
+			map[accesskey.Field]any{
+				accesskey.FieldDeleted: false,
 			},
 
 			[]*accesskey.Accesskey{},
@@ -73,7 +74,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 		customerID uuid.UUID
 
 		responseAccesskeys []*accesskey.Accesskey
-		expectFilter       map[string]string
+		expectFilter       map[accesskey.Field]any
 		expectRes          []*accesskey.Accesskey
 	}{
 		{
@@ -91,8 +92,8 @@ func Test_GetsByCustomerID(t *testing.T) {
 					ID: uuid.FromStringOrNil("805a864a-ab12-11ef-9dfd-376fdcb46270"),
 				},
 			},
-			expectFilter: map[string]string{
-				"customer_id": "7fdfe8d6-ab12-11ef-9387-339121720d4f",
+			expectFilter: map[accesskey.Field]any{
+				accesskey.FieldCustomerID: uuid.FromStringOrNil("7fdfe8d6-ab12-11ef-9387-339121720d4f"),
 			},
 			expectRes: []*accesskey.Accesskey{
 				{
@@ -270,7 +271,7 @@ func Test_GetByToken(t *testing.T) {
 		token string
 
 		responseAccesskeys []*accesskey.Accesskey
-		expectFilter       map[string]string
+		expectFilter       map[accesskey.Field]any
 		expectRes          *accesskey.Accesskey
 	}{
 		{
@@ -283,8 +284,8 @@ func Test_GetByToken(t *testing.T) {
 					ID: uuid.FromStringOrNil("8061b60a-ab11-11ef-8cd0-4721783d6664"),
 				},
 			},
-			expectFilter: map[string]string{
-				"token": "8043e3fa-ab11-11ef-ba54-cf942545cefe",
+			expectFilter: map[accesskey.Field]any{
+				accesskey.FieldToken: "8043e3fa-ab11-11ef-ba54-cf942545cefe",
 			},
 			expectRes: &accesskey.Accesskey{
 				ID: uuid.FromStringOrNil("8061b60a-ab11-11ef-8cd0-4721783d6664"),
@@ -379,6 +380,8 @@ func Test_UpdateBasicInfo(t *testing.T) {
 		id           uuid.UUID
 		customerName string
 		detail       string
+
+		expectFields map[accesskey.Field]any
 	}{
 		{
 			name: "normal",
@@ -386,6 +389,11 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			id:           uuid.FromStringOrNil("459d01b2-a75d-11ef-80a3-03acd83f53cc"),
 			customerName: "name new",
 			detail:       "detail new",
+
+			expectFields: map[accesskey.Field]any{
+				accesskey.FieldName:   "name new",
+				accesskey.FieldDetail: "detail new",
+			},
 		},
 	}
 
@@ -406,7 +414,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeySetBasicInfo(gomock.Any(), tt.id, tt.customerName, tt.detail).Return(nil)
+			mockDB.EXPECT().AccesskeyUpdate(gomock.Any(), tt.id, tt.expectFields).Return(nil)
 			mockDB.EXPECT().AccesskeyGet(gomock.Any(), gomock.Any()).Return(&accesskey.Accesskey{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), accesskey.EventTypeAccesskeyUpdated, gomock.Any()).Return()
 

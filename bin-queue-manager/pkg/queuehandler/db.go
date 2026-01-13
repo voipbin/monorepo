@@ -11,7 +11,7 @@ import (
 )
 
 // Gets returns queues
-func (h *queueHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
+func (h *queueHandler) Gets(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error) {
 	log := logrus.WithField("func", "Gets")
 
 	res, err := h.db.QueueGets(ctx, size, token, filters)
@@ -79,18 +79,17 @@ func (h *queueHandler) UpdateBasicInfo(
 	})
 	log.Debug("Updating the queue's basic info.")
 
-	err := h.db.QueueSetBasicInfo(
-		ctx,
-		id,
-		name,
-		detail,
-		routingMethod,
-		tagIDs,
-		waitFlowID,
-		waitTimeout,
-		serviceTimeout,
-	)
-	if err != nil {
+	fields := map[queue.Field]any{
+		queue.FieldName:           name,
+		queue.FieldDetail:         detail,
+		queue.FieldRoutingMethod:  routingMethod,
+		queue.FieldTagIDs:         tagIDs,
+		queue.FieldWaitFlowID:     waitFlowID,
+		queue.FieldWaitTimeout:    waitTimeout,
+		queue.FieldServiceTimeout: serviceTimeout,
+	}
+
+	if err := h.db.QueueUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update the basic info. err: %v", err)
 		return nil, err
 	}
@@ -113,7 +112,11 @@ func (h *queueHandler) UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []
 	})
 	log.Debug("Updating the queue's tag ids.")
 
-	if err := h.db.QueueSetTagIDs(ctx, id, tagIDs); err != nil {
+	fields := map[queue.Field]any{
+		queue.FieldTagIDs: tagIDs,
+	}
+
+	if err := h.db.QueueUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not set the tags. err: %v", err)
 		return nil, err
 	}
@@ -136,8 +139,12 @@ func (h *queueHandler) UpdateRoutingMethod(ctx context.Context, id uuid.UUID, ro
 	})
 	log.Debug("Updating the queue's routing method.")
 
-	if err := h.db.QueueSetRoutingMethod(ctx, id, routingMethod); err != nil {
-		log.Errorf("Could not set the addresses. err: %v", err)
+	fields := map[queue.Field]any{
+		queue.FieldRoutingMethod: routingMethod,
+	}
+
+	if err := h.db.QueueUpdate(ctx, id, fields); err != nil {
+		log.Errorf("Could not set the routing method. err: %v", err)
 		return nil, err
 	}
 
@@ -150,29 +157,6 @@ func (h *queueHandler) UpdateRoutingMethod(ctx context.Context, id uuid.UUID, ro
 
 	return res, nil
 }
-
-// // UpdateWaitActionsAndTimeouts updates the queue's wait/service info.
-// func (h *queueHandler) UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":     "UpdateWaitActionsAndTimeouts",
-// 		"queue_id": id,
-// 	})
-// 	log.Debug("Updating the queue's wait actions and timeouts.")
-
-// 	if err := h.db.QueueSetWaitActionsAndTimeouts(ctx, id, waitActions, waitTimeout, serviceTimeout); err != nil {
-// 		log.Errorf("Could not set the status. err: %v", err)
-// 		return nil, err
-// 	}
-
-// 	res, err := h.db.QueueGet(ctx, id)
-// 	if err != nil {
-// 		log.Errorf("Could not get updated queue. err: %v", err)
-// 		return nil, err
-// 	}
-// 	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
-
-// 	return res, nil
-// }
 
 // UpdateExecute updates the queue's execute.
 func (h *queueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error) {
@@ -194,7 +178,11 @@ func (h *queueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute 
 		return q, nil
 	}
 
-	if err := h.db.QueueSetExecute(ctx, id, execute); err != nil {
+	fields := map[queue.Field]any{
+		queue.FieldExecute: execute,
+	}
+
+	if err := h.db.QueueUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not set the execute. err: %v", err)
 		return nil, err
 	}

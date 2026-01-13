@@ -4,53 +4,25 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"monorepo/bin-customer-manager/models/accesskey"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+
+	"monorepo/bin-customer-manager/models/accesskey"
 )
 
 const (
-	// select query for call get
-	accesskeySelect = `
-	select
-		id,
-		customer_id,
-
-		name,
-		detail,
-
-		token,
-
-		tm_expire,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		customer_accesskeys
-	`
+	accesskeyTable = "customer_accesskeys"
 )
 
 // accesskeyGetFromRow gets the accesskey from the row.
 func (h *handler) accesskeyGetFromRow(row *sql.Rows) (*accesskey.Accesskey, error) {
 	res := &accesskey.Accesskey{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Name,
-		&res.Detail,
-
-		&res.Token,
-
-		&res.TMExpire,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. accesskeyGetFromRow. err: %v", err)
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
+		return nil, fmt.Errorf("could not scan the row. accesskeyGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -58,47 +30,32 @@ func (h *handler) accesskeyGetFromRow(row *sql.Rows) (*accesskey.Accesskey, erro
 
 // AccesskeyCreate creates new accesskey record and returns the created accesskey record.
 func (h *handler) AccesskeyCreate(ctx context.Context, c *accesskey.Accesskey) error {
-	q := `insert into customer_accesskeys(
-		id,
-		customer_id,
+	now := h.utilHandler.TimeGetCurTime()
 
-		name,
-		detail,
+	// Set timestamps
+	c.TMCreate = now
+	c.TMUpdate = DefaultTimeStamp
+	c.TMDelete = DefaultTimeStamp
 
-		token,
-
-		tm_expire,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, 
-		?, 
-		?, ?, ?
-	)
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q,
-		c.ID.Bytes(),
-		c.CustomerID.Bytes(),
-
-		c.Name,
-		c.Detail,
-
-		c.Token,
-
-		c.TMExpire,
-
-		ts,
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not execute. AccessKeyCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. AccesskeyCreate. err: %v", err)
+	}
+
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(accesskeyTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. AccesskeyCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. AccesskeyCreate. err: %v", err)
 	}
 
 	// update the cache
@@ -145,11 +102,18 @@ func (h *handler) accesskeyGetFromCache(ctx context.Context, id uuid.UUID) (*acc
 
 // accesskeyGetFromDB returns accesskey from the DB.
 func (h *handler) accesskeyGetFromDB(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error) {
+	fields := commondatabasehandler.GetDBFields(&accesskey.Accesskey{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(accesskeyTable).
+		Where(squirrel.Eq{string(accesskey.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. accesskeyGetFromDB. err: %v", err)
+	}
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", accesskeySelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. accesskeyGetFromDB. err: %v", err)
 	}
@@ -158,12 +122,15 @@ func (h *handler) accesskeyGetFromDB(ctx context.Context, id uuid.UUID) (*access
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. accesskeyGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.accesskeyGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. accesskeyGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not get data from row. accesskeyGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -188,50 +155,31 @@ func (h *handler) AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Ac
 }
 
 // AccesskeyGets returns accesskeys.
-func (h *handler) AccesskeyGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*accesskey.Accesskey, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, accesskeySelect)
-
+func (h *handler) AccesskeyGets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&accesskey.Accesskey{})
+	sb := squirrel.
+		Select(fields...).
+		From(accesskeyTable).
+		Where(squirrel.Lt{string(accesskey.FieldTMCreate): token}).
+		OrderBy(string(accesskey.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. AccesskeyGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		case "token":
-			q = fmt.Sprintf("%s and token =?", q)
-			values = append(values, v)
-
-		case "customer_id":
-			q = fmt.Sprintf("%s and customer_id = ?", q)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. AccesskeyGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AccesskeyGets. err: %v", err)
 	}
@@ -239,59 +187,86 @@ func (h *handler) AccesskeyGets(ctx context.Context, size uint64, token string, 
 		_ = rows.Close()
 	}()
 
-	var res []*accesskey.Accesskey
+	res := []*accesskey.Accesskey{}
 	for rows.Next() {
 		u, err := h.accesskeyGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. AccesskeyGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. AccesskeyGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. AccesskeyGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// AccesskeyDelete deletes the accesskey.
-func (h *handler) AccesskeyDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		customer_accesskeys
-	set
-		tm_delete = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AccesskeyDelete. err: %v", err)
+// AccesskeyUpdate updates accesskey fields.
+func (h *handler) AccesskeyUpdate(ctx context.Context, id uuid.UUID, fields map[accesskey.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// update the cache
-	_ = h.accesskeyUpdateToCache(ctx, id)
+	fields[accesskey.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("AccesskeyUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(accesskeyTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(accesskey.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("AccesskeyUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("AccesskeyUpdate: exec failed: %w", err)
+	}
+
+	_ = h.accesskeyUpdateToCache(ctx, id)
 	return nil
 }
 
-// AccesskeySetBasicInfo sets the accesskey's basic info.
-func (h *handler) AccesskeySetBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) error {
-	// prepare
-	q := `
-	update
-		customer_accesskeys
-	set
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, name, detail, h.utilHandler.TimeGetCurTime(), id.Bytes())
+// AccesskeyDelete deletes the accesskey.
+func (h *handler) AccesskeyDelete(ctx context.Context, id uuid.UUID) error {
+	ts := h.utilHandler.TimeGetCurTime()
+
+	fields := map[accesskey.Field]any{
+		accesskey.FieldTMUpdate: ts,
+		accesskey.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. AccessKeySetBasicInfo. err: %v", err)
+		return fmt.Errorf("AccesskeyDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(accesskeyTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(accesskey.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("AccesskeyDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("AccesskeyDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %w", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
 	}
 
 	// update the cache

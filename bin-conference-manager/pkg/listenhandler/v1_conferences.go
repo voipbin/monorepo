@@ -34,7 +34,12 @@ func (h *listenHandler) processV1ConferencesGet(ctx context.Context, m *sock.Req
 	pageToken := u.Query().Get(PageToken)
 
 	// get filters
-	filters := h.utilHandler.URLParseFilters(u)
+	tmpFilters := h.utilHandler.URLParseFilters(u)
+	filters, err := conference.ConvertStringMapToFieldMap(tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	confs, err := h.conferenceHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

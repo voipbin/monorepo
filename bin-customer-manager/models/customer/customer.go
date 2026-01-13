@@ -4,24 +4,24 @@ import "github.com/gofrs/uuid"
 
 // Customer defines
 type Customer struct {
-	ID uuid.UUID `json:"id"` // Customer's ID
+	ID uuid.UUID `json:"id" db:"id,uuid"` // Customer's ID
 
-	Name   string `json:"name,omitempty"`   //  name
-	Detail string `json:"detail,omitempty"` //  detail
+	Name   string `json:"name,omitempty" db:"name"`     //  name
+	Detail string `json:"detail,omitempty" db:"detail"` //  detail
 
-	Email       string `json:"email,omitempty"`
-	PhoneNumber string `json:"phone_number,omitempty"`
-	Address     string `json:"address,omitempty"`
+	Email       string `json:"email,omitempty" db:"email"`
+	PhoneNumber string `json:"phone_number,omitempty" db:"phone_number"`
+	Address     string `json:"address,omitempty" db:"address"`
 
 	// webhook info
-	WebhookMethod WebhookMethod `json:"webhook_method,omitempty"` // webhook method
-	WebhookURI    string        `json:"webhook_uri,omitempty"`    // webhook uri
+	WebhookMethod WebhookMethod `json:"webhook_method,omitempty" db:"webhook_method"` // webhook method
+	WebhookURI    string        `json:"webhook_uri,omitempty" db:"webhook_uri"`       // webhook uri
 
-	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty"` // default billing account id
+	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty" db:"billing_account_id,uuid"` // default billing account id
 
-	TMCreate string `json:"tm_create,omitempty"` // Created timestamp.
-	TMUpdate string `json:"tm_update,omitempty"` // Updated timestamp.
-	TMDelete string `json:"tm_delete,omitempty"` // Deleted timestamp.
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"` // Created timestamp.
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"` // Updated timestamp.
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"` // Deleted timestamp.
 }
 
 // WebhookMethod defines

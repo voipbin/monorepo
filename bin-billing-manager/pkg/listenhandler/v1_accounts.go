@@ -12,10 +12,52 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-billing-manager/pkg/listenhandler/models/response"
 )
+
+// urlFiltersToAccountFilters converts URL string filters to typed account.Field filters
+func (h *listenHandler) urlFiltersToAccountFilters(u *url.URL) map[account.Field]any {
+	filters := make(map[account.Field]any)
+
+	// parse all URL query parameters
+	for key, values := range u.Query() {
+		// skip pagination params
+		if key == PageSize || key == PageToken {
+			continue
+		}
+
+		if len(values) == 0 {
+			continue
+		}
+		value := values[0]
+
+		// map to typed fields
+		switch key {
+		case "customer_id":
+			if id := uuid.FromStringOrNil(value); id != uuid.Nil {
+				filters[account.FieldCustomerID] = id
+			}
+		case "deleted":
+			switch value {
+			case "false":
+				filters[account.FieldDeleted] = false
+			case "true":
+				filters[account.FieldDeleted] = true
+			}
+		case "type":
+			filters[account.FieldType] = value
+		case "payment_type":
+			filters[account.FieldPaymentType] = value
+		case "payment_method":
+			filters[account.FieldPaymentMethod] = value
+		}
+	}
+
+	return filters
+}
 
 // processV1AccountsGet handles GET /v1/accounts request
 func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
@@ -35,7 +77,7 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 	pageToken := u.Query().Get(PageToken)
 
 	// get filters
-	filters := h.utilHandler.URLParseFilters(u)
+	filters := h.urlFiltersToAccountFilters(u)
 
 	as, err := h.accountHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
@@ -195,40 +237,6 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *sock.R
 
 	return res, nil
 }
-
-// // processV1AccountsCustomerIDIDGet handles GET /v1/accounts/customer_id/<cusotmer-id> request
-// func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":    "processV1AccountsCustomerIDIDGet",
-// 		"request": m,
-// 	})
-
-// 	uriItems := strings.Split(m.URI, "/")
-// 	if len(uriItems) < 4 {
-// 		return simpleResponse(400), nil
-// 	}
-
-// 	customerID := uuid.FromStringOrNil(uriItems[4])
-
-// 	c, err := h.accountHandler.GetByCustomerID(ctx, customerID)
-// 	if err != nil {
-// 		log.Errorf("Could not get account info. err: %v", err)
-// 		return simpleResponse(404), nil
-// 	}
-
-// 	data, err := json.Marshal(c)
-// 	if err != nil {
-// 		return simpleResponse(404), nil
-// 	}
-
-// 	res := &sock.Response{
-// 		StatusCode: 200,
-// 		DataType:   "application/json",
-// 		Data:       data,
-// 	}
-
-// 	return res, nil
-// }
 
 // processV1AccountsIDBalanceAddForcePost handles POST /v1/accounts/<account-id>/balance_add_force request
 func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {

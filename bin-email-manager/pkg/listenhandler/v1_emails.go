@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-email-manager/models/email"
 	"monorepo/bin-email-manager/pkg/listenhandler/models/request"
 	"net/url"
 	"strconv"
@@ -26,7 +27,11 @@ func (h *listenHandler) v1EmailsGet(ctx context.Context, m *sock.Request) (*sock
 	pageToken := u.Query().Get(PageToken)
 
 	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	urlFilters := h.utilHandler.URLParseFilters(u)
+	filters := make(map[email.Field]any)
+	for k, v := range urlFilters {
+		filters[email.Field(k)] = v
+	}
 
 	tmp, err := h.emailHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {

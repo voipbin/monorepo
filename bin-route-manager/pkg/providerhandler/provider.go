@@ -77,7 +77,9 @@ func (h *providerHandler) Gets(ctx context.Context, token string, limit uint64) 
 		})
 	log.Debug("Getting providers.")
 
-	res, err := h.db.ProviderGets(ctx, token, limit)
+	filters := map[provider.Field]any{}
+
+	res, err := h.db.ProviderGets(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get providers. err: %v", err)
 		return nil, err
@@ -142,19 +144,17 @@ func (h *providerHandler) Update(
 		},
 	).Debug("Updating the provider.")
 
-	tmp := &provider.Provider{
-		ID:          id,
-		Type:        providerType,
-		Hostname:    hostname,
-		TechPrefix:  techPrefix,
-		TechPostfix: techPostfix,
-		TechHeaders: techHeaders,
-		Name:        name,
-		Detail:      detail,
+	fields := map[provider.Field]any{
+		provider.FieldType:        providerType,
+		provider.FieldHostname:    hostname,
+		provider.FieldTechPrefix:  techPrefix,
+		provider.FieldTechPostfix: techPostfix,
+		provider.FieldTechHeaders: techHeaders,
+		provider.FieldName:        name,
+		provider.FieldDetail:      detail,
 	}
-	log.WithField("update_provider", tmp).Debugf("Created update provider info.")
 
-	if errUpdate := h.db.ProviderUpdate(ctx, tmp); errUpdate != nil {
+	if errUpdate := h.db.ProviderUpdate(ctx, id, fields); errUpdate != nil {
 		log.Errorf("Could not update the provider info. err: %v", errUpdate)
 		return nil, errors.Wrap(errUpdate, "could not update the provider info")
 	}

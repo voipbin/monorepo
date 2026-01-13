@@ -70,7 +70,7 @@ func (h *conferencecallHandler) Create(
 }
 
 // Gets returns list of conferencecalls.
-func (h *conferencecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
+func (h *conferencecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error) {
 
 	res, err := h.db.ConferencecallGets(ctx, size, token, filters)
 	if err != nil {
@@ -115,7 +115,10 @@ func (h *conferencecallHandler) updateStatus(ctx context.Context, id uuid.UUID, 
 		"status":            status,
 	})
 
-	if errStatus := h.db.ConferencecallUpdateStatus(ctx, id, status); errStatus != nil {
+	fields := map[conferencecall.Field]any{
+		conferencecall.FieldStatus: status,
+	}
+	if errStatus := h.db.ConferencecallUpdate(ctx, id, fields); errStatus != nil {
 		log.Errorf("Could not update the conferencecall status. err: %v", errStatus)
 		return nil, errStatus
 	}

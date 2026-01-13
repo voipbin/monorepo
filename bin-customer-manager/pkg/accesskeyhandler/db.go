@@ -3,16 +3,17 @@ package accesskeyhandler
 import (
 	"context"
 	"fmt"
-	"monorepo/bin-customer-manager/models/accesskey"
-	"monorepo/bin-customer-manager/pkg/dbhandler"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-customer-manager/models/accesskey"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
 // Gets returns list of accesskeys
-func (h *accesskeyHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*accesskey.Accesskey, error) {
+func (h *accesskeyHandler) Gets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
 	log := logrus.WithField("func", "Gets")
 
 	res, err := h.db.AccesskeyGets(ctx, size, token, filters)
@@ -28,8 +29,8 @@ func (h *accesskeyHandler) Gets(ctx context.Context, size uint64, token string, 
 func (h *accesskeyHandler) GetsByCustomerID(ctx context.Context, size uint64, token string, customerID uuid.UUID) ([]*accesskey.Accesskey, error) {
 	log := logrus.WithField("func", "Gets")
 
-	filter := map[string]string{
-		"customer_id": customerID.String(),
+	filter := map[accesskey.Field]any{
+		accesskey.FieldCustomerID: customerID,
 	}
 
 	res, err := h.db.AccesskeyGets(ctx, size, token, filter)
@@ -58,8 +59,8 @@ func (h *accesskeyHandler) Get(ctx context.Context, id uuid.UUID) (*accesskey.Ac
 func (h *accesskeyHandler) GetByToken(ctx context.Context, token string) (*accesskey.Accesskey, error) {
 	log := logrus.WithField("func", "GetByToken")
 
-	filter := map[string]string{
-		"token": token,
+	filter := map[accesskey.Field]any{
+		accesskey.FieldToken: token,
 	}
 
 	tmp, err := h.db.AccesskeyGets(ctx, 100, "", filter)
@@ -177,12 +178,12 @@ func (h *accesskeyHandler) UpdateBasicInfo(
 	})
 	log.Debug("Updating the accesskey's basic info.")
 
-	if err := h.db.AccesskeySetBasicInfo(
-		ctx,
-		id,
-		name,
-		detail,
-	); err != nil {
+	fields := map[accesskey.Field]any{
+		accesskey.FieldName:   name,
+		accesskey.FieldDetail: detail,
+	}
+
+	if err := h.db.AccesskeyUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update the basic info. err: %v", err)
 		return nil, err
 	}

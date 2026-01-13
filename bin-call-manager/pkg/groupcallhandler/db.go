@@ -112,7 +112,13 @@ func (h *groupcallHandler) Gets(ctx context.Context, size uint64, token string, 
 		"filters": filters,
 	})
 
-	res, err := h.db.GroupcallGets(ctx, size, token, filters)
+	// Convert string filters to typed filters
+	typedFilters := make(map[groupcall.Field]any)
+	for k, v := range filters {
+		typedFilters[groupcall.Field(k)] = v
+	}
+
+	res, err := h.db.GroupcallGets(ctx, size, token, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get calls. err: %v", err)
 		return nil, err

@@ -98,12 +98,32 @@ func Test_DialrouteGets(t *testing.T) {
 			ctx := context.Background()
 
 			// GetsByTarget for customer route base
-			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, tt.customerID, tt.target).Return(tt.responseRoutesCustomerTarget, nil)
-			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, tt.customerID, route.TargetAll).Return(tt.responseRoutesCustomerAll, nil)
+			// First call: filtersTarget with customerID and target
+			filtersCustomerTarget := map[route.Field]any{
+				route.FieldCustomerID: tt.customerID,
+				route.FieldTarget:     tt.target,
+			}
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersCustomerTarget).Return(tt.responseRoutesCustomerTarget, nil)
+			// Second call: filtersAll with customerID and TargetAll
+			filtersCustomerAll := map[route.Field]any{
+				route.FieldCustomerID: tt.customerID,
+				route.FieldTarget:     route.TargetAll,
+			}
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersCustomerAll).Return(tt.responseRoutesCustomerAll, nil)
 
 			// GetsByTarget for default route base
-			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, route.CustomerIDBasicRoute, tt.target).Return(tt.responseRoutesDefaultTarget, nil)
-			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, route.CustomerIDBasicRoute, route.TargetAll).Return(tt.responseRoutesDefaultAll, nil)
+			// First call: filtersTarget with CustomerIDBasicRoute and target
+			filtersDefaultTarget := map[route.Field]any{
+				route.FieldCustomerID: route.CustomerIDBasicRoute,
+				route.FieldTarget:     tt.target,
+			}
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersDefaultTarget).Return(tt.responseRoutesDefaultTarget, nil)
+			// Second call: filtersAll with CustomerIDBasicRoute and TargetAll
+			filtersDefaultAll := map[route.Field]any{
+				route.FieldCustomerID: route.CustomerIDBasicRoute,
+				route.FieldTarget:     route.TargetAll,
+			}
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersDefaultAll).Return(tt.responseRoutesDefaultAll, nil)
 
 			res, err := h.DialrouteGets(ctx, tt.customerID, tt.target)
 			if err != nil {

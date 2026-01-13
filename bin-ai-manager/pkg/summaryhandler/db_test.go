@@ -185,7 +185,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[summary.Field]any
 
 		responseSummaries []*summary.Summary
 	}{
@@ -194,9 +194,9 @@ func Test_Gets(t *testing.T) {
 
 			size:  100,
 			token: "2025-03-28 21:35:02.809",
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "2e194dfe-0b92-11f0-b142-1bfcc0d84473",
+			filters: map[summary.Field]any{
+				summary.FieldDeleted:    false,
+				summary.FieldCustomerID: uuid.FromStringOrNil("2e194dfe-0b92-11f0-b142-1bfcc0d84473"),
 			},
 
 			responseSummaries: []*summary.Summary{
@@ -257,7 +257,7 @@ func Test_GetByCustomerIDAndReferenceIDAndLanguage(t *testing.T) {
 
 		responseSummaries []*summary.Summary
 
-		expectedFilters map[string]string
+		expectedFilters map[summary.Field]any
 		expectedRes     *summary.Summary
 	}{
 		{
@@ -280,11 +280,11 @@ func Test_GetByCustomerIDAndReferenceIDAndLanguage(t *testing.T) {
 				},
 			},
 
-			expectedFilters: map[string]string{
-				"deleted":      "false",
-				"customer_id":  "1b420968-0b93-11f0-a599-eb340fd6a276",
-				"reference_id": "1abd614a-0b93-11f0-8711-1b309437dfe1",
-				"language":     "en-US",
+			expectedFilters: map[summary.Field]any{
+				summary.FieldDeleted:     false,
+				summary.FieldCustomerID:  uuid.FromStringOrNil("1b420968-0b93-11f0-a599-eb340fd6a276"),
+				summary.FieldReferenceID: uuid.FromStringOrNil("1abd614a-0b93-11f0-8711-1b309437dfe1"),
+				summary.FieldLanguage:    "en-US",
 			},
 			expectedRes: &summary.Summary{
 				Identity: commonidentity.Identity{
@@ -436,7 +436,7 @@ func Test_UpdateStatusDone(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryUpdateStatusDone(ctx, tt.id, tt.content).Return(nil)
+			mockDB.EXPECT().SummaryUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().SummaryGet(ctx, tt.id).Return(tt.responseSummary, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummary.CustomerID, summary.EventTypeUpdated, tt.responseSummary)
 

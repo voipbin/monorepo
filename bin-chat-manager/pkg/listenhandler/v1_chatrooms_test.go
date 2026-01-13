@@ -26,7 +26,7 @@ func Test_v1ChatroomsGet(t *testing.T) {
 		ownerID    uuid.UUID
 		pageToken  string
 		pageSize   uint64
-		filters    map[string]string
+		filters    map[chatroom.Field]any
 
 		responseChatrooms []*chatroom.Chatroom
 
@@ -44,9 +44,9 @@ func Test_v1ChatroomsGet(t *testing.T) {
 			uuid.FromStringOrNil("5cc29ca4-3503-11ed-af37-3388a22eea50"),
 			"2020-10-10T03:30:17.000000",
 			10,
-			map[string]string{
-				"deleted":  "false",
-				"owner_id": "5cc29ca4-3503-11ed-af37-3388a22eea50",
+			map[chatroom.Field]any{
+				chatroom.FieldDeleted: false,
+				chatroom.FieldOwnerID: uuid.FromStringOrNil("5cc29ca4-3503-11ed-af37-3388a22eea50"),
 			},
 
 			[]*chatroom.Chatroom{
@@ -75,9 +75,9 @@ func Test_v1ChatroomsGet(t *testing.T) {
 			uuid.FromStringOrNil("5d1a8cca-3503-11ed-88db-57e51b7f708f"),
 			"2020-10-10T03:30:17.000000",
 			10,
-			map[string]string{
-				"deleted":  "false",
-				"owner_id": "5d1a8cca-3503-11ed-88db-57e51b7f708f",
+			map[chatroom.Field]any{
+				chatroom.FieldDeleted: false,
+				chatroom.FieldOwnerID: uuid.FromStringOrNil("5d1a8cca-3503-11ed-88db-57e51b7f708f"),
 			},
 
 			[]*chatroom.Chatroom{
@@ -111,9 +111,9 @@ func Test_v1ChatroomsGet(t *testing.T) {
 			uuid.FromStringOrNil("5dae1058-3503-11ed-a7d3-df338985d478"),
 			"2020-10-10T03:30:17.000000",
 			10,
-			map[string]string{
-				"deleted":  "false",
-				"owner_id": "5dae1058-3503-11ed-a7d3-df338985d478",
+			map[chatroom.Field]any{
+				chatroom.FieldDeleted: false,
+				chatroom.FieldOwnerID: uuid.FromStringOrNil("5dae1058-3503-11ed-a7d3-df338985d478"),
 			},
 
 			[]*chatroom.Chatroom{},

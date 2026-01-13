@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-conference-manager/models/conferencecall"
 	"monorepo/bin-conference-manager/pkg/listenhandler/models/request"
 )
 
@@ -33,7 +34,12 @@ func (h *listenHandler) processV1ConferencecallsGet(ctx context.Context, m *sock
 	pageToken := u.Query().Get(PageToken)
 
 	// get filters
-	filters := h.utilHandler.URLParseFilters(u)
+	tmpFilters := h.utilHandler.URLParseFilters(u)
+	filters, err := conferencecall.ConvertStringMapToFieldMap(tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	confs, err := h.conferencecallHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

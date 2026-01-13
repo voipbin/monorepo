@@ -11,24 +11,24 @@ import (
 type Message struct {
 	commonidentity.Identity
 
-	Type Type `json:"type"`
+	Type Type `json:"type" db:"type"`
 
 	// from/to info
-	Source  *commonaddress.Address `json:"source"`
-	Targets []target.Target        `json:"targets"`
+	Source  *commonaddress.Address `json:"source" db:"source,json"`
+	Targets []target.Target        `json:"targets" db:"targets,json"`
 
 	// provider info
-	ProviderName        ProviderName `json:"provider_name"`
-	ProviderReferenceID string       `json:"provider_reference_id"`
+	ProviderName        ProviderName `json:"provider_name" db:"provider_name"`
+	ProviderReferenceID string       `json:"provider_reference_id" db:"provider_reference_id"`
 
 	// message info
-	Text      string    `json:"text"` // Text delivered in the body of the message.
-	Medias    []string  `json:"medias"`
-	Direction Direction `json:"direction"`
+	Text      string    `json:"text" db:"text"` // Text delivered in the body of the message.
+	Medias    []string  `json:"medias" db:"medias,json"`
+	Direction Direction `json:"direction" db:"direction"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // Type defines

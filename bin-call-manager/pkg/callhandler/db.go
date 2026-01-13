@@ -131,7 +131,13 @@ func (h *callHandler) Gets(ctx context.Context, size uint64, token string, filte
 		"filters": filters,
 	})
 
-	res, err := h.db.CallGets(ctx, size, token, filters)
+	// Convert string filters to typed filters
+	typedFilters := make(map[call.Field]any)
+	for k, v := range filters {
+		typedFilters[call.Field(k)] = v
+	}
+
+	res, err := h.db.CallGets(ctx, size, token, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get calls. err: %v", err)
 		return nil, err

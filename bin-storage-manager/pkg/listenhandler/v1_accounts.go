@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
@@ -71,7 +72,17 @@ func (h *listenHandler) v1AccountsGet(ctx context.Context, m *sock.Request) (*so
 	pageToken := u.Query().Get(PageToken)
 
 	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	var req map[string]any
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return nil, err
+	}
+
+	filters, err := account.ConvertStringMapToFieldMap(req)
+	if err != nil {
+		log.Errorf("Could not convert the filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	// gets the list of accounts
 	tmp, err := h.accountHandler.Gets(ctx, pageToken, pageSize, filters)

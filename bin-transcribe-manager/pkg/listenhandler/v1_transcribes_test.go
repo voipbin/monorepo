@@ -106,7 +106,9 @@ func Test_processV1TranscribesGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseFilters     map[string]string
+		responseFilters map[string]string
+		expectFilters   map[transcribe.Field]any
+
 		responseTranscribes []*transcribe.Transcribe
 		expectRes           *sock.Response
 	}{
@@ -122,6 +124,9 @@ func Test_processV1TranscribesGet(t *testing.T) {
 
 			responseFilters: map[string]string{
 				"customer_id": "079ffd84-7f68-11ed-ae05-430c9b75ab3b",
+			},
+			expectFilters: map[transcribe.Field]any{
+				transcribe.FieldCustomerID: uuid.FromStringOrNil("079ffd84-7f68-11ed-ae05-430c9b75ab3b"),
 			},
 			responseTranscribes: []*transcribe.Transcribe{
 				{
@@ -149,6 +154,9 @@ func Test_processV1TranscribesGet(t *testing.T) {
 
 			responseFilters: map[string]string{
 				"customer_id": "871275ba-7f68-11ed-a6e2-dbc6d9a383d9",
+			},
+			expectFilters: map[transcribe.Field]any{
+				transcribe.FieldCustomerID: uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),
 			},
 			responseTranscribes: []*transcribe.Transcribe{
 				{
@@ -188,7 +196,7 @@ func Test_processV1TranscribesGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockTranscribe.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseTranscribes, nil)
+			mockTranscribe.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.expectFilters).Return(tt.responseTranscribes, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

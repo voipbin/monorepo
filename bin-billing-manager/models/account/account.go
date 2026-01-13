@@ -8,20 +8,20 @@ import (
 type Account struct {
 	commonidentity.Identity
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name   string `json:"name" db:"name"`
+	Detail string `json:"detail" db:"detail"`
 
-	Type Type `json:"type"`
+	Type Type `json:"type" db:"type"`
 
-	Balance float32 `json:"balance"` // USD
+	Balance float32 `json:"balance" db:"balance"` // USD
 
-	PaymentType   PaymentType   `json:"payment_type"`
-	PaymentMethod PaymentMethod `json:"payment_method"`
+	PaymentType   PaymentType   `json:"payment_type" db:"payment_type"`
+	PaymentMethod PaymentMethod `json:"payment_method" db:"payment_method"`
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // Type define

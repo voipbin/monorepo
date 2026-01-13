@@ -5,44 +5,23 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-conversation-manager/models/media"
 )
 
-const (
-	// select query for conversation get
-	mediaSelect = `
-	select
-		id,
-		customer_id,
-
-		type,
-		filename,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		conversation_medias
-	`
+var (
+	mediasTable = "conversation_medias"
 )
 
 // mediaGetFromRow gets the media from the row.
 func (h *handler) mediaGetFromRow(row *sql.Rows) (*media.Media, error) {
-
 	res := &media.Media{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Type,
-		&res.Filename,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. mediaGetFromRow. err: %v", err)
 	}
 
@@ -51,42 +30,31 @@ func (h *handler) mediaGetFromRow(row *sql.Rows) (*media.Media, error) {
 
 // MediaCreate creates a new media record
 func (h *handler) MediaCreate(ctx context.Context, m *media.Media) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-	q := `insert into conversation_medias(
-		id,
-		customer_id,
+	// Set timestamps
+	m.TMCreate = now
+	m.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	m.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		type,
-		filename,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(m)
 	if err != nil {
-		return fmt.Errorf("could not prepare. MediaCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. MediaCreate. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	_, err = stmt.ExecContext(ctx,
-		m.ID.Bytes(),
-		m.CustomerID.Bytes(),
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(mediasTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		m.Type,
-		m.Filename,
-
-		m.TMCreate,
-		m.TMUpdate,
-		m.TMDelete,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. MediaCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. MediaCreate. err: %v", err)
 	}
 
@@ -97,22 +65,20 @@ func (h *handler) MediaCreate(ctx context.Context, m *media.Media) error {
 
 // mediaGetFromDB gets the media info from the db.
 func (h *handler) mediaGetFromDB(ctx context.Context, id uuid.UUID) (*media.Media, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", mediaSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&media.Media{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(mediasTable).
+		Where(squirrel.Eq{"id": id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. mediaGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. mediaGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. mediaGetFromDB. err: %v", err)
+		return nil, errors.Wrapf(err, "could not query. mediaGetFromDB. err: %v", err)
 	}
 	defer func() {
 		_ = row.Close()

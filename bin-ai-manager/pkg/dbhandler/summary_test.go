@@ -119,7 +119,7 @@ func Test_SummaryCreate(t *testing.T) {
 			}
 
 			expectRes := []*summary.Summary{tt.expectRes}
-			resGets, err := h.SummaryGets(ctx, 100, DefaultTimeStamp, map[string]string{"reference_id": tt.summary.ReferenceID.String()})
+			resGets, err := h.SummaryGets(ctx, 100, DefaultTimeStamp, map[summary.Field]any{summary.FieldReferenceID: tt.summary.ReferenceID})
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -131,13 +131,13 @@ func Test_SummaryCreate(t *testing.T) {
 	}
 }
 
-func Test_SummaryUpdateStatusDone(t *testing.T) {
+func Test_SummaryUpdate(t *testing.T) {
 	tests := []struct {
 		name    string
 		summary *summary.Summary
 
-		id      uuid.UUID
-		content string
+		id     uuid.UUID
+		fields map[summary.Field]any
 
 		responseCurTime string
 		expectRes       *summary.Summary
@@ -159,8 +159,11 @@ func Test_SummaryUpdateStatusDone(t *testing.T) {
 				Language: "en-US",
 			},
 
-			id:      uuid.FromStringOrNil("0951c95e-0bd5-11f0-a747-c75eccfcb319"),
-			content: "test content",
+			id: uuid.FromStringOrNil("0951c95e-0bd5-11f0-a747-c75eccfcb319"),
+			fields: map[summary.Field]any{
+				summary.FieldStatus:  summary.StatusDone,
+				summary.FieldContent: "test content",
+			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
 			expectRes: &summary.Summary{
@@ -208,7 +211,7 @@ func Test_SummaryUpdateStatusDone(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().SummarySet(ctx, gomock.Any())
-			if errUpdate := h.SummaryUpdateStatusDone(ctx, tt.id, tt.content); errUpdate != nil {
+			if errUpdate := h.SummaryUpdate(ctx, tt.id, tt.fields); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 

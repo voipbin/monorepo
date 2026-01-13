@@ -3,112 +3,35 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-queue-manager/models/queuecall"
 )
 
 const (
-	// select query for  queuecall get
-	queuecallSelect = `
-	select
-		id,
-		customer_id,
-		queue_id,
-
-		reference_type,
-		reference_id,
-		reference_activeflow_id,
-
-		forward_action_id,
- 		confbridge_id,
-
-		source,
-		routing_method,
-		tag_ids,
-
-		status,
-		service_agent_id,
-
-		timeout_wait,
-		timeout_service,
-
-		duration_waiting,
-		duration_service,
-
-		tm_create,
-		tm_service,
-		tm_update,
-		tm_end,
-		tm_delete
-	from
-		queue_queuecalls
-	`
+	queueQueuecallsTable = "queue_queuecalls"
 )
 
-// queuecallGetFromRow gets the  queuecall from the row.
+// queuecallGetFromRow gets the queuecall from the row.
 func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, error) {
-	var referenceActiveflowID sql.NullString
-	var source sql.NullString
-	var tagIDs sql.NullString
-
 	res := &queuecall.Queuecall{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.QueueID,
 
-		&res.ReferenceType,
-		&res.ReferenceID,
-		&referenceActiveflowID,
-
-		&res.ForwardActionID,
-		&res.ConfbridgeID,
-
-		&source,
-		&res.RoutingMethod,
-		&tagIDs,
-
-		&res.Status,
-		&res.ServiceAgentID,
-
-		&res.TimeoutWait,
-		&res.TimeoutService,
-
-		&res.DurationWaiting,
-		&res.DurationService,
-
-		&res.TMCreate,
-		&res.TMService,
-		&res.TMUpdate,
-		&res.TMEnd,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. queueCallGetFromRow. err: %v", err)
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
+		return nil, fmt.Errorf("could not scan the row. queuecallGetFromRow. err: %v", err)
 	}
 
-	// referenceActiveflowID
-	if referenceActiveflowID.Valid {
-		res.ReferenceActiveflowID = uuid.FromBytesOrNil([]byte(referenceActiveflowID.String))
+	// Ensure Source is not nil
+	if res.Source == (commonaddress.Address{}) {
+		res.Source = commonaddress.Address{}
 	}
 
-	// source
-	if source.Valid {
-		if err := json.Unmarshal([]byte(source.String), &res.Source); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the source. queuecallGetFromRow. err: %v", err)
-		}
-	}
-
-	// tag_ids
-	if tagIDs.Valid {
-		if err := json.Unmarshal([]byte(tagIDs.String), &res.TagIDs); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the source. queuecallGetFromRow. err: %v", err)
-		}
-	}
+	// Ensure TagIDs slice is not nil
 	if res.TagIDs == nil {
 		res.TagIDs = []uuid.UUID{}
 	}
@@ -117,103 +40,45 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 }
 
 // QueuecallCreate creates new QueueCall record and returns the created QueueCall.
-func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error {
-	q := `insert into queue_queuecalls(
-		id,
-		customer_id,
-		queue_id,
+func (h *handler) QueuecallCreate(ctx context.Context, qc *queuecall.Queuecall) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-		reference_type,
-		reference_id,
-		reference_activeflow_id,
+	// Set timestamps
+	qc.TMCreate = now
+	qc.TMService = DefaultTimeStamp
+	qc.TMUpdate = DefaultTimeStamp
+	qc.TMEnd = DefaultTimeStamp
+	qc.TMDelete = DefaultTimeStamp
 
-		forward_action_id,
- 		confbridge_id,
-
-		source,
-		routing_method,
-		tag_ids,
-
-		status,
-		service_agent_id,
-
-		timeout_wait,
-		timeout_service,
-
-		duration_waiting,
-		duration_service,
-
-		tm_create,
-		tm_service,
-		tm_update,
-		tm_end,
-		tm_delete
-	) values(
-		?, ?, ?,
-		?, ?, ?,
-		?, ?,
-		?, ?, ?,
-		?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?, ?, ?
-		)
-	`
-
-	tmpSource, err := json.Marshal(a.Source)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(qc)
 	if err != nil {
-		return fmt.Errorf("could not marshal source. QueuecallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. QueuecallCreate. err: %v", err)
 	}
 
-	tmpTagIDs, err := json.Marshal(a.TagIDs)
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(queueQueuecallsTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal tagids. QueuecallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. QueuecallCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q,
-		a.ID.Bytes(),
-		a.CustomerID.Bytes(),
-		a.QueueID.Bytes(),
-
-		a.ReferenceType,
-		a.ReferenceID.Bytes(),
-		a.ReferenceActiveflowID.Bytes(),
-
-		a.ForwardActionID.Bytes(),
-		a.ConfbridgeID.Bytes(),
-
-		tmpSource,
-		a.RoutingMethod,
-		tmpTagIDs,
-
-		a.Status,
-		a.ServiceAgentID.Bytes(),
-
-		a.TimeoutWait,
-		a.TimeoutService,
-
-		a.DurationWaiting,
-		a.DurationService,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallCreate. err: %v", err)
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. QueuecallCreate. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.queuecallUpdateToCache(ctx, a.ID)
+	_ = h.queuecallUpdateToCache(ctx, qc.ID)
 
 	return nil
 }
 
 // queuecallUpdateToCache gets the QueueCall from the DB and update the cache.
 func (h *handler) queuecallUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.queuecallGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -237,7 +102,6 @@ func (h *handler) queuecallSetToCache(ctx context.Context, u *queuecall.Queuecal
 
 // queuecallGetFromCache returns QueueCall from the cache.
 func (h *handler) queuecallGetFromCache(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
-
 	// get from cache
 	res, err := h.cache.QueuecallGet(ctx, id)
 	if err != nil {
@@ -249,25 +113,35 @@ func (h *handler) queuecallGetFromCache(ctx context.Context, id uuid.UUID) (*que
 
 // queuecallGetFromDB returns queuecall from the DB.
 func (h *handler) queuecallGetFromDB(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", queuecallSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	fields := commondatabasehandler.GetDBFields(&queuecall.Queuecall{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(queueQueuecallsTable).
+		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. queueCallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. queuecallGetFromDB. err: %v", err)
+	}
+
+	row, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. queuecallGetFromDB. err: %v", err)
 	}
 	defer func() {
 		_ = row.Close()
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. queuecallGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.queuecallGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. queueCallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not get data from row. queuecallGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -298,10 +172,19 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 		return tmp, nil
 	}
 
-	// prepare
-	q := fmt.Sprintf("%s where reference_id = ? order by tm_create desc", queuecallSelect)
+	fields := commondatabasehandler.GetDBFields(&queuecall.Queuecall{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(queueQueuecallsTable).
+		Where(squirrel.Eq{string(queuecall.FieldReferenceID): referenceID.Bytes()}).
+		OrderBy(string(queuecall.FieldTMCreate) + " DESC").
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. QueuecallGetByReferenceID. err: %v", err)
+	}
 
-	row, err := h.db.Query(q, referenceID.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueuecallGetByReferenceID. err: %v", err)
 	}
@@ -315,7 +198,7 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 
 	res, err := h.queuecallGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. QueuecallGetByReferenceID, err: %v", err)
+		return nil, fmt.Errorf("could not get queuecall. QueuecallGetByReferenceID, err: %v", err)
 	}
 
 	_ = h.queuecallSetToCache(ctx, res)
@@ -324,45 +207,31 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 }
 
 // QueuecallGets returns queuecalls.
-func (h *handler) QueuecallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, queuecallSelect)
-
+func (h *handler) QueuecallGets(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&queuecall.Queuecall{})
+	sb := squirrel.
+		Select(fields...).
+		From(queueQueuecallsTable).
+		Where(squirrel.Lt{string(queuecall.FieldTMCreate): token}).
+		OrderBy(string(queuecall.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. QueuecallGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "queue_id", "reference_id", "reference_activeflow_id", "forward_action_id", "exit_action_id", "confbridge_id", "service_agent_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. QueuecallGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueuecallGets. err: %v", err)
 	}
@@ -370,36 +239,78 @@ func (h *handler) QueuecallGets(ctx context.Context, size uint64, token string, 
 		_ = rows.Close()
 	}()
 
-	var res []*queuecall.Queuecall
+	res := []*queuecall.Queuecall{}
 	for rows.Next() {
 		u, err := h.queuecallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. QueuecallGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. QueuecallGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
+// QueuecallUpdate updates queuecall fields.
+func (h *handler) QueuecallUpdate(ctx context.Context, id uuid.UUID, fields map[queuecall.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	fields[queuecall.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("QueuecallUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(queueQueuecallsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("QueuecallUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("QueuecallUpdate: exec failed: %w", err)
+	}
+
+	_ = h.queuecallUpdateToCache(ctx, id)
+	return nil
+}
+
 // QueuecallDelete deletes the queuecall.
 func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		queue_queuecalls
-	set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+
+	fields := map[queuecall.Field]any{
+		queuecall.FieldTMUpdate: ts,
+		queuecall.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallDelete. err: %v", err)
+		return fmt.Errorf("QueuecallDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(queueQueuecallsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("QueuecallDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("QueuecallDelete: exec failed: %w", err)
 	}
 
 	// update the cache
@@ -410,47 +321,44 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {
 
 // QueuecallSetStatusConnecting sets the QueueCall's status to the connecting.
 func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		queue_queuecalls
-	set
-		status = ?,
-		service_agent_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, queuecall.StatusConnecting, serviceAgentID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusConnecting. err: %v", err)
+	fields := map[queuecall.Field]any{
+		queuecall.FieldStatus:         queuecall.StatusConnecting,
+		queuecall.FieldServiceAgentID: serviceAgentID,
 	}
 
-	// update the cache
-	_ = h.queuecallUpdateToCache(ctx, id)
+	if err := h.QueuecallUpdate(ctx, id, fields); err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetStatusConnecting. err: %v", err)
+	}
 
 	return nil
 }
 
 // QueuecallSetStatusService sets the Queuecall's status to the service.
 func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
-	// prepare
-	q := `
-	update
-		queue_queuecalls
-	set
-		status = ?,
-		duration_waiting = ?,
-		tm_service = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+	fields := map[queuecall.Field]any{
+		queuecall.FieldStatus:          queuecall.StatusService,
+		queuecall.FieldDurationWaiting: durationWaiting,
+		queuecall.FieldTMService:       ts,
+		queuecall.FieldTMUpdate:        ts,
+	}
 
-	_, err := h.db.Exec(q, queuecall.StatusService, durationWaiting, ts, ts, id.Bytes())
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusService. err: %v", err)
+		return fmt.Errorf("QueuecallSetStatusService: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(queueQueuecallsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("QueuecallSetStatusService: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("QueuecallSetStatusService: exec failed: %w", err)
 	}
 
 	// update the cache
@@ -461,22 +369,30 @@ func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, d
 
 // QueuecallSetStatusAbandoned sets the Queuecall's status to the abandoned.
 func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
-	// prepare
-	q := `
-	update
-		queue_queuecalls
-	set
-		status = ?,
-		duration_waiting = ?,
-		tm_end = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+	fields := map[queuecall.Field]any{
+		queuecall.FieldStatus:          queuecall.StatusAbandoned,
+		queuecall.FieldDurationWaiting: durationWaiting,
+		queuecall.FieldTMEnd:           ts,
+		queuecall.FieldTMUpdate:        ts,
+	}
 
-	_, err := h.db.Exec(q, queuecall.StatusAbandoned, durationWaiting, ts, ts, id.Bytes())
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusAbandoned. err: %v", err)
+		return fmt.Errorf("QueuecallSetStatusAbandoned: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(queueQueuecallsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("QueuecallSetStatusAbandoned: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("QueuecallSetStatusAbandoned: exec failed: %w", err)
 	}
 
 	// update the cache
@@ -487,22 +403,30 @@ func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID,
 
 // QueuecallSetStatusDone sets the Queuecall's status to the done.
 func (h *handler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error {
-	// prepare
-	q := `
-	update
-		queue_queuecalls
-	set
-		status = ?,
-		duration_service = ?,
-		tm_end = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+	fields := map[queuecall.Field]any{
+		queuecall.FieldStatus:          queuecall.StatusDone,
+		queuecall.FieldDurationService: durationService,
+		queuecall.FieldTMEnd:           ts,
+		queuecall.FieldTMUpdate:        ts,
+	}
 
-	_, err := h.db.Exec(q, queuecall.StatusDone, durationService, ts, ts, id.Bytes())
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusDone. err: %v", err)
+		return fmt.Errorf("QueuecallSetStatusDone: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(queueQueuecallsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("QueuecallSetStatusDone: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("QueuecallSetStatusDone: exec failed: %w", err)
 	}
 
 	// update the cache
@@ -513,47 +437,26 @@ func (h *handler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, dura
 
 // QueuecallSetStatusKicking sets the QueueCall's status to the kicking.
 func (h *handler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		queue_queuecalls
-	set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, queuecall.StatusKicking, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusKicking. err: %v", err)
+	fields := map[queuecall.Field]any{
+		queuecall.FieldStatus: queuecall.StatusKicking,
 	}
 
-	// update the cache
-	_ = h.queuecallUpdateToCache(ctx, id)
+	if err := h.QueuecallUpdate(ctx, id, fields); err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetStatusKicking. err: %v", err)
+	}
 
 	return nil
 }
 
 // QueuecallSetStatusWaiting sets the QueueCall's status to the waiting.
 func (h *handler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		queue_queuecalls
-	set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, queuecall.StatusWaiting, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusWaiting. err: %v", err)
+	fields := map[queuecall.Field]any{
+		queuecall.FieldStatus: queuecall.StatusWaiting,
 	}
 
-	// update the cache
-	_ = h.queuecallUpdateToCache(ctx, id)
+	if err := h.QueuecallUpdate(ctx, id, fields); err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetStatusWaiting. err: %v", err)
+	}
 
 	return nil
 }

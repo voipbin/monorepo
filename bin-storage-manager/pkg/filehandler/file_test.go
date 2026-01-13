@@ -72,7 +72,7 @@ func Test_Gets(t *testing.T) {
 
 		token   string
 		size    uint64
-		filters map[string]string
+		filters map[file.Field]any
 
 		responseFiles []*file.File
 	}{
@@ -81,8 +81,8 @@ func Test_Gets(t *testing.T) {
 
 			token: "2024-05-16 03:22:17.995000",
 			size:  10,
-			filters: map[string]string{
-				"customer_id": "ba5d2ed2-1531-11ef-960b-cfcd7e5676b9",
+			filters: map[file.Field]any{
+				file.FieldCustomerID: uuid.FromStringOrNil("ba5d2ed2-1531-11ef-960b-cfcd7e5676b9"),
 			},
 
 			responseFiles: []*file.File{

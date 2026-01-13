@@ -27,9 +27,10 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseFilters map[string]string
-		responseAgents  []*agent.Agent
-		expectRes       *sock.Response
+		responseFilters  map[string]string
+		convertedFilters map[agent.Field]any
+		responseAgents   []*agent.Agent
+		expectRes        *sock.Response
 	}{
 		{
 			name: "normal",
@@ -47,6 +48,12 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 				"deleted":     "false",
 				"status":      string(agent.StatusAvailable),
 				"tag_ids":     "f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91",
+			},
+			convertedFilters: map[agent.Field]any{
+				agent.FieldCustomerID: uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
+				agent.FieldDeleted:    true,
+				agent.FieldStatus:     agent.StatusAvailable,
+				agent.Field("tag_ids"): "f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91",
 			},
 			responseAgents: []*agent.Agent{
 				{
@@ -97,7 +104,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockAgent.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseAgents, nil)
+			mockAgent.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.convertedFilters).Return(tt.responseAgents, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

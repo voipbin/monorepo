@@ -26,24 +26,29 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseFilters     map[string]string
+		responseFilters map[string]string
+		expectFilters   map[transcript.Field]any
+
 		responseTranscripts []*transcript.Transcript
 		expectRes           *sock.Response
 	}{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_transcribe_id=4f08e520-821d-11ed-844e-67fdcb950f6f",
 				Method: sock.RequestMethodGet,
 			},
 
-			10,
-			"2020-05-03 21:35:02.809",
+			pageSize:  10,
+			pageToken: "2020-05-03 21:35:02.809",
 
-			map[string]string{
+			responseFilters: map[string]string{
 				"transcribe_id": "4f08e520-821d-11ed-844e-67fdcb950f6f",
 			},
-			[]*transcript.Transcript{
+			expectFilters: map[transcript.Field]any{
+				transcript.FieldTranscribeID: uuid.FromStringOrNil("4f08e520-821d-11ed-844e-67fdcb950f6f"),
+			},
+			responseTranscripts: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("2afd749c-821e-11ed-9ba2-271e7b9600a1"),
@@ -51,26 +56,29 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 				},
 			},
 
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"2afd749c-821e-11ed-9ba2-271e7b9600a1","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""}]`),
 			},
 		},
 		{
-			"2 items",
-			&sock.Request{
+			name: "2 items",
+			request: &sock.Request{
 				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_transcribe_id=43b608e6-821e-11ed-9611-e329cba76cc9",
 				Method: sock.RequestMethodGet,
 			},
 
-			10,
-			"2020-05-03 21:35:02.809",
+			pageSize:  10,
+			pageToken: "2020-05-03 21:35:02.809",
 
-			map[string]string{
+			responseFilters: map[string]string{
 				"transcribe_id": "43b608e6-821e-11ed-9611-e329cba76cc9",
 			},
-			[]*transcript.Transcript{
+			expectFilters: map[transcript.Field]any{
+				transcript.FieldTranscribeID: uuid.FromStringOrNil("43b608e6-821e-11ed-9611-e329cba76cc9"),
+			},
+			responseTranscripts: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("43e2dae2-821e-11ed-8cb9-ff5d144f9d22"),
@@ -82,7 +90,7 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 					},
 				},
 			},
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"43e2dae2-821e-11ed-8cb9-ff5d144f9d22","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""},{"id":"440fc214-821e-11ed-b83d-2f241266f784","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""}]`),
@@ -108,7 +116,7 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockTranscript.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseTranscripts, nil)
+			mockTranscript.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.expectFilters).Return(tt.responseTranscripts, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

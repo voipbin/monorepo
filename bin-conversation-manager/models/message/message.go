@@ -12,21 +12,21 @@ import (
 type Message struct {
 	commonidentity.Identity
 
-	ConversationID uuid.UUID `json:"conversation_id,omitempty"`
-	Direction      Direction `json:"direction,omitempty"`
-	Status         Status    `json:"status,omitempty"`
+	ConversationID uuid.UUID `json:"conversation_id,omitempty" db:"conversation_id,uuid"`
+	Direction      Direction `json:"direction,omitempty" db:"direction"`
+	Status         Status    `json:"status,omitempty" db:"status"`
 
-	ReferenceType ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty" db:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`
 
-	TransactionID string `json:"transaction_id,omitempty"` // uniq id for message's transaction
+	TransactionID string `json:"transaction_id,omitempty" db:"transaction_id"` // uniq id for message's transaction
 
-	Text   string        `json:"text,omitempty"`
-	Medias []media.Media `json:"medias,omitempty"`
+	Text   string        `json:"text,omitempty" db:"text"`
+	Medias []media.Media `json:"medias,omitempty" db:"medias,json"`
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Field defines the fields for the Message entity.

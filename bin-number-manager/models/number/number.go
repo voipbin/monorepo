@@ -10,29 +10,29 @@ import (
 type Number struct {
 	commonidentity.Identity
 
-	Number string `json:"number"`
+	Number string `json:"number" db:"number"`
 
-	CallFlowID    uuid.UUID `json:"call_flow_id"`
-	MessageFlowID uuid.UUID `json:"message_flow_id"`
+	CallFlowID    uuid.UUID `json:"call_flow_id" db:"call_flow_id,uuid"`
+	MessageFlowID uuid.UUID `json:"message_flow_id" db:"message_flow_id,uuid"`
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name   string `json:"name" db:"name"`
+	Detail string `json:"detail" db:"detail"`
 
-	ProviderName        ProviderName `json:"provider_name"`
-	ProviderReferenceID string       `json:"provider_reference_id"`
+	ProviderName        ProviderName `json:"provider_name" db:"provider_name"`
+	ProviderReferenceID string       `json:"provider_reference_id" db:"provider_reference_id"`
 
-	Status Status `json:"status"`
+	Status Status `json:"status" db:"status"`
 
-	T38Enabled       bool `json:"t38_enabled"`
-	EmergencyEnabled bool `json:"emergency_enabled"`
+	T38Enabled       bool `json:"t38_enabled" db:"t38_enabled"`
+	EmergencyEnabled bool `json:"emergency_enabled" db:"emergency_enabled"`
 
 	// timestamp
-	TMPurchase string `json:"tm_purchase"`
-	TMRenew    string `json:"tm_renew"`
+	TMPurchase string `json:"tm_purchase" db:"tm_purchase"`
+	TMRenew    string `json:"tm_renew" db:"tm_renew"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // ProviderName type

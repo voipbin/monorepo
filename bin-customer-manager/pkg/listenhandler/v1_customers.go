@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-customer-manager/pkg/listenhandler/models/response"
 )
@@ -35,8 +36,9 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *sock.Reque
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	// parse the filters and convert to typed filters
+	stringFilters := h.utilHandler.URLParseFilters(u)
+	filters := convertCustomerFilters(stringFilters)
 
 	tmp, err := h.customerHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
@@ -58,6 +60,27 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *sock.Reque
 	}
 
 	return res, nil
+}
+
+// convertCustomerFilters converts string filters to typed customer.Field filters
+func convertCustomerFilters(stringFilters map[string]string) map[customer.Field]any {
+	filters := make(map[customer.Field]any)
+	for k, v := range stringFilters {
+		switch k {
+		case "deleted":
+			switch v {
+			case "false":
+				filters[customer.FieldDeleted] = false
+			case "true":
+				filters[customer.FieldDeleted] = true
+			}
+		case "billing_account_id":
+			filters[customer.FieldBillingAccountID] = uuid.FromStringOrNil(v)
+		default:
+			filters[customer.Field(k)] = v
+		}
+	}
+	return filters
 }
 
 // processV1CustomersPost handles Post /v1/customers request

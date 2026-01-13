@@ -98,7 +98,7 @@ func Test_AIcallCreate(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("e2fa5772-a5e1-11ed-94a9-f72c152d4780"),
 				},
-				AIEngineData: map[string]any{},
+				AIEngineData: nil,
 				TMEnd:        DefaultTimeStamp,
 				TMCreate:     "2023-01-03 21:35:02.809",
 				TMUpdate:     DefaultTimeStamp,
@@ -172,7 +172,7 @@ func Test_AIcallGetByReferenceID(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("a8b26464-a5e2-11ed-bce7-83b475b0c53d"),
 				},
-				AIEngineData:  map[string]any{},
+				AIEngineData:  nil,
 				ReferenceType: aicall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("a8ebd744-a5e2-11ed-bc18-d3a88a0f1ffa"),
 				TMEnd:         DefaultTimeStamp,
@@ -219,21 +219,21 @@ func Test_AIcallGetByReferenceID(t *testing.T) {
 	}
 }
 
-func Test_AIcallUpdatePipecatcallID(t *testing.T) {
+func Test_AIcallUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
 		ai   *aicall.AIcall
 
-		id            uuid.UUID
-		pipecatcallID uuid.UUID
+		id     uuid.UUID
+		fields map[aicall.Field]any
 
 		responseCurTime string
 
 		expectRes *aicall.AIcall
 	}{
 		{
-			name: "normal",
+			name: "update pipecatcall_id",
 			ai: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("f6c9d56a-afbc-11f0-bb5f-1b20049b3cfb"),
@@ -241,15 +241,17 @@ func Test_AIcallUpdatePipecatcallID(t *testing.T) {
 				PipecatcallID: uuid.FromStringOrNil("f6ee5c0a-afbc-11f0-8049-c7a79d2e4fe8"),
 			},
 
-			id:            uuid.FromStringOrNil("f6c9d56a-afbc-11f0-bb5f-1b20049b3cfb"),
-			pipecatcallID: uuid.FromStringOrNil("f720a0d4-afbc-11f0-954f-6ff64a2d4520"),
+			id: uuid.FromStringOrNil("f6c9d56a-afbc-11f0-bb5f-1b20049b3cfb"),
+			fields: map[aicall.Field]any{
+				aicall.FieldPipecatcallID: uuid.FromStringOrNil("f720a0d4-afbc-11f0-954f-6ff64a2d4520"),
+			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
 			expectRes: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("f6c9d56a-afbc-11f0-bb5f-1b20049b3cfb"),
 				},
-				AIEngineData:  map[string]any{},
+				AIEngineData:  nil,
 				PipecatcallID: uuid.FromStringOrNil("f720a0d4-afbc-11f0-954f-6ff64a2d4520"),
 				TMEnd:         DefaultTimeStamp,
 				TMCreate:      "2023-01-03 21:35:02.809",
@@ -257,80 +259,25 @@ func Test_AIcallUpdatePipecatcallID(t *testing.T) {
 				TMDelete:      DefaultTimeStamp,
 			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			if err := h.AIcallCreate(ctx, tt.ai); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			if err := h.AIcallUpdatePipecatcallID(ctx, tt.id, tt.pipecatcallID); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().AIcallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			res, err := h.AIcallGet(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_AIcallUpdateStatus(t *testing.T) {
-
-	tests := []struct {
-		name string
-		ai   *aicall.AIcall
-
-		id     uuid.UUID
-		status aicall.Status
-
-		responseCurTime string
-
-		expectRes *aicall.AIcall
-	}{
 		{
-			name: "normal",
+			name: "update status",
 			ai: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("f7c0bf02-b083-11f0-99e0-ffcbb19dc61e"),
 				},
 			},
 
-			id:     uuid.FromStringOrNil("f7c0bf02-b083-11f0-99e0-ffcbb19dc61e"),
-			status: aicall.StatusProgressing,
+			id: uuid.FromStringOrNil("f7c0bf02-b083-11f0-99e0-ffcbb19dc61e"),
+			fields: map[aicall.Field]any{
+				aicall.FieldStatus: aicall.StatusProgressing,
+			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
 			expectRes: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("f7c0bf02-b083-11f0-99e0-ffcbb19dc61e"),
 				},
-				AIEngineData: map[string]any{},
+				AIEngineData: nil,
 				Status:       aicall.StatusProgressing,
 				TMEnd:        DefaultTimeStamp,
 				TMCreate:     "2023-01-03 21:35:02.809",
@@ -364,7 +311,7 @@ func Test_AIcallUpdateStatus(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
-			if err := h.AIcallUpdateStatus(ctx, tt.id, tt.status); err != nil {
+			if err := h.AIcallUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -408,7 +355,7 @@ func Test_AIcallDelete(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("78f9a8fc-a5e4-11ed-95aa-133c8380df73"),
 				},
-				AIEngineData: map[string]any{},
+				AIEngineData: nil,
 				TMEnd:        DefaultTimeStamp,
 				TMCreate:     "2023-01-03 21:35:02.809",
 				TMUpdate:     "2023-01-03 21:35:02.809",
@@ -466,7 +413,7 @@ func Test_AIcallGets(t *testing.T) {
 		aicalls []*aicall.AIcall
 
 		count   int
-		filters map[string]string
+		filters map[aicall.Field]any
 
 		responseCurTime string
 		expectRes       []*aicall.AIcall
@@ -489,9 +436,9 @@ func Test_AIcallGets(t *testing.T) {
 			},
 
 			count: 10,
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "6d35368c-a76d-11ed-9699-235c9e4a0117",
+			filters: map[aicall.Field]any{
+				aicall.FieldDeleted:    false,
+				aicall.FieldCustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -501,7 +448,7 @@ func Test_AIcallGets(t *testing.T) {
 						ID:         uuid.FromStringOrNil("6d060150-a76d-11ed-9e96-fb09644b04ca"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					AIEngineData: map[string]any{},
+					AIEngineData: nil,
 					TMEnd:        DefaultTimeStamp,
 					TMCreate:     "2023-01-03 21:35:02.809",
 					TMUpdate:     DefaultTimeStamp,
@@ -512,7 +459,7 @@ func Test_AIcallGets(t *testing.T) {
 						ID:         uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					AIEngineData: map[string]any{},
+					AIEngineData: nil,
 					TMEnd:        DefaultTimeStamp,
 					TMCreate:     "2023-01-03 21:35:02.809",
 					TMUpdate:     DefaultTimeStamp,
@@ -525,9 +472,9 @@ func Test_AIcallGets(t *testing.T) {
 			aicalls: []*aicall.AIcall{},
 
 			count: 0,
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "a819a17a-0ba7-11f0-94b8-77c77a198260",
+			filters: map[aicall.Field]any{
+				aicall.FieldDeleted:    false,
+				aicall.FieldCustomerID: uuid.FromStringOrNil("a819a17a-0ba7-11f0-94b8-77c77a198260"),
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",

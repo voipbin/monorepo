@@ -15,7 +15,7 @@ import (
 )
 
 // Gets returns queuecalls of the given customer_id
-func (h *queuecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
+func (h *queuecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"filters": filters,

@@ -9,25 +9,25 @@ import (
 type AI struct {
 	identity.Identity
 
-	Name   string `json:"name,omitempty"`
-	Detail string `json:"detail,omitempty"`
+	Name   string `json:"name,omitempty" db:"name"`
+	Detail string `json:"detail,omitempty" db:"detail"`
 
-	EngineType  EngineType     `json:"engine_type,omitempty"`  // currently not in used.
-	EngineModel EngineModel    `json:"engine_model,omitempty"` // ai(llm) model. combine with <engine model target>.<model>
-	EngineData  map[string]any `json:"engine_data,omitempty"`
-	EngineKey   string         `json:"engine_key,omitempty"` // ai(llm) service api key
+	EngineType  EngineType     `json:"engine_type,omitempty" db:"engine_type"`   // currently not in used.
+	EngineModel EngineModel    `json:"engine_model,omitempty" db:"engine_model"` // ai(llm) model. combine with <engine model target>.<model>
+	EngineData  map[string]any `json:"engine_data,omitempty" db:"engine_data,json"`
+	EngineKey   string         `json:"engine_key,omitempty" db:"engine_key"` // ai(llm) service api key
 
-	InitPrompt string `json:"init_prompt,omitempty"`
+	InitPrompt string `json:"init_prompt,omitempty" db:"init_prompt"`
 
-	TTSType    TTSType `json:"tts_type,omitempty"`
-	TTSVoiceID string  `json:"tts_voice_id,omitempty"`
+	TTSType    TTSType `json:"tts_type,omitempty" db:"tts_type"`
+	TTSVoiceID string  `json:"tts_voice_id,omitempty" db:"tts_voice_id"`
 
-	STTType STTType `json:"stt_type,omitempty"`
+	STTType STTType `json:"stt_type,omitempty" db:"stt_type"`
 
 	// timestamp
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // EngineType define

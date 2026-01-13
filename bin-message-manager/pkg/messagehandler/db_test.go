@@ -216,9 +216,9 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
+		token   string
+		size    uint64
+		filters map[message.Field]any
 
 		responseGets []*message.Message
 		expectRes    []*message.Message
@@ -226,9 +226,11 @@ func Test_Gets(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("90c4eadc-a298-11ec-ab3a-8b21b05640ec"),
-			10,
 			"2021-02-26 18:26:49.000",
+			10,
+			map[message.Field]any{
+				message.FieldCustomerID: uuid.FromStringOrNil("90c4eadc-a298-11ec-ab3a-8b21b05640ec"),
+			},
 
 			[]*message.Message{
 				{
@@ -262,9 +264,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGets(ctx, tt.customerID, tt.pageSize, tt.pageToken).Return(tt.responseGets, nil)
+			mockDB.EXPECT().MessageGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseGets, nil)
 
-			res, err := h.dbGets(ctx, tt.customerID, tt.pageSize, tt.pageToken)
+			res, err := h.dbGets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

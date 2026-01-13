@@ -44,17 +44,17 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 }
 
 // AccountCreate mocks base method.
-func (m *MockDBHandler) AccountCreate(ctx context.Context, f *account.Account) error {
+func (m *MockDBHandler) AccountCreate(ctx context.Context, a *account.Account) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountCreate", ctx, f)
+	ret := m.ctrl.Call(m, "AccountCreate", ctx, a)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AccountCreate indicates an expected call of AccountCreate.
-func (mr *MockDBHandlerMockRecorder) AccountCreate(ctx, f any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AccountCreate(ctx, a any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountCreate", reflect.TypeOf((*MockDBHandler)(nil).AccountCreate), ctx, f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountCreate", reflect.TypeOf((*MockDBHandler)(nil).AccountCreate), ctx, a)
 }
 
 // AccountDecreaseFileInfo mocks base method.
@@ -101,7 +101,7 @@ func (mr *MockDBHandlerMockRecorder) AccountGet(ctx, id any) *gomock.Call {
 }
 
 // AccountGets mocks base method.
-func (m *MockDBHandler) AccountGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*account.Account, error) {
+func (m *MockDBHandler) AccountGets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccountGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*account.Account)
@@ -127,6 +127,20 @@ func (m *MockDBHandler) AccountIncreaseFileInfo(ctx context.Context, id uuid.UUI
 func (mr *MockDBHandlerMockRecorder) AccountIncreaseFileInfo(ctx, id, filecount, filesize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountIncreaseFileInfo", reflect.TypeOf((*MockDBHandler)(nil).AccountIncreaseFileInfo), ctx, id, filecount, filesize)
+}
+
+// AccountUpdate mocks base method.
+func (m *MockDBHandler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountUpdate indicates an expected call of AccountUpdate.
+func (mr *MockDBHandlerMockRecorder) AccountUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountUpdate", reflect.TypeOf((*MockDBHandler)(nil).AccountUpdate), ctx, id, fields)
 }
 
 // FileCreate mocks base method.
@@ -173,7 +187,7 @@ func (mr *MockDBHandlerMockRecorder) FileGet(ctx, id any) *gomock.Call {
 }
 
 // FileGets mocks base method.
-func (m *MockDBHandler) FileGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error) {
+func (m *MockDBHandler) FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FileGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*file.File)
@@ -188,29 +202,15 @@ func (mr *MockDBHandlerMockRecorder) FileGets(ctx, token, size, filters any) *go
 }
 
 // FileUpdate mocks base method.
-func (m *MockDBHandler) FileUpdate(ctx context.Context, id uuid.UUID, name, detail string) error {
+func (m *MockDBHandler) FileUpdate(ctx context.Context, id uuid.UUID, fields map[file.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FileUpdate", ctx, id, name, detail)
+	ret := m.ctrl.Call(m, "FileUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FileUpdate indicates an expected call of FileUpdate.
-func (mr *MockDBHandlerMockRecorder) FileUpdate(ctx, id, name, detail any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) FileUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileUpdate", reflect.TypeOf((*MockDBHandler)(nil).FileUpdate), ctx, id, name, detail)
-}
-
-// FileUpdateDownloadInfo mocks base method.
-func (m *MockDBHandler) FileUpdateDownloadInfo(ctx context.Context, id uuid.UUID, uriDownload, tmDownloadExpire string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FileUpdateDownloadInfo", ctx, id, uriDownload, tmDownloadExpire)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FileUpdateDownloadInfo indicates an expected call of FileUpdateDownloadInfo.
-func (mr *MockDBHandlerMockRecorder) FileUpdateDownloadInfo(ctx, id, uriDownload, tmDownloadExpire any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileUpdateDownloadInfo", reflect.TypeOf((*MockDBHandler)(nil).FileUpdateDownloadInfo), ctx, id, uriDownload, tmDownloadExpire)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileUpdate", reflect.TypeOf((*MockDBHandler)(nil).FileUpdate), ctx, id, fields)
 }

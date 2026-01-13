@@ -80,7 +80,7 @@ func Test_Gets(t *testing.T) {
 		chatroomID uuid.UUID
 		token      string
 		limit      uint64
-		filters    map[string]string
+		filters    map[messagechatroom.Field]any
 
 		responseMessagechatroom []*messagechatroom.Messagechatroom
 	}{
@@ -90,8 +90,8 @@ func Test_Gets(t *testing.T) {
 			uuid.FromStringOrNil("df481ecc-32b2-11ed-9274-6b15aa52d410"),
 			"2022-04-18 03:22:17.995000",
 			10,
-			map[string]string{
-				"deleted": "false",
+			map[messagechatroom.Field]any{
+				messagechatroom.FieldDeleted: false,
 			},
 
 			[]*messagechatroom.Messagechatroom{

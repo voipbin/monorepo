@@ -56,16 +56,16 @@ func (h *messageHandler) Create(ctx context.Context, id uuid.UUID, customerID uu
 	return res, nil
 }
 
-// Gets returns list of messges info of the given customer_id
-func (h *messageHandler) Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error) {
+// Gets returns list of messges info with filters
+func (h *messageHandler) Gets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Gets",
-		"customer_id": customerID,
+		"func":    "Gets",
+		"filters": filters,
 	})
 
-	res, err := h.dbGets(ctx, customerID, pageSize, pageToken)
+	res, err := h.dbGets(ctx, token, size, filters)
 	if err != nil {
-		log.Errorf("Could not get messages. customer_id: %s, err: %v", customerID, err)
+		log.Errorf("Could not get messages. err: %v", err)
 		return nil, err
 	}
 

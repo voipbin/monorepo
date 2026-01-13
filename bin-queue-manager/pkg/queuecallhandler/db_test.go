@@ -29,7 +29,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[queuecall.Field]any
 
 		response []*queuecall.Queuecall
 
@@ -40,8 +40,8 @@ func Test_Gets(t *testing.T) {
 
 			1000,
 			"2021-04-18 03:22:17.994000",
-			map[string]string{
-				"deleted": "false",
+			map[queuecall.Field]any{
+				queuecall.FieldDeleted: false,
 			},
 
 			[]*queuecall.Queuecall{

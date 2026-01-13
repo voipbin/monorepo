@@ -127,7 +127,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[ai.Field]any
 
 		responseAIs []*ai.AI
 	}{
@@ -136,9 +136,9 @@ func Test_Gets(t *testing.T) {
 
 			size:  10,
 			token: "2023-01-03 21:35:02.809",
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "132be434-f839-11ed-ae95-efa657af10fb",
+			filters: map[ai.Field]any{
+				ai.FieldDeleted:    false,
+				ai.FieldCustomerID: uuid.FromStringOrNil("132be434-f839-11ed-ae95-efa657af10fb"),
 			},
 
 			responseAIs: []*ai.AI{
@@ -359,20 +359,7 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AISetInfo(
-				ctx,
-				tt.id,
-				tt.aiName,
-				tt.detail,
-				tt.engineType,
-				tt.engineModel,
-				tt.engineData,
-				tt.engineKey,
-				tt.initPrompt,
-				tt.ttsType,
-				tt.ttsVoiceID,
-				tt.sttType,
-			).Return(nil)
+			mockDB.EXPECT().AIUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeUpdated, tt.responseAI)
 

@@ -52,9 +52,9 @@ func (h *customerHandler) validateCreate(ctx context.Context, email string) bool
 	}
 
 	// check customer
-	filterCustomer := map[string]string{
-		"deleted": "false",
-		"email":   email,
+	filterCustomer := map[customer.Field]any{
+		customer.FieldDeleted: false,
+		customer.FieldEmail:   email,
 	}
 	tmps, err := h.Gets(ctx, 100, "", filterCustomer)
 	if err != nil {

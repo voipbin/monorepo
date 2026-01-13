@@ -3,84 +3,33 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
-	"strings"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-
-	"github.com/gofrs/uuid"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-agent-manager/models/agent"
 )
 
 const (
-	// select query for agent get
-	agentSelect = `
-	select
-		id,
-		customer_id,
-		username,
-		password_hash,
-
-		name,
-		detail,
-
-		ring_method,
-
-		status,
-		permission,
-		tag_ids,
-		addresses,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		agent_agents
-	`
+	agentTable = "agent_agents"
 )
 
 // agentGetFromRow gets the agent from the row.
 func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
-
-	tagIDs := ""
-	addresses := ""
-
 	res := &agent.Agent{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.Username,
-		&res.PasswordHash,
 
-		&res.Name,
-		&res.Detail,
-
-		&res.RingMethod,
-
-		&res.Status,
-		&res.Permission,
-		&tagIDs,
-		&addresses,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. agentGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(tagIDs), &res.TagIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the tag_ids. agentGetFromRow. err: %v", err)
-	}
+	// Initialize nil slices to empty slices
 	if res.TagIDs == nil {
 		res.TagIDs = []uuid.UUID{}
-	}
-
-	if err := json.Unmarshal([]byte(addresses), &res.Addresses); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the endpoints. agentGetFromRow. err: %v", err)
 	}
 	if res.Addresses == nil {
 		res.Addresses = []commonaddress.Address{}
@@ -91,77 +40,43 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 
 // AgentCreate creates new agent record and returns the created agent record.
 func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
-	q := `insert into agent_agents(
-		id,
-		customer_id,
-		username,
-		password_hash,
+	now := h.utilHandler.TimeGetCurTime()
 
-		name,
-		detail,
+	// Set timestamps
+	a.TMCreate = now
+	a.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	a.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		ring_method,
-
-		status,
-		permission,
-		tag_ids,
-		addresses,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?, ?,
-		?, ?,
-		?,
-		?, ?, ?, ?,
-		?, ?, ?
-		)
-	`
-
-	tagIDs, err := json.Marshal(a.TagIDs)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(a)
 	if err != nil {
-		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
-	}
-	addresses, err := json.Marshal(a.Addresses)
-	if err != nil {
-		return fmt.Errorf("could not marshal the addresses. err: %v", err)
+		return fmt.Errorf("could not prepare fields. AgentCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q,
-		a.ID.Bytes(),
-		a.CustomerID.Bytes(),
-		a.Username,
-		a.PasswordHash,
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(agentTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		a.Name,
-		a.Detail,
-
-		a.RingMethod,
-
-		a.Status,
-		a.Permission,
-		tagIDs,
-		addresses,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. AgentCreate. err: %v", err)
+		return fmt.Errorf("could not build query. AgentCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. AgentCreate. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.AgentUpdateToCache(ctx, a.ID)
+	_ = h.agentUpdateToCache(ctx, a.ID)
 
 	return nil
 }
 
-// AgentUpdateToCache gets the agent from the DB and update the cache.
-func (h *handler) AgentUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
-	res, err := h.agentGetFromDB(id)
+// agentUpdateToCache gets the agent from the DB and update the cache.
+func (h *handler) agentUpdateToCache(ctx context.Context, id uuid.UUID) error {
+	res, err := h.agentGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -184,7 +99,6 @@ func (h *handler) agentSetToCache(ctx context.Context, u *agent.Agent) error {
 
 // agentGetFromCache returns agent from the cache.
 func (h *handler) agentGetFromCache(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
-
 	// get from cache
 	res, err := h.cache.AgentGet(ctx, id)
 	if err != nil {
@@ -195,12 +109,20 @@ func (h *handler) agentGetFromCache(ctx context.Context, id uuid.UUID) (*agent.A
 }
 
 // agentGetFromDB returns agent from the DB.
-func (h *handler) agentGetFromDB(id uuid.UUID) (*agent.Agent, error) {
+func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
+	fields := commondatabasehandler.GetDBFields(&agent.Agent{})
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", agentSelect)
+	query, args, err := squirrel.
+		Select(fields...).
+		From(agentTable).
+		Where(squirrel.Eq{string(agent.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. agentGetFromDB. err: %v", err)
+	}
 
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. agentGetFromDB. err: %v", err)
 	}
@@ -209,12 +131,15 @@ func (h *handler) agentGetFromDB(id uuid.UUID) (*agent.Agent, error) {
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. agentGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.agentGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. agentGetFromDB. err: %v", err)
+		return nil, errors.Wrapf(err, "could not get data from row. agentGetFromDB. id: %s", id)
 	}
 
 	return res, nil
@@ -227,7 +152,7 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 		return res, nil
 	}
 
-	res, err = h.agentGetFromDB(id)
+	res, err = h.agentGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -239,69 +164,32 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 }
 
 // AgentGets returns agents.
-func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, agentSelect)
-
+func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&agent.Agent{})
+
+	sb := squirrel.
+		Select(fields...).
+		From(agentTable).
+		Where(squirrel.Lt{string(agent.FieldTMCreate): token}).
+		OrderBy(string(agent.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. AgentGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		case "status":
-			q = fmt.Sprintf("%s and status = ?", q)
-			values = append(values, v)
-
-		case "tag_ids":
-			ids := strings.Split(v, ",")
-			if len(ids) == 0 {
-				// has no tag ids
-				break
-			}
-
-			tmp := ""
-			for i, id := range ids {
-				if i == 0 {
-					tmp = "json_contains(tag_ids, ?)"
-					tmpTagID := fmt.Sprintf(`"%s"`, id)
-					values = append(values, tmpTagID)
-				} else {
-					tmp = fmt.Sprintf("%s or json_contains(tag_ids, ?)", tmp)
-					tmpTagID := fmt.Sprintf(`"%s"`, id)
-					values = append(values, tmpTagID)
-				}
-			}
-
-			q = fmt.Sprintf("%s and (%s)", q, tmp)
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. AgentGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGets. err: %v", err)
 	}
@@ -313,46 +201,36 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 	for rows.Next() {
 		u, err := h.agentGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. AgentGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. AgentGets. err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. AgentGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
 // AgentGetByCustomerIDAndAddress returns agent of the given customerID and address.
-// It filters agents by customerID, not deleted, and containing the given address.
-//
-// Parameters:
-// ctx (context.Context): The context for the operation.
-// customerID (uuid.UUID): The ID of the customer.
-// address (commonaddress.Address): The address to filter agents.
-//
-// Returns:
-// ([]*agent.Agent, error): A slice of agents that match the given criteria, and an error if any occurred.
-// If no agents match the criteria, an empty slice is returned and no error is returned.
 func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, address *commonaddress.Address) (*agent.Agent, error) {
+	fields := commondatabasehandler.GetDBFields(&agent.Agent{})
 
-	// prepare the SQL query
-	q := fmt.Sprintf(`%s 
-    where 
-        customer_id =?
-        and tm_delete >=?
-		and json_contains(
-			addresses, 
-			JSON_OBJECT(
-				'type', ?,
-				'target', ?
-			)
-		)
-        `, agentSelect)
-
-	// execute the query
-	row, err := h.db.Query(q, customerID.Bytes(), DefaultTimeStamp, address.Type, address.Target)
+	query, args, err := squirrel.
+		Select(fields...).
+		From(agentTable).
+		Where(squirrel.Eq{string(agent.FieldCustomerID): customerID.Bytes()}).
+		Where(squirrel.GtOrEq{string(agent.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where("json_contains(addresses, JSON_OBJECT('type', ?, 'target', ?))", address.Type, address.Target).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AgentGetsByCustomerIDAndAddress. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. AgentGetByCustomerIDAndAddress. err: %v", err)
+	}
+
+	row, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AgentGetByCustomerIDAndAddress. err: %v", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -364,7 +242,7 @@ func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID
 
 	res, err := h.agentGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. agentGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. AgentGetByCustomerIDAndAddress. err: %v", err)
 	}
 
 	return res, nil
@@ -372,10 +250,9 @@ func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID
 
 // AgentGetByUsername returns agent of the given username.
 func (h *handler) AgentGetByUsername(ctx context.Context, username string) (*agent.Agent, error) {
-
-	filters := map[string]string{
-		"deleted":  "false",
-		"username": username,
+	filters := map[agent.Field]any{
+		agent.FieldDeleted:  false,
+		agent.FieldUsername: username,
 	}
 
 	tmp, err := h.AgentGets(ctx, 1, h.utilHandler.TimeGetCurTime(), filters)
@@ -392,177 +269,109 @@ func (h *handler) AgentGetByUsername(ctx context.Context, username string) (*age
 
 // AgentDelete deletes the agent.
 func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		agent_agents
-	set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AgentDelete. err: %v", err)
+	now := h.utilHandler.TimeGetCurTime()
+	fields := map[agent.Field]any{
+		agent.FieldTMDelete: now,
+		agent.FieldTMUpdate: now,
 	}
 
-	// update the cache
-	_ = h.AgentUpdateToCache(ctx, id)
+	if err := h.agentUpdate(ctx, id, fields); err != nil {
+		return fmt.Errorf("could not update agent for delete. AgentDelete. err: %v", err)
+	}
 
+	return nil
+}
+
+// AgentUpdate updates the agent with the given fields.
+func (h *handler) AgentUpdate(ctx context.Context, id uuid.UUID, fields map[agent.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	fields[agent.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	return h.agentUpdate(ctx, id, fields)
+}
+
+func (h *handler) agentUpdate(ctx context.Context, id uuid.UUID, fields map[agent.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("agentUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(agentTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{"id": id.Bytes()})
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("agentUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+		return fmt.Errorf("agentUpdate: exec failed: %w", err)
+	}
+
+	_ = h.agentUpdateToCache(ctx, id)
 	return nil
 }
 
 // AgentSetBasicInfo sets the agent's basic info.
 func (h *handler) AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error {
-	// prepare
-	q := `
-	update
-		agent_agents
-	set
-		name = ?,
-		detail = ?,
-		ring_method = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, name, detail, ringMethod, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AgentSetBasicInfo. err: %v", err)
+	fields := map[agent.Field]any{
+		agent.FieldName:       name,
+		agent.FieldDetail:     detail,
+		agent.FieldRingMethod: ringMethod,
 	}
 
-	// update the cache
-	_ = h.AgentUpdateToCache(ctx, id)
-
-	return nil
+	return h.AgentUpdate(ctx, id, fields)
 }
 
 // AgentSetPasswordHash sets the agent password_hash.
 func (h *handler) AgentSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error {
-	// prepare
-	q := `
-	update
-		agent_agents
-	set
-		password_hash = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, passwordHash, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AgentSetPasswordHash. err: %v", err)
+	fields := map[agent.Field]any{
+		agent.FieldPasswordHash: passwordHash,
 	}
 
-	// update the cache
-	_ = h.AgentUpdateToCache(ctx, id)
-
-	return nil
+	return h.AgentUpdate(ctx, id, fields)
 }
 
 // AgentSetStatus sets the agent status.
 func (h *handler) AgentSetStatus(ctx context.Context, id uuid.UUID, status agent.Status) error {
-	// prepare
-	q := `
-	update
-		agent_agents
-	set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AgentSetStatus. err: %v", err)
+	fields := map[agent.Field]any{
+		agent.FieldStatus: status,
 	}
 
-	// update the cache
-	_ = h.AgentUpdateToCache(ctx, id)
-
-	return nil
+	return h.AgentUpdate(ctx, id, fields)
 }
 
 // AgentSetPermission sets the agent permission.
 func (h *handler) AgentSetPermission(ctx context.Context, id uuid.UUID, permission agent.Permission) error {
-	// prepare
-	q := `
-	update
-		agent_agents
-	set
-		permission = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, permission, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AgentSetPermission. err: %v", err)
+	fields := map[agent.Field]any{
+		agent.FieldPermission: permission,
 	}
 
-	// update the cache
-	_ = h.AgentUpdateToCache(ctx, id)
-
-	return nil
+	return h.AgentUpdate(ctx, id, fields)
 }
 
 // AgentSetTagIDs sets the agent tag_ids.
 func (h *handler) AgentSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		agent_agents
-	set
-		tag_ids = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	t, err := json.Marshal(tagIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
+	fields := map[agent.Field]any{
+		agent.FieldTagIDs: tagIDs,
 	}
 
-	_, err = h.db.Exec(q, t, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AgentSetPermission. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.AgentUpdateToCache(ctx, id)
-
-	return nil
+	return h.AgentUpdate(ctx, id, fields)
 }
 
 // AgentSetAddresses sets the agent addresses.
 func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) error {
-	// prepare
-	q := `
-	update
-		agent_agents
-	set
-		addresses = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	t, err := json.Marshal(addresses)
-	if err != nil {
-		return fmt.Errorf("could not marshal the addresses. err: %v", err)
+	fields := map[agent.Field]any{
+		agent.FieldAddresses: addresses,
 	}
 
-	_, err = h.db.Exec(q, t, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AgentSetAddresses. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.AgentUpdateToCache(ctx, id)
-
-	return nil
+	return h.AgentUpdate(ctx, id, fields)
 }

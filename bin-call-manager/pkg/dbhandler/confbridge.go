@@ -5,104 +5,35 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+
 	"monorepo/bin-call-manager/models/confbridge"
 )
 
-const (
-	confbridgeSelect = `
-	select
-		id,
-		customer_id,
-
-		activeflow_id,
-		reference_type,
-		reference_id,
-
-		type,
-		status,
-		bridge_id,
-		flags,
-
-		channel_call_ids,
-
-		recording_id,
-		recording_ids,
-
-		external_media_id,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	from
-		call_confbridges
-	`
+var (
+	confbridgeTable = "call_confbridges"
 )
 
 // confbridgeGetFromRow gets the confbridge from the row.
 func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, error) {
-	var recordingIDs sql.NullString
-	var channelCallIDs sql.NullString
-	var flags sql.NullString
-
 	res := &confbridge.Confbridge{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.ActiveflowID,
-		&res.ReferenceType,
-		&res.ReferenceID,
-
-		&res.Type,
-		&res.Status,
-		&res.BridgeID,
-		&flags,
-
-		&channelCallIDs,
-
-		&res.RecordingID,
-		&recordingIDs,
-
-		&res.ExternalMediaID,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. confbridgeGetFromRow. err: %v", err)
 	}
 
-	// ChannelCallIDs
-	if channelCallIDs.Valid {
-		if err := json.Unmarshal([]byte(channelCallIDs.String), &res.ChannelCallIDs); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the callChannelIDs. confbridgeGetFromRow. err: %v", err)
-		}
-	}
+	// Initialize nil slices/maps to empty
 	if res.ChannelCallIDs == nil {
 		res.ChannelCallIDs = map[string]uuid.UUID{}
 	}
-
-	// RecordingIDs
-	if recordingIDs.Valid {
-		if err := json.Unmarshal([]byte(recordingIDs.String), &res.RecordingIDs); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the recordingIDs. confbridgeGetFromRow. err: %v", err)
-		}
-	}
 	if res.RecordingIDs == nil {
 		res.RecordingIDs = []uuid.UUID{}
-	}
-
-	if flags.Valid {
-		if err := json.Unmarshal([]byte(flags.String), &res.Flags); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the flags. confbridgeGetFromRow. err: %v", err)
-		}
 	}
 	if res.Flags == nil {
 		res.Flags = []confbridge.Flag{}
@@ -113,80 +44,42 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 
 // ConfbridgeCreate creates a new confbridge record.
 func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridge) error {
-	q := `insert into call_confbridges(
-		id,
-		customer_id,
+	now := h.utilHandler.TimeGetCurTime()
 
-		activeflow_id,
-		reference_type,
-		reference_id,
+	// Set timestamps
+	cb.TMCreate = now
+	cb.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	cb.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		type,
-		status,
-		bridge_id,
-		flags,
-
-		channel_call_ids,
-
-		recording_id,
-		recording_ids,
-
-		external_media_id,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?, ?,
-		?, ?, ?, ?,
-		?,
-		?, ?,
-		?,
-		?, ?, ?
-		)
-	`
-
-	flags, err := json.Marshal(cb.Flags)
-	if err != nil {
-		return fmt.Errorf("could not marshal flags. ConfbridgeCreate. err: %v", err)
+	// Initialize nil slices/maps
+	if cb.Flags == nil {
+		cb.Flags = []confbridge.Flag{}
+	}
+	if cb.ChannelCallIDs == nil {
+		cb.ChannelCallIDs = map[string]uuid.UUID{}
+	}
+	if cb.RecordingIDs == nil {
+		cb.RecordingIDs = []uuid.UUID{}
 	}
 
-	callChannelIDs, err := json.Marshal(cb.ChannelCallIDs)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(cb)
 	if err != nil {
-		return fmt.Errorf("could not marshal callChannelIDs. ConfbridgeCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ConfbridgeCreate. err: %v", err)
 	}
 
-	recordingIDs, err := json.Marshal(cb.RecordingIDs)
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(confbridgeTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal recording_ids. ConfbridgeCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ConfbridgeCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q,
-		cb.ID.Bytes(),
-		cb.CustomerID.Bytes(),
-
-		cb.ActiveflowID.Bytes(),
-		cb.ReferenceType,
-		cb.ReferenceID.Bytes(),
-
-		cb.Type,
-		cb.Status,
-		cb.BridgeID,
-		flags,
-
-		callChannelIDs,
-
-		cb.RecordingID.Bytes(),
-		recordingIDs,
-
-		cb.ExternalMediaID.Bytes(),
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
-	if err != nil {
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeCreate. err: %v", err)
 	}
 
@@ -198,23 +91,27 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 
 // confbridgeGetFromCache returns conference from the cache if possible.
 func (h *handler) confbridgeGetFromCache(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
-
-	// get from cache
 	res, err := h.cache.ConfbridgeGet(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-
 	return res, nil
 }
 
 // confbridgeGetFromDB gets confbridge.
 func (h *handler) confbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+	fields := commondatabasehandler.GetDBFields(&confbridge.Confbridge{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(confbridgeTable).
+		Where(squirrel.Eq{string(confbridge.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. confbridgeGetFromDB. err: %v", err)
+	}
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", confbridgeSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConfbridgeGetFromDB. err: %v", err)
 	}
@@ -223,6 +120,9 @@ func (h *handler) confbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confb
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. confbridgeGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -236,7 +136,6 @@ func (h *handler) confbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confb
 
 // confbridgeUpdateToCache gets the confbridge from the DB and update the cache.
 func (h *handler) confbridgeUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.confbridgeGetFromDB(ctx, id)
 	if err != nil {
 		logrus.Errorf("Could not get confbridge from the DB. err: %v", err)
@@ -256,13 +155,11 @@ func (h *handler) confbridgeSetToCache(ctx context.Context, data *confbridge.Con
 	if err := h.cache.ConfbridgeSet(ctx, data); err != nil {
 		return err
 	}
-
 	return nil
 }
 
 // ConfbridgeGet gets conference.
 func (h *handler) ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
-
 	res, err := h.confbridgeGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -281,11 +178,18 @@ func (h *handler) ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.
 
 // ConfbridgeGetByBridgeID gets confbridge by the bridgeID.
 func (h *handler) ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) (*confbridge.Confbridge, error) {
+	fields := commondatabasehandler.GetDBFields(&confbridge.Confbridge{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(confbridgeTable).
+		Where(squirrel.Eq{string(confbridge.FieldBridgeID): bridgeID}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. ConfbridgeGetByBridgeID. err: %v", err)
+	}
 
-	// prepare
-	q := fmt.Sprintf("%s where bridge_id = ?", confbridgeSelect)
-
-	row, err := h.db.Query(q, bridgeID)
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConfbridgeGetByBridgeID. err: %v", err)
 	}
@@ -294,6 +198,9 @@ func (h *handler) ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) 
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. ConfbridgeGetByBridgeID. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -306,45 +213,31 @@ func (h *handler) ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) 
 }
 
 // ConfbridgeGets returns a list of confbridges.
-func (h *handler) ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, confbridgeSelect)
-
+func (h *handler) ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[confbridge.Field]any) ([]*confbridge.Confbridge, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	dbFields := commondatabasehandler.GetDBFields(&confbridge.Confbridge{})
+	sb := squirrel.
+		Select(dbFields...).
+		From(confbridgeTable).
+		Where(squirrel.Lt{string(confbridge.FieldTMCreate): token}).
+		OrderBy(string(confbridge.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. ConfbridgeGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "activeflow_id", "reference_id", "recording_id", "external_media_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ConfbridgeGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConfbridgeGets. err: %v", err)
 	}
@@ -358,81 +251,71 @@ func (h *handler) ConfbridgeGets(ctx context.Context, size uint64, token string,
 		if err != nil {
 			return nil, fmt.Errorf("could not get data. confbridgeGetFromRow, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. ConfbridgeGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// ConfbridgeSetBridgeID sets the bridge id
-func (h *handler) ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error {
-	//prepare
-	q := `
-	update call_confbridges set
-		bridge_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, bridgeID, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeSetBridgeID. err: %v", err)
+// ConfbridgeUpdate updates confbridge fields using a generic typed field map
+func (h *handler) ConfbridgeUpdate(ctx context.Context, id uuid.UUID, fields map[confbridge.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// update the cache
-	_ = h.confbridgeUpdateToCache(ctx, id)
+	fields[confbridge.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ConfbridgeUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(confbridgeTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(confbridge.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("ConfbridgeUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("ConfbridgeUpdate: exec failed: %w", err)
+	}
+
+	_ = h.confbridgeUpdateToCache(ctx, id)
 	return nil
+}
+
+// ConfbridgeSetBridgeID sets the bridge id
+func (h *handler) ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error {
+	return h.ConfbridgeUpdate(ctx, id, map[confbridge.Field]any{
+		confbridge.FieldBridgeID: bridgeID,
+	})
 }
 
 // ConfbridgeDelete ends the conference
 func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
-	//prepare
-	q := `
-	update call_confbridges set
-		tm_delete = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeDelete. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.confbridgeUpdateToCache(ctx, id)
-
-	return nil
+	ts := h.utilHandler.TimeGetCurTime()
+	return h.ConfbridgeUpdate(ctx, id, map[confbridge.Field]any{
+		confbridge.FieldTMDelete: ts,
+	})
 }
 
 // ConfbridgeSetRecordingID sets the conference's recording_id.
 func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
-	// prepare
-	q := `
-	update call_confbridges set
-		recording_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeSetRecordingID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.confbridgeUpdateToCache(ctx, id)
-
-	return nil
+	return h.ConfbridgeUpdate(ctx, id, map[confbridge.Field]any{
+		confbridge.FieldRecordingID: recordingID,
+	})
 }
 
 // ConfbridgeAddRecordingIDs adds the record file to the bridge's record_files.
 func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
-	// prepare
+	// Use raw SQL for JSON array append operation
 	q := `
 	update call_confbridges set
 		recording_ids = json_array_append(
@@ -450,32 +333,15 @@ func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 		return fmt.Errorf("could not execute. ConfbridgeAddRecordingIDs. err: %v", err)
 	}
 
-	// update the cache
 	_ = h.confbridgeUpdateToCache(ctx, id)
-
 	return nil
 }
 
 // ConfbridgeSetExternalMediaID sets the conference's external media id.
 func (h *handler) ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error {
-	// prepare
-	q := `
-	update call_confbridges set
-		external_media_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, externalMediaID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeSetExternalMediaID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.confbridgeUpdateToCache(ctx, id)
-
-	return nil
+	return h.ConfbridgeUpdate(ctx, id, map[confbridge.Field]any{
+		confbridge.FieldExternalMediaID: externalMediaID,
+	})
 }
 
 // ConfbridgeAddChannelCallID adds the call/channel id info
@@ -498,9 +364,7 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %v", err)
 	}
 
-	// update the cache
 	_ = h.confbridgeUpdateToCache(ctx, id)
-
 	return nil
 }
 
@@ -523,16 +387,21 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %v", err)
 	}
 
-	// update the cache
 	_ = h.confbridgeUpdateToCache(ctx, id)
-
 	return nil
 }
 
 // ConfbridgeSetFlags sets the confbridge's flags
 func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) error {
+	if flags == nil {
+		flags = []confbridge.Flag{}
+	}
 
-	// prepare
+	tmp, err := json.Marshal(flags)
+	if err != nil {
+		return errors.Wrap(err, "could not marshal the flags")
+	}
+
 	q := `
 	update
 		call_confbridges
@@ -542,40 +411,19 @@ func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []
 	where
 		id = ?
 	`
-	tmp, err := json.Marshal(flags)
-	if err != nil {
-		return errors.Wrap(err, "could not marshal the flags")
-	}
 
 	_, err = h.db.Exec(q, tmp, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetFlags. err: %v", err)
 	}
 
-	// update the cache
 	_ = h.confbridgeUpdateToCache(ctx, id)
-
 	return nil
 }
 
 // ConfbridgeSetStatus sets the status
 func (h *handler) ConfbridgeSetStatus(ctx context.Context, id uuid.UUID, status confbridge.Status) error {
-	//prepare
-	q := `
-	update call_confbridges set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeSetStatus. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.confbridgeUpdateToCache(ctx, id)
-
-	return nil
+	return h.ConfbridgeUpdate(ctx, id, map[confbridge.Field]any{
+		confbridge.FieldStatus: status,
+	})
 }

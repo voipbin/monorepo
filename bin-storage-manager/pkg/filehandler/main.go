@@ -47,7 +47,7 @@ type FileHandler interface {
 		filepath string,
 	) (*file.File, error)
 	Get(ctx context.Context, id uuid.UUID) (*file.File, error)
-	Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error)
+	Gets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error)
 	Delete(ctx context.Context, id uuid.UUID) (*file.File, error)
 	DeleteBucketfile(ctx context.Context, bucketName string, filepath string) error
 

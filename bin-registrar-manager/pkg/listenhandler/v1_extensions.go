@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 )
 
@@ -120,7 +121,13 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *sock.Re
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.extensionHandler.Update(ctx, extensionID, req.Name, req.Detail, req.Password)
+	fields := map[extension.Field]any{
+		extension.FieldName:     req.Name,
+		extension.FieldDetail:   req.Detail,
+		extension.FieldPassword: req.Password,
+	}
+
+	tmp, err := h.extensionHandler.Update(ctx, extensionID, fields)
 	if err != nil {
 		log.Errorf("Could not update the extension info. err: %v", err)
 		return nil, err
@@ -198,10 +205,11 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *sock.Requ
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	// parse the filters and convert to typed filters
+	stringFilters := h.utilHandler.URLParseFilters(u)
+	filters := convertToExtensionFilters(stringFilters)
 	if customerID != uuid.Nil {
-		filters["customer_id"] = customerID.String()
+		filters[extension.FieldCustomerID] = customerID
 	}
 
 	extensions, err := h.extensionHandler.Gets(ctx, pageToken, pageSize, filters)

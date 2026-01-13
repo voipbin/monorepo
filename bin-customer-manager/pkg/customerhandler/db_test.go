@@ -22,7 +22,7 @@ func Test_Gets(t *testing.T) {
 		name    string
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[customer.Field]any
 
 		result []*customer.Customer
 	}{
@@ -30,8 +30,8 @@ func Test_Gets(t *testing.T) {
 			"normal",
 			10,
 			"",
-			map[string]string{
-				"deleted": "false",
+			map[customer.Field]any{
+				customer.FieldDeleted: false,
 			},
 
 			[]*customer.Customer{},
@@ -80,7 +80,7 @@ func Test_Create(t *testing.T) {
 		responseUUID uuid.UUID
 		responseHash string
 
-		expectedFilterCustomer map[string]string
+		expectedFilterCustomer map[customer.Field]any
 		expectedFilterAgent    map[string]string
 		expectedCustomer       *customer.Customer
 	}{
@@ -98,9 +98,9 @@ func Test_Create(t *testing.T) {
 			responseUUID: uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
 			responseHash: "$2a$12$KEqTmfExiTmQ0HBspD6x7.XBkG1mVVAKidWG6J.zUeTtdgb0NXppq",
 
-			expectedFilterCustomer: map[string]string{
-				"deleted": "false",
-				"email":   "test@voipbin.net",
+			expectedFilterCustomer: map[customer.Field]any{
+				customer.FieldDeleted: false,
+				customer.FieldEmail:   "test@voipbin.net",
 			},
 			expectedFilterAgent: map[string]string{
 				"deleted":  "false",
@@ -246,7 +246,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerSetBasicInfo(gomock.Any(), tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(nil)
+			mockDB.EXPECT().CustomerUpdate(gomock.Any(), tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
 
@@ -289,7 +289,7 @@ func Test_UpdateBillingAccountID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerSetBillingAccountID(gomock.Any(), tt.id, tt.billingAccountID)
+			mockDB.EXPECT().CustomerUpdate(gomock.Any(), tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
 

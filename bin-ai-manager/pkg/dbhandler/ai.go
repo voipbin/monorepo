@@ -2,154 +2,39 @@ package dbhandler
 
 import (
 	"context"
-	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
-	"github.com/pkg/errors"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-ai-manager/models/ai"
 )
 
 const (
-	// select query for call get
-	aiSelect = `
-	select
-		id,
-		customer_id,
-
-		name,
-		detail,
-
-		engine_type,
-		engine_model,
-		engine_data,
-		engine_key,
-
-		init_prompt,
-
-		tts_type,
-		tts_voice_id,
-
-		stt_type,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		ai_ais
-	`
+	aiTable = "ai_ais"
 )
-
-// aiGetFromRow gets the ai from the row.
-func (h *handler) aiGetFromRow(row *sql.Rows) (*ai.AI, error) {
-	var tmpEngineData sql.NullString
-
-	res := &ai.AI{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.EngineType,
-		&res.EngineModel,
-		&tmpEngineData,
-		&res.EngineKey,
-
-		&res.InitPrompt,
-
-		&res.TTSType,
-		&res.TTSVoiceID,
-
-		&res.STTType,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, errors.Wrap(err, "aiGetFromRow: Could not scan the row")
-	}
-
-	if tmpEngineData.Valid {
-		if err := json.Unmarshal([]byte(tmpEngineData.String), &res.EngineData); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
-		}
-	}
-	if res.EngineData == nil {
-		res.EngineData = map[string]any{}
-	}
-
-	return res, nil
-}
 
 // AICreate creates new ai record.
 func (h *handler) AICreate(ctx context.Context, c *ai.AI) error {
-	q := `insert into ai_ais(
-		id,
-		customer_id,
+	c.TMCreate = h.utilHandler.TimeGetCurTime()
+	c.TMUpdate = DefaultTimeStamp
+	c.TMDelete = DefaultTimeStamp
 
-		name,
-		detail,
-
-		engine_type,
-		engine_model,
-		engine_data,
-		engine_key,
-
-		init_prompt,
-
-		tts_type,
-		tts_voice_id,
-
-		stt_type,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values (
-		?, ?,
-		?, ?,
-		?, ?, ?, ?,
-		?,
-		?, ?,
-		?,
-		?, ?, ?
-		)
-	`
-
-	tmpEngineData, err := json.Marshal(c.EngineData)
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("AICreate: Could not marshal the data. err: %v", err)
+		return fmt.Errorf("AICreate: could not prepare fields. err: %v", err)
 	}
-	_, err = h.db.Exec(q,
-		c.ID.Bytes(),
-		c.CustomerID.Bytes(),
 
-		c.Name,
-		c.Detail,
-
-		c.EngineType,
-		c.EngineModel,
-		tmpEngineData,
-		c.EngineKey,
-
-		c.InitPrompt,
-
-		c.TTSType,
-		c.TTSVoiceID,
-
-		c.STTType,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sq.Insert(aiTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("AICreate: Could not execute query. err: %v", err)
+		return fmt.Errorf("AICreate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AICreate: could not execute query. err: %v", err)
 	}
 
 	// update the cache
@@ -160,8 +45,6 @@ func (h *handler) AICreate(ctx context.Context, c *ai.AI) error {
 
 // aiGetFromCache returns ai from the cache.
 func (h *handler) aiGetFromCache(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
-
-	// get from cache
 	res, err := h.cache.AIGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -172,33 +55,36 @@ func (h *handler) aiGetFromCache(ctx context.Context, id uuid.UUID) (*ai.AI, err
 
 // aiGetFromDB returns ai from the DB.
 func (h *handler) aiGetFromDB(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
+	cols := commondatabasehandler.GetDBFields(ai.AI{})
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", aiSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	query, args, err := sq.Select(cols...).
+		From(aiTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. aiGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("aiGetFromDB: could not build query. err: %v", err)
 	}
-	defer func() {
-		_ = row.Close()
-	}()
 
-	if !row.Next() {
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("aiGetFromDB: could not query. err: %v", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.aiGetFromRow(row)
-	if err != nil {
-		return nil, err
+	res := &ai.AI{}
+	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
+		return nil, fmt.Errorf("aiGetFromDB: could not scan row. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// ChannelUpdateToCache gets the channel from the DB and update the cache.
+// aiUpdateToCache gets the ai from the DB and updates the cache.
 func (h *handler) aiUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.aiGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -211,7 +97,7 @@ func (h *handler) aiUpdateToCache(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// ChannelSetToCache sets the given channel to the cache
+// aiSetToCache sets the given ai to the cache.
 func (h *handler) aiSetToCache(ctx context.Context, c *ai.AI) error {
 	if err := h.cache.AISet(ctx, c); err != nil {
 		return err
@@ -222,7 +108,6 @@ func (h *handler) aiSetToCache(ctx context.Context, c *ai.AI) error {
 
 // AIGet returns ai.
 func (h *handler) AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
-
 	res, err := h.aiGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -239,21 +124,24 @@ func (h *handler) AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
 	return res, nil
 }
 
-// AIDelete deletes the ai
+// AIDelete deletes the ai.
 func (h *handler) AIDelete(ctx context.Context, id uuid.UUID) error {
-	//prepare
-	q := `
-	update ai_ais set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+
+	query, args, err := sq.Update(aiTable).
+		SetMap(map[string]any{
+			"tm_update": ts,
+			"tm_delete": ts,
+		}).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. AIDelete. err: %v", err)
+		return fmt.Errorf("AIDelete: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AIDelete: could not execute. err: %v", err)
 	}
 
 	// update the cache
@@ -263,101 +151,71 @@ func (h *handler) AIDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // AIGets returns a list of ais.
-func (h *handler) AIGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, aiSelect)
-
-	values := []interface{}{
-		token,
+func (h *handler) AIGets(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
+	cols := commondatabasehandler.GetDBFields(ai.AI{})
 
-		case "customer_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, uuid.FromStringOrNil(v).Bytes())
+	builder := sq.Select(cols...).
+		From(aiTable).
+		Where(sq.Lt{"tm_create": token}).
+		OrderBy("tm_create desc").
+		Limit(size)
 
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
-	}
-
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AIGets. err: %v", err)
+		return nil, fmt.Errorf("AIGets: could not apply filters. err: %v", err)
 	}
-	defer func() {
-		_ = rows.Close()
-	}()
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("AIGets: could not build query. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("AIGets: could not query. err: %v", err)
+	}
+	defer rows.Close()
 
 	res := []*ai.AI{}
 	for rows.Next() {
-		u, err := h.aiGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not get data. AIGets, err: %v", err)
+		u := &ai.AI{}
+		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
+			return nil, fmt.Errorf("AIGets: could not scan row. err: %v", err)
 		}
-
 		res = append(res, u)
 	}
 
 	return res, nil
 }
 
-// AISetInfo sets the ai info
-func (h *handler) AISetInfo(
-	ctx context.Context,
-	id uuid.UUID,
-	name string,
-	detail string,
-	engineType ai.EngineType,
-	engineModel ai.EngineModel,
-	engineData map[string]any,
-	engineKey string,
-	initPrompt string,
-	ttsType ai.TTSType,
-	ttsVoiceID string,
-	sttType ai.STTType,
-) error {
-	q := `
-	update ai_ais set
-		name = ?,
-		detail = ?,
-		engine_type = ?,
-		engine_model = ?,
-		engine_data = ?,
-		engine_key = ?,
-		init_prompt = ?,
-		tts_type = ?,
-		tts_voice_id = ?,
-		stt_type = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+// AIUpdate updates the ai fields.
+func (h *handler) AIUpdate(ctx context.Context, id uuid.UUID, fields map[ai.Field]any) error {
+	updateFields := make(map[string]any)
+	for k, v := range fields {
+		updateFields[string(k)] = v
+	}
+	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
 
-	tmpEngineData, err := json.Marshal(engineData)
+	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return errors.Wrapf(err, "AISetInfo: Could not marshal the data")
+		return fmt.Errorf("AIUpdate: could not prepare fields. err: %v", err)
 	}
 
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err = h.db.Exec(q, name, detail, engineType, engineModel, tmpEngineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, ts, id.Bytes())
+	query, args, err := sq.Update(aiTable).
+		SetMap(preparedFields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. AISetInfo. err: %v", err)
+		return fmt.Errorf("AIUpdate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AIUpdate: could not execute. err: %v", err)
 	}
 
 	// update the cache

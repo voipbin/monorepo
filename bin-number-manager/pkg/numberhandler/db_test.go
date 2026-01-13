@@ -119,23 +119,24 @@ func Test_dbCreate(t *testing.T) {
 	}
 }
 
-func Test_dbUpdateFlowID(t *testing.T) {
+func Test_dbUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		id            uuid.UUID
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
+		id     uuid.UUID
+		fields map[number.Field]any
 
 		responseNumber *number.Number
 	}{
 		{
 			name: "normal",
 
-			id:            uuid.FromStringOrNil("b14ed168-20b0-11ee-b635-cf0e0e6774ba"),
-			callFlowID:    uuid.FromStringOrNil("b1884696-20b0-11ee-8cd8-4315da0cea2e"),
-			messageFlowID: uuid.FromStringOrNil("b1b4c734-20b0-11ee-9097-7f486b745239"),
+			id: uuid.FromStringOrNil("b14ed168-20b0-11ee-b635-cf0e0e6774ba"),
+			fields: map[number.Field]any{
+				number.FieldCallFlowID:    uuid.FromStringOrNil("b1884696-20b0-11ee-8cd8-4315da0cea2e"),
+				number.FieldMessageFlowID: uuid.FromStringOrNil("b1b4c734-20b0-11ee-9097-7f486b745239"),
+			},
 
 			responseNumber: &number.Number{
 				Identity: commonidentity.Identity{
@@ -163,10 +164,10 @@ func Test_dbUpdateFlowID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberUpdateFlowID(ctx, tt.id, tt.callFlowID, tt.messageFlowID).Return(nil)
+			mockDB.EXPECT().NumberUpdate(ctx, tt.id, tt.fields).Return(nil)
 			mockDB.EXPECT().NumberGet(ctx, tt.id).Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberUpdated, tt.responseNumber)
-			res, err := h.dbUpdateFlowID(ctx, tt.id, tt.callFlowID, tt.messageFlowID)
+			res, err := h.dbUpdate(ctx, tt.id, tt.fields, number.EventTypeNumberUpdated)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

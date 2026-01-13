@@ -10,17 +10,17 @@ import (
 type Message struct {
 	identity.Identity
 
-	AIcallID uuid.UUID `json:"aicall_id,omitempty"`
+	AIcallID uuid.UUID `json:"aicall_id,omitempty" db:"aicall_id,uuid"`
 
-	Direction Direction `json:"direction,omitempty"`
-	Role      Role      `json:"role,omitempty"`
-	Content   string    `json:"content,omitempty"`
+	Direction Direction `json:"direction,omitempty" db:"direction"`
+	Role      Role      `json:"role,omitempty" db:"role"`
+	Content   string    `json:"content,omitempty" db:"content"`
 
-	ToolCalls  []ToolCall `json:"tool_calls,omitempty"`
-	ToolCallID string     `json:"tool_call_id,omitempty"`
+	ToolCalls  []ToolCall `json:"tool_calls,omitempty" db:"tool_calls,json"`
+	ToolCallID string     `json:"tool_call_id,omitempty" db:"tool_call_id"`
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Role defiens

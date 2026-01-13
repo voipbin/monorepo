@@ -228,7 +228,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[billing.Field]any
 
 		responseBillings []*billing.Billing
 	}
@@ -239,8 +239,8 @@ func Test_Gets(t *testing.T) {
 
 			size:  10,
 			token: "2023-06-08 03:22:17.995000",
-			filters: map[string]string{
-				"customer_id": "bd5b3ae6-08ff-11ee-8101-1396e6f3622a",
+			filters: map[billing.Field]any{
+				billing.FieldCustomerID: uuid.FromStringOrNil("bd5b3ae6-08ff-11ee-8101-1396e6f3622a"),
 			},
 
 			responseBillings: []*billing.Billing{

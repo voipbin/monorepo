@@ -90,7 +90,7 @@ func (mr *MockMessagechatHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockMessagechatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*messagechat.Messagechat, error) {
+func (m *MockMessagechatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*messagechat.Messagechat)

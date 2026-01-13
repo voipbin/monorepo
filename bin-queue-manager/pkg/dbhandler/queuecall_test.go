@@ -149,7 +149,7 @@ func Test_QueuecallGets(t *testing.T) {
 		data []*queuecall.Queuecall
 
 		size    uint64
-		filters map[string]string
+		filters map[queuecall.Field]any
 
 		responseCurTime string
 		expectRes       []*queuecall.Queuecall
@@ -176,9 +176,9 @@ func Test_QueuecallGets(t *testing.T) {
 			},
 
 			2,
-			map[string]string{
-				"customer_id": "38959f28-f03e-11ee-9a3e-d7ddc59a75be",
-				"deleted":     "false",
+			map[queuecall.Field]any{
+				queuecall.FieldCustomerID: uuid.FromStringOrNil("38959f28-f03e-11ee-9a3e-d7ddc59a75be"),
+				queuecall.FieldDeleted:    false,
 			},
 
 			"2023-02-14 03:22:17.994000",
@@ -239,9 +239,9 @@ func Test_QueuecallGets(t *testing.T) {
 			},
 
 			2,
-			map[string]string{
-				"deleted":      "false",
-				"reference_id": "f3d7b568-b14c-11ee-b97e-135a40197a9b",
+			map[queuecall.Field]any{
+				queuecall.FieldDeleted:     false,
+				queuecall.FieldReferenceID: uuid.FromStringOrNil("f3d7b568-b14c-11ee-b97e-135a40197a9b"),
 			},
 
 			"2023-02-14 03:22:17.994000",
@@ -304,10 +304,10 @@ func Test_QueuecallGets(t *testing.T) {
 			},
 
 			2,
-			map[string]string{
-				"deleted":  "false",
-				"queue_id": "db62b2b6-b14d-11ee-b27b-6747a7421f4e",
-				"status":   string(queuecall.StatusWaiting),
+			map[queuecall.Field]any{
+				queuecall.FieldDeleted: false,
+				queuecall.FieldQueueID: uuid.FromStringOrNil("db62b2b6-b14d-11ee-b27b-6747a7421f4e"),
+				queuecall.FieldStatus:  queuecall.StatusWaiting,
 			},
 
 			"2023-02-14 03:22:17.994000",

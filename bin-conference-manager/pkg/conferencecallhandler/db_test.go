@@ -95,7 +95,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[conferencecall.Field]any
 
 		responseConferencecall []*conferencecall.Conferencecall
 	}{
@@ -104,8 +104,8 @@ func Test_Gets(t *testing.T) {
 
 			10,
 			"2023-01-03 21:35:02.809",
-			map[string]string{
-				"deleted": "false",
+			map[conferencecall.Field]any{
+				conferencecall.FieldDeleted: false,
 			},
 
 			[]*conferencecall.Conferencecall{
@@ -241,7 +241,10 @@ func Test_updateStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.id, tt.status).Return(nil)
+			expectFields := map[conferencecall.Field]any{
+				conferencecall.FieldStatus: tt.status,
+			}
+			mockDB.EXPECT().ConferencecallUpdate(ctx, tt.id, expectFields).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
 			res, err := h.updateStatus(ctx, tt.id, tt.status)
 			if err != nil {
@@ -294,7 +297,10 @@ func Test_updateStatusJoined(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.responseConferencecall.ID, conferencecall.StatusJoined).Return(nil)
+			expectFields := map[conferencecall.Field]any{
+				conferencecall.FieldStatus: conferencecall.StatusJoined,
+			}
+			mockDB.EXPECT().ConferencecallUpdate(ctx, tt.responseConferencecall.ID, expectFields).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.responseConferencecall.ID).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallJoined, tt.responseConferencecall)
 
@@ -349,7 +355,10 @@ func Test_updateStatusLeaving(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.responseConferencecall.ID, conferencecall.StatusLeaving).Return(nil)
+			expectFields := map[conferencecall.Field]any{
+				conferencecall.FieldStatus: conferencecall.StatusLeaving,
+			}
+			mockDB.EXPECT().ConferencecallUpdate(ctx, tt.responseConferencecall.ID, expectFields).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.responseConferencecall.ID).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallLeaving, tt.responseConferencecall)
 
@@ -404,7 +413,10 @@ func Test_updateStatusLeaved(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.responseConferencecall.ID, conferencecall.StatusLeaved).Return(nil)
+			expectFields := map[conferencecall.Field]any{
+				conferencecall.FieldStatus: conferencecall.StatusLeaved,
+			}
+			mockDB.EXPECT().ConferencecallUpdate(ctx, tt.responseConferencecall.ID, expectFields).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.responseConferencecall.ID).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallLeaved, tt.responseConferencecall)
 

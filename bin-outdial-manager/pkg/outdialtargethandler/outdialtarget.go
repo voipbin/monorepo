@@ -122,7 +122,12 @@ func (h *outdialTargetHandler) GetsByOutdialID(ctx context.Context, outdialID uu
 			"outdial_id": outdialID,
 		})
 
-	res, err := h.db.OutdialTargetGetsByOutdialID(ctx, outdialID, token, limit)
+	filters := map[outdialtarget.Field]any{
+		outdialtarget.FieldOutdialID: outdialID,
+		outdialtarget.FieldDeleted:   false,
+	}
+
+	res, err := h.db.OutdialTargetGets(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not create the outdial. err: %v", err)
 		return nil, err
@@ -189,7 +194,7 @@ func (h *outdialTargetHandler) UpdateProgressing(ctx context.Context, id uuid.UU
 	return res, nil
 }
 
-// UpdateProgressing updates the outdialtarget's status to progress and increase try count
+// UpdateStatus updates the outdialtarget's status
 func (h *outdialTargetHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status outdialtarget.Status) (*outdialtarget.OutdialTarget, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -198,7 +203,11 @@ func (h *outdialTargetHandler) UpdateStatus(ctx context.Context, id uuid.UUID, s
 			"status":           status,
 		})
 
-	if errUpdate := h.db.OutdialTargetUpdateStatus(ctx, id, status); errUpdate != nil {
+	fields := map[outdialtarget.Field]any{
+		outdialtarget.FieldStatus: status,
+	}
+
+	if errUpdate := h.db.OutdialTargetUpdate(ctx, id, fields); errUpdate != nil {
 		log.Errorf("Could not update the outdialtarget status. err: %v", errUpdate)
 		return nil, errUpdate
 	}

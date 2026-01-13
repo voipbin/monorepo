@@ -4,45 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"monorepo/bin-storage-manager/models/account"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+
+	"monorepo/bin-storage-manager/models/account"
 )
 
 const (
-	// select query for account get
-	accountSelect = `
-	select
-		id,
-		customer_id,
-
-		total_file_count,
-		total_file_size,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		storage_accounts
-	`
+	accountsTable = "storage_accounts"
 )
 
-// accountGetFromRow gets the file from the row.
+// accountGetFromRow gets the account from the row.
 func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
-
 	res := &account.Account{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.TotalFileCount,
-		&res.TotalFileSize,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. accountGetFromRow. err: %v", err)
 	}
 
@@ -50,54 +29,42 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 }
 
 // AccountCreate creates a new account row
-func (h *handler) AccountCreate(ctx context.Context, f *account.Account) error {
+func (h *handler) AccountCreate(ctx context.Context, a *account.Account) error {
+	now := h.util.TimeGetCurTime()
 
-	q := `insert into storage_accounts(
-		id,
-		customer_id,
+	// Set timestamps
+	a.TMCreate = now
+	a.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	a.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		total_file_count,
-		total_file_size,
-
-        tm_create,
-        tm_update,
-        tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(a)
 	if err != nil {
-		return fmt.Errorf("could not prepare. AccountCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. AccountCreate. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	_, err = stmt.ExecContext(ctx,
-		f.ID.Bytes(),
-		f.CustomerID.Bytes(),
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(accountsTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		f.TotalFileCount,
-		f.TotalFileSize,
-
-		h.util.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. AccountCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. AccountCreate. err: %v", err)
 	}
 
-	_ = h.accountUpdateToCache(ctx, f.ID)
+	_ = h.accountUpdateToCache(ctx, a.ID)
 
 	return nil
 }
 
 // accountUpdateToCache gets the account from the DB and update the cache.
 func (h *handler) accountUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.accountGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -110,18 +77,17 @@ func (h *handler) accountUpdateToCache(ctx context.Context, id uuid.UUID) error 
 	return nil
 }
 
-// accountSetToCache sets the given file to the cache
-func (h *handler) accountSetToCache(ctx context.Context, f *account.Account) error {
-	if err := h.cache.AccountSet(ctx, f); err != nil {
+// accountSetToCache sets the given account to the cache
+func (h *handler) accountSetToCache(ctx context.Context, a *account.Account) error {
+	if err := h.cache.AccountSet(ctx, a); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// accountGetFromCache returns file from the cache if possible.
+// accountGetFromCache returns account from the cache if possible.
 func (h *handler) accountGetFromCache(ctx context.Context, id uuid.UUID) (*account.Account, error) {
-
 	// get from cache
 	res, err := h.cache.AccountGet(ctx, id)
 	if err != nil {
@@ -131,22 +97,20 @@ func (h *handler) accountGetFromCache(ctx context.Context, id uuid.UUID) (*accou
 	return res, nil
 }
 
-// accountGetFromDB gets the file info from the db.
+// accountGetFromDB gets the account info from the db.
 func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.Account, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", accountSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&account.Account{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(accountsTable).
+		Where(squirrel.Eq{string(account.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. accountGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. accountGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. accountGetFromDB. err: %v", err)
 	}
@@ -155,12 +119,15 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. accountGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.accountGetFromRow(row)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get data from row. accountGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -168,7 +135,6 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 
 // AccountGet returns account.
 func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error) {
-
 	res, err := h.accountGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -185,43 +151,31 @@ func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Accoun
 }
 
 // AccountGets returns list of accounts.
-func (h *handler) AccountGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*account.Account, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, accountSelect)
-
+func (h *handler) AccountGets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&account.Account{})
+	sb := squirrel.
+		Select(fields...).
+		From(accountsTable).
+		Where(squirrel.Lt{string(account.FieldTMCreate): token}).
+		OrderBy(string(account.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. AccountGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. AccountGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AccountGets. err: %v", err)
 	}
@@ -233,16 +187,51 @@ func (h *handler) AccountGets(ctx context.Context, token string, size uint64, fi
 	for rows.Next() {
 		u, err := h.accountGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. AccountGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. AccountGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. AccountGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// AccountIncreaseFileInfo increase the account info.
+// AccountUpdate updates account fields.
+func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	fields[account.FieldTMUpdate] = h.util.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("AccountUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(accountsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(account.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+		return fmt.Errorf("AccountUpdate: exec failed: %w", err)
+	}
+
+	// set to the cache
+	_ = h.accountUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// AccountIncreaseFileInfo increases the account's file info.
 func (h *handler) AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error {
 	q := `
 	update storage_accounts set
@@ -263,7 +252,7 @@ func (h *handler) AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, fil
 	return nil
 }
 
-// AccountDecreaseFileInfo increase the account info.
+// AccountDecreaseFileInfo decreases the account's file info.
 func (h *handler) AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error {
 	q := `
 	update storage_accounts set
@@ -286,17 +275,38 @@ func (h *handler) AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, fil
 
 // AccountDelete deletes the given account
 func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update storage_accounts set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
 	ts := h.util.TimeGetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. AccountDelete. err: %v", err)
+
+	fields := map[account.Field]any{
+		account.FieldTMUpdate: ts,
+		account.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("AccountDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(accountsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(account.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("AccountDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %v", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
 	}
 
 	// set to the cache

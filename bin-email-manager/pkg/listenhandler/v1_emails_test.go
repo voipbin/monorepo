@@ -26,6 +26,7 @@ func Test_v1EmailsGet(t *testing.T) {
 		pageSize  uint64
 
 		responseFilters map[string]string
+		expectFilters   map[email.Field]any
 		responseEmails  []*email.Email
 
 		expectRes *sock.Response
@@ -43,6 +44,10 @@ func Test_v1EmailsGet(t *testing.T) {
 			responseFilters: map[string]string{
 				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
 				"deleted":     "false",
+			},
+			expectFilters: map[email.Field]any{
+				email.FieldCustomerID: "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
+				email.FieldDeleted:    "false",
 			},
 			responseEmails: []*email.Email{
 				{
@@ -71,6 +76,10 @@ func Test_v1EmailsGet(t *testing.T) {
 			responseFilters: map[string]string{
 				"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63",
 				"deleted":     "false",
+			},
+			expectFilters: map[email.Field]any{
+				email.FieldCustomerID: "2457d824-7f4c-11ec-9489-b3552a7c9d63",
+				email.FieldDeleted:    "false",
 			},
 			responseEmails: []*email.Email{
 				{
@@ -105,6 +114,10 @@ func Test_v1EmailsGet(t *testing.T) {
 				"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
 				"deleted":     "false",
 			},
+			expectFilters: map[email.Field]any{
+				email.FieldCustomerID: "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
+				email.FieldDeleted:    "false",
+			},
 			responseEmails: []*email.Email{},
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -131,7 +144,7 @@ func Test_v1EmailsGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockEmail.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseEmails, nil)
+			mockEmail.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseEmails, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

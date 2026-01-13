@@ -104,7 +104,7 @@ func (mr *MockAccesskeyHandlerMockRecorder) GetByToken(ctx, token any) *gomock.C
 }
 
 // Gets mocks base method.
-func (m *MockAccesskeyHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*accesskey.Accesskey, error) {
+func (m *MockAccesskeyHandler) Gets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*accesskey.Accesskey)

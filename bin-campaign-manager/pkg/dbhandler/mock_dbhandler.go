@@ -89,6 +89,21 @@ func (mr *MockDBHandlerMockRecorder) CampaignGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGet", reflect.TypeOf((*MockDBHandler)(nil).CampaignGet), ctx, id)
 }
 
+// CampaignGets mocks base method.
+func (m *MockDBHandler) CampaignGets(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignGets", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignGets indicates an expected call of CampaignGets.
+func (mr *MockDBHandlerMockRecorder) CampaignGets(ctx, token, size, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGets", reflect.TypeOf((*MockDBHandler)(nil).CampaignGets), ctx, token, size, filters)
+}
+
 // CampaignGetsByCustomerID mocks base method.
 func (m *MockDBHandler) CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
@@ -102,6 +117,20 @@ func (m *MockDBHandler) CampaignGetsByCustomerID(ctx context.Context, customerID
 func (mr *MockDBHandlerMockRecorder) CampaignGetsByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).CampaignGetsByCustomerID), ctx, customerID, token, limit)
+}
+
+// CampaignUpdate mocks base method.
+func (m *MockDBHandler) CampaignUpdate(ctx context.Context, id uuid.UUID, fields map[campaign.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaignUpdate indicates an expected call of CampaignUpdate.
+func (mr *MockDBHandlerMockRecorder) CampaignUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdate", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdate), ctx, id, fields)
 }
 
 // CampaignUpdateActions mocks base method.
@@ -317,6 +346,21 @@ func (mr *MockDBHandlerMockRecorder) CampaigncallGetByReferenceID(ctx, reference
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetByReferenceID), ctx, referenceID)
 }
 
+// CampaigncallGets mocks base method.
+func (m *MockDBHandler) CampaigncallGets(ctx context.Context, token string, size uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallGets", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaigncallGets indicates an expected call of CampaigncallGets.
+func (mr *MockDBHandlerMockRecorder) CampaigncallGets(ctx, token, size, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGets", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGets), ctx, token, size, filters)
+}
+
 // CampaigncallGetsByCampaignID mocks base method.
 func (m *MockDBHandler) CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
@@ -375,6 +419,20 @@ func (m *MockDBHandler) CampaigncallGetsOngoingByCampaignID(ctx context.Context,
 func (mr *MockDBHandlerMockRecorder) CampaigncallGetsOngoingByCampaignID(ctx, campaignID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsOngoingByCampaignID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetsOngoingByCampaignID), ctx, campaignID, token, limit)
+}
+
+// CampaigncallUpdate mocks base method.
+func (m *MockDBHandler) CampaigncallUpdate(ctx context.Context, id uuid.UUID, fields map[campaigncall.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaigncallUpdate indicates an expected call of CampaigncallUpdate.
+func (mr *MockDBHandlerMockRecorder) CampaigncallUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallUpdate", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallUpdate), ctx, id, fields)
 }
 
 // CampaigncallUpdateStatus mocks base method.
@@ -448,6 +506,21 @@ func (mr *MockDBHandlerMockRecorder) OutplanGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanGet", reflect.TypeOf((*MockDBHandler)(nil).OutplanGet), ctx, id)
 }
 
+// OutplanGets mocks base method.
+func (m *MockDBHandler) OutplanGets(ctx context.Context, token string, size uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutplanGets", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*outplan.Outplan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutplanGets indicates an expected call of OutplanGets.
+func (mr *MockDBHandlerMockRecorder) OutplanGets(ctx, token, size, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanGets", reflect.TypeOf((*MockDBHandler)(nil).OutplanGets), ctx, token, size, filters)
+}
+
 // OutplanGetsByCustomerID mocks base method.
 func (m *MockDBHandler) OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
 	m.ctrl.T.Helper()
@@ -461,6 +534,20 @@ func (m *MockDBHandler) OutplanGetsByCustomerID(ctx context.Context, customerID 
 func (mr *MockDBHandlerMockRecorder) OutplanGetsByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).OutplanGetsByCustomerID), ctx, customerID, token, limit)
+}
+
+// OutplanUpdate mocks base method.
+func (m *MockDBHandler) OutplanUpdate(ctx context.Context, id uuid.UUID, fields map[outplan.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutplanUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// OutplanUpdate indicates an expected call of OutplanUpdate.
+func (mr *MockDBHandlerMockRecorder) OutplanUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanUpdate", reflect.TypeOf((*MockDBHandler)(nil).OutplanUpdate), ctx, id, fields)
 }
 
 // OutplanUpdateBasicInfo mocks base method.

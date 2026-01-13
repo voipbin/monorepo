@@ -89,7 +89,7 @@ func (mr *MockEmailHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockEmailHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*email.Email, error) {
+func (m *MockEmailHandler) Gets(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*email.Email)

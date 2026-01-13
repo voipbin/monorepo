@@ -10,15 +10,15 @@ import (
 type Transcript struct {
 	commonidentity.Identity
 
-	TranscribeID uuid.UUID `json:"transcribe_id"`
+	TranscribeID uuid.UUID `json:"transcribe_id" db:"transcribe_id,uuid"`
 
-	Direction Direction `json:"direction"` // direction. in/out
-	Message   string    `json:"message"`   // message
+	Direction Direction `json:"direction" db:"direction"` // direction. in/out
+	Message   string    `json:"message" db:"message"`     // message
 
-	TMTranscript string `json:"tm_transcript"` // timestamp transcripted. 0001-01-01 00:00:00.00000 points begining of the transcribe craete time.
+	TMTranscript string `json:"tm_transcript" db:"tm_transcript"` // timestamp transcripted. 0001-01-01 00:00:00.00000 points begining of the transcribe craete time.
 
-	TMCreate string `json:"tm_create"` // timestamp create
-	TMDelete string `json:"tm_delete"` // timestamp delete
+	TMCreate string `json:"tm_create" db:"tm_create"` // timestamp create
+	TMDelete string `json:"tm_delete" db:"tm_delete"` // timestamp delete
 }
 
 // Direction define

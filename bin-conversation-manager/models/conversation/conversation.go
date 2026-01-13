@@ -15,21 +15,21 @@ type Conversation struct {
 	commonidentity.Identity
 	commonidentity.Owner
 
-	AccountID uuid.UUID `json:"account_id,omitempty"`
+	AccountID uuid.UUID `json:"account_id,omitempty" db:"account_id,uuid"`
 
-	Name   string `json:"name,omitempty"`
-	Detail string `json:"detail,omitempty"`
+	Name   string `json:"name,omitempty" db:"name"`
+	Detail string `json:"detail,omitempty" db:"detail"`
 
-	Type Type `json:"type,omitempty"` // represent the type of conversation. could be message(sms/mms), line, etc.
+	Type Type `json:"type,omitempty" db:"type"` // represent the type of conversation. could be message(sms/mms), line, etc.
 
-	DialogID string `json:"dialog_id,omitempty"` // represent the id of referenced conversation transaction. for the Line could be chatroom id, for sms/mms, could be empty.
+	DialogID string `json:"dialog_id,omitempty" db:"dialog_id"` // represent the id of referenced conversation transaction. for the Line could be chatroom id, for sms/mms, could be empty.
 
-	Self commonaddress.Address `json:"self,omitempty"` // self address
-	Peer commonaddress.Address `json:"peer,omitempty"` // peer address
+	Self commonaddress.Address `json:"self,omitempty" db:"self,json"` // self address
+	Peer commonaddress.Address `json:"peer,omitempty" db:"peer,json"` // peer address
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 type Field string

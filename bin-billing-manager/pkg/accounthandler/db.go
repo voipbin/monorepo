@@ -86,7 +86,7 @@ func (h *accountHandler) GetByCustomerID(ctx context.Context, customerID uuid.UU
 }
 
 // Gets returns list of accounts.
-func (h *accountHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
+func (h *accountHandler) Gets(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "Gets",
 		"size":  size,
@@ -176,9 +176,14 @@ func (h *accountHandler) dbUpdateBasicInfo(ctx context.Context, id uuid.UUID, na
 		"detail": detail,
 	})
 
-	if errSet := h.db.AccountSet(ctx, id, name, detail); errSet != nil {
-		log.Errorf("Could not update the account. err: %v", errSet)
-		return nil, errors.Wrap(errSet, "could not update the account")
+	fields := map[account.Field]any{
+		account.FieldName:   name,
+		account.FieldDetail: detail,
+	}
+
+	if errUpdate := h.db.AccountUpdate(ctx, id, fields); errUpdate != nil {
+		log.Errorf("Could not update the account. err: %v", errUpdate)
+		return nil, errors.Wrap(errUpdate, "could not update the account")
 	}
 
 	res, err := h.Get(ctx, id)
@@ -199,9 +204,14 @@ func (h *accountHandler) dbUpdatePaymentInfo(ctx context.Context, id uuid.UUID, 
 		"payment_method": paymentMethod,
 	})
 
-	if errSet := h.db.AccountSetPaymentInfo(ctx, id, paymentType, paymentMethod); errSet != nil {
-		log.Errorf("Could not update the account. err: %v", errSet)
-		return nil, errors.Wrap(errSet, "could not update the account")
+	fields := map[account.Field]any{
+		account.FieldPaymentType:   paymentType,
+		account.FieldPaymentMethod: paymentMethod,
+	}
+
+	if errUpdate := h.db.AccountUpdate(ctx, id, fields); errUpdate != nil {
+		log.Errorf("Could not update the account. err: %v", errUpdate)
+		return nil, errors.Wrap(errUpdate, "could not update the account")
 	}
 
 	res, err := h.Get(ctx, id)

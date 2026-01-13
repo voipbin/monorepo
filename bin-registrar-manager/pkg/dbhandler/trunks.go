@@ -3,87 +3,32 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/models/trunk"
 )
 
 const (
-	trunkSelect = `
-	select
-		id,
-		customer_id,
-
-		name,
-		detail,
-
-		domain_name,
-		auth_types,
-
-		realm,
-		username,
-		password,
-
-		allowed_ips,
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
-	from
-		registrar_trunks
-	`
+	trunksTable = "registrar_trunks"
 )
 
-// trunkGetFromRow gets the domain from the row
+// trunkGetFromRow gets the trunk from the row
 func (h *handler) trunkGetFromRow(row *sql.Rows) (*trunk.Trunk, error) {
-	var authTypes sql.NullString
-	var allowedIPs sql.NullString
-
 	res := &trunk.Trunk{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Name,
-		&res.Detail,
-
-		&res.DomainName,
-		&authTypes,
-
-		&res.Realm,
-		&res.Username,
-		&res.Password,
-
-		&allowedIPs,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. trunkGetFromRow. err: %v", err)
 	}
 
-	// AuthTypes
-	if authTypes.Valid && authTypes.String != "" {
-		if err := json.Unmarshal([]byte(authTypes.String), &res.AuthTypes); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the auth_types. trunkGetFromRow. err: %v", err)
-		}
-	}
+	// initialize nil slices to empty slices
 	if res.AuthTypes == nil {
 		res.AuthTypes = []sipauth.AuthType{}
-	}
-
-	// allowedIPs
-	res.AllowedIPs = []string{}
-	if allowedIPs.Valid {
-		if err := json.Unmarshal([]byte(allowedIPs.String), &res.AllowedIPs); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the allowed_ips. trunkGetFromRow. err: %v", err)
-		}
 	}
 	if res.AllowedIPs == nil {
 		res.AllowedIPs = []string{}
@@ -94,67 +39,32 @@ func (h *handler) trunkGetFromRow(row *sql.Rows) (*trunk.Trunk, error) {
 
 // TrunkCreate creates new Trunk record.
 func (h *handler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
-	q := `insert into registrar_trunks(
-		id,
-		customer_id,
+	now := h.utilHandler.TimeGetCurTime()
 
-		name,
-		detail,
+	// Set timestamps
+	t.TMCreate = now
+	t.TMUpdate = DefaultTimeStamp
+	t.TMDelete = DefaultTimeStamp
 
-		domain_name,
-		auth_types,
-
-		realm,
-		username,
-		password,
-
-		allowed_ips,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?,
-		?,
-		?, ?, ?
-	)
-	`
-
-	authTypes, err := json.Marshal(t.AuthTypes)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("could not marshal auth types. TrunkCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. TrunkCreate. err: %v", err)
 	}
 
-	allowedIps, err := json.Marshal(t.AllowedIPs)
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(trunksTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal allowed ips. TrunkCreate. err: %v", err)
+		return fmt.Errorf("could not build query. TrunkCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q,
-		t.ID.Bytes(),
-		t.CustomerID.Bytes(),
-
-		t.Name,
-		t.Detail,
-
-		t.DomainName,
-		authTypes,
-
-		t.Realm,
-		t.Username,
-		t.Password,
-
-		allowedIps,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. TrunkCreate. err: %v", err)
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. TrunkCreate. err: %v", err)
 	}
 
 	// update the cache
@@ -165,10 +75,18 @@ func (h *handler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
 
 // trunkGetFromDB returns Trunk from the DB.
 func (h *handler) trunkGetFromDB(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error) {
+	fields := commondatabasehandler.GetDBFields(&trunk.Trunk{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(trunksTable).
+		Where(squirrel.Eq{string(trunk.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. trunkGetFromDB. err: %v", err)
+	}
 
-	q := fmt.Sprintf("%s where id = ?", trunkSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. trunkGetFromDB. err: %v", err)
 	}
@@ -177,12 +95,15 @@ func (h *handler) trunkGetFromDB(ctx context.Context, id uuid.UUID) (*trunk.Trun
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. trunkGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.trunkGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. trunkGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not get data from row. trunkGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -249,57 +170,34 @@ func (h *handler) trunkDeleteFromCache(ctx context.Context, id uuid.UUID, name s
 	return nil
 }
 
-// TrunkUpdateBasicInfo updates trunk record.
-func (h *handler) TrunkUpdateBasicInfo(
-	ctx context.Context,
-	id uuid.UUID,
-	name string,
-	detail string,
-	authTypes []sipauth.AuthType,
-	username string,
-	password string,
-	allowedIPs []string,
-) error {
-	q := `
-	update registrar_trunks set
-		name = ?,
-		detail = ?,
-		auth_types = ?,
-		username = ?,
-		password = ?,
-		allowed_ips = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpAuthTypes, err := json.Marshal(authTypes)
-	if err != nil {
-		return fmt.Errorf("could not marshal the authTypes. TrunkUpdateBasicInfo. err: %v", err)
+// TrunkUpdate updates trunk record with given fields.
+func (h *handler) TrunkUpdate(ctx context.Context, id uuid.UUID, fields map[trunk.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	tmpAllowedIPs, err := json.Marshal(allowedIPs)
+	fields[trunk.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not marshal allowedIPs. TrunkUpdateBasicInfo. err: %v", err)
+		return fmt.Errorf("TrunkUpdate: prepare fields failed: %w", err)
 	}
 
-	_, err = h.db.Exec(q,
-		name,
-		detail,
-		tmpAuthTypes,
-		username,
-		password,
-		tmpAllowedIPs,
-		h.utilHandler.TimeGetCurTime(),
-		id.Bytes(),
-	)
+	q := squirrel.Update(trunksTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(trunk.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. TrunkUpdateBasicInfo. err: %v", err)
+		return fmt.Errorf("TrunkUpdate: build SQL failed: %w", err)
 	}
 
-	// update the cache
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("TrunkUpdate: exec failed: %w", err)
+	}
+
 	_ = h.trunkUpdateToCache(ctx, id)
-
 	return nil
 }
 
@@ -330,9 +228,9 @@ func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (
 		return res, nil
 	}
 
-	filters := map[string]string{
-		"domain_name": domainName,
-		"deleted":     "false",
+	filters := map[trunk.Field]any{
+		trunk.FieldDomainName: domainName,
+		trunk.FieldDeleted:    false,
 	}
 
 	tmp, err := h.TrunkGets(ctx, 1, "", filters)
@@ -353,44 +251,31 @@ func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (
 }
 
 // TrunkGets returns trunks.
-func (h *handler) TrunkGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*trunk.Trunk, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, trunkSelect)
-
+func (h *handler) TrunkGets(ctx context.Context, size uint64, token string, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&trunk.Trunk{})
+	sb := squirrel.
+		Select(fields...).
+		From(trunksTable).
+		Where(squirrel.Lt{string(trunk.FieldTMCreate): token}).
+		OrderBy(string(trunk.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. TrunkGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. TrunkGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TrunkGets. err: %v", err)
 	}
@@ -398,14 +283,16 @@ func (h *handler) TrunkGets(ctx context.Context, size uint64, token string, filt
 		_ = rows.Close()
 	}()
 
-	var res []*trunk.Trunk
+	res := []*trunk.Trunk{}
 	for rows.Next() {
 		u, err := h.trunkGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. TrunkGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. TrunkGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. TrunkGets. err: %v", err)
 	}
 
 	return res, nil
@@ -413,17 +300,30 @@ func (h *handler) TrunkGets(ctx context.Context, size uint64, token string, filt
 
 // TrunkDelete deletes given Trunk
 func (h *handler) TrunkDelete(ctx context.Context, id uuid.UUID) error {
+	ts := h.utilHandler.TimeGetCurTime()
 
-	q := `
-	update registrar_trunks set
-		tm_delete = ?
-	where
-		id = ?
-	`
+	fields := map[trunk.Field]any{
+		trunk.FieldTMUpdate: ts,
+		trunk.FieldTMDelete: ts,
+	}
 
-	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. TrunkDelete. err: %v", err)
+		return fmt.Errorf("TrunkDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(trunksTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(trunk.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("TrunkDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("TrunkDelete: exec failed: %w", err)
 	}
 
 	_ = h.trunkUpdateToCache(ctx, id)

@@ -26,7 +26,7 @@ func Test_dbGets(t *testing.T) {
 		customerID uuid.UUID
 		size       uint64
 		token      string
-		filters    map[string]string
+		filters    map[agent.Field]any
 
 		responseAgents []*agent.Agent
 	}{
@@ -36,8 +36,8 @@ func Test_dbGets(t *testing.T) {
 			customerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			size:       10,
 			token:      "2021-11-23 17:55:39.712000",
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[agent.Field]any{
+				agent.FieldDeleted: false,
 			},
 
 			responseAgents: []*agent.Agent{},

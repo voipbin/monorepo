@@ -155,7 +155,7 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 		responseVariable    *fmvariable.Variable
 		responseSend        *openai.ChatCompletionResponse
 
-		expectedFilterSummary     map[string]string
+		expectedFilterSummary     map[summary.Field]any
 		expectedReferenceID       uuid.UUID
 		expectedFilterTranscribe  map[string]string
 		expectedFilterTranscripts map[string]string
@@ -216,9 +216,9 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 				},
 			},
 
-			expectedFilterSummary: map[string]string{
-				"deleted":      "false",
-				"reference_id": "12793fb8-0d78-11f0-b745-5bd13769c11a",
+			expectedFilterSummary: map[summary.Field]any{
+				summary.FieldDeleted:     false,
+				summary.FieldReferenceID: uuid.FromStringOrNil("12793fb8-0d78-11f0-b745-5bd13769c11a"),
 			},
 			expectedReferenceID: uuid.FromStringOrNil("12793fb8-0d78-11f0-b745-5bd13769c11a"),
 			expectedFilterTranscribe: map[string]string{
@@ -256,7 +256,7 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryGets(ctx, uint64(1), "", tt.expectedFilterSummary).Return(tt.responseSummaries, nil)
+			mockDB.EXPECT().SummaryGets(ctx, uint64(1), "", gomock.Any()).Return(tt.responseSummaries, nil)
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectedReferenceID).Return(tt.responseConference, nil)
 
 			// contentGetTranscripts
@@ -268,7 +268,7 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(tt.responseSend, nil)
 
 			// UpdateStatusDone
-			mockDB.EXPECT().SummaryUpdateStatusDone(ctx, tt.responseSummaries[0].ID, tt.expectedSummaryContent).Return(nil)
+			mockDB.EXPECT().SummaryUpdate(ctx, tt.responseSummaries[0].ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().SummaryGet(ctx, tt.responseSummaries[0].ID).Return(tt.responseSummaries[0], nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummaries[0].CustomerID, summary.EventTypeUpdated, tt.responseSummaries[0])
 

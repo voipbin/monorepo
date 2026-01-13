@@ -185,7 +185,7 @@ func Test_EmailGets(t *testing.T) {
 		emails []email.Email
 
 		size    uint64
-		filters map[string]string
+		filters map[email.Field]any
 
 		expectRes []*email.Email
 	}{
@@ -213,9 +213,9 @@ func Test_EmailGets(t *testing.T) {
 			},
 
 			size: 10,
-			filters: map[string]string{
-				"customer_id": "b7cff8ba-ffe7-11ef-ab26-737ee1b185a8",
-				"deleted":     "false",
+			filters: map[email.Field]any{
+				email.FieldCustomerID: uuid.FromStringOrNil("b7cff8ba-ffe7-11ef-ab26-737ee1b185a8"),
+				email.FieldTMDelete:   DefaultTimeStamp,
 			},
 
 			expectRes: []*email.Email{

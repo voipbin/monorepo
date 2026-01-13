@@ -11,22 +11,22 @@ import (
 type Agent struct {
 	commonidentity.Identity
 
-	Username     string `json:"username"`      // agent's username
-	PasswordHash string `json:"password_hash"` // hashed Password
+	Username     string `json:"username" db:"username"`           // agent's username
+	PasswordHash string `json:"password_hash" db:"password_hash"` // hashed Password
 
-	Name   string `json:"name"`   // agent's name
-	Detail string `json:"detail"` // agent's detail
+	Name   string `json:"name" db:"name"`     // agent's name
+	Detail string `json:"detail" db:"detail"` // agent's detail
 
-	RingMethod RingMethod `json:"ring_method"` // agent's ring method
+	RingMethod RingMethod `json:"ring_method" db:"ring_method"` // agent's ring method
 
-	Status     Status                  `json:"status"`     // agent's status
-	Permission Permission              `json:"permission"` // agent's permission.
-	TagIDs     []uuid.UUID             `json:"tag_ids"`    // agent's tag ids
-	Addresses  []commonaddress.Address `json:"addresses"`  // agent's endpoint addresses
+	Status     Status                  `json:"status" db:"status"`           // agent's status
+	Permission Permission              `json:"permission" db:"permission"`   // agent's permission.
+	TagIDs     []uuid.UUID             `json:"tag_ids" db:"tag_ids,json"`    // agent's tag ids
+	Addresses  []commonaddress.Address `json:"addresses" db:"addresses,json"` // agent's endpoint addresses
 
-	TMCreate string `json:"tm_create"` // Created timestamp.
-	TMUpdate string `json:"tm_update"` // Updated timestamp.
-	TMDelete string `json:"tm_delete"` // Deleted timestamp.
+	TMCreate string `json:"tm_create" db:"tm_create"` // Created timestamp.
+	TMUpdate string `json:"tm_update" db:"tm_update"` // Updated timestamp.
+	TMDelete string `json:"tm_delete" db:"tm_delete"` // Deleted timestamp.
 }
 
 // HasPermission returns true if the user has the given permission

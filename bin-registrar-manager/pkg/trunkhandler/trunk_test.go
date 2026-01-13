@@ -199,7 +199,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[trunk.Field]any
 
 		responseGets []*trunk.Trunk
 		expectRes    []*trunk.Trunk
@@ -209,9 +209,9 @@ func Test_Gets(t *testing.T) {
 
 			10,
 			"2020-05-03%2021:35:02.809",
-			map[string]string{
-				"deleted":     "false",
-				"customer_id": "aa2be0f0-5234-11ee-960c-43d098822966",
+			map[trunk.Field]any{
+				trunk.FieldDeleted:    false,
+				trunk.FieldCustomerID: uuid.FromStringOrNil("aa2be0f0-5234-11ee-960c-43d098822966"),
 			},
 
 			[]*trunk.Trunk{
@@ -322,17 +322,11 @@ func Test_Update(t *testing.T) {
 	type test struct {
 		name string
 
-		id         uuid.UUID
-		trunkName  string
-		detail     string
-		authTypes  []sipauth.AuthType
-		username   string
-		password   string
-		allowedIPs []string
+		id     uuid.UUID
+		fields map[trunk.Field]any
 
-		responseTrunk *trunk.Trunk
-
-		expectSIPAuth *sipauth.SIPAuth
+		responseTrunk    *trunk.Trunk
+		expectSIPAuthFields map[sipauth.Field]any
 	}
 
 	tests := []test{
@@ -340,13 +334,13 @@ func Test_Update(t *testing.T) {
 			"test normal",
 
 			uuid.FromStringOrNil("80a7dd20-5229-11ee-bf8c-a3fb6b428056"),
-			"update name",
-			"update detail",
-			[]sipauth.AuthType{sipauth.AuthTypeBasic},
-			"updateusername",
-			"updatepassword",
-			[]string{
-				"1.2.3.4",
+			map[trunk.Field]any{
+				trunk.FieldName:       "update name",
+				trunk.FieldDetail:     "update detail",
+				trunk.FieldAuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic},
+				trunk.FieldUsername:   "updateusername",
+				trunk.FieldPassword:   "updatepassword",
+				trunk.FieldAllowedIPs: []string{"1.2.3.4"},
 			},
 
 			&trunk.Trunk{
@@ -355,9 +349,11 @@ func Test_Update(t *testing.T) {
 				},
 			},
 
-			&sipauth.SIPAuth{
-				ID:            uuid.FromStringOrNil("80a7dd20-5229-11ee-bf8c-a3fb6b428056"),
-				ReferenceType: sipauth.ReferenceTypeTrunk,
+			map[sipauth.Field]any{
+				sipauth.FieldAuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic},
+				sipauth.FieldUsername:   "updateusername",
+				sipauth.FieldPassword:   "updatepassword",
+				sipauth.FieldAllowedIPs: []string{"1.2.3.4"},
 			},
 		},
 	}
@@ -375,11 +371,11 @@ func Test_Update(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().TrunkUpdateBasicInfo(ctx, tt.id, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs).Return(nil)
+		mockDBBin.EXPECT().TrunkUpdate(ctx, tt.id, tt.fields).Return(nil)
 		mockDBBin.EXPECT().TrunkGet(ctx, tt.responseTrunk.ID).Return(tt.responseTrunk, nil)
-		mockDBBin.EXPECT().SIPAuthUpdateAll(ctx, tt.expectSIPAuth).Return(nil)
+		mockDBBin.EXPECT().SIPAuthUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 		mockNotify.EXPECT().PublishEvent(ctx, trunk.EventTypeTrunkUpdated, tt.responseTrunk)
-		_, err := h.Update(ctx, tt.id, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs)
+		_, err := h.Update(ctx, tt.id, tt.fields)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}

@@ -21,50 +21,50 @@ type Call struct {
 	commonidentity.Identity
 	commonidentity.Owner
 
-	ChannelID string `json:"channel_id,omitempty"`
-	BridgeID  string `json:"bridge_id,omitempty"` // call bridge id
+	ChannelID string `json:"channel_id,omitempty" db:"channel_id"`
+	BridgeID  string `json:"bridge_id,omitempty" db:"bridge_id"` // call bridge id
 
-	FlowID       uuid.UUID `json:"flow_id,omitempty"`       // flow id
-	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"` // activeflow id
-	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty"` // currently joined confbridge id.
+	FlowID       uuid.UUID `json:"flow_id,omitempty" db:"flow_id,uuid"`             // flow id
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"` // activeflow id
+	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty" db:"confbridge_id,uuid"` // currently joined confbridge id.
 
-	Type Type `json:"type,omitempty"` // call type
+	Type Type `json:"type,omitempty" db:"type"` // call type
 
 	// etc info
-	MasterCallID    uuid.UUID   `json:"master_call_id,omitempty"`    // master call id
-	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids,omitempty"`  // chained call ids
-	RecordingID     uuid.UUID   `json:"recording_id,omitempty"`      // recording id(current)
-	RecordingIDs    []uuid.UUID `json:"recording_ids,omitempty"`     // recording ids
-	ExternalMediaID uuid.UUID   `json:"external_media_id,omitempty"` // external media id(current)
-	GroupcallID     uuid.UUID   `json:"groupcall_id,omitempty"`      // groupcall id
+	MasterCallID    uuid.UUID   `json:"master_call_id,omitempty" db:"master_call_id,uuid"`     // master call id
+	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids,omitempty" db:"chained_call_ids,json"` // chained call ids
+	RecordingID     uuid.UUID   `json:"recording_id,omitempty" db:"recording_id,uuid"`         // recording id(current)
+	RecordingIDs    []uuid.UUID `json:"recording_ids,omitempty" db:"recording_ids,json"`       // recording ids
+	ExternalMediaID uuid.UUID   `json:"external_media_id,omitempty" db:"external_media_id,uuid"` // external media id(current)
+	GroupcallID     uuid.UUID   `json:"groupcall_id,omitempty" db:"groupcall_id,uuid"`           // groupcall id
 
 	// source/destination
-	Source      commonaddress.Address `json:"source,omitempty"`
-	Destination commonaddress.Address `json:"destination,omitempty"`
+	Source      commonaddress.Address `json:"source,omitempty" db:"source,json"`
+	Destination commonaddress.Address `json:"destination,omitempty" db:"destination,json"`
 
 	// info
-	Status         Status              `json:"status,omitempty"`
-	Data           map[DataType]string `json:"data,omitempty"`             //
-	Action         fmaction.Action     `json:"action,omitempty"`           // call's current action.
-	ActionNextHold bool                `json:"action_next_hold,omitempty"` // call's next action hold. if true, don't allow to go next action
-	Direction      Direction           `json:"direction,omitempty"`        //  direction of call. incoming/outgoing
-	MuteDirection  MuteDirection       `json:"mute_direction,omitempty"`   // mute direction
+	Status         Status              `json:"status,omitempty" db:"status"`
+	Data           map[DataType]string `json:"data,omitempty" db:"data,json"`
+	Action         fmaction.Action     `json:"action,omitempty" db:"action,json"`             // call's current action.
+	ActionNextHold bool                `json:"action_next_hold,omitempty" db:"action_next_hold"` // call's next action hold. if true, don't allow to go next action
+	Direction      Direction           `json:"direction,omitempty" db:"direction"`               //  direction of call. incoming/outgoing
+	MuteDirection  MuteDirection       `json:"mute_direction,omitempty" db:"mute_direction"`     // mute direction
 
-	HangupBy     HangupBy     `json:"hangup_by,omitempty"`
-	HangupReason HangupReason `json:"hangup_reason,omitempty"`
+	HangupBy     HangupBy     `json:"hangup_by,omitempty" db:"hangup_by"`
+	HangupReason HangupReason `json:"hangup_reason,omitempty" db:"hangup_reason"`
 
 	// dialroute(valid only tel type outgoing call)
-	DialrouteID uuid.UUID       `json:"dialroute_id,omitempty"` // dialroute id(current use)
-	Dialroutes  []rmroute.Route `json:"dialroutes,omitempty"`   // list of dialroutes for dialing.
+	DialrouteID uuid.UUID       `json:"dialroute_id,omitempty" db:"dialroute_id,uuid"` // dialroute id(current use)
+	Dialroutes  []rmroute.Route `json:"dialroutes,omitempty" db:"dialroutes,json"`     // list of dialroutes for dialing.
 
-	TMRinging     string `json:"tm_ringing,omitempty"`
-	TMProgressing string `json:"tm_progressing,omitempty"`
-	TMHangup      string `json:"tm_hangup,omitempty"`
+	TMRinging     string `json:"tm_ringing,omitempty" db:"tm_ringing"`
+	TMProgressing string `json:"tm_progressing,omitempty" db:"tm_progressing"`
+	TMHangup      string `json:"tm_hangup,omitempty" db:"tm_hangup"`
 
 	// timestamp
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Type type

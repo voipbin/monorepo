@@ -11,30 +11,30 @@ import (
 type AIcall struct {
 	identity.Identity
 
-	AIID          uuid.UUID      `json:"ai_id,omitempty"`
-	AIEngineType  ai.EngineType  `json:"ai_engine_type,omitempty"`
-	AIEngineModel ai.EngineModel `json:"ai_engine_model,omitempty"`
-	AIEngineData  map[string]any `json:"ai_engine_data,omitempty"`
-	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty"`
-	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty"`
-	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty"`
+	AIID          uuid.UUID      `json:"ai_id,omitempty" db:"ai_id,uuid"`
+	AIEngineType  ai.EngineType  `json:"ai_engine_type,omitempty" db:"ai_engine_type"`
+	AIEngineModel ai.EngineModel `json:"ai_engine_model,omitempty" db:"ai_engine_model"`
+	AIEngineData  map[string]any `json:"ai_engine_data,omitempty" db:"ai_engine_data,json"`
+	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty" db:"ai_tts_type"`
+	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty" db:"ai_tts_voice_id"`
+	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty" db:"ai_stt_type"`
 
-	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`
-	ReferenceType ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
+	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`
+	ReferenceType ReferenceType `json:"reference_type,omitempty" db:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`
 
-	ConfbridgeID  uuid.UUID `json:"confbridge_id,omitempty"`
-	PipecatcallID uuid.UUID `json:"pipecatcall_id,omitempty"`
+	ConfbridgeID  uuid.UUID `json:"confbridge_id,omitempty" db:"confbridge_id,uuid"`
+	PipecatcallID uuid.UUID `json:"pipecatcall_id,omitempty" db:"pipecatcall_id,uuid"`
 
-	Status Status `json:"status,omitempty"`
+	Status Status `json:"status,omitempty" db:"status"`
 
-	Gender   Gender `json:"gender,omitempty"`
-	Language string `json:"language,omitempty"`
+	Gender   Gender `json:"gender,omitempty" db:"gender"`
+	Language string `json:"language,omitempty" db:"language"`
 
-	TMEnd    string `json:"tm_end,omitempty"`
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMEnd    string `json:"tm_end,omitempty" db:"tm_end"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // ReferenceType define

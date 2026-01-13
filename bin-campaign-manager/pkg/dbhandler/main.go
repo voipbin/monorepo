@@ -29,7 +29,9 @@ type DBHandler interface {
 	OutplanCreate(ctx context.Context, t *outplan.Outplan) error
 	OutplanDelete(ctx context.Context, id uuid.UUID) error
 	OutplanGet(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error)
+	OutplanGets(ctx context.Context, token string, size uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error)
 	OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error)
+	OutplanUpdate(ctx context.Context, id uuid.UUID, fields map[outplan.Field]any) error
 	OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	OutplanUpdateDialInfo(
 		ctx context.Context,
@@ -48,7 +50,9 @@ type DBHandler interface {
 	CampaignCreate(ctx context.Context, t *campaign.Campaign) error
 	CampaignDelete(ctx context.Context, id uuid.UUID) error
 	CampaignGet(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
+	CampaignGets(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error)
 	CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error)
+	CampaignUpdate(ctx context.Context, id uuid.UUID, fields map[campaign.Field]any) error
 	CampaignUpdateBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,
@@ -74,10 +78,12 @@ type DBHandler interface {
 	CampaigncallGet(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
 	CampaigncallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error)
 	CampaigncallGetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error)
+	CampaigncallGets(ctx context.Context, token string, size uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error)
 	CampaigncallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallGetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
+	CampaigncallUpdate(ctx context.Context, id uuid.UUID, fields map[campaigncall.Field]any) error
 	CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error
 	CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) error
 }
@@ -96,7 +102,7 @@ var (
 
 // list of default values
 const (
-	DefaultTimeStamp = "9999-01-01 00:00:000"
+	DefaultTimeStamp = "9999-01-01 00:00:00.000000"
 )
 
 // NewHandler creates DBHandler
@@ -108,14 +114,6 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	}
 	return h
 }
-
-// // GetCurTime return current utc time string
-// func TimeGetCurTime() string {
-// 	now := time.Now().UTC().String()
-// 	res := strings.TrimSuffix(now, " +0000 UTC")
-
-// 	return res
-// }
 
 // GetCurTimeAdd return current utc time string
 func GetCurTimeAdd(d time.Duration) string {

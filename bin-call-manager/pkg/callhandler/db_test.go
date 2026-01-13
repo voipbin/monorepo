@@ -317,7 +317,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseGets, nil)
+			mockDB.EXPECT().CallGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGets, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {

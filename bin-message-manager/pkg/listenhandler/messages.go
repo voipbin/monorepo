@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/pkg/listenhandler/models/request"
 )
 
@@ -32,10 +33,19 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// parse the filters
+	urlFilters := h.utilHandler.URLParseFilters(u)
+	filters := make(map[message.Field]any)
+	for k, v := range urlFilters {
+		// convert customer_id to UUID type
+		if k == "customer_id" {
+			filters[message.Field(k)] = uuid.FromStringOrNil(v)
+		} else {
+			filters[message.Field(k)] = v
+		}
+	}
 
-	messages, err := h.messageHandler.Gets(ctx, customerID, pageSize, pageToken)
+	messages, err := h.messageHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Debugf("Could not get messages. err: %v", err)
 		return simpleResponse(500), nil

@@ -28,7 +28,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 		customer        *cmcustomer.Customer
 		responseNumbers []*number.Number
 
-		expectFilter map[string]string
+		expectFilter map[number.Field]any
 	}{
 		{
 			name: "normal",
@@ -53,9 +53,9 @@ func Test_EventCustomerDeleted(t *testing.T) {
 				},
 			},
 
-			expectFilter: map[string]string{
-				"customer_id": "82ed53fa-ccca-11ee-be19-17f582a54cf4",
-				"deleted":     "false",
+			expectFilter: map[number.Field]any{
+				number.FieldCustomerID: uuid.FromStringOrNil("82ed53fa-ccca-11ee-be19-17f582a54cf4"),
+				number.FieldDeleted:    false,
 			},
 		},
 	}
@@ -114,8 +114,8 @@ func Test_EventFlowDeleted(t *testing.T) {
 		responseNumbersCallFlow    []*number.Number
 		responseNumbersMessageFlow []*number.Number
 
-		expectFiltersCallFlow    map[string]string
-		expectFiltersMessageFlow map[string]string
+		expectFiltersCallFlow    map[number.Field]any
+		expectFiltersMessageFlow map[number.Field]any
 	}
 
 	tests := []test{
@@ -137,13 +137,13 @@ func Test_EventFlowDeleted(t *testing.T) {
 			},
 			[]*number.Number{},
 
-			map[string]string{
-				"call_flow_id": "dd92f3fa-7d22-11eb-be53-47ee94a9bce3",
-				"deleted":      "false",
+			map[number.Field]any{
+				number.FieldCallFlowID: uuid.FromStringOrNil("dd92f3fa-7d22-11eb-be53-47ee94a9bce3"),
+				number.FieldDeleted:    false,
 			},
-			map[string]string{
-				"message_flow_id": "dd92f3fa-7d22-11eb-be53-47ee94a9bce3",
-				"deleted":         "false",
+			map[number.Field]any{
+				number.FieldMessageFlowID: uuid.FromStringOrNil("dd92f3fa-7d22-11eb-be53-47ee94a9bce3"),
+				number.FieldDeleted:       false,
 			},
 		},
 		{
@@ -177,13 +177,13 @@ func Test_EventFlowDeleted(t *testing.T) {
 			},
 			[]*number.Number{},
 
-			map[string]string{
-				"call_flow_id": "01647c7a-ecb7-11ee-9273-7b59a4ee0467",
-				"deleted":      "false",
+			map[number.Field]any{
+				number.FieldCallFlowID: uuid.FromStringOrNil("01647c7a-ecb7-11ee-9273-7b59a4ee0467"),
+				number.FieldDeleted:    false,
 			},
-			map[string]string{
-				"message_flow_id": "01647c7a-ecb7-11ee-9273-7b59a4ee0467",
-				"deleted":         "false",
+			map[number.Field]any{
+				number.FieldMessageFlowID: uuid.FromStringOrNil("01647c7a-ecb7-11ee-9273-7b59a4ee0467"),
+				number.FieldDeleted:       false,
 			},
 		},
 	}
@@ -208,13 +208,17 @@ func Test_EventFlowDeleted(t *testing.T) {
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().NumberGets(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersCallFlow).Return(tt.responseNumbersCallFlow, nil)
 			for _, num := range tt.responseNumbersCallFlow {
-				mockDB.EXPECT().NumberUpdateCallFlowID(gomock.Any(), num.ID, uuid.Nil)
+				mockDB.EXPECT().NumberUpdate(gomock.Any(), num.ID, map[number.Field]any{
+					number.FieldCallFlowID: uuid.Nil,
+				})
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().NumberGets(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersMessageFlow).Return(tt.responseNumbersMessageFlow, nil)
 			for _, num := range tt.responseNumbersMessageFlow {
-				mockDB.EXPECT().NumberUpdateMessageFlowID(gomock.Any(), num.ID, uuid.Nil)
+				mockDB.EXPECT().NumberUpdate(gomock.Any(), num.ID, map[number.Field]any{
+					number.FieldMessageFlowID: uuid.Nil,
+				})
 			}
 
 			if err := h.EventFlowDeleted(ctx, tt.flow); err != nil {

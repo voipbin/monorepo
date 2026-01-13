@@ -207,7 +207,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseGroupcalls, nil)
+			mockDB.EXPECT().GroupcallGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGroupcalls, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {

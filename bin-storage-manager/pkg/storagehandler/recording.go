@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-storage-manager/models/bucketfile"
+	"monorepo/bin-storage-manager/models/file"
 )
 
 // RecordingGet returns given recording's bucketfile info.
@@ -18,9 +19,9 @@ func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucke
 		"recoding_id": id,
 	})
 
-	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": id.String(),
+	filters := map[file.Field]any{
+		file.FieldDeleted:     false,
+		file.FieldReferenceID: id,
 	}
 
 	files, err := h.FileGets(ctx, "", 100, filters)
@@ -62,9 +63,9 @@ func (h *storageHandler) RecordingDelete(ctx context.Context, id uuid.UUID) erro
 		"recoding_id": id,
 	})
 
-	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": id.String(),
+	filters := map[file.Field]any{
+		file.FieldDeleted:     false,
+		file.FieldReferenceID: id,
 	}
 
 	files, err := h.FileGets(ctx, "", 100, filters)

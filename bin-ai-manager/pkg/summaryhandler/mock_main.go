@@ -100,7 +100,7 @@ func (mr *MockSummaryHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockSummaryHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error) {
+func (m *MockSummaryHandler) Gets(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*summary.Summary)

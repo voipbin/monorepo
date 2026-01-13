@@ -210,27 +210,24 @@ func Test_Update(t *testing.T) {
 	type test struct {
 		name string
 
-		id            uuid.UUID
-		extensionName string
-		detail        string
-		password      string
+		id     uuid.UUID
+		fields map[extension.Field]any
 
 		responseExtension *extension.Extension
 		updateAuth        *astauth.AstAuth
-		updateExt         *extension.Extension
 		updatedExt        *extension.Extension
-
-		expectSIPAuth *sipauth.SIPAuth
 	}
 
 	tests := []test{
 		{
 			name: "normal",
 
-			id:            uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
-			extensionName: "update name",
-			detail:        "update detail",
-			password:      "update password",
+			id: uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
+			fields: map[extension.Field]any{
+				extension.FieldName:     "update name",
+				extension.FieldDetail:   "update detail",
+				extension.FieldPassword: "update password",
+			},
 
 			responseExtension: &extension.Extension{
 				Identity: commonidentity.Identity{
@@ -251,17 +248,6 @@ func Test_Update(t *testing.T) {
 				ID:       getStringPointer("66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net"),
 				Password: getStringPointer("update password"),
 			},
-			updateExt: &extension.Extension{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
-					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
-				},
-				Name:      "update name",
-				Detail:    "update detail",
-				AuthID:    "66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net",
-				Extension: "66f6b86c-6f44-11eb-ab55-934942c23f91",
-				Password:  "update password",
-			},
 			updatedExt: &extension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
@@ -275,18 +261,6 @@ func Test_Update(t *testing.T) {
 				Realm:      "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
 				Username:   "66f6b86c-6f44-11eb-ab55-934942c23f91",
 				Password:   "update password",
-			},
-
-			expectSIPAuth: &sipauth.SIPAuth{
-				ID:            uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
-				ReferenceType: sipauth.ReferenceTypeExtension,
-				AuthTypes: []sipauth.AuthType{
-					sipauth.AuthTypeBasic,
-				},
-				Realm:      "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
-				Username:   "66f6b86c-6f44-11eb-ab55-934942c23f91",
-				Password:   "update password",
-				AllowedIPs: []string{},
 			},
 		},
 	}
@@ -306,14 +280,14 @@ func Test_Update(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.updateExt.ID).Return(tt.responseExtension, nil)
+		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.id).Return(tt.responseExtension, nil)
 		mockDBAst.EXPECT().AstAuthUpdate(gomock.Any(), tt.updateAuth).Return(nil)
-		mockDBBin.EXPECT().ExtensionUpdate(gomock.Any(), tt.id, tt.extensionName, tt.detail, tt.password).Return(nil)
+		mockDBBin.EXPECT().ExtensionUpdate(gomock.Any(), tt.id, tt.fields).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.responseExtension.ID).Return(tt.updatedExt, nil)
-		mockDBBin.EXPECT().SIPAuthUpdateAll(ctx, tt.expectSIPAuth).Return(nil)
+		mockDBBin.EXPECT().SIPAuthUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), extension.EventTypeExtensionUpdated, tt.updatedExt)
-		_, err := h.Update(ctx, tt.id, tt.extensionName, tt.detail, tt.password)
+		_, err := h.Update(ctx, tt.id, tt.fields)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
@@ -456,7 +430,7 @@ func Test_Gets(t *testing.T) {
 
 		token   string
 		limit   uint64
-		filters map[string]string
+		filters map[extension.Field]any
 
 		exts []*extension.Extension
 	}
@@ -467,8 +441,8 @@ func Test_Gets(t *testing.T) {
 
 			"2021-02-15 17:31:59.519672",
 			10,
-			map[string]string{
-				"deleted": "false",
+			map[extension.Field]any{
+				extension.FieldDeleted: false,
 			},
 
 			[]*extension.Extension{

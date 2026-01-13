@@ -186,7 +186,7 @@ func Test_ConferencecallGets(t *testing.T) {
 		conferencecalls []*conferencecall.Conferencecall
 
 		count   int
-		filters map[string]string
+		filters map[conferencecall.Field]any
 
 		responseCurTime string
 
@@ -210,9 +210,9 @@ func Test_ConferencecallGets(t *testing.T) {
 			},
 
 			10,
-			map[string]string{
-				"customer_id": "8512e56c-cb08-46fa-96de-7855d0889577",
-				"deleted":     "false",
+			map[conferencecall.Field]any{
+				conferencecall.FieldCustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
+				conferencecall.FieldDeleted:    false,
 			},
 
 			"2023-01-03 21:35:02.809",
@@ -242,9 +242,9 @@ func Test_ConferencecallGets(t *testing.T) {
 			[]*conferencecall.Conferencecall{},
 
 			0,
-			map[string]string{
-				"customer_id": "9c61ef24-b396-465b-9705-44b420f2dc5d",
-				"deleted":     "false",
+			map[conferencecall.Field]any{
+				conferencecall.FieldCustomerID: uuid.FromStringOrNil("9c61ef24-b396-465b-9705-44b420f2dc5d"),
+				conferencecall.FieldDeleted:    false,
 			},
 
 			"2023-01-03 21:35:02.809",

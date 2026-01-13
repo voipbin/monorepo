@@ -103,18 +103,18 @@ func (mr *MockTagHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockTagHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error) {
+func (m *MockTagHandler) Gets(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockTagHandlerMockRecorder) Gets(ctx, customerID, size, token any) *gomock.Call {
+func (mr *MockTagHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockTagHandler)(nil).Gets), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockTagHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // UpdateBasicInfo mocks base method.

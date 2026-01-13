@@ -11,15 +11,15 @@ import (
 )
 
 // dbGets returns tags
-func (h *tagHandler) dbGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error) {
+func (h *tagHandler) dbGets(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "dbGets",
-		"customer_id": customerID,
-		"size":        size,
-		"token":       token,
+		"func":    "dbGets",
+		"filters": filters,
+		"size":    size,
+		"token":   token,
 	})
 
-	res, err := h.db.TagGets(ctx, customerID, size, token)
+	res, err := h.db.TagGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
 		return nil, err

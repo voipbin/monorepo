@@ -2,179 +2,40 @@ package dbhandler
 
 import (
 	"context"
-	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
-	"github.com/pkg/errors"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-ai-manager/models/aicall"
 )
 
 const (
-	aicallSelect = `
-	select
-		id,
-		customer_id,
-
-		ai_id,
-		ai_engine_type,
-		ai_engine_model,
-		ai_engine_data,
-		ai_tts_type,
-		ai_tts_voice_id,
-		ai_stt_type,
-
-		activeflow_id,
-		reference_type,
-		reference_id,
-
-		confbridge_id,
-		pipecatcall_id,
-
-		status,
-
-		gender,
-		language,
-
-		tm_end,
-		tm_create,
-		tm_update,
-		tm_delete
-
-	from
-		ai_aicalls
-	`
+	aicallTable = "ai_aicalls"
 )
-
-// aicallGetFromRow gets the aicall from the row.
-func (h *handler) aicallGetFromRow(row *sql.Rows) (*aicall.AIcall, error) {
-	var tmpAIEngineData sql.NullString
-
-	res := &aicall.AIcall{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-
-		&res.AIID,
-		&res.AIEngineType,
-		&res.AIEngineModel,
-		&tmpAIEngineData,
-		&res.AITTSType,
-		&res.AITTSVoiceID,
-		&res.AISTTType,
-
-		&res.ActiveflowID,
-		&res.ReferenceType,
-		&res.ReferenceID,
-
-		&res.ConfbridgeID,
-		&res.PipecatcallID,
-
-		&res.Status,
-
-		&res.Gender,
-		&res.Language,
-
-		&res.TMEnd,
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, errors.Wrapf(err, "could not scan the row. aicallGetFromRow")
-	}
-
-	if tmpAIEngineData.Valid {
-		if err := json.Unmarshal([]byte(tmpAIEngineData.String), &res.AIEngineData); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the data. aicallGetFromRow. err: %v", err)
-		}
-	}
-	if res.AIEngineData == nil {
-		res.AIEngineData = map[string]any{}
-	}
-
-	return res, nil
-}
 
 // AIcallCreate creates a new aicall record.
 func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
-	q := `insert into ai_aicalls(
-		id,
-		customer_id,
+	cb.TMEnd = DefaultTimeStamp
+	cb.TMCreate = h.utilHandler.TimeGetCurTime()
+	cb.TMUpdate = DefaultTimeStamp
+	cb.TMDelete = DefaultTimeStamp
 
-		ai_id,
-		ai_engine_type,
-		ai_engine_model,
-		ai_engine_data,
-		ai_tts_type,
-		ai_tts_voice_id,
-		ai_stt_type,
-
-		activeflow_id,
-		reference_type,
-		reference_id,
-
-		confbridge_id,
-		pipecatcall_id,
-
-		status,
-
-		gender,
-		language,
- 
-		tm_end,
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, 
-		?, ?, ?, ?, ?, ?, ?,
-		?, ?, ?,
-		?, ?,
-		?,
-		?, ?,
- 		?, ?, ?, ?
-		)
-	`
-
-	tmpAIEngineData, err := json.Marshal(cb.AIEngineData)
+	fields, err := commondatabasehandler.PrepareFields(cb)
 	if err != nil {
-		return fmt.Errorf("AICreate: Could not marshal the data. err: %v", err)
+		return fmt.Errorf("AIcallCreate: could not prepare fields. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q,
-		cb.ID.Bytes(),
-		cb.CustomerID.Bytes(),
-
-		cb.AIID.Bytes(),
-		cb.AIEngineType,
-		cb.AIEngineModel,
-		tmpAIEngineData,
-		cb.AITTSType,
-		cb.AITTSVoiceID,
-		cb.AISTTType,
-
-		cb.ActiveflowID.Bytes(),
-		cb.ReferenceType,
-		cb.ReferenceID.Bytes(),
-
-		cb.ConfbridgeID.Bytes(),
-		cb.PipecatcallID.Bytes(),
-
-		cb.Status,
-
-		cb.Gender,
-		cb.Language,
-
-		DefaultTimeStamp,
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sq.Insert(aicallTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. AIcallCreate. err: %v", err)
+		return fmt.Errorf("AIcallCreate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AIcallCreate: could not execute. err: %v", err)
 	}
 
 	// update the cache
@@ -185,8 +46,6 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 
 // aicallGetFromCache returns aicall from the cache if possible.
 func (h *handler) aicallGetFromCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-
-	// get from cache
 	res, err := h.cache.AIcallGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -197,33 +56,36 @@ func (h *handler) aicallGetFromCache(ctx context.Context, id uuid.UUID) (*aicall
 
 // aicallGetFromDB gets aicall from the database.
 func (h *handler) aicallGetFromDB(id uuid.UUID) (*aicall.AIcall, error) {
+	cols := commondatabasehandler.GetDBFields(aicall.AIcall{})
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", aicallSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	query, args, err := sq.Select(cols...).
+		From(aicallTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. aicallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("aicallGetFromDB: could not build query. err: %v", err)
 	}
-	defer func() {
-		_ = row.Close()
-	}()
 
-	if !row.Next() {
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("aicallGetFromDB: could not query. err: %v", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.aicallGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not get call. aicallGetFromDB, err: %v", err)
+	res := &aicall.AIcall{}
+	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
+		return nil, fmt.Errorf("aicallGetFromDB: could not scan row. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// aicallUpdateToCache gets the aicall from the DB and update the cache.
+// aicallUpdateToCache gets the aicall from the DB and updates the cache.
 func (h *handler) aicallUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.aicallGetFromDB(id)
 	if err != nil {
 		return err
@@ -236,7 +98,7 @@ func (h *handler) aicallUpdateToCache(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// aicallSetToCache sets the given aicall to the cache
+// aicallSetToCache sets the given aicall to the cache.
 func (h *handler) aicallSetToCache(ctx context.Context, data *aicall.AIcall) error {
 	if err := h.cache.AIcallSet(ctx, data); err != nil {
 		return err
@@ -247,7 +109,6 @@ func (h *handler) aicallSetToCache(ctx context.Context, data *aicall.AIcall) err
 
 // AIcallGet gets aicall.
 func (h *handler) AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-
 	res, err := h.aicallGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -266,30 +127,35 @@ func (h *handler) AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, 
 
 // AIcallGetByReferenceID gets aicall of the given reference_id.
 func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error) {
-
 	tmp, err := h.cache.AIcallGetByReferenceID(ctx, referenceID)
 	if err == nil {
 		return tmp, nil
 	}
 
-	// prepare
-	q := fmt.Sprintf("%s where reference_id = ? order by tm_create desc", aicallSelect)
+	cols := commondatabasehandler.GetDBFields(aicall.AIcall{})
 
-	row, err := h.db.Query(q, referenceID.Bytes())
+	query, args, err := sq.Select(cols...).
+		From(aicallTable).
+		Where(sq.Eq{"reference_id": referenceID.Bytes()}).
+		OrderBy("tm_create desc").
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AIcallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("AIcallGetByReferenceID: could not build query. err: %v", err)
 	}
-	defer func() {
-		_ = row.Close()
-	}()
 
-	if !row.Next() {
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("AIcallGetByReferenceID: could not query. err: %v", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.aicallGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not get call. AIcallGetByReferenceID, err: %v", err)
+	res := &aicall.AIcall{}
+	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
+		return nil, fmt.Errorf("AIcallGetByReferenceID: could not scan row. err: %v", err)
 	}
 
 	_ = h.aicallSetToCache(ctx, res)
@@ -297,109 +163,24 @@ func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.U
 	return res, nil
 }
 
-func (h *handler) AIcallUpdatePipecatcallID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID) error {
-	//prepare
-	q := `
-		update ai_aicalls set
- 			pipecatcall_id = ?,
-			tm_update = ?
-		where
-			id = ?
-		`
-
-	_, err := h.db.Exec(q, pipecatcallID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return errors.Wrapf(err, "could not execute. AIcallUpdateStatusAndPipecatcallID")
-	}
-
-	// update the cache
-	_ = h.aicallUpdateToCache(ctx, id)
-
-	return nil
-}
-
-func (h *handler) AIcallUpdateStatus(ctx context.Context, id uuid.UUID, status aicall.Status) error {
-	//prepare
-	q := `
-		update ai_aicalls set
- 			status = ?,
-			tm_update = ?
-		where
-			id = ?
-		`
-
-	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return errors.Wrapf(err, "could not execute. AIcallUpdateStatus")
-	}
-
-	// update the cache
-	_ = h.aicallUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// AIcallUpdateStatusResuming updates the aicall's status to resuming
-func (h *handler) AIcallUpdateStatusResuming(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) error {
-	//prepare
-	q := `
-	update ai_aicalls set
-		status = ?,
-		confbridge_id = ?,
- 		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, aicall.StatusResuming, confbridgeID.Bytes(), ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AIcallUpdateStatusResuming. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.aicallUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// AIcallUpdateStatusTerminating updates the aicall's status to finishing
-func (h *handler) AIcallUpdateStatusTerminating(ctx context.Context, id uuid.UUID) error {
-	//prepare
-	q := `
-		update ai_aicalls set
-			status = ?,
-			tm_update = ?
-		where
-			id = ?
-		`
-
-	_, err := h.db.Exec(q, aicall.StatusTerminating, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return errors.Wrapf(err, "could not execute. AIcallUpdateStatusTerminating")
-	}
-
-	// update the cache
-	_ = h.aicallUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// AIcallDelete deletes the aicall
+// AIcallDelete deletes the aicall.
 func (h *handler) AIcallDelete(ctx context.Context, id uuid.UUID) error {
-	//prepare
-	q := `
-	update ai_aicalls set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+
+	query, args, err := sq.Update(aicallTable).
+		SetMap(map[string]any{
+			"tm_update": ts,
+			"tm_delete": ts,
+		}).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. AIcallDelete. err: %v", err)
+		return fmt.Errorf("AIcallDelete: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AIcallDelete: could not execute. err: %v", err)
 	}
 
 	// update the cache
@@ -409,59 +190,75 @@ func (h *handler) AIcallDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // AIcallGets returns a list of aicalls.
-func (h *handler) AIcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+func (h *handler) AIcallGets(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, aicallSelect)
+	cols := commondatabasehandler.GetDBFields(aicall.AIcall{})
 
-	values := []interface{}{
-		token,
-	}
+	builder := sq.Select(cols...).
+		From(aicallTable).
+		Where(sq.Lt{"tm_create": token}).
+		OrderBy("tm_create desc").
+		Limit(size)
 
-	for k, v := range filters {
-		switch k {
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		case "customer_id", "ai_id", "activeflow_id", "reference_id", "confbridge_id", "pipecatcall_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, uuid.FromStringOrNil(v).Bytes())
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
-	}
-
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AIcallGets. err: %v", err)
+		return nil, fmt.Errorf("AIcallGets: could not apply filters. err: %v", err)
 	}
-	defer func() {
-		_ = rows.Close()
-	}()
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("AIcallGets: could not build query. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("AIcallGets: could not query. err: %v", err)
+	}
+	defer rows.Close()
 
 	res := []*aicall.AIcall{}
 	for rows.Next() {
-		u, err := h.aicallGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not get data. AIcallGets, err: %v", err)
+		u := &aicall.AIcall{}
+		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
+			return nil, fmt.Errorf("AIcallGets: could not scan row. err: %v", err)
 		}
-
 		res = append(res, u)
 	}
 
 	return res, nil
+}
+
+// AIcallUpdate updates the aicall fields.
+func (h *handler) AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error {
+	updateFields := make(map[string]any)
+	for k, v := range fields {
+		updateFields[string(k)] = v
+	}
+	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
+
+	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
+	if err != nil {
+		return fmt.Errorf("AIcallUpdate: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Update(aicallTable).
+		SetMap(preparedFields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("AIcallUpdate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AIcallUpdate: could not execute. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.aicallUpdateToCache(ctx, id)
+
+	return nil
 }

@@ -3,6 +3,7 @@ create table storage_files(
   id                binary(16),   -- id
   customer_id       binary(16),   -- customer id
   account_id        binary(16),   -- account id
+  owner_type        varchar(255), -- owner type
   owner_id          binary(16),   -- owner id
 
   reference_type  varchar(255),   -- reference type

@@ -16,6 +16,24 @@ import (
 	"monorepo/bin-agent-manager/pkg/listenhandler/models/request"
 )
 
+// convertAgentFilters converts URL query filters to typed agent filters
+func convertAgentFilters(rawFilters map[string]string) map[agent.Field]any {
+	filters := make(map[agent.Field]any)
+	for k, v := range rawFilters {
+		switch k {
+		case "customer_id":
+			filters[agent.FieldCustomerID] = uuid.FromStringOrNil(v)
+		case "deleted":
+			filters[agent.FieldDeleted] = v == "false"
+		case "status":
+			filters[agent.FieldStatus] = agent.Status(v)
+		default:
+			filters[agent.Field(k)] = v
+		}
+	}
+	return filters
+}
+
 // processV1AgentsGet handles GET /v1/agents request
 func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 
@@ -29,8 +47,9 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	// parse the filters and convert to typed filters
+	rawFilters := h.utilHandler.URLParseFilters(u)
+	filters := convertAgentFilters(rawFilters)
 
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AgentsGet",

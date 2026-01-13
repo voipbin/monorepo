@@ -90,7 +90,9 @@ func Test_Terminating(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockDB.EXPECT().ConferenceSetStatus(ctx, tt.id, conference.StatusTerminating).Return(nil)
+			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, map[conference.Field]any{
+				conference.FieldStatus: conference.StatusTerminating,
+			}).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
 

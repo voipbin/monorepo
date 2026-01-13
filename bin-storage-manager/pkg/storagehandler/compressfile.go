@@ -94,9 +94,9 @@ func (h *storageHandler) compressGetFilesByReferenceIDs(ctx context.Context, ref
 
 	res := []*file.File{}
 	for _, id := range referenceIDs {
-		filters := map[string]string{
-			"deleted":      "false",
-			"reference_id": id.String(),
+		filters := map[file.Field]any{
+			file.FieldDeleted:     false,
+			file.FieldReferenceID: id,
 		}
 
 		tmps, err := h.FileGets(ctx, "", 1000, filters)

@@ -8,6 +8,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -21,10 +22,12 @@ func Test_processV1MessagesGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
+		filters    map[message.Field]any
 		resultData []*message.Message
+
+		responseFilters map[string]string
 
 		request  *sock.Request
 		response *sock.Response
@@ -32,9 +35,11 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
 			10,
 			"2021-03-01 03:30:17.000000",
+			map[message.Field]any{
+				message.FieldCustomerID: uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
+			},
 			[]*message.Message{
 				{
 					Identity: commonidentity.Identity{
@@ -43,6 +48,11 @@ func Test_processV1MessagesGet(t *testing.T) {
 					},
 				},
 			},
+
+			map[string]string{
+				"customer_id": "197609d6-a29b-11ec-b884-5b8a227db58a",
+			},
+
 			&sock.Request{
 				URI:    "/v1/messages?customer_id=197609d6-a29b-11ec-b884-5b8a227db58a&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: sock.RequestMethodGet,
@@ -56,9 +66,11 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			"2 results",
 
-			uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
 			10,
 			"2021-03-01 03:30:17.000000",
+			map[message.Field]any{
+				message.FieldCustomerID: uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
+			},
 			[]*message.Message{
 				{
 					Identity: commonidentity.Identity{
@@ -73,6 +85,11 @@ func Test_processV1MessagesGet(t *testing.T) {
 					},
 				},
 			},
+
+			map[string]string{
+				"customer_id": "75dd760a-a29b-11ec-ba70-cb282aa1d594",
+			},
+
 			&sock.Request{
 				URI:    "/v1/messages?customer_id=75dd760a-a29b-11ec-ba70-cb282aa1d594&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: sock.RequestMethodGet,
@@ -92,13 +109,16 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:    mockSock,
+				utilHandler:    mockUtil,
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockMessage.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

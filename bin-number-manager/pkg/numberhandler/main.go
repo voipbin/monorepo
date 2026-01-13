@@ -28,7 +28,7 @@ type NumberHandler interface {
 
 	Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error)
 	Get(ctx context.Context, id uuid.UUID) (*number.Number, error)
-	Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error)
+	Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error)
 	Delete(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	Register(
 		ctx context.Context,
@@ -45,8 +45,7 @@ type NumberHandler interface {
 		emergencyEnabled bool,
 	) (*number.Number, error)
 
-	UpdateInfo(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*number.Number, error)
-	UpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error)
+	Update(ctx context.Context, id uuid.UUID, fields map[number.Field]any) (*number.Number, error)
 
 	RenewNumbers(ctx context.Context, days int, hours int, tmRenew string) ([]*number.Number, error)
 

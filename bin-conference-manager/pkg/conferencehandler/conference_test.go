@@ -211,6 +211,7 @@ func Test_Update(t *testing.T) {
 		preFlowID      uuid.UUID
 		postFlowID     uuid.UUID
 
+		expectFields       map[conference.Field]any
 		responseConference *conference.Conference
 	}{
 		{
@@ -226,6 +227,14 @@ func Test_Update(t *testing.T) {
 			preFlowID:  uuid.FromStringOrNil("c4642da2-1e10-11f0-9c2d-9fadec265c1d"),
 			postFlowID: uuid.FromStringOrNil("c48cc2e4-1e10-11f0-9e00-bbd2a97e0a8e"),
 
+			expectFields: map[conference.Field]any{
+				conference.FieldName:       "update name",
+				conference.FieldDetail:     "update detail",
+				conference.FieldData:       map[string]any{"key1": "value1"},
+				conference.FieldTimeout:    86400,
+				conference.FieldPreFlowID:  uuid.FromStringOrNil("c4642da2-1e10-11f0-9c2d-9fadec265c1d"),
+				conference.FieldPostFlowID: uuid.FromStringOrNil("c48cc2e4-1e10-11f0-9e00-bbd2a97e0a8e"),
+			},
 			responseConference: &conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c40d48ac-1e10-11f0-a6b3-276e2a2df365"),
@@ -237,6 +246,14 @@ func Test_Update(t *testing.T) {
 
 			id: uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
 
+			expectFields: map[conference.Field]any{
+				conference.FieldName:       "",
+				conference.FieldDetail:     "",
+				conference.FieldData:       map[string]any(nil),
+				conference.FieldTimeout:    0,
+				conference.FieldPreFlowID:  uuid.Nil,
+				conference.FieldPostFlowID: uuid.Nil,
+			},
 			responseConference: &conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
@@ -262,7 +279,7 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceSet(ctx, tt.id, tt.conferenceName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID).Return(nil)
+			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
 
@@ -286,6 +303,7 @@ func Test_UpdateRecordingID(t *testing.T) {
 		id          uuid.UUID
 		recordingID uuid.UUID
 
+		expectFields       map[conference.Field]any
 		responseConference *conference.Conference
 	}{
 		{
@@ -294,6 +312,9 @@ func Test_UpdateRecordingID(t *testing.T) {
 			id:          uuid.FromStringOrNil("cbbf9c7c-9090-11ed-b005-b76aad1ce504"),
 			recordingID: uuid.FromStringOrNil("cbf14380-9090-11ed-8ae5-0bdda69156ed"),
 
+			expectFields: map[conference.Field]any{
+				conference.FieldRecordingID: uuid.FromStringOrNil("cbf14380-9090-11ed-8ae5-0bdda69156ed"),
+			},
 			responseConference: &conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cbbf9c7c-9090-11ed-b005-b76aad1ce504"),
@@ -306,6 +327,9 @@ func Test_UpdateRecordingID(t *testing.T) {
 			id:          uuid.FromStringOrNil("f036af26-98c1-11ed-a796-0753c08f103e"),
 			recordingID: uuid.Nil,
 
+			expectFields: map[conference.Field]any{
+				conference.FieldRecordingID: uuid.Nil,
+			},
 			responseConference: &conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f036af26-98c1-11ed-a796-0753c08f103e"),
@@ -331,7 +355,7 @@ func Test_UpdateRecordingID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceSetRecordingID(ctx, tt.id, tt.recordingID).Return(nil)
+			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields).Return(nil)
 			if tt.recordingID != uuid.Nil {
 				mockDB.EXPECT().ConferenceAddRecordingIDs(ctx, tt.id, tt.recordingID).Return(nil)
 			}
@@ -357,6 +381,7 @@ func Test_UpdateTranscribeID(t *testing.T) {
 		id           uuid.UUID
 		transcribeID uuid.UUID
 
+		expectFields       map[conference.Field]any
 		responseConference *conference.Conference
 	}{
 		{
@@ -365,6 +390,9 @@ func Test_UpdateTranscribeID(t *testing.T) {
 			id:           uuid.FromStringOrNil("d5e141cc-98c1-11ed-8cce-6b7c71104332"),
 			transcribeID: uuid.FromStringOrNil("d629b3ee-98c1-11ed-8d37-d7fa7c56235d"),
 
+			expectFields: map[conference.Field]any{
+				conference.FieldTranscribeID: uuid.FromStringOrNil("d629b3ee-98c1-11ed-8d37-d7fa7c56235d"),
+			},
 			responseConference: &conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d5e141cc-98c1-11ed-8cce-6b7c71104332"),
@@ -377,6 +405,9 @@ func Test_UpdateTranscribeID(t *testing.T) {
 			id:           uuid.FromStringOrNil("f0138906-98c1-11ed-8b15-77a88eafac75"),
 			transcribeID: uuid.Nil,
 
+			expectFields: map[conference.Field]any{
+				conference.FieldTranscribeID: uuid.Nil,
+			},
 			responseConference: &conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f0138906-98c1-11ed-8b15-77a88eafac75"),
@@ -402,7 +433,7 @@ func Test_UpdateTranscribeID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceSetTranscribeID(ctx, tt.id, tt.transcribeID).Return(nil)
+			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields).Return(nil)
 			if tt.transcribeID != uuid.Nil {
 				mockDB.EXPECT().ConferenceAddTranscribeIDs(ctx, tt.id, tt.transcribeID).Return(nil)
 			}
@@ -543,7 +574,7 @@ func Test_Gets(t *testing.T) {
 		customerID uuid.UUID
 		size       uint64
 		token      string
-		filters    map[string]string
+		filters    map[conference.Field]any
 
 		responseConference []*conference.Conference
 
@@ -555,8 +586,8 @@ func Test_Gets(t *testing.T) {
 			customerID: uuid.FromStringOrNil("c7dc2ef0-afd3-11ee-a624-3fa2cdf1cb55"),
 			size:       10,
 			token:      "2023-01-03 21:35:02.809",
-			filters: map[string]string{
-				"type": string(conference.TypeConnect),
+			filters: map[conference.Field]any{
+				conference.FieldType: conference.TypeConnect,
 			},
 
 			responseConference: []*conference.Conference{

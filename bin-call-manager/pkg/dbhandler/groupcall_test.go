@@ -738,7 +738,7 @@ func Test_GroupcallGets(t *testing.T) {
 		name       string
 		groupcalls []*groupcall.Groupcall
 
-		filters map[string]string
+		filters map[groupcall.Field]any
 
 		responseCurTime string
 
@@ -763,9 +763,9 @@ func Test_GroupcallGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "fc86423c-aef0-11ee-a9c6-f7e96941fc95",
-				"deleted":     "false",
+			map[groupcall.Field]any{
+				groupcall.FieldCustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+				groupcall.FieldDeleted:    false,
 			},
 
 			"2020-04-18 03:22:17.995000",
@@ -807,9 +807,9 @@ func Test_GroupcallGets(t *testing.T) {
 			"empty",
 			[]*groupcall.Groupcall{},
 
-			map[string]string{
-				"customer_id": "fce1b9aa-aef0-11ee-b858-6ff6c7db63ee",
-				"deleted":     "true",
+			map[groupcall.Field]any{
+				groupcall.FieldCustomerID: uuid.FromStringOrNil("fce1b9aa-aef0-11ee-b858-6ff6c7db63ee"),
+				groupcall.FieldDeleted:    false,
 			},
 
 			"2020-04-18 03:22:17.995000",

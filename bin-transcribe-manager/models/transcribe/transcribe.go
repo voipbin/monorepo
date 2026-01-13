@@ -10,23 +10,23 @@ import (
 type Transcribe struct {
 	commonidentity.Identity
 
-	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"`
-	OnEndFlowID  uuid.UUID `json:"on_end_flow_id,omitempty"`
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`
+	OnEndFlowID  uuid.UUID `json:"on_end_flow_id,omitempty" db:"on_end_flow_id,uuid"`
 
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"` // call/conference/recording's id
+	ReferenceType ReferenceType `json:"reference_type" db:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id" db:"reference_id,uuid"` // call/conference/recording's id
 
-	Status    Status    `json:"status"`
-	HostID    uuid.UUID `json:"host_id"`  // host id
-	Language  string    `json:"language"` // BCP47 type's language code. en-US
-	Direction Direction `json:"direction"`
+	Status    Status    `json:"status" db:"status"`
+	HostID    uuid.UUID `json:"host_id" db:"host_id,uuid"` // host id
+	Language  string    `json:"language" db:"language"`    // BCP47 type's language code. en-US
+	Direction Direction `json:"direction" db:"direction"`
 
-	StreamingIDs []uuid.UUID `json:"streaming_ids"`
+	StreamingIDs []uuid.UUID `json:"streaming_ids" db:"streaming_ids,json"`
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // ReferenceType define

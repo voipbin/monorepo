@@ -119,7 +119,7 @@ func (mr *MockTrunkHandlerMockRecorder) GetByDomainName(ctx, domainName any) *go
 }
 
 // Gets mocks base method.
-func (m *MockTrunkHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*trunk.Trunk, error) {
+func (m *MockTrunkHandler) Gets(ctx context.Context, token string, limit uint64, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*trunk.Trunk)
@@ -134,16 +134,16 @@ func (mr *MockTrunkHandlerMockRecorder) Gets(ctx, token, limit, filters any) *go
 }
 
 // Update mocks base method.
-func (m *MockTrunkHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
+func (m *MockTrunkHandler) Update(ctx context.Context, id uuid.UUID, fields map[trunk.Field]any) (*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, authTypes, username, password, allowedIPs)
+	ret := m.ctrl.Call(m, "Update", ctx, id, fields)
 	ret0, _ := ret[0].(*trunk.Trunk)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockTrunkHandlerMockRecorder) Update(ctx, id, name, detail, authTypes, username, password, allowedIPs any) *gomock.Call {
+func (mr *MockTrunkHandlerMockRecorder) Update(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTrunkHandler)(nil).Update), ctx, id, name, detail, authTypes, username, password, allowedIPs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTrunkHandler)(nil).Update), ctx, id, fields)
 }

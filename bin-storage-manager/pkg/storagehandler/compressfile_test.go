@@ -119,9 +119,9 @@ func Test_CompressCreate(t *testing.T) {
 				mockFile.EXPECT().Get(ctx, id).Return(tt.responseFilesByFileIDs[i], nil)
 			}
 			for i, id := range tt.referenceIDs {
-				filters := map[string]string{
-					"deleted":      "false",
-					"reference_id": id.String(),
+				filters := map[file.Field]any{
+					file.FieldDeleted:     false,
+					file.FieldReferenceID: id,
 				}
 				mockFile.EXPECT().Gets(ctx, "", uint64(1000), filters).Return(tt.responseFilesByReferenceIDs[i], nil)
 			}
@@ -233,9 +233,9 @@ func Test_compressGetFilesByReferenceIDs(t *testing.T) {
 			ctx := context.Background()
 
 			for i, id := range tt.referenceIDs {
-				filters := map[string]string{
-					"deleted":      "false",
-					"reference_id": id.String(),
+				filters := map[file.Field]any{
+					file.FieldDeleted:     false,
+					file.FieldReferenceID: id,
 				}
 				mockFile.EXPECT().Gets(ctx, "", uint64(1000), filters).Return(tt.responseFiles[i], nil)
 			}

@@ -93,9 +93,9 @@ func (h *numberHandler) Register(
 	})
 	log.Debugf("Registering number. number: %s", num)
 
-	filters := map[string]string{
-		"deleted": "false",
-		"number":  num,
+	filters := map[number.Field]any{
+		number.FieldDeleted: false,
+		number.FieldNumber:  num,
 	}
 
 	existedNumbers, err := h.dbList(ctx, 1, "", filters)
@@ -189,7 +189,7 @@ func (h *numberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, 
 }
 
 // Gets returns list of numbers info of the given filters
-func (h *numberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
+func (h *numberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "Gets",
 		"page_size":  pageSize,
@@ -207,41 +207,19 @@ func (h *numberHandler) Gets(ctx context.Context, pageSize uint64, pageToken str
 	return res, nil
 }
 
-// UpdateInfo updates the number
-func (h *numberHandler) UpdateInfo(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*number.Number, error) {
+// Update updates the number with the given fields.
+func (h *numberHandler) Update(ctx context.Context, id uuid.UUID, fields map[number.Field]any) (*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "UpdateInfo",
-		"number_id":       id,
-		"call_flow_id":    callFlowID,
-		"message_flow_id": messageFlowID,
-		"name":            name,
-		"detail":          detail,
+		"func":      "Update",
+		"number_id": id,
+		"fields":    fields,
 	})
-	log.Debugf("UpdateBasicInfo. number_id: %s", id)
+	log.Debugf("Update. number_id: %s", id)
 
-	res, err := h.dbUpdateInfo(ctx, id, callFlowID, messageFlowID, name, detail)
+	res, err := h.dbUpdate(ctx, id, fields, number.EventTypeNumberUpdated)
 	if err != nil {
-		log.Errorf("Could not update the number info. err: %v", err)
-		return nil, errors.Wrap(err, "could not update the number info")
-	}
-
-	return res, nil
-}
-
-// UpdateFlowID updates the number's flow_id
-func (h *numberHandler) UpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*number.Number, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "UpdateFlowID",
-		"number_id":       id,
-		"call_flow_id":    callFlowID,
-		"message_flow_id": messageFlowID,
-	})
-	log.Debugf("UpdateFlowID. number_id: %s", id)
-
-	res, err := h.dbUpdateFlowID(ctx, id, callFlowID, messageFlowID)
-	if err != nil {
-		log.Errorf("Could not update the flow id. err: %v", err)
-		return nil, errors.Wrap(err, "could not update the flow id")
+		log.Errorf("Could not update the number. err: %v", err)
+		return nil, errors.Wrap(err, "could not update the number")
 	}
 
 	return res, nil

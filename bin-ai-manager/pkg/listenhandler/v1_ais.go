@@ -35,14 +35,15 @@ func (h *listenHandler) processV1AIsGet(ctx context.Context, m *sock.Request) (*
 
 	// get filters
 	filters := getFilters(u)
+	typedFilters := convertToAIFilters(filters)
 
 	log = log.WithFields(logrus.Fields{
 		"size":    pageSize,
 		"token":   pageToken,
-		"filters": filters,
+		"filters": typedFilters,
 	})
 
-	tmp, err := h.aiHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmp, err := h.aiHandler.Gets(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
 		return simpleResponse(500), nil

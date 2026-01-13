@@ -159,7 +159,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 		customer       *cmcustomer.Customer
 		responseAgents []*agent.Agent
 
-		expectFilter map[string]string
+		expectFilter map[agent.Field]any
 	}{
 		{
 			name: "normal",
@@ -180,9 +180,9 @@ func Test_EventCustomerDeleted(t *testing.T) {
 				},
 			},
 
-			expectFilter: map[string]string{
-				"customer_id": "82ed53fa-ccca-11ee-be19-17f582a54cf4",
-				"deleted":     "false",
+			expectFilter: map[agent.Field]any{
+				agent.FieldCustomerID: uuid.FromStringOrNil("82ed53fa-ccca-11ee-be19-17f582a54cf4"),
+				agent.FieldDeleted:    false,
 			},
 		},
 	}

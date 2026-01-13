@@ -3,187 +3,62 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-campaign-manager/models/campaigncall"
 )
 
 const (
-	// select query for campaigncall get
-	campaigncallSelect = `
-	select
-		id,
-		customer_id,
-		campaign_id,
-
-		outplan_id,
-		outdial_id,
-		outdial_target_id,
-		queue_id,
-
-		activeflow_id,
-		flow_id,
-
-		reference_type,
-		reference_id,
-
-		status,
-		result,
-
-		source,
-		destination,
-		destination_index,
-		try_count,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		campaign_campaigncalls
-	`
+	campaigncallsTable = "campaign_campaigncalls"
 )
 
 // campaigncallGetFromRow gets the campaigncall from the row.
 func (h *handler) campaigncallGetFromRow(row *sql.Rows) (*campaigncall.Campaigncall, error) {
-
-	var source string
-	var destination string
-
 	res := &campaigncall.Campaigncall{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.CampaignID,
 
-		&res.OutplanID,
-		&res.OutdialID,
-		&res.OutdialTargetID,
-		&res.QueueID,
-
-		&res.ActiveflowID,
-		&res.FlowID,
-
-		&res.ReferenceType,
-		&res.ReferenceID,
-
-		&res.Status,
-		&res.Result,
-
-		&source,
-		&destination,
-		&res.DestinationIndex,
-		&res.TryCount,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. campaignGetFromRow. err: %v", err)
-	}
-
-	if errSource := json.Unmarshal([]byte(source), &res.Source); errSource != nil {
-		return nil, fmt.Errorf("could not unmarshal the source. campaignGetFromRow. err: %v", errSource)
-	}
-
-	if errDestination := json.Unmarshal([]byte(destination), &res.Destination); errDestination != nil {
-		return nil, fmt.Errorf("could not unmarshal the destination. campaignGetFromRow. err: %v", errDestination)
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
+		return nil, fmt.Errorf("could not scan the row. campaigncallGetFromRow. err: %v", err)
 	}
 
 	return res, nil
 }
 
 // CampaigncallCreate insert a new campaigncall record
-func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campaigncall) error {
-	q := `insert into campaign_campaigncalls(
-		id,
-		customer_id,
-		campaign_id,
+func (h *handler) CampaigncallCreate(ctx context.Context, c *campaigncall.Campaigncall) error {
+	now := h.util.TimeGetCurTime()
 
-		outplan_id,
-		outdial_id,
-		outdial_target_id,
-		queue_id,
+	// Set timestamps
+	c.TMCreate = now
+	c.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	c.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		activeflow_id,
-		flow_id,
-
-		reference_type,
-		reference_id,
-
-		status,
-		result,
-
-		source,
-		destination,
-		destination_index,
-		try_count,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?,
-		?, ?, ?, ?,
-		?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?, ?,
-		?, ?, ?
-	)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare. CampaigncallCreate. err: %v", err)
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-
-	source, err := json.Marshal(t.Source)
-	if err != nil {
-		return fmt.Errorf("could not marshal source. CampaigncallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CampaigncallCreate. err: %v", err)
 	}
 
-	destination, err := json.Marshal(t.Destination)
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(campaigncallsTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal destination. CampaigncallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. CampaigncallCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
-		t.ID.Bytes(),
-		t.CustomerID.Bytes(),
-		t.CampaignID.Bytes(),
-
-		t.OutplanID.Bytes(),
-		t.OutdialID.Bytes(),
-		t.OutdialTargetID.Bytes(),
-		t.QueueID.Bytes(),
-
-		t.ActiveflowID.Bytes(),
-		t.FlowID.Bytes(),
-
-		t.ReferenceType,
-		t.ReferenceID.Bytes(),
-
-		t.Status,
-		t.Result,
-
-		source,
-		destination,
-		t.DestinationIndex,
-		t.TryCount,
-
-		h.util.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
-	if err != nil {
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. CampaigncallCreate. err: %v", err)
 	}
 
-	_ = h.campaigncallUpdateToCache(ctx, t.ID)
+	_ = h.campaigncallUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -226,20 +101,18 @@ func (h *handler) campaigncallGetFromCache(ctx context.Context, id uuid.UUID) (*
 
 // campaigncallGetFromDB gets the campaigncall info from the db.
 func (h *handler) campaigncallGetFromDB(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", campaigncallSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&campaigncall.Campaigncall{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(campaigncallsTable).
+		Where(squirrel.Eq{string(campaigncall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. campaigncallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. campaigncallGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. campaigncallGetFromDB. err: %v", err)
 	}
@@ -248,6 +121,9 @@ func (h *handler) campaigncallGetFromDB(ctx context.Context, id uuid.UUID) (*cam
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. campaigncallGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -279,20 +155,18 @@ func (h *handler) CampaigncallGet(ctx context.Context, id uuid.UUID) (*campaignc
 
 // CampaigncallGetByReferenceID returns campaigncall of the reference_id.
 func (h *handler) CampaigncallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where reference_id = ?", campaigncallSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&campaigncall.Campaigncall{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(campaigncallsTable).
+		Where(squirrel.Eq{string(campaigncall.FieldReferenceID): referenceID.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. CampaigncallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. CampaigncallGetByReferenceID. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, referenceID.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CampaigncallGetByReferenceID. err: %v", err)
 	}
@@ -301,6 +175,9 @@ func (h *handler) CampaigncallGetByReferenceID(ctx context.Context, referenceID 
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. CampaigncallGetByReferenceID. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -314,28 +191,29 @@ func (h *handler) CampaigncallGetByReferenceID(ctx context.Context, referenceID 
 
 // CampaigncallGetByActiveflowID returns campaigncall of the activeflow_id.
 func (h *handler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where activeflow_id = ?", campaigncallSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&campaigncall.Campaigncall{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(campaigncallsTable).
+		Where(squirrel.Eq{string(campaigncall.FieldActiveflowID): activeflowID.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. CampaigncallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. CampaigncallGetByActiveflowID. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, activeflowID.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaigncallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not query. CampaigncallGetByActiveflowID. err: %v", err)
 	}
 	defer func() {
 		_ = row.Close()
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. CampaigncallGetByActiveflowID. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -347,128 +225,108 @@ func (h *handler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowI
 	return res, nil
 }
 
-// CampaigncallGetsByCustomerID returns list of campaigncall.
-func (h *handler) CampaigncallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+// CampaigncallGets returns list of campaigncalls with filters.
+func (h *handler) CampaigncallGets(ctx context.Context, token string, size uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
+	if token == "" {
+		token = h.util.TimeGetCurTime()
+	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, campaigncallSelect)
+	fields := commondatabasehandler.GetDBFields(&campaigncall.Campaigncall{})
+	sb := squirrel.
+		Select(fields...).
+		From(campaigncallsTable).
+		Where(squirrel.Lt{string(campaigncall.FieldTMCreate): token}).
+		OrderBy(string(campaigncall.FieldTMCreate) + " DESC", string(campaigncall.FieldID) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, limit)
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaigncallGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. CampaigncallGets. err: %v", err)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CampaigncallGets. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CampaigncallGets. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
 
-	var res []*campaigncall.Campaigncall
+	res := []*campaigncall.Campaigncall{}
 	for rows.Next() {
 		u, err := h.campaigncallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. CampaigncallGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("could not get data. CampaigncallGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. CampaigncallGets. err: %v", err)
 	}
 
 	return res, nil
+}
+
+// CampaigncallGetsByCustomerID returns list of campaigncall.
+func (h *handler) CampaigncallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+	filters := map[campaigncall.Field]any{
+		campaigncall.FieldCustomerID: customerID,
+	}
+
+	return h.CampaigncallGets(ctx, token, limit, filters)
 }
 
 // CampaigncallGetsByCampaignID returns list of campaigncall.
 func (h *handler) CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			campaign_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, campaigncallSelect)
-
-	rows, err := h.db.Query(q, campaignID.Bytes(), token, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaigncallGetsByCampaignID. err: %v", err)
-	}
-	defer func() {
-		_ = rows.Close()
-	}()
-
-	var res []*campaigncall.Campaigncall
-	for rows.Next() {
-		u, err := h.campaigncallGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. CampaigncallGetsByCampaignID. err: %v", err)
-		}
-
-		res = append(res, u)
+	filters := map[campaigncall.Field]any{
+		campaigncall.FieldCampaignID: campaignID,
 	}
 
-	return res, nil
+	return h.CampaigncallGets(ctx, token, limit, filters)
 }
 
 // CampaigncallGetsByCampaignIDAndStatus returns list of campaigncall.
 func (h *handler) CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			status = ?
-			and campaign_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, campaigncallSelect)
-
-	rows, err := h.db.Query(q, status, campaignID.Bytes(), token, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaigncallGetsByCampaignIDAndStatus. err: %v", err)
-	}
-	defer func() {
-		_ = rows.Close()
-	}()
-
-	var res []*campaigncall.Campaigncall
-	for rows.Next() {
-		u, err := h.campaigncallGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. CampaigncallGetsByCampaignIDAndStatus. err: %v", err)
-		}
-
-		res = append(res, u)
+	filters := map[campaigncall.Field]any{
+		campaigncall.FieldCampaignID: campaignID,
+		campaigncall.FieldStatus:     status,
 	}
 
-	return res, nil
+	return h.CampaigncallGets(ctx, token, limit, filters)
 }
 
-// CampaigncallGetsByCampaignIDAndStatusOngoing returns list of campaigncall.
+// CampaigncallGetsOngoingByCampaignID returns list of ongoing campaigncalls (dialing or progressing).
 func (h *handler) CampaigncallGetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+	if token == "" {
+		token = h.util.TimeGetCurTime()
+	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			(status = ? or status = ?)
-			and campaign_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, campaigncallSelect)
+	fields := commondatabasehandler.GetDBFields(&campaigncall.Campaigncall{})
+	sb := squirrel.
+		Select(fields...).
+		From(campaigncallsTable).
+		Where(squirrel.Eq{string(campaigncall.FieldCampaignID): campaignID.Bytes()}).
+		Where(squirrel.Or{
+			squirrel.Eq{string(campaigncall.FieldStatus): campaigncall.StatusDialing},
+			squirrel.Eq{string(campaigncall.FieldStatus): campaigncall.StatusProgressing},
+		}).
+		Where(squirrel.Lt{string(campaigncall.FieldTMCreate): token}).
+		OrderBy(string(campaigncall.FieldTMCreate) + " DESC", string(campaigncall.FieldID) + " DESC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question)
 
-	rows, err := h.db.Query(q, campaigncall.StatusDialing, campaigncall.StatusProgressing, campaignID.Bytes(), token, limit)
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CampaigncallGetsOngoingByCampaignID. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CampaigncallGetsOngoingByCampaignID. err: %v", err)
 	}
@@ -476,73 +334,97 @@ func (h *handler) CampaigncallGetsOngoingByCampaignID(ctx context.Context, campa
 		_ = rows.Close()
 	}()
 
-	var res []*campaigncall.Campaigncall
+	res := []*campaigncall.Campaigncall{}
 	for rows.Next() {
 		u, err := h.campaigncallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. CampaigncallGetsOngoingByCampaignID. err: %v", err)
+			return nil, fmt.Errorf("could not get data. CampaigncallGetsOngoingByCampaignID, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. CampaigncallGetsOngoingByCampaignID. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// CampaigncallUpdateStatus updates campaigncall's status.
-func (h *handler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error {
-	q := `
-	update campaign_campaigncalls set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, status, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. CampaigncallUpdateStatus. err: %v", err)
+// CampaigncallUpdate updates campaigncall fields.
+func (h *handler) CampaigncallUpdate(ctx context.Context, id uuid.UUID, fields map[campaigncall.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// set to the cache
-	_ = h.campaigncallUpdateToCache(ctx, id)
+	fields[campaigncall.FieldTMUpdate] = h.util.TimeGetCurTime()
 
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("CampaigncallUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(campaigncallsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(campaigncall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("CampaigncallUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+		return fmt.Errorf("CampaigncallUpdate: exec failed: %w", err)
+	}
+
+	_ = h.campaigncallUpdateToCache(ctx, id)
 	return nil
+}
+
+// CampaigncallUpdateStatus updates campaigncall's status.
+func (h *handler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error {
+	fields := map[campaigncall.Field]any{
+		campaigncall.FieldStatus: status,
+	}
+
+	return h.CampaigncallUpdate(ctx, id, fields)
 }
 
 // CampaigncallUpdateStatusAndResult updates campaigncall's status and result.
 func (h *handler) CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) error {
-	q := `
-	update campaign_campaigncalls set
-		result = ?,
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, result, status, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. CampaigncallUpdateStatusAndResult. err: %v", err)
+	fields := map[campaigncall.Field]any{
+		campaigncall.FieldStatus: status,
+		campaigncall.FieldResult: result,
 	}
 
-	// set to the cache
-	_ = h.campaigncallUpdateToCache(ctx, id)
-
-	return nil
+	return h.CampaigncallUpdate(ctx, id, fields)
 }
 
 // CampaigncallDelete deletes the given campaigncall
 func (h *handler) CampaigncallDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update campaign_campaigncalls set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
 	ts := h.util.TimeGetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. CampaigncallDelete. err: %v", err)
+
+	fields := map[campaigncall.Field]any{
+		campaigncall.FieldTMUpdate: ts,
+		campaigncall.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("CampaigncallDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(campaigncallsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(campaigncall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("CampaigncallDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("CampaigncallDelete: exec failed: %w", err)
 	}
 
 	// update cache

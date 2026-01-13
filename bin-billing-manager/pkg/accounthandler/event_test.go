@@ -26,7 +26,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 
 		responseAccounts []*account.Account
 
-		expectFilters map[string]string
+		expectFilters map[account.Field]any
 		expectRes     []*account.Account
 	}
 
@@ -54,9 +54,9 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "92435eb0-0e68-11ee-b841-3fe2d10a7ab9",
-				"deleted":     "false",
+			expectFilters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("92435eb0-0e68-11ee-b841-3fe2d10a7ab9"),
+				account.FieldDeleted:    false,
 			},
 			expectRes: []*account.Account{
 				{

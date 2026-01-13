@@ -248,6 +248,8 @@ func Test_processV1NumbersGet(t *testing.T) {
 		responseFilters map[string]string
 		responseNumbers []*number.Number
 
+		expectTypedFilters map[number.Field]any
+
 		request  *sock.Request
 		response *sock.Response
 	}
@@ -279,6 +281,12 @@ func Test_processV1NumbersGet(t *testing.T) {
 					EmergencyEnabled:    false,
 				},
 			},
+
+			map[number.Field]any{
+				number.FieldCustomerID: uuid.FromStringOrNil("bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2"),
+				number.FieldDeleted:    true, // "false" -> true (negated)
+			},
+
 			&sock.Request{
 				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2&filter_deleted=false",
 				Method: sock.RequestMethodGet,
@@ -329,6 +337,12 @@ func Test_processV1NumbersGet(t *testing.T) {
 					EmergencyEnabled:    false,
 				},
 			},
+
+			map[number.Field]any{
+				number.FieldCustomerID: uuid.FromStringOrNil("dcff90a8-eca8-11ee-8816-0fa58b162524"),
+				number.FieldDeleted:    true, // "false" -> true (negated)
+			},
+
 			&sock.Request{
 				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=dcff90a8-eca8-11ee-8816-0fa58b162524&filter_deleted=false",
 				Method: sock.RequestMethodGet,
@@ -357,7 +371,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockNumber.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseNumbers, nil)
+			mockNumber.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseNumbers, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -440,7 +454,14 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().UpdateInfo(gomock.Any(), tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.resultData, nil)
+			expectFields := map[number.Field]any{
+				number.FieldCallFlowID:    tt.callFlowID,
+				number.FieldMessageFlowID: tt.messageFlowID,
+				number.FieldName:          tt.numberName,
+				number.FieldDetail:        tt.detail,
+			}
+
+			mockNumber.EXPECT().Update(gomock.Any(), tt.id, expectFields).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -518,7 +539,12 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().UpdateFlowID(gomock.Any(), tt.id, tt.callFlowID, tt.messageFlowID).Return(tt.resultData, nil)
+			expectFields := map[number.Field]any{
+				number.FieldCallFlowID:    tt.callFlowID,
+				number.FieldMessageFlowID: tt.messageFlowID,
+			}
+
+			mockNumber.EXPECT().Update(gomock.Any(), tt.id, expectFields).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -364,7 +364,7 @@ func Test_MessageGets(t *testing.T) {
 		name     string
 		messages []*message.Message
 
-		customerID uuid.UUID
+		filters map[message.Field]any
 
 		responseCurTime string
 		expectCount     int
@@ -384,7 +384,10 @@ func Test_MessageGets(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("a73a34f4-a296-11ec-b7df-a3ed77d36f0d"),
+			map[message.Field]any{
+				message.FieldCustomerID: uuid.FromStringOrNil("a73a34f4-a296-11ec-b7df-a3ed77d36f0d"),
+				message.FieldTMDelete:   DefaultTimeStamp,
+			},
 
 			"2021-01-01 00:00:00.000",
 			1,
@@ -393,7 +396,10 @@ func Test_MessageGets(t *testing.T) {
 			"empty",
 			[]*message.Message{},
 
-			uuid.FromStringOrNil("a8053398-a296-11ec-a7c7-33a89a071234"),
+			map[message.Field]any{
+				message.FieldCustomerID: uuid.FromStringOrNil("a8053398-a296-11ec-a7c7-33a89a071234"),
+				message.FieldTMDelete:   DefaultTimeStamp,
+			},
 
 			"",
 			0,
@@ -425,7 +431,7 @@ func Test_MessageGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.MessageGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime())
+			res, err := h.MessageGets(ctx, utilhandler.TimeGetCurTime(), 10, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

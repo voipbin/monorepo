@@ -35,11 +35,6 @@ var (
 	ErrNotFound = errors.New("record not found")
 )
 
-// list of default values
-const (
-	DefaultTimeStamp = "9999-01-01 00:00:00.000000" //nolint:varcheck,deadcode // this is fine
-)
-
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{

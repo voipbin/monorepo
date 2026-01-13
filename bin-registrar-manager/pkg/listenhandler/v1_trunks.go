@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-registrar-manager/models/trunk"
 	"monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 )
 
@@ -72,10 +73,11 @@ func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *sock.Reques
 	// get user_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	// parse the filters and convert to typed filters
+	stringFilters := h.utilHandler.URLParseFilters(u)
+	filters := convertToTrunkFilters(stringFilters)
 	if customerID != uuid.Nil {
-		filters["customer_id"] = customerID.String()
+		filters[trunk.FieldCustomerID] = customerID
 	}
 
 	trunks, err := h.trunkHandler.Gets(ctx, pageToken, pageSize, filters)
@@ -156,7 +158,16 @@ func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.trunkHandler.Update(ctx, id, reqData.Name, reqData.Detail, reqData.Authtypes, reqData.Username, reqData.Password, reqData.AllowedIPs)
+	fields := map[trunk.Field]any{
+		trunk.FieldName:       reqData.Name,
+		trunk.FieldDetail:     reqData.Detail,
+		trunk.FieldAuthTypes:  reqData.Authtypes,
+		trunk.FieldUsername:   reqData.Username,
+		trunk.FieldPassword:   reqData.Password,
+		trunk.FieldAllowedIPs: reqData.AllowedIPs,
+	}
+
+	tmp, err := h.trunkHandler.Update(ctx, id, fields)
 	if err != nil {
 		log.Errorf("Could not get domain info. err: %v", err)
 		return nil, err

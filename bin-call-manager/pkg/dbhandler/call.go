@@ -3,204 +3,43 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
-	"monorepo/bin-common-handler/models/address"
-
-	fmaction "monorepo/bin-flow-manager/models/action"
-
-	rmroute "monorepo/bin-route-manager/models/route"
-
+	"github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
+	rmroute "monorepo/bin-route-manager/models/route"
 
 	"monorepo/bin-call-manager/models/call"
 )
 
-const (
-	// select query for call get
-	callSelect = `
-	select
-		id,
-		customer_id,
-		owner_type,
-		owner_id,
-
-		channel_id,
-		bridge_id,
-		flow_id,
-		activeflow_id,
-		confbridge_id,
-		type,
-
-		master_call_id,
-		chained_call_ids,
-		recording_id,
-		recording_ids,
-		external_media_id,
-		groupcall_id,
-
-		source,
-		destination,
-
-		status,
-		data,
-		action,
-		action_next_hold,
-		direction,
-		mute_direction,
-
-		hangup_by,
-		hangup_reason,
-
-		dialroute_id,
-		dialroutes,
-
-		tm_create,
-		tm_update,
-		tm_delete,
-
-		tm_progressing,
-		tm_ringing,
-		tm_hangup
-
-	from
-		call_calls
-	`
+var (
+	callTable = "call_calls"
 )
 
 // callGetFromRow gets the call from the row.
 func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
-	var chainedCallIDs sql.NullString
-	var recordingIDs sql.NullString
-	var data sql.NullString
-	var source sql.NullString
-	var destination sql.NullString
-	var action sql.NullString
-	var dialroutes sql.NullString
-	var tmDelete sql.NullString
-
 	res := &call.Call{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.OwnerType,
-		&res.OwnerID,
 
-		&res.ChannelID,
-		&res.BridgeID,
-		&res.FlowID,
-		&res.ActiveflowID,
-		&res.ConfbridgeID,
-		&res.Type,
-
-		&res.MasterCallID,
-		&chainedCallIDs,
-		&res.RecordingID,
-		&recordingIDs,
-		&res.ExternalMediaID,
-		&res.GroupcallID,
-
-		&source,
-		&destination,
-
-		&res.Status,
-		&data,
-		&action,
-		&res.ActionNextHold,
-		&res.Direction,
-		&res.MuteDirection,
-
-		&res.HangupBy,
-		&res.HangupReason,
-
-		&res.DialrouteID,
-		&dialroutes,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&tmDelete,
-
-		&res.TMProgressing,
-		&res.TMRinging,
-		&res.TMHangup,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
 	}
 
-	// ChainedCallIDs
-	if chainedCallIDs.Valid {
-		if err := json.Unmarshal([]byte(chainedCallIDs.String), &res.ChainedCallIDs); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the chained_call_ids. callGetFromRow. err: %v", err)
-		}
-	}
+	// Initialize nil slices/maps to empty
 	if res.ChainedCallIDs == nil {
 		res.ChainedCallIDs = []uuid.UUID{}
-	}
-
-	// RecordingIDs
-	if recordingIDs.Valid {
-		if err := json.Unmarshal([]byte(recordingIDs.String), &res.RecordingIDs); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the recording_ids. callGetFromRow. err: %v", err)
-		}
 	}
 	if res.RecordingIDs == nil {
 		res.RecordingIDs = []uuid.UUID{}
 	}
-
-	// Source
-	if source.Valid {
-		if err := json.Unmarshal([]byte(source.String), &res.Source); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the source. callGetFromRow. err: %v", err)
-		}
-	} else {
-		res.Source = address.Address{}
-	}
-
-	// Destination
-	if destination.Valid {
-		if err := json.Unmarshal([]byte(destination.String), &res.Destination); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination. callGetFromRow. err: %v", err)
-		}
-	} else {
-		res.Destination = address.Address{}
-	}
-
-	// Data
-	if data.Valid {
-		if err := json.Unmarshal([]byte(data.String), &res.Data); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
-		}
-	}
 	if res.Data == nil {
 		res.Data = map[call.DataType]string{}
 	}
-
-	// Action
-	if action.Valid {
-		if err := json.Unmarshal([]byte(action.String), &res.Action); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the action. callGetFromRow. err: %v", err)
-		}
-	} else {
-		res.Action = fmaction.Action{}
-	}
-
-	// Dialroutes
-	if dialroutes.Valid {
-		if err := json.Unmarshal([]byte(dialroutes.String), &res.Dialroutes); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the dialroutes. callGetFromRow. err: %v", err)
-		}
-	}
 	if res.Dialroutes == nil {
 		res.Dialroutes = []rmroute.Route{}
-	}
-
-	// TMDelete
-	if tmDelete.Valid {
-		res.TMDelete = tmDelete.String
-	} else {
-		res.TMDelete = DefaultTimeStamp
 	}
 
 	return res, nil
@@ -208,155 +47,50 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 
 // CallCreate creates new call record.
 func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
-	q := `insert into call_calls(
-		id,
-		customer_id,
-		owner_type,
-        owner_id,
+	now := h.utilHandler.TimeGetCurTime()
 
-		channel_id,
-		bridge_id,
+	// Set timestamps
+	c.TMCreate = now
+	c.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	c.TMDelete = commondatabasehandler.DefaultTimeStamp
+	c.TMRinging = commondatabasehandler.DefaultTimeStamp
+	c.TMProgressing = commondatabasehandler.DefaultTimeStamp
+	c.TMHangup = commondatabasehandler.DefaultTimeStamp
 
-		flow_id,
-		activeflow_id,
-		confbridge_id,
-		type,
-
-		master_call_id,
-		chained_call_ids,
-		recording_id,
-		recording_ids,
-		external_media_id,
-		groupcall_id,
-
-		source,
-		source_target,
-		destination,
-		destination_target,
-
-		status,
-		data,
-		action,
-		action_next_hold,
-		direction,
-		mute_direction,
-
-		hangup_by,
-		hangup_reason,
-
-		dialroute_id,
-		dialroutes,
-
-		tm_create,
-		tm_update,
-		tm_delete,
-
-		tm_progressing,
-		tm_ringing,
-		tm_hangup
-	) values(
-		?, ?, ?, ?,
-		?, ?,
-		?, ?, ?, ?,
-		?, ?, ?, ?, ?, ?,
-		?, ?, ?, ?,
-		?, ?, ?, ?, ?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?,
-		?, ?, ?
-		)`
-
+	// Initialize nil slices
 	if c.ChainedCallIDs == nil {
 		c.ChainedCallIDs = []uuid.UUID{}
 	}
-	tmpChainedCallIDs, err := json.Marshal(c.ChainedCallIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal calls. CallCreate. err: %v", err)
-	}
-
 	if c.RecordingIDs == nil {
 		c.RecordingIDs = []uuid.UUID{}
 	}
-	tmpRecordingIDs, err := json.Marshal(c.RecordingIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal the recording_ids. CallCreate. err: %v", err)
+	if c.Dialroutes == nil {
+		c.Dialroutes = []rmroute.Route{}
 	}
 
-	tmpSource, err := json.Marshal(c.Source)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not marshal source. CallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CallCreate. err: %v", err)
 	}
 
-	tmpDestination, err := json.Marshal(c.Destination)
+	// Add source_target and destination_target for indexed search
+	fields["source_target"] = c.Source.Target
+	fields["destination_target"] = c.Destination.Target
+
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(callTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal destination. CallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. CallCreate. err: %v", err)
 	}
 
-	tmpData, err := json.Marshal(c.Data)
-	if err != nil {
-		return fmt.Errorf("could not marshal data. CallCreate. err: %v", err)
-	}
-
-	tmpAction, err := json.Marshal(c.Action)
-	if err != nil {
-		return fmt.Errorf("could not marshal action. CallCreate. err: %v", err)
-	}
-
-	tmpDialroutes, err := json.Marshal(c.Dialroutes)
-	if err != nil {
-		return fmt.Errorf("could not marshal dialroutes. CallCreate. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q,
-		c.ID.Bytes(),
-		c.CustomerID.Bytes(),
-		c.OwnerType,
-		c.OwnerID.Bytes(),
-
-		c.ChannelID,
-		c.BridgeID,
-
-		c.FlowID.Bytes(),
-		c.ActiveflowID.Bytes(),
-		c.ConfbridgeID.Bytes(),
-		c.Type,
-
-		c.MasterCallID.Bytes(),
-		tmpChainedCallIDs,
-		c.RecordingID.Bytes(),
-		tmpRecordingIDs,
-		c.ExternalMediaID.Bytes(),
-		c.GroupcallID.Bytes(),
-
-		tmpSource,
-		c.Source.Target,
-		tmpDestination,
-		c.Destination.Target,
-
-		c.Status,
-		tmpData,
-		tmpAction,
-		c.ActionNextHold,
-		c.Direction,
-		c.MuteDirection,
-
-		c.HangupBy,
-		c.HangupReason,
-
-		c.DialrouteID.Bytes(),
-		tmpDialroutes,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. CallCreate. err: %v", err)
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. CallCreate. err: %v", err)
 	}
 
 	// update the cache
@@ -367,7 +101,6 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 // CallGet returns call.
 func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error) {
-
 	res, err := h.callGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -384,13 +117,20 @@ func (h *handler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	return res, nil
 }
 
-// CallGet returns call.
+// CallGetByChannelID returns call by channelID.
 func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error) {
+	fields := commondatabasehandler.GetDBFields(&call.Call{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(callTable).
+		Where(squirrel.Eq{string(call.FieldChannelID): channelID}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. CallGetByChannelID. err: %v", err)
+	}
 
-	// prepare
-	q := fmt.Sprintf("%s where channel_id = ?", callSelect)
-
-	row, err := h.db.Query(q, channelID)
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGetByChannelID. err: %v", err)
 	}
@@ -399,6 +139,9 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. CallGetByChannelID. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -411,45 +154,31 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 }
 
 // CallGets returns a list of calls.
-func (h *handler) CallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*call.Call, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, callSelect)
-
+func (h *handler) CallGets(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	dbFields := commondatabasehandler.GetDBFields(&call.Call{})
+	sb := squirrel.
+		Select(dbFields...).
+		From(callTable).
+		Where(squirrel.Lt{string(call.FieldTMCreate): token}).
+		OrderBy(string(call.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. CallGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "owner_id", "flow_id", "activeflow_id", "confbridge_id", "master_call_id", "recording_id", "external_media_id", "groupcall_id", "dialroute_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CallGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGets. err: %v", err)
 	}
@@ -461,244 +190,142 @@ func (h *handler) CallGets(ctx context.Context, size uint64, token string, filte
 	for rows.Next() {
 		u, err := h.callGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. callGetFromRow, err: %v", err)
+			return nil, fmt.Errorf("could not get data. CallGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. CallGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// CallSetBridgeID sets the call bridge id
-func (h *handler) CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error {
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		bridge_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, bridgeID, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. callSetBridgeID. err: %v", err)
+// CallUpdate updates call fields using a generic typed field map
+func (h *handler) CallUpdate(ctx context.Context, id uuid.UUID, fields map[call.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
+	// Only set TMUpdate if it's not already provided
+	if _, ok := fields[call.FieldTMUpdate]; !ok {
+		fields[call.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	}
 
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("CallUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(callTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("CallUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("CallUpdate: exec failed: %w", err)
+	}
+
+	_ = h.callUpdateToCache(ctx, id)
 	return nil
+}
+
+// CallSetBridgeID sets the call bridge id
+func (h *handler) CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error {
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldBridgeID: bridgeID,
+	})
 }
 
 // CallSetStatusRinging sets the call status to ringing
 func (h *handler) CallSetStatusRinging(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		status = ?,
-		tm_update = ?,
-		tm_ringing = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, call.StatusRinging, ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetStatusRinging. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldStatus:    call.StatusRinging,
+		call.FieldTMRinging: ts,
+		call.FieldTMUpdate:  ts,
+	})
 }
 
 // CallSetStatusProgressing sets the call status to progressing
 func (h *handler) CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		status = ?,
-		tm_update = ?,
-		tm_progressing = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, call.StatusProgressing, ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetStatusProgressing. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldStatus:        call.StatusProgressing,
+		call.FieldTMProgressing: ts,
+		call.FieldTMUpdate:      ts,
+	})
 }
 
 // CallSetStatus sets the call status without update the timestamp for status
 func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error {
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetStatus. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldStatus: status,
+	})
 }
 
-// CallSetStatus sets the call status
+// CallSetHangup sets the call status to hangup
 func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy) error {
-
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		status = ?,
-		hangup_by = ?,
-		hangup_reason = ?,
-		tm_update = ?,
-		tm_hangup = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, string(call.StatusHangup), hangupBy, reason, ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetHangup. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldStatus:       call.StatusHangup,
+		call.FieldHangupBy:     hangupBy,
+		call.FieldHangupReason: reason,
+		call.FieldTMHangup:     ts,
+		call.FieldTMUpdate:     ts,
+	})
 }
 
-// CallSetFlowID sets the call status
+// CallSetFlowID sets the call's flow_id
 func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error {
-
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		flow_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, flowID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetFlowID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldFlowID: flowID,
+	})
 }
 
 // CallSetConfbridgeID sets the call's confbridge_id
 func (h *handler) CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error {
-
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		confbridge_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, confbridgeID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetConfbridgeID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldConfbridgeID: confbridgeID,
+	})
 }
 
-// CallSetAction sets the call status
+// CallSetActionAndActionNextHold sets the call action and action_next_hold
 func (h *handler) CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *fmaction.Action, hold bool) error {
-
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		action = ?,
-		action_next_hold = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpAction, err := json.Marshal(action)
-	if err != nil {
-		return err
-	}
-
-	_, err = h.db.Exec(q, tmpAction, hold, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetActionAndActionNextHold. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldAction:         action,
+		call.FieldActionNextHold: hold,
+	})
 }
 
 // callGetFromCache returns call from the cache.
 func (h *handler) callGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error) {
-
-	// get from cache
 	res, err := h.cache.CallGet(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-
 	return res, nil
 }
 
 // callGetFromDB returns call from the DB.
 func (h *handler) callGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+	fields := commondatabasehandler.GetDBFields(&call.Call{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(callTable).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. callGetFromDB. err: %v", err)
+	}
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", callSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. callGetFromDB. err: %v", err)
 	}
@@ -707,12 +334,15 @@ func (h *handler) callGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, 
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. callGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.callGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. callGetFromDB, err: %v", err)
+		return nil, errors.Wrapf(err, "could not get data from row. callGetFromDB. id: %s", id)
 	}
 
 	return res, nil
@@ -720,7 +350,6 @@ func (h *handler) callGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, 
 
 // callUpdateToCache gets the call from the DB and update the cache.
 func (h *handler) callUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.callGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -734,11 +363,10 @@ func (h *handler) callUpdateToCache(ctx context.Context, id uuid.UUID) error {
 }
 
 // callSetToCache sets the given call to the cache
-func (h *handler) callSetToCache(ctx context.Context, call *call.Call) error {
-	if err := h.cache.CallSet(ctx, call); err != nil {
+func (h *handler) callSetToCache(ctx context.Context, c *call.Call) error {
+	if err := h.cache.CallSet(ctx, c); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -802,100 +430,32 @@ func (h *handler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID
 
 // CallSetMasterCallID sets the call's master_call_id
 func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error {
-
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		master_call_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, callID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetMasterCallID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldMasterCallID: callID,
+	})
 }
 
 // CallSetRecordingID sets the given recordID to recording_id.
 func (h *handler) CallSetRecordingID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
-	// prepare
-	q := `
-	update call_calls set
-		recording_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetRecordingID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(context.Background(), id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldRecordingID: recordID,
+	})
 }
 
 // CallSetExternalMediaID sets the call's external_media_id
 func (h *handler) CallSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error {
-
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		external_media_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, externalMediaID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetExternalMediaID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldExternalMediaID: externalMediaID,
+	})
 }
 
 // CallSetForRouteFailover sets the call for route failover.
 func (h *handler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error {
-	// prepare
-	q := `
-	update call_calls set
-		bridge_id = '',
-
-		channel_id = ?,
-		dialroute_id = ?,
-
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, channelID, dialrouteID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetForRouteFailover. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldBridgeID:    "",
+		call.FieldChannelID:   channelID,
+		call.FieldDialrouteID: dialrouteID,
+	})
 }
 
 // CallAddRecordingIDs adds the given recording_id into the recording_ids.
@@ -925,16 +485,26 @@ func (h *handler) CallAddRecordingIDs(ctx context.Context, id uuid.UUID, recordI
 }
 
 func (h *handler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
-
 	tx, err := h.db.Begin()
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get transaction. CallTXStart. err: %v", err)
 	}
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ? for update", callSelect)
+	fields := commondatabasehandler.GetDBFields(&call.Call{})
+	sb := squirrel.
+		Select(fields...).
+		From(callTable).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		Suffix("FOR UPDATE").
+		PlaceholderFormat(squirrel.Question)
 
-	row, err := tx.Query(q, id.Bytes())
+	query, args, err := sb.ToSql()
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, nil, fmt.Errorf("could not build query. CallTXStart. err: %v", err)
+	}
+
+	row, err := tx.Query(query, args...)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, nil, fmt.Errorf("could not query. CallTXStart. err: %v", err)
@@ -1025,123 +595,61 @@ func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.U
 
 // CallSetActionNextHold sets the action_next_hold.
 func (h *handler) CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error {
-	// prepare
-	q := `
-	update call_calls set
-		action_next_hold = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, hold, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetActionNextHold. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldActionNextHold: hold,
+	})
 }
 
 // CallDelete deletes the call
 func (h *handler) CallDelete(ctx context.Context, id uuid.UUID) error {
-	//prepare
-	q := `
-	update call_calls set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallDelete. err: %v", err)
+
+	fields := map[call.Field]any{
+		call.FieldTMUpdate: ts,
+		call.FieldTMDelete: ts,
 	}
 
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("CallDelete: prepare fields failed: %w", err)
+	}
 
+	sb := squirrel.Update(callTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("CallDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("CallDelete: exec failed: %w", err)
+	}
+
+	_ = h.callUpdateToCache(ctx, id)
 	return nil
 }
 
 // CallSetData sets the call data
 func (h *handler) CallSetData(ctx context.Context, id uuid.UUID, data map[call.DataType]string) error {
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		data = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpData, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("could not marshal data. CallSetData. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q, tmpData, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetData. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldData: data,
+	})
 }
 
 // CallSetMuteDirection sets the call mute direction
 func (h *handler) CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDirection call.MuteDirection) error {
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		mute_direction = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, muteDirection, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetMuteDirection. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldMuteDirection: muteDirection,
+	})
 }
 
 // CallSetChannelIDAndBridgeID sets the call's channel_id and bridge_id
 func (h *handler) CallSetChannelIDAndBridgeID(ctx context.Context, id uuid.UUID, channelID string, bridgeID string) error {
-	// prepare
-	q := `
-	update
-		call_calls
-	set
-		channel_id = ?,
-		bridge_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, channelID, bridgeID, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetChannelIDAndBridgeID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.callUpdateToCache(ctx, id)
-
-	return nil
+	return h.CallUpdate(ctx, id, map[call.Field]any{
+		call.FieldChannelID: channelID,
+		call.FieldBridgeID:  bridgeID,
+	})
 }

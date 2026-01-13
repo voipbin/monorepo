@@ -74,7 +74,7 @@ func Test_ProcessStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.aicall.ID, aicall.StatusProgressing).Return(nil)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusProgressing, tt.aicall)
 
@@ -177,7 +177,7 @@ func Test_ProcessTerminate(t *testing.T) {
 				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.responseAicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 			}
 
-			mockDB.EXPECT().AIcallUpdateStatus(ctx, tt.responseAicall.ID, aicall.StatusTerminated).Return(nil)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAicall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAicall.ID).Return(tt.responseAicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAicall.CustomerID, aicall.EventTypeStatusTerminated, tt.responseAicall)
 

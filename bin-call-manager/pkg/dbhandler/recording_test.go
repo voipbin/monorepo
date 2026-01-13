@@ -158,7 +158,7 @@ func Test_RecordingGets(t *testing.T) {
 
 		recordings []*recording.Recording
 
-		filters map[string]string
+		filters map[recording.Field]any
 
 		responseCurTime string
 
@@ -183,9 +183,9 @@ func Test_RecordingGets(t *testing.T) {
 				},
 			},
 
-			filters: map[string]string{
-				"customer_id": "f15430d8-7f43-11ec-b82c-b7ffeefaf0b9",
-				"deleted":     "false",
+			filters: map[recording.Field]any{
+				recording.FieldCustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+				recording.FieldDeleted:    false,
 			},
 			responseCurTime: "2020-04-18 03:22:17.995000",
 
@@ -225,8 +225,8 @@ func Test_RecordingGets(t *testing.T) {
 
 			recordings: []*recording.Recording{},
 
-			filters: map[string]string{
-				"customer_id": "08cb92b0-7f44-11ec-8753-6f51eae532cc",
+			filters: map[recording.Field]any{
+				recording.FieldCustomerID: uuid.FromStringOrNil("08cb92b0-7f44-11ec-8753-6f51eae532cc"),
 			},
 			responseCurTime: "2020-04-18 03:22:17.995000",
 

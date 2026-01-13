@@ -27,7 +27,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[agent.Field]any
 
 		result []*agent.Agent
 	}{
@@ -36,8 +36,8 @@ func Test_Gets(t *testing.T) {
 
 			10,
 			"2021-11-23 17:55:39.712000",
-			map[string]string{
-				"deleted": "false",
+			map[agent.Field]any{
+				agent.FieldDeleted: false,
 			},
 
 			[]*agent.Agent{},
@@ -526,7 +526,7 @@ func Test_UpdatePermission_error(t *testing.T) {
 			mockFunc: func(mockDB *dbhandler.MockDBHandler, id uuid.UUID, perm agent.Permission, before *agent.Agent, list []*agent.Agent) {
 				// isOnlyAdmin
 				mockDB.EXPECT().AgentGet(gomock.Any(), id).Return(before, nil)
-				mockDB.EXPECT().AgentGets(gomock.Any(), uint64(1000), "", map[string]string{"customer_id": before.CustomerID.String(), "deleted": "false"}).Return(list, nil)
+				mockDB.EXPECT().AgentGets(gomock.Any(), uint64(1000), "", map[agent.Field]any{agent.FieldCustomerID: before.CustomerID, agent.FieldDeleted: false}).Return(list, nil)
 			},
 		},
 	}
@@ -625,7 +625,7 @@ func Test_isOnlyAdmin(t *testing.T) {
 		responseAgent  *agent.Agent
 		responseAgents []*agent.Agent
 
-		expectFilters map[string]string
+		expectFilters map[agent.Field]any
 		expectRes     bool
 	}{
 		{
@@ -657,9 +657,9 @@ func Test_isOnlyAdmin(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "ae51a166-e73e-11ee-92dd-07437d91f85c",
-				"deleted":     "false",
+			expectFilters: map[agent.Field]any{
+				agent.FieldCustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				agent.FieldDeleted:    false,
 			},
 			expectRes: true,
 		},
@@ -685,9 +685,9 @@ func Test_isOnlyAdmin(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "ae51a166-e73e-11ee-92dd-07437d91f85c",
-				"deleted":     "false",
+			expectFilters: map[agent.Field]any{
+				agent.FieldCustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				agent.FieldDeleted:    false,
 			},
 			expectRes: true,
 		},
@@ -720,9 +720,9 @@ func Test_isOnlyAdmin(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "ae51a166-e73e-11ee-92dd-07437d91f85c",
-				"deleted":     "false",
+			expectFilters: map[agent.Field]any{
+				agent.FieldCustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				agent.FieldDeleted:    false,
 			},
 			expectRes: false,
 		},

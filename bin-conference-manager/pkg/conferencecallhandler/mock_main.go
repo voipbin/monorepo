@@ -89,7 +89,7 @@ func (mr *MockConferencecallHandlerMockRecorder) GetByReferenceID(ctx, reference
 }
 
 // Gets mocks base method.
-func (m *MockConferencecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
+func (m *MockConferencecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*conferencecall.Conferencecall)

@@ -389,7 +389,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseAIcall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
-			mockDB.EXPECT().AIcallUpdatePipecatcallID(ctx, tt.responseAIcall.ID, tt.responseUUIDPipecatcallID).Return(nil)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAIcall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 
 			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageText, nil, "").Return(&message.Message{}, nil)

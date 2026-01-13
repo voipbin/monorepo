@@ -134,7 +134,7 @@ func Test_TranscribeGets(t *testing.T) {
 		name        string
 		transcribes []*transcribe.Transcribe
 
-		filters map[string]string
+		filters map[transcribe.Field]any
 
 		responseCurTime string
 		expectRes       []*transcribe.Transcribe
@@ -150,9 +150,9 @@ func Test_TranscribeGets(t *testing.T) {
 				},
 			},
 
-			filters: map[string]string{
-				"customer_id": "68fdd924-ed95-11ee-a7ea-57b90b872fde",
-				"deleted":     "false",
+			filters: map[transcribe.Field]any{
+				transcribe.FieldCustomerID: uuid.FromStringOrNil("68fdd924-ed95-11ee-a7ea-57b90b872fde"),
+				transcribe.FieldDeleted:    false,
 			},
 
 			responseCurTime: "2021-01-01 00:00:00.000",
@@ -173,8 +173,8 @@ func Test_TranscribeGets(t *testing.T) {
 			name:        "empty",
 			transcribes: []*transcribe.Transcribe{},
 
-			filters: map[string]string{
-				"customer_id": "b231e14e-ed95-11ee-a29f-7be740276529",
+			filters: map[transcribe.Field]any{
+				transcribe.FieldCustomerID: uuid.FromStringOrNil("b231e14e-ed95-11ee-a29f-7be740276529"),
 			},
 
 			responseCurTime: "",
@@ -197,9 +197,9 @@ func Test_TranscribeGets(t *testing.T) {
 				},
 			},
 
-			filters: map[string]string{
-				"customer_id": "c1644a94-ed95-11ee-b2c8-8bf8e129a2f7",
-				"deleted":     "false",
+			filters: map[transcribe.Field]any{
+				transcribe.FieldCustomerID: uuid.FromStringOrNil("c1644a94-ed95-11ee-b2c8-8bf8e129a2f7"),
+				transcribe.FieldDeleted:    false,
 			},
 
 			responseCurTime: "2021-01-01 00:00:00.000",
@@ -265,14 +265,14 @@ func Test_TranscribeGets(t *testing.T) {
 	}
 }
 
-func Test_TranscribeSetStatus(t *testing.T) {
+func Test_TranscribeUpdate(t *testing.T) {
 	type test struct {
 		name string
 
 		transcribe *transcribe.Transcribe
 
 		id              uuid.UUID
-		status          transcribe.Status
+		fields          map[transcribe.Field]any
 		responseCurTime string
 
 		expectRes *transcribe.Transcribe
@@ -288,8 +288,10 @@ func Test_TranscribeSetStatus(t *testing.T) {
 				},
 			},
 
-			id:              uuid.FromStringOrNil("dc3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
-			status:          transcribe.StatusProgressing,
+			id: uuid.FromStringOrNil("dc3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+			fields: map[transcribe.Field]any{
+				transcribe.FieldStatus: transcribe.StatusProgressing,
+			},
 			responseCurTime: "2020-04-18T03:22:17.995000",
 
 			expectRes: &transcribe.Transcribe{
@@ -331,7 +333,7 @@ func Test_TranscribeSetStatus(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
-			if err := h.TranscribeSetStatus(ctx, tt.id, tt.status); err != nil {
+			if err := h.TranscribeUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -375,7 +377,7 @@ func Test_TranscribeDelete(t *testing.T) {
 				},
 				StreamingIDs: []uuid.UUID{},
 				TMCreate:     "2021-01-01 00:00:00.000",
-				TMUpdate:     DefaultTimeStamp,
+				TMUpdate:     "2021-01-01 00:00:00.000",
 				TMDelete:     "2021-01-01 00:00:00.000",
 			},
 		},

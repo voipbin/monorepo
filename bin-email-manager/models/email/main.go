@@ -11,26 +11,26 @@ import (
 type Email struct {
 	commonidentity.Identity
 
-	ActiveflowID uuid.UUID `json:"activeflow_id"`
+	ActiveflowID uuid.UUID `json:"activeflow_id" db:"activeflow_id,uuid"`
 
 	// provider info
-	ProviderType        ProviderType `json:"provider_type"`
-	ProviderReferenceID string       `json:"provider_reference_id"`
+	ProviderType        ProviderType `json:"provider_type" db:"provider_type"`
+	ProviderReferenceID string       `json:"provider_reference_id" db:"provider_reference_id"`
 
 	// from/to info
-	Source       *commonaddress.Address  `json:"source"`
-	Destinations []commonaddress.Address `json:"destinations"`
+	Source       *commonaddress.Address  `json:"source" db:"source,json"`
+	Destinations []commonaddress.Address `json:"destinations" db:"destinations,json"`
 
 	// message info
-	Status  Status `json:"status"`
-	Subject string `json:"subject"` // Subject of the message.
-	Content string `json:"content"` // Content of the message.
+	Status  Status `json:"status" db:"status"`
+	Subject string `json:"subject" db:"subject"` // Subject of the message.
+	Content string `json:"content" db:"content"` // Content of the message.
 
-	Attachments []Attachment `json:"attachments"`
+	Attachments []Attachment `json:"attachments" db:"attachments,json"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // ProviderType type

@@ -3,123 +3,38 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-conference-manager/models/conference"
 )
 
-const (
-	conferenceSelect = `
-	select
-		id,
-		customer_id,
-		type,
- 		confbridge_id,
-
-		status,
-		name,
-		detail,
-		data,
-		timeout,
-
-		pre_flow_id,
-		post_flow_id,
-
-		conferencecall_ids,
-
-		recording_id,
-		recording_ids,
-
-		transcribe_id,
-		transcribe_ids,
-
-		tm_end,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	from
-		conference_conferences
-	`
+var (
+	conferenceTable = "conference_conferences"
 )
 
 // conferenceGetFromRow gets the conference from the row.
 func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, error) {
-
-	var data string
-	var conferencecallIDs sql.NullString
-	var recordingIDs sql.NullString
-	var transcribeIDs sql.NullString
-
 	res := &conference.Conference{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.Type,
-		&res.ConfbridgeID,
 
-		&res.Status,
-		&res.Name,
-		&res.Detail,
-		&data,
-		&res.Timeout,
-
-		&res.PreFlowID,
-		&res.PostFlowID,
-
-		&conferencecallIDs,
-
-		&res.RecordingID,
-		&recordingIDs,
-
-		&res.TranscribeID,
-		&transcribeIDs,
-
-		&res.TMEnd,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. conferenceGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. conferenceGetFromRow. err: %v", err)
-	}
+	// Initialize nil slices and maps to empty values
 	if res.Data == nil {
-		res.Data = map[string]interface{}{}
+		res.Data = map[string]any{}
 	}
-
-	if conferencecallIDs.Valid && conferencecallIDs.String != "" {
-		if err := json.Unmarshal([]byte(conferencecallIDs.String), &res.ConferencecallIDs); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the queucall_ids. conferenceGetFromRow. err: %v", err)
-		}
-		if res.ConferencecallIDs == nil {
-			res.ConferencecallIDs = []uuid.UUID{}
-		}
-	} else {
+	if res.ConferencecallIDs == nil {
 		res.ConferencecallIDs = []uuid.UUID{}
-	}
-
-	if recordingIDs.Valid {
-		if errMarshal := json.Unmarshal([]byte(recordingIDs.String), &res.RecordingIDs); errMarshal != nil {
-			return nil, fmt.Errorf("could not unmarshal the recording_ids. conferenceGetFromRow. err: %v", errMarshal)
-		}
 	}
 	if res.RecordingIDs == nil {
 		res.RecordingIDs = []uuid.UUID{}
-	}
-
-	if transcribeIDs.Valid {
-		if errMarshal := json.Unmarshal([]byte(transcribeIDs.String), &res.TranscribeIDs); errMarshal != nil {
-			return nil, fmt.Errorf("could not unmarshal the transcribe_ids. conferenceGetFromRow. err: %v", errMarshal)
-		}
 	}
 	if res.TranscribeIDs == nil {
 		res.TranscribeIDs = []uuid.UUID{}
@@ -130,97 +45,47 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 
 // ConferenceCreate creates a new conference record.
 func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
-	q := `insert into conference_conferences(
-		id,
-		customer_id,
-		type,
- 		confbridge_id,
+	now := h.utilHandler.TimeGetCurTime()
 
-		status,
-		name,
-		detail,
-		data,
-		timeout,
+	// Set timestamps
+	cf.TMEnd = commondatabasehandler.DefaultTimeStamp
+	cf.TMCreate = now
+	cf.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	cf.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		pre_flow_id,
-		post_flow_id,
-
-		conferencecall_ids,
-
-		recording_id,
-		recording_ids,
-
-		transcribe_id,
-		transcribe_ids,
-
-		tm_end,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?, ?,
-		?, ?, ?, ?, ?,
-		?, ?,
-		?,
-		?, ?,
-		?, ?,
-		?,
-		?, ?, ?
-		)
-	`
-
-	data, err := json.Marshal(cf.Data)
-	if err != nil {
-		return fmt.Errorf("could not marshal data. ConferenceCreate. err: %v", err)
+	// Initialize nil fields
+	if cf.Data == nil {
+		cf.Data = map[string]any{}
+	}
+	if cf.ConferencecallIDs == nil {
+		cf.ConferencecallIDs = []uuid.UUID{}
+	}
+	if cf.RecordingIDs == nil {
+		cf.RecordingIDs = []uuid.UUID{}
+	}
+	if cf.TranscribeIDs == nil {
+		cf.TranscribeIDs = []uuid.UUID{}
 	}
 
-	conferencecallIDs, err := json.Marshal(cf.ConferencecallIDs)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(cf)
 	if err != nil {
-		return fmt.Errorf("could not marshal calls. ConferenceCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ConferenceCreate. err: %v", err)
 	}
 
-	recordingIDs, err := json.Marshal(cf.RecordingIDs)
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(conferenceTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal recording_ids. ConferenceCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ConferenceCreate. err: %v", err)
 	}
 
-	transcribeIDs, err := json.Marshal(cf.TranscribeIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal transcribe_ids. ConferenceCreate. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q,
-		cf.ID.Bytes(),
-		cf.CustomerID.Bytes(),
-		cf.Type,
-		cf.ConfbridgeID.Bytes(),
-
-		cf.Status,
-		cf.Name,
-		cf.Detail,
-		data,
-		cf.Timeout,
-
-		cf.PreFlowID.Bytes(),
-		cf.PostFlowID.Bytes(),
-
-		conferencecallIDs,
-
-		cf.RecordingID.Bytes(),
-		recordingIDs,
-
-		cf.TranscribeID.Bytes(),
-		transcribeIDs,
-
-		DefaultTimeStamp,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceCreate. err: %v", err)
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. ConferenceCreate. err: %v", err)
 	}
 
 	// update the cache
@@ -243,11 +108,18 @@ func (h *handler) conferenceGetFromCache(ctx context.Context, id uuid.UUID) (*co
 
 // conferenceGetFromDB gets conference.
 func (h *handler) conferenceGetFromDB(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	fields := commondatabasehandler.GetDBFields(&conference.Conference{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(conferenceTable).
+		Where(squirrel.Eq{string(conference.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. conferenceGetFromDB. err: %v", err)
+	}
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", conferenceSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. conferenceGetFromDB. err: %v", err)
 	}
@@ -256,12 +128,15 @@ func (h *handler) conferenceGetFromDB(ctx context.Context, id uuid.UUID) (*confe
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. conferenceGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.conferenceGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. conferenceGetFromDB, err: %v", err)
+		return nil, errors.Wrapf(err, "could not get data from row. conferenceGetFromDB. id: %s", id)
 	}
 
 	return res, nil
@@ -283,8 +158,8 @@ func (h *handler) conferenceUpdateToCache(ctx context.Context, id uuid.UUID) err
 }
 
 // ConferenceSetToCache sets the given conference to the cache
-func (h *handler) ConferenceSetToCache(ctx context.Context, conference *conference.Conference) error {
-	if err := h.cache.ConferenceSet(ctx, conference); err != nil {
+func (h *handler) ConferenceSetToCache(ctx context.Context, conf *conference.Conference) error {
+	if err := h.cache.ConferenceSet(ctx, conf); err != nil {
 		return err
 	}
 
@@ -311,42 +186,31 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 }
 
 // ConferenceGets returns a list of conferences.
-func (h *handler) ConferenceGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conference.Conference, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-	where
-		tm_create < ?
-	`, conferenceSelect)
-
-	values := []interface{}{
-		token,
+func (h *handler) ConferenceGets(ctx context.Context, size uint64, token string, filters map[conference.Field]any) ([]*conference.Conference, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "confbridge_id", "pre_flow_id", "post_flow_id", "recording_id", "transcribe_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
+	fields := commondatabasehandler.GetDBFields(&conference.Conference{})
+	sb := squirrel.
+		Select(fields...).
+		From(conferenceTable).
+		Where(squirrel.Lt{string(conference.FieldTMCreate): token}).
+		OrderBy(string(conference.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. ConferenceGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ConferenceGets. err: %v", err)
+	}
 
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferenceGets. err: %v", err)
 	}
@@ -360,8 +224,10 @@ func (h *handler) ConferenceGets(ctx context.Context, size uint64, token string,
 		if err != nil {
 			return nil, fmt.Errorf("could not get data. ConferenceGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. ConferenceGets. err: %v", err)
 	}
 
 	return res, nil
@@ -369,13 +235,20 @@ func (h *handler) ConferenceGets(ctx context.Context, size uint64, token string,
 
 // ConferenceGetByConfbridgeID returns conference of the given confbridgeID
 func (h *handler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where confbridge_id = ?", conferenceSelect)
-
-	row, err := h.db.Query(q, confbridgeID.Bytes())
+	fields := commondatabasehandler.GetDBFields(&conference.Conference{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(conferenceTable).
+		Where(squirrel.Eq{string(conference.FieldConfbridgeID): confbridgeID.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConferenceGet. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. ConferenceGetByConfbridgeID. err: %v", err)
+	}
+
+	row, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ConferenceGetByConfbridgeID. err: %v", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -391,6 +264,38 @@ func (h *handler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID 
 	}
 
 	return res, nil
+}
+
+// ConferenceUpdate updates the conference with the given fields.
+func (h *handler) ConferenceUpdate(ctx context.Context, id uuid.UUID, fields map[conference.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	fields[conference.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ConferenceUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(conferenceTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(conference.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("ConferenceUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("ConferenceUpdate: exec failed: %w", err)
+	}
+
+	// update the cache
+	_ = h.conferenceUpdateToCache(ctx, id)
+	return nil
 }
 
 // ConferenceAddConferencecallID adds the call id to the conference.
@@ -453,109 +358,30 @@ func (h *handler) ConferenceRemoveConferencecallID(ctx context.Context, id, conf
 
 // ConferenceDelete deletes the conference
 func (h *handler) ConferenceDelete(ctx context.Context, id uuid.UUID) error {
-	//prepare
-	q := `
-	update conference_conferences set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceDelete. err: %v", err)
+
+	fields := map[conference.Field]any{
+		conference.FieldTMUpdate: ts,
+		conference.FieldTMDelete: ts,
 	}
 
-	// update the cache
-	_ = h.conferenceUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// ConferenceSet sets the status
-func (h *handler) ConferenceSet(
-	ctx context.Context,
-	id uuid.UUID,
-	name string,
-	detail string,
-	data map[string]interface{},
-	timeout int,
-	preFlowID uuid.UUID,
-	postFlowID uuid.UUID,
-) error {
-	//prepare
-	q := `
-	update conference_conferences set
-		name = ?,
-		detail = ?,
-		data = ?,
-		timeout = ?,
-		pre_flow_id = ?,
-		post_flow_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpData, err := json.Marshal(data)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("dbhandler: Could not marshal. ConferenceSetData. err: %v", err)
+		return fmt.Errorf("ConferenceDelete: prepare fields failed: %w", err)
 	}
 
-	_, err = h.db.Exec(q, name, detail, tmpData, timeout, preFlowID.Bytes(), postFlowID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	sb := squirrel.Update(conferenceTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(conference.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceSet. err: %v", err)
+		return fmt.Errorf("ConferenceDelete: build SQL failed: %w", err)
 	}
 
-	// update the cache
-	_ = h.conferenceUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// ConferenceSetStatus sets the status
-func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error {
-	//prepare
-	q := `
-	update conference_conferences set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceSetStatus. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.conferenceUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// ConferenceSetData sets the data
-func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error {
-	//prepare
-	q := `
-	update conference_conferences set
-		data = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpData, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not marshal. ConferenceSetData. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q, tmpData, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceSetData. err: %v", err)
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("ConferenceDelete: exec failed: %w", err)
 	}
 
 	// update the cache
@@ -566,48 +392,15 @@ func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[
 
 // ConferenceEnd ends the conference
 func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
-	//prepare
-	q := `
-	update conference_conferences set
-		status = ?,
-		tm_end = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, conference.StatusTerminated, ts, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceEnd. err: %v", err)
+
+	fields := map[conference.Field]any{
+		conference.FieldStatus:   conference.StatusTerminated,
+		conference.FieldTMEnd:    ts,
+		conference.FieldTMUpdate: ts,
 	}
 
-	// update the cache
-	_ = h.conferenceUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// ConferenceSetRecordingID sets the conference's recording_id.
-func (h *handler) ConferenceSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
-	// prepare
-	q := `
-	update conference_conferences set
-		recording_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceSetRecordingID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.conferenceUpdateToCache(ctx, id)
-
-	return nil
+	return h.ConferenceUpdate(ctx, id, fields)
 }
 
 // ConferenceAddRecordingIDs adds the recording id to the conference's recording_ids.
@@ -628,28 +421,6 @@ func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 	_, err := h.db.Exec(q, recordingID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddRecordingIDs. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.conferenceUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// ConferenceSetTranscribeID sets the conference's transcribe_id.
-func (h *handler) ConferenceSetTranscribeID(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error {
-	// prepare
-	q := `
-	update conference_conferences set
-		transcribe_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, transcribeID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceSetTranscribeID. err: %v", err)
 	}
 
 	// update the cache

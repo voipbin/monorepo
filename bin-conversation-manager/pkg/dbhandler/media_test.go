@@ -11,6 +11,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/pkg/cachehandler"
 )
@@ -21,6 +22,9 @@ func Test_MediaCreate(t *testing.T) {
 		name string
 
 		media *media.Media
+
+		responseCurTime string
+		expectRes       *media.Media
 	}{
 		{
 			"normal",
@@ -33,8 +37,19 @@ func Test_MediaCreate(t *testing.T) {
 
 				Type:     media.TypeAudio,
 				Filename: "testfilename.wav",
+			},
+
+			"2022-04-18 03:22:17.995000",
+			&media.Media{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("77f3825a-eb9c-11ec-9fa6-ef743d81dea8"),
+					CustomerID: uuid.FromStringOrNil("7a4fe890-eb9c-11ec-b171-cf5dc7a96ec5"),
+				},
+
+				Type:     media.TypeAudio,
+				Filename: "testfilename.wav",
 				TMCreate: "2022-04-18 03:22:17.995000",
-				TMUpdate: "2022-04-18 03:22:17.995000",
+				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
@@ -46,14 +61,17 @@ func Test_MediaCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().MediaSet(gomock.Any(), gomock.Any())
 			if err := h.MediaCreate(ctx, tt.media); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -66,8 +84,8 @@ func Test_MediaCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.media) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.media, res)
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

@@ -2,115 +2,39 @@ package dbhandler
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"monorepo/bin-ai-manager/models/summary"
-	"strconv"
 
+	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
-	"github.com/pkg/errors"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+
+	"monorepo/bin-ai-manager/models/summary"
 )
 
 const (
-	summarySelect = `
-	select
-		id,
-		customer_id,
-
-		activeflow_id,
-		on_end_flow_id,
-
-		reference_type,
-		reference_id,
-
-		status,
-		language,
-		content,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	from
-		ai_summaries
-	`
+	summaryTable = "ai_summaries"
 )
-
-// summaryGetFromRow gets the message from the row.
-func (h *handler) summaryGetFromRow(row *sql.Rows) (*summary.Summary, error) {
-	res := &summary.Summary{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-
-		&res.ActiveflowID,
-		&res.OnEndFlowID,
-
-		&res.ReferenceType,
-		&res.ReferenceID,
-
-		&res.Status,
-		&res.Language,
-		&res.Content,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, errors.Wrap(err, "summaryGetFromRow: Could not scan the row")
-	}
-
-	return res, nil
-}
 
 // SummaryCreate creates a new summary record.
 func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
-	q := `insert into ai_summaries(
-		id,
-		customer_id,
+	c.TMCreate = h.utilHandler.TimeGetCurTime()
+	c.TMUpdate = DefaultTimeStamp
+	c.TMDelete = DefaultTimeStamp
 
-		activeflow_id,
-		on_end_flow_id,
-
-		reference_type,
-		reference_id,
-
-		status,
-		language,
-		content,
-		
-		tm_create,
-		tm_update,
-		tm_delete
-	) values (
-		?, ?,
-		?, ?, 
-		?, ?,
-		?, ?, ?,
-		?, ?, ?
-		)
-	`
-
-	_, err := h.db.Exec(q,
-		c.ID.Bytes(),
-		c.CustomerID.Bytes(),
-
-		c.ActiveflowID.Bytes(),
-		c.OnEndFlowID.Bytes(),
-
-		c.ReferenceType,
-		c.ReferenceID.Bytes(),
-
-		c.Status,
-		c.Language,
-		c.Content,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("SummaryCreate: Could not execute query. err: %v", err)
+		return fmt.Errorf("SummaryCreate: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Insert(summaryTable).SetMap(fields).ToSql()
+	if err != nil {
+		return fmt.Errorf("SummaryCreate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("SummaryCreate: could not execute query. err: %v", err)
 	}
 
 	// update the cache
@@ -121,8 +45,6 @@ func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 
 // summaryGetFromCache returns summary from the cache.
 func (h *handler) summaryGetFromCache(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
-
-	// get from cache
 	res, err := h.cache.SummaryGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -133,33 +55,36 @@ func (h *handler) summaryGetFromCache(ctx context.Context, id uuid.UUID) (*summa
 
 // summaryGetFromDB returns summary from the DB.
 func (h *handler) summaryGetFromDB(id uuid.UUID) (*summary.Summary, error) {
+	cols := commondatabasehandler.GetDBFields(summary.Summary{})
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", summarySelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	query, args, err := sq.Select(cols...).
+		From(summaryTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. summaryGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("summaryGetFromDB: could not build query. err: %v", err)
 	}
-	defer func() {
-		_ = row.Close()
-	}()
 
-	if !row.Next() {
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("summaryGetFromDB: could not query. err: %v", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.summaryGetFromRow(row)
-	if err != nil {
-		return nil, err
+	res := &summary.Summary{}
+	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
+		return nil, fmt.Errorf("summaryGetFromDB: could not scan row. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// summaryUpdateToCache gets the message from the DB and updates the cache.
+// summaryUpdateToCache gets the summary from the DB and updates the cache.
 func (h *handler) summaryUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.summaryGetFromDB(id)
 	if err != nil {
 		return err
@@ -172,7 +97,7 @@ func (h *handler) summaryUpdateToCache(ctx context.Context, id uuid.UUID) error 
 	return nil
 }
 
-// summarySetToCache sets the given message to the cache.
+// summarySetToCache sets the given summary to the cache.
 func (h *handler) summarySetToCache(ctx context.Context, c *summary.Summary) error {
 	if err := h.cache.SummarySet(ctx, c); err != nil {
 		return err
@@ -181,9 +106,8 @@ func (h *handler) summarySetToCache(ctx context.Context, c *summary.Summary) err
 	return nil
 }
 
-// SummaryGet returns message.
+// SummaryGet returns summary.
 func (h *handler) SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
-
 	res, err := h.summaryGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -200,21 +124,24 @@ func (h *handler) SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summar
 	return res, nil
 }
 
-// SummaryDelete deletes the message.
+// SummaryDelete deletes the summary.
 func (h *handler) SummaryDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update ai_summaries set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+
+	query, args, err := sq.Update(summaryTable).
+		SetMap(map[string]any{
+			"tm_update": ts,
+			"tm_delete": ts,
+		}).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. SummaryDelete. err: %v", err)
+		return fmt.Errorf("SummaryDelete: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("SummaryDelete: could not execute. err: %v", err)
 	}
 
 	// update the cache
@@ -224,79 +151,71 @@ func (h *handler) SummaryDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // SummaryGets returns a list of summaries.
-func (h *handler) SummaryGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error) {
+func (h *handler) SummaryGets(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// prepare the query
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, summarySelect)
+	cols := commondatabasehandler.GetDBFields(summary.Summary{})
 
-	values := []interface{}{
-		token,
-	}
+	builder := sq.Select(cols...).
+		From(summaryTable).
+		Where(sq.Lt{"tm_create": token}).
+		OrderBy("tm_create desc").
+		Limit(size)
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "activeflow_id", "reference_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, uuid.FromStringOrNil(v).Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
-	}
-
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. SummaryGets. err: %v", err)
+		return nil, fmt.Errorf("SummaryGets: could not apply filters. err: %v", err)
 	}
-	defer func() {
-		_ = rows.Close()
-	}()
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("SummaryGets: could not build query. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("SummaryGets: could not query. err: %v", err)
+	}
+	defer rows.Close()
 
 	res := []*summary.Summary{}
 	for rows.Next() {
-		u, err := h.summaryGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not get data. SummaryGets, err: %v", err)
+		u := &summary.Summary{}
+		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
+			return nil, fmt.Errorf("SummaryGets: could not scan row. err: %v", err)
 		}
-
 		res = append(res, u)
 	}
 
 	return res, nil
 }
 
-// SummaryUpdateStatusDone updates the status to done
-func (h *handler) SummaryUpdateStatusDone(ctx context.Context, id uuid.UUID, content string) error {
-	// prepare
-	q := `
-	update ai_summaries set
-		status = ?,
-		content = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+// SummaryUpdate updates the summary fields.
+func (h *handler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[summary.Field]any) error {
+	updateFields := make(map[string]any)
+	for k, v := range fields {
+		updateFields[string(k)] = v
+	}
+	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
 
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, summary.StatusDone, content, ts, id.Bytes())
+	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return fmt.Errorf("could not execute. SummaryUpdateStatusDone. err: %v", err)
+		return fmt.Errorf("SummaryUpdate: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Update(summaryTable).
+		SetMap(preparedFields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("SummaryUpdate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("SummaryUpdate: could not execute. err: %v", err)
 	}
 
 	// update the cache

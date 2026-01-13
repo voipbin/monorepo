@@ -80,8 +80,18 @@ func (h *listenHandler) processV1QueuesGet(ctx context.Context, m *sock.Request)
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get filters
-	filters := h.utilHanlder.URLParseFilters(u)
+	// get filters from request body
+	var req map[string]any
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	filters, err := queue.ConvertStringMapToFieldMap(req)
+	if err != nil {
+		log.Debugf("Could not convert the filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.queueHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

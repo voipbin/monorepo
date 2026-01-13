@@ -78,7 +78,7 @@ func Test_TranscribingStop_call(t *testing.T) {
 			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
 
 			// streamingTranscribeStop
-			mockDB.EXPECT().TranscribeSetStatus(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().TranscribeUpdate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().TranscribeGet(gomock.Any(), gomock.Any()).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 
@@ -141,7 +141,9 @@ func Test_stopLive(t *testing.T) {
 				mockStreaming.EXPECT().Stop(ctx, stID).Return(&streaming.Streaming{}, nil)
 			}
 
-			mockDB.EXPECT().TranscribeSetStatus(ctx, tt.transcribe.ID, transcribe.StatusDone).Return(nil)
+			mockDB.EXPECT().TranscribeUpdate(ctx, tt.transcribe.ID, map[transcribe.Field]any{
+				transcribe.FieldStatus: transcribe.StatusDone,
+			}).Return(nil)
 			mockDB.EXPECT().TranscribeGet(gomock.Any(), tt.transcribe.ID).Return(tt.transcribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.transcribe.CustomerID, transcribe.EventTypeTranscribeDone, tt.transcribe)
 

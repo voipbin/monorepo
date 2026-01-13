@@ -279,7 +279,7 @@ func Test_AgentGets(t *testing.T) {
 		agents []*agent.Agent
 
 		size    uint64
-		filters map[string]string
+		filters map[agent.Field]any
 
 		responseCurTime string
 		expectRes       []*agent.Agent
@@ -306,9 +306,9 @@ func Test_AgentGets(t *testing.T) {
 			},
 
 			size: 2,
-			filters: map[string]string{
-				"customer_id": "48788c16-7fde-11ec-80e1-33e6bbba4dac",
-				"deleted":     "false",
+			filters: map[agent.Field]any{
+				agent.FieldCustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+				agent.FieldDeleted:    false,
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -355,9 +355,9 @@ func Test_AgentGets(t *testing.T) {
 			},
 
 			size: 2,
-			filters: map[string]string{
-				"username": "test3@test.com",
-				"deleted":  "false",
+			filters: map[agent.Field]any{
+				agent.FieldUsername: "test3@test.com",
+				agent.FieldDeleted:  false,
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -382,9 +382,9 @@ func Test_AgentGets(t *testing.T) {
 			agents: []*agent.Agent{},
 
 			size: 2,
-			filters: map[string]string{
-				"username": "282b439e-eca7-11ee-9d38-637a094feef1@test.com",
-				"deleted":  "false",
+			filters: map[agent.Field]any{
+				agent.FieldUsername: "282b439e-eca7-11ee-9d38-637a094feef1@test.com",
+				agent.FieldDeleted:  false,
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",

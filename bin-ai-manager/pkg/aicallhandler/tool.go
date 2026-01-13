@@ -382,7 +382,7 @@ func (h *aicallHandler) toolHandleGetAIcallMessages(ctx context.Context, c *aica
 		return res
 	}
 
-	messages, err := h.messageHandler.Gets(ctx, tmp.ID, 1000, "", map[string]string{})
+	messages, err := h.messageHandler.Gets(ctx, tmp.ID, 1000, "", map[message.Field]any{})
 	if err != nil {
 		fillFailed(res, err)
 		return res

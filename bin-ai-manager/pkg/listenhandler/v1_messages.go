@@ -36,15 +36,16 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 
 	// get filters
 	filters := getFilters(u)
+	typedFilters := convertToMessageFilters(filters)
 
 	log = log.WithFields(logrus.Fields{
-		"customer_id": aicallID,
-		"size":        pageSize,
-		"token":       pageToken,
-		"filters":     filters,
+		"aicall_id": aicallID,
+		"size":      pageSize,
+		"token":     pageToken,
+		"filters":   typedFilters,
 	})
 
-	tmp, err := h.messageHandler.Gets(ctx, aicallID, pageSize, pageToken, filters)
+	tmp, err := h.messageHandler.Gets(ctx, aicallID, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get messages. err: %v", err)
 		return simpleResponse(500), nil

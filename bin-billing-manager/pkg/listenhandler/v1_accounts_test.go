@@ -8,7 +8,6 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -24,26 +23,22 @@ func Test_processV1AccountsGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		responseFilters  map[string]string
 		responseAccounts []*account.Account
 
-		expectCustomerID uuid.UUID
-		expectSize       uint64
-		expectToken      string
-		expectRes        *sock.Response
+		expectFilters map[account.Field]any
+		expectSize    uint64
+		expectToken   string
+		expectRes     *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08%2003:22:17.995000&filter_customer_id=bc8f9070-0e5a-11ee-b22e-97ef303987a3",
+				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08%2003:22:17.995000&customer_id=bc8f9070-0e5a-11ee-b22e-97ef303987a3",
 				Method: sock.RequestMethodGet,
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "bc8f9070-0e5a-11ee-b22e-97ef303987a3",
-			},
 			responseAccounts: []*account.Account{
 				{
 					Identity: commonidentity.Identity{
@@ -57,9 +52,11 @@ func Test_processV1AccountsGet(t *testing.T) {
 				},
 			},
 
-			expectCustomerID: uuid.FromStringOrNil("bc8f9070-0e5a-11ee-b22e-97ef303987a3"),
-			expectSize:       10,
-			expectToken:      "2023-06-08 03:22:17.995000",
+			expectFilters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("bc8f9070-0e5a-11ee-b22e-97ef303987a3"),
+			},
+			expectSize:  10,
+			expectToken: "2023-06-08 03:22:17.995000",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -74,17 +71,14 @@ func Test_processV1AccountsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:    mockSock,
-				utilHandler:    mockUtil,
 				accountHandler: mockAccount,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectSize, tt.expectToken, tt.responseFilters).Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectSize, tt.expectToken, tt.expectFilters).Return(tt.responseAccounts, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

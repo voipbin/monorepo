@@ -26,6 +26,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 		token   string
 
 		responseFilters   map[string]string
+		expectFilters     map[customer.Field]any
 		responseCustomers []*customer.Customer
 		expectRes         *sock.Response
 	}{
@@ -41,6 +42,9 @@ func Test_processV1CustomersGet(t *testing.T) {
 
 			map[string]string{
 				"deleted": "false",
+			},
+			map[customer.Field]any{
+				customer.FieldDeleted: false,
 			},
 			[]*customer.Customer{
 				{
@@ -68,6 +72,9 @@ func Test_processV1CustomersGet(t *testing.T) {
 
 			map[string]string{
 				"deleted": "false",
+			},
+			map[customer.Field]any{
+				customer.FieldDeleted: false,
 			},
 			[]*customer.Customer{
 				{
@@ -103,7 +110,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token, tt.responseFilters).Return(tt.responseCustomers, nil)
+			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token, tt.expectFilters).Return(tt.responseCustomers, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

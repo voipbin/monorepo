@@ -68,7 +68,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RecordingGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseRecordings, nil)
+			mockDB.EXPECT().RecordingGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseRecordings, nil)
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -133,7 +133,7 @@ func (mr *MockTranscribeHandlerMockRecorder) GetByReferenceIDAndLanguage(ctx, re
 }
 
 // Gets mocks base method.
-func (m *MockTranscribeHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcribe.Transcribe, error) {
+func (m *MockTranscribeHandler) Gets(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*transcribe.Transcribe)

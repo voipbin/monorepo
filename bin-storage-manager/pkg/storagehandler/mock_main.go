@@ -105,7 +105,7 @@ func (mr *MockStorageHandlerMockRecorder) FileGet(ctx, id any) *gomock.Call {
 }
 
 // FileGets mocks base method.
-func (m *MockStorageHandler) FileGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error) {
+func (m *MockStorageHandler) FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FileGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*file.File)

@@ -161,7 +161,7 @@ func (mr *MockBillingHandlerMockRecorder) GetByReferenceID(ctx, referenceID any)
 }
 
 // Gets mocks base method.
-func (m *MockBillingHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*billing.Billing, error) {
+func (m *MockBillingHandler) Gets(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*billing.Billing)

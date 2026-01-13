@@ -31,7 +31,7 @@ type chatHandler struct {
 // ChatHandler defines
 type ChatHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
-	Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*chat.Chat, error)
+	Gets(ctx context.Context, token string, limit uint64, filters map[chat.Field]any) ([]*chat.Chat, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,

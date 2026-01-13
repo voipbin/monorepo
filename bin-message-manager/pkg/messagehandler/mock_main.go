@@ -74,18 +74,18 @@ func (mr *MockMessageHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockMessageHandler) Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error) {
+func (m *MockMessageHandler) Gets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, pageSize, pageToken)
+	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockMessageHandlerMockRecorder) Gets(ctx, customerID, pageSize, pageToken any) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Gets(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, customerID, pageSize, pageToken)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, token, size, filters)
 }
 
 // Hook mocks base method.

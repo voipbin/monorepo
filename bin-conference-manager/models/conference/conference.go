@@ -13,32 +13,32 @@ import (
 type Conference struct {
 	commonidentity.Identity
 
-	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty"` // confbridge id(call-manager)
-	Type         Type      `json:"type,omitempty"`
+	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty" db:"confbridge_id,uuid"` // confbridge id(call-manager)
+	Type         Type      `json:"type,omitempty" db:"type"`
 
-	Status Status `json:"status,omitempty"`
+	Status Status `json:"status,omitempty" db:"status"`
 
-	Name    string         `json:"name,omitempty"`
-	Detail  string         `json:"detail,omitempty"`
-	Data    map[string]any `json:"data,omitempty"`
-	Timeout int            `json:"timeout,omitempty"` // timeout. second
+	Name    string         `json:"name,omitempty" db:"name"`
+	Detail  string         `json:"detail,omitempty" db:"detail"`
+	Data    map[string]any `json:"data,omitempty" db:"data,json"`
+	Timeout int            `json:"timeout,omitempty" db:"timeout"` // timeout. second
 
-	PreFlowID  uuid.UUID `json:"pre_flow_id,omitempty"`  // pre flow id
-	PostFlowID uuid.UUID `json:"post_flow_id,omitempty"` // post flow id
+	PreFlowID  uuid.UUID `json:"pre_flow_id,omitempty" db:"pre_flow_id,uuid"`   // pre flow id
+	PostFlowID uuid.UUID `json:"post_flow_id,omitempty" db:"post_flow_id,uuid"` // post flow id
 
-	ConferencecallIDs []uuid.UUID `json:"conferencecall_ids,omitempty"` // list of conferencecall ids of the conference
+	ConferencecallIDs []uuid.UUID `json:"conferencecall_ids,omitempty" db:"conferencecall_ids,json"` // list of conferencecall ids of the conference
 
-	RecordingID  uuid.UUID   `json:"recording_id,omitempty"`
-	RecordingIDs []uuid.UUID `json:"recording_ids,omitempty"`
+	RecordingID  uuid.UUID   `json:"recording_id,omitempty" db:"recording_id,uuid"`
+	RecordingIDs []uuid.UUID `json:"recording_ids,omitempty" db:"recording_ids,json"`
 
-	TranscribeID  uuid.UUID   `json:"transcribe_id,omitempty"`
-	TranscribeIDs []uuid.UUID `json:"transcribe_ids,omitempty"`
+	TranscribeID  uuid.UUID   `json:"transcribe_id,omitempty" db:"transcribe_id,uuid"`
+	TranscribeIDs []uuid.UUID `json:"transcribe_ids,omitempty" db:"transcribe_ids,json"`
 
-	TMEnd string `json:"tm_end,omitempty"` // represent the timestamp for conference ended.
+	TMEnd string `json:"tm_end,omitempty" db:"tm_end"` // represent the timestamp for conference ended.
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Matches return true if the given items are the same

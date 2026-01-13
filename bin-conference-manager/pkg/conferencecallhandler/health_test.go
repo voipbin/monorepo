@@ -331,7 +331,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				// terminate
 				mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
 				mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
-				mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.id, conferencecall.StatusLeaving).Return(nil)
+				mockDB.EXPECT().ConferencecallUpdate(ctx, tt.id, map[conferencecall.Field]any{
+					conferencecall.FieldStatus: conferencecall.StatusLeaving,
+				}).Return(nil)
 				mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
 				mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.responseConference.ConfbridgeID, tt.responseConferencecall.ReferenceID).Return(nil)

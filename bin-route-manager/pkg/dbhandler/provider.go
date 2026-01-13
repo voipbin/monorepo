@@ -3,65 +3,26 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-route-manager/models/provider"
 )
 
 const (
-	// select query for provider get
-	providerSelect = `
-	select
-		id,
-
-		type,
-		hostname,
-
-		tech_prefix,
-		tech_postfix,
-		tech_headers,
-
-		name,
-		detail,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		route_providers
-	`
+	providersTable = "route_providers"
 )
 
 // providerGetFromRow gets the provider from the row.
 func (h *handler) providerGetFromRow(row *sql.Rows) (*provider.Provider, error) {
-	var techHeaders string
-
 	res := &provider.Provider{}
-	if err := row.Scan(
-		&res.ID,
 
-		&res.Type,
-		&res.Hostname,
-
-		&res.TechPrefix,
-		&res.TechPostfix,
-		&techHeaders,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. providerGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(techHeaders), &res.TechHeaders); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. providerGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -69,62 +30,36 @@ func (h *handler) providerGetFromRow(row *sql.Rows) (*provider.Provider, error) 
 
 // ProviderCreate creates a new provider record
 func (h *handler) ProviderCreate(ctx context.Context, p *provider.Provider) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-	q := `insert into route_providers(
-		id,
+	// Set timestamps
+	p.TMCreate = now
+	p.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	p.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		type,
-		hostname,
-
-		tech_prefix,
-		tech_postfix,
-		tech_headers,
-
-		name,
-		detail,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?,
-		?, ?,
-		?, ?, ?,
-		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not prepare. ProviderCreate. err: %v", err)
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-
-	techHeaders, err := json.Marshal(p.TechHeaders)
-	if err != nil {
-		return fmt.Errorf("could not marshal actions. ProviderCreate. err: %v", err)
+	// Initialize tech_headers if nil to avoid null in database
+	if p.TechHeaders == nil {
+		p.TechHeaders = map[string]string{}
 	}
 
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err = stmt.ExecContext(ctx,
-		p.ID.Bytes(),
-
-		p.Type,
-		p.Hostname,
-
-		p.TechPrefix,
-		p.TechPostfix,
-		techHeaders,
-
-		p.Name,
-		p.Detail,
-
-		ts,
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(p)
 	if err != nil {
+		return fmt.Errorf("could not prepare fields. ProviderCreate. err: %v", err)
+	}
+
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(providersTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. ProviderCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. ProviderCreate. err: %v", err)
 	}
 
@@ -135,7 +70,6 @@ func (h *handler) ProviderCreate(ctx context.Context, p *provider.Provider) erro
 
 // providerUpdateToCache gets the provider from the DB and update the cache.
 func (h *handler) providerUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.providerGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -159,7 +93,6 @@ func (h *handler) providerSetToCache(ctx context.Context, f *provider.Provider) 
 
 // providerGetFromCache returns provider from the cache if possible.
 func (h *handler) providerGetFromCache(ctx context.Context, id uuid.UUID) (*provider.Provider, error) {
-
 	// get from cache
 	res, err := h.cache.ProviderGet(ctx, id)
 	if err != nil {
@@ -171,20 +104,18 @@ func (h *handler) providerGetFromCache(ctx context.Context, id uuid.UUID) (*prov
 
 // providerGetFromDB gets the provider info from the db.
 func (h *handler) providerGetFromDB(ctx context.Context, id uuid.UUID) (*provider.Provider, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", providerSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&provider.Provider{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(providersTable).
+		Where(squirrel.Eq{string(provider.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. providerGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. providerGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. providerGetFromDB. err: %v", err)
 	}
@@ -193,12 +124,15 @@ func (h *handler) providerGetFromDB(ctx context.Context, id uuid.UUID) (*provide
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. providerGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.providerGetFromRow(row)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get data from row. providerGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -206,7 +140,6 @@ func (h *handler) providerGetFromDB(ctx context.Context, id uuid.UUID) (*provide
 
 // ProviderGet returns provider.
 func (h *handler) ProviderGet(ctx context.Context, id uuid.UUID) (*provider.Provider, error) {
-
 	res, err := h.providerGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -223,20 +156,32 @@ func (h *handler) ProviderGet(ctx context.Context, id uuid.UUID) (*provider.Prov
 }
 
 // ProviderGets returns list of providers.
-func (h *handler) ProviderGets(ctx context.Context, token string, limit uint64) ([]*provider.Provider, error) {
+func (h *handler) ProviderGets(ctx context.Context, token string, limit uint64, filters map[provider.Field]any) ([]*provider.Provider, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, providerSelect)
+	fields := commondatabasehandler.GetDBFields(&provider.Provider{})
+	sb := squirrel.
+		Select(fields...).
+		From(providersTable).
+		Where(squirrel.GtOrEq{string(provider.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where(squirrel.Lt{string(provider.FieldTMCreate): token}).
+		OrderBy(string(provider.FieldTMCreate) + " DESC", string(provider.FieldID) + " DESC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, token, limit)
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. ProviderGets. err: %v", err)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ProviderGets. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ProviderGets. err: %v", err)
 	}
@@ -244,14 +189,16 @@ func (h *handler) ProviderGets(ctx context.Context, token string, limit uint64) 
 		_ = rows.Close()
 	}()
 
-	var res []*provider.Provider
+	res := []*provider.Provider{}
 	for rows.Next() {
 		u, err := h.providerGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ProviderGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. ProviderGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. ProviderGets. err: %v", err)
 	}
 
 	return res, nil
@@ -259,55 +206,73 @@ func (h *handler) ProviderGets(ctx context.Context, token string, limit uint64) 
 
 // ProviderDelete deletes the given provider
 func (h *handler) ProviderDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update route_providers set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ProviderDelete. err: %v", err)
+
+	fields := map[provider.Field]any{
+		provider.FieldTMUpdate: ts,
+		provider.FieldTMDelete: ts,
 	}
 
-	// delete cache
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ProviderDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(providersTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(provider.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("ProviderDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("ProviderDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %v", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	// update cache after delete
 	_ = h.providerUpdateToCache(ctx, id)
 
 	return nil
 }
 
 // ProviderUpdate updates the provider information.
-func (h *handler) ProviderUpdate(ctx context.Context, p *provider.Provider) error {
-	q := `
-	update route_providers set
-		type = ?,
-		hostname = ?,
+func (h *handler) ProviderUpdate(ctx context.Context, id uuid.UUID, fields map[provider.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
 
-		tech_prefix = ?,
-		tech_postfix = ?,
-		tech_headers = ?,
+	fields[provider.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	techHeaders, err := json.Marshal(p.TechHeaders)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return err
+		return fmt.Errorf("ProviderUpdate: prepare fields failed: %w", err)
 	}
 
-	ts := h.utilHandler.TimeGetCurTime()
-	if _, err := h.db.Exec(q, p.Type, p.Hostname, p.TechPrefix, p.TechPostfix, techHeaders, p.Name, p.Detail, ts, p.ID.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ProviderUpdate. err: %v", err)
+	q := squirrel.Update(providersTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(provider.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("ProviderUpdate: build SQL failed: %w", err)
 	}
 
-	// set to the cache
-	_ = h.providerUpdateToCache(ctx, p.ID)
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("ProviderUpdate: exec failed: %w", err)
+	}
 
+	_ = h.providerUpdateToCache(ctx, id)
 	return nil
 }

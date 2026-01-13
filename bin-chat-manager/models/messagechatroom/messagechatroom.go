@@ -15,18 +15,18 @@ type Messagechatroom struct {
 	commonidentity.Identity
 	commonidentity.Owner
 
-	ChatroomID    uuid.UUID `json:"chatroom_id"`
-	MessagechatID uuid.UUID `json:"messagechat_id"`
+	ChatroomID    uuid.UUID `json:"chatroom_id" db:"chatroom_id,uuid"`
+	MessagechatID uuid.UUID `json:"messagechat_id" db:"messagechat_id,uuid"`
 
 	// message defines
-	Source *commonaddress.Address `json:"source"`
-	Type   Type                   `json:"type"`
-	Text   string                 `json:"text"`
-	Medias []media.Media          `json:"medias"`
+	Source *commonaddress.Address `json:"source" db:"source,json"`
+	Type   Type                   `json:"type" db:"type"`
+	Text   string                 `json:"text" db:"text"`
+	Medias []media.Media          `json:"medias" db:"medias,json"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // Type define
