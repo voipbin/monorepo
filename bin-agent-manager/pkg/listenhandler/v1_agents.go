@@ -24,7 +24,7 @@ func convertAgentFilters(rawFilters map[string]string) map[agent.Field]any {
 		case "customer_id":
 			filters[agent.FieldCustomerID] = uuid.FromStringOrNil(v)
 		case "deleted":
-			filters[agent.FieldDeleted] = v == "false"
+			filters[agent.FieldDeleted] = v == "true"
 		case "status":
 			filters[agent.FieldStatus] = agent.Status(v)
 		default:

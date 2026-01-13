@@ -225,7 +225,7 @@ func convertToTypedFilters(stringFilters map[string]string) map[number.Field]any
 		case "customer_id", "call_flow_id", "message_flow_id":
 			filters[number.Field(k)] = uuid.FromStringOrNil(v)
 		case "deleted":
-			filters[number.FieldDeleted] = v == "false"
+			filters[number.FieldDeleted] = v == "true"
 		default:
 			filters[number.Field(k)] = v
 		}

@@ -261,7 +261,7 @@ func convertToTrunkFilters(stringFilters map[string]string) map[trunk.Field]any 
 		case "customer_id":
 			filters[trunk.FieldCustomerID] = uuid.FromStringOrNil(v)
 		case "deleted":
-			filters[trunk.FieldDeleted] = v == "false"
+			filters[trunk.FieldDeleted] = v == "true"
 		case "domain_name":
 			filters[trunk.FieldDomainName] = v
 		default:
@@ -279,7 +279,7 @@ func convertToExtensionFilters(stringFilters map[string]string) map[extension.Fi
 		case "customer_id":
 			filters[extension.FieldCustomerID] = uuid.FromStringOrNil(v)
 		case "deleted":
-			filters[extension.FieldDeleted] = v == "false"
+			filters[extension.FieldDeleted] = v == "true"
 		default:
 			filters[extension.Field(k)] = v
 		}

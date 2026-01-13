@@ -67,7 +67,7 @@ func convertTranscriptFilters(stringFilters map[string]string) map[transcript.Fi
 		case "transcribe_id":
 			filters[transcript.FieldTranscribeID] = uuid.FromStringOrNil(v)
 		case "deleted":
-			filters[transcript.FieldDeleted] = (v == "false")
+			filters[transcript.FieldDeleted] = (v == "true")
 		case "direction":
 			filters[transcript.FieldDirection] = transcript.Direction(v)
 		}

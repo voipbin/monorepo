@@ -115,7 +115,7 @@ func convertTranscribeFilters(stringFilters map[string]string) map[transcribe.Fi
 		case "host_id":
 			filters[transcribe.FieldHostID] = uuid.FromStringOrNil(v)
 		case "deleted":
-			filters[transcribe.FieldDeleted] = (v == "false")
+			filters[transcribe.FieldDeleted] = (v == "true")
 		case "reference_type":
 			filters[transcribe.FieldReferenceType] = transcribe.ReferenceType(v)
 		case "status":
