@@ -70,7 +70,7 @@ func (h *handler) aicallGetFromDB(id uuid.UUID) (*aicall.AIcall, error) {
 	if err != nil {
 		return nil, fmt.Errorf("aicallGetFromDB: could not query. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
 		return nil, ErrNotFound
@@ -147,7 +147,7 @@ func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.U
 	if err != nil {
 		return nil, fmt.Errorf("AIcallGetByReferenceID: could not query. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
 		return nil, ErrNotFound
@@ -217,7 +217,7 @@ func (h *handler) AIcallGets(ctx context.Context, size uint64, token string, fil
 	if err != nil {
 		return nil, fmt.Errorf("AIcallGets: could not query. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	res := []*aicall.AIcall{}
 	for rows.Next() {

@@ -69,7 +69,7 @@ func (h *handler) summaryGetFromDB(id uuid.UUID) (*summary.Summary, error) {
 	if err != nil {
 		return nil, fmt.Errorf("summaryGetFromDB: could not query. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
 		return nil, ErrNotFound
@@ -178,7 +178,7 @@ func (h *handler) SummaryGets(ctx context.Context, size uint64, token string, fi
 	if err != nil {
 		return nil, fmt.Errorf("SummaryGets: could not query. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	res := []*summary.Summary{}
 	for rows.Next() {

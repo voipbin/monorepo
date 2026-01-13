@@ -68,7 +68,7 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 	if err != nil {
 		return nil, fmt.Errorf("messageGetFromDB: could not query. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
 		return nil, ErrNotFound
@@ -176,7 +176,7 @@ func (h *handler) MessageGets(ctx context.Context, size uint64, token string, fi
 	if err != nil {
 		return nil, fmt.Errorf("MessageGets: could not query. err: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	res := []*message.Message{}
 	for rows.Next() {
